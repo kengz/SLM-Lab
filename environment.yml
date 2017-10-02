@@ -1,0 +1,16 @@
+name: lab
+channels:
+- conda-forge
+- defaults
+dependencies:
+- ipykernel=4.6.1=py36_0
+- setuptools=36.3.0=py36_0
+- six=1.11.0=py36_1
+- wheel=0.30.0=py_1
+- numpy=1.13.1=py36_0
+- pandas=0.20.3=py36_0
+- plotly=2.0.11=py36_0
+- requests=2.14.2=py36_0
+- scipy=0.19.1=np113py36_0
+- pip:
+  - pydash==4.2.1
