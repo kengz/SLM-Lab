@@ -1,0 +1,71 @@
+#!/bin/bash --login
+# This script sets up Unity Lab for Linux Ubuntu
+
+# Fail on the first error; killable by SIGINT
+set -e
+trap "exit" INT
+
+echo "--- Installing system dependencies ---"
+sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && sudo apt-get update
+sudo apt-get install -y gcc-4.9 g++-4.9 libhdf5-dev libopenblas-dev git
+sudo apt-get install -y cmake xvfb libboost-all-dev
+
+echo "--- Installing noti for notification ---"
+if which noti >/dev/null; then
+  echo "Noti is already installed"
+else
+  curl -L https://github.com/variadico/noti/releases/download/v2.6.0/noti2.6.0.linux-amd64.tar.gz | tar -xz
+  sudo mv noti /usr/bin/
+fi
+
+echo "--- Installing NodeJS Lab interface ---"
+if which node >/dev/null; then
+  echo "Nodejs is already installed"
+else
+  curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+  sudo apt-get install -y nodejs
+fi
+
+echo "--- Installing npm modules for Lab interface ---"
+if [ -d ./node_modules ]; then
+  echo "Npm modules are already installed"
+else
+  npm install; sudo npm i -g grunt-cli
+fi
+
+echo "--- Installing Python for Lab backend ---"
+if which python3 >/dev/null; then
+  echo "Python3 is already installed"
+else
+  sudo apt-get -y install python3-dev python3-pip python3-setuptools
+fi
+
+echo "--- Installing Conda ---"
+if which conda >/dev/null; then
+  echo "Conda is already installed"
+else
+  curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  bash Miniconda3-latest-Linux-x86_64.sh
+  rm Miniconda3-latest-Linux-x86_64.sh
+  source ~/.bash_profile
+fi
+
+echo "--- Installing Conda environment ---"
+if conda env list | grep "^lab " >/dev/null; then
+  echo "conda env lab is already installed"
+else
+  conda config --add channels conda-forge
+  conda create -n lab python=3.6 ipykernel -c conda-forge -y
+  source activate lab
+  python -m ipykernel install --user --name lab
+fi
+
+# remove for reset:
+# source deactivate
+# conda env remove -n lab -y
+# conda env export > environment.yml
+echo "--- Updating Conda environment ---"
+conda env update -f environment.yml
+
+source ~/.bashrc
+echo "--- Lab setup complete ---"
