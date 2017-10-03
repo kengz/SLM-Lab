@@ -6,10 +6,9 @@
 
 # Fail on the first error; killable by SIGINT
 set -e
-trap 'exit' INT
+trap "exit" INT
 
-
-read -p '
+read -p "
 ------------------------------------------------
 
 Welcome to the Unity Lab setup script;
@@ -19,32 +18,20 @@ inspect bin/setup_ubuntu or bin/setup_macOS and run the lines manually.
 Press enter to continue, Ctrl+c to quit:
 
 ------------------------------------------------
-'
+"
 
 # copy config file if not already exist
 BIN_DIR=`pwd`/bin
 $BIN_DIR/copy_config
 
-# determine if is Mac OSX, or Linux; then run accordingly
-if [ $(uname) == 'Darwin' ];
-# Mac runs below
-then (
-  $BIN_DIR/setup_macOS;
-  );
-else (
-  $BIN_DIR/setup_ubuntu;
-  );
+# Run setup by OS
+if [ $(uname) == "Darwin" ]; then
+  $BIN_DIR/setup_macOS
+else
+  $BIN_DIR/setup_ubuntu
 fi
 
-
-echo '
-------------------------------------------------
-
-Setup done.
-Running basic installation checks.
-
-------------------------------------------------
-'
+echo "--- Setup done. Running basic checks ---"
 
 # post-installation checks
 # TODO implement
@@ -52,11 +39,10 @@ Running basic installation checks.
 # python3 -c "import gym; gym.make('LunarLander-v2')"
 # python3 -c "import gym; gym.make('SpaceInvaders-v0')"
 
-
-echo '
+echo "
 ------------------------------------------------
 
 Installation complete.
 
 ------------------------------------------------
-'
+"
