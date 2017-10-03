@@ -25,11 +25,12 @@ node_modules/
 .DS_Store
 
 # Data files
-*checkpoint*
-*.tfl*
-*.meta
+config/
 data/
 model/
 *.csv
-*.log
 *.h5
+*.log
+*.meta
+*.tfl*
+*checkpoint*
