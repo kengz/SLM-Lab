@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --login
 # This script runs the same sequence as the CircleCI build
 # Run this as:
 # bin/setup
@@ -23,7 +23,7 @@ Press enter to continue, Ctrl+c to quit:
 
 # copy config file if not already exist
 BIN_DIR=`pwd`/bin
-$BIN_DIR/copy-config
+$BIN_DIR/copy_config
 
 # determine if is Mac OSX, or Linux; then run accordingly
 if [ $(uname) == 'Darwin' ];

@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/bash --login
 
 # copy config file if not already exist
 CONFIG_DIR=`pwd`/config
-EXAMPLE_CONFIG="$CONFIG_DIR/example-default.json"
+EXAMPLE_CONFIG="$CONFIG_DIR/example_default.json"
 DEV_CONFIG="$CONFIG_DIR/default.json"
 PROD_CONFIG="$CONFIG_DIR/production.json"
 
