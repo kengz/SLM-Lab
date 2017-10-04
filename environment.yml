@@ -1,5 +1,6 @@
 name: lab
 channels:
+- soumith
 - conda-forge
 - defaults
 dependencies:
@@ -12,5 +13,7 @@ dependencies:
 - plotly=2.0.11=py36_0
 - requests=2.14.2=py36_0
 - scipy=0.19.1=np113py36_0
+- pytorch=0.2.0=py36_4cu75
+- torchvision=0.1.9=py36_1
 - pip:
   - pydash==4.2.1
