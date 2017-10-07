@@ -16,4 +16,5 @@ dependencies:
 - pytorch=0.2.0=py36_4cu75
 - torchvision=0.1.9=py36_1
 - pip:
+  - cufflinks=0.12.0
   - pydash==4.2.1
