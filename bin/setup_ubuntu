@@ -6,9 +6,23 @@ set -e
 trap "exit" INT
 
 echo "--- Installing system dependencies ---"
-sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && sudo apt-get update
-sudo apt-get install -y gcc-4.9 g++-4.9 libhdf5-dev libopenblas-dev git
-sudo apt-get install -y cmake xvfb libboost-all-dev
+sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+sudo add-apt-repository -y ppa:webupd8team/atom
+sudo apt-get update
+sudo apt-get install -y cmake gcc-4.9 g++-4.9 git
+sudo apt-get install -y xvfb libhdf5-dev libopenblas-dev libboost-all-dev
+
+echo "--- Installing Atom and Hydrogen for interactive computing ---"
+if which atom >/dev/null; then
+  echo "Atom is already installed"
+else
+  sudo apt-get install -y atom
+fi
+if apm ls | grep " Hydrogen" >/dev/null; then
+  echo "Hydrogen is already installed"
+else
+  apm install hydrogen
+fi
 
 echo "--- Installing noti for notification ---"
 if which noti >/dev/null; then
