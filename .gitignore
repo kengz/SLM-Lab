@@ -25,7 +25,8 @@ node_modules/
 .DS_Store
 
 # Data files
-config/
+config/default.json
+config/production.json
 data/
 model/
 *.csv
