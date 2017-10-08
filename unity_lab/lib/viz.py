@@ -81,45 +81,71 @@ def plot_go(
     return figure
 
 
-def plot_area(*args, **kwargs):
+def plot_area(
+    *args, fill='tozeroy',
+    trace_kwargs=None, layout_kwargs=None,
+        **kwargs):
     '''Plot area from df'''
+    trace_kwargs = _.merge(dict(fill=fill), trace_kwargs)
+    layout_kwargs = _.merge(dict(), layout_kwargs)
     return plot_go(
-        trace_class='Scatter', trace_kwargs=dict(fill='tozeroy'),
-        *args, **kwargs)
+        *args, trace_class='Scatter',
+        trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
+        **kwargs)
 
 
 def plot_bar(
-    *args,
-    barmode='stack', orientation='v', trace_kwargs=None, layout_kwargs=None,
+    *args, barmode='stack', orientation='v',
+    trace_kwargs=None, layout_kwargs=None,
         **kwargs):
     '''Plot bar chart from df'''
     trace_kwargs = _.merge(dict(orientation=orientation), trace_kwargs)
     layout_kwargs = _.merge(dict(barmode=barmode), layout_kwargs)
     return plot_go(
-        trace_class='Bar',
+        *args, trace_class='Bar',
         trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
-        *args, **kwargs)
+        **kwargs)
 
 
-def plot_line(*args, **kwargs):
-    '''Plot scatter from df'''
-    # TODO customize line style
-    return plot_go(trace_class='Scatter', *args, **kwargs)
+def plot_line(
+    *args,
+    trace_kwargs=None, layout_kwargs=None,
+        **kwargs):
+    '''Plot line from df'''
+    trace_kwargs = _.merge(dict(), trace_kwargs)
+    layout_kwargs = _.merge(dict(), layout_kwargs)
+    return plot_go(
+        trace_class='Scatter',
+        trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
+        **kwargs)
+
+
+def plot_scatter(
+    *args,
+    trace_kwargs=None, layout_kwargs=None,
+        **kwargs):
+    '''Plot Scatter from df'''
+    trace_kwargs = _.merge(dict(mode='markers'), trace_kwargs)
+    layout_kwargs = _.merge(dict(), layout_kwargs)
+    return plot_go(
+        *args, trace_class='Scatter',
+        trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
+        **kwargs)
 
 
 def plot_histogram(
-        *args,
-        barmode='overlay', xbins=None, histnorm='count', orientation='v',
-        trace_kwargs=None, layout_kwargs=None,
+    *args, barmode='overlay', xbins=None, histnorm='count', orientation='v',
+    trace_kwargs=None, layout_kwargs=None,
         **kwargs):
     '''Plot histogram from df'''
     trace_kwargs = _.merge(dict(orientation=orientation,
                                 xbins={}, histnorm=histnorm), trace_kwargs)
     layout_kwargs = _.merge(dict(barmode=barmode), layout_kwargs)
     return plot_go(
-        trace_class='Histogram',
+        *args, trace_class='Histogram',
         trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
-        *args, **kwargs)
+        **kwargs)
 
 # do not default x or y, take 'index' arg
 # scatter, pie, swarm, box
+# for stacked area, just use df cumsum
