@@ -10,21 +10,6 @@ cf.set_config_file(offline=True, world_readable=False)
 py.init_notebook_mode(connected=True)
 
 
-def create_layout(
-        title, y_title, x_title, x_type=None,
-        width=500, height=350):
-    '''simplified method to generate Layout'''
-    layout = go.Layout(
-        title=title,
-        legend=dict(x=0.0, y=-0.2, orientation='h'),
-        yaxis=dict(rangemode='tozero', title=y_title),
-        xaxis=dict(type=x_type, title=x_title),
-        width=width, height=height,
-        margin=go.Margin(l=70, r=70, t=70, b=70),
-    )
-    return layout
-
-
 def create_label(
         y_col, x_col,
         title=None, y_title=None, x_title=None, legend_name=None):
@@ -45,6 +30,21 @@ def create_label(
         'legend_name_list': legend_name_list,
     }
     return label
+
+
+def create_layout(
+        title, y_title, x_title, x_type=None,
+        width=500, height=350):
+    '''simplified method to generate Layout'''
+    layout = go.Layout(
+        title=title,
+        legend=dict(x=0.0, y=-0.2, orientation='h'),
+        yaxis=dict(rangemode='tozero', title=y_title),
+        xaxis=dict(type=x_type, title=x_title),
+        width=width, height=height,
+        margin=go.Margin(l=70, r=70, t=70, b=70),
+    )
+    return layout
 
 
 def plot_scatter(
