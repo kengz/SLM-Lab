@@ -49,14 +49,13 @@ def create_layout(
 
 
 def plot_go(
-        df, y_col, x_col=None,
+        df, y_col=None, x_col='index',
         title=None, y_title=None, x_title=None, x_type=None,
         legend_name=None, width=500, height=350, draw=True,
         trace_class='Scatter', trace_kwargs=None, layout_kwargs=None):
     '''Draw plot from df using trace build from specified go.Trace'''
     df = df.copy()
-    if x_col is None:
-        x_col = 'index'
+    if x_col == 'index':
         df['index'] = df.index.tolist()
 
     label = create_label(
@@ -66,11 +65,14 @@ def plot_go(
         x_title=label['x_title'], x_type=x_type,
         width=width, height=height, layout_kwargs=layout_kwargs)
 
+    y_col_list, x_col_list = label['y_col_list'], label['x_col_list']
+    trace_num = max(len(y_col_list), len(y_col_list))
     data = []
-    for idx, y_c in enumerate(label['y_col_list']):
-        x_c = _.get(label['x_col_list'], idx, default=x_col)
+    for idx in range(trace_num):
+        y_c, x_c = _.get(y_col_list, idx), _.get(x_col_list, idx)
+        df_y, df_x = _.get(df, y_c), _.get(df, x_c)
         trace = _.get(go, trace_class)(
-            y=df[y_c], x=df[x_c],
+            y=df_y, x=df_x,
             name=label['legend_name_list'][idx])
         trace.update(trace_kwargs)
         data.append(trace)
@@ -115,7 +117,7 @@ def plot_line(
     trace_kwargs = _.merge(dict(), trace_kwargs)
     layout_kwargs = _.merge(dict(), layout_kwargs)
     return plot_go(
-        trace_class='Scatter',
+        *args, trace_class='Scatter',
         trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
         **kwargs)
 
@@ -124,7 +126,7 @@ def plot_scatter(
     *args,
     trace_kwargs=None, layout_kwargs=None,
         **kwargs):
-    '''Plot Scatter from df'''
+    '''Plot scatter from df'''
     trace_kwargs = _.merge(dict(mode='markers'), trace_kwargs)
     layout_kwargs = _.merge(dict(), layout_kwargs)
     return plot_go(
