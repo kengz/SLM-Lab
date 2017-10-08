@@ -1,3 +1,9 @@
+'''
+Data visualization library
+TODO pie, swarm, box plots
+TODO for stacked area, just use df cumsum
+'''
+
 import cufflinks as cf
 import pydash as _
 from plotly import (
@@ -147,7 +153,3 @@ def plot_histogram(
         *args, trace_class='Histogram',
         trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
         **kwargs)
-
-# do not default x or y, take 'index' arg
-# scatter, pie, swarm, box
-# for stacked area, just use df cumsum
