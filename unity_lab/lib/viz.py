@@ -1,7 +1,7 @@
 '''
 Data visualization library
 TODO pie, swarm, box plots
-TODO for stacked area, just use df cumsum
+TODO login credentials from config, save function
 '''
 
 import cufflinks as cf
@@ -14,6 +14,19 @@ from unity_lab.lib import util
 
 cf.set_config_file(offline=True, world_readable=False)
 py.init_notebook_mode(connected=True)
+
+
+def stack_cumsum(df, y_col):
+    '''Helper to cumsum over y columns for stacked area plot'''
+    y_col_list = util.wrap_list(y_col)
+    stack_df = df.copy()
+    for idx in range(len(y_col_list)):
+        col = y_col_list[idx]
+        presum_idx = idx - 1
+        if presum_idx > -1:
+            presum_col = y_col_list[presum_idx]
+            stack_df[col] += stack_df[presum_col]
+    return stack_df
 
 
 def create_label(
@@ -74,9 +87,9 @@ def plot_go(
     label = create_label(
         y_col, x_col, title, y_title, x_title, legend_name)
     layout = create_layout(
-        title=label['title'], y_title=label['y_title'],
-        x_title=label['x_title'], x_type=x_type,
-        width=width, height=height, layout_kwargs=layout_kwargs)
+        x_type=x_type, width=width, height=height,
+        layout_kwargs=layout_kwargs,
+        **_.pick(label, ['title', 'y_title', 'x_title']))
 
     y_col_list, x_col_list = label['y_col_list'], label['x_col_list']
     trace_num = max(len(y_col_list), len(y_col_list))
@@ -97,10 +110,14 @@ def plot_go(
 
 
 def plot_area(
-    *args, fill='tonexty',
+    *args, fill='tonexty', stack=False,
     trace_kwargs=None, layout_kwargs=None,
         **kwargs):
     '''Plot area from df'''
+    if stack:
+        df, y_col = args[:2]
+        stack_df = stack_cumsum(df, y_col)
+        args = (stack_df,) + args[1:]
     trace_kwargs = _.merge(dict(fill=fill), trace_kwargs)
     layout_kwargs = _.merge(dict(), layout_kwargs)
     return plot_go(
