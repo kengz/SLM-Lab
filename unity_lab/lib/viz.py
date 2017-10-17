@@ -20,8 +20,8 @@ def create_label(
         y_col, x_col,
         title=None, y_title=None, x_title=None, legend_name=None):
     '''Create label dict for go.Layout with smart resolution'''
-    y_title = y_title or y_col
-    x_title = x_title or x_col
+    y_title = str(y_title or y_col)
+    x_title = str(x_title or x_col)
     title = title or f'{y_title} vs {x_title}'
     legend_name = legend_name or y_col
     y_col_list, x_col_list, legend_name_list = _.map_(
@@ -44,7 +44,7 @@ def create_layout(
     '''simplified method to generate Layout'''
     layout = go.Layout(
         title=title,
-        legend=dict(x=0.0, y=-0.2, orientation='h'),
+        legend=dict(x=0.0, y=-0.4, orientation='h'),
         yaxis=dict(rangemode='tozero', title=y_title),
         xaxis=dict(type=x_type, title=x_title),
         width=width, height=height,
@@ -59,7 +59,14 @@ def plot_go(
         title=None, y_title=None, x_title=None, x_type=None,
         legend_name=None, width=500, height=350, draw=True,
         trace_class='Scatter', trace_kwargs=None, layout_kwargs=None):
-    '''Draw plot from df using trace build from specified go.Trace'''
+    '''
+    Quickly plot from df using trace_class, e.g. go.Scatter
+    1. create_label() to auto-resolve labels
+    2. create_layout() with go.Layout() and update(layout_kwargs)
+    3. spread and create go.<trace_class>() and update(trace_kwargs)
+    4. Create the figure and plot accordingly
+    @returns figure
+    '''
     df = df.copy()
     if x_col == 'index':
         df['index'] = df.index.tolist()
@@ -90,7 +97,7 @@ def plot_go(
 
 
 def plot_area(
-    *args, fill='tozeroy',
+    *args, fill='tonexty',
     trace_kwargs=None, layout_kwargs=None,
         **kwargs):
     '''Plot area from df'''
