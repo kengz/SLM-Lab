@@ -42,6 +42,7 @@ dependencies:
 - pytz=2017.2=py36_0
 - pyzmq=16.0.2=py36_2
 - readline=6.2=0
+- regex=2017.09.23=py36_0
 - setuptools=36.3.0=py36_0
 - simplegeneric=0.8.1=py36_0
 - six=1.11.0=py36_1
@@ -71,4 +72,3 @@ dependencies:
   - prompt-toolkit==1.0.15
   - pydash==4.2.1
   - torch==0.2.0.post4
-

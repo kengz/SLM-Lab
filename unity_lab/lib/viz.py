@@ -18,7 +18,7 @@ py.init_notebook_mode(connected=True)
 
 def stack_cumsum(df, y_col):
     '''Helper to cumsum over y columns for stacked area plot'''
-    y_col_list = util.wrap_list(y_col)
+    y_col_list = util.cast_list(y_col)
     stack_df = df.copy()
     for idx in range(len(y_col_list)):
         col = y_col_list[idx]
@@ -38,7 +38,7 @@ def create_label(
     title = title or f'{y_title} vs {x_title}'
     legend_name = legend_name or y_col
     y_col_list, x_col_list, legend_name_list = _.map_(
-        [y_col, x_col, legend_name], util.wrap_list)
+        [y_col, x_col, legend_name], util.cast_list)
 
     label = {
         'y_title': y_title,
