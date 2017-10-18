@@ -1,11 +1,17 @@
 import os
+import pandas as pd
 import pydash as _
 import regex as re
+import ujson
+import yaml
 from datetime import datetime
 
-ROOT_DIR = os.getcwd()
+
+DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
+DICT_FILE_EXT = ['.json', '.yml']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
+ROOT_DIR = os.getcwd()
 
 
 def cast_list(val):
@@ -51,16 +57,55 @@ def smart_path(data_path, as_dir=False):
     return os.path.normpath(data_path)
 
 
+def get_file_ext(data_path):
+    return os.path.splitext(data_path)[-1]
+
+
+def read_as_df(data_path):
+    '''Submethod to read data as DataFrame'''
+    ext = get_file_ext(data_path)
+    if ext in ['.xlsx', 'xls']:
+        data = pd.read_excel(data_path)
+    else:  # .csv
+        data = pd.read_csv(data_path)
+    return data
+
+
+def read_as_dict(data_path):
+    '''Submethod to read data as dict'''
+    ext = get_file_ext(data_path)
+    open_file = open(data_path, 'r')
+    if ext == '.json':
+        data = ujson.load(open_file)
+    elif ext == '.yml':
+        data = yaml.load(open_file)
+    return data
+
+
 def smart_read(data_path):
     '''
     Universal data reading method with smart data parsing
     - {.csv, .xlsx, .xls} to DataFrame
     - {.json, .yml} to dict
-    - {.h5} to model weights
-    - {db-query} to dict, DataFrame
+    - TODO {.h5} to model weights
+    - TODO {db-query} to dict, DataFrame
     - {*} to str
     '''
-    return
+    data_path = smart_path(data_path)
+    try:
+        assert os.path.isfile(data_path)
+    except AssertionError:
+        raise FileNotFoundError(data_path)
+
+    ext = get_file_ext(data_path)
+    if ext in DF_FILE_EXT:
+        data = read_as_df(data_path)
+        return data
+    elif ext in DICT_FILE_EXT:
+        data = read_as_dict(data_path)
+    else:
+        data = open(data_path, 'r').read()
+    return data
 
 
 def smart_write(data, data_path):

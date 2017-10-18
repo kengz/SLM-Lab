@@ -40,6 +40,7 @@ dependencies:
 - python=3.6.2=0
 - python-dateutil=2.6.1=py36_0
 - pytz=2017.2=py36_0
+- pyyaml=3.12=py36_1
 - pyzmq=16.0.2=py36_2
 - readline=6.2=0
 - regex=2017.09.23=py36_0
@@ -53,6 +54,7 @@ dependencies:
 - wcwidth=0.1.7=py36_0
 - wheel=0.30.0=py_1
 - xz=5.2.3=0
+- yaml=0.1.6=0
 - zeromq=4.2.1=1
 - zlib=1.2.11=0
 - mkl=2017.0.3=0
@@ -61,6 +63,7 @@ dependencies:
 - plotly=2.0.11=py36_0
 - requests=2.14.2=py36_0
 - scipy=0.19.1=np113py36_0
+- ujson=1.35=py36_0
 - pytorch=0.2.0=py36_4cu75
 - torchvision=0.1.9=py36_1
 - pip:
@@ -72,3 +75,4 @@ dependencies:
   - prompt-toolkit==1.0.15
   - pydash==4.2.1
   - torch==0.2.0.post4
+

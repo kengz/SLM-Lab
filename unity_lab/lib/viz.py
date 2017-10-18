@@ -17,7 +17,7 @@ py.init_notebook_mode(connected=True)
 
 
 def stack_cumsum(df, y_col):
-    '''Helper to cumsum over y columns for stacked area plot'''
+    '''Submethod to cumsum over y columns for stacked area plot'''
     y_col_list = util.cast_list(y_col)
     stack_df = df.copy()
     for idx in range(len(y_col_list)):
