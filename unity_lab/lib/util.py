@@ -1,7 +1,9 @@
+import os
 import pydash as _
 import regex as re
 from datetime import datetime
 
+ROOT_DIR = os.getcwd()
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 
@@ -13,7 +15,6 @@ def cast_list(val):
     else:
         return [val]
 
-# TODO auto path resolver
 # TODO logger, with dedent
 # TODO auto file reader, resolve to sensible format
 # TODO auto file writer, resolve to sensible format
@@ -23,6 +24,31 @@ def cast_list(val):
 # TODO unit tests
 # use simple tree level notation? will get out of hand, but store as metadata
 # try first experiments as pytorch intro and simple dqn implementations, then ways to store experiments data in neo4j
+
+
+def smart_path(data_path, as_dir=False):
+    '''
+    Resolve data_path into abspath with fallback to join from ROOT_DIR
+    @param {str} data_path The input data path to resolve
+    @param {bool} as_dir Whether to return as dirname
+    @returns {str} The normalized absolute data_path
+    @example
+
+    smart_path('unity_lab/lib')
+    # => '/Users/ANON/Documents/unity_lab/unity_lab/lib'
+
+    smart_path('/tmp')
+    # => '/tmp'
+    '''
+    if not os.path.isabs(data_path):
+        abs_path = os.path.abspath(data_path)
+        if os.path.exists(abs_path):
+            data_path = abs_path
+        else:
+            data_path = os.path.join(ROOT_DIR, data_path)
+    if as_dir:
+        data_path = os.path.dirname(data_path)
+    return os.path.normpath(data_path)
 
 
 def smart_read(data_path):
