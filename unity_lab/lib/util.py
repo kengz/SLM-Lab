@@ -8,10 +8,16 @@ from datetime import datetime
 
 
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
-DICT_FILE_EXT = ['.json', '.yml']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 ROOT_DIR = os.getcwd()
+
+
+def cast_df(val):
+    '''missing pydash method to cast value as DataFrame'''
+    if isinstance(val, pd.DataFrame):
+        return val
+    return pd.DataFrame(val)
 
 
 def cast_list(val):
@@ -22,8 +28,6 @@ def cast_list(val):
         return [val]
 
 # TODO logger, with dedent
-# TODO auto file reader, resolve to sensible format
-# TODO auto file writer, resolve to sensible format
 # TODO refer to old exp util
 # TODO experiment controller/util vs generic util
 # TODO new exp id needs to reflect DAG structure: its ancestors; use neo4j to store
@@ -71,14 +75,17 @@ def read_as_df(data_path):
     return data
 
 
-def read_as_dict(data_path):
-    '''Submethod to read data as dict'''
-    ext = get_file_ext(data_path)
+def read_as_plain(data_path):
+    '''Submethod to read data as plain type'''
     open_file = open(data_path, 'r')
+    ext = get_file_ext(data_path)
     if ext == '.json':
         data = ujson.load(open_file)
     elif ext == '.yml':
         data = yaml.load(open_file)
+    else:
+        data = open_file.read()
+    open_file.close()
     return data
 
 
@@ -86,38 +93,91 @@ def smart_read(data_path):
     '''
     Universal data reading method with smart data parsing
     - {.csv, .xlsx, .xls} to DataFrame
-    - {.json, .yml} to dict
+    - {.json} to dict, list
+    - {.yml} to dict
+    - {*} to str
     - TODO {.h5} to model weights
     - TODO {db-query} to dict, DataFrame
-    - {*} to str
+    @param {str} data_path The data path to read from
+    @returns {data} The read data in sensible format
+    @example
+
+    smart_read('test/fixture/lib/util/sample.csv')
+    smart_read('test/fixture/lib/util/sample.xlsx')
+    smart_read('test/fixture/lib/util/sample.xls')
+    # => <DataFrame>
+
+    smart_read('test/fixture/lib/util/sample.json')
+    # => <dict or list>
+    smart_read('test/fixture/lib/util/sample.yml')
+    # => <dict>
+    smart_read('test/fixture/lib/util/sample.txt')
+    # => <str>
     '''
     data_path = smart_path(data_path)
     try:
         assert os.path.isfile(data_path)
     except AssertionError:
         raise FileNotFoundError(data_path)
-
     ext = get_file_ext(data_path)
     if ext in DF_FILE_EXT:
         data = read_as_df(data_path)
-        return data
-    elif ext in DICT_FILE_EXT:
-        data = read_as_dict(data_path)
     else:
-        data = open(data_path, 'r').read()
+        data = read_as_plain(data_path)
     return data
+
+
+def write_as_df(data, data_path):
+    '''Submethod to write data as DataFrame'''
+    df = cast_df(data)
+    ext = get_file_ext(data_path)
+    if ext in ['.xlsx', 'xls']:
+        write = pd.ExcelWriter(data_path)
+        df.to_excel(writer)
+        writer.save()
+        writer.close()
+    else:  # .csv
+        df.to_csv(data_path)
+    return data_path
+
+
+def write_as_plain(data_path):
+    '''Submethod to write data as plain type'''
+    open_file = open(data_path, 'w')
+    ext = get_file_ext(data_path)
+    if ext == '.json':
+        json.dump(data, open_file)
+    elif ext == '.yml':
+        yaml.dump(data, open_file)
+    else:
+        open_file.write(str(data))
+    open_file.close()
+    return data_path
 
 
 def smart_write(data, data_path):
     '''
     Universal data writing method with smart data parsing
     - {.csv, .xlsx, .xls} from DataFrame
-    - {.json, .yml} from dict
-    - {.h5} from model weights
-    - {db-query} from dict, DataFrame
+    - {.json} from dict, list
+    - {.yml} from dict
     - {*} from str(*)
+    - TODO {.h5} from model weights
+    - TODO {db-query} from dict, DataFrame
+    @param {*} data The data to write
+    @param {str} data_path The data path to write to
+    @returns {data_path} The data path written to
+    @example
     '''
-    return
+    data_path = smart_path(data_path)
+    data_dir = os.path.dirname(data_path)
+    os.makedirs(data_dir, exist_ok=True)
+    ext = get_file_ext(data_path)
+    if ext in DF_FILE_EXT:
+        write_as_df(data, data_path)
+    else:
+        write_as_plain(data, data_path)
+    return data_path
 
 
 def get_timestamp(pattern=FILE_TS_FORMAT):
