@@ -10,6 +10,7 @@ from datetime import datetime
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
+RE_INDENT = re.compile('(?!\n)\s+|(\n\s+)$')
 ROOT_DIR = os.getcwd()
 
 
@@ -26,6 +27,14 @@ def cast_list(val):
         return val
     else:
         return [val]
+
+
+def dedent(string):
+    '''
+    Method to dedent the broken python multiline string
+    '''
+    return RE_INDENT.sub('', string)
+
 
 # TODO logger, with dedent
 # TODO refer to old exp util
