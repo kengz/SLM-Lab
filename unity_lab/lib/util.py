@@ -36,7 +36,6 @@ def dedent(string):
     return RE_INDENT.sub('', string)
 
 
-# TODO logger, with dedent
 # TODO refer to old exp util
 # TODO experiment controller/util vs generic util
 # TODO new exp id needs to reflect DAG structure: its ancestors; use neo4j to store
@@ -98,7 +97,7 @@ def read_as_plain(data_path):
     return data
 
 
-def smart_read(data_path):
+def read(data_path):
     '''
     Universal data reading method with smart data parsing
     - {.csv, .xlsx, .xls} to DataFrame
@@ -111,16 +110,16 @@ def smart_read(data_path):
     @returns {data} The read data in sensible format
     @example
 
-    smart_read('test/fixture/lib/util/sample.csv')
-    smart_read('test/fixture/lib/util/sample.xlsx')
-    smart_read('test/fixture/lib/util/sample.xls')
+    read('test/fixture/lib/util/sample.csv')
+    read('test/fixture/lib/util/sample.xlsx')
+    read('test/fixture/lib/util/sample.xls')
     # => <DataFrame>
 
-    smart_read('test/fixture/lib/util/sample.json')
+    read('test/fixture/lib/util/sample.json')
     # => <dict or list>
-    smart_read('test/fixture/lib/util/sample.yml')
+    read('test/fixture/lib/util/sample.yml')
     # => <dict>
-    smart_read('test/fixture/lib/util/sample.txt')
+    read('test/fixture/lib/util/sample.txt')
     # => <str>
     '''
     data_path = smart_path(data_path)
@@ -164,7 +163,7 @@ def write_as_plain(data_path):
     return data_path
 
 
-def smart_write(data, data_path):
+def write(data, data_path):
     '''
     Universal data writing method with smart data parsing
     - {.csv, .xlsx, .xls} from DataFrame
