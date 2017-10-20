@@ -25,13 +25,12 @@ node_modules/
 .DS_Store
 
 # Data files
-config/default.json
-config/production.json
+config/
 data/
 model/
-*.csv
-*.h5
 *.log
 *.meta
 *.tfl*
+*.xls
+*.xlsx
 *checkpoint*
