@@ -1,3 +1,4 @@
+import json
 import os
 import pandas as pd
 import pydash as _
@@ -10,7 +11,7 @@ from datetime import datetime
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
-RE_INDENT = re.compile('(?!\n)\s+|(\n\s+)$')
+RE_INDENT = re.compile('(^\n)|(?!\n)\s{2,}|(\n\s+)$')
 ROOT_DIR = os.getcwd()
 
 
@@ -34,14 +35,6 @@ def dedent(string):
     Method to dedent the broken python multiline string
     '''
     return RE_INDENT.sub('', string)
-
-
-# TODO refer to old exp util
-# TODO experiment controller/util vs generic util
-# TODO new exp id needs to reflect DAG structure: its ancestors; use neo4j to store
-# TODO unit tests
-# use simple tree level notation? will get out of hand, but store as metadata
-# try first experiments as pytorch intro and simple dqn implementations, then ways to store experiments data in neo4j
 
 
 def smart_path(data_path, as_dir=False):
@@ -110,16 +103,19 @@ def read(data_path):
     @returns {data} The read data in sensible format
     @example
 
-    read('test/fixture/lib/util/sample.csv')
-    read('test/fixture/lib/util/sample.xlsx')
-    read('test/fixture/lib/util/sample.xls')
+    data_df = util.read('test/fixture/common/util/test_df.csv')
+    data_df = util.read('test/fixture/common/util/test_df.xls')
+    data_df = util.read('test/fixture/common/util/test_df.xlsx')
     # => <DataFrame>
 
-    read('test/fixture/lib/util/sample.json')
-    # => <dict or list>
-    read('test/fixture/lib/util/sample.yml')
+    data_dict = util.read('test/fixture/common/util/test_dict.json')
+    data_dict = util.read('test/fixture/common/util/test_dict.yml')
     # => <dict>
-    read('test/fixture/lib/util/sample.txt')
+
+    data_list = util.read('test/fixture/common/util/test_list.json')
+    # => <list>
+
+    data_str = util.read('test/fixture/common/util/test_str.txt')
     # => <str>
     '''
     data_path = smart_path(data_path)
@@ -140,16 +136,16 @@ def write_as_df(data, data_path):
     df = cast_df(data)
     ext = get_file_ext(data_path)
     if ext in ['.xlsx', 'xls']:
-        write = pd.ExcelWriter(data_path)
+        writer = pd.ExcelWriter(data_path)
         df.to_excel(writer)
         writer.save()
         writer.close()
     else:  # .csv
-        df.to_csv(data_path)
+        df.to_csv(data_path, index=False)
     return data_path
 
 
-def write_as_plain(data_path):
+def write_as_plain(data, data_path):
     '''Submethod to write data as plain type'''
     open_file = open(data_path, 'w')
     ext = get_file_ext(data_path)
@@ -176,6 +172,17 @@ def write(data, data_path):
     @param {str} data_path The data path to write to
     @returns {data_path} The data path written to
     @example
+
+    data_path = util.write(data_df, 'test/fixture/common/util/test_df.csv')
+    data_path = util.write(data_df, 'test/fixture/common/util/test_df.xls')
+    data_path = util.write(data_df, 'test/fixture/common/util/test_df.xlsx')
+
+    data_path = util.write(data_dict, 'test/fixture/common/util/test_dict.json')
+    data_path = util.write(data_dict, 'test/fixture/common/util/test_dict.yml')
+
+    data_path = util.write(data_list, 'test/fixture/common/util/test_list.json')
+
+    data_path = util.write(data_str, 'test/fixture/common/util/test_str.txt')
     '''
     data_path = smart_path(data_path)
     data_dir = os.path.dirname(data_path)
@@ -212,10 +219,10 @@ def calc_timestamp_diff(ts2, ts1):
     @returns {string} delta_t in %H:%M:%S format
     @example
 
-    ts1 = get_timestamp()
-    ts2 = get_timestamp()
+    ts1 = '2017_10_17_084739'
+    ts2 = '2017_10_17_084740'
     ts_diff = calc_timestamp_diff(ts2, ts1)
-    # => '00:00:01'
+    # => '0:00:01'
     '''
     delta_t = datetime.strptime(
         ts2, FILE_TS_FORMAT) - datetime.strptime(
