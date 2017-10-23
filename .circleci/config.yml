@@ -32,6 +32,7 @@ jobs:
       - run:
           name: Install Python dependencies without Conda for CI
           command: |
+            pip install setuptools
             python setup.py install
 
 test:
