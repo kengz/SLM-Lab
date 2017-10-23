@@ -63,7 +63,7 @@ dependencies:
 - traitlets=4.3.2=py36_0
 - wcwidth=0.1.7=py36_0
 - wheel=0.30.0=py_1
-- xlrd=1.1.0=py36_1
+- xlrd=1.1.0
 - xz=5.2.3=0
 - yaml=0.1.6=0
 - zeromq=4.2.1=1
