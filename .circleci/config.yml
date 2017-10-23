@@ -2,8 +2,8 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:8
       - image: circleci/python:3.6
+      - image: circleci/node:8
       - image: neo4j:3.2
 
     working_directory: ~/Unity-Lab
