@@ -72,6 +72,7 @@ else
   curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
   bash Miniconda3-latest-MacOSX-x86_64.sh -b
   rm Miniconda3-latest-MacOSX-x86_64.sh
+  echo 'export PATH=$HOME/miniconda3/bin:$PATH' ~/.bash_profile
   source ~/.bash_profile
 fi
 

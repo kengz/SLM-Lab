@@ -30,12 +30,18 @@ jobs:
       #     key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
+          name: Install Conda
+          command: |
+            if which conda >/dev/null; then
+              echo "Conda is already installed"
+            else
+              curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+              bash Miniconda3-latest-Linux-x86_64.sh -b
+              echo 'export PATH=$HOME/miniconda3/bin:$PATH' ~/.bashrc
+              source ~/.bashrc
+      - run:
           name: Install Python dependencies with Conda
           command: |
-            python -V
-            curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-            bash Miniconda3-latest-Linux-x86_64.sh -b
-            export PATH=$HOME/miniconda3/bin:$PATH
             conda config --add channels conda-forge
             conda config --add channels soumith
             conda create -n lab python=3.6 ipykernel -c conda-forge -c soumith -y
