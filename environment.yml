@@ -75,7 +75,7 @@ dependencies:
 - requests=2.14.2=py36_0
 - scipy=0.19.1=np113py36_0
 - ujson=1.35=py36_0
-- pytorch=0.2.0=py36_4cu75
+- pytorch=0.2.0
 - torchvision=0.1.9=py36_1
 - pip:
   - colorlover==0.2.1
