@@ -56,7 +56,7 @@ jobs:
 test:
     docker:
       - image: circleci/python:3.6
-      # - image: circleci/node:7.10
+      - image: circleci/node:8
       - image: neo4j:3.2
     environment:
       CC_TEST_REPORTER_ID: 633cb615def2956cb2c4b0817b54f0e5b15bb8c42d9f9b921b8b2e02b217c369
@@ -72,8 +72,15 @@ test:
             source activate lab
             python setup.py test
             cc-test-reporter after-build --exit-code $?
-
       - store_test_results:
           path:
             - .coverage
-            - htmlcov
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
