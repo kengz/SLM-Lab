@@ -35,10 +35,13 @@ jobs:
             python -V
             curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
             bash Miniconda3-latest-Linux-x86_64.sh -b
+            export PATH=$HOME/miniconda3/bin:$PATH
+      - save_cache:
+          paths:
+            - ~/miniconda3
       - run:
           name: Install Python dependencies with Conda
           command: |
-            source ~/.bashrc
             conda config --add channels conda-forge
             conda config --add channels soumith
             conda create -n lab python=3.6 ipykernel -c conda-forge -c soumith -y
@@ -47,7 +50,7 @@ jobs:
             conda env update -f environment.yml
       - save_cache:
           paths:
-            - ~/miniconda3
+            - ~/miniconda3/envs/lab
           key: v1-dependencies-{{ checksum "environment.yml" }}
 
 test:
