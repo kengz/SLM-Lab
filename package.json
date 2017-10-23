@@ -1,0 +1,10 @@
+{
+  "name": "unity_lab",
+  "version": "0.1.0",
+  "description": "An experimental framework for Reinforcement Learning using Unity and PyTorch.",
+  "main": "index.js",
+  "repository": "https://github.com/kengz/Unity-Lab.git",
+  "author": "kengz <kengzwl@gmail.com>, lgraesser",
+  "license": "MIT",
+  "private": false
+}

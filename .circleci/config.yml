@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:7.10
+      - image: circleci/node:8
       - image: circleci/python:3.6
       - image: neo4j:3.2
 
@@ -22,6 +22,7 @@ jobs:
       - run:
           name: Install NodeJS dependencies
           command: |
+            npm install -g yarn
             yarn install
       - save_cache:
           paths:

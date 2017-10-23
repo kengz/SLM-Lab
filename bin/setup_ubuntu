@@ -38,13 +38,14 @@ if which node >/dev/null; then
 else
   curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
   sudo apt-get install -y nodejs
+  npm install -g yarn
 fi
 
 echo "--- Installing npm modules for Lab interface ---"
 if [ -d ./node_modules ]; then
   echo "Npm modules are already installed"
 else
-  npm install; sudo npm i -g grunt-cli
+  yarn install; yarn global add grunt-cli
 fi
 
 echo "--- Installing Python for Lab backend ---"
