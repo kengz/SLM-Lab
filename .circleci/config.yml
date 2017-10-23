@@ -19,15 +19,15 @@ jobs:
           - v1-dependencies-{{ checksum "environment.yml" }}
           - v1-dependencies
 
-      - run:
-          name: Install NodeJS dependencies
-          command: |
-            sudo npm install -g yarn
-            yarn install
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+      # - run:
+      #     name: Install NodeJS dependencies
+      #     command: |
+      #       sudo npm install -g yarn
+      #       yarn install
+      # - save_cache:
+      #     paths:
+      #       - node_modules
+      #     key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
           name: Install Python dependencies using venv for CI
@@ -43,7 +43,7 @@ jobs:
 
 test:
     docker:
-      - image: circleci/node:7.10
+      # - image: circleci/node:7.10
       - image: circleci/python:3.6
       - image: neo4j:3.2
     environment:
