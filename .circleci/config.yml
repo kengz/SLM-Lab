@@ -39,6 +39,7 @@ jobs:
               bash Miniconda3-latest-Linux-x86_64.sh -b
               echo 'export PATH=$HOME/miniconda3/bin:$PATH' ~/.bashrc
               source ~/.bashrc
+            fi
       - run:
           name: Install Python dependencies with Conda
           command: |
