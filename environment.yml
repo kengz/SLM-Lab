@@ -4,16 +4,87 @@ channels:
 - conda-forge
 - defaults
 dependencies:
+- apipkg=1.4=py36_0
+- appnope=0.1.0=py36_0
+- autopep8=1.3.2=py36_0
+- ca-certificates=2017.7.27.1=0
+- certifi=2017.7.27.1=py36_0
+- cffi=1.10.0=py36_0
+- coverage=4.4.1=py36_0
+- decorator=4.1.2=py36_0
+- et_xmlfile=1.0.1=py36_0
+- execnet=1.5.0=py_0
+- freetype=2.7=1
 - ipykernel=4.6.1=py36_0
+- ipython=6.2.1=py36_0
+- ipython_genutils=0.2.0=py36_0
+- isort=4.2.15=py36_0
+- jdcal=1.3=py36_0
+- jedi=0.10.2=py36_0
+- jpeg=9b=1
+- jsonschema=2.6.0=py36_0
+- jupyter_client=5.1.0=py36_0
+- jupyter_core=4.3.0=py36_0
+- libffi=3.2.1=3
+- libpng=1.6.28=0
+- libsodium=1.0.10=0
+- libtiff=4.0.6=7
+- nbformat=4.4.0=py36_0
+- ncurses=5.9=10
+- olefile=0.44=py36_0
+- openpyxl=2.5.0a3=py36_0
+- openssl=1.0.2l=0
+- pexpect=4.2.1=py36_0
+- pickleshare=0.7.4=py36_0
+- pillow=4.2.1=py36_0
+- pip=9.0.1=py36_0
+- prompt_toolkit=1.0.15=py36_0
+- ptyprocess=0.5.2=py36_0
+- py=1.4.34=py36_0
+- pycodestyle=2.3.1=py36_0
+- pycparser=2.18=py36_0
+- pygments=2.2.0=py36_0
+- pytest=3.2.3=py36_0
+- pytest-cov=2.5.1=py36_0
+- pytest-forked=0.2=py36_0
+- pytest-xdist=1.20.1=py_0
+- python=3.6.2=0
+- python-dateutil=2.6.1=py36_0
+- pytz=2017.2=py36_0
+- pyyaml=3.12=py36_1
+- pyzmq=16.0.2=py36_2
+- readline=6.2=0
+- regex=2017.09.23=py36_0
 - setuptools=36.3.0=py36_0
+- simplegeneric=0.8.1=py36_0
 - six=1.11.0=py36_1
+- sqlite=3.13.0=1
+- tk=8.5.19=2
+- tornado=4.5.2=py36_0
+- traitlets=4.3.2=py36_0
+- wcwidth=0.1.7=py36_0
 - wheel=0.30.0=py_1
+- xlrd=1.1.0=py36_1
+- xz=5.2.3=0
+- yaml=0.1.6=0
+- zeromq=4.2.1=1
+- zlib=1.2.11=0
+- mkl=2017.0.3=0
 - numpy=1.13.1=py36_0
 - pandas=0.20.3=py36_0
 - plotly=2.0.11=py36_0
 - requests=2.14.2=py36_0
 - scipy=0.19.1=np113py36_0
+- ujson=1.35=py36_0
 - pytorch=0.2.0=py36_4cu75
 - torchvision=0.1.9=py36_1
 - pip:
+  - colorlover==0.2.1
+  - cufflinks==0.12.0
+  - et-xmlfile==1.0.1
+  - ipython-genutils==0.2.0
+  - jupyter-client==5.1.0
+  - jupyter-core==4.3.0
+  - prompt-toolkit==1.0.15
   - pydash==4.2.1
+  - torch==0.2.0.post4

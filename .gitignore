@@ -28,9 +28,9 @@ node_modules/
 config/
 data/
 model/
-*.csv
-*.h5
 *.log
 *.meta
 *.tfl*
+*.xls
+*.xlsx
 *checkpoint*
