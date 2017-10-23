@@ -32,9 +32,10 @@ jobs:
       - run:
           name: Install Python dependencies using venv for CI
           command: |
-            python3 -m venv venv
+            python -V
+            python -m venv venv
             . venv/bin/activate
-            python3 setup.py install
+            python setup.py install
       - save_cache:
           paths:
             - venv
