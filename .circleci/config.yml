@@ -30,21 +30,26 @@ jobs:
       #     key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
-          name: Install Python dependencies using venv for CI
+          name: Install Python dependencies with Conda
           command: |
             python -V
-            python -m venv venv
-            . venv/bin/activate
-            python setup.py install
+            curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+            bash Miniconda3-latest-MacOSX-x86_64.sh -b
+            conda config --add channels conda-forge
+            conda config --add channels soumith
+            conda create -n lab python=3.6 ipykernel -c conda-forge -c soumith -y
+            source activate lab
+            python -m ipykernel install --user --name lab
+            conda env update -f environment.yml
       - save_cache:
           paths:
-            - venv
+            - ~/miniconda3
           key: v1-dependencies-{{ checksum "environment.yml" }}
 
 test:
     docker:
-      # - image: circleci/node:7.10
       - image: circleci/python:3.6
+      # - image: circleci/node:7.10
       - image: neo4j:3.2
     environment:
       CC_TEST_REPORTER_ID: 633cb615def2956cb2c4b0817b54f0e5b15bb8c42d9f9b921b8b2e02b217c369
