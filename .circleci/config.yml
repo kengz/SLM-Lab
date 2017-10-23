@@ -33,8 +33,6 @@ jobs:
           name: Install Python dependencies without Conda for CI
           command: |
             python setup.py install
-      - save_cache:
-          key: v1-dependencies-{{ checksum "environment.yml" }}
 
 test:
     docker:
