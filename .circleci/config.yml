@@ -30,11 +30,11 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
-          name: Install Python dependencies without Conda for CI
+          name: Install Python dependencies using venv for CI
           command: |
-            python -m venv venv
+            python3 -m venv venv
             . venv/bin/activate
-            python setup.py install
+            python3 setup.py install
       - save_cache:
           paths:
             - venv
