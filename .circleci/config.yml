@@ -4,7 +4,6 @@ jobs:
     docker:
       - image: circleci/node:8
       - image: circleci/python:3.6
-      - image: conda/miniconda3:latest
       - image: neo4j:3.2
 
     working_directory: ~/Unity-Lab
@@ -31,13 +30,10 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
-          name: Install Python dependencies with Conda
+          name: Install Python dependencies without Conda for CI
           command: |
-            source activate lab
-            conda env update -f environment.yml
+            python setup.py install
       - save_cache:
-          paths:
-            - ~/miniconda3/envs/lab
           key: v1-dependencies-{{ checksum "environment.yml" }}
 
 test:
