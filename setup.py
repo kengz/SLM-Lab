@@ -20,12 +20,7 @@ env_file = read('environment.yml')
 dep_str = env_file.split('dependencies:')[-1]
 conda_dep_str, pip_dep_str = dep_str.split('- pip:')
 conda_dep = conda_dep_str.rstrip('\n').split('\n- ')[1:]
-conda_as_pip_dep = []
-for c_dep in conda_dep:
-    conda_as_pip = '=='.join(c_dep.split('=')[:2])
-    if 'pytorch' in conda_as_pip:
-        conda_as_pip = 'http://download.pytorch.org/whl/cu75/torch-0.2.0.post3-cp36-cp36m-manylinux1_x86_64.whl'
-    conda_as_pip_dep.append(conda_as_pip)
+conda_as_pip_dep = [ '=='.join(c_dep.split('=')[:2]) for c_dep in conda_dep]
 pip_dep = pip_dep_str.rstrip('\n').split('\n  - ')[1:]
 dependencies = conda_as_pip_dep + pip_dep
 
