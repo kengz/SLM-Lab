@@ -38,6 +38,7 @@ jobs:
       - run:
           name: Install Python dependencies with Conda
           command: |
+            source ~/.bashrc
             conda config --add channels conda-forge
             conda config --add channels soumith
             conda create -n lab python=3.6 ipykernel -c conda-forge -c soumith -y
