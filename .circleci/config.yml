@@ -20,18 +20,19 @@ jobs:
           - v1-dependencies
 
       - run:
-        name: Install NodeJS dependencies
-        command: yarn install
+          name: Install NodeJS dependencies
+          command: |
+            yarn install
       - save_cache:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
-        name: Install Python dependencies with Conda
-        command: |
-          source activate lab
-          conda env update -f environment.yml
+          name: Install Python dependencies with Conda
+          command: |
+            source activate lab
+            conda env update -f environment.yml
       - save_cache:
           paths:
             - ~/miniconda3/envs/lab
@@ -48,14 +49,14 @@ test:
     steps:
       - checkout
       - run:
-        name: Run Python tests
-        command: |
-          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-          chmod +x ./cc-test-reporter
-          ./cc-test-reporter before-build
-          source activate lab
-          python setup.py test
-          cc-test-reporter after-build --exit-code $?
+          name: Run Python tests
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+            ./cc-test-reporter before-build
+            source activate lab
+            python setup.py test
+            cc-test-reporter after-build --exit-code $?
 
       - store_test_results:
           path:
