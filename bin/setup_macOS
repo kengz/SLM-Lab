@@ -48,7 +48,7 @@ if which node >/dev/null; then
   echo "NodeJS is already installed"
 else
   brew install node
-  npm install -g yarn
+  sudo npm install -g yarn
 fi
 
 echo "--- Installing npm modules for Lab interface ---"

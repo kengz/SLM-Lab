@@ -38,7 +38,7 @@ if which node >/dev/null; then
 else
   curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
   sudo apt-get install -y nodejs
-  npm install -g yarn
+  sudo npm install -g yarn
 fi
 
 echo "--- Installing npm modules for Lab interface ---"
