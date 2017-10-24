@@ -70,8 +70,7 @@ jobs:
             python setup.py test
             cc-test-reporter after-build --exit-code $?
       - store_test_results:
-          path:
-            - htmlcov
+          path: htmlcov
 
 workflows:
   version: 2
