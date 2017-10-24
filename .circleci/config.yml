@@ -47,7 +47,7 @@ jobs:
             conda env update -f environment.yml
       - save_cache:
           paths:
-            - ~/miniconda3/envs/lab
+            - ~/miniconda3
           key: v1-dependencies-{{ checksum "environment.yml" }}
 
   test:
