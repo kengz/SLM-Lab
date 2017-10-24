@@ -60,6 +60,12 @@ jobs:
 
     steps:
       - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-{{ checksum "environment.yml" }}
+          - v1-dependencies
+
       - run:
           name: Install Codeclimate test reporter
           command: |
