@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  - build:
+  build:
     docker:
       - image: circleci/python:3.6
       - image: circleci/node:8
@@ -50,7 +50,7 @@ jobs:
             - ~/miniconda3/envs/lab
           key: v1-dependencies-{{ checksum "environment.yml" }}
 
-- test:
+  test:
     docker:
       - image: circleci/python:3.6
       - image: circleci/node:8
