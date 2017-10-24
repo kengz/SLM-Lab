@@ -43,7 +43,7 @@ setup(
     version='0.1.0',
     description='An experimental framework for Reinforcement Learning using Unity and PyTorch.',
     long_description=read('README.md'),
-    keywords='unity lab',
+    keywords='Unity Lab',
     url='https://github.com/kengz/unity_lab',
     author='kengz,lgraesser',
     author_email='kengzwl@gmail.com',
