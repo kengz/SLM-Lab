@@ -7,9 +7,6 @@ jobs:
       - image: neo4j:3.2
 
     working_directory: ~/Unity-Lab
-    branches:
-      ignore:
-        - gh-pages
 
     steps:
       - checkout
@@ -80,7 +77,15 @@ workflows:
   version: 2
   build-test:
     jobs:
-      - build
+      - build:
+        filters:
+          branches:
+            ignore:
+              - gh-pages
       - test:
           requires:
             - build
+          filters:
+            branches:
+              ignore:
+                - gh-pages
