@@ -5,6 +5,8 @@ jobs:
       - image: circleci/python:3.6
       - image: circleci/node:8
       - image: neo4j:3.2
+    environment:
+      CC_TEST_REPORTER_ID: 633cb615def2956cb2c4b0817b54f0e5b15bb8c42d9f9b921b8b2e02b217c369
 
     working_directory: ~/Unity-Lab
 
@@ -50,22 +52,6 @@ jobs:
             - ~/miniconda3
           key: v1-dependencies-{{ checksum "environment.yml" }}
 
-  test:
-    docker:
-      - image: circleci/python:3.6
-      - image: circleci/node:8
-      - image: neo4j:3.2
-    environment:
-      CC_TEST_REPORTER_ID: 633cb615def2956cb2c4b0817b54f0e5b15bb8c42d9f9b921b8b2e02b217c369
-
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          - v1-dependencies-{{ checksum "environment.yml" }}
-          - v1-dependencies
-
       - run:
           name: Install Codeclimate test reporter
           command: |
@@ -87,6 +73,3 @@ workflows:
   build-test:
     jobs:
       - build
-      - test:
-          requires:
-            - build
