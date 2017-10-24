@@ -51,7 +51,7 @@ setup(
     packages=[],
     zip_safe=False,
     include_package_data=True,
-    install_requires=dependencies,
+    # install_requires=dependencies,
     dependency_links=[],
     extras_require={
         'dev': [],
