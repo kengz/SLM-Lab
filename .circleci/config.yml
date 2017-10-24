@@ -74,7 +74,7 @@ test:
             cc-test-reporter after-build --exit-code $?
       - store_test_results:
           path:
-            - .coverage
+            - htmlcov
 
 workflows:
   version: 2
