@@ -62,9 +62,9 @@ jobs:
             ./cc-test-reporter before-build
             source activate lab
             python setup.py test
-            ./cc-test-reporter after-build -t coverage.py --exit-code $? ./.coverage
+            ./cc-test-reporter after-build --exit-code $?
       - store_test_results:
-          path: ./.coverage
+          path: ./coverage.xml
 
 workflows:
   version: 2
