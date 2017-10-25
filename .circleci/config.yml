@@ -4,12 +4,12 @@ jobs:
     environment:
       CC_TEST_REPORTER_ID: 633cb615def2956cb2c4b0817b54f0e5b15bb8c42d9f9b921b8b2e02b217c369
 
+    working_directory: ~/Unity-Lab
+
     docker:
       - image: circleci/python:3.6
       - image: circleci/node:8
       - image: neo4j:3.2
-
-    working_directory: ~/Unity-Lab
 
     steps:
       - checkout
@@ -50,9 +50,28 @@ jobs:
             python -m ipykernel install --user --name lab
             conda env update -f environment.yml
       - save_cache:
+          key: v1-dependencies-{{ checksum "environment.yml" }}
           paths:
             - ~/miniconda3
-          key: v1-dependencies-{{ checksum "environment.yml" }}
+
+  test:
+    environment:
+      CC_TEST_REPORTER_ID: 633cb615def2956cb2c4b0817b54f0e5b15bb8c42d9f9b921b8b2e02b217c369
+
+    working_directory: ~/Unity-Lab
+
+    docker:
+      - image: circleci/python:3.6
+      - image: circleci/node:8
+      - image: neo4j:3.2
+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-{{ checksum "environment.yml" }}
+          - v1-dependencies
 
       # - run:
       #     name: Run Python tests
@@ -77,3 +96,6 @@ workflows:
   build-test:
     jobs:
       - build
+      - test:
+          requires:
+            - build
