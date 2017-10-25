@@ -96,6 +96,7 @@ jobs:
       - run:
           name: Run Python tests
           command: |
+            export PATH=$HOME/miniconda3/bin:$PATH
             source activate lab
             python setup.py test
       - store_test_results:
