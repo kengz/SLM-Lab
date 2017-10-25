@@ -32,7 +32,7 @@ jobs:
           name: Install Conda
           command: |
             echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
-            source $BASH_ENV
+            export PATH=$HOME/miniconda3/bin:$PATH
             if which conda >/dev/null; then
               echo "Conda is already installed"
             else
@@ -92,7 +92,7 @@ jobs:
           name: Run Python tests
           command: |
             echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
-            source $BASH_ENV
+            export PATH=$HOME/miniconda3/bin:$PATH
             source activate lab
             python setup.py test
       - store_test_results:
