@@ -9,6 +9,7 @@ build/
 dist/
 src/
 htmlcov/
+coverage.xml
 .coverage
 .env
 .venv

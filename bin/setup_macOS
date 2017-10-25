@@ -48,13 +48,14 @@ if which node >/dev/null; then
   echo "NodeJS is already installed"
 else
   brew install node
+  sudo npm install -g yarn
 fi
 
 echo "--- Installing npm modules for Lab interface ---"
 if [ -d ./node_modules ]; then
   echo "Npm modules are already installed"
 else
-  npm install; sudo npm i -g grunt-cli
+  yarn install; yarn global add grunt-cli
 fi
 
 echo "--- Installing Python for Lab backend ---"
@@ -69,8 +70,9 @@ if which conda >/dev/null; then
   echo "Conda is already installed"
 else
   curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
-  bash Miniconda3-latest-MacOSX-x86_64.sh
+  bash Miniconda3-latest-MacOSX-x86_64.sh -b
   rm Miniconda3-latest-MacOSX-x86_64.sh
+  echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> ~/.bash_profile
   source ~/.bash_profile
 fi
 

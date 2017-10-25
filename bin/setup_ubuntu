@@ -38,13 +38,14 @@ if which node >/dev/null; then
 else
   curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
   sudo apt-get install -y nodejs
+  sudo npm install -g yarn
 fi
 
 echo "--- Installing npm modules for Lab interface ---"
 if [ -d ./node_modules ]; then
   echo "Npm modules are already installed"
 else
-  npm install; sudo npm i -g grunt-cli
+  yarn install; yarn global add grunt-cli
 fi
 
 echo "--- Installing Python for Lab backend ---"
@@ -59,9 +60,10 @@ if which conda >/dev/null; then
   echo "Conda is already installed"
 else
   curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-  bash Miniconda3-latest-Linux-x86_64.sh
+  bash Miniconda3-latest-Linux-x86_64.sh -b
   rm Miniconda3-latest-Linux-x86_64.sh
-  source ~/.bash_profile
+  echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> ~/.bashrc
+  source ~/.bashrc
 fi
 
 echo "--- Installing Conda environment ---"

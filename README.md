@@ -1,2 +1,2 @@
-# Unity Lab
+# Unity Lab [![CircleCI](https://circleci.com/gh/kengz/Unity-Lab.svg?style=svg)](https://circleci.com/gh/kengz/Unity-Lab) [![Maintainability](https://api.codeclimate.com/v1/badges/cd657608713aa907e424/maintainability)](https://codeclimate.com/github/kengz/Unity-Lab/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/cd657608713aa907e424/test_coverage)](https://codeclimate.com/github/kengz/Unity-Lab/test_coverage)
 An experimental framework for Reinforcement Learning using Unity and PyTorch.
