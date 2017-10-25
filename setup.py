@@ -6,7 +6,6 @@ from setuptools.command.test import test as TestCommand
 test_args = [
     '-n 2',
     '--cov-report=html',
-    '--cov-report=xml',
     '--cov-report=term',
     '--cov=unity_lab',
     'test'
