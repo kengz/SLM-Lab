@@ -8,8 +8,8 @@ jobs:
 
     docker:
       - image: circleci/python:3.6
-      - image: circleci/node:8
-      - image: neo4j:3.2
+      # - image: circleci/node:8
+      # - image: neo4j:3.2
 
     steps:
       - checkout
@@ -73,8 +73,8 @@ jobs:
 
     docker:
       - image: circleci/python:3.6
-      - image: circleci/node:8
-      - image: neo4j:3.2
+      # - image: circleci/node:8
+      # - image: neo4j:3.2
 
     steps:
       - checkout
