@@ -32,27 +32,37 @@ jobs:
       - run:
           name: Install Conda
           command: |
+            echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
             if which conda >/dev/null; then
               echo "Conda is already installed"
             else
               curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
               bash Miniconda3-latest-Linux-x86_64.sh -b
             fi
-            echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
+      - save_cache:
+          key: v1-dependencies-{{ checksum "environment.yml" }}
+          paths:
+            - ~/miniconda3
 
       - run:
           name: Install Python dependencies with Conda
           command: |
-            conda config --add channels conda-forge
-            conda config --add channels soumith
-            conda create -n lab python=3.6 ipykernel -c conda-forge -c soumith -y
+            if conda env list | grep "^lab " >/dev/null; then
+              echo "conda env lab is already installed"
+            else
+              conda config --add channels conda-forge
+              conda config --add channels soumith
+              conda create -n lab python=3.6 ipykernel -c conda-forge -c soumith -y
+              source activate lab
+              python -m ipykernel install --user --name lab
+            fi
             source activate lab
-            python -m ipykernel install --user --name lab
             conda env update -f environment.yml
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}
           paths:
             - ~/miniconda3
+            - ~/.cache/pip
 
   test:
     environment:
@@ -86,7 +96,6 @@ jobs:
       - run:
           name: Run Python tests
           command: |
-            echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
             source activate lab
             python setup.py test
       - store_test_results:
