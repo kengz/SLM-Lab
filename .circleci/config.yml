@@ -86,6 +86,7 @@ jobs:
       - run:
           name: Run Python tests
           command: |
+            echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
             source activate lab
             python setup.py test
       - store_test_results:
