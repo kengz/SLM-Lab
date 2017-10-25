@@ -1,12 +1,13 @@
 version: 2
 jobs:
   build:
+    environment:
+      CC_TEST_REPORTER_ID: 633cb615def2956cb2c4b0817b54f0e5b15bb8c42d9f9b921b8b2e02b217c369
+
     docker:
       - image: circleci/python:3.6
       - image: circleci/node:8
       - image: neo4j:3.2
-    environment:
-      CC_TEST_REPORTER_ID: 633cb615def2956cb2c4b0817b54f0e5b15bb8c42d9f9b921b8b2e02b217c369
 
     working_directory: ~/Unity-Lab
 
@@ -37,10 +38,11 @@ jobs:
               curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
               bash Miniconda3-latest-Linux-x86_64.sh -b
             fi
+            echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
+
       - run:
           name: Install Python dependencies with Conda
           command: |
-            export PATH=$HOME/miniconda3/bin:$PATH
             conda config --add channels conda-forge
             conda config --add channels soumith
             conda create -n lab python=3.6 ipykernel -c conda-forge -c soumith -y
@@ -58,12 +60,11 @@ jobs:
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
             ./cc-test-reporter before-build
-            export PATH=$HOME/miniconda3/bin:$PATH
             source activate lab
             python setup.py test
-            ./cc-test-reporter after-build --exit-code $?
+            ./cc-test-reporter after-build -t coverage.py --exit-code $?
       - store_test_results:
-          path: htmlcov
+          path: .coverage
 
 workflows:
   version: 2
