@@ -58,10 +58,9 @@ jobs:
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
             ./cc-test-reporter before-build
-            export PATH=$HOME/miniconda3/bin:$PATH
             source activate lab
             python setup.py test
-            cc-test-reporter after-build --exit-code $?
+            ./cc-test-reporter after-build --exit-code $?
       - store_test_results:
           path: htmlcov
 
