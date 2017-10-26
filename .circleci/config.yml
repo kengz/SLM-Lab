@@ -28,11 +28,10 @@ jobs:
       #       - node_modules
       #     key: v1-dependencies-{{ checksum "package.json" }}
 
+      - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:
           name: Install Conda
           command: |
-            echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
-            source $BASH_ENV
             if which conda >/dev/null; then
               echo "Conda is already installed"
             else
@@ -78,25 +77,18 @@ jobs:
           - v1-dependencies-{{ checksum "environment.yml" }}
           - v1-dependencies
 
-      # - run:
-      #     name: Run Python tests
-      #     command: |
-      #       curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-      #       chmod +x ./cc-test-reporter
-      #       ./cc-test-reporter before-build
-      #       source activate lab
-      #       python setup.py test
-      #       ./cc-test-reporter after-build -t coverage.py --exit-code $? .coverage
-
+      - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:
           name: Run Python tests
           command: |
-            echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
-            source $BASH_ENV
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+            ./cc-test-reporter before-build
             source activate lab
             python setup.py test
+            ./cc-test-reporter after-build -t coverage.py --exit-code $? .coverage
       - store_test_results:
-          path: .coverage
+          path: htmlcov
 
 workflows:
   version: 2
