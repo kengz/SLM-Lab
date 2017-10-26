@@ -7,6 +7,7 @@ test_args = [
     '-n 2',
     '--cov-report=html',
     '--cov-report=term',
+    '--cov-report=xml',
     '--cov=unity_lab',
     'test'
 ]
