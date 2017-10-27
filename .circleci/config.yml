@@ -86,6 +86,7 @@ jobs:
             ./cc-test-reporter before-build
             source activate lab
             python setup.py test
+            cat coverage.yml
             ./cc-test-reporter after-build -d -p ~/Unity-Lab/test --exit-code $? coverage.xml
       - store_test_results:
           path: htmlcov
