@@ -87,7 +87,7 @@ jobs:
             source activate lab
             python setup.py test
             cat coverage.xml
-            ./cc-test-reporter after-build -d --exit-code $? coverage.xml
+            ./cc-test-reporter after-build -d -p ~/Unity-Lab/unity_lab --exit-code $? coverage.xml
       - store_test_results:
           path: htmlcov
 
