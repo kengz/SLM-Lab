@@ -42,7 +42,11 @@ def flatten_dict(d, parent_key='', sep='.'):
     '''missing pydash method to flatten dict'''
     items = []
     for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
+        if parent_key:
+            new_key = parent_key + sep + k
+        else:
+            new_key = k
+
         if isinstance(v, collections.MutableMapping):
             items.extend(flatten_dict(v, new_key, sep=sep).items())
         else:
