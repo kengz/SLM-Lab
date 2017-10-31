@@ -12,8 +12,8 @@ test_args = [
 ]
 
 
-def read(file_path):
-    return open(os.path.join(os.path.dirname(__file__), file_path)).read()
+def read(filepath):
+    return open(os.path.join(os.path.dirname(__file__), filepath)).read()
 
 
 env_file = read('environment.yml')
