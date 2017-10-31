@@ -1,3 +1,7 @@
+'''
+Example Hydrogen notebook
+Use `lab` as your Hydrogen kernel and run below interactively
+'''
 import pandas as pd
 import pydash as _
 from unity_lab.lib import util, viz
@@ -7,9 +11,9 @@ df = pd.DataFrame({
     'y': [0, 1, 4, 9, 16],
 })
 
-fig = viz.plot_area(df, ['x', 'y'], save=True)
+fig = viz.plot_area(df, ['x', 'y'])
 fig = viz.plot_area(df, ['x', 'y'], stack=True)
 fig = viz.plot_bar(df, ['y', 'x'])
-fig = viz.plot_line(df, ['y', 'x'])
+fig = viz.plot_line(df, ['y', 'x'], save=False)
 fig = viz.plot_scatter(df, ['y', 'x'])
 fig = viz.plot_histogram(df, ['y'])
