@@ -61,6 +61,7 @@ jobs:
 
   test:
     environment:
+      PY_ENV: test
       CC_TEST_REPORTER_ID: 633cb615def2956cb2c4b0817b54f0e5b15bb8c42d9f9b921b8b2e02b217c369
 
     working_directory: ~/Unity-Lab

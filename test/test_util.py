@@ -25,6 +25,17 @@ def test_dedent(test_multiline_str):
     assert dedented_string == 'lorem ipsum dolor\nsit amet\n\nconsectetur adipiscing elit'
 
 
+def test_flatten_dict(test_dict):
+    assert util.flatten_dict(test_dict) == test_dict
+    assert util.flatten_dict({'a': {'b': 1}}) == {'a.b': 1}
+    assert util.flatten_dict({'a': {'b': 1}}) == {'a.b': 1}
+    assert util.flatten_dict({'a': {'b': 1}}, sep='_') == {'a_b': 1}
+
+
+def test_is_jupyter():
+    assert not util.is_jupyter()
+
+
 def test_smart_path():
     rel_path = 'test/test_util.py'
     fake_rel_path = 'test/test_util.py_fake'
@@ -35,47 +46,47 @@ def test_smart_path():
     assert util.smart_path(abs_path, as_dir=True) == os.path.dirname(abs_path)
 
 
-@pytest.mark.parametrize('file_name,dtype', [
+@pytest.mark.parametrize('filename,dtype', [
     ('test_df.csv', pd.DataFrame),
     ('test_df.xls', pd.DataFrame),
     ('test_df.xlsx', pd.DataFrame),
 ])
-def test_write_read_as_df(test_df, file_name, dtype):
-    data_path = f'test/fixture/common/util/{file_name}'
+def test_write_read_as_df(test_df, filename, dtype):
+    data_path = f'test/fixture/common/util/{filename}'
     util.write(test_df, util.smart_path(data_path))
     assert os.path.exists(data_path)
     data_df = util.read(util.smart_path(data_path))
     assert isinstance(data_df, dtype)
 
 
-@pytest.mark.parametrize('file_name,dtype', [
+@pytest.mark.parametrize('filename,dtype', [
     ('test_dict.json', dict),
     ('test_dict.yml', dict),
 ])
-def test_write_read_as_plain_dict(test_dict, file_name, dtype):
-    data_path = f'test/fixture/common/util/{file_name}'
+def test_write_read_as_plain_dict(test_dict, filename, dtype):
+    data_path = f'test/fixture/common/util/{filename}'
     util.write(test_dict, util.smart_path(data_path))
     assert os.path.exists(data_path)
     data_dict = util.read(util.smart_path(data_path))
     assert isinstance(data_dict, dtype)
 
 
-@pytest.mark.parametrize('file_name,dtype', [
+@pytest.mark.parametrize('filename,dtype', [
     ('test_list.json', list),
 ])
-def test_write_read_as_plain_list(test_list, file_name, dtype):
-    data_path = f'test/fixture/common/util/{file_name}'
+def test_write_read_as_plain_list(test_list, filename, dtype):
+    data_path = f'test/fixture/common/util/{filename}'
     util.write(test_list, util.smart_path(data_path))
     assert os.path.exists(data_path)
     data_dict = util.read(util.smart_path(data_path))
     assert isinstance(data_dict, dtype)
 
 
-@pytest.mark.parametrize('file_name,dtype', [
+@pytest.mark.parametrize('filename,dtype', [
     ('test_str.txt', str),
 ])
-def test_write_read_as_plain_list(test_str, file_name, dtype):
-    data_path = f'test/fixture/common/util/{file_name}'
+def test_write_read_as_plain_list(test_str, filename, dtype):
+    data_path = f'test/fixture/common/util/{filename}'
     util.write(test_str, util.smart_path(data_path))
     assert os.path.exists(data_path)
     data_dict = util.read(util.smart_path(data_path))

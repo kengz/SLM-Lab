@@ -1,19 +1,35 @@
 '''
-Data visualization library
+The data visualization module
 TODO pie, swarm, box plots
-TODO login credentials from config, save function
 '''
 
-import cufflinks as cf
+import os
+import plotly
 import pydash as _
 from plotly import (
     graph_objs as go,
     offline as py,
 )
 from unity_lab.lib import util
+from unity_lab import config
 
-cf.set_config_file(offline=True, world_readable=False)
-py.init_notebook_mode(connected=True)
+PLOT_FILEDIR = util.smart_path('data')
+os.makedirs(PLOT_FILEDIR, exist_ok=True)
+if util.is_jupyter():
+    py.init_notebook_mode(connected=True)
+
+
+def save_image(figure, filename=None):
+    if filename is None:
+        filename = _.get(figure, 'layout.title') + '.png'
+    filepath = f'{PLOT_FILEDIR}/{filename}'
+
+    plotly.tools.set_credentials_file(
+        username=_.get(config, 'plotly.username'),
+        api_key=_.get(config, 'plotly.api_key'))
+    plotly.tools.set_config_file(
+        world_readable=True, sharing='public')
+    return plotly.plotly.image.save_as(figure, filepath)
 
 
 def stack_cumsum(df, y_col):
@@ -33,12 +49,12 @@ def create_label(
         y_col, x_col,
         title=None, y_title=None, x_title=None, legend_name=None):
     '''Create label dict for go.Layout with smart resolution'''
-    y_title = str(y_title or y_col)
-    x_title = str(x_title or x_col)
-    title = title or f'{y_title} vs {x_title}'
     legend_name = legend_name or y_col
     y_col_list, x_col_list, legend_name_list = _.map_(
         [y_col, x_col, legend_name], util.cast_list)
+    y_title = str(y_title or ','.join(y_col_list))
+    x_title = str(x_title or ','.join(x_col_list))
+    title = title or f'{y_title} vs {x_title}'
 
     label = {
         'y_title': y_title,
@@ -71,6 +87,7 @@ def plot_go(
         df, y_col=None, x_col='index',
         title=None, y_title=None, x_title=None, x_type=None,
         legend_name=None, width=500, height=350, draw=True,
+        save=False, filename=None,
         trace_class='Scatter', trace_kwargs=None, layout_kwargs=None):
     '''
     Quickly plot from df using trace_class, e.g. go.Scatter
@@ -106,6 +123,8 @@ def plot_go(
     figure = go.Figure(data=data, layout=layout)
     if draw:
         py.iplot(figure)
+    if save:
+        save_image(figure, filename=filename)
     return figure
 
 

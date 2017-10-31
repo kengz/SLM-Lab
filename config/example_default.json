@@ -1,8 +1,12 @@
 {
-  "data_sync_destination": "~/Dropbox/unity_lab/data",
-  "NOTI_SLACK_DEST": "#rl-monitor",
-  "NOTI_SLACK_TOK": "GET_SLACK_BOT_TOKEN_FROM_https://my.slack.com/services/new/bot",
+  "data_sync_destination": "~/Dropbox/Unity-Lab/data",
   "experiments": [
     "quickstart"
-  ]
+  ],
+  "NOTI_SLACK_DEST": "#rl-monitor",
+  "NOTI_SLACK_TOK": "get slack bot token from https://my.slack.com/services/new/bot",
+  "plotly": {
+    "username": "get from https://plot.ly/settings/api",
+    "api_key": "generate from https://plot.ly/settings/api"
+  }
 }
