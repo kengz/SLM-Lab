@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-@pytest.fixture
+
 class TestNet:
     '''
     Base class for unit testing neural network training
@@ -72,4 +72,13 @@ class TestNet:
         '''
         # TODO: e.g. loss is not CrossEntropy when output has one dimension
         #       e.g. softmax has not been applied with CrossEntropy loss (includes it)
+        pass
+
+
+    @staticmethod
+    def check_output(self, net):
+        '''
+        Checks that the output of the net is not zero or nan
+        '''
+        # TODO Complete for vanilla nn
         pass

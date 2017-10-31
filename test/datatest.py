@@ -1,7 +1,6 @@
 import pytest
 import torch
 
-@pytest.fixture
 class TestData:
     '''
     Base class for unit testing data provided to a network
