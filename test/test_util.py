@@ -25,6 +25,13 @@ def test_dedent(test_multiline_str):
     assert dedented_string == 'lorem ipsum dolor\nsit amet\n\nconsectetur adipiscing elit'
 
 
+def test_flatten_dict(test_dict):
+    assert util.flatten_dict(test_dict) == test_dict
+    assert util.flatten_dict({'a': {'b': 1}}) == {'a.b': 1}
+    assert util.flatten_dict({'a': {'b': 1}}) == {'a.b': 1}
+    assert util.flatten_dict({'a': {'b': 1}}, sep='_') == {'a_b': 1}
+
+
 def test_smart_path():
     rel_path = 'test/test_util.py'
     fake_rel_path = 'test/test_util.py_fake'

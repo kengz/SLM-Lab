@@ -1,3 +1,4 @@
+import collections
 import json
 import os
 import pandas as pd
@@ -35,6 +36,18 @@ def dedent(string):
     Method to dedent the broken python multiline string
     '''
     return RE_INDENT.sub('', string)
+
+
+def flatten_dict(d, parent_key='', sep='.'):
+    '''missing pydash method to flatten dict'''
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 
 def smart_path(data_path, as_dir=False):
