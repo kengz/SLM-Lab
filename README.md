@@ -26,7 +26,7 @@ The Lab uses interactive programming and lit workflow:
 
 1. Install [Atom text editor](https://atom.io/)
 2. Install [Hydrogen for Atom](https://atom.io/packages/hydrogen) and [these other Atom packages optionally](https://gist.github.com/kengz/70c20a0cb238ba1fbb29cdfe402c6470#file-packages-json-L3)
-3. Use this [killer keymap for Hydrogen and other Atom shortcuts](https://gist.github.com/kengz/70c20a0cb238ba1fbb29cdfe402c6470#file-keymap-cson-L15-L18)
+3. Use this [killer keymap for Hydrogen and other Atom shortcuts](https://gist.github.com/kengz/70c20a0cb238ba1fbb29cdfe402c6470#file-keymap-cson-L15-L18). Install [Sync Settings](https://atom.io/packages/sync-settings), fork the keymap gist, and update the sync settings config
 4. Open and run the example `unity_lab/notebook/hydrogen.py` on Atom using Hydrogen and those keymaps
 5. Start working from `unity_lab/notebook/`
 
