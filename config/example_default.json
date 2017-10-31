@@ -1,5 +1,5 @@
 {
-  "data_sync_destination": "~/Dropbox/unity_lab/data",
+  "data_sync_destination": "~/Dropbox/Unity-Lab/data",
   "NOTI_SLACK_DEST": "#rl-monitor",
   "NOTI_SLACK_TOK": "GET_SLACK_BOT_TOKEN_FROM_https://my.slack.com/services/new/bot",
   "experiments": [

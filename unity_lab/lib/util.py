@@ -50,6 +50,16 @@ def flatten_dict(d, parent_key='', sep='.'):
     return dict(items)
 
 
+def is_jupyter():
+    '''Check if process is in Jupyter kernel'''
+    try:
+        get_ipython().config
+        return True
+    except NameError:
+        return False
+    return False
+
+
 def smart_path(data_path, as_dir=False):
     '''
     Resolve data_path into abspath with fallback to join from ROOT_DIR
