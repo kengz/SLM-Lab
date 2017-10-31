@@ -81,13 +81,13 @@ jobs:
       - run:
           name: Run Python tests
           command: |
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-            chmod +x ./cc-test-reporter
-            ./cc-test-reporter before-build
+            # curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            # chmod +x ./cc-test-reporter
+            # ./cc-test-reporter before-build
             source activate lab
             python setup.py test
             cat coverage.xml
-            ./cc-test-reporter after-build -d -t coverage.py -p ~/Unity-Lab/unity_lab --exit-code $? coverage.xml
+            # ./cc-test-reporter after-build -d -t coverage.py -p ~/Unity-Lab/unity_lab --exit-code $? coverage.xml
       - store_test_results:
           path: htmlcov
 
