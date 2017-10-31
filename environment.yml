@@ -79,7 +79,6 @@ dependencies:
 - torchvision=0.1.9
 - pip:
   - colorlover==0.2.1
-  - cufflinks==0.12.0
   - et-xmlfile==1.0.1
   - ipython-genutils==0.2.0
   - jupyter-client==5.1.0
