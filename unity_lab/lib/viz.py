@@ -4,7 +4,6 @@ TODO pie, swarm, box plots
 TODO login credentials from config, save function
 '''
 
-import cufflinks as cf
 import pydash as _
 from plotly import (
     graph_objs as go,
@@ -12,8 +11,10 @@ from plotly import (
 )
 from unity_lab.lib import util
 
-cf.set_config_file(offline=True, world_readable=False)
-py.init_notebook_mode(connected=True)
+if util.is_jupyter()
+    import cufflinks as cf
+    cf.set_config_file(offline=True, world_readable=False)
+    py.init_notebook_mode(connected=True)
 
 
 def stack_cumsum(df, y_col):
