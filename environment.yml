@@ -47,7 +47,7 @@ dependencies:
 - pytest-cov=2.5.1=py36_0
 - pytest-forked=0.2=py36_0
 - pytest-xdist=1.20.1=py_0
-- python=3.6.0=0
+- python=3.6.2=0
 - python-dateutil=2.6.1=py36_0
 - pytz=2017.2=py36_0
 - pyyaml=3.12=py36_1
