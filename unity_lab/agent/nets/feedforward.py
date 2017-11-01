@@ -15,7 +15,7 @@ class MLPNet(nn.Module):
                 hid_dim,
                 out_dim,
                 optim=optim.Adam,
-                loss_fn=nn.SmoothL1Loss,
+                loss_fn=F.smooth_l1_loss,
                 clamp_grad=False):
         '''
         in_dim: dimension of the inputs
@@ -47,18 +47,19 @@ class MLPNet(nn.Module):
         assert len(self.batch_norms) == len(self.hid_layers)
         self.out_layer = nn.Linear(hid_dim[-1], out_dim)
         self.num_hid_layers = len(self.hid_layers)
-        self.optim = optim
+        self.optim = optim(self.parameters())
         self.loss_fn = loss_fn
         self.clamp_grad = clamp_grad
-        print(len(self.hid_layers))
         self.init_params()
 
     def forward(self, x):
         '''
         The feedforward step
         '''
-        for i in range(num_layers):
+        print(x)
+        for i in range(self.num_hid_layers):
             x = F.relu(self.batch_norms[i](self.hid_layers[i](x)))
+            print(x)
         x = self.out_layer(x)
         return x
 
@@ -76,9 +77,11 @@ class MLPNet(nn.Module):
         self.optim.zero_grad()
 
         out = self(x)
+        print(out)
         loss = self.loss_fn(out, y)
+        print(loss)
         loss.backward()
-        if clamp_grad:
+        if self.clamp_grad:
             for param in self.parameters():
                 param.grad.data.clamp_(-1, 1)
         self.optim.step()
@@ -86,14 +89,15 @@ class MLPNet(nn.Module):
 
     def init_params(self):
         '''
-        Initializes all of the model's parameters using Xavier initialization.
+        Initializes all of the model's parameters using uniform initialization.
         Biases are all set to 0
         '''
+        # TODO: change to Xavier init
+        initrange = 0.2
         lin_layers = self.hid_layers + list([self.out_layer])
         for layer in lin_layers:
-            nn.init.xavier_uniform(layer.weight.data)
+            layer.weight.data.uniform_(-initrange, initrange)
             layer.bias.data.fill_(0)
-        initrange = 0.2
         for layer in self.batch_norms:
             layer.weight.data.uniform_(-initrange, initrange)
             layer.bias.data.fill_(0)
