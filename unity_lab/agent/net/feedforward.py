@@ -7,7 +7,7 @@ import torch.nn.functional as F
 class MLPNet(nn.Module):
     '''
     Class for generating arbitrary sized feedforward
-    neural network, with ReLU activations and batch normalization
+    neural network, with ReLU activations
     '''
 
     def __init__(self,
@@ -41,10 +41,6 @@ class MLPNet(nn.Module):
             l = nn.Linear(in_D, out_D)
             setattr(self, 'linear_' + str(i), l)
             self.hid_layers.append(l)
-            b = nn.BatchNorm1d(out_D)
-            setattr(self, 'bn_' + str(i), b)
-            self.batch_norms.append(b)
-        assert len(self.batch_norms) == len(self.hid_layers)
         self.out_layer = nn.Linear(hid_dim[-1], out_dim)
         self.num_hid_layers = len(self.hid_layers)
         self.optim = optim(self.parameters())
@@ -53,13 +49,9 @@ class MLPNet(nn.Module):
         self.init_params()
 
     def forward(self, x):
-        '''
-        The feedforward step
-        '''
-        print(x)
+        ''' The feedforward step '''
         for i in range(self.num_hid_layers):
-            x = F.relu(self.batch_norms[i](self.hid_layers[i](x)))
-            print(x)
+            x = F.relu((self.hid_layers[i](x)))
         x = self.out_layer(x)
         return x
 
@@ -67,19 +59,11 @@ class MLPNet(nn.Module):
         '''
         Takes a single training step: one forwards and one backwards pass
         '''
-
-        '''
-        Set model in training mode and zero the gradients
-        Should be set to train() when training and eval() during inference
-        '''
+        # Sets model in training mode and zero the gradients
         self.train()
-        self.zero_grad()
         self.optim.zero_grad()
-
         out = self(x)
-        print(out)
         loss = self.loss_fn(out, y)
-        print(loss)
         loss.backward()
         if self.clamp_grad:
             for param in self.parameters():
@@ -87,17 +71,28 @@ class MLPNet(nn.Module):
         self.optim.step()
         return loss
 
+
+    def eval(self, x):
+        '''
+        Completes one feedforward step, ensuring net is set to evaluation model
+        returns: network output given input x
+        '''
+        self.eval()
+        return self(x)
+
+
     def init_params(self):
         '''
         Initializes all of the model's parameters using uniform initialization.
-        Biases are all set to 0
+        Note: Ideally it should be xavier initialization, but there appears
+        to be unreproduceable behaviours in pyTorch.
+        Sometimes the trainable params tests pass (see nn_test.py), other times
+        they dont.
+        Biases are all set to 0.01
         '''
-        # TODO: change to Xavier init
         initrange = 0.2
+        biasinit = 0.01
         lin_layers = self.hid_layers + list([self.out_layer])
         for layer in lin_layers:
             layer.weight.data.uniform_(-initrange, initrange)
-            layer.bias.data.fill_(0)
-        for layer in self.batch_norms:
-            layer.weight.data.uniform_(-initrange, initrange)
-            layer.bias.data.fill_(0)
+            layer.bias.data.fill_(biasinit)
