@@ -8,7 +8,7 @@ class TestData:
 
 
     @staticmethod
-    def test_zero(self, batch):
+    def test_zero(batch):
         '''
         Checks that a batch of data is not zero
         batch: tensor representing a batch of data. May be of arbitrary dimension,
@@ -17,7 +17,7 @@ class TestData:
         pass
 
     @staticmethod
-    def test_different(self, dataloader):
+    def test_different(dataloader):
         '''
         Checks that batches of data are changing
         returns: true if two batches are not equal to each other, false otherwise
