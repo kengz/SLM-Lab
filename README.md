@@ -20,6 +20,16 @@ An experimental framework for Reinforcement Learning using Unity and PyTorch.
 
 ## Usage
 
+### High Level `yarn` commands
+
+| Function | `command` |
+| :------------- | :------------- |
+| start the Lab | `yarn start` |
+| update dependency file | `yarn update-dep` |
+| update environment | `yarn update-env` |
+| run tests | `yarn test` |
+| clear cache | `yarn clear` |
+
 ### Notebook
 
 The Lab uses interactive programming and lit workflow:
@@ -33,9 +43,3 @@ The Lab uses interactive programming and lit workflow:
 ### Experiment
 
 _To be set up_
-
-### Unit Test
-
-```shell
-yarn test
-```

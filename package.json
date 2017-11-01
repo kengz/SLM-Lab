@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "grunt",
-    "test": "source activate lab && python setup.py test",
+    "update-dep": "conda env export > environment.yml",
+    "update-env": "conda env update -f environment.yml",
+    "test": "python setup.py test",
     "clear": "find . | grep -E '(__pycache__|.pyc|.pyo|.egg*|.cache|htmlcov|.coverage|build/|dist/)' | xargs rm -rf"
   },
   "repository": "https://github.com/kengz/Unity-Lab.git",
