@@ -5,11 +5,11 @@ import numpy as np
 SMALL_NUM = 0.000000001
 LARGE_NUM = 100000
 
+
 class TestNet:
     '''
     Base class for unit testing neural network training
     '''
-
 
     @staticmethod
     def gather_trainable_params(net):
@@ -20,7 +20,6 @@ class TestNet:
         '''
         return [param.clone() for param in net.parameters()]
 
-
     @staticmethod
     def gather_fixed_params(net):
         '''
@@ -29,7 +28,6 @@ class TestNet:
         returns: copy of a list of fixed params
         '''
         return None
-
 
     @staticmethod
     def check_trainable(net):
@@ -51,7 +49,7 @@ class TestNet:
                 if torch.sum(b.data) == torch.sum(a.data):
                     print("Before gradient: {}".format(a.grad))
                     print("After gradient (should not be None): {}".format(
-                                                                    b.grad))
+                        b.grad))
                     print("FAIL layer {}".format(i))
                     flag = False
                     i += 1
@@ -60,7 +58,6 @@ class TestNet:
         else:
             print("PASS")
             return True
-
 
     @staticmethod
     def check_fixed(net):
@@ -89,7 +86,6 @@ class TestNet:
             print("PASS")
             return True
 
-
     @staticmethod
     def check_gradient_size(net, x, y, steps=3):
         ''' Checks for exploding and vanishing gradients '''
@@ -104,11 +100,11 @@ class TestNet:
             else:
                 if torch.sum(torch.abs(p.grad.data)) < SMALL_NUM:
                     print("FAIL: tiny gradients: {}".format(
-                                    torch.sum(torch.abs(p.grad))))
+                        torch.sum(torch.abs(p.grad))))
                     flag = False
                 if torch.sum(torch.abs(p.grad.data)) > LARGE_NUM:
                     print("FAIL: large gradients: {}".format(
-                                    torch.sum(torch.abs(p.grad))))
+                        torch.sum(torch.abs(p.grad))))
                     flag = False
         if not flag:
             return False
@@ -116,14 +112,13 @@ class TestNet:
             print("PASS")
             return True
 
-
     @staticmethod
     def check_loss_input(net, loss):
         ''' Checks that the inputs to the loss function are correct '''
         # TODO: e.g. loss is not CrossEntropy when output has one dimension
-        #       e.g. softmax has not been applied with CrossEntropy loss (includes it)
+        #       e.g. softmax has not been applied with CrossEntropy loss
+        #       (includes it)
         pass
-
 
     @staticmethod
     def check_output(net):
@@ -142,7 +137,6 @@ class TestNet:
         else:
             print("PASS")
             return True
-
 
     @staticmethod
     def check_params_not_zero(net):

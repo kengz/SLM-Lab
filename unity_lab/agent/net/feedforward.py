@@ -71,7 +71,6 @@ class MLPNet(nn.Module):
         self.optim.step()
         return loss
 
-
     def eval(self, x):
         '''
         Completes one feedforward step, ensuring net is set to evaluation model
@@ -79,7 +78,6 @@ class MLPNet(nn.Module):
         '''
         self.eval()
         return self(x)
-
 
     def init_params(self):
         '''
