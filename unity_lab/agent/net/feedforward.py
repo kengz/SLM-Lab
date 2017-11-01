@@ -11,12 +11,12 @@ class MLPNet(nn.Module):
     '''
 
     def __init__(self,
-                in_dim,
-                hid_dim,
-                out_dim,
-                optim=optim.Adam,
-                loss_fn=F.smooth_l1_loss,
-                clamp_grad=False):
+                 in_dim,
+                 hid_dim,
+                 out_dim,
+                 optim=optim.Adam,
+                 loss_fn=F.smooth_l1_loss,
+                 clamp_grad=False):
         '''
         in_dim: dimension of the inputs
         hid_dim: list containing dimensions of the hidden layers
@@ -36,7 +36,7 @@ class MLPNet(nn.Module):
             if i == 0:
                 in_D = in_dim
             else:
-                in_D = hid_dim[i-1]
+                in_D = hid_dim[i - 1]
             out_D = hid_dim[i]
             l = nn.Linear(in_D, out_D)
             setattr(self, 'linear_' + str(i), l)

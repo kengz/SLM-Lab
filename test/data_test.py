@@ -1,6 +1,7 @@
 import pytest
 import torch
 
+
 class TestData:
     '''
     Base class for unit testing data provided to a network

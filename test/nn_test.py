@@ -85,7 +85,7 @@ class TestNet:
 
 
     @staticmethod
-    def check_loss_input(self, net, loss):
+    def check_loss_input(net, loss):
         '''
         Checks that the inputs to the loss function are correct
         '''
@@ -95,7 +95,7 @@ class TestNet:
 
 
     @staticmethod
-    def check_output(self, net):
+    def check_output(net):
         '''
         Checks that the output of the net is not zero or nan
         '''
