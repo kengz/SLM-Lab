@@ -1,10 +1,29 @@
 import pytest
 import torch
 from torch.autograd import Variable
+from unity_lab.agent.net.feedforward import MLPNet
 import numpy as np
 SMALL_NUM = 0.000000001
 LARGE_NUM = 100000
 
+
+@pytest.mark.parametrize("net" "x", "y", "loss", "steps", [
+    (MLPNet(10, [5, 3], 2),
+    Variable(torch.ones((2, 10))),
+    Variable(torch.zeros((2, 2))),
+    None,
+    3),
+    (MLPNet(20, [10, 50, 5], 2),
+    Variable(torch.ones((2, 20))),
+    Variable(torch.zeros((2, 2))),
+    None,
+    3),
+    (MLPNet(10, [], 5),
+    Variable(torch.ones((5, 10))),
+    Variable(torch.zeros((5, 5))),
+    None,
+    3)
+])
 
 class TestNet:
     '''
@@ -30,7 +49,7 @@ class TestNet:
         return None
 
     @staticmethod
-    def check_trainable(net):
+    def test_trainable(net):
         '''
         Checks that trainable parameters actually change during training
         net: instance of torch.nn.Module or a derived class
@@ -53,14 +72,12 @@ class TestNet:
                     print("FAIL layer {}".format(i))
                     flag = False
                     i += 1
-        if not flag:
-            return False
-        else:
+        if flag:
             print("PASS")
-            return True
+        assert flag == True
 
     @staticmethod
-    def check_fixed(net):
+    def test_fixed(net):
         '''
         Checks that fixed parameters don't change during training
         net: instance of torch.nn.Module or a derived class
@@ -80,14 +97,12 @@ class TestNet:
                     print("FAIL")
                     flag = False
                     i += 1
-        if not flag:
-            return False
-        else:
+        if flag:
             print("PASS")
-            return True
+        assert flag == True
 
     @staticmethod
-    def check_gradient_size(net, x, y, steps=3):
+    def test_gradient_size(net, x, y, steps=3):
         ''' Checks for exploding and vanishing gradients '''
         print("Running check_gradient_size test:")
         for i in range(steps):
@@ -106,40 +121,39 @@ class TestNet:
                     print("FAIL: large gradients: {}".format(
                         torch.sum(torch.abs(p.grad))))
                     flag = False
-        if not flag:
-            return False
-        else:
+        if flag:
             print("PASS")
-            return True
+        assert flag == True
 
     @staticmethod
-    def check_loss_input(net, loss):
+    def test_loss_input(net, loss):
         ''' Checks that the inputs to the loss function are correct '''
         # TODO: e.g. loss is not CrossEntropy when output has one dimension
         #       e.g. softmax has not been applied with CrossEntropy loss
         #       (includes it)
-        pass
+        assert loss == None
 
     @staticmethod
-    def check_output(net):
+    def test_output(net):
         ''' Checks that the output of the net is not zero or nan '''
         print("Running check_output test. Tests if output is not 0 or NaN")
         dummy_input = Variable(torch.ones((2, net.in_dim)))
         out = net(dummy_input)
+        flag = True
         if torch.sum(torch.abs(out.data)) < SMALL_NUM:
             print("FAIL")
             print(out)
-            return False
+            flag = False
         if np.isnan(torch.sum(out.data)):
             print("FAIL")
             print(out)
-            return False
-        else:
+            flag = False
+        if flag:
             print("PASS")
-            return True
+        assert flag == True
 
     @staticmethod
-    def check_params_not_zero(net):
+    def test_params_not_zero(net):
         ''' Checks that the parameters of the net are not zero '''
         print("Running check_params_not_zero test")
         flag = True
@@ -147,8 +161,6 @@ class TestNet:
             if torch.sum(torch.abs(param.data)) < SMALL_NUM:
                 print("FAIL: layer {}".format(i))
                 flag = False
-        if not flag:
-            return False
-        else:
+        if flag:
             print("PASS")
-            return True
+        assert flag == True

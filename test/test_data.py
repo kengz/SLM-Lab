@@ -1,6 +1,8 @@
 import pytest
-import torch
 
+@pytest.mark.parametrize("batch", "dataloader", [
+    (None, None)
+])
 
 class TestData:
     '''
@@ -14,7 +16,8 @@ class TestData:
         batch: tensor representing a batch of data. May be of arbitrary
         dimension, but first dimension always represents batch size
         returns: true if batch is not all zero, false otherwise'''
-        pass
+        # TODO: implement basic version
+        assert batch == None
 
     @staticmethod
     def test_different(dataloader):
@@ -23,5 +26,5 @@ class TestData:
         returns: true if two batches are not equal to each other,
                  false otherwise
         '''
-        # TODO: decide on format for dataloader
-        pass
+        # TODO: decide on format for dataloader and implement basic version
+        assert dataloader == None
