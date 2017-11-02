@@ -13,6 +13,7 @@ https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Unity-Agents---
 # TODO unity app sizing bug lol
 
 import numpy as np
+import time
 from unity_lab.lib import util
 from unityagents import UnityEnvironment
 
@@ -29,6 +30,7 @@ print(str(env))
 default_brain = env.brain_names[0]
 brain = env.brains[default_brain]
 
+'''
 is_continuous = (brain.action_space_type == 'continuous')
 use_observations = (brain.number_observations > 0)
 use_states = (brain.state_space_size > 0)
@@ -54,8 +56,6 @@ env_info.local_done
 # list of ids of agents of the brain
 env_info.agents
 
-
-'''
 env.reset(train_model=True, config=None)
 env.step(action, memory=None, value=None)
 where action can be 1D array or 2D array if you have multiple agents per brains
@@ -83,6 +83,7 @@ for epi in range(10):
             env_info = env.step(action)[default_brain]
         epi_rewards += env_info.rewards[0]
         done = env_info.local_done[0]
+    time.sleep(2)
     print('Total reward this episode: {}'.format(epi_rewards))
 
 
