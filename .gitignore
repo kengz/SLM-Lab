@@ -25,6 +25,9 @@ node_modules/
 # System
 .DS_Store
 
+# Unity environment
+*.app
+
 # Data files
 config/
 data/
