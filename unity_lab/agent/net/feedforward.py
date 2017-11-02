@@ -41,7 +41,10 @@ class MLPNet(nn.Module):
             l = nn.Linear(in_D, out_D)
             setattr(self, 'linear_' + str(i), l)
             self.hid_layers.append(l)
-        self.out_layer = nn.Linear(hid_dim[-1], out_dim)
+        if len(hid_dim) > 0:
+            self.out_layer = nn.Linear(hid_dim[-1], out_dim)
+        else:
+            self.out_layer = nn.Linear(in_dim, out_dim)
         self.num_hid_layers = len(self.hid_layers)
         self.optim = optim(self.parameters())
         self.loss_fn = loss_fn
