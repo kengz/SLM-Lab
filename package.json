@@ -1,5 +1,5 @@
 {
-  "name": "unity_lab",
+  "name": "slm_lab",
   "version": "0.1.0",
   "description": "An experimental framework for Reinforcement Learning using Unity and PyTorch.",
   "main": "index.js",
@@ -10,7 +10,7 @@
     "test": "python setup.py test",
     "clear": "find . | grep -E '(__pycache__|.pyc|.pyo|.egg*|.cache|htmlcov|.coverage|build/|dist/)' | xargs rm -rf"
   },
-  "repository": "https://github.com/kengz/Unity-Lab.git",
+  "repository": "https://github.com/kengz/SLM-Lab.git",
   "author": "kengz <kengzwl@gmail.com>, lgraesser",
   "license": "MIT",
   "private": false

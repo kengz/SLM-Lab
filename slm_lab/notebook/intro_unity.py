@@ -14,11 +14,11 @@ https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Unity-Agents---
 
 import numpy as np
 import time
-from unity_lab.lib import util
+from slm_lab.lib import util
 from unityagents import UnityEnvironment
 
 # TODO util method to infer path of environment, plus gitignore the file
-env_name = f'{util.ROOT_DIR}/unity_lab/environment/3DBall'
+env_name = f'{util.ROOT_DIR}/slm_lab/environment/3DBall'
 train_mode = True
 
 # UnityEnvironment interfaces python with Unity,

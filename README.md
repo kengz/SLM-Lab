@@ -1,11 +1,11 @@
-# Unity Lab [![CircleCI](https://circleci.com/gh/kengz/Unity-Lab.svg?style=shield)](https://circleci.com/gh/kengz/Unity-Lab) [![Maintainability](https://api.codeclimate.com/v1/badges/cd657608713aa907e424/maintainability)](https://codeclimate.com/github/kengz/Unity-Lab/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/cd657608713aa907e424/test_coverage)](https://codeclimate.com/github/kengz/Unity-Lab/test_coverage)
+# SLM Lab [![CircleCI](https://circleci.com/gh/kengz/SLM-Lab.svg?style=shield)](https://circleci.com/gh/kengz/SLM-Lab) [![Maintainability](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/maintainability)](https://codeclimate.com/github/kengz/SLM-Lab/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/test_coverage)](https://codeclimate.com/github/kengz/SLM-Lab/test_coverage)
 An experimental framework for Reinforcement Learning using Unity and PyTorch.
 
 ## Installation
 
 1. Clone the repo:
   ```shell
-  git clone https://github.com/kengz/Unity-Lab.git
+  git clone https://github.com/kengz/SLM-Lab.git
   ```
 
 2. Install dependencies (or inspect `bin/*` before running):
@@ -37,8 +37,8 @@ The Lab uses interactive programming and lit workflow:
 1. Install [Atom text editor](https://atom.io/)
 2. Install [Hydrogen for Atom](https://atom.io/packages/hydrogen) and [these other Atom packages optionally](https://gist.github.com/kengz/70c20a0cb238ba1fbb29cdfe402c6470#file-packages-json-L3)
 3. Use this [killer keymap for Hydrogen and other Atom shortcuts](https://gist.github.com/kengz/70c20a0cb238ba1fbb29cdfe402c6470#file-keymap-cson-L15-L18)
-4. Open and run the example `unity_lab/notebook/hydrogen.py` on Atom using Hydrogen and those keymaps
-5. Start working from `unity_lab/notebook/`
+4. Open and run the example `slm_lab/notebook/hydrogen.py` on Atom using Hydrogen and those keymaps
+5. Start working from `slm_lab/notebook/`
 
 ### Experiment
 

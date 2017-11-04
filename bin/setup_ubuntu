@@ -1,5 +1,5 @@
 #!/bin/bash --login
-# This script sets up Unity Lab for Linux Ubuntu
+# This script sets up SLM Lab for Linux Ubuntu
 
 # Fail on the first error; killable by SIGINT
 set -e

@@ -4,7 +4,7 @@ Use `lab` as your Hydrogen kernel and run below interactively
 '''
 import pandas as pd
 import pydash as _
-from unity_lab.lib import util, viz
+from slm_lab.lib import util, viz
 
 df = pd.DataFrame({
     'x': [0, 1, 2, 3, 4],
