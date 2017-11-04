@@ -71,3 +71,8 @@ def test_multiline_str():
      2)])
 def test_nets(request):
     return request.param
+
+
+@pytest.fixture(scope="class", params=[(None, None)])
+def test_data_gen(request):
+    return request.param
