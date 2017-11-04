@@ -72,8 +72,8 @@ def smart_path(data_path, as_dir=False):
     @returns {str} The normalized absolute data_path
     @example
 
-    smart_path('unity_lab/lib')
-    # => '/Users/ANON/Documents/unity_lab/unity_lab/lib'
+    smart_path('slm_lab/lib')
+    # => '/Users/ANON/Documents/slm_lab/slm_lab/lib'
 
     smart_path('/tmp')
     # => '/tmp'

@@ -11,7 +11,7 @@ trap "exit" INT
 read -p "
 ------------------------------------------------
 
-Welcome to the Unity Lab setup script;
+Welcome to the SLM Lab setup script;
 This will invoke sudo; alternatively,
 inspect bin/setup_ubuntu or bin/setup_macOS and run the lines manually.
 

@@ -1,4 +1,4 @@
-from unity_lab.lib import logger
+from slm_lab.lib import logger
 
 
 def test_logger(test_multiline_str):
