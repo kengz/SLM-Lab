@@ -1,6 +1,4 @@
 import pytest
-batches = [None, None, None]
-dl = [None, None, None]
 
 
 class TestData:
@@ -8,9 +6,8 @@ class TestData:
     Base class for unit testing data provided to a network
     '''
 
-    @pytest.mark.parametrize("batch", [batches[0], batches[1], batches[2]])
-    @staticmethod
-    def test_zero(batch):
+    @pytest.mark.parametrize("batch", [None, None, None])
+    def test_zero(self, batch):
         '''
         Checks that a batch of data is not zero
         batch: tensor representing a batch of data. May be of arbitrary
@@ -19,9 +16,8 @@ class TestData:
         # TODO: implement basic version
         assert batch == None
 
-    @pytest.mark.parametrize("dataloader", [dl[0], dl[1], dl[2]])
-    @staticmethod
-    def test_different(dataloader):
+    @pytest.mark.parametrize("dataloader", [None, None, None])
+    def test_different(self, dataloader):
         '''
         Checks that batches of data are changing
         returns: true if two batches are not equal to each other,
