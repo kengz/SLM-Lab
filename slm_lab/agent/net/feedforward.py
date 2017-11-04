@@ -31,6 +31,7 @@ class MLPNet(nn.Module):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.hid_layers = []
+        self.batch_norms = []
         for i, layer in enumerate(hid_dim):
             if i == 0:
                 in_D = in_dim
@@ -104,7 +105,7 @@ class MLPNet(nn.Module):
         '''
         return [param.clone() for param in self.parameters()]
 
-    def gather_fixed_params(self):
+    def gather_fixed_params(net):
         '''
         Gathers parameters that should be fixed into a list
         returns: copy of a list of fixed params
