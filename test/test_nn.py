@@ -67,7 +67,7 @@ class TestNet:
     def test_gradient_size(self, test_nets):
         ''' Checks for exploding and vanishing gradients '''
         net = test_nets[0]
-        x = test_nets[1], y = test_nets[2]
+        x, y = test_nets[1], test_nets[2]
         loss = test_nets[3]
         steps = test_nets[4]
         print("Running check_gradient_size test:")
