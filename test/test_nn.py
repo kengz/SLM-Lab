@@ -24,29 +24,11 @@ class TestNet:
     Base class for unit testing neural network training
     '''
 
-    @pytest.mark.parametrize("net", [nets[0], nets[1], nets[2]])
-    @staticmethod
-    def gather_trainable_params(net):
-        '''
-        Gathers parameters that should be trained into a list
-        net: instance of torch.nn.Module or a derived class
-        returns: copy of a list of fixed params
-        '''
-        return [param.clone() for param in net.parameters()]
-
-    @pytest.mark.parametrize("net", [nets[0], nets[1], nets[2]])
-    @staticmethod
-    def gather_fixed_params(net):
-        '''
-        Gathers parameters that should be fixed into a list
-        net: instance of torch.nn.Module or a derived class
-        returns: copy of a list of fixed params
-        '''
-        return None
-
-    @pytest.mark.parametrize("net", [nets[0], nets[1], nets[2]])
-    @staticmethod
-    def test_trainable(net):
+    @pytest.mark.parametrize("net", [
+        MLPNet(10, [5, 3], 2),
+        MLPNet(20, [10, 50, 5], 2),
+        MLPNet(10, [], 5)])
+    def test_trainable(self, net):
         '''
         Checks that trainable parameters actually change during training
         net: instance of torch.nn.Module or a derived class
@@ -54,11 +36,12 @@ class TestNet:
         '''
         print("Running check_trainable test:")
         flag = True
-        before_params = TestNet.gather_trainable_params(net)
+        print(net)
+        before_params = net.gather_trainable_params()
         dummy_input = Variable(torch.ones((2, net.in_dim)))
         dummy_output = Variable(torch.zeros((2, net.out_dim)))
         loss = net.training_step(dummy_input, dummy_output)
-        after_params = TestNet.gather_trainable_params(net)
+        after_params = net.gather_trainable_params()
         i = 0
         if before_params is not None:
             for b, a in zip(before_params, after_params):
@@ -73,9 +56,11 @@ class TestNet:
             print("PASS")
         assert flag == True
 
-    @pytest.mark.parametrize("net", [nets[0], nets[1], nets[2]])
-    @staticmethod
-    def test_fixed(net):
+    @pytest.mark.parametrize("net", [
+        MLPNet(10, [5, 3], 2),
+        MLPNet(20, [10, 50, 5], 2),
+        MLPNet(10, [], 5)])
+    def test_fixed(self, net):
         '''
         Checks that fixed parameters don't change during training
         net: instance of torch.nn.Module or a derived class
@@ -83,11 +68,11 @@ class TestNet:
         '''
         print("Running check_fixed test:")
         flag = True
-        before_params = TestNet.gather_fixed_params(net)
+        before_params = net.gather_fixed_params()
         dummy_input = Variable(torch.ones((2, net.in_dim)))
         dummy_output = Variable(torch.zeros((2, net.out_dim)))
         loss = net.training_step(dummy_input, dummy_output)
-        after_params = TestNet.gather_fixed_params(net)
+        after_params = net.gather_fixed_params()
         i = 0
         if before_params is not None:
             for b, a in zip(before_params, after_params):
@@ -99,12 +84,20 @@ class TestNet:
             print("PASS")
         assert flag == True
 
-    @pytest.mark.parametrize("net" "x", "y", "loss", "steps", [
-        (nets[0], xs[0], ys[0], losses[0], steps_list[0]),
-        (nets[1], xs[1], ys[1], losses[1], steps_list[1]),
-        (nets[2], xs[2], ys[2], losses[2], steps_list[2])])
-    @staticmethod
-    def test_gradient_size(net, x, y, steps=3):
+    @pytest.mark.parametrize("net,x,y,steps", [
+        (MLPNet(10, [5, 3], 2),
+        Variable(torch.ones((2, 10))),
+        Variable(torch.zeros((2, 2))),
+        2),
+        (MLPNet(20, [10, 50, 5], 2),
+        Variable(torch.ones((2, 20))),
+        Variable(torch.zeros((2, 2))),
+        2),
+        (MLPNet(10, [], 5),
+        Variable(torch.ones((2, 10))),
+        Variable(torch.zeros((2, 5))),
+        2)])
+    def test_gradient_size(self, net, x, y, steps):
         ''' Checks for exploding and vanishing gradients '''
         print("Running check_gradient_size test:")
         for i in range(steps):
@@ -127,21 +120,22 @@ class TestNet:
             print("PASS")
         assert flag == True
 
-    @pytest.mark.parametrize("net", "loss", [
-        (nets[0], losses[0]),
-        (nets[1], losses[1]),
-        (nets[2], losses[2])])
-    @staticmethod
-    def test_loss_input(net, loss):
+    @pytest.mark.parametrize("net,loss", [
+        (MLPNet(10, [5, 3], 2), None),
+        (MLPNet(20, [10, 50, 5], 2), None),
+        (MLPNet(10, [], 5), None)])
+    def test_loss_input(self, net, loss):
         ''' Checks that the inputs to the loss function are correct '''
         # TODO: e.g. loss is not CrossEntropy when output has one dimension
         #       e.g. softmax has not been applied with CrossEntropy loss
         #       (includes it)
         assert loss == None
 
-    @pytest.mark.parametrize("net", [nets[0], nets[1], nets[2]])
-    @staticmethod
-    def test_output(net):
+    @pytest.mark.parametrize("net", [
+        MLPNet(10, [5, 3], 2),
+        MLPNet(20, [10, 50, 5], 2),
+        MLPNet(10, [], 5)])
+    def test_output(self, net):
         ''' Checks that the output of the net is not zero or nan '''
         print("Running check_output test. Tests if output is not 0 or NaN")
         dummy_input = Variable(torch.ones((2, net.in_dim)))
@@ -159,9 +153,11 @@ class TestNet:
             print("PASS")
         assert flag == True
 
-    @pytest.mark.parametrize("net", [nets[0], nets[1], nets[2]])
-    @staticmethod
-    def test_params_not_zero(net):
+    @pytest.mark.parametrize("net", [
+        MLPNet(10, [5, 3], 2),
+        MLPNet(20, [10, 50, 5], 2),
+        MLPNet(10, [], 5)])
+    def test_params_not_zero(self, net):
         ''' Checks that the parameters of the net are not zero '''
         print("Running check_params_not_zero test")
         flag = True

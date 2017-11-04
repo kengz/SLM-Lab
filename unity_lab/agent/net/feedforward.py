@@ -97,3 +97,17 @@ class MLPNet(nn.Module):
         for layer in lin_layers:
             layer.weight.data.uniform_(-initrange, initrange)
             layer.bias.data.fill_(biasinit)
+
+    def gather_trainable_params(self):
+        '''
+        Gathers parameters that should be trained into a list
+        returns: copy of a list of fixed params
+        '''
+        return [param.clone() for param in self.parameters()]
+
+    def gather_fixed_params(net):
+        '''
+        Gathers parameters that should be fixed into a list
+        returns: copy of a list of fixed params
+        '''
+        return None
