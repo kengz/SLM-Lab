@@ -10,8 +10,8 @@ from plotly import (
     graph_objs as go,
     offline as py,
 )
-from unity_lab.lib import util
-from unity_lab import config
+from slm_lab.lib import util
+from slm_lab import config
 
 PLOT_FILEDIR = util.smart_path('data')
 os.makedirs(PLOT_FILEDIR, exist_ok=True)

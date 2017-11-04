@@ -1,5 +1,5 @@
 #!/bin/bash --login
-# This script sets up Unity Lab for macOS
+# This script sets up SLM Lab for macOS
 
 # Fail on the first error; killable by SIGINT
 set -e
