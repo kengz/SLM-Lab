@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     environment:
-      CC_TEST_REPORTER_ID: 633cb615def2956cb2c4b0817b54f0e5b15bb8c42d9f9b921b8b2e02b217c369
+      CC_TEST_REPORTER_ID: ff1651bfca53185e6d295b5989f89074b87fd7d68c6d1f938f19ea9186572a81
 
     working_directory: ~/SLM-Lab
 
