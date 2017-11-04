@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import pytest
-from unity_lab.lib import util
+from slm_lab.lib import util
 
 
 def test_cast_df(test_df, test_list):

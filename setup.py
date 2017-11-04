@@ -8,7 +8,7 @@ test_args = [
     '--cov-report=html',
     '--cov-report=term',
     '--cov-report=xml',
-    '--cov=unity_lab',
+    '--cov=slm_lab',
     'test'
 ]
 
@@ -40,12 +40,12 @@ class PyTest(TestCommand):
 
 
 setup(
-    name='unity_lab',
+    name='slm_lab',
     version='0.1.0',
     description='An experimental framework for Reinforcement Learning using Unity and PyTorch.',
     long_description=read('README.md'),
-    keywords='Unity Lab',
-    url='https://github.com/kengz/unity_lab',
+    keywords='SLM Lab',
+    url='https://github.com/kengz/slm_lab',
     author='kengz,lgraesser',
     author_email='kengzwl@gmail.com',
     license='MIT',
