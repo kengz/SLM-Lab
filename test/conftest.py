@@ -1,7 +1,7 @@
 import pandas as pd
 import torch
 from torch.autograd import Variable
-from unity_lab.agent.net.feedforward import MLPNet
+from slm_lab.agent.net.feedforward import MLPNet
 import pytest
 
 
