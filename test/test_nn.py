@@ -22,9 +22,7 @@ LARGE_NUM = 100000
     Variable(torch.ones((5, 10))),
     Variable(torch.zeros((5, 5))),
     None,
-    3)
-])
-
+    3)])
 class TestNet:
     '''
     Base class for unit testing neural network training

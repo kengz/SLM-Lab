@@ -1,9 +1,7 @@
 import pytest
 
 @pytest.mark.parametrize("batch", "dataloader", [
-    (None, None)
-])
-
+    (None, None)])
 class TestData:
     '''
     Base class for unit testing data provided to a network
