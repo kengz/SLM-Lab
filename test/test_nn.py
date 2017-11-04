@@ -6,18 +6,6 @@ import numpy as np
 SMALL_NUM = 0.000000001
 LARGE_NUM = 100000
 
-nets = [MLPNet(10, [5, 3], 2),
-        MLPNet(20, [10, 50, 5], 2),
-        MLPNet(10, [], 5)]
-xs = [Variable(torch.ones((2, 10))),
-      Variable(torch.ones((2, 20))),
-      Variable(torch.ones((5, 10)))]
-ys = [Variable(torch.zeros((2, 2))),
-      Variable(torch.zeros((2, 2))),
-      Variable(torch.zeros((5, 5)))]
-losses = [None, None, None]
-steps_list = [3, 3, 3]
-
 
 class TestNet:
     '''
