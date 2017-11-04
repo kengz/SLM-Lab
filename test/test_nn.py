@@ -11,7 +11,6 @@ class TestNet:
     Base class for unit testing neural network training
     '''
 
-
     def test_trainable(self, test_nets):
         '''
         Checks that trainable parameters actually change during training
@@ -40,7 +39,6 @@ class TestNet:
             print("PASS")
         assert flag == True
 
-
     def test_fixed(self, test_nets):
         '''
         Checks that fixed parameters don't change during training
@@ -65,7 +63,6 @@ class TestNet:
         if flag:
             print("PASS")
         assert flag == True
-
 
     def test_gradient_size(self, test_nets):
         ''' Checks for exploding and vanishing gradients '''
@@ -95,7 +92,6 @@ class TestNet:
             print("PASS")
         assert flag == True
 
-
     def test_loss_input(self, test_nets):
         ''' Checks that the inputs to the loss function are correct '''
         net = test_nets[0]
@@ -104,7 +100,6 @@ class TestNet:
         #       e.g. softmax has not been applied with CrossEntropy loss
         #       (includes it)
         assert loss == None
-
 
     def test_output(self, test_nets):
         ''' Checks that the output of the net is not zero or nan '''
@@ -124,7 +119,6 @@ class TestNet:
         if flag:
             print("PASS")
         assert flag == True
-
 
     def test_params_not_zero(self, test_nets):
         ''' Checks that the parameters of the net are not zero '''
