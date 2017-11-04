@@ -1,12 +1,14 @@
 import pytest
+batches = [None, None, None]
+dl = [None, None, None]
 
-@pytest.mark.parametrize("batch", "dataloader", [
-    (None, None)])
+
 class TestData:
     '''
     Base class for unit testing data provided to a network
     '''
 
+    @pytest.mark.parametrize("batch", [batches[0], batches[1], batches[2]])
     @staticmethod
     def test_zero(batch):
         '''
@@ -17,6 +19,7 @@ class TestData:
         # TODO: implement basic version
         assert batch == None
 
+    @pytest.mark.parametrize("dataloader", [dl[0], dl[1], dl[2]])
     @staticmethod
     def test_different(dataloader):
         '''

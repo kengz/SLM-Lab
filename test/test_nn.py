@@ -6,28 +6,25 @@ import numpy as np
 SMALL_NUM = 0.000000001
 LARGE_NUM = 100000
 
+nets = [MLPNet(10, [5, 3], 2),
+        MLPNet(20, [10, 50, 5], 2),
+        MLPNet(10, [], 5)]
+xs = [Variable(torch.ones((2, 10))),
+      Variable(torch.ones((2, 20))),
+      Variable(torch.ones((5, 10)))]
+ys = [Variable(torch.zeros((2, 2))),
+      Variable(torch.zeros((2, 2))),
+      Variable(torch.zeros((5, 5)))]
+losses = [None, None, None]
+steps_list = [3, 3, 3]
 
-@pytest.mark.parametrize("net" "x", "y", "loss", "steps", [
-    (MLPNet(10, [5, 3], 2),
-    Variable(torch.ones((2, 10))),
-    Variable(torch.zeros((2, 2))),
-    None,
-    3),
-    (MLPNet(20, [10, 50, 5], 2),
-    Variable(torch.ones((2, 20))),
-    Variable(torch.zeros((2, 2))),
-    None,
-    3),
-    (MLPNet(10, [], 5),
-    Variable(torch.ones((5, 10))),
-    Variable(torch.zeros((5, 5))),
-    None,
-    3)])
+
 class TestNet:
     '''
     Base class for unit testing neural network training
     '''
 
+    @pytest.mark.parametrize("net", [nets[0], nets[1], nets[2]])
     @staticmethod
     def gather_trainable_params(net):
         '''
@@ -37,6 +34,7 @@ class TestNet:
         '''
         return [param.clone() for param in net.parameters()]
 
+    @pytest.mark.parametrize("net", [nets[0], nets[1], nets[2]])
     @staticmethod
     def gather_fixed_params(net):
         '''
@@ -46,6 +44,7 @@ class TestNet:
         '''
         return None
 
+    @pytest.mark.parametrize("net", [nets[0], nets[1], nets[2]])
     @staticmethod
     def test_trainable(net):
         '''
@@ -74,6 +73,7 @@ class TestNet:
             print("PASS")
         assert flag == True
 
+    @pytest.mark.parametrize("net", [nets[0], nets[1], nets[2]])
     @staticmethod
     def test_fixed(net):
         '''
@@ -99,6 +99,10 @@ class TestNet:
             print("PASS")
         assert flag == True
 
+    @pytest.mark.parametrize("net" "x", "y", "loss", "steps", [
+        (nets[0], xs[0], ys[0], losses[0], steps_list[0]),
+        (nets[1], xs[1], ys[1], losses[1], steps_list[1]),
+        (nets[2], xs[2], ys[2], losses[2], steps_list[2])])
     @staticmethod
     def test_gradient_size(net, x, y, steps=3):
         ''' Checks for exploding and vanishing gradients '''
@@ -123,6 +127,10 @@ class TestNet:
             print("PASS")
         assert flag == True
 
+    @pytest.mark.parametrize("net", "loss", [
+        (nets[0], losses[0]),
+        (nets[1], losses[1]),
+        (nets[2], losses[2])])
     @staticmethod
     def test_loss_input(net, loss):
         ''' Checks that the inputs to the loss function are correct '''
@@ -131,6 +139,7 @@ class TestNet:
         #       (includes it)
         assert loss == None
 
+    @pytest.mark.parametrize("net", [nets[0], nets[1], nets[2]])
     @staticmethod
     def test_output(net):
         ''' Checks that the output of the net is not zero or nan '''
@@ -150,6 +159,7 @@ class TestNet:
             print("PASS")
         assert flag == True
 
+    @pytest.mark.parametrize("net", [nets[0], nets[1], nets[2]])
     @staticmethod
     def test_params_not_zero(net):
         ''' Checks that the parameters of the net are not zero '''
