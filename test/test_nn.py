@@ -1,7 +1,6 @@
 import pytest
 import torch
 from torch.autograd import Variable
-from unity_lab.agent.net.feedforward import MLPNet
 import numpy as np
 SMALL_NUM = 0.000000001
 LARGE_NUM = 100000
@@ -12,19 +11,16 @@ class TestNet:
     Base class for unit testing neural network training
     '''
 
-    @pytest.mark.parametrize("net", [
-        MLPNet(10, [5, 3], 2),
-        MLPNet(20, [10, 50, 5], 2),
-        MLPNet(10, [], 5)])
-    def test_trainable(self, net):
+
+    def test_trainable(self, test_nets):
         '''
         Checks that trainable parameters actually change during training
         net: instance of torch.nn.Module or a derived class
         returns: true if all trainable params change, false otherwise
         '''
+        net = test_nets[0]
         print("Running check_trainable test:")
         flag = True
-        print(net)
         before_params = net.gather_trainable_params()
         dummy_input = Variable(torch.ones((2, net.in_dim)))
         dummy_output = Variable(torch.zeros((2, net.out_dim)))
@@ -44,16 +40,14 @@ class TestNet:
             print("PASS")
         assert flag == True
 
-    @pytest.mark.parametrize("net", [
-        MLPNet(10, [5, 3], 2),
-        MLPNet(20, [10, 50, 5], 2),
-        MLPNet(10, [], 5)])
-    def test_fixed(self, net):
+
+    def test_fixed(self, test_nets):
         '''
         Checks that fixed parameters don't change during training
         net: instance of torch.nn.Module or a derived class
         returns: true if all fixed params don't change, false otherwise
         '''
+        net = test_nets[0]
         print("Running check_fixed test:")
         flag = True
         before_params = net.gather_fixed_params()
@@ -72,21 +66,14 @@ class TestNet:
             print("PASS")
         assert flag == True
 
-    @pytest.mark.parametrize("net,x,y,steps", [
-        (MLPNet(10, [5, 3], 2),
-        Variable(torch.ones((2, 10))),
-        Variable(torch.zeros((2, 2))),
-        2),
-        (MLPNet(20, [10, 50, 5], 2),
-        Variable(torch.ones((2, 20))),
-        Variable(torch.zeros((2, 2))),
-        2),
-        (MLPNet(10, [], 5),
-        Variable(torch.ones((2, 10))),
-        Variable(torch.zeros((2, 5))),
-        2)])
-    def test_gradient_size(self, net, x, y, steps):
+
+    def test_gradient_size(self, test_nets):
         ''' Checks for exploding and vanishing gradients '''
+        net = test_nets[0]
+        x = test_nets[1]
+        y = test_nets[2]
+        loss = test_nets[3]
+        steps = test_nets[4]
         print("Running check_gradient_size test:")
         for i in range(steps):
             _ = net.training_step(x, y)
@@ -108,23 +95,20 @@ class TestNet:
             print("PASS")
         assert flag == True
 
-    @pytest.mark.parametrize("net,loss", [
-        (MLPNet(10, [5, 3], 2), None),
-        (MLPNet(20, [10, 50, 5], 2), None),
-        (MLPNet(10, [], 5), None)])
-    def test_loss_input(self, net, loss):
+
+    def test_loss_input(self, test_nets):
         ''' Checks that the inputs to the loss function are correct '''
+        net = test_nets[0]
+        loss = test_nets[3]
         # TODO: e.g. loss is not CrossEntropy when output has one dimension
         #       e.g. softmax has not been applied with CrossEntropy loss
         #       (includes it)
         assert loss == None
 
-    @pytest.mark.parametrize("net", [
-        MLPNet(10, [5, 3], 2),
-        MLPNet(20, [10, 50, 5], 2),
-        MLPNet(10, [], 5)])
-    def test_output(self, net):
+
+    def test_output(self, test_nets):
         ''' Checks that the output of the net is not zero or nan '''
+        net = test_nets[0]
         print("Running check_output test. Tests if output is not 0 or NaN")
         dummy_input = Variable(torch.ones((2, net.in_dim)))
         out = net(dummy_input)
@@ -141,12 +125,10 @@ class TestNet:
             print("PASS")
         assert flag == True
 
-    @pytest.mark.parametrize("net", [
-        MLPNet(10, [5, 3], 2),
-        MLPNet(20, [10, 50, 5], 2),
-        MLPNet(10, [], 5)])
-    def test_params_not_zero(self, net):
+
+    def test_params_not_zero(self, test_nets):
         ''' Checks that the parameters of the net are not zero '''
+        net = test_nets[0]
         print("Running check_params_not_zero test")
         flag = True
         for i, param in enumerate(net.parameters()):
