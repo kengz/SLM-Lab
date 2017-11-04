@@ -37,7 +37,7 @@ class TestNet:
                     i += 1
         if flag:
             print("PASS")
-        assert flag == True
+        assert flag is True
 
     def test_fixed(self, test_nets):
         '''
@@ -62,13 +62,12 @@ class TestNet:
                     i += 1
         if flag:
             print("PASS")
-        assert flag == True
+        assert flag is True
 
     def test_gradient_size(self, test_nets):
         ''' Checks for exploding and vanishing gradients '''
         net = test_nets[0]
-        x = test_nets[1]
-        y = test_nets[2]
+        x = test_nets[1], y = test_nets[2]
         loss = test_nets[3]
         steps = test_nets[4]
         print("Running check_gradient_size test:")
@@ -90,7 +89,7 @@ class TestNet:
                     flag = False
         if flag:
             print("PASS")
-        assert flag == True
+        assert flag is True
 
     def test_loss_input(self, test_nets):
         ''' Checks that the inputs to the loss function are correct '''
@@ -99,7 +98,7 @@ class TestNet:
         # TODO: e.g. loss is not CrossEntropy when output has one dimension
         #       e.g. softmax has not been applied with CrossEntropy loss
         #       (includes it)
-        assert loss == None
+        assert loss is None
 
     def test_output(self, test_nets):
         ''' Checks that the output of the net is not zero or nan '''
@@ -118,7 +117,7 @@ class TestNet:
             flag = False
         if flag:
             print("PASS")
-        assert flag == True
+        assert flag is True
 
     def test_params_not_zero(self, test_nets):
         ''' Checks that the parameters of the net are not zero '''
@@ -131,4 +130,4 @@ class TestNet:
                 flag = False
         if flag:
             print("PASS")
-        assert flag == True
+        assert flag is True
