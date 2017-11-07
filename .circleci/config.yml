@@ -15,6 +15,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
+          - v1-dependencies-{{ checksum "~/SLM-Env/README.md" }}
           - v1-dependencies-{{ checksum "environment.yml" }}
           - v1-dependencies
 
@@ -27,6 +28,20 @@ jobs:
       #     paths:
       #       - node_modules
       #     key: v1-dependencies-{{ checksum "package.json" }}
+
+      - run:
+          name: Clone SLM-Env
+          command: |
+            if [ -d ~/SLM-Env ]; then
+              echo "SLM-Env already present"
+            else
+              git clone https://github.com/kengz/SLM-Env.git ~/SLM-Env/
+            fi
+            cd ~/SLM-Env && git pull && cd ~/SLM-Lab
+      - save_cache:
+          key: v1-dependencies-{{ checksum "~/SLM-Env/README.md" }}
+          paths:
+            - ~/SLM-Env
 
       - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:
@@ -75,6 +90,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
+          - v1-dependencies-{{ checksum "~/SLM-Env/README.md" }}
           - v1-dependencies-{{ checksum "environment.yml" }}
           - v1-dependencies
 
