@@ -15,6 +15,9 @@ jobs:
       - checkout
       - restore_cache:
           keys:
+          - v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
+      - restore_cache:
+          keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
           - v1-dependencies
 
@@ -27,6 +30,20 @@ jobs:
       #     paths:
       #       - node_modules
       #     key: v1-dependencies-{{ checksum "package.json" }}
+
+      - run:
+          name: Clone SLM-Env
+          command: |
+            if [ -d ~/SLM-Env ]; then
+              echo "SLM-Env already present"
+            else
+              git clone https://github.com/kengz/SLM-Env.git ~/SLM-Env/
+            fi
+            cd ~/SLM-Env && git pull && cd ~/SLM-Lab
+      - save_cache:
+          key: v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
+          paths:
+            - ~/SLM-Env
 
       - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:
@@ -75,6 +92,9 @@ jobs:
       - checkout
       - restore_cache:
           keys:
+          - v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
+      - restore_cache:
+          keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
           - v1-dependencies
 
@@ -82,13 +102,13 @@ jobs:
       - run:
           name: Run Python tests
           command: |
-            # curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-            # chmod +x ./cc-test-reporter
-            # ./cc-test-reporter before-build
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+            ./cc-test-reporter before-build
             source activate lab
             python setup.py test
             cat coverage.xml
-            # ./cc-test-reporter after-build -d -t coverage.py -p ~/SLM-Lab/slm_lab --exit-code $? coverage.xml
+            ./cc-test-reporter after-build -d -p ~/SLM-Lab --exit-code $?
       - store_test_results:
           path: htmlcov
 
