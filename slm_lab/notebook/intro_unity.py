@@ -34,32 +34,35 @@ is_continuous = (brain.action_space_type == 'continuous')
 use_observations = (brain.number_observations > 0)
 use_states = (brain.state_space_size > 0)
 
-# reset env with param, returns dict of {brain: BrainInfo}
+- reset env with param, returns dict of {brain: BrainInfo}
 env.reset(train_mode=train_mode)
 env_info = env.reset(train_mode=train_mode)[default_brain]
 
-# list of 4D np arrays. nth element = nth observation (pixel-wise) of the brain
+- list of 4D np arrays. nth element = nth observation (pixel-wise) of the brain
 env_info.observations
-# 2D np array of (batch_size, state_size) for cont and discrete
+- 2D np array of (batch_size, state_size) for cont and discrete
 env_info.states.shape
 
-# 2D np array of (batch_size, memory_size) which corresponds to the memories sent at previous step
+- 2D np array of (batch_size, memory_size) which corresponds to
+  the memories sent at previous step
 env_info.memories
 
-# list of scalar rewards for each agent of the brain
+- list of scalar rewards for each agent of the brain
 env_info.rewards
 
-# list of done status of each agent of the brain
+- list of done status of each agent of the brain
 env_info.local_done
 
-# list of ids of agents of the brain
+- list of ids of agents of the brain
 env_info.agents
 
 env.reset(train_model=True, config=None)
 env.step(action, memory=None, value=None)
-where action can be 1D array or 2D array if you have multiple agents per brains
-memory is an optional input that can be used to send a list of floats per agents to be retrieved at the next step.
-value is an optional input that be used to send a single float per agent to be displayed if and AgentMonitor.cs component is attached to the agent.
+- action can be 1D array or 2D array if you have multiple agents per brains
+- memory is an optional input that can be used to send a list of floats
+  per agents to be retrieved at the next step.
+- value is an optional input that be used to send a single float per agent
+  to be displayed if and AgentMonitor.cs component is attached to the agent.
 if u have more than one brain, use dict for action per brain
 action = {'brain1': [1.0, 2.0], 'brain2': [3.0, 4.0]}
 '''
