@@ -44,7 +44,8 @@ The Lab uses interactive programming and lit workflow:
   - Fork the keymap gist
   - Then update the sync settings config
 4. Open and run the example `slm_lab/notebook/intro_hydrogen.py` on Atom using Hydrogen and those keymaps
-5. Start working from `slm_lab/notebook/`
+5. See `slm_lab/notebook/intro_unity.py` to see example of Unity environment usage
+6. Start working from `slm_lab/notebook/`
 
 ## Experiment
 
