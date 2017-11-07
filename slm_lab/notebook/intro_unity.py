@@ -9,8 +9,6 @@ ml-agents Python API doc:
 https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Unity-Agents---Python-API.md
 '''
 
-# TODO find env app path, use environment module method
-# TODO unity app sizing bug lol
 
 import numpy as np
 import time
