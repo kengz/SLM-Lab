@@ -19,5 +19,6 @@ ratings:
   - "**.js"
   - "**.py"
 exclude_paths:
+- "**.md"
 - config/
 - node_modules/
