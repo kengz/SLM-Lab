@@ -66,7 +66,7 @@ To develop and build a new Unity ml-agents environment, clone and use the fork [
 
 2. Build the following versions of the environment binary (e.g. env name `3DBall`) and save them to the `SLM-Env` repo:
   - MacOSX version
-    - make `Academy > Training Configuration` as follow:
+    - make `Academy > Training Configuration` as follow (or leave as-is if smaller than `Inference Configuration`):
       - Width: 128
       - Height: 72
       - Quality Level: 0
@@ -77,8 +77,5 @@ To develop and build a new Unity ml-agents environment, clone and use the fork [
     - make `Training Configuration` same as MaxOSX
     - `Headless Mode (checked)`
     - save name: `3DBall`
-  - MacOSX `Dev` version
-    - make `Training Configuration` the same as `Inference Configuration`. This is to allow live debugging when developing agent.
-    - save name: `3DBall_Dev`
 
 3. Make the sure the built binaries are in `SLM-Env/Build/`. Commit the changes and push to the `SLM-Env` repo. New environment is now ready for Lab usage.

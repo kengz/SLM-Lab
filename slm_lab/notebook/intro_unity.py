@@ -18,8 +18,9 @@ from slm_lab.lib import util
 from unityagents import UnityEnvironment
 
 # TODO util method to infer path of environment, plus gitignore the file
-env_name = f'{util.ENV_DIR}/Build/3DBall_Dev'
-train_mode = True
+env_name = f'{util.ENV_DIR}/Build/3DBall'
+# use train_mode = False to debug, i.e. render env at real size, real time
+train_mode = False
 
 # UnityEnvironment interfaces python with Unity,
 # and contains brains for controlling connected agents.
