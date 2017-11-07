@@ -12,8 +12,6 @@ engines:
     enabled: true
   pep8:
     enabled: true
-    exclude_paths:
-    - "**.md"
   radon:
     enabled: true
 ratings:
