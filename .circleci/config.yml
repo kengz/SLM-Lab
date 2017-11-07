@@ -15,7 +15,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "~/SLM-Env/README.md" }}
+          - v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
           - v1-dependencies-{{ checksum "environment.yml" }}
           - v1-dependencies
 
@@ -39,7 +39,7 @@ jobs:
             fi
             cd ~/SLM-Env && git pull && cd ~/SLM-Lab
       - save_cache:
-          key: v1-dependencies-{{ checksum "~/SLM-Env/README.md" }}
+          key: v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
           paths:
             - ~/SLM-Env
 
@@ -90,7 +90,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "~/SLM-Env/README.md" }}
+          - v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
           - v1-dependencies-{{ checksum "environment.yml" }}
           - v1-dependencies
 
