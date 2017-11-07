@@ -18,7 +18,7 @@ from slm_lab.lib import util
 from unityagents import UnityEnvironment
 
 # TODO util method to infer path of environment, plus gitignore the file
-env_name = f'{util.ROOT_DIR}/slm_lab/environment/3DBall'
+env_name = f'{util.ENV_DIR}/Build/3DBall_Dev'
 train_mode = True
 
 # UnityEnvironment interfaces python with Unity,
@@ -83,8 +83,8 @@ for epi in range(10):
             env_info = env.step(action)[default_brain]
         epi_rewards += env_info.rewards[0]
         done = env_info.local_done[0]
-    time.sleep(2)
-    print('Total reward this episode: {}'.format(epi_rewards))
+    print('Total reward for this episode: {}'.format(epi_rewards))
 
 
 env.close()
+print('Environment is closed')
