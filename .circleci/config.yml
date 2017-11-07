@@ -16,6 +16,8 @@ jobs:
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
+      - restore_cache:
+          keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
           - v1-dependencies
 
