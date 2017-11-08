@@ -32,8 +32,8 @@ class TestMemory:
         memory = test_memory[0]
         memory.reset_memory()
         experiences = test_memory[2]
-        experience = experiences[0]
-        memory.add(exp)
+        exp = experiences[0]
+        memory.add_experience(*exp)
         assert memory.current_size == 1
         assert memory.head == 0
         assert memory.states[memory.head] == exp[0]
@@ -55,8 +55,8 @@ class TestMemory:
         last_e = None
         for i in range(6):
             e = experiences[i]
-            memory.add(*e)
-            last_e = copy.deep_copy()
+            memory.add_experience(*e)
+            last_e = copy.deepcopy(e)
         e = memory.get_most_recent_experience()
         for orig_e, mem_e in zip(last_e, e):
             assert orig_e == mem_e
@@ -68,10 +68,10 @@ class TestMemory:
         experiences = test_memory[2]
         num_added = 0
         for e in experiences:
-            memory.add(*e)
+            memory.add_experience(*e)
             num_added += 1
-            assert memory.current_size = min(memory.max_size, i + 1)
-            assert self.head = (i + 1) % memory.max_size
+            assert memory.current_size == min(memory.max_size, num_added)
+            assert memory.head == (num_added - 1) % memory.max_size
 
     def test_sample(self, test_memory):
         '''
@@ -83,7 +83,7 @@ class TestMemory:
         batch_size = test_memory[1]
         experiences = test_memory[2]
         for e in experiences:
-            memory.add(*e)
+            memory.add_experience(*e)
         batch = memory.get_batch(batch_size)
         assert batch['states'].shape == (batch_size, *memory.state_dim)
         assert batch['actions'].shape == (batch_size, *memory.action_dim)
@@ -102,14 +102,14 @@ class TestMemory:
         batch_size = test_memory[1]
         experiences = test_memory[2]
         for e in experiences:
-            memory.add(*e)
+            memory.add_experience(*e)
         _ = memory.get_batch(batch_size)
-        old_idx = copy.deep_copy(memory.current_batch_indices).tolist()
+        old_idx = copy.deepcopy(memory.current_batch_indices).tolist()
         for i in range(5):
             _ = memory.get_batch(batch_size)
             new_idx = memory.current_batch_indices.tolist()
             assert old_idx != new_idx
-            old_idx = copy.deep_copy(memory.current_batch_indices).tolist()
+            old_idx = copy.deepcopy(memory.current_batch_indices).tolist()
 
     def test_reset_memory(self, test_memory):
         '''
@@ -122,10 +122,10 @@ class TestMemory:
         experiences = test_memory[2]
         for i in range(2):
             e = experiences[i]
-            memory.add(*e)
+            memory.add_experience(*e)
         memory.reset_memory()
         assert memory.head == -1
-        assert memory.current_size = 0
+        assert memory.current_size == 0
         assert np.sum(memory.states) == 0
         assert np.sum(memory.actions) == 0
         assert np.sum(memory.rewards) == 0
