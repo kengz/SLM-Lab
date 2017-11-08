@@ -15,12 +15,12 @@ class TestMemory:
     def test_memory_init(self, test_memory):
         memory = test_memory[0]
         assert memory.current_size == 0
-        assert memory.states.shape == (memory.size, *memory.state_dim)
-        assert memory.actions.shape == (memory.size, *memory.action_dim)
-        assert memory.next_states.shape == (memory.size, *memory.state_dim)
-        assert memory.terminals.shape == (memory.size, 1)
-        assert memory.rewards.shape == (memory.size, 1)
-        assert memory.priorities.shape == (memory.size, 1)
+        assert memory.states.shape == (memory.max_size, *memory.state_dim)
+        assert memory.actions.shape == (memory.max_size, *memory.action_dim)
+        assert memory.next_states.shape == (memory.max_size, *memory.state_dim)
+        assert memory.terminals.shape == (memory.max_size, 1)
+        assert memory.rewards.shape == (memory.max_size, 1)
+        assert memory.priorities.shape == (memory.max_size, 1)
 
     def test_add_experience(self, test_memory):
         '''
