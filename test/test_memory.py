@@ -36,11 +36,19 @@ class TestMemory:
         memory.add_experience(*exp)
         assert memory.current_size == 1
         assert memory.head == 0
-        assert memory.states[memory.head] == exp[0]
-        assert memory.actions[memory.head] == exp[1]
+        # Handle states and actions with multiple dimensions
+        if memory.states[memory.head].size > 1:
+            for i in range(memory.states[memory.head].size):
+                assert memory.states[memory.head][i] == exp[0][i]
+                assert memory.next_states[memory.head][i] == exp[4][i]
+            for i in range(memory.actions[memory.head].size):
+                assert memory.actions[memory.head][i] == exp[1][i]
+        else:
+            assert memory.states[memory.head] == exp[0]
+            assert memory.actions[memory.head] == exp[1]
+            assert memory.next_states[memory.head] == exp[4]
         assert memory.rewards[memory.head] == exp[2]
         assert memory.terminals[memory.head] == exp[3]
-        assert memory.next_states[memory.head] == exp[4]
         assert memory.priorities[memory.head] == 1
 
     def test_get_most_recent_experience(self, test_memory):
@@ -58,8 +66,13 @@ class TestMemory:
             memory.add_experience(*e)
             last_e = copy.deepcopy(e)
         e = memory.get_most_recent_experience()
+        # Handle states and actions with multiple dimensions
         for orig_e, mem_e in zip(last_e, e):
-            assert orig_e == mem_e
+            if mem_e.size > 1:
+                for i in range(mem_e.size):
+                    assert orig_e[i] == mem_e[i]
+            else:
+                assert orig_e == mem_e
 
     def test_wrap(self, test_memory):
         '''Tests that the memory wraps round when it is at capacity'''
