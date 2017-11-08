@@ -13,7 +13,7 @@ class ReplayMemory:
                 - Real numbers representing mean on action dist (continuous)
         - reward: scalar value
         - next state: representation of next state (should be same as state)
-        - terminal: True / False representing if the current state is the last
+        - terminal: 0 / 1 representing if the current state is the last
                     in an episode
         - priority (optional): scalar value, unnormalized
 
@@ -34,19 +34,18 @@ class ReplayMemory:
 
     def __init__(self, size, state_dim, action_dim):
         super(ReplayMemory, self).__init__()
-        self.states = np.zeros(size, *state_dim)
-        self.actions = np.zeros(size, *action_dim)
-        self.rewards = np.zeros(size, 1)
-        self.next_states = np.zeros(size, *state_dim)
-        self.priorities = np.zeros(size, 1)
         self.max_size = size
-        self.current_size = 0
-        self.head = 0  # Index of most recent experience
-        self.tail = -1  # Index of least recent experience
-        self.current_batch_indices = None
-        self.total_experiences = 0
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        self.reset_memory()
 
-    def add_experience(self, state, action, reward, next_state, priority=1):
+    def add_experience(self,
+                    state,
+                    action,
+                    reward,
+                    terminal,
+                    next_state,
+                    priority=1):
         '''Adds experience to memory, expanding the memory size if necessary'''
         # Move head and tail pointers. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
@@ -55,6 +54,7 @@ class ReplayMemory:
         self.states[self.head] = state
         self.actions[self.head] = action
         self.rewards[self.head] = reward
+        self.terminals[self.head] = terminal
         self.next_states[self.head] = next_states
         self.priorities[self.head] = priority
         # Update memory size if necessary
@@ -69,6 +69,7 @@ class ReplayMemory:
         experience.append(self.states[self.head])
         experience.append(self.actions[self.head])
         experience.append(self.rewards[self.head])
+        experience.append(self.terminals[self.head])
         experience.append(self.next_states[self.head])
         experience.append(self.priorities[self.head])
         return experience
@@ -81,17 +82,19 @@ class ReplayMemory:
         an experience. Values are an array of the corresponding
         sampled elements
         e.g.
-            batch = {'states'       : states,
-                     'actions'      : actions,
-                     'rewards'      : rewards,
-                     'next_states'  : next_states,
-                     'priorities'   : priorities}
+            batch = {'states'      : states,
+                     'actions'     : actions,
+                     'rewards'     : rewards,
+                     'terminals'   : terminals,
+                     'next_states' : next_states,
+                     'priorities'  : priorities}
         '''
         self.sample_indices(batch_size)
         batch = {}
         batch['states'] = self.states[self.current_batch_indices]
         batch['actions'] = self.actions[self.current_batch_indices]
         batch['rewards'] = self.rewards[self.current_batch_indices]
+        batch['terminals'] = self.terminals[self.current_batch_indices]
         batch['next_states'] = self.next_states[self.current_batch_indices]
         batch['priorities'] = self.priorities[self.current_batch_indices]
         return batch
@@ -109,3 +112,20 @@ class ReplayMemory:
         '''
         assert len(priorites) == self.current_batch_indicies.size
         self.priorities[self.current_batch_indicies] = priorities
+
+    def reset_memory(self):
+        '''
+        Initializes all of the memory parameters to a blank memory
+        Can also be used to clear the memory
+        '''
+        self.states = np.zeros(size, *self.state_dim)
+        self.actions = np.zeros(size, *self.action_dim)
+        self.rewards = np.zeros(size, 1)
+        self.terminals = np.zeros(size, 1)
+        self.next_states = np.zeros(size, *self.state_dim)
+        self.priorities = np.zeros(size, 1)
+        self.current_size = 0
+        self.head = 0  # Index of most recent experience
+        self.tail = -1  # Index of least recent experience
+        self.current_batch_indices = None
+        self.total_experiences = 0
