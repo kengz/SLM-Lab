@@ -15,27 +15,10 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
-      - restore_cache:
-          keys:
           - v1-dependencies-{{ checksum "package.json" }}
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
-
-      - run:
-          name: Clone SLM-Env
-          command: |
-            if [ -d ~/SLM-Env ]; then
-              echo "SLM-Env already present"
-            else
-              git clone https://github.com/kengz/SLM-Env.git ~/SLM-Env/
-            fi
-            cd ~/SLM-Env && git pull && cd ~/SLM-Lab
-      - save_cache:
-          key: v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
-          paths:
-            - ~/SLM-Env
 
       - run:
           name: Install NodeJS dependencies
@@ -92,9 +75,6 @@ jobs:
 
     steps:
       - checkout
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "package.json" }}
