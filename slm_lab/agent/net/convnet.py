@@ -31,8 +31,8 @@ class ConvNet(MLPNet):
         convolutional hidden layers. Asssumed to all come
         before the flat layers.
             Note: a convolutional layer should specify the
-            in_channel, out_channels, kernel_size, stride,
-            padding, and dilation
+            in_channel, out_channels, kernel_size, stride (of kernel steps),
+            padding, and dilation (spacing between kernel points)
             E.g. [3, 16, (5, 5), 1, 0, (2, 2)]
             For more details, see
             http://pytorch.org/docs/master/nn.html#conv2d
