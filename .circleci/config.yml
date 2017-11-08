@@ -7,8 +7,8 @@ jobs:
     working_directory: ~/SLM-Lab
 
     docker:
-      - image: circleci/python:3.6
-      # - image: circleci/node:8
+      - image: circleci/node:9
+      # - image: circleci/python:3.6
       # - image: neo4j:3.2
 
     steps:
@@ -18,18 +18,10 @@ jobs:
           - v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
       - restore_cache:
           keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+      - restore_cache:
+          keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
-          - v1-dependencies
-
-      # - run:
-      #     name: Install NodeJS dependencies
-      #     command: |
-      #       sudo npm install -g yarn
-      #       yarn install
-      # - save_cache:
-      #     paths:
-      #       - node_modules
-      #     key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
           name: Clone SLM-Env
@@ -44,6 +36,16 @@ jobs:
           key: v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
           paths:
             - ~/SLM-Env
+
+      - run:
+          name: Install NodeJS dependencies
+          command: |
+            sudo npm install -g yarn
+            yarn install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
 
       - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:
@@ -84,8 +86,8 @@ jobs:
     working_directory: ~/SLM-Lab
 
     docker:
-      - image: circleci/python:3.6
-      # - image: circleci/node:8
+      - image: circleci/node:8
+      # - image: circleci/python:3.6
       # - image: neo4j:3.2
 
     steps:
@@ -95,8 +97,10 @@ jobs:
           - v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
       - restore_cache:
           keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+      - restore_cache:
+          keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
-          - v1-dependencies
 
       - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:
