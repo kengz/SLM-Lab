@@ -30,6 +30,7 @@ class PyTest(TestCommand):
     user_options = [('pytest-args=', 'a', 'Arguments to pass to py.test')]
 
     def initialize_options(self):
+        os.environ['PY_ENV'] = 'test'
         TestCommand.initialize_options(self)
         self.pytest_args = test_args
 

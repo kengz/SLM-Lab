@@ -15,8 +15,10 @@ RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 RE_INDENT = re.compile('(^\n)|(?!\n)\s{2,}|(\n\s+)$')
 # TODO switch to abs path of file
 ROOT_DIR = os.getcwd()
-ENV_DIR = os.path.join(ROOT_DIR, '..', 'SLM-Env')
-assert os.path.exists(ENV_DIR), 'SLM-Env/ is missing. Check README for setup.'
+env_name = '3dball'
+ENV_DIR = os.path.join(ROOT_DIR, 'node_modules', f'slm-env-{env_name}')
+assert os.path.exists(
+    ENV_DIR), f'{env_name} is missing. Check README for setup.'
 
 
 def cast_df(val):
