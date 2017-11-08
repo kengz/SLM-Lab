@@ -19,8 +19,8 @@ class ReplayMemory:
 
     The memory has a size of N. When capacity is reached, the oldest experience
     is deleted to make space for the lastest experience.
-        - This is implemented as a circular buffer so that inserting and
-        deleting memories are O(1) once the memory is at capacity
+        - This is implemented as a circular buffer so that inserting
+          experiences are O(1)
         - Each element of an experience is stored as a separate array of size
           N * element dim
 
@@ -47,9 +47,8 @@ class ReplayMemory:
                     next_state,
                     priority=1):
         '''Adds experience to memory, expanding the memory size if necessary'''
-        # Move head and tail pointers. Wrap around if necessary
+        # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
-        self.tail = (self.tail + 1) % self.max_size
         # Add newest experience
         self.states[self.head] = state
         self.actions[self.head] = action
@@ -125,7 +124,6 @@ class ReplayMemory:
         self.next_states = np.zeros(size, *self.state_dim)
         self.priorities = np.zeros(size, 1)
         self.current_size = 0
-        self.head = 0  # Index of most recent experience
-        self.tail = -1  # Index of least recent experience
+        self.head = -1  # Index of most recent experience
         self.current_batch_indices = None
         self.total_experiences = 0
