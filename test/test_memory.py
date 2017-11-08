@@ -1,5 +1,7 @@
 import pytest
 import numpy as np
+import copy
+from collections import Counter
 
 
 class TestMemory:
@@ -13,20 +15,12 @@ class TestMemory:
     def test_memory_init(self, test_memory):
         memory = test_memory[0]
         assert memory.current_size == 0
-        assert memory.states.shape = (memory.size, *memory.state_dim)
-        assert memory.actions.shape = (memory.size, *memory.action_dim)
-        assert memory.next_states.shape = (memory.size, *memory.state_dim)
-        assert memory.terminals.shape = (memory.size, 1)
-        assert memory.rewards.shape = (memory.size, 1)
-        assert memory.priorities.shape = (memory.size, 1)
-
-    def test_reset_memory(self, test_memory):
-        '''
-        Tests memory reset.
-        Adds 2 experiences, then resets the memory
-        and checks if all appropriate values have been
-        zeroed'''
-        pass
+        assert memory.states.shape == (memory.size, *memory.state_dim)
+        assert memory.actions.shape == (memory.size, *memory.action_dim)
+        assert memory.next_states.shape == (memory.size, *memory.state_dim)
+        assert memory.terminals.shape == (memory.size, 1)
+        assert memory.rewards.shape == (memory.size, 1)
+        assert memory.priorities.shape == (memory.size, 1)
 
     def test_add_experience(self, test_memory):
         '''
@@ -41,7 +35,7 @@ class TestMemory:
         experience = experiences[0]
         memory.add(exp)
         assert memory.current_size == 1
-        assert memory.head = 0
+        assert memory.head == 0
         assert memory.states[memory.head] == exp[0]
         assert memory.actions[memory.head] == exp[1]
         assert memory.rewards[memory.head] == exp[2]
@@ -55,7 +49,17 @@ class TestMemory:
         that the most recent experience is equal
         to the last experience added
         '''
-        pass
+        memory = test_memory[0]
+        memory.reset_memory()
+        experiences = test_memory[2]
+        last_e = None
+        for i in range(6):
+            e = experiences[i]
+            memory.add(*e)
+            last_e = copy.deep_copy()
+        e = memory.get_most_recent_experience()
+        for orig_e, mem_e in zip(last_e, e):
+            assert orig_e == mem_e
 
     def test_wrap(self, test_memory):
         '''Tests that the memory wraps round when it is at capacity'''
@@ -70,14 +74,77 @@ class TestMemory:
             assert self.head = (i + 1) % memory.max_size
 
     def test_sample(self, test_memory):
-        pass
-
-    def test_sample_dist(self, test_memory):
-        pass
+        '''
+        Tests that a sample of batch size is returned
+        with the correct dimensions
+        '''
+        memory = test_memory[0]
+        memory.reset_memory()
+        batch_size = test_memory[1]
+        experiences = test_memory[2]
+        for e in experiences:
+            memory.add(*e)
+        batch = memory.get_batch(batch_size)
+        assert batch['states'].shape == (batch_size, *memory.state_dim)
+        assert batch['actions'].shape == (batch_size, *memory.action_dim)
+        assert batch['rewards'].shape == (batch_size, 1)
+        assert batch['terminals'].shape == (batch_size, 1)
+        assert batch['next_states'].shape == (batch_size, *memory.state_dim)
+        assert batch['priorities'].shape == (batch_size, 1)
 
     def test_sample_changes(self, test_memory):
         '''
         Tests if memory.current_batch_indices changes
         from sample to sample
         '''
-        pass
+        memory = test_memory[0]
+        memory.reset_memory()
+        batch_size = test_memory[1]
+        experiences = test_memory[2]
+        for e in experiences:
+            memory.add(*e)
+        _ = memory.get_batch(batch_size)
+        old_idx = copy.deep_copy(memory.current_batch_indices).tolist()
+        for i in range(5):
+            _ = memory.get_batch(batch_size)
+            new_idx = memory.current_batch_indices.tolist()
+            assert old_idx != new_idx
+            old_idx = copy.deep_copy(memory.current_batch_indices).tolist()
+
+    def test_reset_memory(self, test_memory):
+        '''
+        Tests memory reset.
+        Adds 2 experiences, then resets the memory
+        and checks if all appropriate values have been
+        zeroed'''
+        memory = test_memory[0]
+        memory.reset_memory()
+        experiences = test_memory[2]
+        for i in range(2):
+            e = experiences[i]
+            memory.add(*e)
+        memory.reset_memory()
+        assert memory.head == -1
+        assert memory.current_size = 0
+        assert np.sum(memory.states) == 0
+        assert np.sum(memory.actions) == 0
+        assert np.sum(memory.rewards) == 0
+        assert np.sum(memory.terminals) == 0
+        assert np.sum(memory.next_states) == 0
+        assert np.sum(memory.priorities) == 0
+
+    def test_sample_dist(self, test_memory):
+        '''
+        Samples 100 times from memory.
+        Accumulates the indices sampled and checks
+        for significant deviation from a uniform distribution'''
+        # TODO: test_sample_dist
+        assert None is None
+
+    def test_update_priorities(self, test_memory):
+        '''
+        Samples from memory, and updates all priorities from
+        1 to 2. Checks that correct experiences are updated
+        '''
+        # TODO: implement test_update_priorities
+        assert None is None
