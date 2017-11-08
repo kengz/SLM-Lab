@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class ReplayMemory:
     '''
     Simple storage for storing agent experiences and sampling from them for
@@ -33,6 +32,11 @@ class ReplayMemory:
     '''
 
     def __init__(self, size, state_dim, action_dim):
+        '''
+        size: maximum size of the memory
+        state_dim: tuple of state dims e.g [5] or [3, 84, 84]
+        action_dim: tuple of action dime e.g. [4]
+        '''
         super(ReplayMemory, self).__init__()
         self.max_size = size
         self.state_dim = state_dim
@@ -54,13 +58,12 @@ class ReplayMemory:
         self.actions[self.head] = action
         self.rewards[self.head] = reward
         self.terminals[self.head] = terminal
-        self.next_states[self.head] = next_states
+        self.next_states[self.head] = next_state
         self.priorities[self.head] = priority
         # Update memory size if necessary
         if self.current_size < self.max_size:
             self.current_size += 1
         self.total_experiences += 1
-        self.check_lengths()
 
     def get_most_recent_experience(self):
         '''Returns the most recent experience'''
@@ -101,7 +104,7 @@ class ReplayMemory:
     def sample_indices(self, batch_size):
         '''Batch indices a sampled random uniformly'''
         self.current_batch_indices = \
-            np.random.choice(list(range(self.current_size)))
+            np.random.choice(list(range(self.current_size)), batch_size)
 
     def update_priorities(self, priorities):
         '''
@@ -117,13 +120,19 @@ class ReplayMemory:
         Initializes all of the memory parameters to a blank memory
         Can also be used to clear the memory
         '''
-        self.states = np.zeros(size, *self.state_dim)
-        self.actions = np.zeros(size, *self.action_dim)
-        self.rewards = np.zeros(size, 1)
-        self.terminals = np.zeros(size, 1)
-        self.next_states = np.zeros(size, *self.state_dim)
-        self.priorities = np.zeros(size, 1)
+        self.states = np.zeros((self.max_size, *self.state_dim))
+        self.actions = np.zeros((self.max_size, *self.action_dim))
+        self.rewards = np.zeros((self.max_size, 1))
+        self.terminals = np.zeros((self.max_size, 1))
+        self.next_states = np.zeros((self.max_size, *self.state_dim))
+        self.priorities = np.zeros((self.max_size, 1))
         self.current_size = 0
         self.head = -1  # Index of most recent experience
         self.current_batch_indices = None
         self.total_experiences = 0
+        assert self.states is not None
+        assert self.actions is not None
+        assert self.rewards is not None
+        assert self.terminals is not None
+        assert self.next_states is not None
+        assert self.priorities is not None
