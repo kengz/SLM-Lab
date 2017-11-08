@@ -10,8 +10,6 @@ engines:
     enabled: true
   fixme:
     enabled: true
-  markdownlint:
-    enabled: true
   pep8:
     enabled: true
   radon:
@@ -19,7 +17,6 @@ engines:
 ratings:
   paths:
   - "**.js"
-  - "**.md"
   - "**.py"
 exclude_paths:
 - config/

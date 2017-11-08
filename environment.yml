@@ -6,11 +6,15 @@ channels:
 dependencies:
 - apipkg=1.4=py36_0
 - autopep8=1.3.2=py36_0
+- backports=1.0=py36_1
+- backports.functools_lru_cache=1.4=py36_1
 - ca-certificates=2017.7.27.1=0
 - certifi=2017.7.27.1=py36_0
 - cffi=1.10.0=py36_0
 - coverage=4.4.1=py36_0
+- cycler=0.10.0=py36_0
 - decorator=4.1.2=py36_0
+- docopt=0.6.2=py36_0
 - et_xmlfile=1.0.1=py36_0
 - execnet=1.5.0=py_0
 - freetype=2.7=1
@@ -28,6 +32,7 @@ dependencies:
 - libpng=1.6.28=0
 - libsodium=1.0.10=0
 - libtiff=4.0.6=7
+- matplotlib=2.1.0=py36_0
 - nbformat=4.4.0=py36_0
 - ncurses=5.9=10
 - olefile=0.44=py36_0
@@ -35,7 +40,7 @@ dependencies:
 - openssl=1.0.2l=0
 - pexpect=4.2.1=py36_0
 - pickleshare=0.7.4=py36_0
-- pillow=4.2.1=py36_0
+- pillow=4.3.0=py36_0
 - pip=9.0.1=py36_0
 - prompt_toolkit=1.0.15=py36_0
 - ptyprocess=0.5.2=py36_0
@@ -43,11 +48,12 @@ dependencies:
 - pycodestyle=2.3.1=py36_0
 - pycparser=2.18=py36_0
 - pygments=2.2.0=py36_0
+- pyparsing=2.2.0=py36_0
 - pytest=3.2.3=py36_0
 - pytest-cov=2.5.1=py36_0
 - pytest-forked=0.2=py36_0
 - pytest-xdist=1.20.1=py_0
-- python=3.6.0=0
+- python=3.6.2=0
 - python-dateutil=2.6.1=py36_0
 - pytz=2017.2=py36_0
 - pyyaml=3.12=py36_1
@@ -67,7 +73,7 @@ dependencies:
 - xz=5.2.3=0
 - yaml=0.1.6=0
 - zeromq=4.2.1=1
-- zlib=1.2.11=0
+- zlib=1.2.8=3
 - mkl=2017.0.3=0
 - numpy=1.13.1=py36_0
 - pandas=0.20.3=py36_0
@@ -78,11 +84,20 @@ dependencies:
 - pytorch=0.2.0
 - torchvision=0.1.9
 - pip:
+  - backports.functools-lru-cache==1.4
+  - bleach==1.5.0
   - colorlover==0.2.1
   - et-xmlfile==1.0.1
+  - html5lib==0.9999999
   - ipython-genutils==0.2.0
   - jupyter-client==5.1.0
   - jupyter-core==4.3.0
+  - markdown==2.6.9
   - prompt-toolkit==1.0.15
+  - protobuf==3.4.0
   - pydash==4.2.1
+  - tensorflow==1.3.0
+  - tensorflow-tensorboard==0.1.8
   - torch==0.2.0.post4
+  - werkzeug==0.12.2
+
