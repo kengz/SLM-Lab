@@ -6,6 +6,7 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 from slm_lab.agent.net.feedforward import MLPNet
 from slm_lab.agent.net.convnet import ConvNet
+from slm_lab.agent.memory.base_memory import ReplayMemory
 import pytest
 
 
