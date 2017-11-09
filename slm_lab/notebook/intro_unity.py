@@ -1,7 +1,8 @@
 '''
 Introduction to Unity ml-agents
 
-Install Unity ml-agents in lab Conda env
+Refer to README for setup
+
 if you're live-hacking stuff, use `pip install -e .`
 https://github.com/Unity-Technologies/ml-agents/blob/master/docs/installation.md
 
@@ -9,14 +10,13 @@ ml-agents Python API doc:
 https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Unity-Agents---Python-API.md
 '''
 
-
 import numpy as np
 import time
 from slm_lab.lib import util
 from unityagents import UnityEnvironment
 
-# TODO util method to infer path of environment, plus gitignore the file
-env_name = f'{util.ENV_DIR}/Build/3DBall'
+# TODO update env pathing from util var
+env_name = f'./node_modules/slm-env-3dball/build/3dball'
 # use train_mode = False to debug, i.e. render env at real size, real time
 train_mode = False
 
