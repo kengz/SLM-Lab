@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class ReplayMemory:
     '''
     Simple storage for storing agent experiences and sampling from them for
@@ -23,8 +24,8 @@ class ReplayMemory:
         - Each element of an experience is stored as a separate array of size
           N * element dim
 
-    When a batch of experiences is requested, K experiences are sampled according
-    to a random uniform distribution.
+    When a batch of experiences is requested, K experiences are sampled
+    according to a random uniform distribution.
 
     All experiences have a priority of 1.
     This allows for other implementations to sample based on the experience
@@ -44,12 +45,12 @@ class ReplayMemory:
         self.reset_memory()
 
     def add_experience(self,
-                    state,
-                    action,
-                    reward,
-                    terminal,
-                    next_state,
-                    priority=1):
+                       state,
+                       action,
+                       reward,
+                       terminal,
+                       next_state,
+                       priority=1):
         '''Adds experience to memory, expanding the memory size if necessary'''
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
