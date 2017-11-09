@@ -19,9 +19,13 @@ class TestNet:
         '''
         net = test_nets[0]
         print("Running check_trainable test:")
+        print(net)
         flag = True
         before_params = net.gather_trainable_params()
-        dummy_input = Variable(torch.ones((2, net.in_dim)))
+        if type(net.in_dim) is int:
+            dummy_input = Variable(torch.ones(2, net.in_dim))
+        else:
+            dummy_input = Variable(torch.ones(2, *net.in_dim))
         dummy_output = Variable(torch.zeros((2, net.out_dim)))
         loss = net.training_step(dummy_input, dummy_output)
         after_params = net.gather_trainable_params()
@@ -49,7 +53,10 @@ class TestNet:
         print("Running check_fixed test:")
         flag = True
         before_params = net.gather_fixed_params()
-        dummy_input = Variable(torch.ones((2, net.in_dim)))
+        if type(net.in_dim) is int:
+            dummy_input = Variable(torch.ones(2, net.in_dim))
+        else:
+            dummy_input = Variable(torch.ones(2, *net.in_dim))
         dummy_output = Variable(torch.zeros((2, net.out_dim)))
         loss = net.training_step(dummy_input, dummy_output)
         after_params = net.gather_fixed_params()
@@ -104,7 +111,10 @@ class TestNet:
         ''' Checks that the output of the net is not zero or nan '''
         net = test_nets[0]
         print("Running check_output test. Tests if output is not 0 or NaN")
-        dummy_input = Variable(torch.ones((2, net.in_dim)))
+        if type(net.in_dim) is int:
+            dummy_input = Variable(torch.ones(2, net.in_dim))
+        else:
+            dummy_input = Variable(torch.ones(2, *net.in_dim))
         out = net(dummy_input)
         flag = True
         if torch.sum(torch.abs(out.data)) < SMALL_NUM:

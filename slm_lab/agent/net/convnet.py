@@ -5,6 +5,7 @@ from torch.nn import Module
 import torch.nn.functional as F
 from torch.autograd import Variable
 from slm_lab.agent.net.feedforward import MLPNet
+# from feedforward import MLPNet
 
 class ConvNet(MLPNet):
     '''
@@ -57,9 +58,9 @@ class ConvNet(MLPNet):
                 [100],
                 10,
                 optim.Adam,
-                nn.SmoothL1Loss)
+                F.smooth_l1_loss)
         '''
-        # Calling super on grandfather class
+        # Calling super on greatgrandfather class
         Module.__init__(self)
         self.in_dim = in_dim
         self.out_dim = out_dim
@@ -80,11 +81,8 @@ class ConvNet(MLPNet):
         x = Variable(torch.ones(1, *self.in_dim))
         bn_flag = len(self.batch_norms) > 0
         for i, layer in enumerate(self.conv_layers):
-            if bn_flag:
-                bn = self.batch_norms[i]
-                x = bn(layer(x))
-            else:
-                x = layer(x)
+            # Don't need to pass through batch norms to calculate size
+            x = layer(x)
         return x.numel()
 
     def build_conv_layers(self, conv_hid):
@@ -98,16 +96,17 @@ class ConvNet(MLPNet):
                         dilation=conv_hid[i][5])
             setattr(self, 'conv_' + str(i), l)
             self.conv_layers.append(l)
-            if self.batch_norm:
+            # Don't include batch norm in the first layer
+            if self.batch_norm and i != 0:
                 b = nn.BatchNorm2d(conv_hid[i][1])
                 setattr(self, 'bn_' + str(i), b)
                 self.batch_norms.append(b)
 
     def build_flat_layers(self, flat_hid, out_dim):
-        flat_dim = self.get_conv_output_size()
+        self.flat_dim = self.get_conv_output_size()
         for i, layer in enumerate(flat_hid):
             if i == 0:
-                in_D = flat_dim
+                in_D = self.flat_dim
             else:
                 in_D = flat_hid[i - 1]
             out_D = flat_hid[i]
@@ -117,17 +116,18 @@ class ConvNet(MLPNet):
         if len(flat_hid) > 0:
             self.out_layer = nn.Linear(flat_hid[-1], out_dim)
         else:
-            self.out_layer = nn.Linear(flat_dim, out_dim)
+            self.out_layer = nn.Linear(self.flat_dim, out_dim)
 
     def forward(self, x):
         ''' The feedforward step '''
         bn_flag = len(self.batch_norms) > 0
         for i, layer in enumerate(self.conv_layers):
-            if bn_flag:
-                bn = self.batch_norms[i]
+            if bn_flag and i != 0:
+                bn = self.batch_norms[i-1]
                 x = F.relu(bn(layer(x)))
             else:
                 x = F.relu(layer(x))
+        x = x.view(-1, self.flat_dim)
         for layer in self.flat_layers:
             x = F.relu(layer(x))
         x = self.out_layer(x)
@@ -137,14 +137,14 @@ class ConvNet(MLPNet):
         '''
         Takes a single training step: one forwards and one backwards pass
         '''
-        return super(MLPNet, self).training_step(x, y)
+        return super(ConvNet, self).training_step(x, y)
 
     def eval(self, x):
         '''
         Completes one feedforward step, ensuring net is set to evaluation model
         returns: network output given input x
         '''
-        return super(MLPNet, self).eval(x)
+        return super(ConvNet, self).eval(x)
 
     def init_params(self):
         '''
@@ -157,22 +157,27 @@ class ConvNet(MLPNet):
         '''
         initrange = 0.1
         biasinit = 0.01
+        bninitrange = 1.0
+        bnbiasinit = 0.1
         layers = self.conv_layers + self.flat_layers \
             + list([self.out_layer])
         for layer in layers:
             layer.weight.data.uniform_(-initrange, initrange)
             layer.bias.data.fill_(biasinit)
+        for bn in self.batch_norms:
+            bn.weight.data.uniform_(-bninitrange, bninitrange)
+            bn.bias.data.fill_(bnbiasinit)
 
     def gather_trainable_params(self):
         '''
         Gathers parameters that should be trained into a list
         returns: copy of a list of fixed params
         '''
-        return super(MLPNet, self).gather_trainable_params()
+        return super(ConvNet, self).gather_trainable_params()
 
     def gather_fixed_params(self):
         '''
         Gathers parameters that should be fixed into a list
         returns: copy of a list of fixed params
         '''
-        return super(MLPNet, self).gather_fixed_params()
+        return super(ConvNet, self).gather_fixed_params()
