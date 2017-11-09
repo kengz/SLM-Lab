@@ -13,16 +13,16 @@ https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Unity-Agents---
 import numpy as np
 import time
 from slm_lab.lib import util
+from slm_lab import environment
 from unityagents import UnityEnvironment
 
-# TODO update env pathing from util var
-env_name = f'./node_modules/slm-env-3dball/build/3dball'
+env_path = environment.get_env_path('3dball')
 # use train_mode = False to debug, i.e. render env at real size, real time
 train_mode = False
 
 # UnityEnvironment interfaces python with Unity,
 # and contains brains for controlling connected agents.
-env = UnityEnvironment(file_name=env_name)
+env = UnityEnvironment(file_name=env_path)
 print(str(env))
 
 # get the default brain
