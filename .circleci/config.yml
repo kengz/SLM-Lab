@@ -7,43 +7,28 @@ jobs:
     working_directory: ~/SLM-Lab
 
     docker:
-      - image: circleci/python:3.6
-      # - image: circleci/node:8
+      - image: circleci/node:9
+      # - image: circleci/python:3.6
       # - image: neo4j:3.2
 
     steps:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
+          - v1-dependencies-{{ checksum "package.json" }}
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
-          - v1-dependencies
-
-      # - run:
-      #     name: Install NodeJS dependencies
-      #     command: |
-      #       sudo npm install -g yarn
-      #       yarn install
-      # - save_cache:
-      #     paths:
-      #       - node_modules
-      #     key: v1-dependencies-{{ checksum "package.json" }}
 
       - run:
-          name: Clone SLM-Env
+          name: Install NodeJS dependencies
           command: |
-            if [ -d ~/SLM-Env ]; then
-              echo "SLM-Env already present"
-            else
-              git clone https://github.com/kengz/SLM-Env.git ~/SLM-Env/
-            fi
-            cd ~/SLM-Env && git pull && cd ~/SLM-Lab
+            sudo npm install -g yarn
+            yarn install
       - save_cache:
-          key: v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
           paths:
-            - ~/SLM-Env
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
 
       - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:
@@ -84,19 +69,18 @@ jobs:
     working_directory: ~/SLM-Lab
 
     docker:
-      - image: circleci/python:3.6
-      # - image: circleci/node:8
+      - image: circleci/node:8
+      # - image: circleci/python:3.6
       # - image: neo4j:3.2
 
     steps:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "slm_lab/environment/__init__.py" }}
+          - v1-dependencies-{{ checksum "package.json" }}
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
-          - v1-dependencies
 
       - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:
