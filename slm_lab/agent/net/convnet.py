@@ -7,6 +7,7 @@ from torch.autograd import Variable
 from slm_lab.agent.net.feedforward import MLPNet
 # from feedforward import MLPNet
 
+
 class ConvNet(MLPNet):
     '''
     Class for generating arbitrary sized convolutional
@@ -88,12 +89,12 @@ class ConvNet(MLPNet):
     def build_conv_layers(self, conv_hid):
         for i, layer in enumerate(conv_hid):
             l = nn.Conv2d(
-                        conv_hid[i][0],
-                        conv_hid[i][1],
-                        conv_hid[i][2],
-                        stride=conv_hid[i][3],
-                        padding=conv_hid[i][4],
-                        dilation=conv_hid[i][5])
+                conv_hid[i][0],
+                conv_hid[i][1],
+                conv_hid[i][2],
+                stride=conv_hid[i][3],
+                padding=conv_hid[i][4],
+                dilation=conv_hid[i][5])
             setattr(self, 'conv_' + str(i), l)
             self.conv_layers.append(l)
             # Don't include batch norm in the first layer
@@ -123,7 +124,7 @@ class ConvNet(MLPNet):
         bn_flag = len(self.batch_norms) > 0
         for i, layer in enumerate(self.conv_layers):
             if bn_flag and i != 0:
-                bn = self.batch_norms[i-1]
+                bn = self.batch_norms[i - 1]
                 x = F.relu(bn(layer(x)))
             else:
                 x = F.relu(layer(x))
