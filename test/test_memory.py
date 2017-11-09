@@ -86,6 +86,7 @@ class TestMemory:
             assert memory.current_size == min(memory.max_size, num_added)
             assert memory.head == (num_added - 1) % memory.max_size
 
+    @pytest.mark.skip(reason='flaky test, see https://circleci.com/gh/kengz/SLM-Lab/262')
     def test_sample(self, test_memory):
         '''
         Tests that a sample of batch size is returned
