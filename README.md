@@ -16,7 +16,17 @@ _(Work In Progress)_ An experimental framework for Reinforcement Learning using 
     source activate lab
     ```
 
-3.  Setup the created config files:
+3.  Install the bleeding-edge Unity `ml-agents` dependency:
+    ```shell
+    source activate lab
+    cd ..
+    git clone https://github.com/kengz/ml-agents.git
+    cd ml-agents/python
+    pip install -e .
+    cd ../SLM-Lab/
+    ```
+
+4.  Setup the created config files:
     -   `config/default.json` for local development, used when `grunt` is ran without a production flag.
     -   `config/production.json` for production lab run when `grunt -prod` is ran with the production flag `-prod`.
 
