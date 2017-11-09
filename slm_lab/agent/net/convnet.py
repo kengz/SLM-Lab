@@ -4,7 +4,7 @@ from torch import optim
 from torch.nn import Module
 import torch.nn.functional as F
 from torch.autograd import Variable
-from feedforward import MLPNet
+from slm_lab.agent.net.feedforward import MLPNet
 
 class ConvNet(MLPNet):
     '''
