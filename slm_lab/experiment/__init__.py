@@ -2,6 +2,7 @@
 The experiment module
 Handles experimentation logic: control, design, monitoring, analysis, evolution
 '''
+from slm_lab.lib import logger, util, viz
 
 
 class Session:
@@ -12,7 +13,40 @@ class Session:
     run the RL system and collect data, e.g. fitness metrics, till it ends,
     then return the session data.
     '''
-    pass
+    self.spec
+    self.agent
+    self.env
+    self.data
+
+    def __init__(self, spec):
+        return
+
+    def init_agent(self):
+        return
+
+    def init_env(self):
+        return
+
+    def run_episode(self):
+        # TODO multi-brain resolver without tampering below
+        # note: an Agent here is the same unit as a Brain in Unity
+        self.agent.reset()
+        state = self.env.reset()
+        # RL steps for SARS
+        for t in range(self.env.max_timestep):
+            action = self.agent.act(state)
+            reward, state, done = self.env.step(action)
+            # fully observable SARS from env, memory and training internally
+            self.agent.update(reward, state)
+            if done:
+                break
+        return
+
+    def run(self):
+        for e in range(self.spec.max_episode):
+            self.run_episode()
+        # TODO tie up things like close env and save agent, package data
+        return self.data
 
 
 class Trial:
