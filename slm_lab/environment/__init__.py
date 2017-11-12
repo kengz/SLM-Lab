@@ -45,12 +45,20 @@ class Env:
     Do the above
     Also standardize logic from Unity environments
     '''
-    # max_timestep
-    # train_mode
-    # u_env
+    max_timestep = None
+    train_mode = None
+    u_env = None
+    agent = None
 
     def __init__(self):
         return
+
+    def set_agent(self, agent):
+        '''
+        Make agent visible to env.
+        TODO anticipate multi-agents
+        '''
+        self.agent = agent
 
     def reset():
         return

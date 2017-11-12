@@ -57,7 +57,7 @@ class Session:
         # preprocessing shd belong to agent internal, analogy: a lens
         # any rendering goes to env
         # make env observable to agent, vice versa. useful for memory
-
+        # foresee multi agent, multi environment in a session
         self.agent.reset()
         state = self.env.reset()
         # RL steps for SARS

@@ -31,10 +31,23 @@ class Agent(ABC):
     # but dont wanna be too restrictive
     # start with a random agent first, with default components
     # tie into a trial of experiment (every run is a trial)
+    env = None
+
     @abstractproperty
-    def name(self):
-        return 'name'
+    def property_to_be_implemented(self):
+        return 'property_to_be_implemented'
 
     @abstractmethod
-    def foo(self):
+    def method_to_be_implemented(self):
         pass
+
+    @abstractmethod
+    def __init__(self):
+        pass
+
+    def set_env(self, env):
+        '''
+        Make env visible to agent.
+        TODO anticipate multi-environments
+        '''
+        self.env = env
