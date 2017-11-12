@@ -19,10 +19,12 @@ class TestNet:
         returns: true if all trainable params change, false otherwise
         '''
         net = test_nets[0]
-        print("Running check_trainable test:")
         flag = True
         before_params = net.gather_trainable_params()
-        dummy_input = Variable(torch.ones((2, net.in_dim)))
+        if type(net.in_dim) is int:
+            dummy_input = Variable(torch.ones(2, net.in_dim))
+        else:
+            dummy_input = Variable(torch.ones(2, *net.in_dim))
         dummy_output = Variable(torch.zeros((2, net.out_dim)))
         loss = net.training_step(dummy_input, dummy_output)
         after_params = net.gather_trainable_params()
@@ -47,10 +49,12 @@ class TestNet:
         returns: true if all fixed params don't change, false otherwise
         '''
         net = test_nets[0]
-        print("Running check_fixed test:")
         flag = True
         before_params = net.gather_fixed_params()
-        dummy_input = Variable(torch.ones((2, net.in_dim)))
+        if type(net.in_dim) is int:
+            dummy_input = Variable(torch.ones(2, net.in_dim))
+        else:
+            dummy_input = Variable(torch.ones(2, *net.in_dim))
         dummy_output = Variable(torch.zeros((2, net.out_dim)))
         loss = net.training_step(dummy_input, dummy_output)
         after_params = net.gather_fixed_params()
@@ -72,7 +76,6 @@ class TestNet:
         x, y = test_nets[1], test_nets[2]
         loss = test_nets[3]
         steps = test_nets[4]
-        print("Running check_gradient_size test:")
         for i in range(steps):
             _ = net.training_step(x, y)
         flag = True
@@ -105,8 +108,10 @@ class TestNet:
     def test_output(self, test_nets):
         ''' Checks that the output of the net is not zero or nan '''
         net = test_nets[0]
-        print("Running check_output test. Tests if output is not 0 or NaN")
-        dummy_input = Variable(torch.ones((2, net.in_dim)))
+        if type(net.in_dim) is int:
+            dummy_input = Variable(torch.ones(2, net.in_dim))
+        else:
+            dummy_input = Variable(torch.ones(2, *net.in_dim))
         out = net(dummy_input)
         flag = True
         if torch.sum(torch.abs(out.data)) < SMALL_NUM:
@@ -124,7 +129,6 @@ class TestNet:
     def test_params_not_zero(self, test_nets):
         ''' Checks that the parameters of the net are not zero '''
         net = test_nets[0]
-        print("Running check_params_not_zero test")
         flag = True
         for i, param in enumerate(net.parameters()):
             if torch.sum(torch.abs(param.data)) < SMALL_NUM:
