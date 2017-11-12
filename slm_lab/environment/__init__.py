@@ -81,10 +81,6 @@ class UnityEnv:
         }
         return brains_info
 
-    def is_discrete_for_brain(self, brain_name):
-        brain = self.get_brain(brain_name)
-        return brain.number_observations == 'discrete'
-
     def is_discrete(self):
         return self.fn_spread_brains('is_discrete')
 

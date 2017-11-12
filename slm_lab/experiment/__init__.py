@@ -5,6 +5,26 @@ Handles experimentation logic: control, design, monitoring, analysis, evolution
 from slm_lab.lib import logger, util, viz
 
 
+class Monitor:
+    '''
+    Monitors agents, environments, sessions, trials, experiments, evolutions.
+    Has standardized input/output data structure, methods.
+    Persists data to DB, and to viz module for plots or Tensorboard.
+    Pipes data to Controller for evolution.
+    TODO Possibly unify this with logger module.
+    '''
+    pass
+
+
+class Controller:
+    '''
+    Controls agents, environments, sessions, trials, experiments, evolutions.
+    Has standardized input/output data structure, methods.
+    Uses data from Monitor for evolution.
+    '''
+    pass
+
+
 class Session:
     '''
     The base unit of instantiated RL system.
@@ -19,6 +39,7 @@ class Session:
     data = None
 
     def __init__(self, spec):
+        # init agent and env as necesary
         return
 
     def init_agent(self):
@@ -30,6 +51,11 @@ class Session:
     def run_episode(self):
         # TODO multi-brain resolver without tampering below
         # note: an Agent here is the same unit as a Brain in Unity
+        # sys_vars is now session_data, should collect silently from agent and env (fully observable anyways with full access)
+        # preprocessing shd belong to agent internal, analogy: a lens
+        # any rendering goes to env
+        # make env observable to agent, vice versa. useful for memory
+
         self.agent.reset()
         state = self.env.reset()
         # RL steps for SARS
