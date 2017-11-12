@@ -18,7 +18,7 @@ def select_action_epsilon_greedy(net, state, epsilon):
         out = net.eval(state)
         _, action = torch.max(out)
     one_hot_a = torch.zeros(1, a_dim)
-    one_hot_a[action] = 1
+    one_hot_a[0][action] = 1
     return one_hot_a
 
 def select_action_boltzmann(net, state, tau):
