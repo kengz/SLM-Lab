@@ -53,6 +53,17 @@ def flatten_dict(d, parent_key='', sep='.'):
     return dict(items)
 
 
+def get_fn_list(Cls):
+    '''
+    Get the callable, non-private functions of a class
+    @returns {[*str]} A list of strings of fn names
+    '''
+    fn_list = _.filter_(
+        dir(Cls),
+        lambda fn: not fn.endswith('__') and callable(getattr(Cls, fn)))
+    return fn_list
+
+
 def is_jupyter():
     '''Check if process is in Jupyter kernel'''
     try:

@@ -7,7 +7,37 @@ To be designed by human and evolution module,
 based on the curriculum and fitness metrics.
 '''
 import os
+import pydash as _
 from slm_lab.lib import util
+from unityagents.brain import BrainParameters
+
+
+class BrainExt:
+    '''
+    Unity Brain class extension, where self = brain
+    to be absorbed into ml-agents Brain class later
+    '''
+
+    def is_discrete(self):
+        return self.number_observations == 'discrete'
+
+    def get_observable(self):
+        '''What channels are observable: state, visual, sound, touch, etc.'''
+        observable = {
+            'state': self.state_space_size > 0,
+            'visual': self.number_observations > 0,
+        }
+        return observable
+
+
+def extend_unity_brain():
+    '''Extend Unity BrainParameters class at runtime to add BrainExt methods'''
+    ext_fn_list = util.get_fn_list(BrainExt)
+    for fn in ext_fn_list:
+        setattr(BrainParameters, fn, getattr(BrainExt, fn))
+
+
+extend_unity_brain()
 
 
 class Env:
@@ -15,8 +45,9 @@ class Env:
     Do the above
     Also standardize logic from Unity environments
     '''
-    self.max_timestep
-    self.train_mode
+    # max_timestep
+    # train_mode
+    # u_env
 
     def __init__(self):
         return
@@ -30,22 +61,43 @@ class Env:
     def close():
         return
 
-    def is_discrete():
-        return
+
+# TODO still need a single-brain env-wrapper methods
+
+
+class UnityEnv:
+    '''
+    Unity Environment wrapper
+    '''
+
+    def get_brain(brain_name):
+        return self.u_env.brains[brain_name]
+
+    def fn_spread_brains(self, brain_fn):
+        '''Call single-brain function on all for {brain_name: info}'''
+        brains_info = {
+            brain_name: brain_fn(brain_name)
+            for brain_name in self.u_env.brains
+        }
+        return brains_info
+
+    def is_discrete_for_brain(self, brain_name):
+        brain = self.get_brain(brain_name)
+        return brain.number_observations == 'discrete'
+
+    def is_discrete(self):
+        return self.fn_spread_brains('is_discrete')
 
     def get_observable():
-        '''
-        What channels are observable: state, visual, sound, touch, etc.
-        '''
-        # TODO handle multi-brain logic
-        # TODO also make clear that unity.brain.agent is not the same as RL agent here. unity agents could be seen as multiple simultaneous incarnations of this agent
-        # use_observations = (brain.number_observations > 0)
-        # use_states = (brain.state_space_size > 0)
-        observable = {
-            'state': True,
-            'visual': True,
-        }
+        observable = self.fn_spread_brains('get_observable')
         return observable
+
+    # TODO handle multi-brain logic
+    # TODO split subclass to handle unity specific logic,
+    # and the other half to handle Lab specific logic
+    # TODO also make clear that unity.brain.agent is not the same as RL agent here. unity agents could be seen as multiple simultaneous incarnations of this agent
+    # TODO actually shd do a single-brain wrapper instead
+    # then on env level call on all brains with wrapper methods, much easier
 
 
 def get_env_path(env_name):

@@ -13,10 +13,10 @@ class Session:
     run the RL system and collect data, e.g. fitness metrics, till it ends,
     then return the session data.
     '''
-    self.spec
-    self.agent
-    self.env
-    self.data
+    spec = None
+    agent = None
+    env = None
+    data = None
 
     def __init__(self, spec):
         return
