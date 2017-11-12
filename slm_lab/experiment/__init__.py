@@ -19,6 +19,7 @@ class Monitor:
 class Controller:
     '''
     Controls agents, environments, sessions, trials, experiments, evolutions.
+    Though many things run independently without needing a controller.
     Has standardized input/output data structure, methods.
     Uses data from Monitor for evolution.
     '''
@@ -37,6 +38,7 @@ class Session:
     agent = None
     env = None
     data = None
+    monitor = None
 
     def __init__(self, spec):
         # init agent and env as necesary
@@ -64,6 +66,7 @@ class Session:
             reward, state, done = self.env.step(action)
             # fully observable SARS from env, memory and training internally
             self.agent.update(reward, state)
+            self.monitor.update()
             if done:
                 break
         return
