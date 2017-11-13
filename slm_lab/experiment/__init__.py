@@ -41,25 +41,26 @@ class Session:
     monitor = None
 
     def __init__(self, spec):
-        # init agent and env as necesary
+        # init agent
+        # init env
+        # init monitor
         return
 
     def init_agent(self):
+        # resolve spec and init
         return
 
     def init_env(self):
         return
 
     def run_episode(self):
-        # TODO multi-brain resolver without tampering below
-        # note: an Agent here is the same unit as a Brain in Unity
         # sys_vars is now session_data, should collect silently from agent and env (fully observable anyways with full access)
         # preprocessing shd belong to agent internal, analogy: a lens
         # any rendering goes to env
         # make env observable to agent, vice versa. useful for memory
-        # foresee multi agent, multi environment in a session
-        self.agent.reset()
+        # TODO substitute singletons for spaces later
         state = self.env.reset()
+        self.agent.reset()
         # RL steps for SARS
         for t in range(self.env.max_timestep):
             action = self.agent.act(state)
