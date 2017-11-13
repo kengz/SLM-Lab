@@ -22,7 +22,6 @@ Agent components:
 - net
 - policy
 '''
-
 import numpy as np
 from abc import ABC, abstractmethod, abstractproperty
 from slm_lab.lib import util

@@ -2,7 +2,6 @@
 The experiment module
 Handles experimentation logic: control, design, monitoring, analysis, evolution
 '''
-
 import pandas as pd
 import pydash as _
 from slm_lab import agent
