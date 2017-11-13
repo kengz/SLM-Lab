@@ -1,0 +1,91 @@
+{
+  "base_case": {
+    "agent": {
+      "name": "Random",
+      "param": {}
+    },
+    "env": {
+      "name": "gridworld",
+      "param": {}
+    },
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_timestep": 20,
+      "max_episode": 3,
+      "max_session": 3,
+      "max_trial": null,
+      "train_mode": false
+    }
+  },
+  "multi_body": {
+    "agent": {
+      "name": "Random",
+      "param": {}
+    },
+    "env": {
+      "name": "3dball",
+      "param": {}
+    },
+    "body": {
+      "product": "outer",
+      "num": 12
+    }
+  },
+  "multi_agent": {
+    "agent": [{
+      "name": "Random",
+      "param": {}
+    }, {
+      "name": "Random",
+      "param": {}
+    }],
+    "env": {
+      "name": "3dball",
+      "param": {}
+    },
+    "body": {
+      "product": "outer",
+      "num": 6
+    }
+  },
+  "multi_env": {
+    "agent": {
+      "name": "Random",
+      "param": {}
+    },
+    "env": [{
+      "name": "3dball",
+      "param": {}
+    }, {
+      "name": "gridworld",
+      "param": {}
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    }
+  },
+  "multi_agent_multi_env": {
+    "agent": [{
+      "name": "Random",
+      "param": {}
+    }, {
+      "name": "Random",
+      "param": {}
+    }],
+    "env": [{
+      "name": "3dball",
+      "param": {}
+    }, {
+      "name": "gridworld",
+      "param": {}
+    }],
+    "body": {
+      "product": "custom",
+      "num": 1
+    }
+  }
+}

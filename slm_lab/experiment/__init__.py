@@ -4,8 +4,9 @@ Handles experimentation logic: control, design, monitoring, analysis, evolution
 '''
 
 import pandas as pd
-from slm_lab.agent import Random
-from slm_lab.environment import Env
+import pydash as _
+from slm_lab import agent
+from slm_lab.env import Env
 from slm_lab.lib import logger, util, viz
 
 
@@ -22,7 +23,8 @@ class Monitor:
         logger.debug('Monitor initialized for {class_name}')
 
     def update(self):
-        # TODO to implement
+        # TODO hook monitor to agent, env, then per update, auto fetches all that is in background
+        # TODO call update in session, trial, experiment loops to collect data visible there too, for unit_data
         return
 
 
@@ -48,11 +50,15 @@ class Session:
     spec = {
     agent_spec: {} or [], list instantiate classes
     env_spec: {} or [], list instantiate classes
-    body_spec: {}, with keyword like '{inner, outer}, body_num', or manually (a,e): body_num
+    body_spec: {}, with keyword like '{inner, outer}, body_num', or custom (a,e): body_num
     }
+    param space further outer-products this AEB space - an AEB space exists for a trial, and when trying different param for a different trial, we create a whole new AEB space
+
+    need to extract params from agent_spec, and do a (with warning)
+    new param = new Agent, could do super speedy training in parallel
+    how do u enumerate the param space onto the AEB space, acting on A?
     '''
     spec = None
-    episode = None
     monitor = None
     data = None
     agent = None
@@ -60,21 +66,30 @@ class Session:
 
     def __init__(self, spec):
         self.spec = spec
-        self.episode = 0
         self.monitor = Monitor(Session.__name__, spec)
         self.data = pd.DataFrame()
 
-        self.agent = Random(0)
-        self.env = Env('gridworld', 0, train_mode=False)
-        self.agent.set_env(self.env)
-        self.env.set_agent(self.agent)
+        self.agent = self.init_agent()
+        self.env = self.init_env()
 
     def init_agent(self):
-        # resolve spec and init
-        return
+        agent_spec = self.spec['agent']
+        # TODO missing: index in AEB space
+        agent_spec['index'] = 0
+        agent_name = agent_spec['name']
+        AgentClass = agent.__dict__.get(agent_name)
+        self.agent = AgentClass(agent_spec)
+        return self.agent
 
     def init_env(self):
-        return
+        env_spec = _.merge(self.spec['env'], self.spec['meta'])
+        # TODO also missing: index in AEB space, train_mode
+        env_spec['index'] = 0
+        self.env = Env(env_spec)
+        # TODO link in AEB space properly
+        self.agent.set_env(self.env)
+        self.env.set_agent(self.agent)
+        return self.env
 
     def close(self):
         '''
@@ -84,6 +99,7 @@ class Session:
         '''
         # TODO save agent and shits
         # TODO catch all to close Unity when py runtime fails
+        self.agent.close()
         self.env.close()
         self.monitor.update()
         logger.info('Session done, closing.')
@@ -101,6 +117,7 @@ class Session:
         self.agent.reset()
         # RL steps for SARS
         for t in range(self.env.max_timestep):
+            logger.debug(f'timestep {t}')
             action = self.agent.act(state)
             reward, state, done = self.env.step(action)
             # fully observable SARS from env, memory and training internally
@@ -114,9 +131,10 @@ class Session:
         return episode_data
 
     def run(self):
-        for e in range(self.spec['max_episode']):
+        for e in range(_.get(self.spec, 'meta.max_episode')):
             self.run_episode()
             self.monitor.update()
+            logger.debug(f'episode {e}')
         self.close()
         return self.data
 
@@ -170,5 +188,13 @@ class EvolutionGraph:
     pass
 
 
-sess = Session({'max_episode': 5})
+logger.set_level('DEBUG')
+demo_spec = util.read('slm_lab/spec/demo.json')
+session_spec = demo_spec['base_case']
+# TODO universal index in spec: experiment, trial, session, then agent, env, bodies
+# TODO spec resolver for params per trial
+# TODO spec key checker and defaulting mechanism, by merging a dict of congruent shape with default values
+# TODO AEB space resolver
+session_spec['index'] = 0
+sess = Session(session_spec)
 session_data = sess.run()

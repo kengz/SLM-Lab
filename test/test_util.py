@@ -4,6 +4,13 @@ import pytest
 from slm_lab.lib import util
 
 
+def test_calc_timestamp_diff():
+    ts1 = '2017_10_17_084739'
+    ts2 = '2017_10_17_084740'
+    ts_diff = util.calc_timestamp_diff(ts2, ts1)
+    assert ts_diff == '0:00:01'
+
+
 def test_cast_df(test_df, test_list):
     assert isinstance(test_df, pd.DataFrame)
     assert isinstance(util.cast_df(test_df), pd.DataFrame)
@@ -103,10 +110,3 @@ def test_timestamp():
     timestamp = util.get_timestamp()
     assert isinstance(timestamp, str)
     assert util.RE_FILE_TS.match(timestamp)
-
-
-def test_calc_timestamp_diff():
-    ts1 = '2017_10_17_084739'
-    ts2 = '2017_10_17_084740'
-    ts_diff = util.calc_timestamp_diff(ts2, ts1)
-    assert ts_diff == '0:00:01'

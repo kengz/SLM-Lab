@@ -25,6 +25,7 @@ Agent components:
 
 import numpy as np
 from abc import ABC, abstractmethod, abstractproperty
+from slm_lab.lib import util
 
 
 class Agent(ABC):
@@ -49,7 +50,7 @@ class Agent(ABC):
     def set_env(self, env):
         '''
         Make env visible to agent.
-        TODO anticipate multi-environments
+        TODO anticipate multi-environments for AEB space
         '''
         self.env = env
 
@@ -65,23 +66,21 @@ class Agent(ABC):
 
 
 class Random(Agent):
-    name = None
-    index = None  # index of this agent in the AgentSpace
-    env = None  # TODO need proper space resolution for multi-env
+    # TODO need proper space resolution for multi-env
+    env = None
 
-    def __init__(self, index):
-        # agent_spec, also how do u specify spec with space structure
-        self.name = self.__class__.__name__
-        self.index = index
+    def __init__(self, spec):
+        # TODO also spec needs to specify AEB space and bodies
+        util.set_attr(self, spec)
 
     def set_env(self, env):
         '''
         Make env visible to agent.
-        TODO make consistent with ABE-space
+        TODO make consistent with AEB space
         '''
         self.env = env
-        # TODO do body count here
-        # analogously, do other dim counts as needed
+        # TODO do body num here
+        # analogously, do other dim counts as needed from env
         self.body_num = 1
         # TODO delegate a copy of variable like action_dim to agent too
 
@@ -99,4 +98,8 @@ class Random(Agent):
         return action
 
     def update(self, reward, state):
+        return
+
+    def close(self):
+        # TODO save or smth
         return
