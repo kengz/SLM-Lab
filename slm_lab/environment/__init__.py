@@ -8,7 +8,7 @@ based on the curriculum and fitness metrics.
 
 ---
 
-Agents-Bodies-Environments design
+Agents-Environments-Bodies design
 Proper semantics yield better understanding; below lays out the Lab's generalized structure and relations of agents, bodies and environments.
 
 First, some semantics correction of Unity ml-agents is needed. Sine this environment module handles the interface with Untiy ml-agents, the correction will happen here.
@@ -20,41 +20,41 @@ Hence, we will call Unity Brain's "Agents" as "Bodies", consistent with SLM's ne
 
 Then, the proper semantics is as follow:
 - Agent: a single class/instance of the SLM entity, e.g. DQN agent. This corresponds precisely to a single Brain in Unity Academy.
-- Body: a single incarnation of an Agent in the Environment. A single Agent (Brain) can have multiple bodies in parallel for batch training.
 - Environment: a single class/instance of the Unity space, as usual.
+- Body: a single incarnation of an Agent in the Environment. A single Agent (Brain) can have multiple bodies in parallel for batch training.
 
 Note that the parallel bodies (identical and non-interacting) of an agent in an environment is equivalent to an agent with a single body existing in multiple copies of the environment. This insight is crucial for the symmetry between Agent and Environment space, and helps generalize further later.
 
 The base case:
-- 1 agent, 1 body, 1 environment
+- 1 agent, 1 environment, 1 body
 This is the most straightforward case, directly runnable as a common session without any multiplicity resolution.
 
 Multi-body case:
-- 1 agent, multiple bodies, 1 environment
+- 1 agent, 1 environment, multiple bodies
 This is just the base case ran in batch, where the agent does batch-processing on input and output.
 Alternatively the bodies could be distinct, such as having inverse rewards. This would be the adversarial case where a single agent self-plays.
 
 Multi-agent case:
-- multiple agents, multiple bodies, 1 environment
+- multiple agents, 1 environment, multiple bodies
 The next extension is having multiple agents interacting in an environment. Each agent can posses 1 body or more as per cases above.
 
 Multi-environment case:
-- 1 agent, multiple bodies, multiple environments
+- 1 agent, multiple environments, multiple bodies
 This is the more novel case. When an agent can have parallel incarnations, nothing restrictst the bodies to be constructed identically or be subject to the same environment. An agent can have multiple bodies in different environments.
 This can be used for simultaneous multi-task training. An example is to expose an agent's legs to ground for walking, wings to air for flying, and fins for swimming. The goal would be to do generalization or transfer learning on all 3 types of limbs to multiple environments. Then perhaps it would generalize to use legs and wings for swimming too.
 
-Full generalizationm, multi-agent multi-environment case:
-- multiple agents, multiple bodies, multiple environments
+Full generalization, multi-agent multi-environment case:
+- multiple agents, multiple environments, multiple bodies
 This generalizes all the cases above and allow us to have a neat representation that corresponds to the Agent-Environment product space before.
-The generalization gives us the 3D space of `Agents x Bodies x Environments`. This space will be the basis of our experiment design.
-We have:
+The generalization gives us the 3D space of `Agents x Environments x Bodies`. We will call this product space `AEB space`. It will be the basis of our experiment design.
+In AEB space, We have the projections:
 - AgentSpace, A: each value in this space is a class of agent
-- BodySpace, B: each value in this space is a body of an agent (with some value in AgentSpace and EnvSpace)
 - EnvSpace, E: each value in this space is a class of environment
+- BodySpace, B: each value in this space is a body of an agent in an environment (indexed by coordinates (a,e) in AE space)
 
-In a general experiment with multiple bodies, with single or multiple agents and environments, each body instance can be marked with the 3D coordinate `(a, b, e)` in `A x B x E`. Each body is also associated with the body-specific data: observables, actions, rewards, done flags. We can call these the data space, i.e. observable space, action space, reward space, etc.
+In a general experiment with multiple bodies, with single or multiple agents and environments, each body instance can be marked with the 3D coordinate `(a,e,b)` in `AEB` space. Each body is also associated with the body-specific data: observables, actions, rewards, done flags. We can call these the data space, i.e. observable space, action space, reward space, etc.
 
-When controlling a session of experiment, execute the agent and environment logic as usual, but the singletons for AgentSpace and EnvSpace respectively. Internally, they shall produce the usual singleton data across all bodies at each point `(a, b, e)`. When passing the data around, simply flatten the data on the corresponding axis and spread the data. E.g. when passing new states from EnvSpace to AgentSpace, group `state(a,b,e)` for each `a` value and pass to the right agent `a`.
+When controlling a session of experiment, execute the agent and environment logic as usual, but the singletons for AgentSpace and EnvSpace respectively. Internally, they shall produce the usual singleton data across all bodies at each point `(a,e,b)`. When passing the data around, simply flatten the data on the corresponding axis and spread the data. E.g. when passing new states from EnvSpace to AgentSpace, group `state(a,e,b)` for each `a` value and pass state(e,b)_a to the right agent `a`.
 
 Hence, the experiment session loop generalizes directly from:
 ```
@@ -182,7 +182,7 @@ class Env:
         self.agent = agent
 
     def reset(self):
-        # TODO need ABE space resolver
+        # TODO need AEB space resolver
         default_brain = self.u_env.brain_names[0]
         env_info = self.u_env.reset(train_mode=self.train_mode)[default_brain]
         return env_info

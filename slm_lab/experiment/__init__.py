@@ -43,6 +43,13 @@ class Session:
     session creates agent(s) and environment(s),
     run the RL system and collect data, e.g. fitness metrics, till it ends,
     then return the session data.
+    noo only experiment_spec, agent_spec, agent_spec
+    auto-resolve param space spec for trial, copy for session with idx
+    spec = {
+    agent_spec: {} or [], list instantiate classes
+    env_spec: {} or [], list instantiate classes
+    body_spec: {}, with keyword like '{inner, outer}, body_num', or manually (a,e): body_num
+    }
     '''
     spec = None
     episode = None

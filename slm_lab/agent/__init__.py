@@ -66,10 +66,11 @@ class Agent(ABC):
 
 class Random(Agent):
     name = None
-    index = None
-    env = None
+    index = None  # index of this agent in the AgentSpace
+    env = None  # TODO need proper space resolution for multi-env
 
     def __init__(self, index):
+        # agent_spec, also how do u specify spec with space structure
         self.name = self.__class__.__name__
         self.index = index
 
@@ -81,7 +82,7 @@ class Random(Agent):
         self.env = env
         # TODO do body count here
         # analogously, do other dim counts as needed
-        self.body_count = 1
+        self.body_num = 1
         # TODO delegate a copy of variable like action_dim to agent too
 
     def reset(self):
@@ -91,10 +92,10 @@ class Random(Agent):
         if self.env.is_discrete():
             # get environment action dim
             action = np.random.randint(
-                0, self.env.get_action_dim(), size=(self.body_count))
+                0, self.env.get_action_dim(), size=(self.body_num))
         else:
             action = np.random.randn(
-                self.body_count, self.env.get_action_dim())
+                self.body_num, self.env.get_action_dim())
         return action
 
     def update(self, reward, state):
