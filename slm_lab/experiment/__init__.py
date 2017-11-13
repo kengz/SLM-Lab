@@ -2,6 +2,10 @@
 The experiment module
 Handles experimentation logic: control, design, monitoring, analysis, evolution
 '''
+
+import pandas as pd
+from slm_lab.agent import Random
+from slm_lab.environment import Env
 from slm_lab.lib import logger, util, viz
 
 
@@ -13,7 +17,13 @@ class Monitor:
     Pipes data to Controller for evolution.
     TODO Possibly unify this with logger module.
     '''
-    pass
+
+    def __init__(self, class_name, spec):
+        logger.debug('Monitor initialized for {class_name}')
+
+    def update(self):
+        # TODO to implement
+        return
 
 
 class Controller:
@@ -25,8 +35,6 @@ class Controller:
     '''
     pass
 
-from slm_lab.agent import Random
-from slm_lab.environment import Env
 
 class Session:
     '''
@@ -37,20 +45,22 @@ class Session:
     then return the session data.
     '''
     spec = None
+    episode = None
+    monitor = None
+    data = None
     agent = None
     env = None
-    data = None
-    monitor = None
 
     def __init__(self, spec):
+        self.spec = spec
+        self.episode = 0
+        self.monitor = Monitor(Session.__name__, spec)
+        self.data = pd.DataFrame()
+
         self.agent = Random(0)
         self.env = Env('gridworld', 0, train_mode=False)
         self.agent.set_env(self.env)
         self.env.set_agent(self.agent)
-        # init agent
-        # init env
-        # init monitor
-        return
 
     def init_agent(self):
         # resolve spec and init
@@ -59,12 +69,27 @@ class Session:
     def init_env(self):
         return
 
+    def close(self):
+        '''
+        Close session and clean up.
+        Save agent, close env. Update monitor.
+        Prepare self.data.
+        '''
+        # TODO save agent and shits
+        # TODO catch all to close Unity when py runtime fails
+        self.env.close()
+        self.monitor.update()
+        logger.info('Session done, closing.')
+
     def run_episode(self):
-        # sys_vars is now session_data, should collect silently from agent and env (fully observable anyways with full access)
-        # preprocessing shd belong to agent internal, analogy: a lens
-        # any rendering goes to env
-        # make env observable to agent, vice versa. useful for memory
-        # TODO substitute singletons for spaces later
+        '''
+        sys_vars is now session_data, should collect silently from agent and env (fully observable anyways with full access)
+        preprocessing shd belong to agent internal, analogy: a lens
+        any rendering goes to env
+        make env observable to agent, vice versa. useful for memory
+        TODO substitute singletons for spaces later
+        '''
+        # TODO generalize and make state to include observables
         state = self.env.reset()
         self.agent.reset()
         # RL steps for SARS
@@ -73,23 +98,21 @@ class Session:
             reward, state, done = self.env.step(action)
             # fully observable SARS from env, memory and training internally
             self.agent.update(reward, state)
-            # self.monitor.update()
+            self.monitor.update()
+            # TODO monitor shd update session data from episode data
             if done:
                 break
-        return
+        # TODO compose episode data from monitor update, is just session_data[episode]
+        episode_data = {}
+        return episode_data
 
     def run(self):
-        # for e in range(self.spec.max_episode):
-        for e in range(3):
+        for e in range(self.spec['max_episode']):
             self.run_episode()
-        # TODO tie up things like close env and save agent, package data
-        self.env.close()
-        # return self.data
+            self.monitor.update()
+        self.close()
+        return self.data
 
-
-sess = Session({'spec': 0})
-# sess.run_episode()
-sess.run()
 
 class Trial:
     '''
@@ -138,3 +161,7 @@ class EvolutionGraph:
     the evolution graph and experiments to achieve SLM.
     '''
     pass
+
+
+sess = Session({'max_episode': 5})
+session_data = sess.run()
