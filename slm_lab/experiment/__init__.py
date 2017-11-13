@@ -25,6 +25,8 @@ class Controller:
     '''
     pass
 
+from slm_lab.agent import Random
+from slm_lab.environment import Env
 
 class Session:
     '''
@@ -41,6 +43,10 @@ class Session:
     monitor = None
 
     def __init__(self, spec):
+        self.agent = Random(0)
+        self.env = Env('gridworld', 0, train_mode=False)
+        self.agent.set_env(self.env)
+        self.env.set_agent(self.agent)
         # init agent
         # init env
         # init monitor
@@ -67,17 +73,23 @@ class Session:
             reward, state, done = self.env.step(action)
             # fully observable SARS from env, memory and training internally
             self.agent.update(reward, state)
-            self.monitor.update()
+            # self.monitor.update()
             if done:
                 break
         return
 
     def run(self):
-        for e in range(self.spec.max_episode):
+        # for e in range(self.spec.max_episode):
+        for e in range(3):
             self.run_episode()
         # TODO tie up things like close env and save agent, package data
-        return self.data
+        self.env.close()
+        # return self.data
 
+
+sess = Session({'spec': 0})
+# sess.run_episode()
+sess.run()
 
 class Trial:
     '''

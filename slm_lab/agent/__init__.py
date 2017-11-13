@@ -23,6 +23,7 @@ Agent components:
 - policy
 '''
 
+import numpy as np
 from abc import ABC, abstractmethod, abstractproperty
 
 
@@ -33,13 +34,13 @@ class Agent(ABC):
     # tie into a trial of experiment (every run is a trial)
     env = None
 
-    @abstractproperty
-    def property_to_be_implemented(self):
-        return 'property_to_be_implemented'
+    # @abstractproperty
+    # def property_to_be_implemented(self):
+    #     return 'property_to_be_implemented'
 
-    @abstractmethod
-    def method_to_be_implemented(self):
-        pass
+    # @abstractmethod
+    # def method_to_be_implemented(self):
+    #     pass
 
     @abstractmethod
     def __init__(self):
@@ -51,3 +52,50 @@ class Agent(ABC):
         TODO anticipate multi-environments
         '''
         self.env = env
+
+    def reset(self):
+        return
+
+    @abstractmethod
+    def act(self):
+        return
+
+    def update(self):
+        return
+
+
+class Random(Agent):
+    name = None
+    index = None
+    env = None
+
+    def __init__(self, index):
+        self.name = self.__class__.__name__
+        self.index = index
+
+    def set_env(self, env):
+        '''
+        Make env visible to agent.
+        TODO make consistent with ABE-space
+        '''
+        self.env = env
+        # TODO do body count here
+        # analogously, do other dim counts as needed
+        self.body_count = 1
+        # TODO delegate a copy of variable like action_dim to agent too
+
+    def reset(self):
+        return
+
+    def act(self, state):
+        if self.env.is_discrete():
+            # get environment action dim
+            action = np.random.randint(
+                0, self.env.get_action_dim(), size=(self.body_count))
+        else:
+            action = np.random.randn(
+                self.body_count, self.env.get_action_dim())
+        return action
+
+    def update(self, reward, state):
+        return

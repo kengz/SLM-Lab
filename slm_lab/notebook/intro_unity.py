@@ -16,13 +16,13 @@ from slm_lab.lib import util
 from slm_lab import environment
 from unityagents import UnityEnvironment
 
-# Multiple env classes simultaneously
-env_path = environment.get_env_path('3dball')
-env_1 = UnityEnvironment(file_name=env_path, worker_id=1)
-env_path = environment.get_env_path('gridworld')
-env_2 = UnityEnvironment(file_name=env_path, worker_id=2)
-env_1.reset(train_mode=False)
-env_2.reset(train_mode=False)
+# # Multiple env classes simultaneously
+# env_path = environment.get_env_path('3dball')
+# env_1 = UnityEnvironment(file_name=env_path, worker_id=1)
+# env_path = environment.get_env_path('gridworld')
+# env_2 = UnityEnvironment(file_name=env_path, worker_id=2)
+# env_1.reset(train_mode=False)
+# env_2.reset(train_mode=False)
 
 env_path = environment.get_env_path('gridworld')
 # use train_mode = False to debug, i.e. render env at real size, real time

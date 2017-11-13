@@ -5,13 +5,9 @@ Provides the rich experience for agent embodiment,
 reflects the curriculum and allows teaching (possibly allows teacher to enter).
 To be designed by human and evolution module,
 based on the curriculum and fitness metrics.
-'''
-import os
-import pydash as _
-from slm_lab.lib import util
-from unityagents.brain import BrainParameters
 
-'''
+---
+
 Agents-Bodies-Environments design
 Proper semantics yield better understanding; below lays out the Lab's generalized structure and relations of agents, bodies and environments.
 
@@ -90,6 +86,11 @@ for t in range(self.env_space.common_refinement_max_timestep):
         break
 ```
 '''
+import os
+import pydash as _
+from slm_lab.lib import util
+from unityagents import UnityEnvironment
+from unityagents.brain import BrainParameters
 
 # TODO should really move into somewhere in experiment module, cuz agent and environment modules really should be atomic and not worry much about multiplicities
 # TODO implement base case first
@@ -101,15 +102,12 @@ class BrainExt:
     to be absorbed into ml-agents Brain class later
     '''
 
+    # TODO or just set properties for all these, no method
     def is_discrete(self):
-        # TODO rename as actionable, or smth lk that
-        return self.number_observations == 'discrete'
+        return self.action_space_type == 'discrete'
 
     def get_action_dim(self):
-        # TODO resolve this
-        # TODO or just set properties for all these, u know
-        self.action_space_size
-        return
+        return self.action_space_size
 
     def get_observable(self):
         '''What channels are observable: state, visual, sound, touch, etc.'''
@@ -138,18 +136,43 @@ def extend_unity_brain():
 extend_unity_brain()
 
 
+def get_env_path(env_name):
+    env_path = util.smart_path(
+        f'node_modules/slm-env-{env_name}/build/{env_name}')
+    env_dir = os.path.dirname(env_path)
+    assert os.path.exists(
+        env_dir), f'Missing {env_path}. See README to install from yarn.'
+    return env_path
+
+
 class Env:
     '''
     Do the above
     Also standardize logic from Unity environments
     '''
+    # TODO perhaps do extension like above again
+    name = None
+    index = None
     max_timestep = None
     train_mode = None
     u_env = None
     agent = None
 
-    def __init__(self):
-        return
+    def __init__(self, name, index, train_mode):
+        self.name = name
+        self.index = index
+        self.train_mode = train_mode
+        self.u_env = UnityEnvironment(
+            file_name=get_env_path(self.name),
+            worker_id=self.index)
+        # TODO set proper from spec
+        self.max_timestep = 40
+        # TODO expose brain methods properly to env
+        default_brain = self.u_env.brain_names[0]
+        brain = self.u_env.brains[default_brain]
+        ext_fn_list = util.get_fn_list(brain)
+        for fn in ext_fn_list:
+            setattr(self, fn, getattr(brain, fn))
 
     def set_agent(self, agent):
         '''
@@ -158,17 +181,25 @@ class Env:
         '''
         self.agent = agent
 
-    def reset():
-        return
+    def reset(self):
+        # TODO need ABE space resolver
+        default_brain = self.u_env.brain_names[0]
+        env_info = self.u_env.reset(train_mode=self.train_mode)[default_brain]
+        return env_info
 
-    def step():
-        return
+    def step(self, action):
+        agent_index = 0
+        default_brain = self.u_env.brain_names[agent_index]
+        env_info = self.u_env.step(action)[default_brain]
+        # TODO body-resolver:
+        body_index = 0
+        reward = env_info.rewards[body_index]
+        state = env_info.states[body_index]
+        done = env_info.local_done[body_index]
+        return reward, state, done
 
-    def close():
-        return
-
-
-# TODO still need a single-brain env-wrapper methods
+    def close(self):
+        self.u_env.close()
 
 
 class RectifiedUnityEnv:
@@ -204,12 +235,3 @@ class RectifiedUnityEnv:
     # 1. Env class to rectify UnityEnv
     # 2. use Env class as proper
     # Rectify steps:
-
-
-def get_env_path(env_name):
-    env_path = util.smart_path(
-        f'node_modules/slm-env-{env_name}/build/{env_name}')
-    env_dir = os.path.dirname(env_path)
-    assert os.path.exists(
-        env_dir), f'Missing {env_path}. See README to install from yarn.'
-    return env_path
