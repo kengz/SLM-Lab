@@ -5,9 +5,8 @@ used for analysis and experiment planning.
 Sources data from monitor.
 Each dataframe resolves from the coarsest dimension to the finest,
 with hyperindex in the form:
-(evolution,experiment,trial,session,episode,timestep,agent,env,body)
-Note that the finest resolution is the AEB space,
-hence AEB is in fact the subindex of the hyperindex.
+(evolution,experiment,trial,session,agent,env,body,episode,timestep)
+The resolution after session is the AEB space, hence it is a subspace.
 AEB space is not necessarily tabular, and hence the data is NoSQL.
 
 The hyperdata is congruent to the hyperindex, with proper resolution.
@@ -22,3 +21,21 @@ Components:
 - plug to NoSQL graph db, using graphql notation, and data backup
 - hyperdata viewer and stats method for evaluating and planning experiments
 '''
+from collections import namedtuple
+
+HYPERINDEX_ORDER = [
+    'evolution',
+    'experiment',
+    'trial',
+    'session',
+    'agent',
+    'env',
+    'body',
+    'episode',
+    'timestep'
+]
+Hyperindex = namedtuple('Hyperindex', HYPERINDEX_ORDER)
+
+
+hyperindex = Hyperindex(*list(range(len(HYPERINDEX_ORDER))))
+hyperindex
