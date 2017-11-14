@@ -21,9 +21,10 @@ Components:
 - plug to NoSQL graph db, using graphql notation, and data backup
 - hyperdata viewer and stats method for evaluating and planning experiments
 '''
-from collections import namedtuple
 
-HYPERINDEX_ORDER = [
+# TODO rename hyper-everthing without hyper
+# TODO maybe stop at timestep since episode is the lowest sensible refinement of data without bloat
+HYPERINDEX_AXES = [
     'evolution',
     'experiment',
     'trial',
@@ -32,10 +33,43 @@ HYPERINDEX_ORDER = [
     'env',
     'body',
     'episode',
-    'timestep'
+    'timestep',
 ]
-Hyperindex = namedtuple('Hyperindex', HYPERINDEX_ORDER)
+HYPERINDEX_AXES_ORDER = {
+    axis: idx for idx, axis in enumerate(HYPERINDEX_AXES)
+}
+HYPERINDEX_DIM = len(HYPERINDEX_AXES)
+
+# TODO maybe not create new dict per episode and timestep for complexity
 
 
-hyperindex = Hyperindex(*list(range(len(HYPERINDEX_ORDER))))
-hyperindex
+def create_hyperindex():
+    '''Create a new hyperindex dict'''
+    return {k: None for k in HYPERINDEX_AXES}
+
+
+# TODO or every stage the class instance shd hold its own hyperindex that ends at its axis
+def update_hyperindex(hyperindex, axis):
+    '''
+    Update a given hyperindex at axis (name).
+    If the axis value has been reset, update to 0, else increment.
+    For all axes post the specified axis, reset to None.
+    '''
+    # TODO increment pattern in break down in AEB
+    assert axis in hyperindex
+    if hyperindex[axis] is None:
+        hyperindex[axis] = 0
+    else:
+        hyperindex[axis] += 1
+
+    axis_idx = HYPERINDEX_AXES_ORDER[axis]
+    for post_idx in range(axis_idx + 1, HYPERINDEX_DIM):
+        post_axis = HYPERINDEX_AXES[post_idx]
+        hyperindex[post_axis] = None
+
+    return hyperindex
+
+# hyperindex = create_hyperindex()
+# print(hyperindex)
+# update_hyperindex(hyperindex, 'trial')
+# print(hyperindex)
