@@ -15,20 +15,27 @@ import time
 from slm_lab.lib import util
 from unityagents import UnityEnvironment
 
-# TODO update env pathing from util var
-env_name = f'./node_modules/slm-env-3dball/build/3dball'
+# # Multiple env classes simultaneously
+# env_path = environment.get_env_path('3dball')
+# env_1 = UnityEnvironment(file_name=env_path, worker_id=1)
+# env_path = environment.get_env_path('gridworld')
+# env_2 = UnityEnvironment(file_name=env_path, worker_id=2)
+# env_1.reset(train_mode=False)
+# env_2.reset(train_mode=False)
+
+env_path = util.get_env_path('gridworld')
 # use train_mode = False to debug, i.e. render env at real size, real time
 train_mode = False
 
 # UnityEnvironment interfaces python with Unity,
 # and contains brains for controlling connected agents.
-env = UnityEnvironment(file_name=env_name)
+env = UnityEnvironment(file_name=env_path)
 print(str(env))
 
 # get the default brain
 default_brain = env.brain_names[0]
 brain = env.brains[default_brain]
-
+env_info = env.reset(train_mode=train_mode)[default_brain]
 '''
 is_continuous = (brain.action_space_type == 'continuous')
 use_observations = (brain.number_observations > 0)
@@ -56,7 +63,7 @@ env_info.local_done
 - list of ids of agents of the brain
 env_info.agents
 
-env.reset(train_model=True, config=None)
+env.reset(train_mode=True, config=None)
 env.step(action, memory=None, value=None)
 - action can be 1D array or 2D array if you have multiple agents per brains
 - memory is an optional input that can be used to send a list of floats

@@ -7,7 +7,8 @@ CONFIG_NAME_MAP = {
     'development': 'default',
     'production': 'production',
 }
+ROOT_DIR = os.getcwd()
 
 config_name = CONFIG_NAME_MAP.get(os.environ['PY_ENV'])
-with open(os.path.join(os.getcwd(), f'config/{config_name}.json')) as f:
+with open(os.path.join(ROOT_DIR, 'config', f'{config_name}.json')) as f:
     config = json.load(f)

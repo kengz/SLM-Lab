@@ -25,10 +25,15 @@ fh.setFormatter(dedent_formatter)
 sh = logging.StreamHandler(sys.stdout)
 sh.setFormatter(dedent_formatter)
 
-lab_logger = logging.getLogger()
+lab_logger = logging.getLogger('slm')
 lab_logger.setLevel(LOG_LEVEL)
 lab_logger.addHandler(fh)
 lab_logger.addHandler(sh)
+lab_logger.propagate = False
+
+
+def set_level(lvl):
+    lab_logger.setLevel(lvl)
 
 
 def critical(msg, *args, **kwargs):

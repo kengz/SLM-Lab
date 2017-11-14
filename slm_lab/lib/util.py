@@ -7,18 +7,31 @@ import regex as re
 import ujson
 import yaml
 from datetime import datetime
-
+from slm_lab import ROOT_DIR
 
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 RE_INDENT = re.compile('(^\n)|(?!\n)\s{2,}|(\n\s+)$')
-# TODO switch to abs path of file
-ROOT_DIR = os.getcwd()
-env_name = '3dball'
-ENV_DIR = os.path.join(ROOT_DIR, 'node_modules', f'slm-env-{env_name}')
-assert os.path.exists(
-    ENV_DIR), f'{env_name} is missing. Check README for setup.'
+
+
+def calc_timestamp_diff(ts2, ts1):
+    '''
+    Calculate the time from timestamps ts1 to ts2
+    @param {str} ts2 Later timestamp in the FILE_TS_FORMAT
+    @param {str} ts1 Earlier timestamp in the FILE_TS_FORMAT
+    @returns {string} delta_t in %H:%M:%S format
+    @example
+
+    ts1 = '2017_10_17_084739'
+    ts2 = '2017_10_17_084740'
+    ts_diff = calc_timestamp_diff(ts2, ts1)
+    # => '0:00:01'
+    '''
+    delta_t = datetime.strptime(
+        ts2, FILE_TS_FORMAT) - datetime.strptime(
+        ts1, FILE_TS_FORMAT)
+    return str(delta_t)
 
 
 def cast_df(val):
@@ -44,7 +57,7 @@ def dedent(string):
 
 
 def flatten_dict(d, parent_key='', sep='.'):
-    '''missing pydash method to flatten dict'''
+    '''Missing pydash method to flatten dict'''
     items = []
     for k, v in d.items():
         if parent_key:
@@ -59,6 +72,47 @@ def flatten_dict(d, parent_key='', sep='.'):
     return dict(items)
 
 
+def get_env_path(env_name):
+    '''Get the path to Unity env binaries distributed via npm'''
+    env_path = smart_path(
+        f'node_modules/slm-env-{env_name}/build/{env_name}')
+    env_dir = os.path.dirname(env_path)
+    assert os.path.exists(
+        env_dir), f'Missing {env_path}. See README to install from yarn.'
+    return env_path
+
+
+def get_file_ext(data_path):
+    return os.path.splitext(data_path)[-1]
+
+
+def get_fn_list(Cls):
+    '''
+    Get the callable, non-private functions of a class
+    @returns {[*str]} A list of strings of fn names
+    '''
+    fn_list = _.filter_(
+        dir(Cls),
+        lambda fn: not fn.endswith('__') and callable(getattr(Cls, fn)))
+    return fn_list
+
+
+def get_timestamp(pattern=FILE_TS_FORMAT):
+    '''
+    Get current timestamp, defaults to format used for filename
+    @param {str} pattern To format the timestamp
+    @returns {str} timestamp
+    @example
+
+    get_timestamp()
+    # => '2017_10_17_084739'
+    '''
+    timestamp_obj = datetime.now()
+    timestamp = timestamp_obj.strftime(pattern)
+    assert RE_FILE_TS.search(timestamp)
+    return timestamp
+
+
 def is_jupyter():
     '''Check if process is in Jupyter kernel'''
     try:
@@ -67,59 +121,6 @@ def is_jupyter():
     except NameError:
         return False
     return False
-
-
-def smart_path(data_path, as_dir=False):
-    '''
-    Resolve data_path into abspath with fallback to join from ROOT_DIR
-    @param {str} data_path The input data path to resolve
-    @param {bool} as_dir Whether to return as dirname
-    @returns {str} The normalized absolute data_path
-    @example
-
-    smart_path('slm_lab/lib')
-    # => '/Users/ANON/Documents/slm_lab/slm_lab/lib'
-
-    smart_path('/tmp')
-    # => '/tmp'
-    '''
-    if not os.path.isabs(data_path):
-        abs_path = os.path.abspath(data_path)
-        if os.path.exists(abs_path):
-            data_path = abs_path
-        else:
-            data_path = os.path.join(ROOT_DIR, data_path)
-    if as_dir:
-        data_path = os.path.dirname(data_path)
-    return os.path.normpath(data_path)
-
-
-def get_file_ext(data_path):
-    return os.path.splitext(data_path)[-1]
-
-
-def read_as_df(data_path):
-    '''Submethod to read data as DataFrame'''
-    ext = get_file_ext(data_path)
-    if ext in ['.xlsx', 'xls']:
-        data = pd.read_excel(data_path)
-    else:  # .csv
-        data = pd.read_csv(data_path)
-    return data
-
-
-def read_as_plain(data_path):
-    '''Submethod to read data as plain type'''
-    open_file = open(data_path, 'r')
-    ext = get_file_ext(data_path)
-    if ext == '.json':
-        data = ujson.load(open_file)
-    elif ext == '.yml':
-        data = yaml.load(open_file)
-    else:
-        data = open_file.read()
-    open_file.close()
-    return data
 
 
 def read(data_path):
@@ -163,32 +164,60 @@ def read(data_path):
     return data
 
 
-def write_as_df(data, data_path):
-    '''Submethod to write data as DataFrame'''
-    df = cast_df(data)
+def read_as_df(data_path):
+    '''Submethod to read data as DataFrame'''
     ext = get_file_ext(data_path)
     if ext in ['.xlsx', 'xls']:
-        writer = pd.ExcelWriter(data_path)
-        df.to_excel(writer)
-        writer.save()
-        writer.close()
+        data = pd.read_excel(data_path)
     else:  # .csv
-        df.to_csv(data_path, index=False)
-    return data_path
+        data = pd.read_csv(data_path)
+    return data
 
 
-def write_as_plain(data, data_path):
-    '''Submethod to write data as plain type'''
-    open_file = open(data_path, 'w')
+def read_as_plain(data_path):
+    '''Submethod to read data as plain type'''
+    open_file = open(data_path, 'r')
     ext = get_file_ext(data_path)
     if ext == '.json':
-        json.dump(data, open_file)
+        data = ujson.load(open_file)
     elif ext == '.yml':
-        yaml.dump(data, open_file)
+        data = yaml.load(open_file)
     else:
-        open_file.write(str(data))
+        data = open_file.read()
     open_file.close()
-    return data_path
+    return data
+
+
+def set_attr(obj, attr_dict):
+    '''Set attribute of an object from a dict'''
+    for attr, val in attr_dict.items():
+        setattr(obj, attr, val)
+    return obj
+
+
+def smart_path(data_path, as_dir=False):
+    '''
+    Resolve data_path into abspath with fallback to join from ROOT_DIR
+    @param {str} data_path The input data path to resolve
+    @param {bool} as_dir Whether to return as dirname
+    @returns {str} The normalized absolute data_path
+    @example
+
+    smart_path('slm_lab/lib')
+    # => '/Users/ANON/Documents/slm_lab/slm_lab/lib'
+
+    smart_path('/tmp')
+    # => '/tmp'
+    '''
+    if not os.path.isabs(data_path):
+        abs_path = os.path.abspath(data_path)
+        if os.path.exists(abs_path):
+            data_path = abs_path
+        else:
+            data_path = os.path.join(ROOT_DIR, data_path)
+    if as_dir:
+        data_path = os.path.dirname(data_path)
+    return os.path.normpath(data_path)
 
 
 def write(data, data_path):
@@ -227,36 +256,29 @@ def write(data, data_path):
     return data_path
 
 
-def get_timestamp(pattern=FILE_TS_FORMAT):
-    '''
-    Get current timestamp, defaults to format used for filename
-    @param {str} pattern To format the timestamp
-    @returns {str} timestamp
-    @example
-
-    get_timestamp()
-    # => '2017_10_17_084739'
-    '''
-    timestamp_obj = datetime.now()
-    timestamp = timestamp_obj.strftime(pattern)
-    assert RE_FILE_TS.search(timestamp)
-    return timestamp
+def write_as_df(data, data_path):
+    '''Submethod to write data as DataFrame'''
+    df = cast_df(data)
+    ext = get_file_ext(data_path)
+    if ext in ['.xlsx', 'xls']:
+        writer = pd.ExcelWriter(data_path)
+        df.to_excel(writer)
+        writer.save()
+        writer.close()
+    else:  # .csv
+        df.to_csv(data_path, index=False)
+    return data_path
 
 
-def calc_timestamp_diff(ts2, ts1):
-    '''
-    Calculate the time from timestamps ts1 to ts2
-    @param {str} ts2 Later timestamp in the FILE_TS_FORMAT
-    @param {str} ts1 Earlier timestamp in the FILE_TS_FORMAT
-    @returns {string} delta_t in %H:%M:%S format
-    @example
-
-    ts1 = '2017_10_17_084739'
-    ts2 = '2017_10_17_084740'
-    ts_diff = calc_timestamp_diff(ts2, ts1)
-    # => '0:00:01'
-    '''
-    delta_t = datetime.strptime(
-        ts2, FILE_TS_FORMAT) - datetime.strptime(
-        ts1, FILE_TS_FORMAT)
-    return str(delta_t)
+def write_as_plain(data, data_path):
+    '''Submethod to write data as plain type'''
+    open_file = open(data_path, 'w')
+    ext = get_file_ext(data_path)
+    if ext == '.json':
+        json.dump(data, open_file)
+    elif ext == '.yml':
+        yaml.dump(data, open_file)
+    else:
+        open_file.write(str(data))
+    open_file.close()
+    return data_path
