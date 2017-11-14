@@ -86,15 +86,24 @@ class Random(Agent):
     def reset(self):
         return
 
-    def act(self, state):
-        if self.env.is_discrete():
-            # get environment action dim
-            action = np.random.randint(
-                0, self.env.get_action_dim(), size=(self.body_num))
-        else:
-            action = np.random.randn(
-                self.body_num, self.env.get_action_dim())
+    def act_discrete(self, state):
+        '''Implement discrete action, or throw NotImplementedError'''
+        action = np.random.randint(
+            0, self.env.get_action_dim(), size=(self.body_num))
         return action
+
+    def act_continuous(self, state):
+        '''Implement continuous action, or throw NotImplementedError'''
+        action = np.random.randn(
+            self.body_num, self.env.get_action_dim())
+        return action
+
+    def act(self, state):
+        '''standard act method. Actions should be implemented in submethods'''
+        if self.env.is_discrete():
+            return self.act_discrete(state)
+        else:
+            return self.act_continuous(state)
 
     def update(self, reward, state):
         return
