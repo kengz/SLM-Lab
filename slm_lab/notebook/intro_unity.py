@@ -13,7 +13,6 @@ https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Unity-Agents---
 import numpy as np
 import time
 from slm_lab.lib import util
-from slm_lab import environment
 from unityagents import UnityEnvironment
 
 # # Multiple env classes simultaneously
@@ -24,7 +23,7 @@ from unityagents import UnityEnvironment
 # env_1.reset(train_mode=False)
 # env_2.reset(train_mode=False)
 
-env_path = environment.get_env_path('gridworld')
+env_path = util.get_env_path('gridworld')
 # use train_mode = False to debug, i.e. render env at real size, real time
 train_mode = False
 
