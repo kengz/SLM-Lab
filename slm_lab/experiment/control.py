@@ -130,12 +130,15 @@ class Session:
         print(monitor.hyperindex['episode'])
         # TODO generalize and make state to include observables
         state = self.env.reset()
+        logger.debug(f'reset state {state}')
+
         self.agent.reset()
         # RL steps for SARS
         for t in range(self.env.max_timestep):
-            logger.debug(f'timestep {t}')
             action = self.agent.act(state)
+            logger.debug(f'action {action}')
             reward, state, done = self.env.step(action)
+            logger.debug(f'reward: {reward}, state: {state}, done: {done}')
             # fully observable SARS from env, memory and training internally
             self.agent.update(reward, state)
             monitor.update()
@@ -208,6 +211,8 @@ class EvolutionGraph:
 # TODO spec resolver for params per trial
 # TODO spec key checker and defaulting mechanism, by merging a dict of congruent shape with default values
 # TODO AEB space resolver
+
+# Ghetto ass run method for now, only runs base case (1 agent 1 env 1 body)
 logger.set_level('DEBUG')
 demo_spec = util.read('slm_lab/spec/demo.json')
 monitor = Monitor(demo_spec)

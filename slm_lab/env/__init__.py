@@ -92,7 +92,9 @@ class Env:
         # TODO get state from env_info
         default_brain = self.u_env.brain_names[0]
         env_info = self.u_env.reset(train_mode=self.train_mode)[default_brain]
-        state = env_info
+        # TODO body-resolver:
+        body_index = 0
+        state = env_info.states[body_index]
         return state
 
     def step(self, action):
