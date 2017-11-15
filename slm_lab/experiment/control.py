@@ -70,21 +70,21 @@ class Session:
         self.env = self.init_env()
 
     def init_agent(self):
-        agent_spec = self.spec['agent']
-        agent_name = agent_spec['name']
-        AgentClass = agent.__dict__.get(agent_name)
-        self.agent = AgentClass(agent_spec)
         # TODO absorb into class init?
         monitor.update_stage('agent')
         print(monitor.hyperindex['agent'])
+        agent_spec = self.spec['agent']
+        agent_name = agent_spec['name']
+        AgentClass = agent.__dict__.get(agent_name)
+        self.agent = AgentClass(agent_spec, monitor.hyperindex)
         return self.agent
 
     def init_env(self):
         env_spec = _.merge(self.spec['env'], self.spec['meta'])
-        self.env = Env(env_spec)
         # TODO absorb into class init?
         monitor.update_stage('env')
         print(monitor.hyperindex['env'])
+        self.env = Env(env_spec, monitor.hyperindex)
         # TODO link in AEB space properly
         self.agent.set_env(self.env)
         self.env.set_agent(self.agent)
@@ -191,6 +191,7 @@ class EvolutionGraph:
     pass
 
 
+# TODO detach hyperindex from monitor
 # TODO universal index in spec: experiment, trial, session, then agent, env, bodies
 # TODO spec resolver for params per trial
 # TODO spec key checker and defaulting mechanism, by merging a dict of congruent shape with default values

@@ -66,8 +66,10 @@ class Env:
     u_env = None
     agent = None
 
-    def __init__(self, spec):
+    def __init__(self, spec, hyperindex):
         util.set_attr(self, spec)
+        self.hyperindex = hyperindex
+        self.index = hyperindex['env']
 
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name),
