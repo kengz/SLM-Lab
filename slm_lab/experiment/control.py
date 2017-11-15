@@ -53,17 +53,6 @@ class Session:
     then return the session data.
     noo only experiment_spec, agent_spec, agent_spec
     auto-resolve param space spec for trial, copy for session with idx
-    TODO rewrite
-    spec = {
-    agent_spec: {} or [], list instantiate classes
-    env_spec: {} or [], list instantiate classes
-    body_spec: {}, with keyword like '{inner, outer}, body_num', or custom (a,e): body_num
-    }
-    param space further outer-products this AEB space - an AEB space exists for a trial, and when trying different param for a different trial, we create a whole new AEB space
-
-    need to extract params from agent_spec, and do a (with warning)
-    new param = new Agent, could do super speedy training in parallel
-    how do u enumerate the param space onto the AEB space, acting on A?
     '''
     spec = None
     data = None
@@ -82,8 +71,6 @@ class Session:
 
     def init_agent(self):
         agent_spec = self.spec['agent']
-        # TODO missing: index in AEB space
-        agent_spec['index'] = 0
         agent_name = agent_spec['name']
         AgentClass = agent.__dict__.get(agent_name)
         self.agent = AgentClass(agent_spec)
@@ -94,8 +81,6 @@ class Session:
 
     def init_env(self):
         env_spec = _.merge(self.spec['env'], self.spec['meta'])
-        # TODO also missing: index in AEB space, train_mode
-        env_spec['index'] = 0
         self.env = Env(env_spec)
         # TODO absorb into class init?
         monitor.update_stage('env')
@@ -111,7 +96,6 @@ class Session:
         Save agent, close env. Update monitor.
         Prepare self.data.
         '''
-        # TODO save agent and shits
         # TODO catch all to close Unity when py runtime fails
         self.agent.close()
         self.env.close()
@@ -124,8 +108,8 @@ class Session:
         preprocessing shd belong to agent internal, analogy: a lens
         any rendering goes to env
         make env observable to agent, vice versa. useful for memory
-        TODO substitute singletons for spaces later
         '''
+        # TODO substitute singletons for spaces later
         monitor.update_stage('episode')
         print(monitor.hyperindex['episode'])
         # TODO generalize and make state to include observables
