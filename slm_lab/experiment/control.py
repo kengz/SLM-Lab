@@ -53,26 +53,21 @@ class Session:
     then return the session data.
     noo only experiment_spec, agent_spec, agent_spec
     auto-resolve param space spec for trial, copy for session with idx
-    TODO rewrite
-    spec = {
-    agent_spec: {} or [], list instantiate classes
-    env_spec: {} or [], list instantiate classes
-    body_spec: {}, with keyword like '{inner, outer}, body_num', or custom (a,e): body_num
-    }
-    param space further outer-products this AEB space - an AEB space exists for a trial, and when trying different param for a different trial, we create a whole new AEB space
-
-    need to extract params from agent_spec, and do a (with warning)
-    new param = new Agent, could do super speedy training in parallel
-    how do u enumerate the param space onto the AEB space, acting on A?
     '''
     spec = None
     data = None
     agent = None
     env = None
 
-    def __init__(self, spec):
-        monitor.update_stage('session')
-        print(monitor.hyperindex['session'])
+    def __init__(self, spec, monitor):
+        # TODO monitor has to be top level outside of Experiment
+        # TODO probably is a good idea to not have global Monitor
+        # that case if one session runtime fails, others wont
+        # or monitor has to be copied in parallel runs too
+        self.monitor = monitor
+
+        self.monitor.update_stage('session')
+        print(self.monitor.hyperindex['session'])
 
         self.spec = spec
         self.data = pd.DataFrame()
@@ -81,25 +76,21 @@ class Session:
         self.env = self.init_env()
 
     def init_agent(self):
+        # TODO absorb into class init?
+        self.monitor.update_stage('agent')
+        print(self.monitor.hyperindex['agent'])
         agent_spec = self.spec['agent']
-        # TODO missing: index in AEB space
-        agent_spec['index'] = 0
         agent_name = agent_spec['name']
         AgentClass = agent.__dict__.get(agent_name)
-        self.agent = AgentClass(agent_spec)
-        # TODO absorb into class init?
-        monitor.update_stage('agent')
-        print(monitor.hyperindex['agent'])
+        self.agent = AgentClass(agent_spec, self.monitor.hyperindex)
         return self.agent
 
     def init_env(self):
         env_spec = _.merge(self.spec['env'], self.spec['meta'])
-        # TODO also missing: index in AEB space, train_mode
-        env_spec['index'] = 0
-        self.env = Env(env_spec)
         # TODO absorb into class init?
-        monitor.update_stage('env')
-        print(monitor.hyperindex['env'])
+        self.monitor.update_stage('env')
+        print(self.monitor.hyperindex['env'])
+        self.env = Env(env_spec, self.monitor.hyperindex)
         # TODO link in AEB space properly
         self.agent.set_env(self.env)
         self.env.set_agent(self.agent)
@@ -111,11 +102,10 @@ class Session:
         Save agent, close env. Update monitor.
         Prepare self.data.
         '''
-        # TODO save agent and shits
         # TODO catch all to close Unity when py runtime fails
         self.agent.close()
         self.env.close()
-        monitor.update()
+        self.monitor.update()
         logger.info('Session done, closing.')
 
     def run_episode(self):
@@ -124,10 +114,10 @@ class Session:
         preprocessing shd belong to agent internal, analogy: a lens
         any rendering goes to env
         make env observable to agent, vice versa. useful for memory
-        TODO substitute singletons for spaces later
         '''
-        monitor.update_stage('episode')
-        print(monitor.hyperindex['episode'])
+        # TODO substitute singletons for spaces later
+        self.monitor.update_stage('episode')
+        print(self.monitor.hyperindex['episode'])
         # TODO generalize and make state to include observables
         state = self.env.reset()
         logger.debug(f'reset state {state}')
@@ -141,7 +131,7 @@ class Session:
             logger.debug(f'reward: {reward}, state: {state}, done: {done}')
             # fully observable SARS from env, memory and training internally
             self.agent.update(reward, state)
-            monitor.update()
+            self.monitor.update()
             # TODO monitor shd update session data from episode data
             if done:
                 break
@@ -153,7 +143,7 @@ class Session:
         for e in range(_.get(self.spec, 'meta.max_episode')):
             logger.debug(f'episode {e}')
             self.run_episode()
-            monitor.update()
+            self.monitor.update()
         self.close()
         return self.data
 
@@ -207,15 +197,8 @@ class EvolutionGraph:
     pass
 
 
+# TODO detach hyperindex from monitor
 # TODO universal index in spec: experiment, trial, session, then agent, env, bodies
 # TODO spec resolver for params per trial
 # TODO spec key checker and defaulting mechanism, by merging a dict of congruent shape with default values
 # TODO AEB space resolver
-
-# Ghetto ass run method for now, only runs base case (1 agent 1 env 1 body)
-logger.set_level('DEBUG')
-demo_spec = util.read('slm_lab/spec/demo.json')
-monitor = Monitor(demo_spec)
-session_spec = demo_spec['base_case']
-sess = Session(session_spec)
-session_data = sess.run()

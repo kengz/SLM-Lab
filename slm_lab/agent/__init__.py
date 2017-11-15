@@ -28,55 +28,24 @@ from slm_lab.lib import util
 
 
 class Agent(ABC):
-    # eventually, wanna init with string name of components
-    # but dont wanna be too restrictive
-    # start with a random agent first, with default components
-    # tie into a trial of experiment (every run is a trial)
+    '''
+    Abstract class ancestor to all Agents,
+    specifies the necessary design blueprint for agent to work in Lab.
+    Mostly, implement just the abstract methods and properties.
+    '''
     env = None
+    memory = None
+    net = None
 
-    # @abstractproperty
-    # def property_to_be_implemented(self):
-    #     return 'property_to_be_implemented'
-
-    # @abstractmethod
-    # def method_to_be_implemented(self):
-    #     pass
-
-    @abstractmethod
-    def __init__(self):
-        pass
-
-    def set_env(self, env):
-        '''
-        Make env visible to agent.
-        TODO anticipate multi-environments for AEB space
-        '''
-        self.env = env
-
-    def reset(self):
-        return
-
-    @abstractmethod
-    def act(self):
-        return
-
-    def update(self):
-        return
-
-
-class Random(Agent):
-    # TODO need proper space resolution for multi-env
-    env = None
-
-    def __init__(self, spec):
+    def __init__(self, spec, hyperindex):
         # TODO also spec needs to specify AEB space and bodies
         util.set_attr(self, spec)
+        self.hyperindex = hyperindex
+        self.index = hyperindex['agent']
 
     def set_env(self, env):
-        '''
-        Make env visible to agent.
-        TODO make consistent with AEB space
-        '''
+        '''Make env visible to agent.'''
+        # TODO make consistent with AEB space
         self.env = env
         # TODO do body num here
         # analogously, do other dim counts as needed from env
@@ -84,30 +53,79 @@ class Random(Agent):
         # TODO delegate a copy of variable like action_dim to agent too
 
     def reset(self):
+        '''Do agent reset per episode, such as memory pointer'''
+        # TODO implement
         return
 
+    @abstractmethod
     def act_discrete(self, state):
         '''Implement discrete action, or throw NotImplementedError'''
-        action = np.random.randint(
-            0, self.env.get_action_dim(), size=(self.body_num))
+        # TODO auto AEB space resolver from atomic method
+        raise NotImplementedError
         return action
 
+    @abstractmethod
     def act_continuous(self, state):
         '''Implement continuous action, or throw NotImplementedError'''
-        action = np.random.randn(
-            self.body_num, self.env.get_action_dim())
+        # TODO auto AEB space resolver from atomic method
+        raise NotImplementedError
         return action
 
     def act(self, state):
-        '''standard act method. Actions should be implemented in submethods'''
+        '''Standard act method. Actions should be implemented in submethods'''
+        # TODO right now, act shd be batched in the submethods and assumes all bodies are in the same env type: discrete or continuous. Things might change in the future, then act is just generic act.
         if self.env.is_discrete():
             return self.act_discrete(state)
         else:
             return self.act_continuous(state)
 
+    def update_param(self):
+        raise NotImplementedError
+
+    def train(self):
+        raise NotImplementedError
+
     def update(self, reward, state):
+        '''
+        Update per timestep after env transitions,
+        e.g. memory, policy, update agent params, train net
+        '''
+        # TODO implement
+        # self.memory.update()
+        # self.policy.update()
+        self.update_param()
+        self.train()
         return
 
     def close(self):
-        # TODO save or smth
+        '''Close agent at the end of a session, e.g. save model'''
+        # TODO save model
+        model_for_loading_next_trial = 'not implemented'
+        return model_for_loading_next_trial
+
+
+class Random(Agent):
+    '''
+    Example Random agent that works in both discrete and continuous envs
+    '''
+    env = None
+
+    def act_discrete(self, state):
+        '''Random discrete action'''
+        # TODO AEB space resolver, lineup index
+        action = np.random.randint(
+            0, self.env.get_action_dim(), size=(self.body_num))
+        return action
+
+    def act_continuous(self, state):
+        '''Random continuous action'''
+        # TODO AEB space resolver, lineup index
+        action = np.random.randn(
+            self.body_num, self.env.get_action_dim())
+        return action
+
+    def update_param(self):
+        return
+
+    def train(self):
         return

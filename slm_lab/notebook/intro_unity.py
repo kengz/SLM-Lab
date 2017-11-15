@@ -75,21 +75,21 @@ action = {'brain1': [1.0, 2.0], 'brain2': [3.0, 4.0]}
 '''
 
 
-# TODO move interface logic from openai lab
 for epi in range(10):
     # env.global_done could be used to check all
     env_info = env.reset(train_mode=train_mode)[default_brain]
+    state = env_info.states[0]
     done = False
     epi_rewards = 0
     while not done:
-        if brain.action_space_type == 'continuous':
-            action = np.random.randn(
-                len(env_info.agents), brain.action_space_size)
-            env_info = env.step(action)[default_brain]
-        else:
+        if brain.action_space_type == 'discrete':
             action = np.random.randint(
                 0, brain.action_space_size, size=(len(env_info.agents)))
-            env_info = env.step(action)[default_brain]
+        else:
+            action = np.random.randn(
+                len(env_info.agents), brain.action_space_size)
+        env_info = env.step(action)[default_brain]
+        state = env_info.states[0]
         epi_rewards += env_info.rewards[0]
         done = env_info.local_done[0]
     print('Total reward for this episode: {}'.format(epi_rewards))

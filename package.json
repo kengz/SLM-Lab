@@ -4,7 +4,7 @@
   "description": "An experimental framework for Reinforcement Learning using Unity and PyTorch.",
   "main": "index.js",
   "scripts": {
-    "start": "grunt",
+    "start": "python main.py",
     "update-dep": "conda env export > environment.yml",
     "update-env": "conda env update -f environment.yml",
     "test": "python setup.py test",

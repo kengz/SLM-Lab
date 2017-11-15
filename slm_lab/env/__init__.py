@@ -12,8 +12,6 @@ from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
 from unityagents.environment import logger as unity_logger
 
-# TODO should really move into somewhere in experiment module, cuz agent and environment modules really should be atomic and not worry much about multiplicities
-
 unity_logger.setLevel('WARN')
 
 
@@ -57,62 +55,6 @@ def extend_unity_brain():
 extend_unity_brain()
 
 
-class Env:
-    '''
-    Do the above
-    Also standardize logic from Unity environments
-    '''
-    # TODO perhaps do extension like above again
-    u_env = None
-    agent = None
-
-    def __init__(self, spec):
-        util.set_attr(self, spec)
-
-        self.u_env = UnityEnvironment(
-            file_name=util.get_env_path(self.name),
-            worker_id=self.index)
-
-        # TODO expose brain methods properly to env
-        default_brain = self.u_env.brain_names[0]
-        brain = self.u_env.brains[default_brain]
-        ext_fn_list = util.get_fn_list(brain)
-        for fn in ext_fn_list:
-            setattr(self, fn, getattr(brain, fn))
-
-    def set_agent(self, agent):
-        '''
-        Make agent visible to env.
-        TODO anticipate multi-agents for AEB space
-        '''
-        self.agent = agent
-
-    def reset(self):
-        # TODO need AEB space resolver
-        # TODO get state from env_info
-        default_brain = self.u_env.brain_names[0]
-        env_info = self.u_env.reset(train_mode=self.train_mode)[default_brain]
-        # TODO body-resolver:
-        body_index = 0
-        state = env_info.states[body_index]
-        return state
-
-    def step(self, action):
-        # TODO need AEB space resolver
-        agent_index = 0
-        default_brain = self.u_env.brain_names[agent_index]
-        env_info = self.u_env.step(action)[default_brain]
-        # TODO body-resolver:
-        body_index = 0
-        reward = env_info.rewards[body_index]
-        state = env_info.states[body_index]
-        done = env_info.local_done[body_index]
-        return reward, state, done
-
-    def close(self):
-        self.u_env.close()
-
-
 class RectifiedUnityEnv:
     '''
     Unity Environment wrapper
@@ -136,7 +78,6 @@ class RectifiedUnityEnv:
         observable = self.fn_spread_brains('get_observable')
         return observable
 
-    # TODO split subclass to handle unity specific logic,
     # and the other half to handle Lab specific logic
     # TODO actually shd do a single-brain wrapper instead
     # then on env level call on all brains with wrapper methods, much easier
@@ -144,3 +85,63 @@ class RectifiedUnityEnv:
     # 1. Env class to rectify UnityEnv
     # 2. use Env class as proper
     # Rectify steps:
+
+
+# TODO make agent and env class implementation atomic and not worry about generalized case with AEB resolver
+class Env:
+    '''
+    Do the above
+    Also standardize logic from Unity environments
+    '''
+    # TODO split subclass to handle unity specific logic,
+    # TODO perhaps do extension like above again
+    u_env = None
+    agent = None
+
+    def __init__(self, spec, hyperindex):
+        util.set_attr(self, spec)
+        self.hyperindex = hyperindex
+        self.index = hyperindex['env']
+
+        self.u_env = UnityEnvironment(
+            file_name=util.get_env_path(self.name),
+            worker_id=self.index)
+
+        # TODO expose brain methods properly to env
+        default_brain = self.u_env.brain_names[0]
+        brain = self.u_env.brains[default_brain]
+        ext_fn_list = util.get_fn_list(brain)
+        for fn in ext_fn_list:
+            setattr(self, fn, getattr(brain, fn))
+
+    def set_agent(self, agent):
+        '''
+        Make agent visible to env.
+        '''
+        # TODO anticipate multi-agents for AEB space
+        self.agent = agent
+
+    def reset(self):
+        # TODO need AEB space resolver
+        default_brain = self.u_env.brain_names[0]
+        env_info = self.u_env.reset(train_mode=self.train_mode)[default_brain]
+        # TODO body-resolver:
+        body_index = 0
+        state = env_info.states[body_index]
+        # TODO return observables instead of just state
+        return state
+
+    def step(self, action):
+        # TODO need AEB space resolver
+        agent_index = 0
+        default_brain = self.u_env.brain_names[agent_index]
+        env_info = self.u_env.step(action)[default_brain]
+        # TODO body-resolver:
+        body_index = 0
+        reward = env_info.rewards[body_index]
+        state = env_info.states[body_index]
+        done = env_info.local_done[body_index]
+        return reward, state, done
+
+    def close(self):
+        self.u_env.close()
