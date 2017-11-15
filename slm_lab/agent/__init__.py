@@ -37,11 +37,11 @@ class Agent(ABC):
     memory = None
     net = None
 
-    def __init__(self, spec, hyperindex):
+    def __init__(self, spec, data_coor):
         # TODO also spec needs to specify AEB space and bodies
         util.set_attr(self, spec)
-        self.hyperindex = hyperindex
-        self.index = hyperindex['agent']
+        self.data_coor = data_coor
+        self.index = data_coor['agent']
 
     def set_env(self, env):
         '''Make env visible to agent.'''
