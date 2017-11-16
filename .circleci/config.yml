@@ -74,7 +74,6 @@ jobs:
           paths:
             - ~/miniconda3
             - ~/.cache/pip
-            - ~/ml-agents
 
   test:
     environment:
