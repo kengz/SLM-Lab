@@ -15,7 +15,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-{{ checksum "yarn.lock" }}
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
@@ -23,12 +23,17 @@ jobs:
       - run:
           name: Install NodeJS dependencies
           command: |
-            sudo npm install -g yarn
+            if which yarn >/dev/null; then
+              echo "Yarn is already installed"
+            else
+              sudo npm install -g yarn
+            fi
             yarn install
       - save_cache:
           paths:
             - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+            - ~/.cache/yarn
+          key: v1-dependencies-{{ checksum "yarn.lock" }}
 
       - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:
@@ -87,7 +92,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-{{ checksum "yarn.lock" }}
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
