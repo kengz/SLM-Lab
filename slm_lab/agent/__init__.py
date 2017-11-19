@@ -22,10 +22,9 @@ Agent components:
 - net
 - policy
 '''
-from slm_lab.agent.algorithm import Random
-from slm_lab.lib import util
-
 # TODO need a mechanism that compose the components together using spec
+from slm_lab.agent import algorithm
+from slm_lab.lib import util
 
 
 class Agent:
@@ -44,8 +43,8 @@ class Agent:
         self.data_coor = data_coor
         self.index = data_coor['agent']
 
-        # TODO get algo class by self.name from spec
-        self.algorithm = Random(self)
+        AlgoClass = getattr(algorithm, self.name)
+        self.algorithm = AlgoClass(self)
 
     def set_env(self, env):
         '''Make env visible to agent.'''
