@@ -41,7 +41,7 @@ class Session:
     session creates agent(s) and environment(s),
     run the RL system and collect data, e.g. fitness metrics, till it ends,
     then return the session data.
-    noo only experiment_spec, agent_spec, agent_spec
+    TODO only experiment_spec, agent_spec, agent_spec
     auto-resolve param space spec for trial, copy for session with idx
     '''
     spec = None
@@ -144,7 +144,31 @@ class Trial:
     gather and aggregate data from sessions as trial data,
     then return the trial data.
     '''
-    pass
+    spec = None
+    data = None
+    session = None
+
+    def __init__(self, spec, monitor):
+        self.monitor = monitor
+        self.monitor.update_stage('trial')
+        print(self.monitor.data_coor['trial'])
+        self.spec = spec
+        self.data = pd.DataFrame()
+
+    def init_session(self):
+        self.session = Session(self.spec, self.monitor)
+        return self.session
+
+    def close(self):
+        return
+
+    def run(self):
+        for s in range(_.get(self.spec, 'meta.max_session')):
+            logger.debug(f'session {s}')
+            self.init_session().run()
+            self.monitor.update()
+        self.close()
+        return self.data
 
 
 class Experiment:
@@ -167,7 +191,23 @@ class Experiment:
     On the evolution graph level, an experiment and its neighbors
     could be seen as test/development of traits.
     '''
-    pass
+
+    def __init__(self, spec):
+        return
+
+    def init_session(self):
+        return
+
+    def close(self):
+        return
+
+    def run(self):
+        for s in range(_.get(self.spec, 'meta.max_session')):
+            logger.debug(f'session {e}')
+            self.sess.run()
+            self.monitor.update()
+        self.close()
+        return self.data
 
 
 class EvolutionGraph:
