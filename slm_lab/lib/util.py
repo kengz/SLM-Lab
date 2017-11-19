@@ -28,7 +28,9 @@ def calc_timestamp_diff(ts2, ts1):
     ts_diff = util.calc_timestamp_diff(ts2, ts1)
     # => '0:00:01'
     '''
-    delta_t = datetime.strptime(ts2, FILE_TS_FORMAT) - datetime.strptime(ts1, FILE_TS_FORMAT)
+    delta_t = datetime.strptime(
+        ts2, FILE_TS_FORMAT) - datetime.strptime(
+        ts1, FILE_TS_FORMAT)
     return str(delta_t)
 
 
@@ -74,7 +76,8 @@ def get_env_path(env_name):
     '''Get the path to Unity env binaries distributed via npm'''
     env_path = smart_path(f'node_modules/slm-env-{env_name}/build/{env_name}')
     env_dir = os.path.dirname(env_path)
-    assert os.path.exists(env_dir), f'Missing {env_path}. See README to install from yarn.'
+    assert os.path.exists(
+        env_dir), f'Missing {env_path}. See README to install from yarn.'
     return env_path
 
 
@@ -251,6 +254,11 @@ def smart_path(data_path, as_dir=False):
     if as_dir:
         data_path = os.path.dirname(data_path)
     return os.path.normpath(data_path)
+
+
+def to_json(d, indent=2):
+    '''Shorthand method for stringify JSON with indent'''
+    return json.dumps(d, indent=indent)
 
 
 def write(data, data_path):

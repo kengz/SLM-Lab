@@ -195,9 +195,9 @@ class Experiment:
         return
 
     def run(self):
-        for s in range(_.get(self.spec, 'meta.max_session')):
-            logger.debug(f'session {e}')
-            self.sess.run()
+        for t in range(_.get(self.spec, 'meta.max_trial')):
+            logger.debug(f'trial {t}')
+            self.init_trial().run()
             self.monitor.update()
         self.close()
         return self.data
