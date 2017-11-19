@@ -20,12 +20,12 @@ def calc_timestamp_diff(ts2, ts1):
     Calculate the time from timestamps ts1 to ts2
     @param {str} ts2 Later timestamp in the FILE_TS_FORMAT
     @param {str} ts1 Earlier timestamp in the FILE_TS_FORMAT
-    @returns {string} delta_t in %H:%M:%S format
+    @returns {str} delta_t in %H:%M:%S format
     @example
 
     ts1 = '2017_10_17_084739'
     ts2 = '2017_10_17_084740'
-    ts_diff = calc_timestamp_diff(ts2, ts1)
+    ts_diff = util.calc_timestamp_diff(ts2, ts1)
     # => '0:00:01'
     '''
     delta_t = datetime.strptime(
@@ -104,7 +104,7 @@ def get_timestamp(pattern=FILE_TS_FORMAT):
     @returns {str} timestamp
     @example
 
-    get_timestamp()
+    util.get_timestamp()
     # => '2017_10_17_084739'
     '''
     timestamp_obj = datetime.now()
@@ -121,6 +121,43 @@ def is_jupyter():
     except NameError:
         return False
     return False
+
+
+def is_sub_dict(sub_dict, super_dict):
+    '''
+    Check if sub_dict is a congruent subset of super_dict
+    @param {dict} sub_dict The sub dictionary
+    @param {dict} super_dict The super dictionary
+    @returns {bool}
+    @example
+
+    sub_dict = {'a': 1, 'b': 2}
+    super_dict = {'a': 0, 'b': 0, 'c': 0}
+    util.is_sub_dict(sub_dict, super_dict)
+    # => True
+
+    nested_sub_dict = {'a': {'b': 1}, 'c': 2}
+    nested_super_dict = {'a': {'b': 0}, 'c': 0, 'd': 0}
+    util.is_sub_dict(nested_sub_dict, nested_super_dict)
+    # => True
+
+    incon_nested_super_dict = {'a': {'b': 0}, 'c': {'d': 0}}
+    util.is_sub_dict(nested_sub_dict, incon_nested_super_dict)
+    # => False
+    '''
+    for sub_k, sub_v in sub_dict.items():
+        if sub_k not in super_dict:
+            return False
+        super_v = super_dict[sub_k]
+        if type(sub_v) != type(super_v):
+            return False
+        if isinstance(sub_v, dict):
+            if not is_sub_dict(sub_v, super_v):
+                return False
+        else:
+            if sub_k not in super_dict:
+                return False
+    return True
 
 
 def read(data_path):
@@ -203,10 +240,10 @@ def smart_path(data_path, as_dir=False):
     @returns {str} The normalized absolute data_path
     @example
 
-    smart_path('slm_lab/lib')
+    util.smart_path('slm_lab/lib')
     # => '/Users/ANON/Documents/slm_lab/slm_lab/lib'
 
-    smart_path('/tmp')
+    util.smart_path('/tmp')
     # => '/tmp'
     '''
     if not os.path.isabs(data_path):

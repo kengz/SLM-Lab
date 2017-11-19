@@ -62,6 +62,21 @@ def test_is_jupyter():
     assert not util.is_jupyter()
 
 
+def test_is_sub_dict():
+    sub_dict = {'a': 1, 'b': 2}
+    super_dict = {'a': 0, 'b': 0, 'c': 0}
+    assert util.is_sub_dict(sub_dict, super_dict)
+    assert not util.is_sub_dict(super_dict, sub_dict)
+
+    nested_sub_dict = {'a': {'b': 1}, 'c': 2}
+    nested_super_dict = {'a': {'b': 0}, 'c': 0, 'd': 0}
+    assert util.is_sub_dict(nested_sub_dict, nested_super_dict)
+    assert not util.is_sub_dict(nested_super_dict, nested_sub_dict)
+    incon_nested_super_dict = {'a': {'b': 0}, 'c': {'d': 0}}
+    assert not util.is_sub_dict(nested_sub_dict, incon_nested_super_dict)
+    assert not util.is_sub_dict(incon_nested_super_dict, nested_sub_dict)
+
+
 def test_set_attr():
     class Foo:
         bar = 0
