@@ -98,10 +98,10 @@ class Env:
     u_env = None
     agent = None
 
-    def __init__(self, spec, hyperindex):
+    def __init__(self, spec, data_coor):
         util.set_attr(self, spec)
-        self.hyperindex = hyperindex
-        self.index = hyperindex['env']
+        self.data_coor = data_coor
+        self.index = data_coor['env']
 
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name),

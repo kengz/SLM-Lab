@@ -5,9 +5,9 @@ EvolutionGraph, Experiment, Trial, Session
 '''
 import pandas as pd
 import pydash as _
-from slm_lab import agent
+from slm_lab.agent import Agent
 from slm_lab.env import Env
-from slm_lab.experiment import hyperdata
+from slm_lab.experiment import data_space
 from slm_lab.lib import logger, util, viz
 
 
@@ -22,11 +22,11 @@ class Monitor:
 
     def __init__(self, spec):
         logger.debug('Monitor initialized.')
-        self.hyperindex = hyperdata.create_hyperindex()
+        self.data_coor = data_space.create_data_coor()
 
     def update_stage(self, axis):
-        hyperdata.update_hyperindex(self.hyperindex, axis)
-        return self.hyperindex
+        data_space.update_data_coor(self.data_coor, axis)
+        return self.data_coor
 
     def update(self):
         # TODO hook monitor to agent, env, then per update, auto fetches all that is in background
@@ -67,33 +67,31 @@ class Session:
         self.monitor = monitor
 
         self.monitor.update_stage('session')
-        print(self.monitor.hyperindex['session'])
+        print(self.monitor.data_coor['session'])
 
         self.spec = spec
         self.data = pd.DataFrame()
 
-        self.agent = self.init_agent()
         self.env = self.init_env()
+        self.agent = self.init_agent()
 
     def init_agent(self):
         # TODO absorb into class init?
         self.monitor.update_stage('agent')
-        print(self.monitor.hyperindex['agent'])
+        print(self.monitor.data_coor['agent'])
         agent_spec = self.spec['agent']
-        agent_name = agent_spec['name']
-        AgentClass = agent.__dict__.get(agent_name)
-        self.agent = AgentClass(agent_spec, self.monitor.hyperindex)
-        return self.agent
-
-    def init_env(self):
-        env_spec = _.merge(self.spec['env'], self.spec['meta'])
-        # TODO absorb into class init?
-        self.monitor.update_stage('env')
-        print(self.monitor.hyperindex['env'])
-        self.env = Env(env_spec, self.monitor.hyperindex)
+        self.agent = Agent(agent_spec, self.monitor.data_coor)
         # TODO link in AEB space properly
         self.agent.set_env(self.env)
         self.env.set_agent(self.agent)
+        return self.agent
+
+    def init_env(self):
+        # TODO absorb into class init?
+        self.monitor.update_stage('env')
+        print(self.monitor.data_coor['env'])
+        env_spec = _.merge(self.spec['env'], self.spec['meta'])
+        self.env = Env(env_spec, self.monitor.data_coor)
         return self.env
 
     def close(self):
@@ -117,7 +115,7 @@ class Session:
         '''
         # TODO substitute singletons for spaces later
         self.monitor.update_stage('episode')
-        print(self.monitor.hyperindex['episode'])
+        print(self.monitor.data_coor['episode'])
         # TODO generalize and make state to include observables
         state = self.env.reset()
         logger.debug(f'reset state {state}')
@@ -197,7 +195,7 @@ class EvolutionGraph:
     pass
 
 
-# TODO detach hyperindex from monitor
+# TODO detach data_coor from monitor
 # TODO universal index in spec: experiment, trial, session, then agent, env, bodies
 # TODO spec resolver for params per trial
 # TODO spec key checker and defaulting mechanism, by merging a dict of congruent shape with default values
