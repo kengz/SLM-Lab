@@ -1,10 +1,8 @@
 '''
 The environment module
 Contains graduated components from experiments for building/using environment.
-Provides the rich experience for agent embodiment,
-reflects the curriculum and allows teaching (possibly allows teacher to enter).
-To be designed by human and evolution module,
-based on the curriculum and fitness metrics.
+Provides the rich experience for agent embodiment, reflects the curriculum and allows teaching (possibly allows teacher to enter).
+To be designed by human and evolution module, based on the curriculum and fitness metrics.
 '''
 import pydash as _
 from slm_lab.lib import logger, util
@@ -18,7 +16,7 @@ unity_logger.setLevel('WARN')
 class BrainExt:
     '''
     Unity Brain class extension, where self = brain
-    to be absorbed into ml-agents Brain class later
+    TODO to be absorbed into ml-agents Brain class later
     '''
 
     # TODO or just set properties for all these, no method

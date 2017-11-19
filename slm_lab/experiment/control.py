@@ -1,7 +1,6 @@
 '''
 The control module
-Creates and controls the units of SLM lab
-EvolutionGraph, Experiment, Trial, Session
+Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Session
 '''
 import pandas as pd
 import pydash as _
@@ -98,6 +97,7 @@ class Session:
 
     def run_episode(self):
         '''
+        TODO still WIP
         sys_vars is now session_data, should collect silently from agent and env (fully observable anyways with full access)
         preprocessing shd belong to agent internal, analogy: a lens
         any rendering goes to env
@@ -177,19 +177,12 @@ class Experiment:
     Given a spec-space/generator of cardinality t,
     a number s,
     a hyper-optimization algorithm hopt(spec, fitness-metric) -> spec_next/null
-    experiment creates and runs up to t trials of s sessions each
-    to optimize (maximize) the fitness metric,
+    experiment creates and runs up to t trials of s sessions each to optimize (maximize) the fitness metric,
     gather the trial data,
     then return the experiment data for analysis and use in evolution graph.
-    Experiment data will include the trial data,
-    notes on design, hypothesis, conclusion,
-    analysis data, e.g. fitness metric,
-    evolution link of ancestors to potential descendants.
-    An experiment then forms a node containing its data in the evolution graph
-    with the evolution link and
-    suggestion at the adjacent possible new experiments
-    On the evolution graph level, an experiment and its neighbors
-    could be seen as test/development of traits.
+    Experiment data will include the trial data, notes on design, hypothesis, conclusion, analysis data, e.g. fitness metric, evolution link of ancestors to potential descendants.
+    An experiment then forms a node containing its data in the evolution graph with the evolution link and suggestion at the adjacent possible new experiments
+    On the evolution graph level, an experiment and its neighbors could be seen as test/development of traits.
     '''
 
     def __init__(self, spec):
@@ -213,14 +206,10 @@ class Experiment:
 class EvolutionGraph:
     '''
     The biggest unit of Lab.
-    The evolution graph keeps track of all experiments
-    as nodes of experiment data,
-    with fitness metrics, evolution links, traits, which could be used to
-    aid graph analysis on the traits, fitness metrics,
-    to suggest new experiment via node creation, mutation or combination
-    (no DAG restriction).
-    There could be a high level evolution module that guides and optimizes
-    the evolution graph and experiments to achieve SLM.
+    The evolution graph keeps track of all experiments as nodes of experiment data, with fitness metrics, evolution links, traits,
+    which could be used to aid graph analysis on the traits, fitness metrics,
+    to suggest new experiment via node creation, mutation or combination (no DAG restriction).
+    There could be a high level evolution module that guides and optimizes the evolution graph and experiments to achieve SLM.
     '''
     pass
 
