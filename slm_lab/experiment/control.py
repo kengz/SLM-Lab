@@ -34,16 +34,6 @@ class Monitor:
         return
 
 
-class Controller:
-    '''
-    Controls agents, environments, sessions, trials, experiments, evolutions.
-    Though many things run independently without needing a controller.
-    Has standardized input/output data structure, methods.
-    Uses data from Monitor for evolution.
-    '''
-    pass
-
-
 class Session:
     '''
     The base unit of instantiated RL system.
