@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import pytest
 from slm_lab.lib import util
+from slm_lab.agent import Agent
 
 
 def test_calc_timestamp_diff():
@@ -39,8 +40,35 @@ def test_flatten_dict(test_dict):
     assert util.flatten_dict({'a': {'b': 1}}, sep='_') == {'a_b': 1}
 
 
+def test_get_env_path():
+    assert 'node_modules/slm-env-3dball/build/3dball' in util.get_env_path(
+        '3dball')
+
+
+def test_get_fn_list():
+    fn_list = util.get_fn_list(Agent)
+    assert 'reset' in fn_list
+    assert 'act' in fn_list
+    assert 'update' in fn_list
+
+
+def test_get_timestamp():
+    timestamp = util.get_timestamp()
+    assert isinstance(timestamp, str)
+    assert util.RE_FILE_TS.match(timestamp)
+
+
 def test_is_jupyter():
     assert not util.is_jupyter()
+
+
+def test_set_attr():
+    class Foo:
+        bar = 0
+    foo = Foo()
+    util.set_attr(foo, {'bar': 1, 'baz': 2})
+    assert foo.bar == 1
+    assert foo.baz == 2
 
 
 def test_smart_path():
@@ -104,9 +132,3 @@ def test_read_file_not_found():
     fake_rel_path = 'test/lib/test_util.py_fake'
     with pytest.raises(FileNotFoundError) as excinfo:
         util.read(fake_rel_path)
-
-
-def test_timestamp():
-    timestamp = util.get_timestamp()
-    assert isinstance(timestamp, str)
-    assert util.RE_FILE_TS.match(timestamp)

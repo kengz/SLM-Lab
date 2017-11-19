@@ -1,13 +1,14 @@
 import pandas as pd
+import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.autograd import Variable
 import torch.nn.functional as F
 from slm_lab.agent.net.feedforward import MLPNet
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.memory.base_memory import ReplayMemory
-import pytest
+from slm_lab.lib import util
+from torch.autograd import Variable
 
 
 @pytest.fixture
@@ -44,6 +45,12 @@ def test_str():
     data = 'lorem ipsum dolor'
     assert isinstance(data, str)
     return data
+
+
+@pytest.fixture
+def test_spec():
+    spec = util.read('slm_lab/spec/demo.json')
+    return spec
 
 
 @pytest.fixture
