@@ -44,8 +44,8 @@ def test_is_jupyter():
 
 
 def test_smart_path():
-    rel_path = 'test/test_util.py'
-    fake_rel_path = 'test/test_util.py_fake'
+    rel_path = 'test/lib/test_util.py'
+    fake_rel_path = 'test/lib/test_util.py_fake'
     abs_path = os.path.abspath(__file__)
     assert util.smart_path(rel_path) == abs_path
     assert util.smart_path(fake_rel_path) == abs_path + '_fake'
@@ -101,7 +101,7 @@ def test_write_read_as_plain_list(test_str, filename, dtype):
 
 
 def test_read_file_not_found():
-    fake_rel_path = 'test/test_util.py_fake'
+    fake_rel_path = 'test/lib/test_util.py_fake'
     with pytest.raises(FileNotFoundError) as excinfo:
         util.read(fake_rel_path)
 
