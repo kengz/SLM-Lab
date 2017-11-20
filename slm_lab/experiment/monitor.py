@@ -79,7 +79,7 @@ class DataSpace:
 
     def init_lab_comp_coor(self, lab_comp, spec):
         '''
-        Run the data space coor update methods and settings for lab comp when it is initialized
+        Update data space coor when initializing lab component, and set its self.spec.
         @example
 
         class Session:
@@ -95,7 +95,7 @@ class DataSpace:
             comp_spec = spec[lab_comp.index]
         else:
             comp_spec = spec
-        util.set_attr(lab_comp, comp_spec)
+        lab_comp.spec = comp_spec
 
 
 class Monitor:

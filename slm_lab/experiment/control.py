@@ -27,7 +27,6 @@ class Session:
 
     def __init__(self, spec):
         data_space.init_lab_comp_coor(self, spec)
-        self.spec = spec
         self.data = pd.DataFrame()
 
         self.env = self.init_env()
@@ -105,7 +104,6 @@ class Trial:
 
     def __init__(self, spec):
         data_space.init_lab_comp_coor(self, spec)
-        self.spec = spec
         self.data = pd.DataFrame()
 
     def init_session(self):
@@ -137,13 +135,17 @@ class Experiment:
     An experiment then forms a node containing its data in the evolution graph with the evolution link and suggestion at the adjacent possible new experiments
     On the evolution graph level, an experiment and its neighbors could be seen as test/development of traits.
     '''
+    spec = None
+    data = None
+    trial = None
 
     def __init__(self, spec):
         data_space.init_lab_comp_coor(self, spec)
         return
 
     def init_trial(self):
-        return
+        self.trial = Trial(self.spec)
+        return self.trial
 
     def close(self):
         return

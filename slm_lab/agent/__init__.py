@@ -31,14 +31,16 @@ class Agent:
     Class for all Agents.
     Standardizes the Agent design to work in Lab.
     '''
+    spec = None
     env = None
     algorithm = None
     memory = None
     net = None
 
-    def __init__(self, spec):
+    def __init__(self, multi_spec):
         # TODO also spec needs to specify AEB space and bodies
-        data_space.init_lab_comp_coor(self, spec)
+        data_space.init_lab_comp_coor(self, multi_spec)
+        util.set_attr(self, self.spec)
 
         AlgoClass = getattr(algorithm, self.name)
         self.algorithm = AlgoClass(self)

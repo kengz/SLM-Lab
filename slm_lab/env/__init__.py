@@ -94,11 +94,13 @@ class Env:
     '''
     # TODO split subclass to handle unity specific logic,
     # TODO perhaps do extension like above again
+    spec = None
     u_env = None
     agent = None
 
-    def __init__(self, spec, meta_spec):
-        data_space.init_lab_comp_coor(self, spec)
+    def __init__(self, multi_spec, meta_spec):
+        data_space.init_lab_comp_coor(self, multi_spec)
+        util.set_attr(self, self.spec)
         util.set_attr(self, meta_spec)
 
         self.u_env = UnityEnvironment(
