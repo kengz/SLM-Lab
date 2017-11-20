@@ -24,24 +24,47 @@ class Session:
     data = None
     agent = None
     env = None
+    envs = []
+    agents = []
 
     def __init__(self, spec):
         data_space.init_lab_comp_coor(self, spec)
         self.data = pd.DataFrame()
 
-        self.env = self.init_env()
-        self.agent = self.init_agent()
+        self.init_AEB()
+        self.init_envs()
+        self.init_agents()
+        self.init_bodies()
 
-    def init_agent(self):
-        self.agent = Agent(self.spec['agent'])
-        # TODO link in AEB space properly
-        self.agent.set_env(self.env)
-        self.env.set_agent(self.agent)
-        return self.agent
+    def init_AEB(self):
+        # TODO init AEB space by resolving from data_space
+        return
 
-    def init_env(self):
-        self.env = Env(self.spec['env'], self.spec['meta'])
-        return self.env
+    def init_envs(self):
+        for env_spec in self.spec['env']:
+            env = Env(env_spec, self.spec['meta'])
+            self.envs.append(env)
+        return self.envs
+
+    def init_agents(self):
+        for agent_spec in self.spec['agent']:
+            agent = Agent(agent_spec)
+            self.agents.append(agent)
+        return self.agents
+
+    def init_bodies(self):
+        # TODO prolly need proxy body object to link from agent batch output index to bodies in generalized number of environments
+        # AEB stores resolved AEB coordinates to linking bodies
+        # for (a, e, b) in self.AEB
+        #     body = self.create_body(a, e, b)
+        #     self.agents[a].add_body(body)
+        #     self.env[e].add_body(body)
+        # TODO tmp base base, use above later
+        self.agents[0].set_env(self.envs[0])
+        self.envs[0].set_agent(self.agents[0])
+        # TODO tmp set default singleton to make singleton logic work
+        self.agent = self.agents[0]
+        self.env = self.envs[0]
 
     def close(self):
         '''

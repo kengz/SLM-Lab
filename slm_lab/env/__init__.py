@@ -108,7 +108,8 @@ class Env:
             worker_id=self.index)
 
         # TODO expose brain methods properly to env
-        default_brain = self.u_env.brain_names[0]
+        agent_index = 0
+        default_brain = self.u_env.brain_names[agent_index]
         brain = self.u_env.brains[default_brain]
         ext_fn_list = util.get_fn_list(brain)
         for fn in ext_fn_list:
@@ -121,7 +122,8 @@ class Env:
 
     def reset(self):
         # TODO need AEB space resolver
-        default_brain = self.u_env.brain_names[0]
+        agent_index = 0
+        default_brain = self.u_env.brain_names[agent_index]
         env_info = self.u_env.reset(train_mode=self.train_mode)[default_brain]
         # TODO body-resolver:
         body_index = 0
