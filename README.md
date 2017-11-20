@@ -38,10 +38,11 @@ _(Work In Progress)_ An experimental framework for Reinforcement Learning using 
 | :------------- | :------------- |
 | install SLM-Env Unity env and Lab dependencies | `yarn install` |
 | start the Lab | `yarn start` |
-| update dependency file | `yarn update-dep` |
+| update dependency file | `yarn export-env` |
 | update environment | `yarn update-env` |
 | run tests | `yarn test` |
 | clear cache | `yarn clear` |
+| kill stuck Unity ports/processes | `yarn kill` |
 
 ## Notebook
 
