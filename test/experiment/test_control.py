@@ -6,6 +6,7 @@ from slm_lab.experiment.control import Monitor, Session, Trial
 
 # TODO test control steps in detail when complete
 
+@pytest.mark.skip(reason='Need to release env with .x86_64 for CI linux')
 def test_session(test_exp_spec):
     monitor = Monitor(test_exp_spec)
     session = Session(test_exp_spec, monitor)
@@ -14,6 +15,7 @@ def test_session(test_exp_spec):
     assert isinstance(session_data, pd.DataFrame)
 
 
+@pytest.mark.skip(reason='Need to release env with .x86_64 for CI linux')
 def test_trial(test_exp_spec):
     monitor = Monitor(test_exp_spec)
     trial = Trial(test_exp_spec, monitor)
