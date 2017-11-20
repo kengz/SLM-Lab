@@ -44,15 +44,21 @@ def check_comp_spec(comp_spec, comp_spec_format):
                 comp_spec_v, v_type), f'Component spec {_.pick(comp_spec, spec_k)} needs to be of type: {v_type}'
 
 
-def check(spec, spec_name=''):
-    assert spec.keys() == SPEC_FORMAT.keys(
-    ), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
-    for agent_spec in spec['agent']:
-        check_comp_spec(agent_spec, SPEC_FORMAT['agent'][0])
-    for env_spec in spec['env']:
-        check_comp_spec(env_spec, SPEC_FORMAT['env'][0])
-    check_comp_spec(spec['body'], SPEC_FORMAT['body'])
-    check_comp_spec(spec['meta'], SPEC_FORMAT['meta'])
+def check(exp_spec, spec_name=''):
+    '''Check a single exp_spec for validity, optionally given its spec_name'''
+    try:
+        assert exp_spec.keys() == SPEC_FORMAT.keys(
+        ), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
+        for agent_spec in exp_spec['agent']:
+            check_comp_spec(agent_spec, SPEC_FORMAT['agent'][0])
+            for env_spec in exp_spec['env']:
+                check_comp_spec(env_spec, SPEC_FORMAT['env'][0])
+                check_comp_spec(exp_spec['body'], SPEC_FORMAT['body'])
+                check_comp_spec(exp_spec['meta'], SPEC_FORMAT['meta'])
+    except Exception as e:
+        logger.exception(f'spec {spec_name} fails spec check')
+        raise e
+    return True
 
 
 def check_all():
@@ -60,22 +66,26 @@ def check_all():
     spec_files = _.filter_(os.listdir(SPEC_DIR), lambda f: f.endswith('.json'))
     for spec_file in spec_files:
         spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
-        for spec_name, spec in spec_dict.items():
+        for spec_name, exp_spec in spec_dict.items():
             try:
-                check(spec, spec_name)
+                check(exp_spec, spec_name)
             except Exception as e:
-                logger.exception(
-                    f'{spec_file} spec {spec_name} fails spec check')
-                raise(e)
+                logger.exception(f'spec_file {spec_file} fails spec check')
+                raise e
     logger.info(f'Checked all specs from: {_.join(spec_files, ",")}')
+    return True
 
 
-check_all()
+def get(spec_file, spec_name):
+    '''
+    Get an experiment spec from spec_file, spec_name.
+    Auto-check spec.
+    @example
 
-
-def read(filename):
-    # resolve
-    # check
-    # return
-
-    return
+    exp_spec = spec.get('demo.json', 'base_case')
+    '''
+    spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
+    assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {_.join(spec_dict.keys())}'
+    exp_spec = spec_dict[spec_name]
+    check(exp_spec, spec_name)
+    return exp_spec

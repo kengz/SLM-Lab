@@ -16,7 +16,7 @@
       "max_timestep": 20,
       "max_episode": 3,
       "max_session": 3,
-      "max_trial": null,
+      "max_trial": 1,
       "train_mode": false
     }
   },
@@ -37,7 +37,7 @@
       "max_timestep": 20,
       "max_episode": 3,
       "max_session": 3,
-      "max_trial": null,
+      "max_trial": 1,
       "train_mode": false
     }
   },
@@ -61,7 +61,7 @@
       "max_timestep": 20,
       "max_episode": 3,
       "max_session": 3,
-      "max_trial": null,
+      "max_trial": 1,
       "train_mode": false
     }
   },
@@ -85,7 +85,7 @@
       "max_timestep": 20,
       "max_episode": 3,
       "max_session": 3,
-      "max_trial": null,
+      "max_trial": 1,
       "train_mode": false
     }
   },
@@ -112,7 +112,7 @@
       "max_timestep": 20,
       "max_episode": 3,
       "max_session": 3,
-      "max_trial": null,
+      "max_trial": 1,
       "train_mode": false
     }
   }
