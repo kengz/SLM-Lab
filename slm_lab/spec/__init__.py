@@ -2,6 +2,7 @@
 The spec module
 Handles the Lab spec: reading, writing(evolution), validation and default setting
 '''
+# TODO spec resolver for params per trial
 import json
 import os
 import pydash as _

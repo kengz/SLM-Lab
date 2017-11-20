@@ -9,6 +9,7 @@ from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
 from unityagents.environment import logger as unity_logger
+from slm_lab.experiment.monitor import data_space
 
 unity_logger.setLevel('WARN')
 
@@ -96,10 +97,9 @@ class Env:
     u_env = None
     agent = None
 
-    def __init__(self, spec, data_coor):
-        util.set_attr(self, spec)
-        self.data_coor = data_coor
-        self.index = data_coor['env']
+    def __init__(self, spec, meta_spec):
+        data_space.init_lab_comp_coor(self, spec)
+        util.set_attr(self, meta_spec)
 
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name),
@@ -113,9 +113,7 @@ class Env:
             setattr(self, fn, getattr(brain, fn))
 
     def set_agent(self, agent):
-        '''
-        Make agent visible to env.
-        '''
+        '''Make agent visible to env.'''
         # TODO anticipate multi-agents for AEB space
         self.agent = agent
 

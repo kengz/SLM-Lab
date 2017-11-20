@@ -6,34 +6,9 @@ import pandas as pd
 import pydash as _
 from slm_lab.agent import Agent
 from slm_lab.env import Env
-from slm_lab.experiment import data_space
+from slm_lab.experiment.monitor import data_space
 from slm_lab.lib import logger, util, viz
 
-
-class Monitor:
-    '''
-    Monitors agents, environments, sessions, trials, experiments, evolutions.
-    Has standardized input/output data structure, methods.
-    Persists data to DB, and to viz module for plots or Tensorboard.
-    Pipes data to Controller for evolution.
-    TODO Possibly unify this with logger module.
-    '''
-
-    def __init__(self):
-        logger.debug('Monitor initialized.')
-        self.data_coor = data_space.create_data_coor()
-
-    def update_stage(self, axis):
-        data_space.update_data_coor(self.data_coor, axis)
-        return self.data_coor
-
-    def update(self):
-        # TODO hook monitor to agent, env, then per update, auto fetches all that is in background
-        # TODO call update in session, trial, experiment loops to collect data visible there too, for unit_data
-        return
-
-
-monitor = Monitor()
 
 class Session:
     '''
@@ -51,9 +26,7 @@ class Session:
     env = None
 
     def __init__(self, spec):
-        monitor.update_stage('session')
-        print(monitor.data_coor['session'])
-
+        data_space.init_lab_comp_coor(self, spec)
         self.spec = spec
         self.data = pd.DataFrame()
 
@@ -61,34 +34,25 @@ class Session:
         self.agent = self.init_agent()
 
     def init_agent(self):
-        # TODO absorb into class init?
-        monitor.update_stage('agent')
-        agent_coor = monitor.data_coor['agent']
-        agent_spec = self.spec['agent'][agent_coor]
-        self.agent = Agent(agent_spec, monitor.data_coor)
+        self.agent = Agent(self.spec['agent'])
         # TODO link in AEB space properly
         self.agent.set_env(self.env)
         self.env.set_agent(self.agent)
         return self.agent
 
     def init_env(self):
-        # TODO absorb into class init?
-        monitor.update_stage('env')
-        env_coor = monitor.data_coor['env']
-        env_spec = _.merge(self.spec['env'][env_coor], self.spec['meta'])
-        self.env = Env(env_spec, monitor.data_coor)
+        self.env = Env(self.spec['env'], self.spec['meta'])
         return self.env
 
     def close(self):
         '''
         Close session and clean up.
-        Save agent, close env. Update monitor.
+        Save agent, close env.
         Prepare self.data.
         '''
         # TODO catch all to close Unity when py runtime fails
         self.agent.close()
         self.env.close()
-        monitor.update()
         logger.info('Session done, closing.')
 
     def run_episode(self):
@@ -99,9 +63,6 @@ class Session:
         any rendering goes to env
         make env observable to agent, vice versa. useful for memory
         '''
-        # TODO substitute singletons for spaces later
-        monitor.update_stage('episode')
-        episode_coor = monitor.data_coor['episode']
         # TODO generalize and make state to include observables
         state = self.env.reset()
         logger.debug(f'reset state {state}')
@@ -115,11 +76,9 @@ class Session:
             logger.debug(f'reward: {reward}, state: {state}, done: {done}')
             # fully observable SARS from env, memory and training internally
             self.agent.update(reward, state)
-            monitor.update()
-            # TODO monitor shd update session data from episode data
             if done:
                 break
-        # TODO compose episode data from monitor update, is just session_data[episode]
+        # TODO compose episode data
         episode_data = {}
         return episode_data
 
@@ -127,7 +86,6 @@ class Session:
         for e in range(_.get(self.spec, 'meta.max_episode')):
             logger.debug(f'episode {e}')
             self.run_episode()
-            monitor.update()
         self.close()
         # TODO session data checker method
         return self.data
@@ -146,8 +104,7 @@ class Trial:
     session = None
 
     def __init__(self, spec):
-        monitor.update_stage('trial')
-        print(monitor.data_coor['trial'])
+        data_space.init_lab_comp_coor(self, spec)
         self.spec = spec
         self.data = pd.DataFrame()
 
@@ -162,7 +119,6 @@ class Trial:
         for s in range(_.get(self.spec, 'meta.max_session')):
             logger.debug(f'session {s}')
             self.init_session().run()
-            monitor.update()
         self.close()
         # TODO trial data checker method
         return self.data
@@ -183,6 +139,7 @@ class Experiment:
     '''
 
     def __init__(self, spec):
+        data_space.init_lab_comp_coor(self, spec)
         return
 
     def init_trial(self):
@@ -195,7 +152,6 @@ class Experiment:
         for t in range(_.get(self.spec, 'meta.max_trial')):
             logger.debug(f'trial {t}')
             self.init_trial().run()
-            monitor.update()
         self.close()
         # TODO exp data checker method
         return self.data
@@ -210,10 +166,3 @@ class EvolutionGraph:
     There could be a high level evolution module that guides and optimizes the evolution graph and experiments to achieve SLM.
     '''
     pass
-
-
-# TODO detach data_coor from monitor
-# TODO universal index in spec: experiment, trial, session, then agent, env, bodies
-# TODO spec resolver for params per trial
-# TODO spec key checker and defaulting mechanism, by merging a dict of congruent shape with default values
-# TODO AEB space resolver

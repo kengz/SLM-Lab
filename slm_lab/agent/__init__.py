@@ -22,6 +22,7 @@ Agent components:
 '''
 # TODO need a mechanism that compose the components together using spec
 from slm_lab.agent import algorithm
+from slm_lab.experiment.monitor import data_space
 from slm_lab.lib import util
 
 
@@ -35,11 +36,9 @@ class Agent:
     memory = None
     net = None
 
-    def __init__(self, spec, data_coor):
+    def __init__(self, spec):
         # TODO also spec needs to specify AEB space and bodies
-        util.set_attr(self, spec)
-        self.data_coor = data_coor
-        self.index = data_coor['agent']
+        data_space.init_lab_comp_coor(self, spec)
 
         AlgoClass = getattr(algorithm, self.name)
         self.algorithm = AlgoClass(self)

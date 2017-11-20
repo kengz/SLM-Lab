@@ -72,6 +72,14 @@ def flatten_dict(d, parent_key='', sep='.'):
     return dict(items)
 
 
+def get_class_name(obj, lower=False):
+    '''Get the class name of an object'''
+    class_name = obj.__class__.__name__
+    if lower:
+        class_name = class_name.lower()
+    return class_name
+
+
 def get_env_path(env_name):
     '''Get the path to Unity env binaries distributed via npm'''
     env_path = smart_path(f'node_modules/slm-env-{env_name}/build/{env_name}')
