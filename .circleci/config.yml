@@ -61,14 +61,14 @@ jobs:
             source activate lab
             conda env update -f environment.yml
 
-            if [ -d ~/ml-agents ]; then
-              echo "ml-agents already present"
+            if pip list | grep "^unityagents " >/dev/null; then
+              echo "unityagents of ml-agents already present"
             else
               git clone https://github.com/kengz/ml-agents.git ~/ml-agents/
+              cd ~/ml-agents/python && git pull
+              pip install -e .
+              cd ~/SLM-Lab
             fi
-            cd ~/ml-agents/python && git pull
-            pip install -e .
-            cd ~/SLM-Lab
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}
           paths:

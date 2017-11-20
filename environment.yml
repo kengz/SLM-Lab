@@ -90,7 +90,9 @@ dependencies:
   - et-xmlfile==1.0.1
   - html5lib==0.9999999
   - ipython-genutils==0.2.0
+  - jupyter==1.0.0
   - jupyter-client==5.1.0
+  - jupyter-console==5.2.0
   - jupyter-core==4.3.0
   - markdown==2.6.9
   - prompt-toolkit==1.0.15
