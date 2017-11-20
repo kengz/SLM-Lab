@@ -19,7 +19,7 @@ class Monitor:
     TODO Possibly unify this with logger module.
     '''
 
-    def __init__(self, spec):
+    def __init__(self):
         logger.debug('Monitor initialized.')
         self.data_coor = data_space.create_data_coor()
 
@@ -32,6 +32,8 @@ class Monitor:
         # TODO call update in session, trial, experiment loops to collect data visible there too, for unit_data
         return
 
+
+monitor = Monitor()
 
 class Session:
     '''
@@ -48,15 +50,9 @@ class Session:
     agent = None
     env = None
 
-    def __init__(self, spec, monitor):
-        # TODO monitor has to be top level outside of Experiment
-        # TODO probably is a good idea to not have global Monitor
-        # that case if one session runtime fails, others wont
-        # or monitor has to be copied in parallel runs too
-        self.monitor = monitor
-
-        self.monitor.update_stage('session')
-        print(self.monitor.data_coor['session'])
+    def __init__(self, spec):
+        monitor.update_stage('session')
+        print(monitor.data_coor['session'])
 
         self.spec = spec
         self.data = pd.DataFrame()
@@ -66,10 +62,10 @@ class Session:
 
     def init_agent(self):
         # TODO absorb into class init?
-        self.monitor.update_stage('agent')
-        agent_coor = self.monitor.data_coor['agent']
+        monitor.update_stage('agent')
+        agent_coor = monitor.data_coor['agent']
         agent_spec = self.spec['agent'][agent_coor]
-        self.agent = Agent(agent_spec, self.monitor.data_coor)
+        self.agent = Agent(agent_spec, monitor.data_coor)
         # TODO link in AEB space properly
         self.agent.set_env(self.env)
         self.env.set_agent(self.agent)
@@ -77,10 +73,10 @@ class Session:
 
     def init_env(self):
         # TODO absorb into class init?
-        self.monitor.update_stage('env')
-        env_coor = self.monitor.data_coor['env']
+        monitor.update_stage('env')
+        env_coor = monitor.data_coor['env']
         env_spec = _.merge(self.spec['env'][env_coor], self.spec['meta'])
-        self.env = Env(env_spec, self.monitor.data_coor)
+        self.env = Env(env_spec, monitor.data_coor)
         return self.env
 
     def close(self):
@@ -92,7 +88,7 @@ class Session:
         # TODO catch all to close Unity when py runtime fails
         self.agent.close()
         self.env.close()
-        self.monitor.update()
+        monitor.update()
         logger.info('Session done, closing.')
 
     def run_episode(self):
@@ -104,8 +100,8 @@ class Session:
         make env observable to agent, vice versa. useful for memory
         '''
         # TODO substitute singletons for spaces later
-        self.monitor.update_stage('episode')
-        episode_coor = self.monitor.data_coor['episode']
+        monitor.update_stage('episode')
+        episode_coor = monitor.data_coor['episode']
         # TODO generalize and make state to include observables
         state = self.env.reset()
         logger.debug(f'reset state {state}')
@@ -119,7 +115,7 @@ class Session:
             logger.debug(f'reward: {reward}, state: {state}, done: {done}')
             # fully observable SARS from env, memory and training internally
             self.agent.update(reward, state)
-            self.monitor.update()
+            monitor.update()
             # TODO monitor shd update session data from episode data
             if done:
                 break
@@ -131,7 +127,7 @@ class Session:
         for e in range(_.get(self.spec, 'meta.max_episode')):
             logger.debug(f'episode {e}')
             self.run_episode()
-            self.monitor.update()
+            monitor.update()
         self.close()
         # TODO session data checker method
         return self.data
@@ -149,15 +145,14 @@ class Trial:
     data = None
     session = None
 
-    def __init__(self, spec, monitor):
-        self.monitor = monitor
-        self.monitor.update_stage('trial')
-        print(self.monitor.data_coor['trial'])
+    def __init__(self, spec):
+        monitor.update_stage('trial')
+        print(monitor.data_coor['trial'])
         self.spec = spec
         self.data = pd.DataFrame()
 
     def init_session(self):
-        self.session = Session(self.spec, self.monitor)
+        self.session = Session(self.spec)
         return self.session
 
     def close(self):
@@ -167,7 +162,7 @@ class Trial:
         for s in range(_.get(self.spec, 'meta.max_session')):
             logger.debug(f'session {s}')
             self.init_session().run()
-            self.monitor.update()
+            monitor.update()
         self.close()
         # TODO trial data checker method
         return self.data
@@ -190,7 +185,7 @@ class Experiment:
     def __init__(self, spec):
         return
 
-    def init_session(self):
+    def init_trial(self):
         return
 
     def close(self):
@@ -200,7 +195,7 @@ class Experiment:
         for t in range(_.get(self.spec, 'meta.max_trial')):
             logger.debug(f'trial {t}')
             self.init_trial().run()
-            self.monitor.update()
+            monitor.update()
         self.close()
         # TODO exp data checker method
         return self.data
