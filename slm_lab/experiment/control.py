@@ -67,8 +67,8 @@ class Session:
     def init_agent(self):
         # TODO absorb into class init?
         self.monitor.update_stage('agent')
-        print(self.monitor.data_coor['agent'])
-        agent_spec = self.spec['agent']
+        agent_coor = self.monitor.data_coor['agent']
+        agent_spec = self.spec['agent'][agent_coor]
         self.agent = Agent(agent_spec, self.monitor.data_coor)
         # TODO link in AEB space properly
         self.agent.set_env(self.env)
@@ -78,8 +78,8 @@ class Session:
     def init_env(self):
         # TODO absorb into class init?
         self.monitor.update_stage('env')
-        print(self.monitor.data_coor['env'])
-        env_spec = _.merge(self.spec['env'], self.spec['meta'])
+        env_coor = self.monitor.data_coor['env']
+        env_spec = _.merge(self.spec['env'][env_coor], self.spec['meta'])
         self.env = Env(env_spec, self.monitor.data_coor)
         return self.env
 
@@ -105,7 +105,7 @@ class Session:
         '''
         # TODO substitute singletons for spaces later
         self.monitor.update_stage('episode')
-        print(self.monitor.data_coor['episode'])
+        episode_coor = self.monitor.data_coor['episode']
         # TODO generalize and make state to include observables
         state = self.env.reset()
         logger.debug(f'reset state {state}')

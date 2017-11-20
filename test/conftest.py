@@ -48,12 +48,6 @@ def test_str():
 
 
 @pytest.fixture
-def test_spec():
-    spec = util.read('slm_lab/spec/demo.json')
-    return spec
-
-
-@pytest.fixture
 def test_multiline_str():
     data = '''
         lorem ipsum dolor
