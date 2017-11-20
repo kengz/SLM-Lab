@@ -10,12 +10,10 @@ from slm_lab.agent.net.feedforward import MLPNet
 
 class ConvNet(MLPNet):
     '''
-    Class for generating arbitrary sized convolutional
-    neural network, with ReLU activations, and optional
-    batch normalization
+    Class for generating arbitrary sized convolutional neural network,
+    with ReLU activations, and optional batch normalization
 
-    Assumed that a single input example is organized into
-    a 3D tensor
+    Assumed that a single input example is organized into a 3D tensor
     '''
 
     def __init__(self,
@@ -29,29 +27,18 @@ class ConvNet(MLPNet):
                  batch_norm=True):
         '''
         in_dim: dimension of the inputs
-        conv_hid: list containing dimensions of the
-        convolutional hidden layers. Asssumed to all come
-        before the flat layers.
-            Note: a convolutional layer should specify the
-            in_channel, out_channels, kernel_size, stride (of kernel steps),
-            padding, and dilation (spacing between kernel points)
-            E.g. [3, 16, (5, 5), 1, 0, (2, 2)]
-            For more details, see
-            http://pytorch.org/docs/master/nn.html#conv2d
-            and
-            https://github.com/vdumoulin/conv_arithmetic/blob/master/README.md
+        conv_hid: list containing dimensions of the convolutional hidden layers. Asssumed to all come before the flat layers.
+            Note: a convolutional layer should specify the in_channel, out_channels, kernel_size, stride (of kernel steps), padding, and dilation (spacing between kernel points) E.g. [3, 16, (5, 5), 1, 0, (2, 2)]
+            For more details, see http://pytorch.org/docs/master/nn.html#conv2d and https://github.com/vdumoulin/conv_arithmetic/blob/master/README.md
 
-        flat_hid: list of dense layers following the
-                   convolutional layers
+        flat_hid: list of dense layers following the convolutional layers
         out_dim: dimension of the ouputs
         optim: optimizer
         loss_fn: measure of error between model
         predictions and correct outputs
         clamp_grad: whether to clamp the gradient to + / - 1
-        batch_norm: whether to add batch normalization
-        after each convolutional layer, excluding the
-        input layer.
-        example:
+        batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
+        @example:
         net = ConvNet(
                 (3, 32, 32),
                 [[3, 36, (5, 5), 1, 0, (2, 2)],
@@ -120,7 +107,7 @@ class ConvNet(MLPNet):
             self.out_layer = nn.Linear(self.flat_dim, out_dim)
 
     def forward(self, x):
-        ''' The feedforward step '''
+        '''The feedforward step'''
         bn_flag = len(self.batch_norms) > 0
         for i, layer in enumerate(self.conv_layers):
             if bn_flag and i != 0:
@@ -150,10 +137,8 @@ class ConvNet(MLPNet):
     def init_params(self):
         '''
         Initializes all of the model's parameters using uniform initialization.
-        Note: Ideally it should be xavier initialization, but there appears
-        to be unreproduceable behaviours in pyTorch.
-        Sometimes the trainable params tests pass (see nn_test.py), other times
-        they dont.
+        Note: Ideally it should be xavier initialization, but there appears to be unreproduceable behaviours in pyTorch.
+        Sometimes the trainable params tests pass (see nn_test.py), other times they dont.
         Biases are all set to 0.01
         '''
         initrange = 0.1
@@ -171,14 +156,12 @@ class ConvNet(MLPNet):
 
     def gather_trainable_params(self):
         '''
-        Gathers parameters that should be trained into a list
-        returns: copy of a list of fixed params
+        Gathers parameters that should be trained into a list returns: copy of a list of fixed params
         '''
         return super(ConvNet, self).gather_trainable_params()
 
     def gather_fixed_params(self):
         '''
-        Gathers parameters that should be fixed into a list
-        returns: copy of a list of fixed params
+        Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
         return super(ConvNet, self).gather_fixed_params()

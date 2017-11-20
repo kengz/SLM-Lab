@@ -1,13 +1,13 @@
 {
-  "base_case": {
-    "agent": {
+  "test_case": {
+    "agent": [{
       "name": "Random",
       "param": {}
-    },
-    "env": {
+    }],
+    "env": [{
       "name": "gridworld",
       "param": {}
-    },
+    }],
     "body": {
       "product": "outer",
       "num": 1
@@ -15,23 +15,51 @@
     "meta": {
       "max_timestep": 20,
       "max_episode": 3,
-      "max_session": 3,
-      "max_trial": null,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": true
+    }
+  },
+  "base_case": {
+    "agent": [{
+      "name": "Random",
+      "param": {}
+    }],
+    "env": [{
+      "name": "gridworld",
+      "param": {}
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_timestep": 20,
+      "max_episode": 3,
+      "max_session": 1,
+      "max_trial": 1,
       "train_mode": false
     }
   },
   "multi_body": {
-    "agent": {
+    "agent": [{
       "name": "Random",
       "param": {}
-    },
-    "env": {
+    }],
+    "env": [{
       "name": "3dball",
       "param": {}
-    },
+    }],
     "body": {
       "product": "outer",
       "num": 12
+    },
+    "meta": {
+      "max_timestep": 20,
+      "max_episode": 3,
+      "max_session": 3,
+      "max_trial": 1,
+      "train_mode": false
     }
   },
   "multi_agent": {
@@ -42,20 +70,27 @@
       "name": "Random",
       "param": {}
     }],
-    "env": {
+    "env": [{
       "name": "3dball",
       "param": {}
-    },
+    }],
     "body": {
       "product": "outer",
       "num": 6
+    },
+    "meta": {
+      "max_timestep": 20,
+      "max_episode": 3,
+      "max_session": 3,
+      "max_trial": 1,
+      "train_mode": false
     }
   },
   "multi_env": {
-    "agent": {
+    "agent": [{
       "name": "Random",
       "param": {}
-    },
+    }],
     "env": [{
       "name": "3dball",
       "param": {}
@@ -66,6 +101,13 @@
     "body": {
       "product": "outer",
       "num": 1
+    },
+    "meta": {
+      "max_timestep": 20,
+      "max_episode": 3,
+      "max_session": 3,
+      "max_trial": 1,
+      "train_mode": false
     }
   },
   "multi_agent_multi_env": {
@@ -86,6 +128,13 @@
     "body": {
       "product": "custom",
       "num": 1
+    },
+    "meta": {
+      "max_timestep": 20,
+      "max_episode": 3,
+      "max_session": 3,
+      "max_trial": 1,
+      "train_mode": false
     }
   }
 }

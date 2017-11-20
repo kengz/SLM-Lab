@@ -1,7 +1,6 @@
 '''
 The control module
-Creates and controls the units of SLM lab
-EvolutionGraph, Experiment, Trial, Session
+Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Session
 '''
 import pandas as pd
 import pydash as _
@@ -34,16 +33,6 @@ class Monitor:
         return
 
 
-class Controller:
-    '''
-    Controls agents, environments, sessions, trials, experiments, evolutions.
-    Though many things run independently without needing a controller.
-    Has standardized input/output data structure, methods.
-    Uses data from Monitor for evolution.
-    '''
-    pass
-
-
 class Session:
     '''
     The base unit of instantiated RL system.
@@ -51,7 +40,7 @@ class Session:
     session creates agent(s) and environment(s),
     run the RL system and collect data, e.g. fitness metrics, till it ends,
     then return the session data.
-    noo only experiment_spec, agent_spec, agent_spec
+    TODO only experiment_spec, agent_spec, agent_spec
     auto-resolve param space spec for trial, copy for session with idx
     '''
     spec = None
@@ -78,8 +67,8 @@ class Session:
     def init_agent(self):
         # TODO absorb into class init?
         self.monitor.update_stage('agent')
-        print(self.monitor.data_coor['agent'])
-        agent_spec = self.spec['agent']
+        agent_coor = self.monitor.data_coor['agent']
+        agent_spec = self.spec['agent'][agent_coor]
         self.agent = Agent(agent_spec, self.monitor.data_coor)
         # TODO link in AEB space properly
         self.agent.set_env(self.env)
@@ -89,8 +78,8 @@ class Session:
     def init_env(self):
         # TODO absorb into class init?
         self.monitor.update_stage('env')
-        print(self.monitor.data_coor['env'])
-        env_spec = _.merge(self.spec['env'], self.spec['meta'])
+        env_coor = self.monitor.data_coor['env']
+        env_spec = _.merge(self.spec['env'][env_coor], self.spec['meta'])
         self.env = Env(env_spec, self.monitor.data_coor)
         return self.env
 
@@ -108,6 +97,7 @@ class Session:
 
     def run_episode(self):
         '''
+        TODO still WIP
         sys_vars is now session_data, should collect silently from agent and env (fully observable anyways with full access)
         preprocessing shd belong to agent internal, analogy: a lens
         any rendering goes to env
@@ -115,7 +105,7 @@ class Session:
         '''
         # TODO substitute singletons for spaces later
         self.monitor.update_stage('episode')
-        print(self.monitor.data_coor['episode'])
+        episode_coor = self.monitor.data_coor['episode']
         # TODO generalize and make state to include observables
         state = self.env.reset()
         logger.debug(f'reset state {state}')
@@ -143,6 +133,7 @@ class Session:
             self.run_episode()
             self.monitor.update()
         self.close()
+        # TODO session data checker method
         return self.data
 
 
@@ -154,7 +145,32 @@ class Trial:
     gather and aggregate data from sessions as trial data,
     then return the trial data.
     '''
-    pass
+    spec = None
+    data = None
+    session = None
+
+    def __init__(self, spec, monitor):
+        self.monitor = monitor
+        self.monitor.update_stage('trial')
+        print(self.monitor.data_coor['trial'])
+        self.spec = spec
+        self.data = pd.DataFrame()
+
+    def init_session(self):
+        self.session = Session(self.spec, self.monitor)
+        return self.session
+
+    def close(self):
+        return
+
+    def run(self):
+        for s in range(_.get(self.spec, 'meta.max_session')):
+            logger.debug(f'session {s}')
+            self.init_session().run()
+            self.monitor.update()
+        self.close()
+        # TODO trial data checker method
+        return self.data
 
 
 class Experiment:
@@ -163,34 +179,40 @@ class Experiment:
     Given a spec-space/generator of cardinality t,
     a number s,
     a hyper-optimization algorithm hopt(spec, fitness-metric) -> spec_next/null
-    experiment creates and runs up to t trials of s sessions each
-    to optimize (maximize) the fitness metric,
+    experiment creates and runs up to t trials of s sessions each to optimize (maximize) the fitness metric,
     gather the trial data,
     then return the experiment data for analysis and use in evolution graph.
-    Experiment data will include the trial data,
-    notes on design, hypothesis, conclusion,
-    analysis data, e.g. fitness metric,
-    evolution link of ancestors to potential descendants.
-    An experiment then forms a node containing its data in the evolution graph
-    with the evolution link and
-    suggestion at the adjacent possible new experiments
-    On the evolution graph level, an experiment and its neighbors
-    could be seen as test/development of traits.
+    Experiment data will include the trial data, notes on design, hypothesis, conclusion, analysis data, e.g. fitness metric, evolution link of ancestors to potential descendants.
+    An experiment then forms a node containing its data in the evolution graph with the evolution link and suggestion at the adjacent possible new experiments
+    On the evolution graph level, an experiment and its neighbors could be seen as test/development of traits.
     '''
-    pass
+
+    def __init__(self, spec):
+        return
+
+    def init_session(self):
+        return
+
+    def close(self):
+        return
+
+    def run(self):
+        for t in range(_.get(self.spec, 'meta.max_trial')):
+            logger.debug(f'trial {t}')
+            self.init_trial().run()
+            self.monitor.update()
+        self.close()
+        # TODO exp data checker method
+        return self.data
 
 
 class EvolutionGraph:
     '''
     The biggest unit of Lab.
-    The evolution graph keeps track of all experiments
-    as nodes of experiment data,
-    with fitness metrics, evolution links, traits, which could be used to
-    aid graph analysis on the traits, fitness metrics,
-    to suggest new experiment via node creation, mutation or combination
-    (no DAG restriction).
-    There could be a high level evolution module that guides and optimizes
-    the evolution graph and experiments to achieve SLM.
+    The evolution graph keeps track of all experiments as nodes of experiment data, with fitness metrics, evolution links, traits,
+    which could be used to aid graph analysis on the traits, fitness metrics,
+    to suggest new experiment via node creation, mutation or combination (no DAG restriction).
+    There could be a high level evolution module that guides and optimizes the evolution graph and experiments to achieve SLM.
     '''
     pass
 

@@ -1,11 +1,8 @@
 '''
 The data_space module
-Handles the unified hyperdimensional data for SLM Lab,
-used for analysis and experiment planning.
+Handles the unified hyperdimensional data for SLM Lab, used for analysis and experiment planning.
 Sources data from monitor.
-Each dataframe resolves from the coarsest dimension to the finest,
-with data coordinates data_coor in the form:
-(evolution,experiment,trial,session,agent,env,body,episode,timestep)
+Each dataframe resolves from the coarsest dimension to the finest, with data coordinates data_coor in the form: (evolution,experiment,trial,session,agent,env,body,episode,timestep)
 The resolution after session is the AEB space, hence it is a subspace.
 AEB space is not necessarily tabular, and hence the data is NoSQL.
 

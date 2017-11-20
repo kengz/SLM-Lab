@@ -6,8 +6,7 @@ import torch.nn.functional as F
 
 class MLPNet(nn.Module):
     '''
-    Class for generating arbitrary sized feedforward
-    neural network, with ReLU activations
+    Class for generating arbitrary sized feedforward neural network, with ReLU activations
     '''
 
     def __init__(self,
@@ -24,7 +23,7 @@ class MLPNet(nn.Module):
         optim: optimizer
         loss_fn: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient to + / - 1
-        example:
+        @example:
         net = MLPNet(1000, [512, 256, 128], 10, optim.Adam, nn.SmoothL1Loss)
         '''
         super(MLPNet, self).__init__()
@@ -51,7 +50,7 @@ class MLPNet(nn.Module):
         self.init_params()
 
     def forward(self, x):
-        ''' The feedforward step '''
+        '''The feedforward step'''
         for i in range(self.num_hid_layers):
             x = F.relu((self.hid_layers[i](x)))
         x = self.out_layer(x)
@@ -75,8 +74,7 @@ class MLPNet(nn.Module):
 
     def eval(self, x):
         '''
-        Completes one feedforward step, ensuring net is set to evaluation model
-        returns: network output given input x
+        Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
         '''
         self.eval()
         return self(x)
@@ -84,10 +82,8 @@ class MLPNet(nn.Module):
     def init_params(self):
         '''
         Initializes all of the model's parameters using uniform initialization.
-        Note: Ideally it should be xavier initialization, but there appears
-        to be unreproduceable behaviours in pyTorch.
-        Sometimes the trainable params tests pass (see nn_test.py), other times
-        they dont.
+        Note: Ideally it should be xavier initialization, but there appears to be unreproduceable behaviours in pyTorch.
+        Sometimes the trainable params tests pass (see nn_test.py), other times they dont.
         Biases are all set to 0.01
         '''
         initrange = 0.2
@@ -99,14 +95,12 @@ class MLPNet(nn.Module):
 
     def gather_trainable_params(self):
         '''
-        Gathers parameters that should be trained into a list
-        returns: copy of a list of fixed params
+        Gathers parameters that should be trained into a list returns: copy of a list of fixed params
         '''
         return [param.clone() for param in self.parameters()]
 
     def gather_fixed_params(self):
         '''
-        Gathers parameters that should be fixed into a list
-        returns: copy of a list of fixed params
+        Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
         return None

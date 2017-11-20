@@ -1,9 +1,7 @@
 '''
 The agent module
-Contains graduated components from experiments for building agents
-and be taught, tested, evaluated on curriculum.
-To be designed by human and evolution module,
-based on the experiment aim (trait) and fitness metrics.
+Contains graduated components from experiments for building agents and be taught, tested, evaluated on curriculum.
+To be designed by human and evolution module, based on the experiment aim (trait) and fitness metrics.
 Main SLM components (refer to SLM doc for more):
 - primary survival objective
 - control policies
@@ -64,8 +62,7 @@ class Agent:
 
     def update(self, reward, state):
         '''
-        Update per timestep after env transitions,
-        e.g. memory, algorithm, update agent params, train net
+        Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
         # TODO implement generic method
         # self.memory.update()
