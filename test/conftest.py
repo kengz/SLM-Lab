@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+from slm_lab import spec
 from slm_lab.agent.net.feedforward import MLPNet
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.memory.base_memory import ReplayMemory
@@ -37,6 +38,12 @@ def test_dict():
 def test_list():
     data = [1, 2, 3]
     assert isinstance(data, list)
+    return data
+
+
+@pytest.fixture
+def test_exp_spec():
+    data = spec.get('default.json', 'test_case')
     return data
 
 

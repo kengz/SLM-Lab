@@ -10,12 +10,12 @@ def main():
     # TODO metaspec to specify specs to run, can be source from evolution suggestion
     # TODO set proper pattern
     # monitor on evolution/experiment level
-    lab_spec = spec.get('demo.json', 'base_case')
-    monitor = Monitor(lab_spec)
+    exp_spec = spec.get('default.json', 'base_case')
+    monitor = Monitor(exp_spec)
     # TODO temp set monitor method in session
-    # sess = Session(lab_spec, monitor)
+    # sess = Session(exp_spec, monitor)
     # session_data = sess.run()
-    trial = Trial(lab_spec, monitor)
+    trial = Trial(exp_spec, monitor)
     trial_data = trial.run()
 
 

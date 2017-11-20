@@ -133,6 +133,7 @@ class Session:
             self.run_episode()
             self.monitor.update()
         self.close()
+        # TODO session data checker method
         return self.data
 
 
@@ -168,6 +169,7 @@ class Trial:
             self.init_session().run()
             self.monitor.update()
         self.close()
+        # TODO trial data checker method
         return self.data
 
 
@@ -200,6 +202,7 @@ class Experiment:
             self.init_trial().run()
             self.monitor.update()
         self.close()
+        # TODO exp data checker method
         return self.data
 
 

@@ -82,7 +82,7 @@ def get(spec_file, spec_name):
     Auto-check spec.
     @example
 
-    exp_spec = spec.get('demo.json', 'base_case')
+    exp_spec = spec.get('default.json', 'base_case')
     '''
     spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
     assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {_.join(spec_dict.keys())}'
