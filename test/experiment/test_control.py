@@ -4,6 +4,8 @@ from slm_lab import spec
 from slm_lab.experiment.control import Monitor, Session, Trial
 
 
+# TODO test control steps in detail when complete
+
 def test_session(test_exp_spec):
     monitor = Monitor(test_exp_spec)
     session = Session(test_exp_spec, monitor)
