@@ -105,6 +105,7 @@ class Env:
     # TODO split subclass to handle unity specific logic,
     # TODO perhaps do extension like above again
     spec = None
+    # TODO only reference via body
     AB_space = []
     u_env = None
     agent = None

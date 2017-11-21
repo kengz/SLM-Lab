@@ -10,8 +10,6 @@ def main():
     # TODO set proper pattern
     logger.set_level('DEBUG')
     spec = spec_util.get('base.json', 'base_case')
-    # session = Session(spec)
-    # session_data = session.run()
     trial = Trial(spec)
     trial_data = trial.run()
 

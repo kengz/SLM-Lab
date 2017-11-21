@@ -32,6 +32,8 @@ class Agent:
     Standardizes the Agent design to work in Lab.
     '''
     spec = None
+    # TODO only reference via body
+    # TODO ok need architecture spec for each agent: disjoint or joint, time or space multiplicity
     EB_space = []
     # active_eb_coor = None
     # TODO then for high level call, update active_eb_coor (switch focus body), call atomic methods
@@ -52,7 +54,8 @@ class Agent:
 
         AlgoClass = getattr(algorithm, self.name)
         self.algorithm = AlgoClass(self)
-        # TODO tmp
+        # TODO tmp use Body in the space
+        # TODO also resolve architecture and data input, output dims via some architecture spec
         self.body_num = 1
         # TODO delegate a copy of variable like action_dim to agent too
 
