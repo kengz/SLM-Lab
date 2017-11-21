@@ -17,12 +17,12 @@ def test_get():
 
 def test_resolve_AEB():
     inner_exp_spec = spec.get('base.json', 'general_inner')
-    inner_coor_list = spec.resolve_AEB(inner_exp_spec)
-    assert inner_coor_list == [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
+    inner_AEB_space = spec.resolve_AEB(inner_exp_spec)
+    assert inner_AEB_space == [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
 
     outer_exp_spec = spec.get('base.json', 'general_outer')
-    outer_coor_list = spec.resolve_AEB(outer_exp_spec)
-    assert outer_coor_list == [(0, 0, 0),
+    outer_AEB_space = spec.resolve_AEB(outer_exp_spec)
+    assert outer_AEB_space == [(0, 0, 0),
                                (0, 0, 1),
                                (0, 1, 0),
                                (0, 1, 1),
@@ -32,8 +32,8 @@ def test_resolve_AEB():
                                (1, 1, 1)]
 
     custom_exp_spec = spec.get('base.json', 'general_custom')
-    custom_coor_list = spec.resolve_AEB(custom_exp_spec)
-    assert custom_coor_list == [(0, 0, 0),
+    custom_AEB_space = spec.resolve_AEB(custom_exp_spec)
+    assert custom_AEB_space == [(0, 0, 0),
                                 (0, 1, 0),
                                 (0, 1, 1),
                                 (0, 1, 2),

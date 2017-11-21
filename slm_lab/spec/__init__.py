@@ -49,11 +49,11 @@ def check_comp_spec(comp_spec, comp_spec_format):
 
 def check_body_spec(exp_spec):
     '''Base method to check body spec for AEB space resolution'''
-    ae_product = _.get(exp_spec, 'body.product')
+    AE_product = _.get(exp_spec, 'body.product')
     body_num = _.get(exp_spec, 'body.num')
-    if ae_product == 'outer':
+    if AE_product == 'outer':
         assert isinstance(body_num, int)
-    elif ae_product == 'inner':
+    elif AE_product == 'inner':
         assert isinstance(body_num, int)
         agent_num = len(exp_spec['agent'])
         env_num = len(exp_spec['env'])
@@ -115,29 +115,29 @@ def resolve_AEB(exp_spec):
     '''
     Resolve an experiment spec into the full list of points (coordinates) in AEB space.
     @param {dict} exp_spec An experiment spec.
-    @returns {list} coor_list Resolved list of points in AEB space.
+    @returns {list} AEB_space Resolved list of points in AEB space.
     @example
 
     exp_spec = get('base.json', 'general_inner')
-    coor_list = spec.resolve_AEB(exp_spec)
+    AEB_space = spec.resolve_AEB(exp_spec)
     # => [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
     '''
     agent_num = len(exp_spec['agent'])
     env_num = len(exp_spec['env'])
-    ae_product = _.get(exp_spec, 'body.product')
+    AE_product = _.get(exp_spec, 'body.product')
     body_num = _.get(exp_spec, 'body.num')
 
-    if ae_product == 'outer':
-        coor_list = list(itertools.product(
+    if AE_product == 'outer':
+        AEB_space = list(itertools.product(
             range(agent_num), range(env_num), range(body_num)))
-    elif ae_product == 'inner':
+    elif AE_product == 'inner':
         ae_coor_itr = zip(range(agent_num), range(env_num))
-        coor_list = list(itertools.product(
+        AEB_space = list(itertools.product(
             ae_coor_itr, range(body_num)))
-        coor_list = [(a, e, b) for ((a, e), b) in coor_list]
+        AEB_space = [(a, e, b) for ((a, e), b) in AEB_space]
     else:  # custom AEB
-        coor_list = [tuple(aeb) for aeb in body_num]
-    return coor_list
+        AEB_space = [tuple(aeb) for aeb in body_num]
+    return AEB_space
 
 
 def resolve_param(exp_spec):
