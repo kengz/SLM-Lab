@@ -56,6 +56,11 @@ def check(exp_spec, spec_name=''):
             check_comp_spec(env_spec, SPEC_FORMAT['env'][0])
         check_comp_spec(exp_spec['body'], SPEC_FORMAT['body'])
         check_comp_spec(exp_spec['meta'], SPEC_FORMAT['meta'])
+
+        if _.get(exp_spec, 'body.product') == 'inner':
+            agent_num = len(exp_spec['agent'])
+            env_num = len(exp_spec['env'])
+            assert agent_num == env_num, 'Agent and Env spec length must be equal for body `inner` product. Given {agent_num}, {env_num}'
     except Exception as e:
         logger.exception(f'spec {spec_name} fails spec check')
         raise e
