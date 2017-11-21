@@ -2,10 +2,13 @@
 The control module
 Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Session
 '''
+import numpy as np
 import pandas as pd
 import pydash as _
-from slm_lab.agent import Agent
-from slm_lab.env import Env
+# TODO resolve spec module name conflict, naming env_spec
+from slm_lab.spec import spec_util
+from slm_lab.agent import Agent, AgentSpace
+from slm_lab.env import Body, Env, EnvSpace
 from slm_lab.experiment.monitor import data_space
 from slm_lab.lib import logger, util, viz
 
@@ -22,50 +25,34 @@ class Session:
     '''
     spec = None
     data = None
-    agent = None
-    env = None
-    envs = []
-    agents = []
+    AEB_space = None
+    env_space = None
+    agent_space = None
 
     def __init__(self, spec):
         data_space.init_lab_comp_coor(self, spec)
         self.data = pd.DataFrame()
 
-        self.init_AEB()
-        self.init_envs()
-        self.init_agents()
-        self.init_bodies()
-
-    def init_AEB(self):
         # TODO init AEB space by resolving from data_space
-        return
+        # TODO put resolved space from spec into monitor.dataspace
+        self.AEB_space = spec_util.resolve_AEB(self.spec)
 
-    def init_envs(self):
-        for env_spec in self.spec['env']:
-            env = Env(env_spec, self.spec['meta'])
-            self.envs.append(env)
-        return self.envs
+        self.env_space = EnvSpace(self.spec)
+        self.agent_space = AgentSpace(self.spec)
+        self.env_space.set_agent_space(self.agent_space)
+        self.agent_space.set_env_space(self.env_space)
 
-    def init_agents(self):
-        for agent_spec in self.spec['agent']:
-            agent = Agent(agent_spec)
-            self.agents.append(agent)
-        return self.agents
+        self.init_bodies()
 
     def init_bodies(self):
         # TODO at init after AEB resolution and projection, check if all bodies can fit in env
         # TODO prolly need proxy body object to link from agent batch output index to bodies in generalized number of environments
         # AEB stores resolved AEB coordinates to linking bodies
-        # for (a, e, b) in self.AEB
-        #     body = self.create_body(a, e, b)
-        #     self.agents[a].add_body(body)
-        #     self.env[e].add_body(body)
-        # TODO tmp base base, use above later
-        self.agents[0].set_env(self.envs[0])
-        self.envs[0].set_agent(self.agents[0])
-        # TODO tmp set default singleton to make singleton logic work
-        self.agent = self.agents[0]
-        self.env = self.envs[0]
+        for (a, e, b) in self.AEB_space:
+            body = Body(a, e, b)
+            # TODO set upper reference to retrieve objects quickly
+            self.env_space.add_body(body)
+            self.agent_space.add_body(body)
 
     def close(self):
         '''
@@ -73,12 +60,11 @@ class Session:
         Save agent, close env.
         Prepare self.data.
         '''
-        # TODO catch all to close Unity when py runtime fails
-        self.agent.close()
-        self.env.close()
+        self.agent_space.close()
+        self.env_space.close()
         logger.info('Session done, closing.')
 
-    def run_episode(self):
+    def singleton_run_episode(self):
         '''
         TODO still WIP
         sys_vars is now session_data, should collect silently from agent and env (fully observable anyways with full access)
@@ -89,7 +75,6 @@ class Session:
         # TODO generalize and make state to include observables
         state = self.env.reset()
         logger.debug(f'reset state {state}')
-
         self.agent.reset()
         # RL steps for SARS
         for t in range(self.env.max_timestep):
@@ -100,6 +85,26 @@ class Session:
             # fully observable SARS from env, memory and training internally
             self.agent.update(reward, state)
             if done:
+                break
+        # TODO compose episode data
+        episode_data = {}
+        return episode_data
+
+    def run_episode(self):
+        # TODO rename agents to agent_space, envs to env_space, with class wrapper
+        # TODO generalize and make state to include observables
+        state_space = self.env_space.reset()
+        self.agent_space.reset()
+        # RL steps for SARS
+        for t in range(self.env_space.max_timestep):
+            action_space = self.agent_space.act(state_space)
+            logger.debug(f'action_space {action_space}')
+            reward_space, state_space, done_space = self.env_space.step(
+                action_space)
+            logger.debug(f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')
+            # fully observable SARS from env_space, memory and training internally
+            self.agent_space.update(reward_space, state_space)
+            if np.all(done_space):
                 break
         # TODO compose episode data
         episode_data = {}

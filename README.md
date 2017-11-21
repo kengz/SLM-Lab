@@ -123,14 +123,16 @@ When controlling a session of experiment, execute the agent and environment logi
 Hence, the experiment session loop generalizes directly from:
 ```
 state = self.env.reset()
+logger.debug(f'reset state {state}')
 self.agent.reset()
 # RL steps for SARS
 for t in range(self.env.max_timestep):
     action = self.agent.act(state)
+    logger.debug(f'action {action}')
     reward, state, done = self.env.step(action)
+    logger.debug(f'reward: {reward}, state: {state}, done: {done}')
     # fully observable SARS from env, memory and training internally
     self.agent.update(reward, state)
-    self.monitor.update()
     if done:
         break
 ```
@@ -140,12 +142,11 @@ to direct substitutions for singletons with spaces:
 state_space = self.env_space.reset()
 self.agent_space.reset()
 # RL steps for SARS
-for t in range(self.env_space.common_refinement_max_timestep):
+for t in range(self.env_space.max_timestep):
     action_space = self.agent_space.act(state_space)
     reward_space, state_space, done_space = self.env_space.step(action_space)
     # fully observable SARS from env_space, memory and training internally
     self.agent_space.update(reward_space, state_space)
-    self.monitor.update()
-    if done_space.all_done:
+    if done_space.done():
         break
 ```

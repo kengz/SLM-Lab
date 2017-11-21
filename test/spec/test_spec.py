@@ -1,27 +1,27 @@
-from slm_lab import spec
+from slm_lab.spec import spec_util
 
 
 def test_check():
-    exp_spec = spec.get('base.json', 'base_case')
-    assert spec.check(exp_spec, spec_name='base_case')
+    spec = spec_util.get('base.json', 'base_case')
+    assert spec_util.check(spec, spec_name='base_case')
 
 
 def test_check_all():
-    assert spec.check_all()
+    assert spec_util.check_all()
 
 
 def test_get():
-    exp_spec = spec.get('base.json', 'base_case')
-    assert exp_spec is not None
+    spec = spec_util.get('base.json', 'base_case')
+    assert spec is not None
 
 
 def test_resolve_AEB():
-    inner_exp_spec = spec.get('base.json', 'general_inner')
-    inner_AEB_space = spec.resolve_AEB(inner_exp_spec)
+    inner_spec = spec_util.get('base.json', 'general_inner')
+    inner_AEB_space = spec_util.resolve_AEB(inner_spec)
     assert inner_AEB_space == [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
 
-    outer_exp_spec = spec.get('base.json', 'general_outer')
-    outer_AEB_space = spec.resolve_AEB(outer_exp_spec)
+    outer_spec = spec_util.get('base.json', 'general_outer')
+    outer_AEB_space = spec_util.resolve_AEB(outer_spec)
     assert outer_AEB_space == [(0, 0, 0),
                                (0, 0, 1),
                                (0, 1, 0),
@@ -31,8 +31,8 @@ def test_resolve_AEB():
                                (1, 1, 0),
                                (1, 1, 1)]
 
-    custom_exp_spec = spec.get('base.json', 'general_custom')
-    custom_AEB_space = spec.resolve_AEB(custom_exp_spec)
+    custom_spec = spec_util.get('base.json', 'general_custom')
+    custom_AEB_space = spec_util.resolve_AEB(custom_spec)
     assert custom_AEB_space == [(0, 0, 0),
                                 (0, 1, 0),
                                 (0, 1, 1),

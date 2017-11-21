@@ -86,7 +86,17 @@ class RectifiedUnityEnv:
     # Rectify steps:
 
 
-# TODO make agent and env class implementation atomic and not worry about generalized case with AEB resolver
+class Body:
+    '''
+    The body of AEB, the abstraction class a body of an agent in an env.
+    Handles the link from Agent to Env, and the AEB resolution.
+    '''
+
+    # TODO implement
+    def __init__(self, a, e, b):
+        return
+
+
 class Env:
     '''
     Do the above
@@ -95,6 +105,7 @@ class Env:
     # TODO split subclass to handle unity specific logic,
     # TODO perhaps do extension like above again
     spec = None
+    AB_space = []
     u_env = None
     agent = None
 
@@ -145,3 +156,46 @@ class Env:
 
     def close(self):
         self.u_env.close()
+
+
+class EnvSpace:
+    # TODO common refinement for max_timestep in space
+    # also an idle logic for env that ends earlier than the other
+    max_timestep = None
+    envs = []
+    agent_space = None
+    E_AB_space = []
+
+    def __init__(self, spec):
+        for env_spec in spec['env']:
+            env = Env(env_spec, spec['meta'])
+            self.add(env)
+        # TODO tmp hack till env properly carries its own max timestep
+        self.max_timestep = _.get(spec, 'meta.max_timestep')
+
+    def add(self, env):
+        self.envs.append(env)
+        return self.envs
+
+    def set_agent_space(self, agent_space):
+        '''Make agent_space visible to env_space.'''
+        self.agent_space = agent_space
+        # TODO tmp set singleton
+        self.envs[0].set_agent(agent_space.agents[0])
+
+    def add_body(self, body):
+        # TODO add to EAB_space
+        # TODO set reference to agents, add_agent(agent), or not, just use AEB
+
+        return
+
+    def reset(self):
+        return self.envs[0].reset()
+
+    def step(self, action):
+        # return reward_space, state_space, done_space
+        return self.envs[0].step(action)
+
+    def close(self):
+        for env in self.envs:
+            env.close()

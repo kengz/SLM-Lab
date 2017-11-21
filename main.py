@@ -1,4 +1,4 @@
-from slm_lab import spec
+from slm_lab.spec import spec_util
 from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Session, Trial
 from slm_lab.lib import logger, util
@@ -9,10 +9,10 @@ def main():
     # TODO metaspec to specify specs to run, can be source from evolution suggestion
     # TODO set proper pattern
     logger.set_level('DEBUG')
-    exp_spec = spec.get('base.json', 'base_case')
-    # session = Session(exp_spec)
+    spec = spec_util.get('base.json', 'base_case')
+    # session = Session(spec)
     # session_data = session.run()
-    trial = Trial(exp_spec)
+    trial = Trial(spec)
     trial_data = trial.run()
 
 
