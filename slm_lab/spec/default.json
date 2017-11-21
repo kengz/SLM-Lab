@@ -57,7 +57,7 @@
     "meta": {
       "max_timestep": 20,
       "max_episode": 3,
-      "max_session": 3,
+      "max_session": 1,
       "max_trial": 1,
       "train_mode": false
     }
@@ -81,7 +81,7 @@
     "meta": {
       "max_timestep": 20,
       "max_episode": 3,
-      "max_session": 3,
+      "max_session": 1,
       "max_trial": 1,
       "train_mode": false
     }
@@ -99,13 +99,13 @@
       "param": {}
     }],
     "body": {
-      "product": "outer",
+      "product": "custom",
       "num": 1
     },
     "meta": {
       "max_timestep": 20,
       "max_episode": 3,
-      "max_session": 3,
+      "max_session": 1,
       "max_trial": 1,
       "train_mode": false
     }
@@ -132,7 +132,61 @@
     "meta": {
       "max_timestep": 20,
       "max_episode": 3,
-      "max_session": 3,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": false
+    }
+  },
+  "general_outer": {
+    "agent": [{
+      "name": "Random",
+      "param": {}
+    }, {
+      "name": "Random",
+      "param": {}
+    }],
+    "env": [{
+      "name": "3dball",
+      "param": {}
+    }, {
+      "name": "gridworld",
+      "param": {}
+    }],
+    "body": {
+      "product": "outer",
+      "num": 2
+    },
+    "meta": {
+      "max_timestep": 20,
+      "max_episode": 3,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": false
+    }
+  },
+  "general_inner": {
+    "agent": [{
+      "name": "Random",
+      "param": {}
+    }, {
+      "name": "Random",
+      "param": {}
+    }],
+    "env": [{
+      "name": "3dball",
+      "param": {}
+    }, {
+      "name": "gridworld",
+      "param": {}
+    }],
+    "body": {
+      "product": "inner",
+      "num": 2
+    },
+    "meta": {
+      "max_timestep": 20,
+      "max_episode": 3,
+      "max_session": 1,
       "max_trial": 1,
       "train_mode": false
     }

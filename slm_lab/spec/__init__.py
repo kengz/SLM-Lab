@@ -1,8 +1,10 @@
 '''
 The spec module
-Handles the Lab spec: reading, writing(evolution), validation and default setting
+Handles the Lab experiment spec: reading, writing(evolution), validation and default setting
+Expands the spec and params into consumable inputs in data space for lab units.
 '''
 # TODO spec resolver for params per trial
+import itertools
 import json
 import os
 import pydash as _
@@ -95,3 +97,42 @@ def get(spec_file, spec_name):
     exp_spec = spec_dict[spec_name]
     check(exp_spec, spec_name)
     return exp_spec
+
+
+# TODO debate, is it more effective to use named tuple as coor
+def resolve_AEB(exp_spec):
+    '''
+    Resolve an experiment spec into the full list of points (coordinates) in AEB space.
+    @param {dict} exp_spec An experiment spec.
+    @returns {list} coor_list Resolved list of points in AEB space.
+    @example
+
+    exp_spec = get('default.json', 'general_inner')
+    coor_list = spec.resolve_AEB(exp_spec)
+    # => [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
+    '''
+    agent_num = len(exp_spec['agent'])
+    env_num = len(exp_spec['env'])
+    ae_product = _.get(exp_spec, 'body.product')
+    body_num = _.get(exp_spec, 'body.num')
+
+    if ae_product == 'outer':
+        coor_list = list(itertools.product(
+            range(agent_num), range(env_num), range(body_num)))
+    elif ae_product == 'inner':
+        ae_coor_itr = zip(range(agent_num), range(env_num))
+        coor_list = list(itertools.product(
+            ae_coor_itr, range(body_num)))
+        coor_list = [(a, e, b) for ((a, e), b) in coor_list]
+    return coor_list
+
+
+def expand_param(param):
+    '''
+    Expand parameters for trials search
+    TODO implement
+    '''
+    return
+
+
+# TODO rename default spec
