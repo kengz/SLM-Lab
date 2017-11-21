@@ -43,7 +43,7 @@ def test_list():
 
 @pytest.fixture
 def test_exp_spec():
-    data = spec.get('default.json', 'test_case')
+    data = spec.get('base.json', 'test_case')
     return data
 
 

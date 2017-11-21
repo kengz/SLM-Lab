@@ -90,7 +90,7 @@ def get(spec_file, spec_name):
     Auto-check spec.
     @example
 
-    exp_spec = spec.get('default.json', 'base_case')
+    exp_spec = spec.get('base.json', 'base_case')
     '''
     spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
     assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {_.join(spec_dict.keys())}'
@@ -107,7 +107,7 @@ def resolve_AEB(exp_spec):
     @returns {list} coor_list Resolved list of points in AEB space.
     @example
 
-    exp_spec = get('default.json', 'general_inner')
+    exp_spec = get('base.json', 'general_inner')
     coor_list = spec.resolve_AEB(exp_spec)
     # => [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
     '''
@@ -133,6 +133,3 @@ def expand_param(param):
     TODO implement
     '''
     return
-
-
-# TODO rename default spec

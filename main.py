@@ -9,7 +9,7 @@ def main():
     # TODO metaspec to specify specs to run, can be source from evolution suggestion
     # TODO set proper pattern
     logger.set_level('DEBUG')
-    exp_spec = spec.get('default.json', 'base_case')
+    exp_spec = spec.get('base.json', 'base_case')
     # session = Session(exp_spec)
     # session_data = session.run()
     trial = Trial(exp_spec)
