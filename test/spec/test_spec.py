@@ -30,3 +30,19 @@ def test_resolve_AEB():
                                (1, 0, 1),
                                (1, 1, 0),
                                (1, 1, 1)]
+
+    custom_exp_spec = spec.get('base.json', 'general_custom')
+    custom_coor_list = spec.resolve_AEB(custom_exp_spec)
+    assert custom_coor_list == [(0, 0, 0),
+                                (0, 1, 0),
+                                (0, 1, 1),
+                                (0, 1, 2),
+                                (0, 1, 3),
+                                (0, 1, 4),
+                                (0, 1, 5),
+                                (0, 1, 6),
+                                (0, 1, 7),
+                                (0, 1, 8),
+                                (0, 1, 9),
+                                (0, 1, 10),
+                                (0, 1, 11)]

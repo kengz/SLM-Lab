@@ -22,7 +22,7 @@ SPEC_FORMAT = {
     }],
     "body": {
         "product": ["outer", "inner", "custom"],
-        "num": int
+        "num": (int, list)
     },
     "meta": {
         "max_timestep": (type(None), int),
@@ -47,6 +47,21 @@ def check_comp_spec(comp_spec, comp_spec_format):
                 comp_spec_v, v_type), f'Component spec {_.pick(comp_spec, spec_k)} needs to be of type: {v_type}'
 
 
+def check_body_spec(exp_spec):
+    '''Base method to check body spec for AEB space resolution'''
+    ae_product = _.get(exp_spec, 'body.product')
+    body_num = _.get(exp_spec, 'body.num')
+    if ae_product == 'outer':
+        assert isinstance(body_num, int)
+    elif ae_product == 'inner':
+        assert isinstance(body_num, int)
+        agent_num = len(exp_spec['agent'])
+        env_num = len(exp_spec['env'])
+        assert agent_num == env_num, 'Agent and Env spec length must be equal for body `inner` product. Given {agent_num}, {env_num}'
+    else:  # custom AEB
+        assert isinstance(body_num, list)
+
+
 def check(exp_spec, spec_name=''):
     '''Check a single exp_spec for validity, optionally given its spec_name'''
     try:
@@ -58,11 +73,7 @@ def check(exp_spec, spec_name=''):
             check_comp_spec(env_spec, SPEC_FORMAT['env'][0])
         check_comp_spec(exp_spec['body'], SPEC_FORMAT['body'])
         check_comp_spec(exp_spec['meta'], SPEC_FORMAT['meta'])
-
-        if _.get(exp_spec, 'body.product') == 'inner':
-            agent_num = len(exp_spec['agent'])
-            env_num = len(exp_spec['env'])
-            assert agent_num == env_num, 'Agent and Env spec length must be equal for body `inner` product. Given {agent_num}, {env_num}'
+        check_body_spec(exp_spec)
     except Exception as e:
         logger.exception(f'spec {spec_name} fails spec check')
         raise e
@@ -124,6 +135,8 @@ def resolve_AEB(exp_spec):
         coor_list = list(itertools.product(
             ae_coor_itr, range(body_num)))
         coor_list = [(a, e, b) for ((a, e), b) in coor_list]
+    else:  # custom AEB
+        coor_list = [tuple(aeb) for aeb in body_num]
     return coor_list
 
 
@@ -133,3 +146,5 @@ def expand_param(param):
     TODO implement
     '''
     return
+
+# TODO at init after AEB resolution and projection, check if all bodies can fit in env
