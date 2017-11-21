@@ -52,10 +52,10 @@ def check(exp_spec, spec_name=''):
         ), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
         for agent_spec in exp_spec['agent']:
             check_comp_spec(agent_spec, SPEC_FORMAT['agent'][0])
-            for env_spec in exp_spec['env']:
-                check_comp_spec(env_spec, SPEC_FORMAT['env'][0])
-                check_comp_spec(exp_spec['body'], SPEC_FORMAT['body'])
-                check_comp_spec(exp_spec['meta'], SPEC_FORMAT['meta'])
+        for env_spec in exp_spec['env']:
+            check_comp_spec(env_spec, SPEC_FORMAT['env'][0])
+        check_comp_spec(exp_spec['body'], SPEC_FORMAT['body'])
+        check_comp_spec(exp_spec['meta'], SPEC_FORMAT['meta'])
     except Exception as e:
         logger.exception(f'spec {spec_name} fails spec check')
         raise e
