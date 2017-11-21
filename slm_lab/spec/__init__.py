@@ -140,11 +140,12 @@ def resolve_AEB(exp_spec):
     return coor_list
 
 
-def expand_param(param):
+def resolve_param(exp_spec):
     '''
-    Expand parameters for trials search
-    TODO implement
+    Resolve an experiment spec into the param space or generator for experiment trials. Do so for each of Agent param, Env param, then their combinations.
+    Each point in the param space is a trial, which contains its own copy of AEB space. Hence the base experiment data space cardinality is param space x AEB space.
+    @param {dict} exp_spec An experiment spec.
+    @returns {list} param_list Resolved param space list of points or generator.
+    TODO implement and design AE params, like AEB space
     '''
     return
-
-# TODO at init after AEB resolution and projection, check if all bodies can fit in env

@@ -53,6 +53,7 @@ class Session:
         return self.agents
 
     def init_bodies(self):
+        # TODO at init after AEB resolution and projection, check if all bodies can fit in env
         # TODO prolly need proxy body object to link from agent batch output index to bodies in generalized number of environments
         # AEB stores resolved AEB coordinates to linking bodies
         # for (a, e, b) in self.AEB
