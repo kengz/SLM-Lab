@@ -25,7 +25,7 @@ class Session:
     '''
     spec = None
     data = None
-    AEB_space = None
+    aeb_coor_arr = None
     env_space = None
     agent_space = None
 
@@ -35,7 +35,7 @@ class Session:
 
         # TODO init AEB space by resolving from data_space
         # TODO put resolved space from spec into monitor.dataspace
-        self.AEB_space = spec_util.resolve_AEB(self.spec)
+        self.aeb_coor_arr = spec_util.resolve_aeb(self.spec)
 
         self.env_space = EnvSpace(self.spec)
         self.agent_space = AgentSpace(self.spec)
@@ -48,7 +48,7 @@ class Session:
         # TODO at init after AEB resolution and projection, check if all bodies can fit in env
         # TODO prolly need proxy body object to link from agent batch output index to bodies in generalized number of environments
         # AEB stores resolved AEB coordinates to linking bodies
-        for (a, e, b) in self.AEB_space:
+        for (a, e, b) in self.aeb_coor_arr:
             body = Body(a, e, b)
             # TODO set upper reference to retrieve objects quickly
             self.env_space.add_body(body)
@@ -64,7 +64,8 @@ class Session:
         self.env_space.close()
         logger.info('Session done, closing.')
 
-    def singleton_run_episode(self):
+
+    def run_episode(self):
         '''
         TODO still WIP
         sys_vars is now session_data, should collect silently from agent and env (fully observable anyways with full access)
@@ -73,34 +74,26 @@ class Session:
         make env observable to agent, vice versa. useful for memory
         '''
         # TODO generalize and make state to include observables
-        state = self.env.reset()
-        logger.debug(f'reset state {state}')
-        self.agent.reset()
-        # RL steps for SARS
-        for t in range(self.env.max_timestep):
-            action = self.agent.act(state)
-            logger.debug(f'action {action}')
-            reward, state, done = self.env.step(action)
-            logger.debug(f'reward: {reward}, state: {state}, done: {done}')
-            # fully observable SARS from env, memory and training internally
-            self.agent.update(reward, state)
-            if done:
-                break
-        # TODO compose episode data
-        episode_data = {}
-        return episode_data
-
-    def run_episode(self):
-        # TODO rename agents to agent_space, envs to env_space, with class wrapper
-        # TODO generalize and make state to include observables
         state_space = self.env_space.reset()
         self.agent_space.reset()
         # RL steps for SARS
         for t in range(self.env_space.max_timestep):
+            # TODO create an AEB data carrier for SARS
+            # state space from env is AEB on E, need to transpose
+            # ok do these internally to agent.
+            # or no need to transpose, just collect and fill up AEB space
+            # for every production, collect, aim aeb coor by bodies x A or E, fill in AEB cube
+            # TODO or could have a central storage with hashed index, and the AEB space element would jsut carry that index, so no real data is transformed
+            # so it's just a flattened list from both spaces
+            # this is all proxied by a space container carrying the data with the AEB index
+            # TODO needa class for taht
             action_space = self.agent_space.act(state_space)
+            # at this point, grouped by agent, but need to reproject and regroup by env. ensure all lies along AEB tho
+            # use transpose
             logger.debug(f'action_space {action_space}')
             reward_space, state_space, done_space = self.env_space.step(
                 action_space)
+            # at this point, grouped by env. still lying along AEB
             logger.debug(f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')
             # fully observable SARS from env_space, memory and training internally
             self.agent_space.update(reward_space, state_space)

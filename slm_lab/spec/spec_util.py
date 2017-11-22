@@ -3,9 +3,9 @@ The spec util
 Handles the Lab experiment spec: reading, writing(evolution), validation and default setting
 Expands the spec and params into consumable inputs in data space for lab units.
 '''
-# TODO spec resolver for params per trial
 import itertools
 import json
+import numpy as np
 import os
 import pydash as _
 from slm_lab.lib import logger, util
@@ -49,11 +49,11 @@ def check_comp_spec(comp_spec, comp_spec_format):
 
 def check_body_spec(spec):
     '''Base method to check body spec for AEB space resolution'''
-    AE_product = _.get(spec, 'body.product')
+    ae_product = _.get(spec, 'body.product')
     body_num = _.get(spec, 'body.num')
-    if AE_product == 'outer':
+    if ae_product == 'outer':
         assert isinstance(body_num, int)
-    elif AE_product == 'inner':
+    elif ae_product == 'inner':
         assert isinstance(body_num, int)
         agent_num = len(spec['agent'])
         env_num = len(spec['env'])
@@ -101,7 +101,7 @@ def get(spec_file, spec_name):
     Auto-check spec.
     @example
 
-    spec = spec.get('base.json', 'base_case')
+    spec = spec_util.get('base.json', 'base_case')
     '''
     spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
     assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {_.join(spec_dict.keys())}'
@@ -110,35 +110,34 @@ def get(spec_file, spec_name):
     return spec
 
 
-# TODO debate, is it more effective to use named tuple as coor
-# TODO check AEB_space body index increasing for the same AE pair
-def resolve_AEB(spec):
+def resolve_aeb(spec):
     '''
     Resolve an experiment spec into the full list of points (coordinates) in AEB space.
     @param {dict} spec An experiment spec.
-    @returns {list} AEB_space Resolved list of points in AEB space.
+    @returns {list} aeb_coor_arr Resolved array of points in AEB space.
     @example
 
-    spec = get('base.json', 'general_inner')
-    AEB_space = spec.resolve_AEB(spec)
-    # => [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
+    spec = spec_util.get('base.json', 'general_inner')
+    aeb_coor_arr = spec_util.resolve_aeb(spec)
+    # => np.array([[0, 0, 0], [0, 0, 1], [1, 1, 0], [1, 1, 1]])
     '''
     agent_num = len(spec['agent'])
     env_num = len(spec['env'])
-    AE_product = _.get(spec, 'body.product')
+    ae_product = _.get(spec, 'body.product')
     body_num = _.get(spec, 'body.num')
 
-    if AE_product == 'outer':
-        AEB_space = list(itertools.product(
+    if ae_product == 'outer':
+        aeb_coor_list = list(itertools.product(
             range(agent_num), range(env_num), range(body_num)))
-    elif AE_product == 'inner':
+    elif ae_product == 'inner':
         ae_coor_itr = zip(range(agent_num), range(env_num))
-        AEB_space = list(itertools.product(
+        aeb_coor_list = list(itertools.product(
             ae_coor_itr, range(body_num)))
-        AEB_space = [(a, e, b) for ((a, e), b) in AEB_space]
-    else:  # custom AEB
-        AEB_space = [tuple(aeb) for aeb in body_num]
-    return AEB_space
+        aeb_coor_list = [(a, e, b) for ((a, e), b) in aeb_coor_list]
+    else:  # custom AEB, body_num is a coor_list
+        aeb_coor_list = sorted(body_num)
+    aeb_coor_arr = np.array(aeb_coor_list)
+    return aeb_coor_arr
 
 
 def resolve_param(spec):
