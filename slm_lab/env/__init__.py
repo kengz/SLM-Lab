@@ -160,6 +160,7 @@ class Env:
 
 
 class EnvSpace:
+    # TODO rename method args to space
     # TODO common refinement for max_timestep in space
     # also an idle logic for env that ends earlier than the other
     max_timestep = None
@@ -183,12 +184,6 @@ class EnvSpace:
         self.agent_space = agent_space
         # TODO tmp set singleton
         self.envs[0].set_agent(agent_space.agents[0])
-
-    def add_body(self, body):
-        # TODO add to EAB_space
-        # TODO set reference to agents, add_agent(agent), or not, just use AEB
-
-        return
 
     def reset(self):
         return self.envs[0].reset()

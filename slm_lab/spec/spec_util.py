@@ -104,7 +104,7 @@ def get(spec_file, spec_name):
     spec = spec_util.get('base.json', 'base_case')
     '''
     spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
-    assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {_.join(spec_dict.keys())}'
+    assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {_.join(spec_dict.keys(), ",")}'
     spec = spec_dict[spec_name]
     check(spec, spec_name)
     return spec

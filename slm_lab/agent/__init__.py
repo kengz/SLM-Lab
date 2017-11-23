@@ -73,7 +73,7 @@ class Agent:
         '''Standard act method from algorithm.'''
         return self.algorithm.act(state)
 
-    def update(self, reward, state):
+    def update(self, reward, state, done):
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
@@ -91,6 +91,7 @@ class Agent:
 
 
 class AgentSpace:
+    # TODO rename method args to space
     agents = []
     A_EB_space = {}
 
@@ -108,11 +109,6 @@ class AgentSpace:
         self.env_space = env_space
         self.agents[0].set_env(env_space.envs[0])
 
-    def add_body(self, body):
-        # TODO add to A_EB_space
-        # TODO set reference to envs, add_env(env), or not, just use AEB
-        return
-
     def reset(self):
         return self.agents[0].reset()
 
@@ -120,9 +116,9 @@ class AgentSpace:
         # TODO tmp
         return self.agents[0].act(state)
 
-    def update(self, reward, state):
+    def update(self, reward, state, done):
         # TODO tmp
-        return self.agents[0].update(reward, state)
+        return self.agents[0].update(reward, state, done)
 
     def close(self):
         for agent in self.agents:

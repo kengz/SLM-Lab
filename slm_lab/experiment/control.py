@@ -5,8 +5,6 @@ Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Se
 import numpy as np
 import pandas as pd
 import pydash as _
-# TODO resolve spec module name conflict, naming env_spec
-from slm_lab.spec import spec_util
 from slm_lab.agent import Agent, AgentSpace
 from slm_lab.env import Body, Env, EnvSpace
 from slm_lab.experiment.monitor import data_space
@@ -26,6 +24,7 @@ class Session:
     spec = None
     data = None
     aeb_coor_arr = None
+    edge_aeb_coor = None
     env_space = None
     agent_space = None
 
@@ -35,24 +34,13 @@ class Session:
 
         # TODO init AEB space by resolving from data_space
         # TODO put resolved space from spec into monitor.dataspace
-        self.aeb_coor_arr = spec_util.resolve_aeb(self.spec)
+
+        # self.aeb_space = AEBSpace(self.spec)
 
         self.env_space = EnvSpace(self.spec)
         self.agent_space = AgentSpace(self.spec)
         self.env_space.set_agent_space(self.agent_space)
         self.agent_space.set_env_space(self.env_space)
-
-        self.init_bodies()
-
-    def init_bodies(self):
-        # TODO at init after AEB resolution and projection, check if all bodies can fit in env
-        # TODO prolly need proxy body object to link from agent batch output index to bodies in generalized number of environments
-        # AEB stores resolved AEB coordinates to linking bodies
-        for (a, e, b) in self.aeb_coor_arr:
-            body = Body(a, e, b)
-            # TODO set upper reference to retrieve objects quickly
-            self.env_space.add_body(body)
-            self.agent_space.add_body(body)
 
     def close(self):
         '''
@@ -63,7 +51,6 @@ class Session:
         self.agent_space.close()
         self.env_space.close()
         logger.info('Session done, closing.')
-
 
     def run_episode(self):
         '''
@@ -78,25 +65,14 @@ class Session:
         self.agent_space.reset()
         # RL steps for SARS
         for t in range(self.env_space.max_timestep):
-            # TODO create an AEB data carrier for SARS
-            # state space from env is AEB on E, need to transpose
-            # ok do these internally to agent.
-            # or no need to transpose, just collect and fill up AEB space
-            # for every production, collect, aim aeb coor by bodies x A or E, fill in AEB cube
-            # TODO or could have a central storage with hashed index, and the AEB space element would jsut carry that index, so no real data is transformed
-            # so it's just a flattened list from both spaces
-            # this is all proxied by a space container carrying the data with the AEB index
-            # TODO needa class for taht
             action_space = self.agent_space.act(state_space)
-            # at this point, grouped by agent, but need to reproject and regroup by env. ensure all lies along AEB tho
-            # use transpose
             logger.debug(f'action_space {action_space}')
-            reward_space, state_space, done_space = self.env_space.step(
-                action_space)
-            # at this point, grouped by env. still lying along AEB
-            logger.debug(f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')
-            # fully observable SARS from env_space, memory and training internally
-            self.agent_space.update(reward_space, state_space)
+            (reward_space, state_space,
+             done_space) = self.env_space.step(action_space)
+            logger.debug(
+                f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')
+            # completes cycle of full info for agent_space
+            self.agent_space.update(reward_space, state_space, done_space)
             if np.all(done_space):
                 break
         # TODO compose episode data
