@@ -2,6 +2,7 @@ from slm_lab.lib import logger
 
 
 def test_logger(test_multiline_str):
+    logger.set_level('DEBUG')
     logger.critical(test_multiline_str)
     logger.debug(test_multiline_str)
     logger.error(test_multiline_str)

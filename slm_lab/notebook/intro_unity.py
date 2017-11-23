@@ -15,20 +15,27 @@ import time
 from slm_lab.lib import util
 from unityagents import UnityEnvironment
 
-# TODO update env pathing from util var
-env_name = f'./node_modules/slm-env-3dball/build/3dball'
+# # Multiple env classes simultaneously
+# env_path = environment.get_env_path('3dball')
+# env_1 = UnityEnvironment(file_name=env_path, worker_id=1)
+# env_path = environment.get_env_path('gridworld')
+# env_2 = UnityEnvironment(file_name=env_path, worker_id=2)
+# env_1.reset(train_mode=False)
+# env_2.reset(train_mode=False)
+
+env_path = util.get_env_path('gridworld')
 # use train_mode = False to debug, i.e. render env at real size, real time
 train_mode = False
 
 # UnityEnvironment interfaces python with Unity,
 # and contains brains for controlling connected agents.
-env = UnityEnvironment(file_name=env_name)
+env = UnityEnvironment(file_name=env_path)
 print(str(env))
 
 # get the default brain
 default_brain = env.brain_names[0]
 brain = env.brains[default_brain]
-
+env_info = env.reset(train_mode=train_mode)[default_brain]
 '''
 is_continuous = (brain.action_space_type == 'continuous')
 use_observations = (brain.number_observations > 0)
@@ -56,7 +63,7 @@ env_info.local_done
 - list of ids of agents of the brain
 env_info.agents
 
-env.reset(train_model=True, config=None)
+env.reset(train_mode=True, config=None)
 env.step(action, memory=None, value=None)
 - action can be 1D array or 2D array if you have multiple agents per brains
 - memory is an optional input that can be used to send a list of floats
@@ -68,21 +75,21 @@ action = {'brain1': [1.0, 2.0], 'brain2': [3.0, 4.0]}
 '''
 
 
-# TODO move interface logic from openai lab
 for epi in range(10):
     # env.global_done could be used to check all
     env_info = env.reset(train_mode=train_mode)[default_brain]
+    state = env_info.states[0]
     done = False
     epi_rewards = 0
     while not done:
-        if brain.action_space_type == 'continuous':
-            action = np.random.randn(
-                len(env_info.agents), brain.action_space_size)
-            env_info = env.step(action)[default_brain]
-        else:
+        if brain.action_space_type == 'discrete':
             action = np.random.randint(
                 0, brain.action_space_size, size=(len(env_info.agents)))
-            env_info = env.step(action)[default_brain]
+        else:
+            action = np.random.randn(
+                len(env_info.agents), brain.action_space_size)
+        env_info = env.step(action)[default_brain]
+        state = env_info.states[0]
         epi_rewards += env_info.rewards[0]
         done = env_info.local_done[0]
     print('Total reward for this episode: {}'.format(epi_rewards))

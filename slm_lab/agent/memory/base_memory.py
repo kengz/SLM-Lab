@@ -3,8 +3,7 @@ import numpy as np
 
 class ReplayMemory:
     '''
-    Simple storage for storing agent experiences and sampling from them for
-    agent training
+    Simple storage for storing agent experiences and sampling from them for agent training
 
     An experience consists of
         - state: representation of a state
@@ -13,23 +12,18 @@ class ReplayMemory:
                 - Real numbers representing mean on action dist (continuous)
         - reward: scalar value
         - next state: representation of next state (should be same as state)
-        - terminal: 0 / 1 representing if the current state is the last
-                    in an episode
+        - terminal: 0 / 1 representing if the current state is the last in an episode
         - priority (optional): scalar value, unnormalized
 
     The memory has a size of N. When capacity is reached, the oldest experience
     is deleted to make space for the lastest experience.
-        - This is implemented as a circular buffer so that inserting
-          experiences are O(1)
-        - Each element of an experience is stored as a separate array of size
-          N * element dim
+        - This is implemented as a circular buffer so that inserting experiences are O(1)
+        - Each element of an experience is stored as a separate array of size N * element dim
 
-    When a batch of experiences is requested, K experiences are sampled
-    according to a random uniform distribution.
+    When a batch of experiences is requested, K experiences are sampled according to a random uniform distribution.
 
     All experiences have a priority of 1.
-    This allows for other implementations to sample based on the experience
-    priorities
+    This allows for other implementations to sample based on the experience priorities
     '''
 
     def __init__(self, size, state_dim, action_dim):
@@ -81,9 +75,7 @@ class ReplayMemory:
         '''
         Returns a batch of batch_size samples.
         Batch is stored as a dict.
-        Keys are the names of the different elements of
-        an experience. Values are an array of the corresponding
-        sampled elements
+        Keys are the names of the different elements of an experience. Values are an array of the corresponding sampled elements
         e.g.
             batch = {'states'      : states,
                      'actions'     : actions,
@@ -110,8 +102,7 @@ class ReplayMemory:
     def update_priorities(self, priorities):
         '''
         Updates the priorities from the most recent batch
-        Assumes the relevant batch indices are stored in
-        self.current_batch_indicies
+        Assumes the relevant batch indices are stored in self.current_batch_indicies
         '''
         assert len(priorites) == self.current_batch_indicies.size
         self.priorities[self.current_batch_indicies] = priorities

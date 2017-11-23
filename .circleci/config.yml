@@ -15,7 +15,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-{{ checksum "yarn.lock" }}
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
@@ -23,12 +23,17 @@ jobs:
       - run:
           name: Install NodeJS dependencies
           command: |
-            sudo npm install -g yarn
+            if which yarn >/dev/null; then
+              echo "Yarn is already installed"
+            else
+              sudo npm install -g yarn
+            fi
             yarn install
       - save_cache:
           paths:
             - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+            - ~/.cache/yarn
+          key: v1-dependencies-{{ checksum "yarn.lock" }}
 
       - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:
@@ -56,25 +61,24 @@ jobs:
             source activate lab
             conda env update -f environment.yml
 
-            if [ -d ~/ml-agents ]; then
-              echo "ml-agents already present"
+            if pip list | grep "^unityagents " >/dev/null; then
+              echo "unityagents of ml-agents already present"
             else
               git clone https://github.com/kengz/ml-agents.git ~/ml-agents/
+              cd ~/ml-agents/python && git pull
+              pip install .
+              cd ~/SLM-Lab
             fi
-            cd ~/ml-agents/python && git pull
-            pip install -e .
-            cd ~/SLM-Lab
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}
           paths:
             - ~/miniconda3
             - ~/.cache/pip
-            - ~/ml-agents
 
   test:
     environment:
       PY_ENV: test
-      CC_TEST_REPORTER_ID: 633cb615def2956cb2c4b0817b54f0e5b15bb8c42d9f9b921b8b2e02b217c369
+      CC_TEST_REPORTER_ID: ff1651bfca53185e6d295b5989f89074b87fd7d68c6d1f938f19ea9186572a81
 
     working_directory: ~/SLM-Lab
 
@@ -87,7 +91,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-{{ checksum "yarn.lock" }}
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "environment.yml" }}

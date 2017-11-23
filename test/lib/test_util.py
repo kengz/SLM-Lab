@@ -2,6 +2,14 @@ import os
 import pandas as pd
 import pytest
 from slm_lab.lib import util
+from slm_lab.agent import Agent
+
+
+def test_calc_timestamp_diff():
+    ts1 = '2017_10_17_084739'
+    ts2 = '2017_10_17_084740'
+    ts_diff = util.calc_timestamp_diff(ts2, ts1)
+    assert ts_diff == '0:00:01'
 
 
 def test_cast_df(test_df, test_list):
@@ -32,13 +40,55 @@ def test_flatten_dict(test_dict):
     assert util.flatten_dict({'a': {'b': 1}}, sep='_') == {'a_b': 1}
 
 
+def test_get_env_path():
+    assert 'node_modules/slm-env-3dball/build/3dball' in util.get_env_path(
+        '3dball')
+
+
+def test_get_fn_list():
+    fn_list = util.get_fn_list(Agent)
+    assert 'reset' in fn_list
+    assert 'act' in fn_list
+    assert 'update' in fn_list
+
+
+def test_get_timestamp():
+    timestamp = util.get_timestamp()
+    assert isinstance(timestamp, str)
+    assert util.RE_FILE_TS.match(timestamp)
+
+
 def test_is_jupyter():
     assert not util.is_jupyter()
 
 
+def test_is_sub_dict():
+    sub_dict = {'a': 1, 'b': 2}
+    super_dict = {'a': 0, 'b': 0, 'c': 0}
+    assert util.is_sub_dict(sub_dict, super_dict)
+    assert not util.is_sub_dict(super_dict, sub_dict)
+
+    nested_sub_dict = {'a': {'b': 1}, 'c': 2}
+    nested_super_dict = {'a': {'b': 0}, 'c': 0, 'd': 0}
+    assert util.is_sub_dict(nested_sub_dict, nested_super_dict)
+    assert not util.is_sub_dict(nested_super_dict, nested_sub_dict)
+    incon_nested_super_dict = {'a': {'b': 0}, 'c': {'d': 0}}
+    assert not util.is_sub_dict(nested_sub_dict, incon_nested_super_dict)
+    assert not util.is_sub_dict(incon_nested_super_dict, nested_sub_dict)
+
+
+def test_set_attr():
+    class Foo:
+        bar = 0
+    foo = Foo()
+    util.set_attr(foo, {'bar': 1, 'baz': 2})
+    assert foo.bar == 1
+    assert foo.baz == 2
+
+
 def test_smart_path():
-    rel_path = 'test/test_util.py'
-    fake_rel_path = 'test/test_util.py_fake'
+    rel_path = 'test/lib/test_util.py'
+    fake_rel_path = 'test/lib/test_util.py_fake'
     abs_path = os.path.abspath(__file__)
     assert util.smart_path(rel_path) == abs_path
     assert util.smart_path(fake_rel_path) == abs_path + '_fake'
@@ -94,19 +144,6 @@ def test_write_read_as_plain_list(test_str, filename, dtype):
 
 
 def test_read_file_not_found():
-    fake_rel_path = 'test/test_util.py_fake'
+    fake_rel_path = 'test/lib/test_util.py_fake'
     with pytest.raises(FileNotFoundError) as excinfo:
         util.read(fake_rel_path)
-
-
-def test_timestamp():
-    timestamp = util.get_timestamp()
-    assert isinstance(timestamp, str)
-    assert util.RE_FILE_TS.match(timestamp)
-
-
-def test_calc_timestamp_diff():
-    ts1 = '2017_10_17_084739'
-    ts2 = '2017_10_17_084740'
-    ts_diff = util.calc_timestamp_diff(ts2, ts1)
-    assert ts_diff == '0:00:01'
