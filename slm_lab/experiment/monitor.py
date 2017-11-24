@@ -18,7 +18,9 @@ DataSpace Components:
 - plug to NoSQL graph db, using graphql notation, and data backup
 - data_space viewer and stats method for evaluating and planning experiments
 '''
+import numpy as np
 from slm_lab.lib import util
+from slm_lab.spec import spec_util
 
 # These correspond to the control unit classes, lower cased
 COOR_AXES = [
@@ -35,7 +37,126 @@ COOR_AXES_ORDER = {
 }
 COOR_DIM = len(COOR_AXES)
 
-# TODO maybe not create new dict per episode and timestep for complexity. halts coordinates at AEB space to limit memory.
+# a = np.arange(4).reshape((2, 2))
+# a
+# a.itemset((1, 1), 100)
+# a
+# a = np.array([(1, 20, 3), (4, 5, 6)])
+# # a
+# np.amax(a, axis=0)
+# # a[:, 0]
+# # a[:, 0].max()
+# # a[:, 1]
+# spec = spec_util.get('base.json', 'general_custom')
+# coor_arr = spec_util.resolve_aeb(spec)
+# aeb_shape = np.amax(coor_arr, axis=0) + 1
+#
+# # these indices are permanent
+# a_data_idx_map = np.full(aeb_shape, -1, dtype=int)
+# a_data_idx_map.shape
+# # construct first, then transpose
+# e_data_idx_map = np.swapaxes(a_data_idx_map, 0, 1)
+# e_data_idx_map.shape
+# # e0.state = by brain and body
+#
+# # base loop:
+# # bodies per agent
+# action_space = agent_space.act(state_space)
+# # want subspace to refer super space, use the resolver to always return data in AEB format
+# # space class internal
+# # dummy first, with warning
+# raw_action_space = [agent.act(state_space) for agent in agents]
+# action_space = to_aeb_data_space(raw_action_space, a_data_idx_map)
+# # => into aeb shape
+# (reward_space, state_space,
+#  done_space) = self.env_space.step(action_space)
+# # same internals from raw to_aeb_data_space
+# # => take standardized format
+# # TODO also reshaping only changes the aeb_idx_space
+
+
+class AEBDataSpace:
+    aeb_idx_space = None
+    data_list = None
+
+    def __init__(self, coor_size):
+        self.aeb_idx_space = np.empty(coor_size, dtype=int)
+
+    def add(self, data, aeb_coor):
+        self.data_list.append(data)
+        idx = len(self.data_list) - 1
+        self.aeb_idx_space.itemset(aeb_coor, idx)
+
+    def get(self, aeb_coor):
+        return
+
+# TODO at init after AEB resolution and projection, check if all bodies can fit in env
+# TODO AEB needs to check agent output dim is sufficient
+
+
+def resolve_a_eb(space, a):
+    return space[0]
+
+
+def resolve_e_ab(space, e):
+    return space[0]
+
+
+class AEBSpace:
+    # will create AEBDataSpace
+    coor_arr = None
+    coor_size = None
+    # a registry of AEBDataSpace
+    # nice to have for monitor I guess
+    data_space_dict = {
+        'state': None,
+        'action': None,
+        'reward': None,
+        'done': None,
+    }
+
+    def __init__(self, spec):
+        self.coor_arr = spec_util.resolve_aeb(spec)
+        self.coor_size = np.amax(self.coor_arr, axis=0) + 1
+
+    def get_box(self):
+        return AEBDataSpace(self.coor_size)
+
+    def use(self):
+        '''
+        box = aeb_space.get_box()
+        for a, agent in enumerate(agents):
+            actions = agent.act()
+            for a_act_idx, action in enumerate(actions):
+                e, b = lookup(a, a_act_idx)
+                aeb_coor = (a,e,b)
+                box.add(action, aeb_coor)
+        # refactor
+        construct lookup of projector, for A, reduce to EB
+        pass agent x actions, with lookup to body,
+        an act is a body
+        every data producer must carry (full) signature in AEB space
+        e.g. per agent, in act(), the agent must have a mapper from action index to (a,e,b)
+        likewise for, per env, in (wrapped) step(), have a mapper from each dataspace to aeb,
+        it suffices to have one of each agent or env carry the AEB mapper
+        also when returning the data, the external resolver should just pick up the data as is, with the signature AEB mapper, and embed data into AEB space
+        AEB space needs to see A, E then, and should actually just store those signatures.
+        Session needs to init AEB space from spec, then A, E using the resolver for auto-architecture
+        the map is just projection
+        suppress dim to just EB, AB. flatten space, unflatten space. bodies are the true anchors.
+        suppress for each e in E then fill lookup by body
+        likewise for a in A
+        '''
+        return
+
+    def embed_data(self, data):
+        # needa be efficient
+        AEBDataSpace(coor_size)
+        return
+
+
+# TODO debate, is it more effective to use named tuple as coor
+# TODO check AEB_space body index increasing for the same AE pair
 
 
 class DataSpace:
@@ -120,4 +241,5 @@ class Monitor:
         return
 
 
+# TODO create like monitor, for experiment level
 data_space = DataSpace()

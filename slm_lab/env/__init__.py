@@ -9,7 +9,7 @@ from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
 from unityagents.environment import logger as unity_logger
-from slm_lab.experiment.monitor import data_space
+from slm_lab.experiment.monitor import data_space, resolve_e_ab
 
 unity_logger.setLevel('WARN')
 
@@ -186,11 +186,25 @@ class EnvSpace:
         self.envs[0].set_agent(agent_space.agents[0])
 
     def reset(self):
-        return self.envs[0].reset()
+        state_space = []
+        # TODO use DataSpace class, with np array
+        for env in self.envs:
+            state = env.reset()
+            state_space.append(state)
+        return state_space
 
-    def step(self, action):
-        # return reward_space, state_space, done_space
-        return self.envs[0].step(action)
+    def step(self, action_space):
+        # TODO use DataSpace class, with np array
+        reward_space = []
+        state_space = []
+        done_space = []
+        for e, env in enumerate(self.envs):
+            action = resolve_e_ab(action_space, e)
+            reward, state, done = env.step(action)
+            reward_space.append(reward)
+            state_space.append(state)
+            done_space.append(done)
+        return reward_space, state_space, done_space
 
     def close(self):
         for env in self.envs:

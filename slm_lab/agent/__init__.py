@@ -22,7 +22,7 @@ Agent components:
 '''
 # TODO need a mechanism that compose the components together using spec
 from slm_lab.agent import algorithm
-from slm_lab.experiment.monitor import data_space
+from slm_lab.experiment.monitor import data_space, resolve_a_eb
 from slm_lab.lib import util
 
 
@@ -107,18 +107,33 @@ class AgentSpace:
     def set_env_space(self, env_space):
         '''Make env_space visible to agent_space.'''
         self.env_space = env_space
+        # TODO tmp
         self.agents[0].set_env(env_space.envs[0])
 
     def reset(self):
-        return self.agents[0].reset()
+        for agent in self.agents:
+            agent.reset()
 
-    def act(self, state):
-        # TODO tmp
-        return self.agents[0].act(state)
+    def act(self, state_space):
+        # resolve state using AEB space, collect and spread by data idx
+        # return self.agents[0].act(state)
+        # TODO use DataSpace class, with np array
+        action_space = []
+        for a, agent in enumerate(self.agents):
+            state = resolve_a_eb(state_space, a)
+            action = agent.act(state)
+            action_space.append(action)
+        return action_space
 
-    def update(self, reward, state, done):
-        # TODO tmp
-        return self.agents[0].update(reward, state, done)
+    def update(self, reward_space, state_space, done_space):
+        # resolve data_space by AEB method again, spread
+        # return self.agents[0].update(reward, state, done)
+        # TODO use DataSpace class, with np array
+        for a, agent in enumerate(self.agents):
+            reward = resolve_a_eb(reward_space, a)
+            state = resolve_a_eb(state_space, a)
+            done = resolve_a_eb(done_space, a)
+            agent.update(reward, state, done)
 
     def close(self):
         for agent in self.agents:
