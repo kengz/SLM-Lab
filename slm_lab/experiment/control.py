@@ -7,7 +7,7 @@ import pandas as pd
 import pydash as _
 from slm_lab.agent import Agent, AgentSpace
 from slm_lab.env import Body, Env, EnvSpace
-from slm_lab.experiment.monitor import data_space
+from slm_lab.experiment.monitor import data_space, AEBSpace
 from slm_lab.lib import logger, util, viz
 
 
@@ -23,7 +23,7 @@ class Session:
     '''
     spec = None
     data = None
-    aeb_coor_arr = None
+    aeb_coor_list = None
     edge_aeb_coor = None
     env_space = None
     agent_space = None
@@ -32,15 +32,11 @@ class Session:
         data_space.init_lab_comp_coor(self, spec)
         self.data = pd.DataFrame()
 
-        # TODO init AEB space by resolving from data_space
         # TODO put resolved space from spec into monitor.dataspace
-
-        # self.aeb_space = AEBSpace(self.spec)
-
+        self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec)
         self.agent_space = AgentSpace(self.spec)
-        self.env_space.set_agent_space(self.agent_space)
-        self.agent_space.set_env_space(self.env_space)
+        self.aeb_space.set_space_ref(self.agent_space, self.env_space)
 
     def close(self):
         '''

@@ -136,6 +136,7 @@ def resolve_aeb(spec):
         aeb_coor_list = [(a, e, b) for ((a, e), b) in aeb_coor_list]
     else:  # custom AEB, body_num is a coor_list
         aeb_coor_list = [tuple(aeb) for aeb in sorted(body_num)]
+    # TODO check aeb_space body index increasing for the same AE pair (no skip)
     return aeb_coor_list
 
 

@@ -22,7 +22,7 @@ Agent components:
 '''
 # TODO need a mechanism that compose the components together using spec
 from slm_lab.agent import algorithm
-from slm_lab.experiment.monitor import data_space, resolve_a_eb
+from slm_lab.experiment.monitor import data_space
 from slm_lab.lib import util
 
 
@@ -92,8 +92,8 @@ class Agent:
 
 class AgentSpace:
     # TODO rename method args to space
+    aeb_space = None
     agents = []
-    A_EB_space = {}
 
     def __init__(self, spec):
         for agent_spec in spec['agent']:
@@ -104,10 +104,11 @@ class AgentSpace:
         self.agents.append(agent)
         return self.agents
 
-    def set_env_space(self, env_space):
-        '''Make env_space visible to agent_space.'''
-        self.env_space = env_space
-        # TODO tmp
+    def set_space_ref(self, aeb_space):
+        '''Make super aeb_space visible to agent_space.'''
+        self.aeb_space = aeb_space
+        # TODO tmp, resolve later from AEB
+        env_space = aeb_space.env_space
         self.agents[0].set_env(env_space.envs[0])
 
     def reset(self):
@@ -118,11 +119,12 @@ class AgentSpace:
         # resolve state using AEB space, collect and spread by data idx
         # return self.agents[0].act(state)
         # TODO use DataSpace class, with np array
-        action_space = []
+        action_list = []
         for a, agent in enumerate(self.agents):
-            state = resolve_a_eb(state_space, a)
+            state = state_space.get(a)
             action = agent.act(state)
-            action_space.append(action)
+            action_list.append(action)
+        action_space = self.aeb_space.add('action', action_list)
         return action_space
 
     def update(self, reward_space, state_space, done_space):
@@ -130,9 +132,9 @@ class AgentSpace:
         # return self.agents[0].update(reward, state, done)
         # TODO use DataSpace class, with np array
         for a, agent in enumerate(self.agents):
-            reward = resolve_a_eb(reward_space, a)
-            state = resolve_a_eb(state_space, a)
-            done = resolve_a_eb(done_space, a)
+            reward = reward_space.get(a)
+            state = state_space.get(a)
+            done = done_space.get(a)
             agent.update(reward, state, done)
 
     def close(self):

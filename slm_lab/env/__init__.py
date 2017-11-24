@@ -9,7 +9,7 @@ from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
 from unityagents.environment import logger as unity_logger
-from slm_lab.experiment.monitor import data_space, resolve_e_ab
+from slm_lab.experiment.monitor import data_space
 
 unity_logger.setLevel('WARN')
 
@@ -105,9 +105,8 @@ class Env:
     # TODO split subclass to handle unity specific logic,
     # TODO perhaps do extension like above again
     spec = None
-    # TODO only reference via body
-    AB_space = []
     u_env = None
+    # TODO tmp
     agent = None
 
     def __init__(self, multi_spec, meta_spec):
@@ -163,10 +162,9 @@ class EnvSpace:
     # TODO rename method args to space
     # TODO common refinement for max_timestep in space
     # also an idle logic for env that ends earlier than the other
-    max_timestep = None
+    aeb_space = None
     envs = []
-    agent_space = None
-    E_AB_space = []
+    max_timestep = None
 
     def __init__(self, spec):
         for env_spec in spec['env']:
@@ -179,31 +177,35 @@ class EnvSpace:
         self.envs.append(env)
         return self.envs
 
-    def set_agent_space(self, agent_space):
-        '''Make agent_space visible to env_space.'''
-        self.agent_space = agent_space
-        # TODO tmp set singleton
+    def set_space_ref(self, aeb_space):
+        '''Make super aeb_space visible to env_space.'''
+        self.aeb_space = aeb_space
+        # TODO tmp, resolve later from AEB
+        agent_space = aeb_space.agent_space
         self.envs[0].set_agent(agent_space.agents[0])
 
     def reset(self):
-        state_space = []
-        # TODO use DataSpace class, with np array
+        state_list = []
         for env in self.envs:
             state = env.reset()
-            state_space.append(state)
+            state_list.append(state)
+        state_space = self.aeb_space.add('state', state_list)
         return state_space
 
     def step(self, action_space):
         # TODO use DataSpace class, with np array
-        reward_space = []
-        state_space = []
-        done_space = []
+        reward_list = []
+        state_list = []
+        done_list = []
         for e, env in enumerate(self.envs):
-            action = resolve_e_ab(action_space, e)
+            action = action_space.get(e)
             reward, state, done = env.step(action)
-            reward_space.append(reward)
-            state_space.append(state)
-            done_space.append(done)
+            reward_list.append(reward)
+            state_list.append(state)
+            done_list.append(done)
+        reward_space = self.aeb_space.add('reward', reward_list)
+        state_space = self.aeb_space.add('state', state_list)
+        done_space = self.aeb_space.add('done', done_list)
         return reward_space, state_space, done_space
 
     def close(self):

@@ -37,20 +37,10 @@ COOR_AXES_ORDER = {
 }
 COOR_DIM = len(COOR_AXES)
 
-# a = np.arange(4).reshape((2, 2))
-# a
-# a.itemset((1, 1), 100)
-# a
-# a = np.array([(1, 20, 3), (4, 5, 6)])
-# # a
-# np.amax(a, axis=0)
-# # a[:, 0]
-# # a[:, 0].max()
-# # a[:, 1]
-# spec = spec_util.get('base.json', 'general_custom')
-# coor_arr = spec_util.resolve_aeb(spec)
-# aeb_shape = np.amax(coor_arr, axis=0) + 1
-#
+# TODO change to ensure coorlist is of tuples, add assert to coor usage
+
+# entities
+DataSpace > AEBSpace
 # # these indices are permanent
 # a_data_idx_map = np.full(aeb_shape, -1, dtype=int)
 # a_data_idx_map.shape
@@ -58,56 +48,60 @@ COOR_DIM = len(COOR_AXES)
 # e_data_idx_map = np.swapaxes(a_data_idx_map, 0, 1)
 # e_data_idx_map.shape
 # # e0.state = by brain and body
-#
-# # base loop:
-# # bodies per agent
-# action_space = agent_space.act(state_space)
-# # want subspace to refer super space, use the resolver to always return data in AEB format
-# # space class internal
-# # dummy first, with warning
-# raw_action_space = [agent.act(state_space) for agent in agents]
-# action_space = to_aeb_data_space(raw_action_space, a_data_idx_map)
-# # => into aeb shape
-# (reward_space, state_space,
-#  done_space) = self.env_space.step(action_space)
-# # same internals from raw to_aeb_data_space
-# # => take standardized format
-# # TODO also reshaping only changes the aeb_idx_space
-
-
-class AEBDataSpace:
-    aeb_idx_space = None
-    data_list = None
-
-    def __init__(self, coor_size):
-        self.aeb_idx_space = np.empty(coor_size, dtype=int)
-
-    def add(self, data, aeb_coor):
-        self.data_list.append(data)
-        idx = len(self.data_list) - 1
-        self.aeb_idx_space.itemset(aeb_coor, idx)
-
-    def get(self, aeb_coor):
-        return
 
 # TODO at init after AEB resolution and projection, check if all bodies can fit in env
 # TODO AEB needs to check agent output dim is sufficient
+# np.amax([[1,2], [3,4]], axis=0)
+# np.amax([(1,2), (3,4)], axis=0)
 
 
-def resolve_a_eb(space, a):
-    return space[0]
+class AEBDataSpace:
+    '''
+    AEB data space - data container with an AEB space hashed to index of a flat list of stored data
+    '''
+    data_name = None
+    aeb_idx_space = None
+    data_list = None
 
+    def __init__(self, data_name, coor_size):
+        self.data_name = data_name
+        self.aeb_idx_space = np.empty(coor_size, dtype=int)
 
-def resolve_e_ab(space, e):
-    return space[0]
+    # TODO below is predictable right
+    # so we shd be able to just batch input at one time per session step, make it the data_list. And so this class is only init once per session
+    # TODO also make auto resolver method
+    def construct_aeb_idx_space(self):
+        return
+
+    def add(self, data_list):
+        # TODO might wanna keep a history before replacement
+        self.data_list = data_list
+
+    def get(self, idx):
+        return self.data_list[idx]
+
+    def resolve_a_eb(self):
+        return
+
+    def resolve_e_ab(self):
+        return
+
+    # def add(self, data, aeb_coor):
+    #     self.data_list.append(data)
+    #     idx = len(self.data_list) - 1
+    #     self.aeb_idx_space.itemset(aeb_coor, idx)
+    #
+    # def get(self, aeb_coor):
+    #     # TODO assert aeb_coor is tuple by construction
+    #     idx = self.aeb_idx_space[aeb_coor]
+    #     return data[idx]
 
 
 class AEBSpace:
-    # will create AEBDataSpace
+    agent_space = None
+    env_space = None
     coor_arr = None
     coor_size = None
-    # a registry of AEBDataSpace
-    # nice to have for monitor I guess
     data_space_dict = {
         'state': None,
         'action': None,
@@ -118,45 +112,30 @@ class AEBSpace:
     def __init__(self, spec):
         self.coor_arr = spec_util.resolve_aeb(spec)
         self.coor_size = np.amax(self.coor_arr, axis=0) + 1
+        # TODO tmp placement here, but shd be after set_space_ref
+        self.init_data_space('TODO')
 
-    def get_box(self):
-        return AEBDataSpace(self.coor_size)
+    def set_space_ref(self, agent_space, env_space):
+        '''Set symmetric references from aeb_space to agent_space and env_space'''
+        self.agent_space = agent_space
+        self.env_space = env_space
+        self.agent_space.set_space_ref(self)
+        self.env_space.set_space_ref(self)
 
-    def use(self):
-        '''
-        box = aeb_space.get_box()
-        for a, agent in enumerate(agents):
-            actions = agent.act()
-            for a_act_idx, action in enumerate(actions):
-                e, b = lookup(a, a_act_idx)
-                aeb_coor = (a,e,b)
-                box.add(action, aeb_coor)
-        # refactor
-        construct lookup of projector, for A, reduce to EB
-        pass agent x actions, with lookup to body,
-        an act is a body
-        every data producer must carry (full) signature in AEB space
-        e.g. per agent, in act(), the agent must have a mapper from action index to (a,e,b)
-        likewise for, per env, in (wrapped) step(), have a mapper from each dataspace to aeb,
-        it suffices to have one of each agent or env carry the AEB mapper
-        also when returning the data, the external resolver should just pick up the data as is, with the signature AEB mapper, and embed data into AEB space
-        AEB space needs to see A, E then, and should actually just store those signatures.
-        Session needs to init AEB space from spec, then A, E using the resolver for auto-architecture
-        the map is just projection
-        suppress dim to just EB, AB. flatten space, unflatten space. bodies are the true anchors.
-        suppress for each e in E then fill lookup by body
-        likewise for a in A
-        '''
-        return
+    def init_data_space(self, data_name):
+        # TODO also create resolver lookup from env, agent, by defining an AEB projection to A, E, which can be used to init A, E too
+        # TODO tmp
+        for data_name in self.data_space_dict:
+            data_space = AEBDataSpace(data_name, self.coor_size)
+            self.data_space_dict[data_name] = data_space
 
-    def embed_data(self, data):
-        # needa be efficient
-        AEBDataSpace(coor_size)
-        return
+        # assert data_name in self.data_space_dict
+        # TODO pending logic of lookup hash from A, E spaces and spec
 
-
-# TODO debate, is it more effective to use named tuple as coor
-# TODO check AEB_space body index increasing for the same AE pair
+    def add(self, data_name, data_list):
+        data_space = self.data_space_dict[data_name]
+        data_space.add(data_list)
+        return data_space
 
 
 class DataSpace:
