@@ -114,12 +114,12 @@ def resolve_aeb(spec):
     '''
     Resolve an experiment spec into the full list of points (coordinates) in AEB space.
     @param {dict} spec An experiment spec.
-    @returns {list} aeb_coor_arr Resolved array of points in AEB space.
+    @returns {list} aeb_coor_list Resolved array of points in AEB space.
     @example
 
     spec = spec_util.get('base.json', 'general_inner')
-    aeb_coor_arr = spec_util.resolve_aeb(spec)
-    # => np.array([[0, 0, 0], [0, 0, 1], [1, 1, 0], [1, 1, 1]])
+    aeb_coor_list = spec_util.resolve_aeb(spec)
+    # => [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
     '''
     agent_num = len(spec['agent'])
     env_num = len(spec['env'])
@@ -135,9 +135,8 @@ def resolve_aeb(spec):
             ae_coor_itr, range(body_num)))
         aeb_coor_list = [(a, e, b) for ((a, e), b) in aeb_coor_list]
     else:  # custom AEB, body_num is a coor_list
-        aeb_coor_list = sorted(body_num)
-    aeb_coor_arr = np.array(aeb_coor_list)
-    return aeb_coor_arr
+        aeb_coor_list = [tuple(aeb) for aeb in sorted(body_num)]
+    return aeb_coor_list
 
 
 def resolve_param(spec):
