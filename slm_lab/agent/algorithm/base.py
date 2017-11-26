@@ -34,6 +34,6 @@ class Algorithm(ABC):
             return self.act_continuous(state)
 
     @abstractmethod
-    def update(self):
+    def update(self, reward, state, done):
         '''Implement algorithm update, or throw NotImplementedError'''
         raise NotImplementedError

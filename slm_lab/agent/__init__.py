@@ -78,10 +78,11 @@ class Agent:
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
+        # TODO count timestep, episode, absolute number of timesteps
         # TODO implement generic method
         # self.memory.update()
         # self.net.train()
-        self.algorithm.update()
+        self.algorithm.update(reward, state, done)
         return
 
     def close(self):

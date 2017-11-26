@@ -97,6 +97,10 @@ class Body:
         return
 
 
+class OpenAIEnv:
+    pass
+
+
 class Env:
     '''
     Do the above

@@ -61,6 +61,8 @@ class Session:
         self.agent_space.reset()
         # RL steps for SARS
         for t in range(self.env_space.max_timestep):
+            # TODO common partition of timestep
+            # TODO ability to train more on harder environments, or specify update per timestep per body, ratio of data u use to train. something like train_per_new_mem
             action_space = self.agent_space.act(state_space)
             logger.debug(f'action_space {action_space}')
             (reward_space, state_space,
