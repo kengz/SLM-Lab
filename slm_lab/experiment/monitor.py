@@ -9,15 +9,16 @@ AEB space is not necessarily tabular, and hence the data is NoSQL.
 The data_space is congruent to the coor, with proper resolution.
 E.g. (evolution,experiment,trial,session) specifies the session_data of a session, ran over multiple episodes on the AEB space.
 
-DataSpace Components:
-- AEB resolver
-- coor resolver
-- data_space resolver
-- monitor data sourcer
-- data_space getter and setter for running experiments
-- plug to NoSQL graph db, using graphql notation, and data backup
-- data_space viewer and stats method for evaluating and planning experiments
+Space ordering:
+- DataSpace: the general space for complete data
+- AEBSpace: subspace of DataSpace for a specific session
+- AgentSpace: space agent instances, subspace of AEBSpace
+- EnvSpace: space of env instances, subspace of AEBSpace
+- AEBDataSpace: a data space for a type of data inside AEBSpace, e.g. action_space, reward_space. Each (a,e,b) coordinate maps to a flat list of the data of the body (at a timestep). The map, `aeb_idx_space` is a copy of the AEBSpace, and its scalar value at (a,e,b) is the index of the data in `data_list`.
 '''
+# TODO - plug to NoSQL graph db, using graphql notation, and data backup
+# TODO - data_space viewer and stats method for evaluating and planning experiments
+# TODO change to ensure coorlist is of tuples, add assert to coor usage
 import numpy as np
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
@@ -37,10 +38,6 @@ COOR_AXES_ORDER = {
 }
 COOR_DIM = len(COOR_AXES)
 
-# TODO change to ensure coorlist is of tuples, add assert to coor usage
-
-# entities
-DataSpace > AEBSpace
 # # these indices are permanent
 # a_data_idx_map = np.full(aeb_shape, -1, dtype=int)
 # a_data_idx_map.shape
@@ -98,10 +95,10 @@ class AEBDataSpace:
 
 
 class AEBSpace:
-    agent_space = None
-    env_space = None
     coor_arr = None
     coor_size = None
+    agent_space = None
+    env_space = None
     data_space_dict = {
         'state': None,
         'action': None,
