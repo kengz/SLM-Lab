@@ -43,6 +43,8 @@ COOR_AXES_ORDER = {
     axis: idx for idx, axis in enumerate(COOR_AXES)
 }
 COOR_DIM = len(COOR_AXES)
+AGENT_DATA_NAMES = ['action']
+ENV_DATA_NAMES = ['state', 'reward', 'done']
 
 # TODO need to assert when accessing index data_proj[idx] idx != -1
 # TODO at init after AEB resolution and projection, check if all bodies can fit in env
@@ -55,20 +57,25 @@ class AEBDataSpace:
     '''
     # TODO prolly keep episodic, timestep historic data series
     data_name = None
-    aeb_idx_space = None
+    proj_aeb_idx_space = None
+    proj_axis = None
     data_proj = None
+    # TODO how to u know the axis of proj?
 
-    def __init__(self, data_name, aeb_idx_space):
+    def __init__(self, data_name, proj_aeb_idx_space):
         self.data_name = data_name
-        self.aeb_idx_space = aeb_idx_space
+        self.proj_aeb_idx_space = proj_aeb_idx_space
+        self.proj_axis = 'a' if data_name in AGENT_DATA_NAMES else 'e'
 
     def add(self, data_proj):
         # TODO might wanna keep a history before replacement, shove to DB
         self.data_proj = data_proj
 
-    def get(self, proj_idx):
-        # TODO resolve projection shape by reprojecting a_eb to e_ab, with proper eb, ab indices. vice versa. use aeb_idx_space
+    def get(self, a=None, e=None):
+        # TODO cache projection mode, if proj_axis is the same as the existing one, just get
+        # TODO resolve projection shape by reprojecting a_eb to e_ab, with proper eb, ab indices. vice versa. use proj_aeb_idx_space map from 'a' to 'e'
         # get for a, then flip to e, vice versa
+        proj_idx = a if a is not None else e
         assert proj_idx > -1
         return self.data_proj[proj_idx]
 
@@ -76,18 +83,15 @@ class AEBDataSpace:
 class AEBSpace:
     coor_arr = None
     aeb_shape = None
+    proj_aeb_idx_space = {
+        'a': None,
+        'e': None,
+    }
     agent_space = None
     env_space = None
     data_spaces = {
-        'state': None,
-        'action': None,
-        'reward': None,
-        'done': None,
+        data_name: None for data_name in _.concat(AGENT_DATA_NAMES, ENV_DATA_NAMES)
     }
-    agent_data_names = ['action']
-    env_data_names = _.difference(list(data_spaces.keys()), agent_data_names)
-    a_eb_idx_space = None
-    e_ab_idx_space = None
 
     def __init__(self, spec):
         self.coor_arr = spec_util.resolve_aeb(spec)
@@ -97,11 +101,7 @@ class AEBSpace:
     def init_data_spaces(self):
         self.init_aeb_idx_spaces()
         for data_name in self.data_spaces:
-            if data_name in self.agent_data_names:
-                aeb_idx_space = self.a_eb_idx_space
-            else:
-                aeb_idx_space = self.e_ab_idx_space
-            data_space = AEBDataSpace(data_name, aeb_idx_space)
+            data_space = AEBDataSpace(data_name, self.proj_aeb_idx_space)
             self.data_spaces[data_name] = data_space
 
     def init_aeb_idx_spaces(self):
@@ -115,7 +115,7 @@ class AEBSpace:
             for eb_idx, (e, b) in enumerate(eb_proj):
                 aeb = (a, e, b)
                 a_eb_idx_space.itemset(aeb, eb_idx)
-        self.a_eb_idx_space = a_eb_idx_space
+        self.proj_aeb_idx_space['a'] = a_eb_idx_space
 
         # env_space output data_proj shape [e, [(a, b)]]
         # TODO construct the AEB space proj to A, E from spec
@@ -127,7 +127,7 @@ class AEBSpace:
             for ab_idx, (a, b) in enumerate(ab_proj):
                 aeb = (a, e, b)
                 e_ab_idx_space.itemset(aeb, ab_idx)
-        self.e_ab_idx_space = e_ab_idx_space
+        self.proj_aeb_idx_space['e'] = e_ab_idx_space
 
     def add(self, data_name, data_proj):
         data_space = self.data_spaces[data_name]

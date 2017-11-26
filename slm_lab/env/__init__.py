@@ -198,7 +198,7 @@ class EnvSpace:
         state_proj = []
         done_proj = []
         for e, env in enumerate(self.envs):
-            action = action_space.get(e)
+            action = action_space.get(e=e)
             reward, state, done = env.step(action)
             reward_proj.append(reward)
             state_proj.append(state)

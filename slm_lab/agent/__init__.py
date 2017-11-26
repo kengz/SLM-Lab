@@ -120,7 +120,7 @@ class AgentSpace:
         # TODO use DataSpace class, with np array
         action_proj = []
         for a, agent in enumerate(self.agents):
-            state = state_space.get(a)
+            state = state_space.get(a=a)
             action = agent.act(state)
             action_proj.append(action)
         action_space = self.aeb_space.add('action', action_proj)
@@ -131,9 +131,9 @@ class AgentSpace:
         # return self.agents[0].update(reward, state, done)
         # TODO use DataSpace class, with np array
         for a, agent in enumerate(self.agents):
-            reward = reward_space.get(a)
-            state = state_space.get(a)
-            done = done_space.get(a)
+            reward = reward_space.get(a=a)
+            state = state_space.get(a=a)
+            done = done_space.get(a=a)
             agent.update(reward, state, done)
 
     def close(self):
