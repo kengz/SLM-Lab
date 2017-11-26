@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pydash as _
 from slm_lab.agent import Agent, AgentSpace
-from slm_lab.env import Body, Env, EnvSpace
+from slm_lab.env import Env, EnvSpace
 from slm_lab.experiment.monitor import data_space, AEBSpace
 from slm_lab.lib import logger, util, viz
 
@@ -21,17 +21,10 @@ class Session:
     TODO only experiment_spec, agent_spec, agent_spec
     auto-resolve param space spec for trial, copy for session with idx
     '''
-    spec = None
-    data = None
-    aeb_coor_list = None
-    edge_aeb_coor = None
-    env_space = None
-    agent_space = None
 
     def __init__(self, spec):
-        data_space.init_lab_comp_coor(self, spec)
+        self.coor, self.index, self.spec = data_space.init_lab_comp(self, spec)
         self.data = pd.DataFrame()
-
         # TODO put resolved space from spec into monitor.dataspace
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec)
@@ -61,7 +54,7 @@ class Session:
         self.agent_space.reset()
         # RL steps for SARS
         for t in range(self.env_space.max_timestep):
-            # TODO common partition of timestep
+            # TODO common refinement of timestep
             # TODO ability to train more on harder environments, or specify update per timestep per body, ratio of data u use to train. something like train_per_new_mem
             action_space = self.agent_space.act(state_space)
             logger.debug(f'action_space {action_space}')
@@ -94,13 +87,11 @@ class Trial:
     gather and aggregate data from sessions as trial data,
     then return the trial data.
     '''
-    spec = None
-    data = None
-    session = None
 
     def __init__(self, spec):
-        data_space.init_lab_comp_coor(self, spec)
+        self.coor, self.index, self.spec = data_space.init_lab_comp(self, spec)
         self.data = pd.DataFrame()
+        self.session = None
 
     def init_session(self):
         self.session = Session(self.spec)
@@ -131,13 +122,11 @@ class Experiment:
     An experiment then forms a node containing its data in the evolution graph with the evolution link and suggestion at the adjacent possible new experiments
     On the evolution graph level, an experiment and its neighbors could be seen as test/development of traits.
     '''
-    spec = None
-    data = None
-    trial = None
 
     def __init__(self, spec):
-        data_space.init_lab_comp_coor(self, spec)
-        return
+        self.coor, self.index, self.spec = data_space.init_lab_comp(self, spec)
+        self.data = pd.DataFrame()
+        self.trial = None
 
     def init_trial(self):
         self.trial = Trial(self.spec)

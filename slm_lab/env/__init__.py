@@ -86,18 +86,8 @@ class RectifiedUnityEnv:
     # Rectify steps:
 
 
-class Body:
-    '''
-    The body of AEB, the abstraction class a body of an agent in an env.
-    Handles the link from Agent to Env, and the AEB resolution.
-    '''
-
-    # TODO implement
-    def __init__(self, a, e, b):
-        return
-
-
 class OpenAIEnv:
+    # TODO merge OpenAI Env in SLM Lab
     pass
 
 
@@ -106,18 +96,15 @@ class Env:
     Do the above
     Also standardize logic from Unity environments
     '''
-    # TODO split subclass to handle unity specific logic,
-    # TODO perhaps do extension like above again
-    spec = None
-    u_env = None
-    # TODO tmp
-    agent = None
 
     def __init__(self, multi_spec, meta_spec):
-        data_space.init_lab_comp_coor(self, multi_spec)
+        self.coor, self.index, self.spec = data_space.init_lab_comp(
+            self, multi_spec)
         util.set_attr(self, self.spec)
         util.set_attr(self, meta_spec)
 
+        # TODO tmp
+        self.agent = None
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name),
             worker_id=self.index)
@@ -165,23 +152,16 @@ class Env:
 
 
 class EnvSpace:
-    # TODO rename method args to space
-    # TODO common refinement for max_timestep in space
-    # also an idle logic for env that ends earlier than the other
-    aeb_space = None
-    envs = []
-    max_timestep = None
+    # TODO common refinement of timestep
 
     def __init__(self, spec):
+        self.aeb_space = None
+        self.envs = []
         for env_spec in spec['env']:
             env = Env(env_spec, spec['meta'])
-            self.add(env)
+            self.envs.append(env)
         # TODO tmp hack till env properly carries its own max timestep
         self.max_timestep = _.get(spec, 'meta.max_timestep')
-
-    def add(self, env):
-        self.envs.append(env)
-        return self.envs
 
     def set_space_ref(self, aeb_space):
         '''Make super aeb_space visible to env_space.'''
