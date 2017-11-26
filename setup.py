@@ -8,7 +8,14 @@ test_args = [
     '--cov-report=html',
     '--cov-report=term',
     '--cov-report=xml',
-    '--cov=slm_lab',
+    '--cov=slm_lab/agent',
+    '--cov=slm_lab/curriculum',
+    '--cov=slm_lab/env',
+    '--cov=slm_lab/evolution',
+    '--cov=slm_lab/experiment',
+    '--cov=slm_lab/lib',
+    '--cov=slm_lab/spec',
+    '--cov=slm_lab/teacher',
     'test'
 ]
 

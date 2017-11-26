@@ -28,5 +28,5 @@ class Random(Algorithm):
             self.agent.body_num, self.agent.env.get_action_dim())
         return action
 
-    def update(self):
+    def update(self, reward, state, done):
         return

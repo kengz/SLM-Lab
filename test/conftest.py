@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-from slm_lab import spec
+from slm_lab.spec import spec_util
 from slm_lab.agent.net.feedforward import MLPNet
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.memory.base_memory import ReplayMemory
@@ -42,8 +42,8 @@ def test_list():
 
 
 @pytest.fixture
-def test_exp_spec():
-    data = spec.get('default.json', 'test_case')
+def test_spec():
+    data = spec_util.get('base.json', 'test_case')
     return data
 
 
