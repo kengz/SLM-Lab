@@ -69,7 +69,7 @@ class Session:
                 f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')
             # completes cycle of full info for agent_space
             self.agent_space.update(reward_space, state_space, done_space)
-            if np.all(done_space):
+            if bool(done_space):
                 break
         # TODO compose episode data
         episode_data = {}

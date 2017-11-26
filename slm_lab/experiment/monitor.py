@@ -26,6 +26,7 @@ E.g. `action_proj` collected from agent_space has the congruence of aeb_space pr
 # TODO change to ensure coorlist is of tuples, add assert to coor usage
 import numpy as np
 import pydash as _
+from copy import deepcopy
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 
@@ -57,33 +58,66 @@ class AEBDataSpace:
     '''
     # TODO prolly keep episodic, timestep historic data series
     data_name = None
-    proj_aeb_idx_space = None
+    aeb_proj_dual_map = None
     proj_axis = None
+    dual_proj_axis = None
     data_proj = None
-    # TODO how to u know the axis of proj?
+    dual_data_proj = None
 
-    def __init__(self, data_name, proj_aeb_idx_space):
+    def __init__(self, data_name, aeb_proj_dual_map):
         self.data_name = data_name
-        self.proj_aeb_idx_space = proj_aeb_idx_space
-        self.proj_axis = 'a' if data_name in AGENT_DATA_NAMES else 'e'
+        self.aeb_proj_dual_map = aeb_proj_dual_map
+        if data_name in AGENT_DATA_NAMES:
+            self.proj_axis = 'a'
+            self.dual_proj_axis = 'e'
+        else:
+            self.proj_axis = 'e'
+            self.dual_proj_axis = 'a'
+
+    def __str__(self):
+        return str(self.data_proj)
+
+    def __bool__(self):
+        return bool(np.all(self.data_proj))
+
+    def create_dual_data_proj(self, data_proj):
+        '''
+        Every data_proj from agent will be used by env, and vice versa.
+        Hence, on receiving data_proj, construct and cache the dual for fast access later.
+        '''
+        x_map = self.aeb_proj_dual_map[self.dual_proj_axis]
+        x_data_proj = []
+        for _x, y_map_idx_list in enumerate(x_map):
+            x_data_proj_x = []
+            for _x_idx, (y, xb_idx) in enumerate(y_map_idx_list):
+                data = data_proj[y][xb_idx]
+                x_data_proj_x.append(data)
+            x_data_proj.append(x_data_proj_x)
+        return x_data_proj
 
     def add(self, data_proj):
         # TODO might wanna keep a history before replacement, shove to DB
         self.data_proj = data_proj
+        self.dual_data_proj = self.create_dual_data_proj(data_proj)
 
     def get(self, a=None, e=None):
-        # TODO cache projection mode, if proj_axis is the same as the existing one, just get
-        # TODO resolve projection shape by reprojecting a_eb to e_ab, with proper eb, ab indices. vice versa. use proj_aeb_idx_space map from 'a' to 'e'
-        # get for a, then flip to e, vice versa
-        proj_idx = a if a is not None else e
+        if a is not None:
+            proj_axis = 'a'
+            proj_idx = a
+        else:
+            proj_axis = 'e'
+            proj_idx = e
         assert proj_idx > -1
-        return self.data_proj[proj_idx]
+        if proj_axis == self.proj_axis:
+            return self.data_proj[proj_idx]
+        else:
+            return self.dual_data_proj[proj_idx]
 
 
 class AEBSpace:
     coor_arr = None
     aeb_shape = None
-    proj_aeb_idx_space = {
+    aeb_proj_dual_map = {
         'a': None,
         'e': None,
     }
@@ -101,33 +135,51 @@ class AEBSpace:
     def init_data_spaces(self):
         self.init_aeb_idx_spaces()
         for data_name in self.data_spaces:
-            data_space = AEBDataSpace(data_name, self.proj_aeb_idx_space)
+            data_space = AEBDataSpace(data_name, self.aeb_proj_dual_map)
             self.data_spaces[data_name] = data_space
 
     def init_aeb_idx_spaces(self):
-        # agent_space output data_proj, shape [a, [(e, b)]]
         # TODO construct the AEB space proj to A, E from spec
+        # agent_space output data_proj, shape [a, [(e, b)]]
+        # env_space output data_proj shape [e, [(a, b)]]
+        # index is a, entries are (e, b)
         a_eb_proj = [
             [(0, 0)]
         ]
+        # index is e, entries are (a, b)
+        e_ab_proj = [
+            [(0, 0)]
+        ]
+        a_eb_dual_map = deepcopy(a_eb_proj)
+        e_ab_dual_map = deepcopy(e_ab_proj)
+
         a_eb_idx_space = np.full(self.aeb_shape, -1, dtype=int)
         for a, eb_proj in enumerate(a_eb_proj):
             for eb_idx, (e, b) in enumerate(eb_proj):
                 aeb = (a, e, b)
                 a_eb_idx_space.itemset(aeb, eb_idx)
-        self.proj_aeb_idx_space['a'] = a_eb_idx_space
 
-        # env_space output data_proj shape [e, [(a, b)]]
-        # TODO construct the AEB space proj to A, E from spec
-        e_ab_proj = [
-            [(0, 0)]
-        ]
         e_ab_idx_space = np.swapaxes(a_eb_idx_space, 0, 1)
         for e, ab_proj in enumerate(e_ab_proj):
             for ab_idx, (a, b) in enumerate(ab_proj):
                 aeb = (a, e, b)
                 e_ab_idx_space.itemset(aeb, ab_idx)
-        self.proj_aeb_idx_space['e'] = e_ab_idx_space
+
+        # construct dual maps
+        for a, eb_proj in enumerate(a_eb_proj):
+            for eb_idx, (e, b) in enumerate(eb_proj):
+                aeb = (a, e, b)
+                ab_idx = e_ab_idx_space[aeb]
+                a_eb_dual_map[a][eb_idx] = (e, ab_idx)
+
+        for e, ab_proj in enumerate(e_ab_proj):
+            for ab_idx, (a, b) in enumerate(ab_proj):
+                aeb = (a, e, b)
+                eb_idx = a_eb_idx_space[aeb]
+                e_ab_dual_map[e][ab_idx] = (a, eb_idx)
+
+        self.aeb_proj_dual_map['a'] = a_eb_dual_map
+        self.aeb_proj_dual_map['e'] = e_ab_dual_map
 
     def add(self, data_name, data_proj):
         data_space = self.data_spaces[data_name]

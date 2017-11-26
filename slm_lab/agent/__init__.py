@@ -71,7 +71,8 @@ class Agent:
 
     def act(self, state):
         '''Standard act method from algorithm.'''
-        return self.algorithm.act(state)
+        # TODO tmp make act across bodies
+        return [self.algorithm.act(state)]
 
     def update(self, reward, state, done):
         '''

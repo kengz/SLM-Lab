@@ -138,7 +138,8 @@ class Env:
         env_info = self.u_env.reset(train_mode=self.train_mode)[default_brain]
         # TODO body-resolver:
         body_index = 0
-        state = env_info.states[body_index]
+        # TODO make spread across body
+        state = [env_info.states[body_index]]
         # TODO return observables instead of just state
         return state
 
@@ -149,9 +150,10 @@ class Env:
         env_info = self.u_env.step(action)[default_brain]
         # TODO body-resolver:
         body_index = 0
-        reward = env_info.rewards[body_index]
-        state = env_info.states[body_index]
-        done = env_info.local_done[body_index]
+        # TODO tmp make across bodies
+        reward = [env_info.rewards[body_index]]
+        state = [env_info.states[body_index]]
+        done = [env_info.local_done[body_index]]
         return reward, state, done
 
     def close(self):
