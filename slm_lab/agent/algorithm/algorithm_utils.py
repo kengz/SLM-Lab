@@ -3,7 +3,7 @@ import random
 
 '''Functions used by more than one algorithm'''
 
-def select_action_epsilon_greedy(net, state, epsilon):
+def act_with_epsilon_greedy(net, state, epsilon):
     '''
     With probability episilon select a random action,
     otherwise select the action associated with the
@@ -21,6 +21,10 @@ def select_action_epsilon_greedy(net, state, epsilon):
     one_hot_a[0][action] = 1
     return one_hot_a
 
-def select_action_boltzmann(net, state, tau):
-    # TODO: implement select_action_boltzmann
+def act_with_boltzmann(net, state, tau):
+    # TODO: implement act_with_boltzmann
+    pass
+
+def act_with_gaussian(net, state):
+    # TODO: implement act_with_gaussian
     pass

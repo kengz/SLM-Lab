@@ -1,5 +1,5 @@
 import torch
-from slm_lab.agent.algorithm.common import *
+from slm_lab.agent.algorithm.algorithm_utils import *
 
 class DQN:
     '''
