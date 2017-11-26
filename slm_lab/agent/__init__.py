@@ -116,15 +116,14 @@ class AgentSpace:
             agent.reset()
 
     def act(self, state_space):
-        # resolve state using AEB space, collect and spread by data idx
         # return self.agents[0].act(state)
         # TODO use DataSpace class, with np array
-        action_list = []
+        action_proj = []
         for a, agent in enumerate(self.agents):
             state = state_space.get(a)
             action = agent.act(state)
-            action_list.append(action)
-        action_space = self.aeb_space.add('action', action_list)
+            action_proj.append(action)
+        action_space = self.aeb_space.add('action', action_proj)
         return action_space
 
     def update(self, reward_space, state_space, done_space):

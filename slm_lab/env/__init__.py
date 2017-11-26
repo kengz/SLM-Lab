@@ -185,27 +185,27 @@ class EnvSpace:
         self.envs[0].set_agent(agent_space.agents[0])
 
     def reset(self):
-        state_list = []
+        state_proj = []
         for env in self.envs:
             state = env.reset()
-            state_list.append(state)
-        state_space = self.aeb_space.add('state', state_list)
+            state_proj.append(state)
+        state_space = self.aeb_space.add('state', state_proj)
         return state_space
 
     def step(self, action_space):
         # TODO use DataSpace class, with np array
-        reward_list = []
-        state_list = []
-        done_list = []
+        reward_proj = []
+        state_proj = []
+        done_proj = []
         for e, env in enumerate(self.envs):
             action = action_space.get(e)
             reward, state, done = env.step(action)
-            reward_list.append(reward)
-            state_list.append(state)
-            done_list.append(done)
-        reward_space = self.aeb_space.add('reward', reward_list)
-        state_space = self.aeb_space.add('state', state_list)
-        done_space = self.aeb_space.add('done', done_list)
+            reward_proj.append(reward)
+            state_proj.append(state)
+            done_proj.append(done)
+        reward_space = self.aeb_space.add('reward', reward_proj)
+        state_space = self.aeb_space.add('state', state_proj)
+        done_space = self.aeb_space.add('done', done_proj)
         return reward_space, state_space, done_space
 
     def close(self):

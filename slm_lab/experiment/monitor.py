@@ -10,16 +10,22 @@ The data_space is congruent to the coor, with proper resolution.
 E.g. (evolution,experiment,trial,session) specifies the session_data of a session, ran over multiple episodes on the AEB space.
 
 Space ordering:
-- DataSpace: the general space for complete data
-- AEBSpace: subspace of DataSpace for a specific session
-- AgentSpace: space agent instances, subspace of AEBSpace
-- EnvSpace: space of env instances, subspace of AEBSpace
-- AEBDataSpace: a data space for a type of data inside AEBSpace, e.g. action_space, reward_space. Each (a,e,b) coordinate maps to a flat list of the data of the body (at a timestep). The map, `aeb_idx_space` is a copy of the AEBSpace, and its scalar value at (a,e,b) is the index of the data in `data_list`.
+DataSpace: the general space for complete data
+
+AEBSpace: subspace of DataSpace for a specific session
+
+AgentSpace: space agent instances, subspace of AEBSpace
+
+EnvSpace: space of env instances, subspace of AEBSpace
+
+AEBDataSpace: a data space for a type of data inside AEBSpace, e.g. action_space, reward_space. Each (a,e,b) coordinate maps to a projection (a or e axis) of the data of the body (at a timestep). The map, `aeb_idx_space` is a copy of the AEBSpace, and its scalar value at (a,e,b) is the projected index (ab_idx, eb_idx) of the data in `data_proj`.
+E.g. `action_proj` collected from agent_space has the congruence of aeb_space projected on the a-axis, `a_eb_proj = [[(0, 0)]]` with shape [a, [(e, b)]]. First flat index is from the first agent, and the data there is for the multiple bodies of the agent, belonging to (e,b). Vice versa (swap a-e) for `data_proj` collected from env_space.
 '''
 # TODO - plug to NoSQL graph db, using graphql notation, and data backup
 # TODO - data_space viewer and stats method for evaluating and planning experiments
 # TODO change to ensure coorlist is of tuples, add assert to coor usage
 import numpy as np
+import pydash as _
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 
@@ -38,101 +44,102 @@ COOR_AXES_ORDER = {
 }
 COOR_DIM = len(COOR_AXES)
 
-# # these indices are permanent
-# a_data_idx_map = np.full(aeb_shape, -1, dtype=int)
-# a_data_idx_map.shape
-# # construct first, then transpose
-# e_data_idx_map = np.swapaxes(a_data_idx_map, 0, 1)
-# e_data_idx_map.shape
-# # e0.state = by brain and body
-
+# TODO need to assert when accessing index data_proj[idx] idx != -1
 # TODO at init after AEB resolution and projection, check if all bodies can fit in env
 # TODO AEB needs to check agent output dim is sufficient
-# np.amax([[1,2], [3,4]], axis=0)
-# np.amax([(1,2), (3,4)], axis=0)
 
 
 class AEBDataSpace:
     '''
     AEB data space - data container with an AEB space hashed to index of a flat list of stored data
     '''
+    # TODO prolly keep episodic, timestep historic data series
     data_name = None
     aeb_idx_space = None
-    data_list = None
+    data_proj = None
 
-    def __init__(self, data_name, coor_size):
+    def __init__(self, data_name, aeb_idx_space):
         self.data_name = data_name
-        self.aeb_idx_space = np.empty(coor_size, dtype=int)
+        self.aeb_idx_space = aeb_idx_space
 
-    # TODO below is predictable right
-    # so we shd be able to just batch input at one time per session step, make it the data_list. And so this class is only init once per session
-    # TODO also make auto resolver method
-    def construct_aeb_idx_space(self):
-        return
+    def add(self, data_proj):
+        # TODO might wanna keep a history before replacement, shove to DB
+        self.data_proj = data_proj
 
-    def add(self, data_list):
-        # TODO might wanna keep a history before replacement
-        self.data_list = data_list
-
-    def get(self, idx):
-        return self.data_list[idx]
-
-    def resolve_a_eb(self):
-        return
-
-    def resolve_e_ab(self):
-        return
-
-    # def add(self, data, aeb_coor):
-    #     self.data_list.append(data)
-    #     idx = len(self.data_list) - 1
-    #     self.aeb_idx_space.itemset(aeb_coor, idx)
-    #
-    # def get(self, aeb_coor):
-    #     # TODO assert aeb_coor is tuple by construction
-    #     idx = self.aeb_idx_space[aeb_coor]
-    #     return data[idx]
+    def get(self, proj_idx):
+        # TODO resolve projection shape by reprojecting a_eb to e_ab, with proper eb, ab indices. vice versa. use aeb_idx_space
+        # get for a, then flip to e, vice versa
+        assert proj_idx > -1
+        return self.data_proj[proj_idx]
 
 
 class AEBSpace:
     coor_arr = None
-    coor_size = None
+    aeb_shape = None
     agent_space = None
     env_space = None
-    data_space_dict = {
+    data_spaces = {
         'state': None,
         'action': None,
         'reward': None,
         'done': None,
     }
+    agent_data_names = ['action']
+    env_data_names = _.difference(list(data_spaces.keys()), agent_data_names)
+    a_eb_idx_space = None
+    e_ab_idx_space = None
 
     def __init__(self, spec):
         self.coor_arr = spec_util.resolve_aeb(spec)
-        self.coor_size = np.amax(self.coor_arr, axis=0) + 1
-        # TODO tmp placement here, but shd be after set_space_ref
-        self.init_data_space('TODO')
+        self.aeb_shape = np.amax(self.coor_arr, axis=0) + 1
+        self.init_data_spaces()
+
+    def init_data_spaces(self):
+        self.init_aeb_idx_spaces()
+        for data_name in self.data_spaces:
+            if data_name in self.agent_data_names:
+                aeb_idx_space = self.a_eb_idx_space
+            else:
+                aeb_idx_space = self.e_ab_idx_space
+            data_space = AEBDataSpace(data_name, aeb_idx_space)
+            self.data_spaces[data_name] = data_space
+
+    def init_aeb_idx_spaces(self):
+        # agent_space output data_proj, shape [a, [(e, b)]]
+        # TODO construct the AEB space proj to A, E from spec
+        a_eb_proj = [
+            [(0, 0)]
+        ]
+        a_eb_idx_space = np.full(self.aeb_shape, -1, dtype=int)
+        for a, eb_proj in enumerate(a_eb_proj):
+            for eb_idx, (e, b) in enumerate(eb_proj):
+                aeb = (a, e, b)
+                a_eb_idx_space.itemset(aeb, eb_idx)
+        self.a_eb_idx_space = a_eb_idx_space
+
+        # env_space output data_proj shape [e, [(a, b)]]
+        # TODO construct the AEB space proj to A, E from spec
+        e_ab_proj = [
+            [(0, 0)]
+        ]
+        e_ab_idx_space = np.swapaxes(a_eb_idx_space, 0, 1)
+        for e, ab_proj in enumerate(e_ab_proj):
+            for ab_idx, (a, b) in enumerate(ab_proj):
+                aeb = (a, e, b)
+                e_ab_idx_space.itemset(aeb, ab_idx)
+        self.e_ab_idx_space = e_ab_idx_space
+
+    def add(self, data_name, data_proj):
+        data_space = self.data_spaces[data_name]
+        data_space.add(data_proj)
+        return data_space
 
     def set_space_ref(self, agent_space, env_space):
-        '''Set symmetric references from aeb_space to agent_space and env_space'''
+        '''Set symmetric references from aeb_space to agent_space and env_space. Called from control.'''
         self.agent_space = agent_space
         self.env_space = env_space
         self.agent_space.set_space_ref(self)
         self.env_space.set_space_ref(self)
-
-    def init_data_space(self, data_name):
-        # TODO also create resolver lookup from env, agent, by defining an AEB projection to A, E, which can be used to init A, E too
-        # TODO tmp
-        for data_name in self.data_space_dict:
-            data_space = AEBDataSpace(data_name, self.coor_size)
-            self.data_space_dict[data_name] = data_space
-
-        # assert data_name in self.data_space_dict
-        # TODO pending logic of lookup hash from A, E spaces and spec
-
-    def add(self, data_name, data_list):
-        data_space = self.data_space_dict[data_name]
-        data_space.add(data_list)
-        return data_space
 
 
 class DataSpace:
