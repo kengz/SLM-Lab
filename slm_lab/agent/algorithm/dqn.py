@@ -1,11 +1,14 @@
 import torch
-from slm_lab.agent.algorithm.algorithm_utils import *
+from slm_lab.agent.algorithm.algorithm_utils import act_fns, update_fns
+from slm_lab.agent.net import nets
+from slm_lab.agent.memory.base_memory import ReplayMemory
 
-class DQN:
+class DQNBase:
     '''
-    Implementation of the DQN algorithm.
-    See Playing Atari with Deep Reinforcement Learning for more info
-    https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf
+    Implementation of the base DQN algorithm.
+    See Sergey Levine's lecture xxx for more details
+    TODO: add link
+          more detailed comments
 
     net: instance of an slm_lab/agent/net
     memory: instance of an slm_lab/agent/memory
@@ -14,29 +17,40 @@ class DQN:
                       actions
     gamma: Real number in range [0, 1]. Determines how much to discount the
            future
+    state_dim: dimension of the state space
+    action_dim: dimensions of the action space
     '''
 
-    # TODO: Change init to something like
-    # def __init__(self, spec):
-    #     self.net = spec['NetType'](*spec.net.params)
-
-    def __init__(self,
-                 net,
-                 memory,
-                 batch_size=32,
-                 action_selection=select_action_epsilon_greedy,
-                 gamma=0.98):
-        super(DQN,self).__init__()
-        self.net = net
-        self.memory = memory
-        self.batch_size = batch_size
-        self.action_selection = action_selection
-        self.gamma = gamma
+    def __init__(self, spec, state_dim, action_dim):
+        super(DQNBase,self).__init__()
+        spec['net_layer_params'][0] = state_dim
+        spec['net_layer_params'][-1] = action_dim
+        self.net = nets[spec['net_type']](
+            *spec['net_layer_params'],
+            *spec['net_other_params'])
+        # TODO: three nets for different part of Q function
+        # In base algorithm should all be pointer to the same
+        # net - then update compute q target values and action
+        # functions
+        self.memory = ReplayMemory(
+            spec['memory_size'],
+            state_dim,
+            action_dim)
+        self.batch_size = spec['batch_size']
+        self.action_selection = act_fns[spec['action_selection']]
+        self.gamma = spec['gamma']
+        self.epsilon_tau_start = spec['epsilon_tau_start']
+        self.epsilon_tau_end = spec['epsilon_tau_end']
+        self.epsilon_or_tau = self.epsilon_tau_start
+        self.decay_steps = spec['decay_steps']
+        self.training_iters_per_batch = 1
 
     def train_a_batch(self):
+        # TODO: Fix for training iters
         batch = self.memory.get_batch(self.batch_size)
-        q_targets = self.compute_q_target_values(batch)
-        loss = self.net.training_step(batch['states'], q_targets)
+        for i in range(self.training_iters_per_batch):
+            q_targets = self.compute_q_target_values(batch)
+            loss = self.net.training_step(batch['states'], q_targets)
         return loss
 
     def compute_q_target_values(self, batch):
@@ -54,9 +68,13 @@ class DQN:
                     torch.mul(q_vals, (1 - batch['actions']))
         return q_targets
 
-    def select_action(self, state, epsilon_or_tau):
-        return self.action_selection(self.net, state, epsilon_or_tau)
+    def select_action(self, state):
+        return self.action_selection(
+                    self.net,
+                    state,
+                    self.epsilon_or_tau)
 
     def update(self):
         # TODO:
+        # Update epsilon or boltzmann
         pass
