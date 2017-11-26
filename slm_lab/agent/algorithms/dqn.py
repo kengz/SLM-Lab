@@ -16,6 +16,10 @@ class DQN:
            future
     '''
 
+    # TODO: Change init to something like
+    # def __init__(self, spec):
+    #     self.net = spec['NetType'](*spec.net.params)
+
     def __init__(self,
                  net,
                  memory,
@@ -39,7 +43,7 @@ class DQN:
         q_vals = self.net.eval(batch['states'])
         # Make future reward 0 if the current state is terminal
         q_targets_all = batch['rewards'] + self.gamma * \
-            (1 - batch['terminals'])  * self.net.eval(batch['next_states'])
+            (1 - batch['terminals']) * self.net.eval(batch['next_states'])
         q_targets_max = torch.max(q_targets_all, axis=1)
         # Reshape q_targets_max to q_targets all shape
         q_targets_max = q_targets_max.expand(-1, q_targets_all.shape[1])
@@ -52,3 +56,7 @@ class DQN:
 
     def select_action(self, state, epsilon_or_tau):
         return self.action_selection(self.net, state, epsilon_or_tau)
+
+    def update(self):
+        # TODO:
+        pass
