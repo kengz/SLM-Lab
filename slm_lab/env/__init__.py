@@ -9,6 +9,7 @@ from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
 from unityagents.environment import logger as unity_logger
+from slm_lab.experiment.monitor import data_space
 
 unity_logger.setLevel('WARN')
 
@@ -85,7 +86,21 @@ class RectifiedUnityEnv:
     # Rectify steps:
 
 
-# TODO make agent and env class implementation atomic and not worry about generalized case with AEB resolver
+class Body:
+    '''
+    The body of AEB, the abstraction class a body of an agent in an env.
+    Handles the link from Agent to Env, and the AEB resolution.
+    '''
+
+    # TODO implement
+    def __init__(self, a, e, b):
+        return
+
+
+class OpenAIEnv:
+    pass
+
+
 class Env:
     '''
     Do the above
@@ -93,39 +108,42 @@ class Env:
     '''
     # TODO split subclass to handle unity specific logic,
     # TODO perhaps do extension like above again
+    spec = None
     u_env = None
+    # TODO tmp
     agent = None
 
-    def __init__(self, spec, data_coor):
-        util.set_attr(self, spec)
-        self.data_coor = data_coor
-        self.index = data_coor['env']
+    def __init__(self, multi_spec, meta_spec):
+        data_space.init_lab_comp_coor(self, multi_spec)
+        util.set_attr(self, self.spec)
+        util.set_attr(self, meta_spec)
 
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name),
             worker_id=self.index)
 
         # TODO expose brain methods properly to env
-        default_brain = self.u_env.brain_names[0]
+        agent_index = 0
+        default_brain = self.u_env.brain_names[agent_index]
         brain = self.u_env.brains[default_brain]
         ext_fn_list = util.get_fn_list(brain)
         for fn in ext_fn_list:
             setattr(self, fn, getattr(brain, fn))
 
     def set_agent(self, agent):
-        '''
-        Make agent visible to env.
-        '''
+        '''Make agent visible to env.'''
         # TODO anticipate multi-agents for AEB space
         self.agent = agent
 
     def reset(self):
         # TODO need AEB space resolver
-        default_brain = self.u_env.brain_names[0]
+        agent_index = 0
+        default_brain = self.u_env.brain_names[agent_index]
         env_info = self.u_env.reset(train_mode=self.train_mode)[default_brain]
         # TODO body-resolver:
         body_index = 0
-        state = env_info.states[body_index]
+        # TODO make spread across body
+        state = [env_info.states[body_index]]
         # TODO return observables instead of just state
         return state
 
@@ -136,10 +154,66 @@ class Env:
         env_info = self.u_env.step(action)[default_brain]
         # TODO body-resolver:
         body_index = 0
-        reward = env_info.rewards[body_index]
-        state = env_info.states[body_index]
-        done = env_info.local_done[body_index]
+        # TODO tmp make across bodies
+        reward = [env_info.rewards[body_index]]
+        state = [env_info.states[body_index]]
+        done = [env_info.local_done[body_index]]
         return reward, state, done
 
     def close(self):
         self.u_env.close()
+
+
+class EnvSpace:
+    # TODO rename method args to space
+    # TODO common refinement for max_timestep in space
+    # also an idle logic for env that ends earlier than the other
+    aeb_space = None
+    envs = []
+    max_timestep = None
+
+    def __init__(self, spec):
+        for env_spec in spec['env']:
+            env = Env(env_spec, spec['meta'])
+            self.add(env)
+        # TODO tmp hack till env properly carries its own max timestep
+        self.max_timestep = _.get(spec, 'meta.max_timestep')
+
+    def add(self, env):
+        self.envs.append(env)
+        return self.envs
+
+    def set_space_ref(self, aeb_space):
+        '''Make super aeb_space visible to env_space.'''
+        self.aeb_space = aeb_space
+        # TODO tmp, resolve later from AEB
+        agent_space = aeb_space.agent_space
+        self.envs[0].set_agent(agent_space.agents[0])
+
+    def reset(self):
+        state_proj = []
+        for env in self.envs:
+            state = env.reset()
+            state_proj.append(state)
+        state_space = self.aeb_space.add('state', state_proj)
+        return state_space
+
+    def step(self, action_space):
+        # TODO use DataSpace class, with np array
+        reward_proj = []
+        state_proj = []
+        done_proj = []
+        for e, env in enumerate(self.envs):
+            action = action_space.get(e=e)
+            reward, state, done = env.step(action)
+            reward_proj.append(reward)
+            state_proj.append(state)
+            done_proj.append(done)
+        reward_space = self.aeb_space.add('reward', reward_proj)
+        state_space = self.aeb_space.add('state', state_proj)
+        done_space = self.aeb_space.add('done', done_proj)
+        return reward_space, state_space, done_space
+
+    def close(self):
+        for env in self.envs:
+            env.close()
