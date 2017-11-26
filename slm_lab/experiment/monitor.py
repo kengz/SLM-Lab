@@ -23,7 +23,6 @@ E.g. `action_proj` collected from agent_space has the congruence of aeb_space pr
 '''
 # TODO - plug to NoSQL graph db, using graphql notation, and data backup
 # TODO - data_space viewer and stats method for evaluating and planning experiments
-# TODO change to ensure coorlist is of tuples, add assert to coor usage
 import numpy as np
 import pydash as _
 from copy import deepcopy
@@ -47,7 +46,6 @@ COOR_DIM = len(COOR_AXES)
 AGENT_DATA_NAMES = ['action']
 ENV_DATA_NAMES = ['state', 'reward', 'done']
 
-# TODO need to assert when accessing index data_proj[idx] idx != -1
 # TODO at init after AEB resolution and projection, check if all bodies can fit in env
 # TODO AEB needs to check agent output dim is sufficient
 
@@ -56,13 +54,7 @@ class AEBDataSpace:
     '''
     AEB data space - data container with an AEB space hashed to index of a flat list of stored data
     '''
-    # TODO prolly keep episodic, timestep historic data series
-    data_name = None
-    aeb_proj_dual_map = None
-    proj_axis = None
-    dual_proj_axis = None
-    data_proj = None
-    dual_data_proj = None
+    # TODO prolly keep episodic, timestep historic data series, to DB per episode
 
     def __init__(self, data_name, aeb_proj_dual_map):
         self.data_name = data_name
@@ -73,6 +65,8 @@ class AEBDataSpace:
         else:
             self.proj_axis = 'e'
             self.dual_proj_axis = 'a'
+        self.data_proj = None
+        self.dual_data_proj = None
 
     def __str__(self):
         return str(self.data_proj)
@@ -115,21 +109,20 @@ class AEBDataSpace:
 
 
 class AEBSpace:
-    coor_arr = None
-    aeb_shape = None
-    aeb_proj_dual_map = {
-        'a': None,
-        'e': None,
-    }
-    agent_space = None
-    env_space = None
-    data_spaces = {
-        data_name: None for data_name in _.concat(AGENT_DATA_NAMES, ENV_DATA_NAMES)
-    }
 
     def __init__(self, spec):
+        self.agent_space = None
+        self.env_space = None
+        self.data_spaces = {
+            data_name: None for data_name in _.concat(AGENT_DATA_NAMES, ENV_DATA_NAMES)
+        }
+
         self.coor_arr = spec_util.resolve_aeb(spec)
         self.aeb_shape = np.amax(self.coor_arr, axis=0) + 1
+        self.aeb_proj_dual_map = {
+            'a': None,
+            'e': None,
+        }
         self.init_data_spaces()
 
     def init_data_spaces(self):
@@ -195,9 +188,6 @@ class AEBSpace:
 
 
 class DataSpace:
-    coor = None
-    covered_space = []
-
     def __init__(self, last_coor=None):
         '''
         Initialize the coor, the global point in data space that will advance according to experiment progress.
@@ -206,6 +196,7 @@ class DataSpace:
         TODO logic to resume from given last_coor
         '''
         self.coor = last_coor or {k: None for k in COOR_AXES}
+        self.covered_space = []
 
     def reset_lower_axes(cls, coor, axis):
         '''Reset the axes lower than the given axis in coor'''
@@ -233,14 +224,14 @@ class DataSpace:
         self.coor = new_coor
         return self.coor
 
-    def init_lab_comp_coor(self, lab_comp, spec):
+    def init_lab_comp(self, lab_comp, spec):
         '''
         Update data space coor when initializing lab component, and set its self.spec.
         @example
 
         class Session:
             def __init__(self, spec):
-                data_space.init_lab_comp_coor(self, spec)
+                self.coor, self.index, self.spec = data_space.init_lab_comp(self, spec)
         '''
         axis = util.get_class_name(lab_comp, lower=True)
         self.advance_coor(axis)
@@ -252,6 +243,7 @@ class DataSpace:
         else:
             comp_spec = spec
         lab_comp.spec = comp_spec
+        return lab_comp.coor, lab_comp.index, lab_comp.spec
 
 
 class Monitor:

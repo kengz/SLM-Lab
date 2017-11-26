@@ -7,8 +7,6 @@ class Algorithm(ABC):
     specifies the necessary design blueprint for agent to work in Lab.
     Mostly, implement just the abstract methods and properties.
     '''
-    # reference to agent for accessing the other agent components
-    agent = None
 
     def __init__(self, agent):
         self.agent = agent
