@@ -44,14 +44,18 @@ class DQNBase:
         self.epsilon_or_tau = self.epsilon_tau_start
         self.decay_steps = spec['decay_steps']
         self.training_iters_per_batch = 1
+        self.training_frequency = 1
 
-    def train_a_batch(self):
-        # TODO: Fix for training iters
-        batch = self.memory.get_batch(self.batch_size)
-        for i in range(self.training_iters_per_batch):
-            q_targets = self.compute_q_target_values(batch)
-            loss = self.net.training_step(batch['states'], q_targets)
-        return loss
+    def train_a_batch(self, t):
+        # TODO: Fix for training iters, docstring
+        if t % self.training_frequency == 0:
+            batch = self.memory.get_batch(self.batch_size)
+            for i in range(self.training_iters_per_batch):
+                q_targets = self.compute_q_target_values(batch)
+                loss = self.net.training_step(batch['states'], q_targets)
+            return loss
+        else:
+            return None
 
     def compute_q_target_values(self, batch):
         q_vals = self.net.eval(batch['states'])

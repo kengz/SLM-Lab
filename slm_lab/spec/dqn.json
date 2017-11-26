@@ -9,6 +9,7 @@
         "memory_size": 5000,
         "batch_size": 32,
         "training_iters_per_batch": 5,
+        "training_frequency": 1,
         "network_update_type": "complete",
         "network_update_weight": 0,
         "network_update_frequency": 1.0,
