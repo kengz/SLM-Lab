@@ -17,6 +17,13 @@ engines:
         enabled: false
   radon:
     enabled: true
+checks:
+  argument-count:
+    config:
+      threshold: 7
+  method-complexity:
+    config:
+      threshold: 7
 ratings:
   paths:
   - "**.js"
