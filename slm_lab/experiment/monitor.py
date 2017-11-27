@@ -11,18 +11,15 @@ E.g. (evolution,experiment,trial,session) specifies the session_data of a sessio
 
 Space ordering:
 DataSpace: the general space for complete data
-
 AEBSpace: subspace of DataSpace for a specific session
-
 AgentSpace: space agent instances, subspace of AEBSpace
-
 EnvSpace: space of env instances, subspace of AEBSpace
-
-AEBDataSpace: a data space for a type of data inside AEBSpace, e.g. action_space, reward_space. Each (a,e,b) coordinate maps to a projection (a or e axis) of the data of the body (at a timestep). The map, `aeb_proj_dual_map` is a copy of the AEBSpace, and its scalar value at (a,e,b) is the projected index (ab_idx, eb_idx) of the data in `data_proj`.
-E.g. `action_proj` collected from agent_space has the congruence of aeb_space projected on the a-axis, `a_eb_proj = [[(0, 0)]]` with shape [a, [(e, b)]]. First flat index is from the first agent, and the data there is for the multiple bodies of the agent, belonging to (e,b). Vice versa (swap a-e) for `data_proj` collected from env_space.
+AEBDataSpace: a data space storing an AEB data projected to a-axis, and its dual projected to e-axis. This is so that a-proj data like action_space from agent_space can be used by env_space, which requires e-proj data, and vice versa,
 '''
 # TODO - plug to NoSQL graph db, using graphql notation, and data backup
 # TODO - data_space viewer and stats method for evaluating and planning experiments
+# TODO at init after AEB resolution and projection, check if all bodies can fit in env
+# TODO AEB needs to check agent output dim is sufficient
 import numpy as np
 import pydash as _
 from copy import deepcopy
@@ -45,9 +42,6 @@ COOR_AXES_ORDER = {
 COOR_DIM = len(COOR_AXES)
 AGENT_DATA_NAMES = ['action']
 ENV_DATA_NAMES = ['state', 'reward', 'done']
-
-# TODO at init after AEB resolution and projection, check if all bodies can fit in env
-# TODO AEB needs to check agent output dim is sufficient
 
 
 class AEBDataSpace:
@@ -78,7 +72,7 @@ class AEBDataSpace:
         '''
         Every data_proj from agent will be used by env, and vice versa.
         Hence, on receiving data_proj, construct and cache the dual for fast access later.
-        @param {[y: [xb_idx:[body_data]]} data_proj. where x, y could be a, e interchangeably.
+        @param {[y: [xb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
         @returns {[x: [yb_idx:[body_data]]} dual_data_proj, with axes flipped.
         '''
         x_map = self.aeb_proj_dual_map[self.dual_proj_axis]
@@ -92,11 +86,21 @@ class AEBDataSpace:
         return x_data_proj
 
     def add(self, data_proj):
+        '''
+        Add a new instance of data projection to data_space from agent_space or env_space. Creates a dual_data_proj.
+        @param {[x: [yb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
+        '''
         # TODO might wanna keep a history before replacement, shove to DB
         self.data_proj = data_proj
         self.dual_data_proj = self.create_dual_data_proj(data_proj)
 
     def get(self, a=None, e=None):
+        '''
+        Get the data_proj for a or e axis to be used by agent_space, env_space respectively, automatically projected and resolved.
+        @param {int} a The index a of an agent in agent_space
+        @param {int} e The index e of an env in env_space
+        @returns {[yb_idx:[body_data]_x} data_proj[x], where x, y could be a, e interchangeably.
+        '''
         if a is not None:
             proj_axis = 'a'
             proj_idx = a
@@ -185,7 +189,7 @@ class AEBSpace:
         '''
         Add a data projection to a data space, e.g. data_proj actions collected per body, per agent, from agent_space, with AEB shape projected on a-axis, added to action_space.
         @param {str} data_name
-        @param {[x: [yb_idx:[body_data]]} data_proj. where x, y could be a, e interchangeably.
+        @param {[x: [yb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
         @returns {AEBDataSpace} data_space (aeb is implied)
         '''
         data_space = self.data_spaces[data_name]
@@ -240,7 +244,8 @@ class DataSpace:
 
     def init_lab_comp(self, lab_comp, spec):
         '''
-        Update data space coor when initializing lab component, and set its self.spec.
+        Update data space coor when initializing lab component, and set its self.coor, self.index, self.spec.
+        @returns {(a, e, b), int, dict} coor, index, spec
         @example
 
         class Session:
