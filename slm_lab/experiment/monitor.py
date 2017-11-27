@@ -119,17 +119,13 @@ class AEBSpace:
     def __init__(self, spec):
         self.agent_space = None
         self.env_space = None
-        self.data_spaces = {
-            data_name: None for data_name in _.concat(AGENT_DATA_NAMES, ENV_DATA_NAMES)
-        }
-
         self.coor_arr = spec_util.resolve_aeb(spec)
         self.aeb_shape, self.a_eb_proj = self.compute_aeb_dims(self.coor_arr)
         self.aeb_proj_dual_map = {
             'a': None,
             'e': None,
         }
-        self.init_data_spaces()
+        self.data_spaces = self.init_data_spaces()
 
     def compute_aeb_dims(self, coor_arr):
         '''
@@ -180,10 +176,17 @@ class AEBSpace:
         self.aeb_proj_dual_map['e'] = e_ab_dual_map
 
     def init_data_spaces(self):
+        '''
+        Initialize the data_space that contains all the data for the Lab.
+        '''
+        self.data_spaces = {
+            data_name: None for data_name in _.concat(AGENT_DATA_NAMES, ENV_DATA_NAMES)
+        }
         self.init_aeb_proj_dual_map()
         for data_name in self.data_spaces:
             data_space = AEBDataSpace(data_name, self.aeb_proj_dual_map)
             self.data_spaces[data_name] = data_space
+        return self.data_spaces
 
     def add(self, data_name, data_proj):
         '''
