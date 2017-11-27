@@ -179,7 +179,6 @@ class EnvSpace:
         return state_space
 
     def step(self, action_space):
-        # TODO use DataSpace class, with np array
         reward_proj = []
         state_proj = []
         done_proj = []

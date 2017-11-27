@@ -60,15 +60,15 @@ class Agent:
 
     def act(self, state):
         '''Standard act method from algorithm.'''
-        # TODO tmp make act across bodies
+        # TODO tmp make act across bodies, work on AEB
         return [self.algorithm.act(state)]
 
     def update(self, reward, state, done):
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
-        # TODO count timestep, episode, absolute number of timesteps
-        # TODO implement generic method
+        # TODO build and access timestep, episode, absolute number of timesteps from Dataspace
+        # TODO implement generic method, work on AEB
         # self.memory.update()
         # self.net.train()
         self.algorithm.update(reward, state, done)
@@ -101,8 +101,6 @@ class AgentSpace:
             agent.reset()
 
     def act(self, state_space):
-        # return self.agents[0].act(state)
-        # TODO use DataSpace class, with np array
         action_proj = []
         for a, agent in enumerate(self.agents):
             state = state_space.get(a=a)
@@ -112,9 +110,6 @@ class AgentSpace:
         return action_space
 
     def update(self, reward_space, state_space, done_space):
-        # resolve data_space by AEB method again, spread
-        # return self.agents[0].update(reward, state, done)
-        # TODO use DataSpace class, with np array
         for a, agent in enumerate(self.agents):
             reward = reward_space.get(a=a)
             state = state_space.get(a=a)
