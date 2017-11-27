@@ -78,6 +78,8 @@ class AEBDataSpace:
         '''
         Every data_proj from agent will be used by env, and vice versa.
         Hence, on receiving data_proj, construct and cache the dual for fast access later.
+        @param {[y: [xb_idx:[body_data]]} data_proj. where x, y could be a, e interchangeably.
+        @returns {[x: [yb_idx:[body_data]]} dual_data_proj, with axes flipped.
         '''
         x_map = self.aeb_proj_dual_map[self.dual_proj_axis]
         x_data_proj = []
@@ -118,19 +120,33 @@ class AEBSpace:
         }
 
         self.coor_arr = spec_util.resolve_aeb(spec)
-        self.aeb_shape = np.amax(self.coor_arr, axis=0) + 1
+        self.aeb_shape, self.a_eb_proj = self.compute_aeb_dims(self.coor_arr)
         self.aeb_proj_dual_map = {
             'a': None,
             'e': None,
         }
-        # TODO tmp, construct later from spec
-        self.a_eb_proj = [
-            [(0, 0)]
-        ]
         self.init_data_spaces()
 
+    def compute_aeb_dims(self, coor_arr):
+        '''
+        Compute the aeb_shape and a_eb_proj from coor_arr
+        @param {[(a, e, b)]} coor_arr The array of aeb coors
+        @returns {array([a, e, b]), [a: [(e, b)]]} aeb_shape, a_eb_proj
+        '''
+        aeb_shape = np.amax(coor_arr, axis=0) + 1
+        a_aeb_groups = _.group_by(coor_arr, lambda aeb: aeb[0])
+        a_eb_proj = []
+        for a, aeb_list in a_aeb_groups.items():
+            a_eb_proj.append(
+                util.to_tuple_list(np.array(aeb_list)[:, 1:]))
+        return aeb_shape, a_eb_proj
+
     def compute_dual_map(cls, a_eb_proj):
-        '''Compute the direct dual map and dual proj of the given proj by swapping a,e'''
+        '''
+        Compute the direct dual map and dual proj of the given proj by swapping a, e
+        @param {[a: [(e, b)]]} a_eb_proj The aeb space projected onto a-axis
+        @returns {[e: [(a, eb_idx)]], [e: [(a, b)]]} e_ab_dual_map, e_ab_proj
+        '''
         flat_aeb_list = []
         for a, eb_list in enumerate(a_eb_proj):
             for eb_idx, (e, b) in enumerate(eb_list):
@@ -139,12 +155,11 @@ class AEBSpace:
 
         e_ab_dual_map = []
         e_ab_proj = []
-        for (a, e, b, eb_idx) in flat_aeb_list:
-            if e >= len(e_ab_dual_map):
-                e_ab_dual_map.append([])
-                e_ab_proj.append([])
-            e_ab_dual_map[e].append((a, eb_idx))
-            e_ab_proj[e].append((a, b))
+        e_aeb_groups = _.group_by(flat_aeb_list, lambda row: row[1])
+        for e, eab_list in e_aeb_groups.items():
+            e_ab_dual_map.append(util.to_tuple_list(
+                np.array(eab_list)[:, (0, 3)]))
+            e_ab_proj.append(util.to_tuple_list(np.array(eab_list)[:, (0, 2)]))
         return e_ab_dual_map, e_ab_proj
 
     def init_aeb_proj_dual_map(self):
@@ -167,6 +182,12 @@ class AEBSpace:
             self.data_spaces[data_name] = data_space
 
     def add(self, data_name, data_proj):
+        '''
+        Add a data projection to a data space, e.g. data_proj actions collected per body, per agent, from agent_space, with AEB shape projected on a-axis, added to action_space.
+        @param {str} data_name
+        @param {[x: [yb_idx:[body_data]]} data_proj. where x, y could be a, e interchangeably.
+        @returns {AEBDataSpace} data_space (aeb is implied)
+        '''
         data_space = self.data_spaces[data_name]
         data_space.add(data_proj)
         return data_space

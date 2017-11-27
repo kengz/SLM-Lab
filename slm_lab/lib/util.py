@@ -269,6 +269,11 @@ def to_json(d, indent=2):
     return json.dumps(d, indent=indent)
 
 
+def to_tuple_list(l):
+    '''Returns a copy of the list with its elements as tuples'''
+    return [tuple(row) for row in l]
+
+
 def write(data, data_path):
     '''
     Universal data writing method with smart data parsing
