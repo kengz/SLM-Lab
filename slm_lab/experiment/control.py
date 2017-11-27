@@ -43,11 +43,8 @@ class Session:
 
     def run_episode(self):
         '''
-        TODO still WIP
-        sys_vars is now session_data, should collect silently from agent and env (fully observable anyways with full access)
-        preprocessing shd belong to agent internal, analogy: a lens
-        any rendering goes to env
-        make env observable to agent, vice versa. useful for memory
+        Main RL loop, runs a single episode over timesteps, generalized to spaces from singleton.
+        Returns episode_data space.
         '''
         # TODO generalize and make state to include observables
         state_space = self.env_space.reset()

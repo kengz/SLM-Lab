@@ -14,7 +14,6 @@ class Algorithm(ABC):
     @abstractmethod
     def act_discrete(self, state):
         '''Implement discrete action, or throw NotImplementedError'''
-        # TODO auto AEB space resolver from atomic method
         raise NotImplementedError
         return action
 

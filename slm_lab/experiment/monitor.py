@@ -188,6 +188,7 @@ class AEBSpace:
         self.env_space.set_space_ref(self)
 
 
+# TODO put AEBSpace into DataSpace, propagate method usage, shove into DB
 class DataSpace:
     def __init__(self, last_coor=None):
         '''
