@@ -123,19 +123,23 @@ class AEBSpace:
             'a': None,
             'e': None,
         }
+        # TODO tmp, construct later from spec
+        self.a_eb_proj = [
+            [(0, 0)]
+        ]
         self.init_data_spaces()
 
-    def compute_dual_map(self, a_eb_proj):
+    def compute_dual_map(cls, a_eb_proj):
         '''Compute the direct dual map and dual proj of the given proj by swapping a,e'''
-        flat_eab_list = []
+        flat_aeb_list = []
         for a, eb_list in enumerate(a_eb_proj):
             for eb_idx, (e, b) in enumerate(eb_list):
-                flat_eab_list.append((e, a, b, eb_idx))
-        flat_eab_list = sorted(flat_eab_list)
+                flat_aeb_list.append((a, e, b, eb_idx))
+        flat_aeb_list = sorted(flat_aeb_list)
 
         e_ab_dual_map = []
         e_ab_proj = []
-        for (e, a, b, eb_idx) in flat_eab_list:
+        for (a, e, b, eb_idx) in flat_aeb_list:
             if e >= len(e_ab_dual_map):
                 e_ab_dual_map.append([])
                 e_ab_proj.append([])
@@ -144,16 +148,14 @@ class AEBSpace:
         return e_ab_dual_map, e_ab_proj
 
     def init_aeb_proj_dual_map(self):
-        # TODO construct the AEB space proj to A, E from spec
-        # agent_space output data_proj, shape [a, [(e, b)]]
-        # env_space output data_proj shape [e, [(a, b)]]
-        # index is a, entries are (e, b)
-        a_eb_proj = [
-            [(0, 0)]
-        ]
-        e_ab_dual_map, e_ab_proj = self.compute_dual_map(a_eb_proj)
+        '''
+        Initialize the AEB projection dual map to map aeb_data_space between agent space and env space.
+        agent_space output data_proj, shape [a, [(e, b)]]
+        env_space output data_proj shape [e, [(a, b)]]
+        '''
+        e_ab_dual_map, e_ab_proj = self.compute_dual_map(self.a_eb_proj)
         a_eb_dual_map, check_a_eb_proj = self.compute_dual_map(e_ab_proj)
-        assert np.array_equal(a_eb_proj, check_a_eb_proj)
+        assert np.array_equal(self.a_eb_proj, check_a_eb_proj)
 
         self.aeb_proj_dual_map['a'] = a_eb_dual_map
         self.aeb_proj_dual_map['e'] = e_ab_dual_map
