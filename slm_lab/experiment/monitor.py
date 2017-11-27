@@ -125,30 +125,23 @@ class AEBSpace:
         }
         self.init_data_spaces()
 
-    def init_data_spaces(self):
-        self.init_aeb_proj_dual_map()
-        for data_name in self.data_spaces:
-            data_space = AEBDataSpace(data_name, self.aeb_proj_dual_map)
-            self.data_spaces[data_name] = data_space
+    def compute_dual_map(self, a_eb_proj):
+        '''Compute the direct dual map and dual proj of the given proj by swapping a,e'''
+        flat_eab_list = []
+        for a, eb_list in enumerate(a_eb_proj):
+            for eb_idx, (e, b) in enumerate(eb_list):
+                flat_eab_list.append((e, a, b, eb_idx))
+        flat_eab_list = sorted(flat_eab_list)
 
-    def create_aeb_proj_idx_space(cls, x_yb_proj, xyb_shape):
-        '''Create the a_eb_idx_space from a_eb_proj, aeb_shape, and vice versa by swapping a,e'''
-        x_yb_idx_space = np.full(xyb_shape, -1, dtype=int)
-        for x, yb_proj in enumerate(x_yb_proj):
-            for yb_idx, (y, b) in enumerate(yb_proj):
-                xyb = (x, y, b)
-                x_yb_idx_space.itemset(xyb, yb_idx)
-        return x_yb_idx_space
-
-    def create_aeb_proj_dual_map(cls, x_yb_proj, y_xb_idx_space):
-        '''Create the a_eb_dual_map from a_eb_proj, dual e_ab_idx_space, and vice versa by swapping a,e'''
-        x_yb_dual_map = deepcopy(x_yb_proj)
-        for x, yb_proj in enumerate(x_yb_proj):
-            for yb_idx, (y, b) in enumerate(yb_proj):
-                xyb = (x, y, b)
-                xb_idx = y_xb_idx_space[xyb]
-                x_yb_dual_map[x][yb_idx] = (y, xb_idx)
-        return x_yb_dual_map
+        e_ab_dual_map = []
+        e_ab_proj = []
+        for (e, a, b, eb_idx) in flat_eab_list:
+            if e >= len(e_ab_dual_map):
+                e_ab_dual_map.append([])
+                e_ab_proj.append([])
+            e_ab_dual_map[e].append((a, eb_idx))
+            e_ab_proj[e].append((a, b))
+        return e_ab_dual_map, e_ab_proj
 
     def init_aeb_proj_dual_map(self):
         # TODO construct the AEB space proj to A, E from spec
@@ -158,22 +151,18 @@ class AEBSpace:
         a_eb_proj = [
             [(0, 0)]
         ]
-        # index is e, entries are (a, b)
-        e_ab_proj = [
-            [(0, 0)]
-        ]
-        a_eb_idx_space = self.create_aeb_proj_idx_space(
-            a_eb_proj, self.aeb_shape)
-        e_ab_dual_map = self.create_aeb_proj_dual_map(
-            e_ab_proj, a_eb_idx_space)
-
-        eab_shape = np.take(self.aeb_shape, [1, 0, 2])
-        e_ab_idx_space = self.create_aeb_proj_idx_space(e_ab_proj, eab_shape)
-        a_eb_dual_map = self.create_aeb_proj_dual_map(
-            a_eb_proj, e_ab_idx_space)
+        e_ab_dual_map, e_ab_proj = self.compute_dual_map(a_eb_proj)
+        a_eb_dual_map, check_a_eb_proj = self.compute_dual_map(e_ab_proj)
+        assert np.array_equal(a_eb_proj, check_a_eb_proj)
 
         self.aeb_proj_dual_map['a'] = a_eb_dual_map
         self.aeb_proj_dual_map['e'] = e_ab_dual_map
+
+    def init_data_spaces(self):
+        self.init_aeb_proj_dual_map()
+        for data_name in self.data_spaces:
+            data_space = AEBDataSpace(data_name, self.aeb_proj_dual_map)
+            self.data_spaces[data_name] = data_space
 
     def add(self, data_name, data_proj):
         data_space = self.data_spaces[data_name]
