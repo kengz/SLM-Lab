@@ -18,7 +18,7 @@ AgentSpace: space agent instances, subspace of AEBSpace
 
 EnvSpace: space of env instances, subspace of AEBSpace
 
-AEBDataSpace: a data space for a type of data inside AEBSpace, e.g. action_space, reward_space. Each (a,e,b) coordinate maps to a projection (a or e axis) of the data of the body (at a timestep). The map, `aeb_idx_space` is a copy of the AEBSpace, and its scalar value at (a,e,b) is the projected index (ab_idx, eb_idx) of the data in `data_proj`.
+AEBDataSpace: a data space for a type of data inside AEBSpace, e.g. action_space, reward_space. Each (a,e,b) coordinate maps to a projection (a or e axis) of the data of the body (at a timestep). The map, `aeb_proj_dual_map` is a copy of the AEBSpace, and its scalar value at (a,e,b) is the projected index (ab_idx, eb_idx) of the data in `data_proj`.
 E.g. `action_proj` collected from agent_space has the congruence of aeb_space projected on the a-axis, `a_eb_proj = [[(0, 0)]]` with shape [a, [(e, b)]]. First flat index is from the first agent, and the data there is for the multiple bodies of the agent, belonging to (e,b). Vice versa (swap a-e) for `data_proj` collected from env_space.
 '''
 # TODO - plug to NoSQL graph db, using graphql notation, and data backup
@@ -126,12 +126,31 @@ class AEBSpace:
         self.init_data_spaces()
 
     def init_data_spaces(self):
-        self.init_aeb_idx_spaces()
+        self.init_aeb_proj_dual_map()
         for data_name in self.data_spaces:
             data_space = AEBDataSpace(data_name, self.aeb_proj_dual_map)
             self.data_spaces[data_name] = data_space
 
-    def init_aeb_idx_spaces(self):
+    def create_aeb_proj_idx_space(cls, x_yb_proj, xyb_shape):
+        '''Create the a_eb_idx_space from a_eb_proj, aeb_shape, and vice versa by swapping a,e'''
+        x_yb_idx_space = np.full(xyb_shape, -1, dtype=int)
+        for x, yb_proj in enumerate(x_yb_proj):
+            for yb_idx, (y, b) in enumerate(yb_proj):
+                xyb = (x, y, b)
+                x_yb_idx_space.itemset(xyb, yb_idx)
+        return x_yb_idx_space
+
+    def create_aeb_proj_dual_map(cls, x_yb_proj, y_xb_idx_space):
+        '''Create the a_eb_dual_map from a_eb_proj, dual e_ab_idx_space, and vice versa by swapping a,e'''
+        x_yb_dual_map = deepcopy(x_yb_proj)
+        for x, yb_proj in enumerate(x_yb_proj):
+            for yb_idx, (y, b) in enumerate(yb_proj):
+                xyb = (x, y, b)
+                xb_idx = y_xb_idx_space[xyb]
+                x_yb_dual_map[x][yb_idx] = (y, xb_idx)
+        return x_yb_dual_map
+
+    def init_aeb_proj_dual_map(self):
         # TODO construct the AEB space proj to A, E from spec
         # agent_space output data_proj, shape [a, [(e, b)]]
         # env_space output data_proj shape [e, [(a, b)]]
@@ -143,33 +162,15 @@ class AEBSpace:
         e_ab_proj = [
             [(0, 0)]
         ]
-        a_eb_dual_map = deepcopy(a_eb_proj)
-        e_ab_dual_map = deepcopy(e_ab_proj)
+        a_eb_idx_space = self.create_aeb_proj_idx_space(
+            a_eb_proj, self.aeb_shape)
+        e_ab_dual_map = self.create_aeb_proj_dual_map(
+            e_ab_proj, a_eb_idx_space)
 
-        a_eb_idx_space = np.full(self.aeb_shape, -1, dtype=int)
-        for a, eb_proj in enumerate(a_eb_proj):
-            for eb_idx, (e, b) in enumerate(eb_proj):
-                aeb = (a, e, b)
-                a_eb_idx_space.itemset(aeb, eb_idx)
-
-        e_ab_idx_space = np.swapaxes(a_eb_idx_space, 0, 1)
-        for e, ab_proj in enumerate(e_ab_proj):
-            for ab_idx, (a, b) in enumerate(ab_proj):
-                aeb = (a, e, b)
-                e_ab_idx_space.itemset(aeb, ab_idx)
-
-        # construct dual maps
-        for a, eb_proj in enumerate(a_eb_proj):
-            for eb_idx, (e, b) in enumerate(eb_proj):
-                aeb = (a, e, b)
-                ab_idx = e_ab_idx_space[aeb]
-                a_eb_dual_map[a][eb_idx] = (e, ab_idx)
-
-        for e, ab_proj in enumerate(e_ab_proj):
-            for ab_idx, (a, b) in enumerate(ab_proj):
-                aeb = (a, e, b)
-                eb_idx = a_eb_idx_space[aeb]
-                e_ab_dual_map[e][ab_idx] = (a, eb_idx)
+        eab_shape = np.take(self.aeb_shape, [1, 0, 2])
+        e_ab_idx_space = self.create_aeb_proj_idx_space(e_ab_proj, eab_shape)
+        a_eb_dual_map = self.create_aeb_proj_dual_map(
+            a_eb_proj, e_ab_idx_space)
 
         self.aeb_proj_dual_map['a'] = a_eb_dual_map
         self.aeb_proj_dual_map['e'] = e_ab_dual_map
