@@ -16,14 +16,16 @@ engines:
       E501:
         enabled: false
   radon:
-    enabled: true
+    enabled:
+    config:
+      threshold: "C"
 checks:
   argument-count:
     config:
-      threshold: 7
+      threshold: 10
   method-complexity:
     config:
-      threshold: 7
+      threshold: 10
 ratings:
   paths:
   - "**.js"
