@@ -129,7 +129,7 @@ class AEBSpace:
 
     def compute_aeb_dims(self, coor_arr):
         '''
-        Compute the aeb_shape and a_eb_proj from coor_arr
+        Compute the aeb_shape and a_eb_proj from coor_arr, which are used to resolve agent_space and env_space.
         @param {[(a, e, b)]} coor_arr The array of aeb coors
         @returns {array([a, e, b]), [a: [(e, b)]]} aeb_shape, a_eb_proj
         '''
