@@ -93,18 +93,18 @@ class OpenAIEnv:
 
 class Env:
     '''
-    Do the above
-    Also standardize logic from Unity environments
+    Class for all Envs.
+    Standardizes the Env design to work in Lab.
+    Access Agents properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    def __init__(self, multi_spec, meta_spec):
+    def __init__(self, multi_spec, meta_spec, env_space):
+        self.env_space = env_space
         self.coor, self.index, self.spec = data_space.init_lab_comp(
             self, multi_spec)
         util.set_attr(self, self.spec)
         util.set_attr(self, meta_spec)
 
-        # TODO tmp
-        self.agent = None
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name),
             worker_id=self.index)
@@ -116,11 +116,6 @@ class Env:
         ext_fn_list = util.get_fn_list(brain)
         for fn in ext_fn_list:
             setattr(self, fn, getattr(brain, fn))
-
-    def set_agent(self, agent):
-        '''Make agent visible to env.'''
-        # TODO anticipate multi-agents for AEB space
-        self.agent = agent
 
     def reset(self):
         # TODO need AEB space resolver
@@ -152,23 +147,20 @@ class Env:
 
 
 class EnvSpace:
-    # TODO common refinement of timestep
+    '''
+    Subspace of AEBSpace, collection of all envs, with interface to Session logic; same methods as singleton envs.
+    Access AgentSpace properties by: AgentSpace - AEBSpace - EnvSpace - Envs
+    '''
 
-    def __init__(self, spec):
-        self.aeb_space = None
+    def __init__(self, spec, aeb_space):
+        self.aeb_space = aeb_space
+        aeb_space.env_space = self
         self.envs = []
         for env_spec in spec['env']:
-            env = Env(env_spec, spec['meta'])
+            env = Env(env_spec, spec['meta'], self)
             self.envs.append(env)
         # TODO tmp hack till env properly carries its own max timestep
         self.max_timestep = _.get(spec, 'meta.max_timestep')
-
-    def set_space_ref(self, aeb_space):
-        '''Make super aeb_space visible to env_space.'''
-        self.aeb_space = aeb_space
-        # TODO tmp, resolve later from AEB
-        agent_space = aeb_space.agent_space
-        self.envs[0].set_agent(agent_space.agents[0])
 
     def reset(self):
         state_proj = []

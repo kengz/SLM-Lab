@@ -27,9 +27,8 @@ class Session:
         self.data = pd.DataFrame()
         # TODO put resolved space from spec into monitor.dataspace
         self.aeb_space = AEBSpace(self.spec)
-        self.env_space = EnvSpace(self.spec)
-        self.agent_space = AgentSpace(self.spec)
-        self.aeb_space.set_space_ref(self.agent_space, self.env_space)
+        self.env_space = EnvSpace(self.spec, self.aeb_space)
+        self.agent_space = AgentSpace(self.spec, self.aeb_space)
 
     def close(self):
         '''

@@ -29,10 +29,12 @@ class Agent:
     '''
     Class for all Agents.
     Standardizes the Agent design to work in Lab.
+    Access Envs properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
     # TODO ok need architecture spec for each agent: disjoint or joint, time or space multiplicity
 
-    def __init__(self, multi_spec):
+    def __init__(self, multi_spec, agent_space):
+        self.agent_space = agent_space
         self.coor, self.index, self.spec = data_space.init_lab_comp(
             self, multi_spec)
         util.set_attr(self, self.spec)
@@ -44,14 +46,9 @@ class Agent:
         self.memory = None
         self.net = None
         # TODO tmp
-        self.env = None
+        self.env = self.agent_space.aeb_space.env_space.envs[0]
         self.body_num = 1
         # TODO delegate a copy of variable like action_dim to agent too
-
-    def set_env(self, env):
-        '''Make env visible to agent.'''
-        # TODO AEB space resolver pending, needs to be powerful enuf to for auto-architecture, action space, body num resolution, other dim counts from env
-        self.env = env
 
     def reset(self):
         '''Do agent reset per episode, such as memory pointer'''
@@ -82,19 +79,18 @@ class Agent:
 
 
 class AgentSpace:
-    def __init__(self, spec):
-        self.aeb_space = None
+    '''
+    Subspace of AEBSpace, collection of all agents, with interface to Session logic; same methods as singleton agents.
+    Access EnvSpace properties by: AgentSpace - AEBSpace - EnvSpace - Envs
+    '''
+
+    def __init__(self, spec, aeb_space):
+        self.aeb_space = aeb_space
+        aeb_space.agent_space = self
         self.agents = []
         for agent_spec in spec['agent']:
-            agent = Agent(agent_spec)
+            agent = Agent(agent_spec, self)
             self.agents.append(agent)
-
-    def set_space_ref(self, aeb_space):
-        '''Make super aeb_space visible to agent_space.'''
-        self.aeb_space = aeb_space
-        # TODO tmp, resolve later from AEB
-        env_space = aeb_space.env_space
-        self.agents[0].set_env(env_space.envs[0])
 
     def reset(self):
         for agent in self.agents:

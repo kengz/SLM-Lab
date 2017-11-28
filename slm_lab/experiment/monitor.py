@@ -14,7 +14,10 @@ DataSpace: the general space for complete data
 AEBSpace: subspace of DataSpace for a specific session
 AgentSpace: space agent instances, subspace of AEBSpace
 EnvSpace: space of env instances, subspace of AEBSpace
-AEBDataSpace: a data space storing an AEB data projected to a-axis, and its dual projected to e-axis. This is so that a-proj data like action_space from agent_space can be used by env_space, which requires e-proj data, and vice versa,
+AEBDataSpace: a data space storing an AEB data projected to a-axis, and its dual projected to e-axis. This is so that a-proj data like action_space from agent_space can be used by env_space, which requires e-proj data, and vice versa.
+
+Object reference (for agent to access env properties, vice versa):
+Agents - AgentSpace - AEBSpace - EnvSpace - Envs
 '''
 # TODO - plug to NoSQL graph db, using graphql notation, and data backup
 # TODO - data_space viewer and stats method for evaluating and planning experiments
@@ -198,13 +201,6 @@ class AEBSpace:
         data_space = self.data_spaces[data_name]
         data_space.add(data_proj)
         return data_space
-
-    def set_space_ref(self, agent_space, env_space):
-        '''Set symmetric references from aeb_space to agent_space and env_space. Called from control.'''
-        self.agent_space = agent_space
-        self.env_space = env_space
-        self.agent_space.set_space_ref(self)
-        self.env_space.set_space_ref(self)
 
 
 # TODO put AEBSpace into DataSpace, propagate method usage, shove into DB
