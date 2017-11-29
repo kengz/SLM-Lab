@@ -4,6 +4,7 @@ Contains graduated components from experiments for building/using environment.
 Provides the rich experience for agent embodiment, reflects the curriculum and allows teaching (possibly allows teacher to enter).
 To be designed by human and evolution module, based on the curriculum and fitness metrics.
 '''
+import numpy as np
 import pydash as _
 from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
@@ -159,8 +160,7 @@ class EnvSpace:
         for env_spec in spec['env']:
             env = Env(env_spec, spec['meta'], self)
             self.envs.append(env)
-        # TODO tmp hack till env properly carries its own max timestep
-        self.max_timestep = _.get(spec, 'meta.max_timestep')
+        self.max_timestep = np.amax([env.max_timestep for env in self.envs])
 
     def reset(self):
         state_proj = []
