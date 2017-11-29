@@ -35,9 +35,6 @@ COOR_AXES = [
     'experiment',
     'trial',
     'session',
-    'agent',
-    'env',
-    'body',
 ]
 COOR_AXES_ORDER = {
     axis: idx for idx, axis in enumerate(COOR_AXES)
@@ -124,6 +121,8 @@ class AEBSpace:
         self.env_space = None
         self.coor_arr = spec_util.resolve_aeb(spec)
         self.aeb_shape, self.a_eb_proj = self.compute_aeb_dims(self.coor_arr)
+        assert len(self.a_eb_proj) == len(spec['agent'])
+        self.e_ab_proj = None
         self.aeb_proj_dual_map = {
             'a': None,
             'e': None,
@@ -175,6 +174,7 @@ class AEBSpace:
         a_eb_dual_map, check_a_eb_proj = self.compute_dual_map(e_ab_proj)
         assert np.array_equal(self.a_eb_proj, check_a_eb_proj)
 
+        self.e_ab_proj = e_ab_proj
         self.aeb_proj_dual_map['a'] = a_eb_dual_map
         self.aeb_proj_dual_map['e'] = e_ab_dual_map
 
@@ -241,27 +241,22 @@ class DataSpace:
         self.coor = new_coor
         return self.coor
 
-    def init_lab_comp(self, lab_comp, spec):
+    def index_lab_comp(self, lab_comp):
         '''
-        Update data space coor when initializing lab component, and set its self.coor, self.index, self.spec.
-        @returns {(a, e, b), int, dict} coor, index, spec
+        Update data space coor when initializing lab component, and return its coor and index.
+        Does not apply to AEB entities.
+        @returns {tuple, int} data_coor, index
         @example
 
         class Session:
             def __init__(self, spec):
-                self.coor, self.index, self.spec = data_space.init_lab_comp(self, spec)
+                self.coor, self.index = data_space.index_lab_comp(self)
         '''
         axis = util.get_class_name(lab_comp, lower=True)
         self.advance_coor(axis)
-        lab_comp.coor = self.coor.copy()
-        lab_comp.index = lab_comp.coor[axis]
-        # for agent and env with list specs
-        if isinstance(spec, list):
-            comp_spec = spec[lab_comp.index]
-        else:
-            comp_spec = spec
-        lab_comp.spec = comp_spec
-        return lab_comp.coor, lab_comp.index, lab_comp.spec
+        coor = self.coor.copy()
+        index = coor[axis]
+        return coor, index
 
 
 class Monitor:

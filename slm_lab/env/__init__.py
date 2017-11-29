@@ -99,12 +99,12 @@ class Env:
     Access Agents properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    def __init__(self, multi_spec, meta_spec, env_space):
-        self.env_space = env_space
-        self.coor, self.index, self.spec = data_space.init_lab_comp(
-            self, multi_spec)
+    def __init__(self, spec, env_space, e=0):
+        self.spec = spec
         util.set_attr(self, self.spec)
-        util.set_attr(self, meta_spec)
+        self.env_space = env_space
+        self.index = e
+        self.ab_proj = self.env_space.e_ab_proj[self.index]
 
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name),
@@ -154,12 +154,12 @@ class EnvSpace:
     '''
 
     def __init__(self, spec, aeb_space):
+        self.spec = spec
         self.aeb_space = aeb_space
         aeb_space.env_space = self
-        self.envs = []
-        for env_spec in spec['env']:
-            env = Env(env_spec, spec['meta'], self)
-            self.envs.append(env)
+        self.e_ab_proj = aeb_space.e_ab_proj
+        self.envs = [Env(_.merge(e_spec, spec['meta']), self)
+                     for e, e_spec in enumerate(spec['env'])]
         self.max_timestep = np.amax([env.max_timestep for env in self.envs])
 
     def reset(self):

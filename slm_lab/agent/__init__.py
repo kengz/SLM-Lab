@@ -33,22 +33,20 @@ class Agent:
     '''
     # TODO ok need architecture spec for each agent: disjoint or joint, time or space multiplicity
 
-    def __init__(self, multi_spec, agent_space):
-        self.agent_space = agent_space
-        self.coor, self.index, self.spec = data_space.init_lab_comp(
-            self, multi_spec)
+    def __init__(self, spec, agent_space, a=0):
+        self.spec = spec
         util.set_attr(self, self.spec)
+        self.agent_space = agent_space
+        self.index = a
+        self.eb_proj = self.agent_space.a_eb_proj[self.index]
 
         AlgoClass = getattr(algorithm, self.name)
         self.algorithm = AlgoClass(self)
-        # TODO tmp use Body in the space
         # TODO also resolve architecture and data input, output dims via some architecture spec
         self.memory = None
         self.net = None
-        # TODO tmp
         self.env = self.agent_space.aeb_space.env_space.envs[0]
         self.body_num = 1
-        # TODO delegate a copy of variable like action_dim to agent too
 
     def reset(self):
         '''Do agent reset per episode, such as memory pointer'''
@@ -85,12 +83,12 @@ class AgentSpace:
     '''
 
     def __init__(self, spec, aeb_space):
+        self.spec = spec
         self.aeb_space = aeb_space
         aeb_space.agent_space = self
-        self.agents = []
-        for agent_spec in spec['agent']:
-            agent = Agent(agent_spec, self)
-            self.agents.append(agent)
+        self.a_eb_proj = aeb_space.a_eb_proj
+        self.agents = [Agent(a_spec, self, a)
+                       for a, a_spec in enumerate(spec['agent'])]
 
     def reset(self):
         for agent in self.agents:

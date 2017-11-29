@@ -23,7 +23,8 @@ class Session:
     '''
 
     def __init__(self, spec):
-        self.coor, self.index, self.spec = data_space.init_lab_comp(self, spec)
+        self.spec = spec
+        self.coor, self.index = data_space.index_lab_comp(self)
         self.data = pd.DataFrame()
         # TODO put resolved space from spec into monitor.dataspace
         self.aeb_space = AEBSpace(self.spec)
@@ -85,7 +86,8 @@ class Trial:
     '''
 
     def __init__(self, spec):
-        self.coor, self.index, self.spec = data_space.init_lab_comp(self, spec)
+        self.spec = spec
+        self.coor, self.index = data_space.index_lab_comp(self)
         self.data = pd.DataFrame()
         self.session = None
 
@@ -120,7 +122,8 @@ class Experiment:
     '''
 
     def __init__(self, spec):
-        self.coor, self.index, self.spec = data_space.init_lab_comp(self, spec)
+        self.spec = spec
+        self.coor, self.index = data_space.index_lab_comp(self)
         self.data = pd.DataFrame()
         self.trial = None
 
