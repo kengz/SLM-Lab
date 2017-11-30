@@ -42,7 +42,7 @@ class BrainExt:
             'state': self.state_space_size,
             'visual': 'some np array shape, as opposed to what Arthur called size',
         }
-        return
+        return observable_dim
 
 
 def extend_unity_brain():
@@ -161,6 +161,9 @@ class EnvSpace:
         self.envs = [Env(_.merge(e_spec, spec['meta']), self)
                      for e, e_spec in enumerate(spec['env'])]
         self.max_timestep = np.amax([env.max_timestep for env in self.envs])
+
+    def get(self, e):
+        return self.envs[e]
 
     def reset(self):
         state_proj = []

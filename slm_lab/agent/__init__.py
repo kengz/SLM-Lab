@@ -90,6 +90,9 @@ class AgentSpace:
         self.agents = [Agent(a_spec, self, a)
                        for a, a_spec in enumerate(spec['agent'])]
 
+    def get(self, a):
+        return self.agents[a]
+
     def reset(self):
         for agent in self.agents:
             agent.reset()

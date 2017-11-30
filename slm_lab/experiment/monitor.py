@@ -44,6 +44,21 @@ AGENT_DATA_NAMES = ['action']
 ENV_DATA_NAMES = ['state', 'reward', 'done']
 
 
+class Body:
+    '''
+    Body, helpful info reference unit under AEBSpace for sharing info between agent and env.
+    '''
+
+    def __init__(self, aeb, agent, env):
+        self.coor = aeb
+        self.agent = agent
+        self.env = env
+        self.observable_dim = self.env.get_observable_dim()
+        self.state_dim = self.observable_dim['state']
+        self.action_dim = self.env.get_action_dim()
+        self.is_discrete = self.env.is_discrete()
+
+
 class AEBDataSpace:
     '''
     AEB data space - data container with an AEB space hashed to index of a flat list of stored data
@@ -119,6 +134,7 @@ class AEBSpace:
     def __init__(self, spec):
         self.agent_space = None
         self.env_space = None
+        self.body_space = None
         self.coor_arr = spec_util.resolve_aeb(spec)
         self.aeb_shape, self.a_eb_proj = self.compute_aeb_dims(self.coor_arr)
         assert len(self.a_eb_proj) == len(spec['agent'])
@@ -179,9 +195,7 @@ class AEBSpace:
         self.aeb_proj_dual_map['e'] = e_ab_dual_map
 
     def init_data_spaces(self):
-        '''
-        Initialize the data_space that contains all the data for the Lab.
-        '''
+        '''Initialize the data_space that contains all the data for the Lab.'''
         self.data_spaces = {
             data_name: None for data_name in _.concat(AGENT_DATA_NAMES, ENV_DATA_NAMES)
         }
@@ -190,6 +204,19 @@ class AEBSpace:
             data_space = AEBDataSpace(data_name, self.aeb_proj_dual_map)
             self.data_spaces[data_name] = data_space
         return self.data_spaces
+
+    def init_body_space(self):
+        '''Initialize the body_space (same class as data_space) used for AEB body resolution'''
+        self.body_space = AEBDataSpace('body', self.aeb_proj_dual_map)
+        data_proj = deepcopy(self.a_eb_proj)
+        for a, eb_list in enumerate(self.a_eb_proj):
+            for eb_idx, (e, b) in enumerate(eb_list):
+                agent = self.agent_space.get(a)
+                env = self.env_space.get(e)
+                body = Body((a, e, b), agent, env)
+                data_proj[a][eb_idx] = body
+        self.body_space.add(data_proj)
+        return self.body_space
 
     def add(self, data_name, data_proj):
         '''
