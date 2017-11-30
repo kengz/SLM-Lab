@@ -1,6 +1,7 @@
 import collections
 import json
 import os
+import numpy as np
 import pandas as pd
 import pydash as _
 import regex as re
@@ -13,6 +14,18 @@ DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 RE_INDENT = re.compile('(^\n)|(?!\n)\s{2,}|(\n\s+)$')
+
+
+class LabJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
 
 
 def calc_timestamp_diff(ts2, ts1):
@@ -78,6 +91,18 @@ def get_class_name(obj, lower=False):
     if lower:
         class_name = class_name.lower()
     return class_name
+
+
+def get_class_attr(obj):
+    '''Get the class attr of an object as dict'''
+    attr_dict = {}
+    for k, v in obj.__dict__.items():
+        if hasattr(v, '__dict__') or isinstance(v, tuple):
+            val = str(v)
+        else:
+            val = v
+        attr_dict[k] = val
+    return attr_dict
 
 
 def get_env_path(env_name):
@@ -266,7 +291,7 @@ def smart_path(data_path, as_dir=False):
 
 def to_json(d, indent=2):
     '''Shorthand method for stringify JSON with indent'''
-    return json.dumps(d, indent=indent)
+    return json.dumps(d, indent=indent, cls=LabJsonEncoder)
 
 
 def to_tuple_list(l):
