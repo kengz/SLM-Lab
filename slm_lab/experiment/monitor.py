@@ -58,6 +58,9 @@ class Body:
         self.action_dim = self.env.get_action_dim()
         self.is_discrete = self.env.is_discrete()
 
+    def __str__(self):
+        return 'body: ' + util.to_json(util.get_class_attr(self))
+
 
 class AEBDataSpace:
     '''
@@ -206,7 +209,7 @@ class AEBSpace:
         return self.data_spaces
 
     def init_body_space(self):
-        '''Initialize the body_space (same class as data_space) used for AEB body resolution'''
+        '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
         self.body_space = AEBDataSpace('body', self.aeb_proj_dual_map)
         data_proj = deepcopy(self.a_eb_proj)
         for a, eb_list in enumerate(self.a_eb_proj):
@@ -216,6 +219,13 @@ class AEBSpace:
                 body = Body((a, e, b), agent, env)
                 data_proj[a][eb_idx] = body
         self.body_space.add(data_proj)
+
+        for agent in self.agent_space.agents:
+            agent.eb_proj_bodies = self.body_space.get(a=agent.index)
+            print(agent.eb_proj_bodies[0])
+        for env in self.env_space.envs:
+            env.ab_proj_bodies = self.body_space.get(e=env.index)
+            print(env.ab_proj_bodies[0])
         return self.body_space
 
     def add(self, data_name, data_proj):

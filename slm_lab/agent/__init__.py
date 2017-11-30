@@ -39,6 +39,7 @@ class Agent:
         self.agent_space = agent_space
         self.index = a
         self.eb_proj = self.agent_space.a_eb_proj[self.index]
+        self.eb_proj_bodies = None
 
         AlgoClass = getattr(algorithm, self.name)
         self.algorithm = AlgoClass(self)
