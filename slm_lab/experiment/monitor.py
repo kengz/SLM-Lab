@@ -221,11 +221,9 @@ class AEBSpace:
         self.body_space.add(data_proj)
 
         for agent in self.agent_space.agents:
-            agent.eb_proj_bodies = self.body_space.get(a=agent.index)
-            print(agent.eb_proj_bodies[0])
+            agent.bodies = self.body_space.get(a=agent.index)
         for env in self.env_space.envs:
-            env.ab_proj_bodies = self.body_space.get(e=env.index)
-            print(env.ab_proj_bodies[0])
+            env.bodies = self.body_space.get(e=env.index)
         return self.body_space
 
     def add(self, data_name, data_proj):

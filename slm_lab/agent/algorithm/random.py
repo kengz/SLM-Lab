@@ -18,13 +18,13 @@ class Random(Algorithm):
         # or all existing in space, on distinct network output units
         # either way needs access to AEB/A/E, get_action_dim, get_observable_dim['state']
         # also ensure algorithm act is congruent with agent.act
-        action = np.random.randint(self.agent.env.get_action_dim())
+        action = np.random.randint(self.agent.bodies[0].env.get_action_dim())
         return action
 
     def act_continuous(self, state):
         '''Random continuous action'''
         # TODO AEB space resolver, lineup index
-        action = np.random.randn(self.agent.env.get_action_dim())
+        action = np.random.randn(self.agent.bodies[0].env.get_action_dim())
         return action
 
     def update(self, reward, state, done):

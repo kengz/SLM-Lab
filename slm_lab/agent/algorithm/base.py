@@ -25,7 +25,7 @@ class Algorithm(ABC):
 
     def act(self, state):
         '''Standard act method. Actions should be implemented in submethods'''
-        if self.agent.env.is_discrete():
+        if self.agent.bodies[0].env.is_discrete():
             return self.act_discrete(state)
         else:
             return self.act_continuous(state)

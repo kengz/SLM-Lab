@@ -39,15 +39,13 @@ class Agent:
         self.agent_space = agent_space
         self.index = a
         self.eb_proj = self.agent_space.a_eb_proj[self.index]
-        self.eb_proj_bodies = None
+        self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
 
         AlgoClass = getattr(algorithm, self.name)
         self.algorithm = AlgoClass(self)
         # TODO also resolve architecture and data input, output dims via some architecture spec
         self.memory = None
         self.net = None
-        self.env = self.agent_space.aeb_space.env_space.envs[0]
-        self.body_num = 1
 
     def reset(self):
         '''Do agent reset per episode, such as memory pointer'''

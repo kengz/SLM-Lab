@@ -105,7 +105,7 @@ class Env:
         self.env_space = env_space
         self.index = e
         self.ab_proj = self.env_space.e_ab_proj[self.index]
-        self.ab_proj_bodies = None
+        self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
 
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name),
