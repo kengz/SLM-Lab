@@ -17,6 +17,14 @@ def test_get():
     assert spec is not None
 
 
+@pytest.mark.parametrize('aeb_coor_list,is_compact', [
+    ([(0, 0, 0), (0, 1, 0), (0, 1, 1)], True),
+    ([(0, 0, 0), (0, 1, 0), (0, 1, 2)], False),
+])
+def test_is_aeb_compact(aeb_coor_list, is_compact):
+    assert spec_util.is_aeb_compact(aeb_coor_list) == is_compact
+
+
 @pytest.mark.parametrize('spec_name,aeb_coor_list', [
     ('general_inner', [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]),
     ('general_outer', [(0, 0, 0),

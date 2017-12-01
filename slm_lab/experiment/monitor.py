@@ -138,8 +138,8 @@ class AEBSpace:
         self.agent_space = None
         self.env_space = None
         self.body_space = None
-        self.coor_arr = spec_util.resolve_aeb(spec)
-        self.aeb_shape, self.a_eb_proj = self.compute_aeb_dims(self.coor_arr)
+        self.coor_list = spec_util.resolve_aeb(spec)
+        self.aeb_shape, self.a_eb_proj = self.compute_aeb_dims(self.coor_list)
         assert len(self.a_eb_proj) == len(spec['agent'])
         self.e_ab_proj = None
         self.aeb_proj_dual_map = {
@@ -148,14 +148,14 @@ class AEBSpace:
         }
         self.data_spaces = self.init_data_spaces()
 
-    def compute_aeb_dims(self, coor_arr):
+    def compute_aeb_dims(self, coor_list):
         '''
-        Compute the aeb_shape and a_eb_proj from coor_arr, which are used to resolve agent_space and env_space.
-        @param {[(a, e, b)]} coor_arr The array of aeb coors
+        Compute the aeb_shape and a_eb_proj from coor_list, which are used to resolve agent_space and env_space.
+        @param {[(a, e, b)]} coor_list The array of aeb coors
         @returns {array([a, e, b]), [a: [(e, b)]]} aeb_shape, a_eb_proj
         '''
-        aeb_shape = np.amax(coor_arr, axis=0) + 1
-        a_aeb_groups = _.group_by(coor_arr, lambda aeb: aeb[0])
+        aeb_shape = np.amax(coor_list, axis=0) + 1
+        a_aeb_groups = _.group_by(coor_list, lambda aeb: aeb[0])
         a_eb_proj = []
         for a, aeb_list in a_aeb_groups.items():
             a_eb_proj.append(
@@ -263,7 +263,6 @@ class DataSpace:
         Advance the coor to the next point in axis (control unit class).
         If the axis value has been reset, update to 0, else increment. For all axes lower than the specified axis, reset to None.
         Note this will not skip coor in space, even though the covered space may not be rectangular.
-        TODO careful with reset on AEB under the same session
         '''
         assert axis in self.coor
         new_coor = self.coor.copy()

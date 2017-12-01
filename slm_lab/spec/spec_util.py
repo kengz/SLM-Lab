@@ -110,6 +110,13 @@ def get(spec_file, spec_name):
     return spec
 
 
+def is_aeb_compact(aeb_coor_list):
+    '''Check if aeb space (aeb_coor_list) is compact; uniq count must equal shape in each of a,e,b axes.'''
+    aeb_shape = np.amax(aeb_coor_list, axis=0) + 1
+    aeb_uniq = [len(np.unique(col)) for col in np.transpose(aeb_coor_list)]
+    return np.array_equal(aeb_shape, aeb_uniq)
+
+
 def resolve_aeb(spec):
     '''
     Resolve an experiment spec into the full list of points (coordinates) in AEB space.
@@ -136,7 +143,7 @@ def resolve_aeb(spec):
         aeb_coor_list = [(a, e, b) for ((a, e), b) in aeb_coor_list]
     else:  # custom AEB, body_num is a coor_list
         aeb_coor_list = [tuple(aeb) for aeb in sorted(body_num)]
-    # TODO check aeb_space body index increasing for the same AE pair (no skip)
+    assert is_aeb_compact(aeb_coor_list)
     return aeb_coor_list
 
 
