@@ -11,21 +11,15 @@ class Random(Algorithm):
     Example Random agent that works in both discrete and continuous envs
     '''
 
-    def act_discrete(self, state):
+    def body_act_discrete(self, body, body_state):
         '''Random discrete action'''
-        # TODO AEB space resolver, lineup index
-        # agent action could be single-body action repeated in time for all bodies (identical only), or
-        # or all existing in space, on distinct network output units
-        # either way needs access to AEB/A/E, get_action_dim, get_observable_dim['state']
-        # also ensure algorithm act is congruent with agent.act
-        action = np.random.randint(self.agent.bodies[0].env.get_action_dim())
-        return action
+        body_action = np.random.randint(body.env.get_action_dim())
+        return body_action
 
-    def act_continuous(self, state):
+    def body_act_continuous(self, body, body_state):
         '''Random continuous action'''
-        # TODO AEB space resolver, lineup index
-        action = np.random.randn(self.agent.bodies[0].env.get_action_dim())
-        return action
+        body_action = np.random.randn(body.env.get_action_dim())
+        return body_action
 
     def update(self, reward, state, done):
         return
