@@ -26,7 +26,7 @@ Agents - AgentSpace - AEBSpace - EnvSpace - Envs
 import numpy as np
 import pydash as _
 from copy import deepcopy
-from slm_lab.lib import util
+from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 
 # These correspond to the control unit classes, lower cased
@@ -95,12 +95,17 @@ class AEBDataSpace:
         '''
         x_map = self.aeb_proj_dual_map[self.dual_proj_axis]
         x_data_proj = []
-        for _x, y_map_idx_list in enumerate(x_map):
-            x_data_proj_x = []
-            for _x_idx, (y, xb_idx) in enumerate(y_map_idx_list):
-                data = data_proj[y][xb_idx]
-                x_data_proj_x.append(data)
-            x_data_proj.append(x_data_proj_x)
+        try:
+            for _x, y_map_idx_list in enumerate(x_map):
+                x_data_proj_x = []
+                for _x_idx, (y, xb_idx) in enumerate(y_map_idx_list):
+                    data = data_proj[y][xb_idx]
+                    x_data_proj_x.append(data)
+                x_data_proj.append(x_data_proj_x)
+        except Exception as e:
+            logger.exception(
+                f'Dimension mismatch of data space {self.data_name}. Expected aeb_proj_map: {x_map}, received input data_proj: {data_proj}')
+            raise e
         return x_data_proj
 
     def add(self, data_proj):
