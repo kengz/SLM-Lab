@@ -95,7 +95,8 @@ class AEBDataSpace:
         return s
 
     def __bool__(self):
-        return all(np.all(self.data_proj))
+        '''Get AND of all entries, reduce 2 times on 2D axes of AE, then convert to py bool'''
+        return bool(np.all(np.all(self.data_proj)))
 
     def create_dual_data_proj(self, data_proj):
         '''
