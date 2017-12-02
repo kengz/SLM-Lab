@@ -21,8 +21,6 @@ Agents - AgentSpace - AEBSpace - EnvSpace - Envs
 '''
 # TODO - plug to NoSQL graph db, using graphql notation, and data backup
 # TODO - data_space viewer and stats method for evaluating and planning experiments
-# TODO at init after AEB resolution and projection, check if all bodies can fit in env
-# TODO AEB needs to check agent output dim is sufficient
 import numpy as np
 import pydash as _
 from copy import deepcopy
