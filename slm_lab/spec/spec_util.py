@@ -110,6 +110,21 @@ def get(spec_file, spec_name):
     return spec
 
 
+def is_aeb_compact(aeb_coor_list):
+    '''
+    Check if aeb space (aeb_coor_list) is compact; uniq count must equal shape in each of a,e axes. For b, per unique a,e hash, uniq must equal shape.'''
+    aeb_shape = util.get_aeb_shape(aeb_coor_list)
+    aeb_uniq = [len(np.unique(col)) for col in np.transpose(aeb_coor_list)]
+    ae_compact = np.array_equal(aeb_shape, aeb_uniq)
+    b_compact = True
+    for ae, ae_b_list in _.group_by(aeb_coor_list, lambda aeb: f'{aeb[0]}{aeb[1]}').items():
+        b_shape = util.get_aeb_shape(ae_b_list)[2]
+        b_uniq = [len(np.unique(col)) for col in np.transpose(ae_b_list)][2]
+        b_compact = b_compact and np.array_equal(b_shape, b_uniq)
+    aeb_compact = ae_compact and b_compact
+    return aeb_compact
+
+
 def resolve_aeb(spec):
     '''
     Resolve an experiment spec into the full list of points (coordinates) in AEB space.
@@ -136,7 +151,8 @@ def resolve_aeb(spec):
         aeb_coor_list = [(a, e, b) for ((a, e), b) in aeb_coor_list]
     else:  # custom AEB, body_num is a coor_list
         aeb_coor_list = [tuple(aeb) for aeb in sorted(body_num)]
-    # TODO check aeb_space body index increasing for the same AE pair (no skip)
+    assert is_aeb_compact(
+        aeb_coor_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
     return aeb_coor_list
 
 

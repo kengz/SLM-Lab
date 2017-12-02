@@ -197,10 +197,10 @@
       "param": {}
     }],
     "env": [{
-      "name": "3dball",
+      "name": "gridworld",
       "param": {}
     }, {
-      "name": "gridworld",
+      "name": "3dball",
       "param": {}
     }],
     "body": {
