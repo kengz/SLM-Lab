@@ -97,7 +97,7 @@ class AEBDataSpace:
         return s
 
     def __bool__(self):
-        return bool(np.all(self.data_proj))
+        return all(np.all(self.data_proj))
 
     def create_dual_data_proj(self, data_proj):
         '''
