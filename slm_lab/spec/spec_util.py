@@ -1,7 +1,7 @@
 '''
 The spec util
 Handles the Lab experiment spec: reading, writing(evolution), validation and default setting
-Expands the spec and params into consumable inputs in data space for lab units.
+Expands the spec and params into consumable inputs in info space for lab units.
 '''
 import itertools
 import json
@@ -159,7 +159,7 @@ def resolve_aeb(spec):
 def resolve_param(spec):
     '''
     Resolve an experiment spec into the param space or generator for experiment trials. Do so for each of Agent param, Env param, then their combinations.
-    Each point in the param space is a trial, which contains its own copy of AEB space. Hence the base experiment data space cardinality is param space x AEB space.
+    Each point in the param space is a trial, which contains its own copy of AEB space. Hence the base experiment info space cardinality is param space x AEB space.
     @param {dict} spec An experiment spec.
     @returns {list} param_list Resolved param space list of points or generator.
     TODO implement and design AE params, like AEB space

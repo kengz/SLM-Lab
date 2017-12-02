@@ -10,7 +10,7 @@ from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
 from unityagents.environment import logger as unity_logger
-from slm_lab.experiment.monitor import data_space
+from slm_lab.experiment.monitor import info_space
 
 unity_logger.setLevel('WARN')
 

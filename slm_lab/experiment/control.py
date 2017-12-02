@@ -7,7 +7,7 @@ import pandas as pd
 import pydash as _
 from slm_lab.agent import Agent, AgentSpace
 from slm_lab.env import Env, EnvSpace
-from slm_lab.experiment.monitor import data_space, AEBSpace
+from slm_lab.experiment.monitor import info_space, AEBSpace
 from slm_lab.lib import logger, util, viz
 
 
@@ -22,9 +22,9 @@ class Session:
 
     def __init__(self, spec):
         self.spec = spec
-        self.coor, self.index = data_space.index_lab_comp(self)
+        self.coor, self.index = info_space.index_lab_comp(self)
         self.data = pd.DataFrame()
-        # TODO put resolved space from spec into monitor.dataspace
+        # TODO put resolved space from spec into monitor.info_space
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
@@ -86,7 +86,7 @@ class Trial:
 
     def __init__(self, spec):
         self.spec = spec
-        self.coor, self.index = data_space.index_lab_comp(self)
+        self.coor, self.index = info_space.index_lab_comp(self)
         self.data = pd.DataFrame()
         self.session = None
 
@@ -123,7 +123,7 @@ class Experiment:
 
     def __init__(self, spec):
         self.spec = spec
-        self.coor, self.index = data_space.index_lab_comp(self)
+        self.coor, self.index = info_space.index_lab_comp(self)
         self.data = pd.DataFrame()
         self.trial = None
 

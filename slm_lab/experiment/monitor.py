@@ -1,7 +1,7 @@
 '''
 The monitor module with data_space
 Monitors agents, environments, sessions, trials, experiments, evolutions, and handles all the data produced by the Lab components.
-DataSpace handles the unified hyperdimensional data for SLM Lab, used for analysis and experiment planning. Sources data from monitor.
+InfoSpace handles the unified hyperdimensional data for SLM Lab, used for analysis and experiment planning. Sources data from monitor.
 Each dataframe resolves from the coarsest dimension to the finest, with data coordinates coor in the form: (evolution,experiment,trial,session,agent,env,body)
 The resolution after session is the AEB space, hence it is a subspace.
 AEB space is not necessarily tabular, and hence the data is NoSQL.
@@ -10,8 +10,8 @@ The data_space is congruent to the coor, with proper resolution.
 E.g. (evolution,experiment,trial,session) specifies the session_data of a session, ran over multiple episodes on the AEB space.
 
 Space ordering:
-DataSpace: the general space for complete data
-AEBSpace: subspace of DataSpace for a specific session
+InfoSpace: the general space for complete information
+AEBSpace: subspace of InfoSpace for a specific session
 AgentSpace: space agent instances, subspace of AEBSpace
 EnvSpace: space of env instances, subspace of AEBSpace
 AEBDataSpace: a data space storing an AEB data projected to a-axis, and its dual projected to e-axis. This is so that a-proj data like action_space from agent_space can be used by env_space, which requires e-proj data, and vice versa.
@@ -152,6 +152,8 @@ class AEBDataSpace:
 class AEBSpace:
 
     def __init__(self, spec):
+        # TODO shove
+        # self.info_space = info_space
         self.agent_space = None
         self.env_space = None
         self.body_space = None
@@ -255,13 +257,13 @@ class AEBSpace:
         return data_space
 
 
-# TODO put AEBSpace into DataSpace, propagate method usage, shove into DB
-class DataSpace:
+# TODO put AEBSpace into InfoSpace, propagate method usage, shove into DB
+class InfoSpace:
     def __init__(self, last_coor=None):
         '''
-        Initialize the coor, the global point in data space that will advance according to experiment progress.
+        Initialize the coor, the global point in info space that will advance according to experiment progress.
         The coor starts with null first since the coor may not start at the origin.
-        TODO In general, when we parallelize to use multiple coor on a data space, keep a covered space and multiple coors to advance without conflicts.
+        TODO In general, when we parallelize to use multiple coor on a info space, keep a covered space and multiple coors to advance without conflicts.
         TODO logic to resume from given last_coor
         '''
         self.coor = last_coor or {k: None for k in COOR_AXES}
@@ -294,14 +296,14 @@ class DataSpace:
 
     def index_lab_comp(self, lab_comp):
         '''
-        Update data space coor when initializing lab component, and return its coor and index.
+        Update info space coor when initializing lab component, and return its coor and index.
         Does not apply to AEB entities.
         @returns {tuple, int} data_coor, index
         @example
 
         class Session:
             def __init__(self, spec):
-                self.coor, self.index = data_space.index_lab_comp(self)
+                self.coor, self.index = info_space.index_lab_comp(self)
         '''
         axis = util.get_class_name(lab_comp, lower=True)
         self.advance_coor(axis)
@@ -333,4 +335,4 @@ class Monitor:
 
 
 # TODO create like monitor, for experiment level
-data_space = DataSpace()
+info_space = InfoSpace()

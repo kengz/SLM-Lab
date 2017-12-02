@@ -21,7 +21,7 @@ Agent components:
 - policy
 '''
 from slm_lab.agent import algorithm
-from slm_lab.experiment.monitor import data_space
+from slm_lab.experiment.monitor import info_space
 from slm_lab.lib import util
 
 
@@ -60,7 +60,7 @@ class Agent:
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
-        # TODO build and access timestep, episode, absolute number of timesteps from Dataspace
+        # TODO build and access timestep, episode, absolute number of timesteps from InfoSpace
         # TODO implement generic method, work on AEB
         # self.memory.update()
         # self.net.train()
