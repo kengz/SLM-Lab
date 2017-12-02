@@ -48,7 +48,7 @@ class Session:
         self.aeb_space.tick_clock('e')
         # TODO generalize and make state to include observables
         state_space = self.env_space.reset()
-        self.agent_space.reset()
+        self.agent_space.reset(state_space)
         # RL steps for SARS
         for t in range(self.env_space.max_timestep):
             self.aeb_space.tick_clock('t')

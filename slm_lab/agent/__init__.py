@@ -47,10 +47,9 @@ class Agent:
         self.memory = None
         self.net = None
 
-    def reset(self):
+    def reset(self, state):
         '''Do agent reset per episode, such as memory pointer'''
-        # TODO implement
-        pass
+        self.memory.reset_last_state(state)
 
     def act(self, state):
         '''Standard act method from algorithm.'''
@@ -90,9 +89,10 @@ class AgentSpace:
     def get(self, a):
         return self.agents[a]
 
-    def reset(self):
-        for agent in self.agents:
-            agent.reset()
+    def reset(self, state_space):
+        for a, agent in enumerate(self.agents):
+            state = state_space.get(a=a)
+            agent.reset(state)
 
     def act(self, state_space):
         action_proj = []

@@ -26,17 +26,18 @@ class ReplayMemory:
     This allows for other implementations to sample based on the experience priorities
     '''
 
-    def __init__(self, size, state_dim, action_dim):
+    def __init__(self, agent):
         '''
         size: maximum size of the memory
         state_dim: tuple of state dims e.g [5] or [3, 84, 84]
         action_dim: tuple of action dime e.g. [4]
         '''
-        super(ReplayMemory, self).__init__()
-
-        self.max_size = size
-        self.state_dim = state_dim
-        self.action_dim = action_dim
+        spec = self.agent.spec
+        self.max_size = spec['memory_size']
+        # TODO generalize
+        default_body = self.agent.bodies[0]
+        self.state_dim = body.state_dim
+        self.action_dim = body.action_dim
         self.reset_memory()
 
     def reset_memory(self):
@@ -63,18 +64,17 @@ class ReplayMemory:
         assert self.dones is not None
         assert self.priorities is not None
 
+    def reset_last_state(self, state):
+        '''epsodic reset'''
+        self.last_state = state
+
     def update(self, action, reward, state, done):
         # interface
         # TODO store directly from data_space?
-        # TODO set last_state
-        # TODO fix init
-        # self.last_state
-        # last state needs be set at env init
         self.add_experience(
             self.last_state, action, reward, state, done
         )
-        # last_state, action, reward, state
-        return
+        self.last_state = state
 
     def add_experience(self,
                        state,
