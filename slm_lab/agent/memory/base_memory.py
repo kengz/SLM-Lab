@@ -12,7 +12,7 @@ class ReplayMemory:
                 - Real numbers representing mean on action dist (continuous)
         - reward: scalar value
         - next state: representation of next state (should be same as state)
-        - terminal: 0 / 1 representing if the current state is the last in an episode
+        - done: 0 / 1 representing if the current state is the last in an episode
         - priority (optional): scalar value, unnormalized
 
     The memory has a size of N. When capacity is reached, the oldest experience
@@ -39,13 +39,16 @@ class ReplayMemory:
         self.reset_memory()
 
     def update(self, action, reward, state, done):
+        # TODO store directly from data_space?
+        # self.last_state
+        # last_state, action, reward, state
         return
 
     def add_experience(self,
                        state,
                        action,
                        reward,
-                       terminal,
+                       done,
                        next_state,
                        priority=1):
         '''Adds experience to memory, expanding the memory size if necessary'''
@@ -55,12 +58,12 @@ class ReplayMemory:
         self.states[self.head] = state
         self.actions[self.head] = action
         self.rewards[self.head] = reward
-        self.terminals[self.head] = terminal
+        self.dones[self.head] = done
         self.next_states[self.head] = next_state
         self.priorities[self.head] = priority
-        # Update memory size if necessary
-        if self.current_size < self.max_size:
-            self.current_size += 1
+        # Actually occupied size of memory
+        if self.true_size < self.max_size:
+            self.true_size += 1
         self.total_experiences += 1
 
     def get_most_recent_experience(self):
@@ -69,7 +72,7 @@ class ReplayMemory:
         experience.append(self.states[self.head])
         experience.append(self.actions[self.head])
         experience.append(self.rewards[self.head])
-        experience.append(self.terminals[self.head])
+        experience.append(self.dones[self.head])
         experience.append(self.next_states[self.head])
         experience.append(self.priorities[self.head])
         return experience
@@ -83,32 +86,33 @@ class ReplayMemory:
             batch = {'states'      : states,
                      'actions'     : actions,
                      'rewards'     : rewards,
-                     'terminals'   : terminals,
+                     'dones'   : dones,
                      'next_states' : next_states,
                      'priorities'  : priorities}
         '''
-        self.sample_indices(batch_size)
+        self.batch_idxs = sample_idxs(batch_size)
         batch = {}
-        batch['states'] = self.states[self.current_batch_indices]
-        batch['actions'] = self.actions[self.current_batch_indices]
-        batch['rewards'] = self.rewards[self.current_batch_indices]
-        batch['terminals'] = self.terminals[self.current_batch_indices]
-        batch['next_states'] = self.next_states[self.current_batch_indices]
-        batch['priorities'] = self.priorities[self.current_batch_indices]
+        batch['states'] = self.states[self.batch_idxs]
+        batch['actions'] = self.actions[self.batch_idxs]
+        batch['rewards'] = self.rewards[self.batch_idxs]
+        batch['dones'] = self.dones[self.batch_idxs]
+        batch['next_states'] = self.next_states[self.batch_idxs]
+        batch['priorities'] = self.priorities[self.batch_idxs]
         return batch
 
-    def sample_indices(self, batch_size):
+    def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
-        self.current_batch_indices = \
-            np.random.choice(list(range(self.current_size)), batch_size)
+        batch_idxs = np.random.choice(
+            list(range(self.true_size)), batch_size)
+        return batch_idxs
 
     def update_priorities(self, priorities):
         '''
         Updates the priorities from the most recent batch
-        Assumes the relevant batch indices are stored in self.current_batch_indicies
+        Assumes the relevant batch indices are stored in self.batch_idxs
         '''
-        assert len(priorites) == self.current_batch_indicies.size
-        self.priorities[self.current_batch_indicies] = priorities
+        assert len(priorites) == self.batch_idxs.size
+        self.priorities[self.batch_idxs] = priorities
 
     def reset_memory(self):
         '''
@@ -118,16 +122,16 @@ class ReplayMemory:
         self.states = np.zeros((self.max_size, *self.state_dim))
         self.actions = np.zeros((self.max_size, *self.action_dim))
         self.rewards = np.zeros((self.max_size, 1))
-        self.terminals = np.zeros((self.max_size, 1))
+        self.dones = np.zeros((self.max_size, 1))
         self.next_states = np.zeros((self.max_size, *self.state_dim))
         self.priorities = np.zeros((self.max_size, 1))
-        self.current_size = 0
+        self.true_size = 0
         self.head = -1  # Index of most recent experience
-        self.current_batch_indices = None
+        self.batch_idxs = None
         self.total_experiences = 0
         assert self.states is not None
         assert self.actions is not None
         assert self.rewards is not None
-        assert self.terminals is not None
+        assert self.dones is not None
         assert self.next_states is not None
         assert self.priorities is not None

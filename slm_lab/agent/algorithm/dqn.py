@@ -64,9 +64,9 @@ class DQNBase(Algorithm):
 
     def compute_q_target_values(self, batch):
         q_vals = self.net.eval(batch['states'])
-        # Make future reward 0 if the current state is terminal
+        # Make future reward 0 if the current state is done
         q_targets_all = batch['rewards'] + self.gamma * \
-            (1 - batch['terminals']) * self.net.eval(batch['next_states'])
+            (1 - batch['dones']) * self.net.eval(batch['next_states'])
         q_targets_max = torch.max(q_targets_all, axis=1)
         # Reshape q_targets_max to q_targets_all shape
         q_targets_max = q_targets_max.expand(-1, q_targets_all.shape[1])

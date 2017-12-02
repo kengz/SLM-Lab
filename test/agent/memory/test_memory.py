@@ -14,11 +14,11 @@ class TestMemory:
 
     def test_memory_init(self, test_memory):
         memory = test_memory[0]
-        assert memory.current_size == 0
+        assert memory.true_size == 0
         assert memory.states.shape == (memory.max_size, *memory.state_dim)
         assert memory.actions.shape == (memory.max_size, *memory.action_dim)
         assert memory.next_states.shape == (memory.max_size, *memory.state_dim)
-        assert memory.terminals.shape == (memory.max_size, 1)
+        assert memory.dones.shape == (memory.max_size, 1)
         assert memory.rewards.shape == (memory.max_size, 1)
         assert memory.priorities.shape == (memory.max_size, 1)
 
@@ -34,7 +34,7 @@ class TestMemory:
         experiences = test_memory[2]
         exp = experiences[0]
         memory.add_experience(*exp)
-        assert memory.current_size == 1
+        assert memory.true_size == 1
         assert memory.head == 0
         # Handle states and actions with multiple dimensions
         if memory.states[memory.head].size > 1:
@@ -48,7 +48,7 @@ class TestMemory:
             assert memory.actions[memory.head] == exp[1]
             assert memory.next_states[memory.head] == exp[4]
         assert memory.rewards[memory.head] == exp[2]
-        assert memory.terminals[memory.head] == exp[3]
+        assert memory.dones[memory.head] == exp[3]
         assert memory.priorities[memory.head] == 1
 
     def test_get_most_recent_experience(self, test_memory):
@@ -83,7 +83,7 @@ class TestMemory:
         for e in experiences:
             memory.add_experience(*e)
             num_added += 1
-            assert memory.current_size == min(memory.max_size, num_added)
+            assert memory.true_size == min(memory.max_size, num_added)
             assert memory.head == (num_added - 1) % memory.max_size
 
     @pytest.mark.skip(reason='flaky test, see https://circleci.com/gh/kengz/SLM-Lab/262')
@@ -102,7 +102,7 @@ class TestMemory:
         assert batch['states'].shape == (batch_size, *memory.state_dim)
         assert batch['actions'].shape == (batch_size, *memory.action_dim)
         assert batch['rewards'].shape == (batch_size, 1)
-        assert batch['terminals'].shape == (batch_size, 1)
+        assert batch['dones'].shape == (batch_size, 1)
         assert batch['next_states'].shape == (batch_size, *memory.state_dim)
         assert batch['priorities'].shape == (batch_size, 1)
 
@@ -140,11 +140,11 @@ class TestMemory:
             memory.add_experience(*e)
         memory.reset_memory()
         assert memory.head == -1
-        assert memory.current_size == 0
+        assert memory.true_size == 0
         assert np.sum(memory.states) == 0
         assert np.sum(memory.actions) == 0
         assert np.sum(memory.rewards) == 0
-        assert np.sum(memory.terminals) == 0
+        assert np.sum(memory.dones) == 0
         assert np.sum(memory.next_states) == 0
         assert np.sum(memory.priorities) == 0
 
