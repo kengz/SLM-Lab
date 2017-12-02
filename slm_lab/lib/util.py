@@ -85,6 +85,10 @@ def flatten_dict(d, parent_key='', sep='.'):
     return dict(items)
 
 
+def get_aeb_shape(aeb_coor_list):
+    return np.amax(aeb_coor_list, axis=0) + 1
+
+
 def get_class_name(obj, lower=False):
     '''Get the class name of an object'''
     class_name = obj.__class__.__name__

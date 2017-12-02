@@ -112,7 +112,7 @@ def get(spec_file, spec_name):
 
 def is_aeb_compact(aeb_coor_list):
     '''Check if aeb space (aeb_coor_list) is compact; uniq count must equal shape in each of a,e,b axes.'''
-    aeb_shape = np.amax(aeb_coor_list, axis=0) + 1
+    aeb_shape = util.get_aeb_shape(aeb_coor_list)
     aeb_uniq = [len(np.unique(col)) for col in np.transpose(aeb_coor_list)]
     return np.array_equal(aeb_shape, aeb_uniq)
 

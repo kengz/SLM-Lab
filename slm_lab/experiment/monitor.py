@@ -172,7 +172,7 @@ class AEBSpace:
         @param {[(a, e, b)]} coor_list The array of aeb coors
         @returns {array([a, e, b]), [a: [(e, b)]]} aeb_shape, a_eb_proj
         '''
-        aeb_shape = np.amax(coor_list, axis=0) + 1
+        aeb_shape = util.get_aeb_shape(coor_list)
         a_aeb_groups = _.group_by(coor_list, lambda aeb: aeb[0])
         a_eb_proj = []
         for a, aeb_list in a_aeb_groups.items():
