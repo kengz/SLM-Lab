@@ -73,7 +73,7 @@ class AEBDataSpace:
         self.data_name = data_name
         self.aeb_proj_dual_map = aeb_proj_dual_map
         self.aeb_space = aeb_space
-        if data_name in AGENT_DATA_NAMES:
+        if data_name in AGENT_DATA_NAMES or data_name == 'body':
             self.proj_axis = 'a'
             self.dual_proj_axis = 'e'
         else:
@@ -89,7 +89,7 @@ class AEBDataSpace:
         for x, y_map_idx_list in enumerate(x_map):
             s += f'\n  {self.proj_axis}:{x} ['
             for x_idx, (y, xb_idx) in enumerate(y_map_idx_list):
-                b = x_yb_proj[x][x_idx][0]
+                b = x_yb_proj[x][x_idx][1]
                 data = self.data_proj[y][xb_idx]
                 s += f'({self.dual_proj_axis}:{y},b:{b}) {data} '
             s += ']'

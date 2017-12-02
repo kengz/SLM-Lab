@@ -75,8 +75,20 @@ class Env:
         self.ab_proj = self.env_space.e_ab_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
         self.u_env = UnityEnvironment(
-            file_name=util.get_env_path(self.name),
-            worker_id=self.index)
+            file_name=util.get_env_path(self.name), worker_id=self.index)
+        self.check_u_brain_to_agent()
+
+    def check_u_brain_to_agent(self):
+        '''Check the size match between unity brain and agent'''
+        u_brain_num = self.u_env.number_brains
+        agent_num = util.get_aeb_shape(self.ab_proj)[0]
+        assert u_brain_num == agent_num, f'There must be a Unity brain for each agent; failed check brain: {u_brain_num} == agent: {agent_num}.'
+
+    def check_u_agent_to_body(self, a_env_info, a):
+        '''Check the size match between unity agent and body'''
+        u_agent_num = len(a_env_info.agents)
+        a_body_num = len(_.filter_(self.ab_proj, lambda ab: ab[0] == a))
+        assert u_agent_num == a_body_num, f'There must be a Unity agent for each body; failed check agent: {u_agent_num} == body: {a_body_num}.'
 
     def get_brain(self, a):
         '''Get the unity-equivalent of agent, i.e. brain, to access its info'''
@@ -106,6 +118,7 @@ class Env:
         for a, b in self.ab_proj:
             a_name = self.u_env.brain_names[a]
             a_env_info = env_info_dict[a_name]
+            self.check_u_agent_to_body(a_env_info, a)
             body_state = a_env_info.states[b]
             state.append(body_state)
         return state
@@ -141,7 +154,7 @@ class EnvSpace:
         self.aeb_space = aeb_space
         aeb_space.env_space = self
         self.e_ab_proj = aeb_space.e_ab_proj
-        self.envs = [Env(_.merge(e_spec, spec['meta']), self)
+        self.envs = [Env(_.merge(e_spec, spec['meta']), self, e)
                      for e, e_spec in enumerate(spec['env'])]
         self.max_timestep = np.amax([env.max_timestep for env in self.envs])
 
