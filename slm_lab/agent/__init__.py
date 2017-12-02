@@ -56,15 +56,15 @@ class Agent:
         '''Standard act method from algorithm.'''
         return self.algorithm.act(state)
 
-    def update(self, reward, state, done):
+    def update(self, action, reward, state, done):
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
         t = self.agent_space.aeb_space.clock['t']
         # TODO implement generic method, work on AEB
-        # self.memory.update()
+        # self.memory.update(action, reward, state, done)
         # self.net.train()
-        self.algorithm.update(reward, state, done)
+        self.algorithm.update(action, reward, state, done)
 
     def close(self):
         '''Close agent at the end of a session, e.g. save model'''
@@ -103,12 +103,13 @@ class AgentSpace:
         action_space = self.aeb_space.add('action', action_proj)
         return action_space
 
-    def update(self, reward_space, state_space, done_space):
+    def update(self, action_space, reward_space, state_space, done_space):
         for a, agent in enumerate(self.agents):
+            action = action_space.get(a=a)
             reward = reward_space.get(a=a)
             state = state_space.get(a=a)
             done = done_space.get(a=a)
-            agent.update(reward, state, done)
+            agent.update(action, reward, state, done)
 
     def close(self):
         for agent in self.agents:

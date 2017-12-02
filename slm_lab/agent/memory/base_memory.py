@@ -38,6 +38,9 @@ class ReplayMemory:
         self.action_dim = action_dim
         self.reset_memory()
 
+    def update(self, action, reward, state, done):
+        return
+
     def add_experience(self,
                        state,
                        action,

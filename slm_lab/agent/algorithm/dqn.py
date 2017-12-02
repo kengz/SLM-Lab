@@ -83,7 +83,7 @@ class DQNBase(Algorithm):
             body_state,
             self.explore_var)
 
-    def update(self, reward, state, done):
+    def update(self, action, reward, state, done):
         # TODO make proper
         # Update epsilon or boltzmann
         self.anneal_epi = 20
