@@ -1,4 +1,5 @@
 ---
+version: 2
 plugins:
   duplication:
     enabled: true
@@ -16,7 +17,7 @@ plugins:
       E501:
         enabled: false
   radon:
-    enabled:
+    enabled: true
     config:
       threshold: "C"
 checks:
