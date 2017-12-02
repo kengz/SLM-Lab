@@ -20,6 +20,7 @@ def test_get():
 @pytest.mark.parametrize('aeb_coor_list,is_compact', [
     ([(0, 0, 0), (0, 1, 0), (0, 1, 1)], True),
     ([(0, 0, 0), (0, 1, 0), (0, 1, 2)], False),
+    ([(0, 0, 0), (0, 1, 1)], False),
 ])
 def test_is_aeb_compact(aeb_coor_list, is_compact):
     assert spec_util.is_aeb_compact(aeb_coor_list) == is_compact
