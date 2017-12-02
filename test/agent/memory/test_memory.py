@@ -17,9 +17,9 @@ class TestMemory:
         assert memory.true_size == 0
         assert memory.states.shape == (memory.max_size, *memory.state_dim)
         assert memory.actions.shape == (memory.max_size, *memory.action_dim)
+        assert memory.rewards.shape == (memory.max_size, 1)
         assert memory.next_states.shape == (memory.max_size, *memory.state_dim)
         assert memory.dones.shape == (memory.max_size, 1)
-        assert memory.rewards.shape == (memory.max_size, 1)
         assert memory.priorities.shape == (memory.max_size, 1)
 
     def test_add_experience(self, test_memory):
@@ -40,15 +40,15 @@ class TestMemory:
         if memory.states[memory.head].size > 1:
             for i in range(memory.states[memory.head].size):
                 assert memory.states[memory.head][i] == exp[0][i]
-                assert memory.next_states[memory.head][i] == exp[4][i]
+                assert memory.next_states[memory.head][i] == exp[3][i]
             for i in range(memory.actions[memory.head].size):
                 assert memory.actions[memory.head][i] == exp[1][i]
         else:
             assert memory.states[memory.head] == exp[0]
             assert memory.actions[memory.head] == exp[1]
-            assert memory.next_states[memory.head] == exp[4]
+            assert memory.next_states[memory.head] == exp[3]
         assert memory.rewards[memory.head] == exp[2]
-        assert memory.dones[memory.head] == exp[3]
+        assert memory.dones[memory.head] == exp[4]
         assert memory.priorities[memory.head] == 1
 
     def test_get_most_recent_experience(self, test_memory):
@@ -60,19 +60,19 @@ class TestMemory:
         memory = test_memory[0]
         memory.reset_memory()
         experiences = test_memory[2]
-        last_e = None
+        last_exp = None
         for i in range(6):
-            e = experiences[i]
-            memory.add_experience(*e)
-            last_e = copy.deepcopy(e)
-        e = memory.get_most_recent_experience()
+            exp = experiences[i]
+            memory.add_experience(*exp)
+            last_exp = copy.deepcopy(exp)
+        exp = memory.get_most_recent_experience()
         # Handle states and actions with multiple dimensions
-        for orig_e, mem_e in zip(last_e, e):
-            if mem_e.size > 1:
-                for i in range(mem_e.size):
-                    assert orig_e[i] == mem_e[i]
+        for orig_exp, mem_exp in zip(last_exp, exp):
+            if mem_exp.size > 1:
+                for i in range(mem_exp.size):
+                    assert orig_exp[i] == mem_exp[i]
             else:
-                assert orig_e == mem_e
+                assert orig_exp == mem_exp
 
     def test_wrap(self, test_memory):
         '''Tests that the memory wraps round when it is at capacity'''
@@ -102,8 +102,8 @@ class TestMemory:
         assert batch['states'].shape == (batch_size, *memory.state_dim)
         assert batch['actions'].shape == (batch_size, *memory.action_dim)
         assert batch['rewards'].shape == (batch_size, 1)
-        assert batch['dones'].shape == (batch_size, 1)
         assert batch['next_states'].shape == (batch_size, *memory.state_dim)
+        assert batch['dones'].shape == (batch_size, 1)
         assert batch['priorities'].shape == (batch_size, 1)
 
     @pytest.mark.skip(reason='flaky test, see https://circleci.com/gh/kengz/SLM-Lab/296')
@@ -144,8 +144,8 @@ class TestMemory:
         assert np.sum(memory.states) == 0
         assert np.sum(memory.actions) == 0
         assert np.sum(memory.rewards) == 0
-        assert np.sum(memory.dones) == 0
         assert np.sum(memory.next_states) == 0
+        assert np.sum(memory.dones) == 0
         assert np.sum(memory.priorities) == 0
 
     def test_sample_dist(self, test_memory):

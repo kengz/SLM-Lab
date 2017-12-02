@@ -33,14 +33,46 @@ class ReplayMemory:
         action_dim: tuple of action dime e.g. [4]
         '''
         super(ReplayMemory, self).__init__()
+
         self.max_size = size
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.reset_memory()
 
+    def reset_memory(self):
+        '''
+        Initializes all of the memory parameters to a blank memory
+        Can also be used to clear the memory
+        '''
+        self.last_state = None
+        self.states = np.zeros((self.max_size, *self.state_dim))
+        self.actions = np.zeros((self.max_size, *self.action_dim))
+        self.rewards = np.zeros((self.max_size, 1))
+        self.next_states = np.zeros((self.max_size, *self.state_dim))
+        self.dones = np.zeros((self.max_size, 1))
+        self.priorities = np.zeros((self.max_size, 1))
+
+        self.true_size = 0
+        self.head = -1  # Index of most recent experience
+        self.batch_idxs = None
+        self.total_experiences = 0
+        assert self.states is not None
+        assert self.actions is not None
+        assert self.rewards is not None
+        assert self.next_states is not None
+        assert self.dones is not None
+        assert self.priorities is not None
+
     def update(self, action, reward, state, done):
+        # interface
         # TODO store directly from data_space?
+        # TODO set last_state
+        # TODO fix init
         # self.last_state
+        # last state needs be set at env init
+        self.add_experience(
+            self.last_state, action, reward, state, done
+        )
         # last_state, action, reward, state
         return
 
@@ -48,8 +80,8 @@ class ReplayMemory:
                        state,
                        action,
                        reward,
-                       done,
                        next_state,
+                       done,
                        priority=1):
         '''Adds experience to memory, expanding the memory size if necessary'''
         # Move head pointer. Wrap around if necessary
@@ -58,8 +90,8 @@ class ReplayMemory:
         self.states[self.head] = state
         self.actions[self.head] = action
         self.rewards[self.head] = reward
-        self.dones[self.head] = done
         self.next_states[self.head] = next_state
+        self.dones[self.head] = done
         self.priorities[self.head] = priority
         # Actually occupied size of memory
         if self.true_size < self.max_size:
@@ -68,12 +100,13 @@ class ReplayMemory:
 
     def get_most_recent_experience(self):
         '''Returns the most recent experience'''
+        # TODO need to foolproof index reference error. Simple as add a dict. if not private method, data format need be consistent with batch format with keys.
         experience = []
         experience.append(self.states[self.head])
         experience.append(self.actions[self.head])
         experience.append(self.rewards[self.head])
-        experience.append(self.dones[self.head])
         experience.append(self.next_states[self.head])
+        experience.append(self.dones[self.head])
         experience.append(self.priorities[self.head])
         return experience
 
@@ -86,8 +119,8 @@ class ReplayMemory:
             batch = {'states'      : states,
                      'actions'     : actions,
                      'rewards'     : rewards,
-                     'dones'   : dones,
                      'next_states' : next_states,
+                     'dones'   : dones,
                      'priorities'  : priorities}
         '''
         self.batch_idxs = sample_idxs(batch_size)
@@ -95,8 +128,8 @@ class ReplayMemory:
         batch['states'] = self.states[self.batch_idxs]
         batch['actions'] = self.actions[self.batch_idxs]
         batch['rewards'] = self.rewards[self.batch_idxs]
-        batch['dones'] = self.dones[self.batch_idxs]
         batch['next_states'] = self.next_states[self.batch_idxs]
+        batch['dones'] = self.dones[self.batch_idxs]
         batch['priorities'] = self.priorities[self.batch_idxs]
         return batch
 
@@ -113,25 +146,3 @@ class ReplayMemory:
         '''
         assert len(priorites) == self.batch_idxs.size
         self.priorities[self.batch_idxs] = priorities
-
-    def reset_memory(self):
-        '''
-        Initializes all of the memory parameters to a blank memory
-        Can also be used to clear the memory
-        '''
-        self.states = np.zeros((self.max_size, *self.state_dim))
-        self.actions = np.zeros((self.max_size, *self.action_dim))
-        self.rewards = np.zeros((self.max_size, 1))
-        self.dones = np.zeros((self.max_size, 1))
-        self.next_states = np.zeros((self.max_size, *self.state_dim))
-        self.priorities = np.zeros((self.max_size, 1))
-        self.true_size = 0
-        self.head = -1  # Index of most recent experience
-        self.batch_idxs = None
-        self.total_experiences = 0
-        assert self.states is not None
-        assert self.actions is not None
-        assert self.rewards is not None
-        assert self.dones is not None
-        assert self.next_states is not None
-        assert self.priorities is not None
