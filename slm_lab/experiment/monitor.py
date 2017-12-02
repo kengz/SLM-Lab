@@ -68,9 +68,10 @@ class AEBDataSpace:
     '''
     # TODO prolly keep episodic, timestep historic data series, to DB per episode
 
-    def __init__(self, data_name, aeb_proj_dual_map):
+    def __init__(self, data_name, aeb_proj_dual_map, aeb_space):
         self.data_name = data_name
         self.aeb_proj_dual_map = aeb_proj_dual_map
+        self.aeb_space = aeb_space
         if data_name in AGENT_DATA_NAMES:
             self.proj_axis = 'a'
             self.dual_proj_axis = 'e'
@@ -81,7 +82,18 @@ class AEBDataSpace:
         self.dual_data_proj = None
 
     def __str__(self):
-        return str(self.data_proj)
+        s = '['
+        x_map = self.aeb_proj_dual_map[self.dual_proj_axis]
+        x_yb_proj = self.aeb_space.a_eb_proj if self.dual_proj_axis == 'a' else self.aeb_space.e_ab_proj
+        for x, y_map_idx_list in enumerate(x_map):
+            s += f'\n  {self.proj_axis}:{x} ['
+            for x_idx, (y, xb_idx) in enumerate(y_map_idx_list):
+                b = x_yb_proj[x][x_idx][0]
+                data = self.data_proj[y][xb_idx]
+                s += f'({self.dual_proj_axis}:{y},b:{b}) {data} '
+            s += ']'
+        s += '\n]'
+        return s
 
     def __bool__(self):
         return bool(np.all(self.data_proj))
@@ -209,13 +221,13 @@ class AEBSpace:
         }
         self.init_aeb_proj_dual_map()
         for data_name in self.data_spaces:
-            data_space = AEBDataSpace(data_name, self.aeb_proj_dual_map)
+            data_space = AEBDataSpace(data_name, self.aeb_proj_dual_map, self)
             self.data_spaces[data_name] = data_space
         return self.data_spaces
 
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
-        self.body_space = AEBDataSpace('body', self.aeb_proj_dual_map)
+        self.body_space = AEBDataSpace('body', self.aeb_proj_dual_map, self)
         data_proj = deepcopy(self.a_eb_proj)
         for a, eb_list in enumerate(self.a_eb_proj):
             for eb_idx, (e, b) in enumerate(eb_list):
