@@ -1,5 +1,5 @@
 ---
-engines:
+plugins:
   duplication:
     enabled: true
     config:
@@ -26,10 +26,6 @@ checks:
   method-complexity:
     config:
       threshold: 10
-ratings:
-  paths:
-  - "**.js"
-  - "**.py"
-exclude_paths:
+exclude_patterns:
 - config/
 - node_modules/
