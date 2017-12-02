@@ -14,7 +14,7 @@ InfoSpace: the general space for complete information
 AEBSpace: subspace of InfoSpace for a specific session
 AgentSpace: space agent instances, subspace of AEBSpace
 EnvSpace: space of env instances, subspace of AEBSpace
-AEBDataSpace: a data space storing an AEB data projected to a-axis, and its dual projected to e-axis. This is so that a-proj data like action_space from agent_space can be used by env_space, which requires e-proj data, and vice versa.
+DataSpace: a data space storing an AEB data projected to a-axis, and its dual projected to e-axis. This is so that a-proj data like action_space from agent_space can be used by env_space, which requires e-proj data, and vice versa.
 
 Object reference (for agent to access env properties, vice versa):
 Agents - AgentSpace - AEBSpace - EnvSpace - Envs
@@ -61,7 +61,7 @@ class Body:
         return 'body: ' + util.to_json(util.get_class_attr(self))
 
 
-class AEBDataSpace:
+class DataSpace:
     '''
     AEB data space - data container with an AEB space hashed to index of a flat list of stored data
     '''
@@ -223,13 +223,13 @@ class AEBSpace:
         }
         self.init_aeb_proj_dual_map()
         for data_name in self.data_spaces:
-            data_space = AEBDataSpace(data_name, self.aeb_proj_dual_map, self)
+            data_space = DataSpace(data_name, self.aeb_proj_dual_map, self)
             self.data_spaces[data_name] = data_space
         return self.data_spaces
 
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
-        self.body_space = AEBDataSpace('body', self.aeb_proj_dual_map, self)
+        self.body_space = DataSpace('body', self.aeb_proj_dual_map, self)
         data_proj = deepcopy(self.a_eb_proj)
         for a, eb_list in enumerate(self.a_eb_proj):
             for eb_idx, (e, b) in enumerate(eb_list):
@@ -250,7 +250,7 @@ class AEBSpace:
         Add a data projection to a data space, e.g. data_proj actions collected per body, per agent, from agent_space, with AEB shape projected on a-axis, added to action_space.
         @param {str} data_name
         @param {[x: [yb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
-        @returns {AEBDataSpace} data_space (aeb is implied)
+        @returns {DataSpace} data_space (aeb is implied)
         '''
         data_space = self.data_spaces[data_name]
         data_space.add(data_proj)
