@@ -20,7 +20,7 @@ Agent components:
 - net
 - policy
 '''
-from slm_lab.agent import algorithm
+from slm_lab.agent import algorithm, memory, net
 from slm_lab.experiment.monitor import info_space
 from slm_lab.lib import util
 
@@ -44,8 +44,10 @@ class Agent:
         AlgoClass = getattr(algorithm, self.name)
         self.algorithm = AlgoClass(self)
         # TODO also resolve architecture and data input, output dims via some architecture spec
-        self.memory = None
-        self.net = None
+        # TODO repattern, redesign spec
+        MemoryClass = getattr(memory, self.memory_name)
+        self.memory = MemoryClass(self)
+        # self.net = None
 
     def reset(self, state):
         '''Do agent reset per episode, such as memory pointer'''

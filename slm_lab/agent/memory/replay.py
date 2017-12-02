@@ -1,7 +1,8 @@
 import numpy as np
+from slm_lab.agent.memory.base import Memory
 
 
-class ReplayMemory:
+class Replay(Memory):
     '''
     Simple storage for storing agent experiences and sampling from them for agent training
 
@@ -32,19 +33,34 @@ class ReplayMemory:
         state_dim: tuple of state dims e.g [5] or [3, 84, 84]
         action_dim: tuple of action dime e.g. [4]
         '''
+        super(Replay, self).__init__(agent)
         spec = self.agent.spec
         self.max_size = spec['memory_size']
         # TODO generalize
-        default_body = self.agent.bodies[0]
-        self.state_dim = body.state_dim
-        self.action_dim = body.action_dim
-        self.reset_memory()
+        # self.reset_memory()
+
+    # def __init__(self, max_size, state_dim, action_dim):
+    #     # TODO deprecate this init and update net, test_memory
+    #     '''
+    #     size: maximum size of the memory
+    #     state_dim: tuple of state dims e.g [5] or [3, 84, 84]
+    #     action_dim: tuple of action dime e.g. [4]
+    #     '''
+    #     self.max_size = max_size
+    #     self.state_dim = state_dim
+    #     self.action_dim = action_dim
+    #     self.reset_memory()
 
     def reset_memory(self):
         '''
         Initializes all of the memory parameters to a blank memory
         Can also be used to clear the memory
         '''
+        default_body = self.agent.bodies[0]
+        # TODO the dim mismatches
+        self.state_dim = default_body.state_dim
+        self.action_dim = default_body.action_dim
+
         self.last_state = None
         self.states = np.zeros((self.max_size, *self.state_dim))
         self.actions = np.zeros((self.max_size, *self.action_dim))

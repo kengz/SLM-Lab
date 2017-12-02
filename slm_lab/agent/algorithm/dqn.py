@@ -2,7 +2,7 @@ import torch
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.algorithm.algorithm_utils import act_fns, update_fns
 from slm_lab.agent.net import nets
-from slm_lab.agent.memory.base_memory import ReplayMemory
+from slm_lab.agent.memory import Replay
 
 
 class DQNBase(Algorithm):
@@ -35,7 +35,7 @@ class DQNBase(Algorithm):
             *spec['net_other_params'])
         # TODO three nets for different part of Q function
         # In base algorithm should all be pointer to the same net - then update compute q target values and action functions
-        self.memory = ReplayMemory(
+        self.memory = Replay(
             spec['memory_size'],
             state_dim,
             action_dim)

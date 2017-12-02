@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from slm_lab.spec import spec_util
 from slm_lab.agent.net.feedforward import MLPNet
 from slm_lab.agent.net.convnet import ConvNet
-from slm_lab.agent.memory.base_memory import ReplayMemory
+from slm_lab.agent.memory import Replay
 from slm_lab.lib import util
 from torch.autograd import Variable
 
