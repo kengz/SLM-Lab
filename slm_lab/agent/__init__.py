@@ -50,7 +50,7 @@ class Agent:
     def reset(self):
         '''Do agent reset per episode, such as memory pointer'''
         # TODO implement
-        return
+        pass
 
     def act(self, state):
         '''Standard act method from algorithm.'''
@@ -60,12 +60,11 @@ class Agent:
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
-        # TODO build and access timestep, episode, absolute number of timesteps from InfoSpace
+        t = self.agent_space.aeb_space.clock['t']
         # TODO implement generic method, work on AEB
         # self.memory.update()
         # self.net.train()
         self.algorithm.update(reward, state, done)
-        return
 
     def close(self):
         '''Close agent at the end of a session, e.g. save model'''

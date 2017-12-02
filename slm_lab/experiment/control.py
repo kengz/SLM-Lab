@@ -45,11 +45,13 @@ class Session:
         Main RL loop, runs a single episode over timesteps, generalized to spaces from singleton.
         Returns episode_data space.
         '''
+        self.aeb_space.tick_clock('e')
         # TODO generalize and make state to include observables
         state_space = self.env_space.reset()
         self.agent_space.reset()
         # RL steps for SARS
         for t in range(self.env_space.max_timestep):
+            self.aeb_space.tick_clock('t')
             # TODO common refinement of timestep
             # TODO ability to train more on harder environments, or specify update per timestep per body, ratio of data u use to train. something like train_per_new_mem
             action_space = self.agent_space.act(state_space)

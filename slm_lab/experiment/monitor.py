@@ -154,18 +154,21 @@ class AEBSpace:
     def __init__(self, spec):
         # TODO shove
         # self.info_space = info_space
+        self.spec = spec
         self.agent_space = None
         self.env_space = None
         self.body_space = None
-        self.coor_list = spec_util.resolve_aeb(spec)
+        self.coor_list = spec_util.resolve_aeb(self.spec)
         self.aeb_shape, self.a_eb_proj = self.compute_aeb_dims(self.coor_list)
-        assert len(self.a_eb_proj) == len(spec['agent'])
         self.e_ab_proj = None
         self.aeb_proj_dual_map = {
             'a': None,
             'e': None,
         }
         self.data_spaces = self.init_data_spaces()
+        self.clock = {
+            unit: 0 for unit in ['t', 'total_t', 'e']
+        }
 
     def compute_aeb_dims(self, coor_list):
         '''
@@ -179,6 +182,7 @@ class AEBSpace:
         for a, aeb_list in a_aeb_groups.items():
             a_eb_proj.append(
                 util.to_tuple_list(np.array(aeb_list)[:, 1:]))
+        assert len(a_eb_proj) == len(self.spec['agent'])
         return aeb_shape, a_eb_proj
 
     def compute_dual_map(cls, a_eb_proj):
@@ -226,6 +230,18 @@ class AEBSpace:
             data_space = DataSpace(data_name, self.aeb_proj_dual_map, self)
             self.data_spaces[data_name] = data_space
         return self.data_spaces
+
+    def tick_clock(self, unit):
+        '''Tick the clock a unit into future time'''
+        if unit == 't':  # timestep
+            self.clock['t'] += 1
+            self.clock['total_t'] += 1
+        elif unit == 'e':  # episode, reset timestep
+            self.clock['t'] = 0
+            self.clock['e'] += 1
+        else:
+            raise KeyError
+        return self.clock
 
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
