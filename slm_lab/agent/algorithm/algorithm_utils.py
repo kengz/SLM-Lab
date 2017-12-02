@@ -30,9 +30,9 @@ def act_with_epsilon_greedy(net, state, epsilon):
     return one_hot_a
 
 def act_with_boltzmann(net, state, tau):
-    # TODO: implement act_with_boltzmann
+    # TODO implement act_with_boltzmann
     pass
 
 def act_with_gaussian(net, state, stddev):
-    # TODO: implement act_with_gaussian
+    # TODO implement act_with_gaussian
     pass

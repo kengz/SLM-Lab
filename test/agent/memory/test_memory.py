@@ -153,7 +153,7 @@ class TestMemory:
         Samples 100 times from memory.
         Accumulates the indices sampled and checks
         for significant deviation from a uniform distribution'''
-        # TODO: test_sample_dist
+        # TODO test_sample_dist
         assert None is None
 
     def test_update_priorities(self, test_memory):
@@ -161,5 +161,5 @@ class TestMemory:
         Samples from memory, and updates all priorities from
         1 to 2. Checks that correct experiences are updated
         '''
-        # TODO: implement test_update_priorities
+        # TODO implement test_update_priorities
         assert None is None

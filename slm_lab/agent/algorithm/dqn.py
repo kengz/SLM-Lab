@@ -3,35 +3,32 @@ from slm_lab.agent.algorithm.algorithm_utils import act_fns, update_fns
 from slm_lab.agent.net import nets
 from slm_lab.agent.memory.base_memory import ReplayMemory
 
+
 class DQNBase:
     '''
     Implementation of the base DQN algorithm.
     See Sergey Levine's lecture xxx for more details
-    TODO: add link
+    TODO add link
           more detailed comments
 
     net: instance of an slm_lab/agent/net
     memory: instance of an slm_lab/agent/memory
     batch_size: how many examples from memory to sample at each training step
-    action_selection: function (from common.py) that determines how to select
-                      actions
-    gamma: Real number in range [0, 1]. Determines how much to discount the
-           future
+    action_selection: function (from common.py) that determines how to select actions
+    gamma: Real number in range [0, 1]. Determines how much to discount the future
     state_dim: dimension of the state space
     action_dim: dimensions of the action space
     '''
 
     def __init__(self, spec, state_dim, action_dim):
-        super(DQNBase,self).__init__()
+        super(DQNBase, self).__init__()
         spec['net_layer_params'][0] = state_dim
         spec['net_layer_params'][-1] = action_dim
         self.net = nets[spec['net_type']](
             *spec['net_layer_params'],
             *spec['net_other_params'])
-        # TODO: three nets for different part of Q function
-        # In base algorithm should all be pointer to the same
-        # net - then update compute q target values and action
-        # functions
+        # TODO three nets for different part of Q function
+        # In base algorithm should all be pointer to the same net - then update compute q target values and action functions
         self.memory = ReplayMemory(
             spec['memory_size'],
             state_dim,
@@ -47,7 +44,7 @@ class DQNBase:
         self.training_frequency = 1
 
     def train_a_batch(self, t):
-        # TODO: Fix for training iters, docstring
+        # TODO Fix for training iters, docstring
         if t % self.training_frequency == 0:
             batch = self.memory.get_batch(self.batch_size)
             for i in range(self.training_iters_per_batch):
@@ -63,22 +60,27 @@ class DQNBase:
         q_targets_all = batch['rewards'] + self.gamma * \
             (1 - batch['terminals']) * self.net.eval(batch['next_states'])
         q_targets_max = torch.max(q_targets_all, axis=1)
-        # Reshape q_targets_max to q_targets all shape
+        # Reshape q_targets_max to q_targets_all shape
         q_targets_max = q_targets_max.expand(-1, q_targets_all.shape[1])
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_vals
         # So that the loss for these actions is 0
         q_targets = torch.mul(q_targets_max, batch['actions']) + \
-                    torch.mul(q_vals, (1 - batch['actions']))
+            torch.mul(q_vals, (1 - batch['actions']))
         return q_targets
 
-    def select_action(self, state):
+    def body_act_discrete(self, body, body_state):
         return self.action_selection(
-                    self.net,
-                    state,
-                    self.epsilon_or_tau)
+            self.net,
+            body_state,
+            self.epsilon_or_tau)
 
-    def update(self):
-        # TODO:
+    def update(self, reward, state, done):
+        # TODO make proper
         # Update epsilon or boltzmann
-        pass
+        self.anneal_epi = 20
+        epi = self.agent.agent_space.aeb_space.clock['e']
+        rise = self.epsilon_tau_end - self.epsilon_tau_start
+        slope = rise / float(self.anneal_epi)
+        self.epsilon_or_tau = max(
+            slope * epi + self.epsilon_tau_start, self.epsilon_tau_end)
