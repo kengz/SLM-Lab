@@ -18,18 +18,17 @@ class Session:
     session creates agent(s) and environment(s),
     run the RL system and collect data, e.g. fitness metrics, till it ends,
     then return the session data.
-    TODO only experiment_spec, agent_spec, agent_spec
-    auto-resolve param space spec for trial, copy for session with idx
     '''
 
     def __init__(self, spec):
-        self.coor, self.index, self.spec = data_space.init_lab_comp(self, spec)
+        self.spec = spec
+        self.coor, self.index = data_space.index_lab_comp(self)
         self.data = pd.DataFrame()
         # TODO put resolved space from spec into monitor.dataspace
         self.aeb_space = AEBSpace(self.spec)
-        self.env_space = EnvSpace(self.spec)
-        self.agent_space = AgentSpace(self.spec)
-        self.aeb_space.set_space_ref(self.agent_space, self.env_space)
+        self.env_space = EnvSpace(self.spec, self.aeb_space)
+        self.agent_space = AgentSpace(self.spec, self.aeb_space)
+        self.aeb_space.init_body_space()
 
     def close(self):
         '''
@@ -86,7 +85,8 @@ class Trial:
     '''
 
     def __init__(self, spec):
-        self.coor, self.index, self.spec = data_space.init_lab_comp(self, spec)
+        self.spec = spec
+        self.coor, self.index = data_space.index_lab_comp(self)
         self.data = pd.DataFrame()
         self.session = None
 
@@ -119,9 +119,11 @@ class Experiment:
     An experiment then forms a node containing its data in the evolution graph with the evolution link and suggestion at the adjacent possible new experiments
     On the evolution graph level, an experiment and its neighbors could be seen as test/development of traits.
     '''
+    # TODO metaspec to specify specs to run, can be sourced from evolution suggestion
 
     def __init__(self, spec):
-        self.coor, self.index, self.spec = data_space.init_lab_comp(self, spec)
+        self.spec = spec
+        self.coor, self.index = data_space.index_lab_comp(self)
         self.data = pd.DataFrame()
         self.trial = None
 

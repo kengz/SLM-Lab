@@ -4,6 +4,7 @@ Contains graduated components from experiments for building/using environment.
 Provides the rich experience for agent embodiment, reflects the curriculum and allows teaching (possibly allows teacher to enter).
 To be designed by human and evolution module, based on the curriculum and fitness metrics.
 '''
+import numpy as np
 import pydash as _
 from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
@@ -18,9 +19,9 @@ class BrainExt:
     '''
     Unity Brain class extension, where self = brain
     TODO to be absorbed into ml-agents Brain class later
+    TODO or just set properties for all these, no method
     '''
 
-    # TODO or just set properties for all these, no method
     def is_discrete(self):
         return self.action_space_type == 'discrete'
 
@@ -41,7 +42,7 @@ class BrainExt:
             'state': self.state_space_size,
             'visual': 'some np array shape, as opposed to what Arthur called size',
         }
-        return
+        return observable_dim
 
 
 def extend_unity_brain():
@@ -54,38 +55,6 @@ def extend_unity_brain():
 extend_unity_brain()
 
 
-class RectifiedUnityEnv:
-    '''
-    Unity Environment wrapper
-    '''
-
-    def get_brain(brain_name):
-        return self.u_env.brains[brain_name]
-
-    def fn_spread_brains(self, brain_fn):
-        '''Call single-brain function on all for {brain_name: info}'''
-        brains_info = {
-            brain_name: brain_fn(brain_name)
-            for brain_name in self.u_env.brains
-        }
-        return brains_info
-
-    def is_discrete(self):
-        return self.fn_spread_brains('is_discrete')
-
-    def get_observable():
-        observable = self.fn_spread_brains('get_observable')
-        return observable
-
-    # and the other half to handle Lab specific logic
-    # TODO actually shd do a single-brain wrapper instead
-    # then on env level call on all brains with wrapper methods, much easier
-    # Remedy:
-    # 1. Env class to rectify UnityEnv
-    # 2. use Env class as proper
-    # Rectify steps:
-
-
 class OpenAIEnv:
     # TODO merge OpenAI Env in SLM Lab
     pass
@@ -93,58 +62,81 @@ class OpenAIEnv:
 
 class Env:
     '''
-    Do the above
-    Also standardize logic from Unity environments
+    Class for all Envs.
+    Standardizes the Env design to work in Lab.
+    Access Agents properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    def __init__(self, multi_spec, meta_spec):
-        self.coor, self.index, self.spec = data_space.init_lab_comp(
-            self, multi_spec)
+    def __init__(self, spec, env_space, e=0):
+        self.spec = spec
         util.set_attr(self, self.spec)
-        util.set_attr(self, meta_spec)
-
-        # TODO tmp
-        self.agent = None
+        self.env_space = env_space
+        self.index = e
+        self.ab_proj = self.env_space.e_ab_proj[self.index]
+        self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
         self.u_env = UnityEnvironment(
-            file_name=util.get_env_path(self.name),
-            worker_id=self.index)
+            file_name=util.get_env_path(self.name), worker_id=self.index)
+        self.check_u_brain_to_agent()
 
-        # TODO expose brain methods properly to env
-        agent_index = 0
-        default_brain = self.u_env.brain_names[agent_index]
-        brain = self.u_env.brains[default_brain]
-        ext_fn_list = util.get_fn_list(brain)
-        for fn in ext_fn_list:
-            setattr(self, fn, getattr(brain, fn))
+    def check_u_brain_to_agent(self):
+        '''Check the size match between unity brain and agent'''
+        u_brain_num = self.u_env.number_brains
+        agent_num = util.get_aeb_shape(self.ab_proj)[0]
+        assert u_brain_num == agent_num, f'There must be a Unity brain for each agent; failed check brain: {u_brain_num} == agent: {agent_num}.'
 
-    def set_agent(self, agent):
-        '''Make agent visible to env.'''
-        # TODO anticipate multi-agents for AEB space
-        self.agent = agent
+    def check_u_agent_to_body(self, a_env_info, a):
+        '''Check the size match between unity agent and body'''
+        u_agent_num = len(a_env_info.agents)
+        a_body_num = len(_.filter_(self.ab_proj, lambda ab: ab[0] == a))
+        assert u_agent_num == a_body_num, f'There must be a Unity agent for each body; failed check agent: {u_agent_num} == body: {a_body_num}.'
+
+    def get_brain(self, a):
+        '''Get the unity-equivalent of agent, i.e. brain, to access its info'''
+        a_name = self.u_env.brain_names[a]
+        a_brain = self.u_env.brains[a_name]
+        return a_brain
+
+    def is_discrete(self, a):
+        '''Check if an agent (brain) is subject to discrete actions'''
+        return self.get_brain(a).is_discrete()
+
+    def get_action_dim(self, a):
+        '''Get the action dim for an agent (brain) in env'''
+        return self.get_brain(a).get_action_dim()
+
+    def get_observable(self, a):
+        '''Get the observable for an agent (brain) in env'''
+        return self.get_brain(a).get_observable()
+
+    def get_observable_dim(self, a):
+        '''Get the observable dim for an agent (brain) in env'''
+        return self.get_brain(a).get_observable_dim()
 
     def reset(self):
-        # TODO need AEB space resolver
-        agent_index = 0
-        default_brain = self.u_env.brain_names[agent_index]
-        env_info = self.u_env.reset(train_mode=self.train_mode)[default_brain]
-        # TODO body-resolver:
-        body_index = 0
-        # TODO make spread across body
-        state = [env_info.states[body_index]]
-        # TODO return observables instead of just state
+        env_info_dict = self.u_env.reset(train_mode=self.train_mode)
+        state = []
+        for a, b in self.ab_proj:
+            a_name = self.u_env.brain_names[a]
+            a_env_info = env_info_dict[a_name]
+            self.check_u_agent_to_body(a_env_info, a)
+            body_state = a_env_info.states[b]
+            state.append(body_state)
         return state
 
     def step(self, action):
-        # TODO need AEB space resolver
-        agent_index = 0
-        default_brain = self.u_env.brain_names[agent_index]
-        env_info = self.u_env.step(action)[default_brain]
-        # TODO body-resolver:
-        body_index = 0
-        # TODO tmp make across bodies
-        reward = [env_info.rewards[body_index]]
-        state = [env_info.states[body_index]]
-        done = [env_info.local_done[body_index]]
+        env_info_dict = self.u_env.step(action)
+        reward = []
+        state = []
+        done = []
+        for a, b in self.ab_proj:
+            a_name = self.u_env.brain_names[a]
+            a_env_info = env_info_dict[a_name]
+            body_reward = a_env_info.rewards[b]
+            reward.append(body_reward)
+            body_state = a_env_info.states[b]
+            state.append(body_state)
+            body_done = a_env_info.local_done[b]
+            done.append(body_done)
         return reward, state, done
 
     def close(self):
@@ -152,23 +144,22 @@ class Env:
 
 
 class EnvSpace:
-    # TODO common refinement of timestep
+    '''
+    Subspace of AEBSpace, collection of all envs, with interface to Session logic; same methods as singleton envs.
+    Access AgentSpace properties by: AgentSpace - AEBSpace - EnvSpace - Envs
+    '''
 
-    def __init__(self, spec):
-        self.aeb_space = None
-        self.envs = []
-        for env_spec in spec['env']:
-            env = Env(env_spec, spec['meta'])
-            self.envs.append(env)
-        # TODO tmp hack till env properly carries its own max timestep
-        self.max_timestep = _.get(spec, 'meta.max_timestep')
-
-    def set_space_ref(self, aeb_space):
-        '''Make super aeb_space visible to env_space.'''
+    def __init__(self, spec, aeb_space):
+        self.spec = spec
         self.aeb_space = aeb_space
-        # TODO tmp, resolve later from AEB
-        agent_space = aeb_space.agent_space
-        self.envs[0].set_agent(agent_space.agents[0])
+        aeb_space.env_space = self
+        self.e_ab_proj = aeb_space.e_ab_proj
+        self.envs = [Env(_.merge(e_spec, spec['meta']), self, e)
+                     for e, e_spec in enumerate(spec['env'])]
+        self.max_timestep = np.amax([env.max_timestep for env in self.envs])
+
+    def get(self, e):
+        return self.envs[e]
 
     def reset(self):
         state_proj = []

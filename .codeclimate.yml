@@ -1,5 +1,6 @@
 ---
-engines:
+version: 2
+plugins:
   duplication:
     enabled: true
     config:
@@ -17,10 +18,15 @@ engines:
         enabled: false
   radon:
     enabled: true
-ratings:
-  paths:
-  - "**.js"
-  - "**.py"
-exclude_paths:
+    config:
+      threshold: "C"
+checks:
+  argument-count:
+    config:
+      threshold: 10
+  method-complexity:
+    config:
+      threshold: 10
+exclude_patterns:
 - config/
 - node_modules/

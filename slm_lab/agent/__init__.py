@@ -29,29 +29,23 @@ class Agent:
     '''
     Class for all Agents.
     Standardizes the Agent design to work in Lab.
+    Access Envs properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
     # TODO ok need architecture spec for each agent: disjoint or joint, time or space multiplicity
 
-    def __init__(self, multi_spec):
-        self.coor, self.index, self.spec = data_space.init_lab_comp(
-            self, multi_spec)
+    def __init__(self, spec, agent_space, a=0):
+        self.spec = spec
         util.set_attr(self, self.spec)
+        self.agent_space = agent_space
+        self.index = a
+        self.eb_proj = self.agent_space.a_eb_proj[self.index]
+        self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
 
         AlgoClass = getattr(algorithm, self.name)
         self.algorithm = AlgoClass(self)
-        # TODO tmp use Body in the space
         # TODO also resolve architecture and data input, output dims via some architecture spec
         self.memory = None
         self.net = None
-        # TODO tmp
-        self.env = None
-        self.body_num = 1
-        # TODO delegate a copy of variable like action_dim to agent too
-
-    def set_env(self, env):
-        '''Make env visible to agent.'''
-        # TODO AEB space resolver pending, needs to be powerful enuf to for auto-architecture, action space, body num resolution, other dim counts from env
-        self.env = env
 
     def reset(self):
         '''Do agent reset per episode, such as memory pointer'''
@@ -60,8 +54,7 @@ class Agent:
 
     def act(self, state):
         '''Standard act method from algorithm.'''
-        # TODO tmp make act across bodies, work on AEB
-        return [self.algorithm.act(state)]
+        return self.algorithm.act(state)
 
     def update(self, reward, state, done):
         '''
@@ -82,19 +75,21 @@ class Agent:
 
 
 class AgentSpace:
-    def __init__(self, spec):
-        self.aeb_space = None
-        self.agents = []
-        for agent_spec in spec['agent']:
-            agent = Agent(agent_spec)
-            self.agents.append(agent)
+    '''
+    Subspace of AEBSpace, collection of all agents, with interface to Session logic; same methods as singleton agents.
+    Access EnvSpace properties by: AgentSpace - AEBSpace - EnvSpace - Envs
+    '''
 
-    def set_space_ref(self, aeb_space):
-        '''Make super aeb_space visible to agent_space.'''
+    def __init__(self, spec, aeb_space):
+        self.spec = spec
         self.aeb_space = aeb_space
-        # TODO tmp, resolve later from AEB
-        env_space = aeb_space.env_space
-        self.agents[0].set_env(env_space.envs[0])
+        aeb_space.agent_space = self
+        self.a_eb_proj = aeb_space.a_eb_proj
+        self.agents = [Agent(a_spec, self, a)
+                       for a, a_spec in enumerate(spec['agent'])]
+
+    def get(self, a):
+        return self.agents[a]
 
     def reset(self):
         for agent in self.agents:
