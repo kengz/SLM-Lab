@@ -15,10 +15,10 @@ class TestMemory:
     def test_memory_init(self, test_memory):
         memory = test_memory[0]
         assert memory.true_size == 0
-        assert memory.states.shape == (memory.max_size, *memory.state_dim)
-        assert memory.actions.shape == (memory.max_size, *memory.action_dim)
+        assert memory.states.shape == (memory.max_size, memory.state_dim)
+        assert memory.actions.shape == (memory.max_size, memory.action_dim)
         assert memory.rewards.shape == (memory.max_size, 1)
-        assert memory.next_states.shape == (memory.max_size, *memory.state_dim)
+        assert memory.next_states.shape == (memory.max_size, memory.state_dim)
         assert memory.dones.shape == (memory.max_size, 1)
         assert memory.priorities.shape == (memory.max_size, 1)
 
@@ -99,10 +99,10 @@ class TestMemory:
         for e in experiences:
             memory.add_experience(*e)
         batch = memory.get_batch(batch_size)
-        assert batch['states'].shape == (batch_size, *memory.state_dim)
-        assert batch['actions'].shape == (batch_size, *memory.action_dim)
+        assert batch['states'].shape == (batch_size, memory.state_dim)
+        assert batch['actions'].shape == (batch_size, memory.action_dim)
         assert batch['rewards'].shape == (batch_size, 1)
-        assert batch['next_states'].shape == (batch_size, *memory.state_dim)
+        assert batch['next_states'].shape == (batch_size, memory.state_dim)
         assert batch['dones'].shape == (batch_size, 1)
         assert batch['priorities'].shape == (batch_size, 1)
 

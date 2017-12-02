@@ -27,45 +27,43 @@ class Replay(Memory):
     This allows for other implementations to sample based on the experience priorities
     '''
 
-    def __init__(self, agent):
+    def __init__(self, agent, state_dim=None, action_dim=None):
         '''
         size: maximum size of the memory
-        state_dim: tuple of state dims e.g [5] or [3, 84, 84]
-        action_dim: tuple of action dime e.g. [4]
+        state_dim: state dim, standardized format from env
+        action_dim: action dim, standardized format from env
         '''
-        super(Replay, self).__init__(agent)
-        spec = self.agent.spec
-        self.max_size = spec['memory_size']
-        # TODO generalize
-        # self.reset_memory()
-
-    # def __init__(self, max_size, state_dim, action_dim):
-    #     # TODO deprecate this init and update net, test_memory
-    #     '''
-    #     size: maximum size of the memory
-    #     state_dim: tuple of state dims e.g [5] or [3, 84, 84]
-    #     action_dim: tuple of action dime e.g. [4]
-    #     '''
-    #     self.max_size = max_size
-    #     self.state_dim = state_dim
-    #     self.action_dim = action_dim
-    #     self.reset_memory()
+        # TODO deprecate this init and update net, test_memory, control loop
+        if isinstance(agent, int):
+            self.agent = agent
+            max_size = agent
+            self.max_size = max_size
+            self.state_dim = state_dim
+            self.action_dim = action_dim
+            self.reset_memory()
+        else:
+            super(Replay, self).__init__(agent)
+            spec = self.agent.spec
+            # TODO make better spec
+            self.max_size = 5000
+            # TODO activate first chunk of reset_memory to use body
 
     def reset_memory(self):
         '''
         Initializes all of the memory parameters to a blank memory
         Can also be used to clear the memory
         '''
-        default_body = self.agent.bodies[0]
-        # TODO the dim mismatches
-        self.state_dim = default_body.state_dim
-        self.action_dim = default_body.action_dim
+        # TODO fix
+        if not isinstance(self.agent, int):
+            default_body = self.agent.bodies[0]
+            self.state_dim = default_body.state_dim
+            self.action_dim = default_body.action_dim
 
         self.last_state = None
-        self.states = np.zeros((self.max_size, *self.state_dim))
-        self.actions = np.zeros((self.max_size, *self.action_dim))
+        self.states = np.zeros((self.max_size, self.state_dim))
+        self.actions = np.zeros((self.max_size, self.action_dim))
         self.rewards = np.zeros((self.max_size, 1))
-        self.next_states = np.zeros((self.max_size, *self.state_dim))
+        self.next_states = np.zeros((self.max_size, self.state_dim))
         self.dones = np.zeros((self.max_size, 1))
         self.priorities = np.zeros((self.max_size, 1))
 

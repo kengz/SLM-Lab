@@ -29,6 +29,9 @@ class Session:
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
         self.aeb_space.init_body_space()
+        # TODO hack
+        for agent in self.agent_space.agents:
+            agent.memory.reset_memory()
 
     def close(self):
         '''
