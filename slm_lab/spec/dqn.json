@@ -15,8 +15,8 @@
         "network_update_frequency": 1.0,
         "action_selection": "epsilon_greedy",
         "gamma": 0.99,
-        "epsilon_tau_start": 1.0,
-        "epsilon_tau_end": 0.1,
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
         "decay_steps": 50
       }
     }],

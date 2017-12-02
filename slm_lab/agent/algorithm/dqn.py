@@ -1,10 +1,11 @@
 import torch
+from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.algorithm.algorithm_utils import act_fns, update_fns
 from slm_lab.agent.net import nets
 from slm_lab.agent.memory.base_memory import ReplayMemory
 
 
-class DQNBase:
+class DQNBase(Algorithm):
     '''
     Implementation of the base DQN algorithm.
     See Sergey Levine's lecture xxx for more details
@@ -20,8 +21,13 @@ class DQNBase:
     action_dim: dimensions of the action space
     '''
 
-    def __init__(self, spec, state_dim, action_dim):
-        super(DQNBase, self).__init__()
+    def __init__(self, agent):
+        super(DQNBase, self).__init__(agent)
+        spec = self.agent.spec
+        # TODO generalize
+        default_body = self.agent.bodies[0]
+        state_dim = body.state_dim
+        action_dim = body.action_dim
         spec['net_layer_params'][0] = state_dim
         spec['net_layer_params'][-1] = action_dim
         self.net = nets[spec['net_type']](
@@ -36,15 +42,17 @@ class DQNBase:
         self.batch_size = spec['batch_size']
         self.action_selection = act_fns[spec['action_selection']]
         self.gamma = spec['gamma']
-        self.epsilon_tau_start = spec['epsilon_tau_start']
-        self.epsilon_tau_end = spec['epsilon_tau_end']
-        self.epsilon_or_tau = self.epsilon_tau_start
+        # explore_var is epsilon, tau or etc.
+        self.explore_var_start = spec['explore_var_start']
+        self.explore_var_end = spec['explore_var_end']
+        self.explore_var = self.explore_var_start
         self.decay_steps = spec['decay_steps']
         self.training_iters_per_batch = 1
         self.training_frequency = 1
 
-    def train_a_batch(self, t):
+    def train_a_batch(self):
         # TODO Fix for training iters, docstring
+        t = self.agent.agent_space.aeb_space.clock['t']
         if t % self.training_frequency == 0:
             batch = self.memory.get_batch(self.batch_size)
             for i in range(self.training_iters_per_batch):
@@ -73,14 +81,14 @@ class DQNBase:
         return self.action_selection(
             self.net,
             body_state,
-            self.epsilon_or_tau)
+            self.explore_var)
 
     def update(self, reward, state, done):
         # TODO make proper
         # Update epsilon or boltzmann
         self.anneal_epi = 20
         epi = self.agent.agent_space.aeb_space.clock['e']
-        rise = self.epsilon_tau_end - self.epsilon_tau_start
+        rise = self.explore_var_end - self.explore_var_start
         slope = rise / float(self.anneal_epi)
-        self.epsilon_or_tau = max(
-            slope * epi + self.epsilon_tau_start, self.epsilon_tau_end)
+        self.explore_var = max(
+            slope * epi + self.explore_var_start, self.explore_var_end)
