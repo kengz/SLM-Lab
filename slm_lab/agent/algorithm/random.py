@@ -13,12 +13,12 @@ class Random(Algorithm):
 
     def body_act_discrete(self, body, body_state):
         '''Random discrete action'''
-        body_action = np.random.randint(body.env.get_action_dim())
+        body_action = np.random.randint(body.action_dim)
         return body_action
 
     def body_act_continuous(self, body, body_state):
         '''Random continuous action'''
-        body_action = np.random.randn(body.env.get_action_dim())
+        body_action = np.random.randn(body.action_dim)
         return body_action
 
     def update(self, reward, state, done):

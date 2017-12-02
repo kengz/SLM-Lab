@@ -51,12 +51,13 @@ class Body:
 
     def __init__(self, aeb, agent, env):
         self.coor = aeb
+        self.a, self.e, self.b = aeb
         self.agent = agent
         self.env = env
-        self.observable_dim = self.env.get_observable_dim()
+        self.observable_dim = self.env.get_observable_dim(self.a)
         self.state_dim = self.observable_dim['state']
-        self.action_dim = self.env.get_action_dim()
-        self.is_discrete = self.env.is_discrete()
+        self.action_dim = self.env.get_action_dim(self.a)
+        self.is_discrete = self.env.is_discrete(self.a)
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))

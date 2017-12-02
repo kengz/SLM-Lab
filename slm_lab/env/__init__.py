@@ -19,9 +19,9 @@ class BrainExt:
     '''
     Unity Brain class extension, where self = brain
     TODO to be absorbed into ml-agents Brain class later
+    TODO or just set properties for all these, no method
     '''
 
-    # TODO or just set properties for all these, no method
     def is_discrete(self):
         return self.action_space_type == 'discrete'
 
@@ -55,38 +55,6 @@ def extend_unity_brain():
 extend_unity_brain()
 
 
-class RectifiedUnityEnv:
-    '''
-    Unity Environment wrapper
-    '''
-
-    def get_brain(brain_name):
-        return self.u_env.brains[brain_name]
-
-    def fn_spread_brains(self, brain_fn):
-        '''Call single-brain function on all for {brain_name: info}'''
-        brains_info = {
-            brain_name: brain_fn(brain_name)
-            for brain_name in self.u_env.brains
-        }
-        return brains_info
-
-    def is_discrete(self):
-        return self.fn_spread_brains('is_discrete')
-
-    def get_observable():
-        observable = self.fn_spread_brains('get_observable')
-        return observable
-
-    # and the other half to handle Lab specific logic
-    # TODO actually shd do a single-brain wrapper instead
-    # then on env level call on all brains with wrapper methods, much easier
-    # Remedy:
-    # 1. Env class to rectify UnityEnv
-    # 2. use Env class as proper
-    # Rectify steps:
-
-
 class OpenAIEnv:
     # TODO merge OpenAI Env in SLM Lab
     pass
@@ -106,42 +74,56 @@ class Env:
         self.index = e
         self.ab_proj = self.env_space.e_ab_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
-
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name),
             worker_id=self.index)
 
-        # TODO expose brain methods properly to env
-        agent_index = 0
-        default_brain = self.u_env.brain_names[agent_index]
-        brain = self.u_env.brains[default_brain]
-        ext_fn_list = util.get_fn_list(brain)
-        for fn in ext_fn_list:
-            setattr(self, fn, getattr(brain, fn))
+    def get_brain(self, a):
+        '''Get the unity-equivalent of agent, i.e. brain, to access its info'''
+        a_name = self.u_env.brain_names[a]
+        a_brain = self.u_env.brains[a_name]
+        return a_brain
+
+    def is_discrete(self, a):
+        '''Check if an agent (brain) is subject to discrete actions'''
+        return self.get_brain(a).is_discrete()
+
+    def get_action_dim(self, a):
+        '''Get the action dim for an agent (brain) in env'''
+        return self.get_brain(a).get_action_dim()
+
+    def get_observable(self, a):
+        '''Get the observable for an agent (brain) in env'''
+        return self.get_brain(a).get_observable()
+
+    def get_observable_dim(self, a):
+        '''Get the observable dim for an agent (brain) in env'''
+        return self.get_brain(a).get_observable_dim()
 
     def reset(self):
-        # TODO need AEB space resolver
-        agent_index = 0
-        default_brain = self.u_env.brain_names[agent_index]
-        env_info = self.u_env.reset(train_mode=self.train_mode)[default_brain]
-        # TODO body-resolver:
-        body_index = 0
-        # TODO make spread across body
-        state = [env_info.states[body_index]]
-        # TODO return observables instead of just state
+        env_info_dict = self.u_env.reset(train_mode=self.train_mode)
+        state = []
+        for a, b in self.ab_proj:
+            a_name = self.u_env.brain_names[a]
+            a_env_info = env_info_dict[a_name]
+            body_state = a_env_info.states[b]
+            state.append(body_state)
         return state
 
     def step(self, action):
-        # TODO need AEB space resolver
-        agent_index = 0
-        default_brain = self.u_env.brain_names[agent_index]
-        env_info = self.u_env.step(action)[default_brain]
-        # TODO body-resolver:
-        body_index = 0
-        # TODO tmp make across bodies
-        reward = [env_info.rewards[body_index]]
-        state = [env_info.states[body_index]]
-        done = [env_info.local_done[body_index]]
+        env_info_dict = self.u_env.step(action)
+        reward = []
+        state = []
+        done = []
+        for a, b in self.ab_proj:
+            a_name = self.u_env.brain_names[a]
+            a_env_info = env_info_dict[a_name]
+            body_reward = a_env_info.rewards[b]
+            reward.append(body_reward)
+            body_state = a_env_info.states[b]
+            state.append(body_state)
+            body_done = a_env_info.local_done[b]
+            done.append(body_done)
         return reward, state, done
 
     def close(self):
