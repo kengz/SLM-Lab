@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-import copy
+from copy import deepcopy
 from collections import Counter
 
 
@@ -65,7 +65,7 @@ class TestMemory:
         for i in range(6):
             exp = experiences[i]
             memory.add_experience(*exp)
-            last_exp = copy.deepcopy(exp)
+            last_exp = deepcopy(exp)
         exp = memory.get_most_recent_experience()
         # Handle states and actions with multiple dimensions
         for orig_exp, mem_exp in zip(last_exp, exp):
@@ -120,12 +120,12 @@ class TestMemory:
         for e in experiences:
             memory.add_experience(*e)
         _ = memory.get_batch(batch_size)
-        old_idx = copy.deepcopy(memory.current_batch_indices).tolist()
+        old_idx = deepcopy(memory.current_batch_indices).tolist()
         for i in range(5):
             _ = memory.get_batch(batch_size)
             new_idx = memory.current_batch_indices.tolist()
             assert old_idx != new_idx
-            old_idx = copy.deepcopy(memory.current_batch_indices).tolist()
+            old_idx = deepcopy(memory.current_batch_indices).tolist()
 
     def test_reset(self, test_memory):
         '''
