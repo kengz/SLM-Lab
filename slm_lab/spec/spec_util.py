@@ -14,9 +14,9 @@ SPEC_DIR = 'slm_lab/spec'
 '''
 All spec values are already param, inferred automatically.
 To change from a value into param range, e.g.
-- single: "decay_steps": 50
-- continuous param: "decay_steps": {"min": 50, "max": 100, "dist": "uniform"}
-- discrete range: "decay_steps": {"values": [50, 75, 100]}
+- single: "explore_anneal_epi": 50
+- continuous param: "explore_anneal_epi": {"min": 50, "max": 100, "dist": "uniform"}
+- discrete range: "explore_anneal_epi": {"values": [50, 75, 100]}
 '''
 SPEC_FORMAT = {
     "agent": [{

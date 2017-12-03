@@ -1,6 +1,6 @@
 import torch
 from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.agent.algorithm.algorithm_utils import act_fns, update_fns
+from slm_lab.agent.algorithm.algorithm_util import act_fns, update_fns
 from slm_lab.agent.net import nets
 from slm_lab.agent.memory import Replay
 
@@ -33,7 +33,6 @@ class DQNBase(Algorithm):
         net_spec = self.agent.spec['net']
         net_spec['net_layer_params'][0] = state_dim
         net_spec['net_layer_params'][-1] = action_dim
-        # TODO pull out net init from algo if possible
         self.net = nets[net_spec['net_type']](
             *net_spec['net_layer_params'],
             *net_spec['net_other_params'])
@@ -49,7 +48,7 @@ class DQNBase(Algorithm):
         self.explore_var_start = algorithm_spec['explore_var_start']
         self.explore_var_end = algorithm_spec['explore_var_end']
         self.explore_var = self.explore_var_start
-        self.decay_steps = algorithm_spec['decay_steps']
+        self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
         self.training_iters_per_batch = 1
         self.training_frequency = 1
 
@@ -87,11 +86,9 @@ class DQNBase(Algorithm):
             self.explore_var)
 
     def update(self):
-        # TODO make proper
-        # Update epsilon or boltzmann
-        self.anneal_epi = 20
+        '''Update epsilon or boltzmann for policy after net training'''
         epi = self.agent.agent_space.aeb_space.clock['e']
         rise = self.explore_var_end - self.explore_var_start
-        slope = rise / float(self.anneal_epi)
+        slope = rise / float(self.self.explore_anneal_epi)
         self.explore_var = max(
             slope * epi + self.explore_var_start, self.explore_var_end)
