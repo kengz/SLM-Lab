@@ -90,6 +90,10 @@ class Env:
         a_body_num = len(_.filter_(self.ab_proj, lambda ab: ab[0] == a))
         assert u_agent_num == a_body_num, f'There must be a Unity agent for each body; failed check agent: {u_agent_num} == body: {a_body_num}.'
 
+    def post_body_init(self):
+        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
+        pass
+
     def get_brain(self, a):
         '''Get the unity-equivalent of agent, i.e. brain, to access its info'''
         a_name = self.u_env.brain_names[a]
@@ -157,6 +161,11 @@ class EnvSpace:
         self.envs = [Env(_.merge(e_spec, spec['meta']), self, e)
                      for e, e_spec in enumerate(spec['env'])]
         self.max_timestep = np.amax([env.max_timestep for env in self.envs])
+
+    def post_body_init(self):
+        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
+        for env in self.envs:
+            env.post_body_init()
 
     def get(self, e):
         return self.envs[e]

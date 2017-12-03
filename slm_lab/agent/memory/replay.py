@@ -27,37 +27,19 @@ class Replay(Memory):
     This allows for other implementations to sample based on the experience priorities
     '''
 
-    def __init__(self, agent, state_dim=None, action_dim=None):
-        '''
-        size: maximum size of the memory
-        state_dim: state dim, standardized format from env
-        action_dim: action dim, standardized format from env
-        '''
-        # TODO deprecate this init and update net, test_memory, control loop
-        if isinstance(agent, int):
-            self.agent = agent
-            max_size = agent
-            self.max_size = max_size
-            self.state_dim = state_dim
-            self.action_dim = action_dim
-            self.reset_memory()
-        else:
-            super(Replay, self).__init__(agent)
-            spec = self.agent.spec
-            # TODO make better spec
-            self.max_size = 5000
-            # TODO activate first chunk of reset_memory to use body
+    def __init__(self, agent):
+        super(Replay, self).__init__(agent)
 
-    def reset_memory(self):
+    def post_body_init(self):
         '''
         Initializes all of the memory parameters to a blank memory
         Can also be used to clear the memory
         '''
-        # TODO fix
-        if not isinstance(self.agent, int):
-            default_body = self.agent.bodies[0]
-            self.state_dim = default_body.state_dim
-            self.action_dim = default_body.action_dim
+        # TODO update for multi bodies
+        default_body = self.agent.bodies[0]
+        self.max_size = self.agent.spec['memory_size']
+        self.state_dim = default_body.state_dim
+        self.action_dim = default_body.action_dim
 
         self.last_state = None
         self.states = np.zeros((self.max_size, self.state_dim))
@@ -71,15 +53,10 @@ class Replay(Memory):
         self.head = -1  # Index of most recent experience
         self.batch_idxs = None
         self.total_experiences = 0
-        assert self.states is not None
-        assert self.actions is not None
-        assert self.rewards is not None
-        assert self.next_states is not None
-        assert self.dones is not None
-        assert self.priorities is not None
 
     def reset_last_state(self, state):
         '''epsodic reset'''
+        # TODO place properly
         self.last_state = state
 
     def update(self, action, reward, state, done):

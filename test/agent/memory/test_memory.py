@@ -31,7 +31,7 @@ class TestMemory:
         added
         '''
         memory = test_memory[0]
-        memory.reset_memory()
+        memory.post_body_init()
         experiences = test_memory[2]
         exp = experiences[0]
         memory.add_experience(*exp)
@@ -59,7 +59,7 @@ class TestMemory:
         to the last experience added
         '''
         memory = test_memory[0]
-        memory.reset_memory()
+        memory.post_body_init()
         experiences = test_memory[2]
         last_exp = None
         for i in range(6):
@@ -78,7 +78,7 @@ class TestMemory:
     def test_wrap(self, test_memory):
         '''Tests that the memory wraps round when it is at capacity'''
         memory = test_memory[0]
-        memory.reset_memory()
+        memory.post_body_init()
         experiences = test_memory[2]
         num_added = 0
         for e in experiences:
@@ -94,7 +94,7 @@ class TestMemory:
         with the correct dimensions
         '''
         memory = test_memory[0]
-        memory.reset_memory()
+        memory.post_body_init()
         batch_size = test_memory[1]
         experiences = test_memory[2]
         for e in experiences:
@@ -114,7 +114,7 @@ class TestMemory:
         from sample to sample
         '''
         memory = test_memory[0]
-        memory.reset_memory()
+        memory.post_body_init()
         batch_size = test_memory[1]
         experiences = test_memory[2]
         for e in experiences:
@@ -127,19 +127,19 @@ class TestMemory:
             assert old_idx != new_idx
             old_idx = copy.deepcopy(memory.current_batch_indices).tolist()
 
-    def test_reset_memory(self, test_memory):
+    def test_reset(self, test_memory):
         '''
         Tests memory reset.
         Adds 2 experiences, then resets the memory
         and checks if all appropriate values have been
         zeroed'''
         memory = test_memory[0]
-        memory.reset_memory()
+        memory.post_body_init()
         experiences = test_memory[2]
         for i in range(2):
             e = experiences[i]
             memory.add_experience(*e)
-        memory.reset_memory()
+        memory.post_body_init()
         assert memory.head == -1
         assert memory.true_size == 0
         assert np.sum(memory.states) == 0

@@ -41,13 +41,17 @@ class Agent:
         self.eb_proj = self.agent_space.a_eb_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
 
+        # TODO repattern, redesign spec
         AlgoClass = getattr(algorithm, self.name)
         self.algorithm = AlgoClass(self)
-        # TODO also resolve architecture and data input, output dims via some architecture spec
-        # TODO repattern, redesign spec
         MemoryClass = getattr(memory, self.memory_name)
         self.memory = MemoryClass(self)
         # self.net = None
+
+    def post_body_init(self):
+        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
+        self.memory.post_body_init()
+        # self.net.post_body_init()
 
     def reset(self, state):
         '''Do agent reset per episode, such as memory pointer'''
@@ -87,6 +91,11 @@ class AgentSpace:
         self.a_eb_proj = aeb_space.a_eb_proj
         self.agents = [Agent(a_spec, self, a)
                        for a, a_spec in enumerate(spec['agent'])]
+
+    def post_body_init(self):
+        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
+        for agent in self.agents:
+            agent.post_body_init()
 
     def get(self, a):
         return self.agents[a]

@@ -261,6 +261,11 @@ class AEBSpace:
             env.bodies = self.body_space.get(e=env.index)
         return self.body_space
 
+    def post_body_init(self):
+        '''Run init for agent, env components that need bodies to exist first, e.g. memory or architecture.'''
+        self.agent_space.post_body_init()
+        self.env_space.post_body_init()
+
     def add(self, data_name, data_proj):
         '''
         Add a data projection to a data space, e.g. data_proj actions collected per body, per agent, from agent_space, with AEB shape projected on a-axis, added to action_space.

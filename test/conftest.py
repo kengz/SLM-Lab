@@ -247,5 +247,5 @@ def test_memory(request, test_agent):
     body.state_dim = state_dim
     body.action_dim = action_dim
     memory = Replay(test_agent)
-    memory.reset_memory()
+    memory.post_body_init()
     return [memory, batch_size, experiences]
