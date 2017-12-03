@@ -5,11 +5,50 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from slm_lab.spec import spec_util
+from slm_lab.agent import Agent, AgentSpace
 from slm_lab.agent.net.feedforward import MLPNet
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.memory import Replay
+from slm_lab.env import Env, EnvSpace
+from slm_lab.experiment.monitor import AEBSpace
 from slm_lab.lib import util
 from torch.autograd import Variable
+
+
+spec = None
+aeb_space = None
+agent = None
+env = None
+
+
+@pytest.fixture(scope='session')
+def test_spec():
+    global spec
+    spec = spec_util.get('base.json', 'test_case')
+    return spec
+
+
+@pytest.fixture(scope='session')
+def test_aeb_space(test_spec):
+    global aeb_space
+    if aeb_space is None:
+        aeb_space = AEBSpace(test_spec)
+        env_space = EnvSpace(test_spec, aeb_space)
+        agent_space = AgentSpace(test_spec, aeb_space)
+        aeb_space.init_body_space()
+    return aeb_space
+
+
+@pytest.fixture(scope='session')
+def test_agent(test_aeb_space):
+    agent = test_aeb_space.agent_space.agents[0]
+    return agent
+
+
+@pytest.fixture(scope='session')
+def test_env(test_aeb_space):
+    env = test_aeb_space.env_space.envs[0]
+    return env
 
 
 @pytest.fixture
@@ -38,12 +77,6 @@ def test_dict():
 def test_list():
     data = [1, 2, 3]
     assert isinstance(data, list)
-    return data
-
-
-@pytest.fixture
-def test_spec():
-    data = spec_util.get('base.json', 'test_case')
     return data
 
 
@@ -186,13 +219,13 @@ def test_data_gen(request):
     return request.param
 
 
-@pytest.fixture(scope="class", params=[
-    (Replay(5, 1, 1),
+@pytest.fixture(scope="session", params=[
+    ((5, 1, 1),
      2,
      [[1, 1, 1, 2, 0], [2, 2, 2, 3, 0], [3, 3, 3, 4, 0], [4, 4, 4, 5, 0],
       [5, 5, 5, 6, 0], [6, 6, 6, 7, 0], [7, 7, 7, 8, 0], [8, 8, 8, 9, 0],
       [9, 9, 9, 10, 0], [10, 10, 10, 11, 0], [11, 11, 11, 0, 1]]),
-    (Replay(8, 3, 2),
+    ((8, 3, 2),
      3,
      [[[1, 1, 1], [1, 1], 1, [2, 2, 2], 0],
       [[2, 2, 2], [2, 2], 2, [3, 3, 3], 0],
@@ -205,5 +238,14 @@ def test_data_gen(request):
       [[9, 9, 9], [9, 9], 9, [10, 10, 10], 0],
       [[10, 10, 10], [10, 10], 10, [11, 11, 11], 0],
       [[11, 11, 11], [11, 11], 11, [0, 0, 0], 1]])])
-def test_memory(request):
-    return request.param
+def test_memory(request, test_agent):
+    max_size, state_dim, action_dim = request.param[0]
+    batch_size = request.param[1]
+    experiences = request.param[2]
+    body = test_agent.bodies[0]
+    body.max_size = max_size
+    body.state_dim = state_dim
+    body.action_dim = action_dim
+    memory = Replay(test_agent)
+    memory.reset_memory()
+    return [memory, batch_size, experiences]

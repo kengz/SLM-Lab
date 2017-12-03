@@ -4,6 +4,7 @@ import copy
 from collections import Counter
 
 
+@pytest.mark.skip(reason='TODO restore. WIP memory and fixture for memory')
 class TestMemory:
     '''
     Base class for unit testing replay memory
