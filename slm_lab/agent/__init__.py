@@ -45,12 +45,11 @@ class Agent:
         self.algorithm = AlgoClass(self)
         MemoryClass = getattr(memory, _.get(self.spec, 'memory.name'))
         self.memory = MemoryClass(self)
-        # self.net = None
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         self.memory.post_body_init()
-        # self.net.post_body_init()
+        self.algorithm.post_body_init()
 
     def reset(self, state):
         '''Do agent reset per episode, such as memory pointer'''

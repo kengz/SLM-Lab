@@ -23,31 +23,36 @@ class DQNBase(Algorithm):
 
     def __init__(self, agent):
         super(DQNBase, self).__init__(agent)
-        spec = self.agent.spec
+
+    def post_body_init(self):
+        '''
+        Initializes all of the memory parameters to a blank memory
+        Can also be used to clear the memory
+        '''
         # TODO generalize
         default_body = self.agent.bodies[0]
-        state_dim = body.state_dim
-        action_dim = body.action_dim
-        spec['net_layer_params'][0] = state_dim
-        spec['net_layer_params'][-1] = action_dim
+        state_dim = default_body.state_dim
+        action_dim = default_body.action_dim
+        net_spec = self.agent.spec['net']
+        net_spec['net_layer_params'][0] = state_dim
+        net_spec['net_layer_params'][-1] = action_dim
         # TODO pull out net init from algo if possible
-        self.net = nets[spec['net_type']](
-            *spec['net_layer_params'],
-            *spec['net_other_params'])
+        self.net = nets[net_spec['net_type']](
+            *net_spec['net_layer_params'],
+            *net_spec['net_other_params'])
         # TODO three nets for different part of Q function
         # In base algorithm should all be pointer to the same net - then update compute q target values and action functions
-        self.memory = Replay(
-            spec['memory_size'],
-            state_dim,
-            action_dim)
-        self.batch_size = spec['batch_size']
-        self.action_selection = act_fns[spec['action_selection']]
-        self.gamma = spec['gamma']
+        self.batch_size = net_spec['batch_size']
+        self.gamma = net_spec['gamma']
+
+        algorithm_spec = self.agent.spec['algorithm']
+        self.action_selection = act_fns[algorithm_spec['action_selection']]
+
         # explore_var is epsilon, tau or etc.
-        self.explore_var_start = spec['explore_var_start']
-        self.explore_var_end = spec['explore_var_end']
+        self.explore_var_start = algorithm_spec['explore_var_start']
+        self.explore_var_end = algorithm_spec['explore_var_end']
         self.explore_var = self.explore_var_start
-        self.decay_steps = spec['decay_steps']
+        self.decay_steps = algorithm_spec['decay_steps']
         self.training_iters_per_batch = 1
         self.training_frequency = 1
 
@@ -55,7 +60,7 @@ class DQNBase(Algorithm):
         # TODO Fix for training iters, docstring
         t = self.agent.agent_space.aeb_space.clock['t']
         if t % self.training_frequency == 0:
-            batch = self.memory.get_batch(self.batch_size)
+            batch = self.agent.memory.get_batch(self.batch_size)
             for i in range(self.training_iters_per_batch):
                 q_targets = self.compute_q_target_values(batch)
                 loss = self.net.training_step(batch['states'], q_targets)
