@@ -7,7 +7,7 @@ import pandas as pd
 import pydash as _
 from slm_lab.agent import Agent, AgentSpace
 from slm_lab.env import Env, EnvSpace
-from slm_lab.experiment.monitor import data_space, AEBSpace
+from slm_lab.experiment.monitor import info_space, AEBSpace
 from slm_lab.lib import logger, util, viz
 
 
@@ -22,13 +22,15 @@ class Session:
 
     def __init__(self, spec):
         self.spec = spec
-        self.coor, self.index = data_space.index_lab_comp(self)
+        self.coor, self.index = info_space.index_lab_comp(self)
         self.data = pd.DataFrame()
-        # TODO put resolved space from spec into monitor.dataspace
+        # TODO put resolved space from spec into monitor.info_space
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
         self.aeb_space.init_body_space()
+        print(self.aeb_space.body_space)
+        self.aeb_space.post_body_init()
 
     def close(self):
         '''
@@ -45,23 +47,29 @@ class Session:
         Main RL loop, runs a single episode over timesteps, generalized to spaces from singleton.
         Returns episode_data space.
         '''
+        self.aeb_space.tick_clock('e')
         # TODO generalize and make state to include observables
         state_space = self.env_space.reset()
-        self.agent_space.reset()
+        self.agent_space.reset(state_space)
         # RL steps for SARS
+        # TODO absorb later from data space
+        total_rewards = 0
         for t in range(self.env_space.max_timestep):
+            self.aeb_space.tick_clock('t')
             # TODO common refinement of timestep
             # TODO ability to train more on harder environments, or specify update per timestep per body, ratio of data u use to train. something like train_per_new_mem
             action_space = self.agent_space.act(state_space)
             logger.debug(f'action_space {action_space}')
             (reward_space, state_space,
              done_space) = self.env_space.step(action_space)
+            total_rewards += np.sum(reward_space.data_proj)
             logger.debug(
                 f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')
             # completes cycle of full info for agent_space
-            self.agent_space.update(reward_space, state_space, done_space)
+            self.agent_space.update(action_space, reward_space, state_space, done_space)
             if bool(done_space):
                 break
+        logger.info(f'total_rewards {total_rewards}')
         # TODO compose episode data
         episode_data = {}
         return episode_data
@@ -86,7 +94,7 @@ class Trial:
 
     def __init__(self, spec):
         self.spec = spec
-        self.coor, self.index = data_space.index_lab_comp(self)
+        self.coor, self.index = info_space.index_lab_comp(self)
         self.data = pd.DataFrame()
         self.session = None
 
@@ -123,7 +131,7 @@ class Experiment:
 
     def __init__(self, spec):
         self.spec = spec
-        self.coor, self.index = data_space.index_lab_comp(self)
+        self.coor, self.index = info_space.index_lab_comp(self)
         self.data = pd.DataFrame()
         self.trial = None
 

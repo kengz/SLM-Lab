@@ -1,7 +1,7 @@
 '''
 The spec util
 Handles the Lab experiment spec: reading, writing(evolution), validation and default setting
-Expands the spec and params into consumable inputs in data space for lab units.
+Expands the spec and params into consumable inputs in info space for lab units.
 '''
 import itertools
 import json
@@ -11,21 +11,29 @@ import pydash as _
 from slm_lab.lib import logger, util
 
 SPEC_DIR = 'slm_lab/spec'
+'''
+All spec values are already param, inferred automatically.
+To change from a value into param range, e.g.
+- single: "explore_anneal_epi": 50
+- continuous param: "explore_anneal_epi": {"min": 50, "max": 100, "dist": "uniform"}
+- discrete range: "explore_anneal_epi": {"values": [50, 75, 100]}
+'''
 SPEC_FORMAT = {
     "agent": [{
         "name": str,
-        "param": dict
+        "algorithm": dict,
+        "memory": dict,
+        "net": dict
     }],
     "env": [{
         "name": str,
-        "param": dict
+        "max_timestep": (type(None), int),
     }],
     "body": {
         "product": ["outer", "inner", "custom"],
         "num": (int, list)
     },
     "meta": {
-        "max_timestep": (type(None), int),
         "max_episode": (type(None), int),
         "max_session": int,
         "max_trial": (type(None), int),
@@ -159,7 +167,7 @@ def resolve_aeb(spec):
 def resolve_param(spec):
     '''
     Resolve an experiment spec into the param space or generator for experiment trials. Do so for each of Agent param, Env param, then their combinations.
-    Each point in the param space is a trial, which contains its own copy of AEB space. Hence the base experiment data space cardinality is param space x AEB space.
+    Each point in the param space is a trial, which contains its own copy of AEB space. Hence the base experiment info space cardinality is param space x AEB space.
     @param {dict} spec An experiment spec.
     @returns {list} param_list Resolved param space list of points or generator.
     TODO implement and design AE params, like AEB space

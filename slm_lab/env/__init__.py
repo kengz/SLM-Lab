@@ -10,7 +10,7 @@ from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
 from unityagents.environment import logger as unity_logger
-from slm_lab.experiment.monitor import data_space
+from slm_lab.experiment.monitor import info_space
 
 unity_logger.setLevel('WARN')
 
@@ -70,6 +70,7 @@ class Env:
     def __init__(self, spec, env_space, e=0):
         self.spec = spec
         util.set_attr(self, self.spec)
+        self.name = self.spec['name']
         self.env_space = env_space
         self.index = e
         self.ab_proj = self.env_space.e_ab_proj[self.index]
@@ -89,6 +90,10 @@ class Env:
         u_agent_num = len(a_env_info.agents)
         a_body_num = len(_.filter_(self.ab_proj, lambda ab: ab[0] == a))
         assert u_agent_num == a_body_num, f'There must be a Unity agent for each body; failed check agent: {u_agent_num} == body: {a_body_num}.'
+
+    def post_body_init(self):
+        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
+        pass
 
     def get_brain(self, a):
         '''Get the unity-equivalent of agent, i.e. brain, to access its info'''
@@ -113,7 +118,7 @@ class Env:
         return self.get_brain(a).get_observable_dim()
 
     def reset(self):
-        env_info_dict = self.u_env.reset(train_mode=self.train_mode)
+        env_info_dict = self.u_env.reset(train_mode=self.train_mode, config=self.spec.get('unity'))
         state = []
         for a, b in self.ab_proj:
             a_name = self.u_env.brain_names[a]
@@ -154,9 +159,14 @@ class EnvSpace:
         self.aeb_space = aeb_space
         aeb_space.env_space = self
         self.e_ab_proj = aeb_space.e_ab_proj
-        self.envs = [Env(_.merge(e_spec, spec['meta']), self, e)
+        self.envs = [Env(_.merge(spec['meta'].copy(), e_spec), self, e)
                      for e, e_spec in enumerate(spec['env'])]
         self.max_timestep = np.amax([env.max_timestep for env in self.envs])
+
+    def post_body_init(self):
+        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
+        for env in self.envs:
+            env.post_body_init()
 
     def get(self, e):
         return self.envs[e]

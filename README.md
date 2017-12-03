@@ -1,5 +1,5 @@
 # SLM Lab [![CircleCI](https://circleci.com/gh/kengz/SLM-Lab.svg?style=shield)](https://circleci.com/gh/kengz/SLM-Lab) [![Maintainability](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/maintainability)](https://codeclimate.com/github/kengz/SLM-Lab/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/test_coverage)](https://codeclimate.com/github/kengz/SLM-Lab/test_coverage)
-_(Work In Progress)_ An experimental framework for Reinforcement Learning using Unity and PyTorch.
+_(Work In Progress)_ An experimentation framework for Reinforcement Learning using Unity and PyTorch.
 
 ## Installation
 
@@ -123,7 +123,6 @@ When controlling a session of experiment, execute the agent and environment logi
 Hence, the experiment session loop generalizes directly from:
 ```
 state = self.env.reset()
-logger.debug(f'reset state {state}')
 self.agent.reset()
 # RL steps for SARS
 for t in range(self.env.max_timestep):
@@ -144,9 +143,11 @@ self.agent_space.reset()
 # RL steps for SARS
 for t in range(self.env_space.max_timestep):
     action_space = self.agent_space.act(state_space)
-    reward_space, state_space, done_space = self.env_space.step(action_space)
-    # fully observable SARS from env_space, memory and training internally
-    self.agent_space.update(reward_space, state_space)
-    if done_space.done():
+    logger.debug(f'action_space {action_space}')
+    (reward_space, state_space,
+     done_space) = self.env_space.step(action_space)
+    # completes cycle of full info for agent_space
+    self.agent_space.update(reward_space, state_space, done_space)
+    if bool(done_space):
         break
 ```

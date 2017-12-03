@@ -12,12 +12,15 @@ class Algorithm(ABC):
         self.agent = agent
 
     @abstractmethod
+    def post_body_init(self):
+        '''Initializes the part of algorithm needing a body to exist first.'''
+        raise NotImplementedError
+
     def body_act_discrete(self, body, body_state):
         '''Implement atomic discrete body_action, or throw NotImplementedError. E.g. fetch body_action from net given body info.'''
         raise NotImplementedError
         return body_action
 
-    @abstractmethod
     def body_act_continuous(self, body, body_state):
         '''Implement atomic continuous body_action, or throw NotImplementedError. E.g. fetch body_action from net given body info.'''
         raise NotImplementedError
@@ -40,6 +43,11 @@ class Algorithm(ABC):
         return action
 
     @abstractmethod
-    def update(self, reward, state, done):
+    def train(self):
+        '''Implement algorithm train, or throw NotImplementedError'''
+        raise NotImplementedError
+
+    @abstractmethod
+    def update(self):
         '''Implement algorithm update, or throw NotImplementedError'''
         raise NotImplementedError

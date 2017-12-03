@@ -1,7 +1,7 @@
 '''
 The monitor module with data_space
 Monitors agents, environments, sessions, trials, experiments, evolutions, and handles all the data produced by the Lab components.
-DataSpace handles the unified hyperdimensional data for SLM Lab, used for analysis and experiment planning. Sources data from monitor.
+InfoSpace handles the unified hyperdimensional data for SLM Lab, used for analysis and experiment planning. Sources data from monitor.
 Each dataframe resolves from the coarsest dimension to the finest, with data coordinates coor in the form: (evolution,experiment,trial,session,agent,env,body)
 The resolution after session is the AEB space, hence it is a subspace.
 AEB space is not necessarily tabular, and hence the data is NoSQL.
@@ -10,11 +10,11 @@ The data_space is congruent to the coor, with proper resolution.
 E.g. (evolution,experiment,trial,session) specifies the session_data of a session, ran over multiple episodes on the AEB space.
 
 Space ordering:
-DataSpace: the general space for complete data
-AEBSpace: subspace of DataSpace for a specific session
+InfoSpace: the general space for complete information
+AEBSpace: subspace of InfoSpace for a specific session
 AgentSpace: space agent instances, subspace of AEBSpace
 EnvSpace: space of env instances, subspace of AEBSpace
-AEBDataSpace: a data space storing an AEB data projected to a-axis, and its dual projected to e-axis. This is so that a-proj data like action_space from agent_space can be used by env_space, which requires e-proj data, and vice versa.
+DataSpace: a data space storing an AEB data projected to a-axis, and its dual projected to e-axis. This is so that a-proj data like action_space from agent_space can be used by env_space, which requires e-proj data, and vice versa.
 
 Object reference (for agent to access env properties, vice versa):
 Agents - AgentSpace - AEBSpace - EnvSpace - Envs
@@ -53,6 +53,7 @@ class Body:
         self.agent = agent
         self.env = env
         self.observable_dim = self.env.get_observable_dim(self.a)
+        # TODO use tuples for state_dim for pixel-based in the future
         self.state_dim = self.observable_dim['state']
         self.action_dim = self.env.get_action_dim(self.a)
         self.is_discrete = self.env.is_discrete(self.a)
@@ -61,7 +62,7 @@ class Body:
         return 'body: ' + util.to_json(util.get_class_attr(self))
 
 
-class AEBDataSpace:
+class DataSpace:
     '''
     AEB data space - data container with an AEB space hashed to index of a flat list of stored data
     '''
@@ -95,7 +96,8 @@ class AEBDataSpace:
         return s
 
     def __bool__(self):
-        return all(np.all(self.data_proj))
+        '''Get AND of all entries, reduce 2 times on 2D axes of AE, then convert to py bool'''
+        return bool(np.all(np.all(self.data_proj)))
 
     def create_dual_data_proj(self, data_proj):
         '''
@@ -151,18 +153,23 @@ class AEBDataSpace:
 class AEBSpace:
 
     def __init__(self, spec):
+        # TODO shove
+        # self.info_space = info_space
+        self.spec = spec
         self.agent_space = None
         self.env_space = None
         self.body_space = None
-        self.coor_list = spec_util.resolve_aeb(spec)
+        self.coor_list = spec_util.resolve_aeb(self.spec)
         self.aeb_shape, self.a_eb_proj = self.compute_aeb_dims(self.coor_list)
-        assert len(self.a_eb_proj) == len(spec['agent'])
         self.e_ab_proj = None
         self.aeb_proj_dual_map = {
             'a': None,
             'e': None,
         }
         self.data_spaces = self.init_data_spaces()
+        self.clock = {
+            unit: 0 for unit in ['t', 'total_t', 'e']
+        }
 
     def compute_aeb_dims(self, coor_list):
         '''
@@ -176,6 +183,7 @@ class AEBSpace:
         for a, aeb_list in a_aeb_groups.items():
             a_eb_proj.append(
                 util.to_tuple_list(np.array(aeb_list)[:, 1:]))
+        assert len(a_eb_proj) == len(self.spec['agent'])
         return aeb_shape, a_eb_proj
 
     def compute_dual_map(cls, a_eb_proj):
@@ -220,13 +228,25 @@ class AEBSpace:
         }
         self.init_aeb_proj_dual_map()
         for data_name in self.data_spaces:
-            data_space = AEBDataSpace(data_name, self.aeb_proj_dual_map, self)
+            data_space = DataSpace(data_name, self.aeb_proj_dual_map, self)
             self.data_spaces[data_name] = data_space
         return self.data_spaces
 
+    def tick_clock(self, unit):
+        '''Tick the clock a unit into future time'''
+        if unit == 't':  # timestep
+            self.clock['t'] += 1
+            self.clock['total_t'] += 1
+        elif unit == 'e':  # episode, reset timestep
+            self.clock['t'] = 0
+            self.clock['e'] += 1
+        else:
+            raise KeyError
+        return self.clock
+
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
-        self.body_space = AEBDataSpace('body', self.aeb_proj_dual_map, self)
+        self.body_space = DataSpace('body', self.aeb_proj_dual_map, self)
         data_proj = deepcopy(self.a_eb_proj)
         for a, eb_list in enumerate(self.a_eb_proj):
             for eb_idx, (e, b) in enumerate(eb_list):
@@ -242,25 +262,30 @@ class AEBSpace:
             env.bodies = self.body_space.get(e=env.index)
         return self.body_space
 
+    def post_body_init(self):
+        '''Run init for agent, env components that need bodies to exist first, e.g. memory or architecture.'''
+        self.agent_space.post_body_init()
+        self.env_space.post_body_init()
+
     def add(self, data_name, data_proj):
         '''
         Add a data projection to a data space, e.g. data_proj actions collected per body, per agent, from agent_space, with AEB shape projected on a-axis, added to action_space.
         @param {str} data_name
         @param {[x: [yb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
-        @returns {AEBDataSpace} data_space (aeb is implied)
+        @returns {DataSpace} data_space (aeb is implied)
         '''
         data_space = self.data_spaces[data_name]
         data_space.add(data_proj)
         return data_space
 
 
-# TODO put AEBSpace into DataSpace, propagate method usage, shove into DB
-class DataSpace:
+# TODO put AEBSpace into InfoSpace, propagate method usage, shove into DB
+class InfoSpace:
     def __init__(self, last_coor=None):
         '''
-        Initialize the coor, the global point in data space that will advance according to experiment progress.
+        Initialize the coor, the global point in info space that will advance according to experiment progress.
         The coor starts with null first since the coor may not start at the origin.
-        TODO In general, when we parallelize to use multiple coor on a data space, keep a covered space and multiple coors to advance without conflicts.
+        TODO In general, when we parallelize to use multiple coor on a info space, keep a covered space and multiple coors to advance without conflicts.
         TODO logic to resume from given last_coor
         '''
         self.coor = last_coor or {k: None for k in COOR_AXES}
@@ -293,14 +318,14 @@ class DataSpace:
 
     def index_lab_comp(self, lab_comp):
         '''
-        Update data space coor when initializing lab component, and return its coor and index.
+        Update info space coor when initializing lab component, and return its coor and index.
         Does not apply to AEB entities.
         @returns {tuple, int} data_coor, index
         @example
 
         class Session:
             def __init__(self, spec):
-                self.coor, self.index = data_space.index_lab_comp(self)
+                self.coor, self.index = info_space.index_lab_comp(self)
         '''
         axis = util.get_class_name(lab_comp, lower=True)
         self.advance_coor(axis)
@@ -332,4 +357,4 @@ class Monitor:
 
 
 # TODO create like monitor, for experiment level
-data_space = DataSpace()
+info_space = InfoSpace()

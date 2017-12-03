@@ -100,7 +100,7 @@ class TestNet:
         ''' Checks that the inputs to the loss function are correct '''
         net = test_nets[0]
         loss = test_nets[3]
-        # TODO: e.g. loss is not CrossEntropy when output has one dimension
+        # TODO e.g. loss is not CrossEntropy when output has one dimension
         #       e.g. softmax has not been applied with CrossEntropy loss
         #       (includes it)
         assert loss is None
