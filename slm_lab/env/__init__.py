@@ -70,6 +70,7 @@ class Env:
     def __init__(self, spec, env_space, e=0):
         self.spec = spec
         util.set_attr(self, self.spec)
+        self.name = self.spec['name']
         self.env_space = env_space
         self.index = e
         self.ab_proj = self.env_space.e_ab_proj[self.index]

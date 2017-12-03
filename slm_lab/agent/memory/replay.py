@@ -37,7 +37,7 @@ class Replay(Memory):
         '''
         # TODO update for multi bodies
         default_body = self.agent.bodies[0]
-        self.max_size = self.agent.spec['memory_size']
+        self.max_size = self.agent.spec['memory']['max_size']
         self.state_dim = default_body.state_dim
         self.action_dim = default_body.action_dim
 

@@ -1,7 +1,14 @@
 {
   "test_case": {
     "agent": [{
-      "name": "Random",
+      "name": "TestCase",
+      "algorithm": {
+        "name": "Random"
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 5000
+      },
       "param": {}
     }],
     "env": [{

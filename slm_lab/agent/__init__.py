@@ -20,6 +20,7 @@ Agent components:
 - net
 - policy
 '''
+import pydash as _
 from slm_lab.agent import algorithm, memory, net
 from slm_lab.experiment.monitor import info_space
 from slm_lab.lib import util
@@ -35,16 +36,16 @@ class Agent:
 
     def __init__(self, spec, agent_space, a=0):
         self.spec = spec
-        util.set_attr(self, self.spec)
+        self.name = self.spec['name']
         self.agent_space = agent_space
         self.index = a
         self.eb_proj = self.agent_space.a_eb_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
 
         # TODO repattern, redesign spec
-        AlgoClass = getattr(algorithm, self.name)
+        AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
         self.algorithm = AlgoClass(self)
-        MemoryClass = getattr(memory, self.memory_name)
+        MemoryClass = getattr(memory, _.get(self.spec, 'memory.name'))
         self.memory = MemoryClass(self)
         # self.net = None
 
