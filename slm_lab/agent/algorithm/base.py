@@ -43,6 +43,11 @@ class Algorithm(ABC):
         return action
 
     @abstractmethod
+    def train(self):
+        '''Implement algorithm train, or throw NotImplementedError'''
+        raise NotImplementedError
+
+    @abstractmethod
     def update(self):
         '''Implement algorithm update, or throw NotImplementedError'''
         raise NotImplementedError

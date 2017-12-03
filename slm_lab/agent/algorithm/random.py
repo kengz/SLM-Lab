@@ -25,5 +25,8 @@ class Random(Algorithm):
         body_action = np.random.randn(body.action_dim)
         return body_action
 
+    def train(self):
+        return
+
     def update(self):
         return

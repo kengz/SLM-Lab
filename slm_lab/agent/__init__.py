@@ -66,7 +66,7 @@ class Agent:
         # TODO implement generic method, work on AEB
         # self.memory.update(action, reward, state, done)
         self.algorithm.train()
-        self.algorithm.update(action, reward, state, done)
+        self.algorithm.update()
 
     def close(self):
         '''Close agent at the end of a session, e.g. save model'''
