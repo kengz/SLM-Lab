@@ -11,14 +11,23 @@ import pydash as _
 from slm_lab.lib import logger, util
 
 SPEC_DIR = 'slm_lab/spec'
+'''
+All spec values are already param, inferred automatically.
+To change from a value into param range, e.g.
+- single: "decay_steps": 50
+- continuous param: "decay_steps": {"min": 50, "max": 100, "dist": "uniform"}
+- discrete range: "decay_steps": {"values": [50, 75, 100]}
+'''
 SPEC_FORMAT = {
     "agent": [{
         "name": str,
-        "param": dict
+        "algorithm": dict,
+        "memory": dict,
+        "net": dict
     }],
     "env": [{
         "name": str,
-        "param": dict
+        "max_timestep": (type(None), int),
     }],
     "body": {
         "product": ["outer", "inner", "custom"],

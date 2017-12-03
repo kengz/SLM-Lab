@@ -28,7 +28,7 @@
     }],
     "env": [{
       "name": "gridworld",
-      "param": {}
+      "max_timestep": 20
     }],
     "body": {
       "product": "outer",
@@ -44,12 +44,19 @@
   },
   "dqn_base_case": {
     "agent": [{
-      "name": "Random",
-      "param": {}
+      "name": "TestCase",
+      "algorithm": {
+        "name": "Random"
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 5000
+      },
+      "net": {}
     }],
     "env": [{
       "name": "gridworld",
-      "param": {}
+      "max_timestep": 20
     }],
     "body": {
       "product": "outer",

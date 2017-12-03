@@ -159,7 +159,7 @@ class EnvSpace:
         self.aeb_space = aeb_space
         aeb_space.env_space = self
         self.e_ab_proj = aeb_space.e_ab_proj
-        self.envs = [Env(_.merge(e_spec, spec['meta']), self, e)
+        self.envs = [Env(_.merge(spec['meta'].copy(), e_spec), self, e)
                      for e, e_spec in enumerate(spec['env'])]
         self.max_timestep = np.amax([env.max_timestep for env in self.envs])
 
