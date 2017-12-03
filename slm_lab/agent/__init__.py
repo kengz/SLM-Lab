@@ -63,8 +63,7 @@ class Agent:
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
-        # TODO implement generic method, work on AEB
-        # self.memory.update(action, reward, state, done)
+        self.memory.update(action, reward, state, done)
         self.algorithm.train()
         self.algorithm.update()
 

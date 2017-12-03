@@ -1,3 +1,4 @@
+from collections import Iterable
 import numpy as np
 from slm_lab.agent.memory.base import Memory
 
@@ -56,8 +57,10 @@ class Replay(Memory):
     def update(self, action, reward, state, done):
         # interface
         # TODO store directly from data_space?
+        # TODO this is still single body, generalize
+        body_idx = 0
         self.add_experience(
-            self.last_state, action, reward, state, done
+            self.last_state[body_idx], action[body_idx], reward[body_idx], state[body_idx], done[body_idx]
         )
         self.last_state = state
 
@@ -69,13 +72,17 @@ class Replay(Memory):
                        done,
                        priority=1):
         '''Interface helper method for update() to add experience to memory, expanding the memory size if necessary'''
+        # TODO this is still single body
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
-        # Add newest experience
-        self.states[self.head] = state
-        self.actions[self.head] = action
+        # spread numbers in numpy since direct list setting is impossible
+        self.states[self.head, :] = state[:]
+        if isinstance(action, Iterable):
+            self.actions[self.head, :] = action[:]
+        else:
+            self.actions[self.head] = action
         self.rewards[self.head] = reward
-        self.next_states[self.head] = next_state
+        self.next_states[self.head, :] = next_state[:]
         self.dones[self.head] = done
         self.priorities[self.head] = priority
         # Actually occupied size of memory
