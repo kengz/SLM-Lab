@@ -63,13 +63,13 @@ class Session:
             (reward_space, state_space,
              done_space) = self.env_space.step(action_space)
             total_rewards += np.sum(reward_space.data_proj)
-            logger.info(f'total_rewards {total_rewards}')
             logger.debug(
                 f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')
             # completes cycle of full info for agent_space
             self.agent_space.update(action_space, reward_space, state_space, done_space)
             if bool(done_space):
                 break
+        logger.info(f'total_rewards {total_rewards}')
         # TODO compose episode data
         episode_data = {}
         return episode_data

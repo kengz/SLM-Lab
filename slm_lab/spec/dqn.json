@@ -28,7 +28,7 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 80
+      "max_timestep": 50
     }],
     "body": {
       "product": "outer",

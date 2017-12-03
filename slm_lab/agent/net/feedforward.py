@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
-from torch import optim
 import torch.nn.functional as F
+from torch import optim
+from torch.autograd import Variable
 
 
 class MLPNet(nn.Module):
@@ -72,12 +73,12 @@ class MLPNet(nn.Module):
         self.optim.step()
         return loss
 
-    def eval(self, x):
+    def wrap_eval(self, x):
         '''
         Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
         '''
         self.eval()
-        return self(x)
+        return self(x).data
 
     def init_params(self):
         '''

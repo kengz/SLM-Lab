@@ -1,4 +1,6 @@
+import numpy as np
 import torch
+from torch.autograd import Variable
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.algorithm.algorithm_util import act_fns, update_fns
 from slm_lab.agent.net import nets
@@ -53,18 +55,35 @@ class DQNBase(Algorithm):
         self.training_frequency = 1
 
     def compute_q_target_values(self, batch):
-        q_vals = self.net.eval(batch['states'])
         # Make future reward 0 if the current state is done
-        q_targets_all = batch['rewards'] + self.gamma * \
-            (1 - batch['dones']) * self.net.eval(batch['next_states'])
-        q_targets_max = torch.max(q_targets_all, axis=1)
-        # Reshape q_targets_max to q_targets_all shape
-        q_targets_max = q_targets_max.expand(-1, q_targets_all.shape[1])
+        float_data_list = [
+            'states', 'actions', 'rewards', 'dones', 'next_states']
+        for k in float_data_list:
+            batch[k] = Variable(torch.from_numpy(batch[k]).float())
+        # print('batch')
+        # print(batch['states'])
+        # print(batch['actions'])
+        # print(batch['rewards'])
+        # print(batch['dones'])
+        # print(1 - batch['dones'])
+        q_vals = self.net.wrap_eval(batch['states'])
+        # print(f'q_vals {q_vals}')
+        q_targets_all = batch['rewards'].data + self.gamma * \
+            torch.mul((1 - batch['dones'].data),
+                      self.net.wrap_eval(batch['next_states']))
+        # print(f'q_targets_all {q_targets_all}')
+        q_targets_max, _ = torch.max(q_targets_all, dim=1)
+        # print(f'q_targets_max {q_targets_max}')
+        # print(f'q_targets_all size {q_targets_all.size()}')
+
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_vals
         # So that the loss for these actions is 0
-        q_targets = torch.mul(q_targets_max, batch['actions']) + \
-            torch.mul(q_vals, (1 - batch['actions']))
+        q_targets_max.unsqueeze_(1)
+        # print(f'q_targets_max {q_targets_max}')
+        q_targets = torch.mul(q_targets_max, batch['actions'].data) + \
+            torch.mul(q_vals, (1 - batch['actions'].data))
+        # print(f'q_targets {q_targets}')
         return q_targets
 
     def train(self):
@@ -74,8 +93,10 @@ class DQNBase(Algorithm):
             batch = self.agent.memory.get_batch(self.batch_size)
             for i in range(self.training_iters_per_batch):
                 q_targets = self.compute_q_target_values(batch)
-                loss = self.net.training_step(batch['states'], q_targets)
-            return loss
+                y = Variable(q_targets)
+                loss = self.net.training_step(batch['states'], y)
+                print(f'loss {loss.data[0]}\n')
+            return loss.data[0]
         else:
             return None
 
@@ -89,6 +110,6 @@ class DQNBase(Algorithm):
         '''Update epsilon or boltzmann for policy after net training'''
         epi = self.agent.agent_space.aeb_space.clock['e']
         rise = self.explore_var_end - self.explore_var_start
-        slope = rise / float(self.self.explore_anneal_epi)
+        slope = rise / float(self.explore_anneal_epi)
         self.explore_var = max(
             slope * epi + self.explore_var_start, self.explore_var_end)

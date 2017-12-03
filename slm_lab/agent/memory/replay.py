@@ -37,6 +37,7 @@ class Replay(Memory):
         Can also be used to clear the memory.
         '''
         # TODO update for multi bodies
+        # TODO also for multi state, multi actions per body, need to be 3D
         default_body = self.agent.bodies[0]
         self.max_size = self.agent.spec['memory']['max_size']
         self.state_dim = default_body.state_dim
@@ -77,10 +78,13 @@ class Replay(Memory):
         self.head = (self.head + 1) % self.max_size
         # spread numbers in numpy since direct list setting is impossible
         self.states[self.head, :] = state[:]
+        # make action into one_hot
         if isinstance(action, Iterable):
-            self.actions[self.head, :] = action[:]
+            # non-singular action
+            # self.actions[self.head] = one hot of multi-action (matrix) on a 3rd axis, to be implement
+            raise NotImplementedError
         else:
-            self.actions[self.head] = action
+            self.actions[self.head][action] = 1
         self.rewards[self.head] = reward
         self.next_states[self.head, :] = next_state[:]
         self.dones[self.head] = done
@@ -115,7 +119,7 @@ class Replay(Memory):
                      'dones'       : dones,
                      'priorities'  : priorities}
         '''
-        self.batch_idxs = sample_idxs(batch_size)
+        self.batch_idxs = self.sample_idxs(batch_size)
         batch = {}
         batch['states'] = self.states[self.batch_idxs]
         batch['actions'] = self.actions[self.batch_idxs]
