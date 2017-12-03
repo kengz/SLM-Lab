@@ -1,0 +1,60 @@
+{
+  "dqn_test_case": {
+    "agent": [{
+      "name": "VanillaDQN",
+      "param": {
+        "net_type": "MLP",
+        "net_layer_params": [null, [100, 50], null],
+        "net_other_params": [],
+        "memory_size": 5000,
+        "batch_size": 32,
+        "training_iters_per_batch": 5,
+        "training_frequency": 1,
+        "network_update_type": "complete",
+        "network_update_weight": 0,
+        "network_update_frequency": 1.0,
+        "action_selection": "epsilon_greedy",
+        "gamma": 0.99,
+        "epsilon_tau_start": 1.0,
+        "epsilon_tau_end": 0.1,
+        "decay_steps": 50
+      }
+    }],
+    "env": [{
+      "name": "gridworld",
+      "param": {}
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_timestep": 20,
+      "max_episode": 3,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": true
+    }
+  },
+  "dqn_base_case": {
+    "agent": [{
+      "name": "Random",
+      "param": {}
+    }],
+    "env": [{
+      "name": "gridworld",
+      "param": {}
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_timestep": 20,
+      "max_episode": 3,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": false
+    }
+  }
+}
