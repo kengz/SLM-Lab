@@ -25,7 +25,6 @@
       "num": 1
     },
     "meta": {
-      "max_timestep": 20,
       "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
@@ -53,7 +52,6 @@
       "num": 1
     },
     "meta": {
-      "max_timestep": 20,
       "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
@@ -81,7 +79,6 @@
       "num": 12
     },
     "meta": {
-      "max_timestep": 20,
       "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
@@ -119,7 +116,6 @@
       "num": 6
     },
     "meta": {
-      "max_timestep": 20,
       "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
@@ -150,7 +146,6 @@
       "num": 1
     },
     "meta": {
-      "max_timestep": 20,
       "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
@@ -191,7 +186,6 @@
       "num": 1
     },
     "meta": {
-      "max_timestep": 20,
       "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
@@ -232,7 +226,6 @@
       "num": 2
     },
     "meta": {
-      "max_timestep": 20,
       "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
@@ -273,7 +266,6 @@
       "num": 2
     },
     "meta": {
-      "max_timestep": 20,
       "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
@@ -318,7 +310,6 @@
       ]
     },
     "meta": {
-      "max_timestep": 20,
       "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,

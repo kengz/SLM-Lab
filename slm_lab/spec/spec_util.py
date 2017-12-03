@@ -34,7 +34,6 @@ SPEC_FORMAT = {
         "num": (int, list)
     },
     "meta": {
-        "max_timestep": (type(None), int),
         "max_episode": (type(None), int),
         "max_session": int,
         "max_trial": (type(None), int),
