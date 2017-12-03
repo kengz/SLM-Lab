@@ -38,17 +38,10 @@ class TestMemory:
         assert memory.true_size == 1
         assert memory.head == 0
         # Handle states and actions with multiple dimensions
-        if memory.states[memory.head].size > 1:
-            for i in range(memory.states[memory.head].size):
-                assert memory.states[memory.head][i] == exp[0][i]
-                assert memory.next_states[memory.head][i] == exp[3][i]
-            for i in range(memory.actions[memory.head].size):
-                assert memory.actions[memory.head][i] == exp[1][i]
-        else:
-            assert memory.states[memory.head] == exp[0]
-            assert memory.actions[memory.head] == exp[1]
-            assert memory.next_states[memory.head] == exp[3]
+        assert np.array_equal(memory.states[memory.head], exp[0])
+        assert np.array_equal(memory.actions[memory.head], exp[1])
         assert memory.rewards[memory.head] == exp[2]
+        assert np.array_equal(memory.next_states[memory.head], exp[3])
         assert memory.dones[memory.head] == exp[4]
         assert memory.priorities[memory.head] == 1
 
