@@ -53,6 +53,7 @@ class Body:
         self.agent = agent
         self.env = env
         self.observable_dim = self.env.get_observable_dim(self.a)
+        # TODO use tuples for state_dim for pixel-based in the future
         self.state_dim = self.observable_dim['state']
         self.action_dim = self.env.get_action_dim(self.a)
         self.is_discrete = self.env.is_discrete(self.a)
