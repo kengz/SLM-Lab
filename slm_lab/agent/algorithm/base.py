@@ -11,6 +11,11 @@ class Algorithm(ABC):
     def __init__(self, agent):
         self.agent = agent
 
+    @abstractmethod
+    def post_body_init(self):
+        '''Initializes the part of algorithm needing a body to exist first.'''
+        raise NotImplementedError
+
     def body_act_discrete(self, body, body_state):
         '''Implement atomic discrete body_action, or throw NotImplementedError. E.g. fetch body_action from net given body info.'''
         raise NotImplementedError

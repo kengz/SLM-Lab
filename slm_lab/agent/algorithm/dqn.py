@@ -25,10 +25,7 @@ class DQNBase(Algorithm):
         super(DQNBase, self).__init__(agent)
 
     def post_body_init(self):
-        '''
-        Initializes all of the memory parameters to a blank memory
-        Can also be used to clear the memory
-        '''
+        '''Initializes the part of algorithm needing a body to exist first.'''
         # TODO generalize
         default_body = self.agent.bodies[0]
         state_dim = default_body.state_dim

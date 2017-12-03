@@ -32,8 +32,8 @@ class Replay(Memory):
 
     def post_body_init(self):
         '''
-        Initializes all of the memory parameters to a blank memory
-        Can also be used to clear the memory
+        Initializes the part of algorithm needing a body to exist first.
+        Can also be used to clear the memory.
         '''
         # TODO update for multi bodies
         default_body = self.agent.bodies[0]
@@ -68,7 +68,7 @@ class Replay(Memory):
                        next_state,
                        done,
                        priority=1):
-        '''Adds experience to memory, expanding the memory size if necessary'''
+        '''Interface helper method for update() to add experience to memory, expanding the memory size if necessary'''
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
         # Add newest experience
