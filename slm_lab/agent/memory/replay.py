@@ -41,7 +41,6 @@ class Replay(Memory):
         self.state_dim = default_body.state_dim
         self.action_dim = default_body.action_dim
 
-        self.last_state = None
         self.states = np.zeros((self.max_size, self.state_dim))
         self.actions = np.zeros((self.max_size, self.action_dim))
         self.rewards = np.zeros((self.max_size, 1))
@@ -53,11 +52,6 @@ class Replay(Memory):
         self.head = -1  # Index of most recent experience
         self.batch_idxs = None
         self.total_experiences = 0
-
-    def reset_last_state(self, state):
-        '''epsodic reset'''
-        # TODO place properly
-        self.last_state = state
 
     def update(self, action, reward, state, done):
         # interface
@@ -111,7 +105,7 @@ class Replay(Memory):
                      'actions'     : actions,
                      'rewards'     : rewards,
                      'next_states' : next_states,
-                     'dones'   : dones,
+                     'dones'       : dones,
                      'priorities'  : priorities}
         '''
         self.batch_idxs = sample_idxs(batch_size)

@@ -30,6 +30,7 @@ class DQNBase(Algorithm):
         action_dim = body.action_dim
         spec['net_layer_params'][0] = state_dim
         spec['net_layer_params'][-1] = action_dim
+        # TODO pull out net init from algo if possible
         self.net = nets[spec['net_type']](
             *spec['net_layer_params'],
             *spec['net_other_params'])
