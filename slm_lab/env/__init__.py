@@ -118,7 +118,7 @@ class Env:
         return self.get_brain(a).get_observable_dim()
 
     def reset(self):
-        env_info_dict = self.u_env.reset(train_mode=self.train_mode)
+        env_info_dict = self.u_env.reset(train_mode=self.train_mode, config=self.spec.get('unity'))
         state = []
         for a, b in self.ab_proj:
             a_name = self.u_env.brain_names[a]

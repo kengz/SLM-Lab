@@ -6,7 +6,7 @@ from slm_lab.lib import logger, util
 
 def main():
     logger.set_level('DEBUG')
-    spec = spec_util.get('dqn.json', 'dqn_test_case')
+    spec = spec_util.get('base.json', 'base_case')
     trial = Trial(spec)
     trial_data = trial.run()
 
