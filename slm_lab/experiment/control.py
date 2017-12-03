@@ -52,6 +52,8 @@ class Session:
         state_space = self.env_space.reset()
         self.agent_space.reset(state_space)
         # RL steps for SARS
+        # TODO absorb later from data space
+        total_rewards = 0
         for t in range(self.env_space.max_timestep):
             self.aeb_space.tick_clock('t')
             # TODO common refinement of timestep
@@ -60,6 +62,8 @@ class Session:
             logger.debug(f'action_space {action_space}')
             (reward_space, state_space,
              done_space) = self.env_space.step(action_space)
+            total_rewards += np.sum(reward_space.data_proj)
+            logger.info(f'total_rewards {total_rewards}')
             logger.debug(
                 f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')
             # completes cycle of full info for agent_space

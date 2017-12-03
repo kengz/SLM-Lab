@@ -7,7 +7,7 @@
         "action_selection": "epsilon_greedy",
         "explore_var_start": 1.0,
         "explore_var_end": 0.1,
-        "explore_anneal_epi": 50
+        "explore_anneal_epi": 20
       },
       "memory": {
         "name": "Replay",
@@ -28,7 +28,7 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 200
+      "max_timestep": 80
     }],
     "body": {
       "product": "outer",

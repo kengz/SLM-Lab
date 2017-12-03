@@ -1,5 +1,6 @@
+import numpy as np
 import torch
-import random
+from torch.autograd import Variable
 
 '''Functions used by more than one algorithm'''
 
@@ -10,17 +11,18 @@ def act_with_epsilon_greedy(net, state, epsilon):
     otherwise select the action associated with the
     largest q value
     '''
-    i = random.random()
+    # TODO store one hot
+    # TODO discrete int
     a_dim = net.out_dim
-    action = None
-    if i < epsilon:
-        action = random.randint(0, a_dim)
+    print(f'epsilon {epsilon}')
+    if epsilon > np.random.rand():
+        print('random action')
+        action = np.random.randint(a_dim)
     else:
-        out = net.eval(state)
-        _, action = torch.max(out)
-    one_hot_a = torch.zeros(1, a_dim)
-    one_hot_a[0][action] = 1
-    return one_hot_a
+        torch_state = Variable(torch.from_numpy(state).float())
+        out = net.wrap_eval(torch_state)
+        action = int(torch.max(out, dim=0)[1][0])
+    return action
 
 
 def act_with_boltzmann(net, state, tau):
