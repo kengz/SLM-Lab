@@ -63,10 +63,9 @@ class Agent:
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
-        t = self.agent_space.aeb_space.clock['t']
         # TODO implement generic method, work on AEB
         # self.memory.update(action, reward, state, done)
-        # self.net.train()
+        self.algorithm.train()
         self.algorithm.update(action, reward, state, done)
 
     def close(self):

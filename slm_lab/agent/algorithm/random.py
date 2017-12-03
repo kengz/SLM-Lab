@@ -25,5 +25,5 @@ class Random(Algorithm):
         body_action = np.random.randn(body.action_dim)
         return body_action
 
-    def update(self, action, reward, state, done):
+    def update(self):
         return

@@ -43,6 +43,6 @@ class Algorithm(ABC):
         return action
 
     @abstractmethod
-    def update(self, action, reward, state, done):
+    def update(self):
         '''Implement algorithm update, or throw NotImplementedError'''
         raise NotImplementedError

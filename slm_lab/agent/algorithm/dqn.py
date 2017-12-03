@@ -53,18 +53,6 @@ class DQNBase(Algorithm):
         self.training_iters_per_batch = 1
         self.training_frequency = 1
 
-    def train_a_batch(self):
-        # TODO Fix for training iters, docstring
-        t = self.agent.agent_space.aeb_space.clock['t']
-        if t % self.training_frequency == 0:
-            batch = self.agent.memory.get_batch(self.batch_size)
-            for i in range(self.training_iters_per_batch):
-                q_targets = self.compute_q_target_values(batch)
-                loss = self.net.training_step(batch['states'], q_targets)
-            return loss
-        else:
-            return None
-
     def compute_q_target_values(self, batch):
         q_vals = self.net.eval(batch['states'])
         # Make future reward 0 if the current state is done
@@ -80,13 +68,25 @@ class DQNBase(Algorithm):
             torch.mul(q_vals, (1 - batch['actions']))
         return q_targets
 
+    def train(self):
+        # TODO Fix for training iters, docstring
+        t = self.agent.agent_space.aeb_space.clock['t']
+        if t % self.training_frequency == 0:
+            batch = self.agent.memory.get_batch(self.batch_size)
+            for i in range(self.training_iters_per_batch):
+                q_targets = self.compute_q_target_values(batch)
+                loss = self.net.training_step(batch['states'], q_targets)
+            return loss
+        else:
+            return None
+
     def body_act_discrete(self, body, body_state):
         return self.action_selection(
             self.net,
             body_state,
             self.explore_var)
 
-    def update(self, action, reward, state, done):
+    def update(self):
         # TODO make proper
         # Update epsilon or boltzmann
         self.anneal_epi = 20
