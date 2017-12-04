@@ -11,15 +11,14 @@ def act_with_epsilon_greedy(net, state, epsilon):
     otherwise select the action associated with the
     largest q value
     '''
-    # TODO store one hot
     # TODO discrete int
     a_dim = net.out_dim
-    print(f'epsilon {epsilon}')
+    # print(f'epsilon {epsilon}')
     if epsilon > np.random.rand():
-        print('random action')
+        # print('random action')
         action = np.random.randint(a_dim)
     else:
-        print('net action')
+        # print('net action')
         torch_state = Variable(torch.from_numpy(state).float())
         out = net.wrap_eval(torch_state)
         action = int(torch.max(out, dim=0)[1][0])

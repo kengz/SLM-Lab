@@ -64,8 +64,10 @@ class Agent:
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
         self.memory.update(action, reward, state, done)
-        self.algorithm.train()
-        self.algorithm.update()
+        loss = self.algorithm.train()
+        explore_var = self.algorithm.update()
+        # TODO tmp return, to unify with monitor auto-fetch later
+        return loss, explore_var
 
     def close(self):
         '''Close agent at the end of a session, e.g. save model'''
@@ -116,7 +118,9 @@ class AgentSpace:
             reward = reward_space.get(a=a)
             state = state_space.get(a=a)
             done = done_space.get(a=a)
-            agent.update(action, reward, state, done)
+            loss, explore_var = agent.update(action, reward, state, done)
+        # TODO tmp, single body (last); use monitor later
+        return loss, explore_var
 
     def close(self):
         for agent in self.agents:
