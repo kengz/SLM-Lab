@@ -46,6 +46,8 @@ class DQNBase(Algorithm):
             *net_spec['net_layer_params'],
             *net_spec['net_other_params'],
             net_spec['lr'])
+        self.act_select_net = self.net
+        self.eval_net = self.net
         self.batch_size = net_spec['batch_size']
         self.gamma = net_spec['gamma']
 
@@ -58,8 +60,8 @@ class DQNBase(Algorithm):
         self.explore_var = self.explore_var_start
         self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
         self.initial_data_gather_steps = algorithm_spec['initial_data_gather_steps']
-        self.training_iters_per_batch = 10
-        self.training_frequency = 4
+        self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
+        self.training_frequency = algorithm_spec['training_frequency']
 
         # Network update params
         self.update_type = "replace"
@@ -67,7 +69,6 @@ class DQNBase(Algorithm):
         self.polyak_weight = 0.9
 
     def compute_q_target_values(self, batch):
-        # Make future reward 0 if the current state is done
         # print('batch')
         # print(batch['states'])
         # print(batch['actions'])
@@ -76,19 +77,36 @@ class DQNBase(Algorithm):
         # print(1 - batch['dones'])
         q_vals = self.net.wrap_eval(batch['states'])
         # print(f'q_vals {q_vals}')
-        q_targets_all = batch['rewards'].data + self.gamma * \
-            torch.mul((1 - batch['dones'].data),
-                      self.net.wrap_eval(batch['next_states']))
-        # print(f'q_targets_all {q_targets_all}')
-        q_targets_max, _ = torch.max(q_targets_all, dim=1)
+
+        # Use act_select network to select actions in next state
+        # Depending on the algorithm this is either the current
+        # net or target net
+        q_next_st_act_vals = self.act_select_net.wrap_eval(batch['next_states'])
+        # print(f'q_next_st_act_vals {q_next_st_act_vals}')
+        _, q_next_actions = torch.max(q_next_st_act_vals, dim=1)
+
+        # Select q_next_st_vals_max based on action selected in q_next_actions
+        # Evaluate the action selection using the eval net
+        # Depending on the algorithm this is either the current
+        # net or target net
+        q_next_st_vals = self.eval_net.wrap_eval(batch['next_states'])
+        idx = torch.from_numpy(np.array(list(range(self.batch_size))))
+        q_next_st_vals_max = q_next_st_vals[idx,q_next_actions]
+        q_next_st_vals_max.unsqueeze_(1)
+        # Compute final q_target using reward and estimated
+        # best Q value from the next state if there is one
+        # Make future reward 0 if the current state is done
+        q_targets_max = batch['rewards'].data + self.gamma * \
+            torch.mul((1 - batch['dones'].data), q_next_st_vals_max)
+
+        # print(f'q_next_actions {q_next_actions}')
+        # print(f'q_next_st_vals {q_next_st_vals}')
+        # print(f'q_next_st_vals_max {q_next_st_vals_max}')
         # print(f'q_targets_max {q_targets_max}')
-        # print(f'q_targets_all size {q_targets_all.size()}')
 
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_vals
         # So that the loss for these actions is 0
-        q_targets_max.unsqueeze_(1)
-        # print(f'q_targets_max {q_targets_max}')
         q_targets = torch.mul(q_targets_max, batch['actions'].data) + \
             torch.mul(q_vals, (1 - batch['actions'].data))
         # print(f'q_targets {q_targets}')
@@ -99,7 +117,7 @@ class DQNBase(Algorithm):
         t = self.agent.agent_space.aeb_space.clock['total_t']
         if t % self.training_frequency == 0 and \
             t > self.initial_data_gather_steps:
-            print("Training")
+            # print("Training")
             batch = self.agent.memory.get_batch(self.batch_size)
 
             ''' Package data into pytorch variables '''
@@ -112,10 +130,10 @@ class DQNBase(Algorithm):
                 q_targets = self.compute_q_target_values(batch)
                 y = Variable(q_targets)
                 loss = self.net.training_step(batch['states'], y)
-                print(f'loss {loss.data[0]}\n')
+                # print(f'loss {loss.data[0]}')
             return loss.data[0]
         else:
-            print("NOT training")
+            # print("NOT training")
             return None
 
     def body_act_discrete(self, body, body_state):
@@ -139,10 +157,10 @@ class DQNBase(Algorithm):
         '''Update target net with current net'''
         if self.update_type == "replace":
             if t % self.update_frequency == 0:
-                print("Updating net by replacing")
+                # print("Updating net by replacing")
                 self.target_net = copy.deepcopy(self.net)
         elif self.update_type == "polyak":
-            print("Updating net by averaging")
+            # print("Updating net by averaging")
             avg_params = self.polyak_weight * flatten_params(self.target_net) + \
                          (1 - self.polyak_weight) * flatten_params(self.net)
             self.target_net = load_params(self.target_net, avg_params)
