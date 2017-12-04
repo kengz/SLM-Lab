@@ -53,7 +53,7 @@
         "training_iters_per_batch" : 10,
         "training_frequency" : 1,
         "update_type" : "replace",
-        "update_frequency" : 250,
+        "update_frequency" : 500,
         "polyak_weight" : 0.99
       },
       "memory": {
@@ -66,7 +66,7 @@
         "net_other_params": [],
         "batch_size": 32,
         "gamma": 0.99,
-        "lr" : 0.05
+        "lr" : 0.001
       }
     }],
     "env": [{
@@ -75,7 +75,7 @@
       "unity": {
         "gridSize": 6,
         "numObstacles": 2,
-        "numGoals": 1
+        "numGoals": 2
       }
     }],
     "body": {
@@ -83,7 +83,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 200,
+      "max_episode": 1000,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true

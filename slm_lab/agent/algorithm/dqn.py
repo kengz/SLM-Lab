@@ -141,7 +141,7 @@ class DQNBase(Algorithm):
         '''Update target net with current net'''
         if self.update_type == "replace":
             if t % self.update_frequency == 0:
-                # print("Updating net by replacing")
+                print("Updating net by replacing")
                 self.target_net = copy.deepcopy(self.net)
         elif self.update_type == "polyak":
             # print("Updating net by averaging")
