@@ -101,6 +101,7 @@ class DQNBase(Algorithm):
             return None
 
     def body_act_discrete(self, body, body_state):
+        # TODO can handle identical bodies now; to use body_net for specific body.
         return self.action_selection(
             self.net,
             body_state,

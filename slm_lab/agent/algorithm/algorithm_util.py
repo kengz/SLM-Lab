@@ -11,7 +11,6 @@ def act_with_epsilon_greedy(net, state, epsilon):
     otherwise select the action associated with the
     largest q value
     '''
-    # TODO store one hot
     # TODO discrete int
     a_dim = net.out_dim
     print(f'epsilon {epsilon}')
