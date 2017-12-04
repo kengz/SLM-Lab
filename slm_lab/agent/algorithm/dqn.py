@@ -1,9 +1,12 @@
+import sys
 import numpy as np
 import torch
+import copy
 from torch.autograd import Variable
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.algorithm.algorithm_util import act_fns, update_fns
 from slm_lab.agent.net import nets
+from slm_lab.agent.net.common import *
 from slm_lab.agent.memory import Replay
 
 
@@ -37,9 +40,12 @@ class DQNBase(Algorithm):
         net_spec['net_layer_params'][-1] = action_dim
         self.net = nets[net_spec['net_type']](
             *net_spec['net_layer_params'],
-            *net_spec['net_other_params'])
-        # TODO three nets for different part of Q function
-        # In base algorithm should all be pointer to the same net - then update compute q target values and action functions
+            *net_spec['net_other_params'],
+            net_spec['lr'])
+        self.target_net = nets[net_spec['net_type']](
+            *net_spec['net_layer_params'],
+            *net_spec['net_other_params'],
+            net_spec['lr'])
         self.batch_size = net_spec['batch_size']
         self.gamma = net_spec['gamma']
 
@@ -51,15 +57,17 @@ class DQNBase(Algorithm):
         self.explore_var_end = algorithm_spec['explore_var_end']
         self.explore_var = self.explore_var_start
         self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
-        self.training_iters_per_batch = 1
-        self.training_frequency = 1
+        self.initial_data_gather_steps = algorithm_spec['initial_data_gather_steps']
+        self.training_iters_per_batch = 10
+        self.training_frequency = 4
+
+        # Network update params
+        self.update_type = "replace"
+        self.update_frequency = 1
+        self.polyak_weight = 0.9
 
     def compute_q_target_values(self, batch):
         # Make future reward 0 if the current state is done
-        float_data_list = [
-            'states', 'actions', 'rewards', 'dones', 'next_states']
-        for k in float_data_list:
-            batch[k] = Variable(torch.from_numpy(batch[k]).float())
         # print('batch')
         # print(batch['states'])
         # print(batch['actions'])
@@ -88,16 +96,26 @@ class DQNBase(Algorithm):
 
     def train(self):
         # TODO Fix for training iters, docstring
-        t = self.agent.agent_space.aeb_space.clock['t']
-        if t % self.training_frequency == 0:
+        t = self.agent.agent_space.aeb_space.clock['total_t']
+        if t % self.training_frequency == 0 and \
+            t > self.initial_data_gather_steps:
+            print("Training")
             batch = self.agent.memory.get_batch(self.batch_size)
+
+            ''' Package data into pytorch variables '''
+            float_data_list = [
+                'states', 'actions', 'rewards', 'dones', 'next_states']
+            for k in float_data_list:
+                batch[k] = Variable(torch.from_numpy(batch[k]).float())
+
             for i in range(self.training_iters_per_batch):
                 q_targets = self.compute_q_target_values(batch)
                 y = Variable(q_targets)
                 loss = self.net.training_step(batch['states'], y)
-                # print(f'loss {loss.data[0]}\n')
+                print(f'loss {loss.data[0]}\n')
             return loss.data[0]
         else:
+            print("NOT training")
             return None
 
     def body_act_discrete(self, body, body_state):
@@ -108,10 +126,28 @@ class DQNBase(Algorithm):
             self.explore_var)
 
     def update(self):
+        t = self.agent.agent_space.aeb_space.clock['total_t']
+
         '''Update epsilon or boltzmann for policy after net training'''
         epi = self.agent.agent_space.aeb_space.clock['e']
         rise = self.explore_var_end - self.explore_var_start
         slope = rise / float(self.explore_anneal_epi)
         self.explore_var = max(
-            slope * epi + self.explore_var_start, self.explore_var_end)
+            slope * (epi - 1) + self.explore_var_start, self.explore_var_end)
+        # print("Explore var: {}".format(self.explore_var))
+
+        '''Update target net with current net'''
+        if self.update_type == "replace":
+            if t % self.update_frequency == 0:
+                print("Updating net by replacing")
+                self.target_net = copy.deepcopy(self.net)
+        elif self.update_type == "polyak":
+            print("Updating net by averaging")
+            avg_params = self.polyak_weight * flatten_params(self.target_net) + \
+                         (1 - self.polyak_weight) * flatten_params(self.net)
+            self.target_net = load_params(self.target_net, avg_params)
+        else:
+            print("Unknown network update type.")
+            print("Should be 'replace' or 'polyak'. Exiting ...")
+            sys.exit()
         return self.explore_var

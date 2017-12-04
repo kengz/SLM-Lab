@@ -14,6 +14,7 @@ class MLPNet(nn.Module):
                  in_dim,
                  hid_dim,
                  out_dim,
+                 lr=0.01,
                  optim=optim.Adam,
                  loss_fn=F.smooth_l1_loss,
                  clamp_grad=False):
@@ -45,7 +46,7 @@ class MLPNet(nn.Module):
         else:
             self.out_layer = nn.Linear(in_dim, out_dim)
         self.num_hid_layers = len(self.hid_layers)
-        self.optim = optim(self.parameters())
+        self.optim = optim(self.parameters(), lr=lr)
         self.loss_fn = loss_fn
         self.clamp_grad = clamp_grad
         self.init_params()
