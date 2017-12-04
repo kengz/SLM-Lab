@@ -95,8 +95,8 @@ class Session:
         # TODO tmp hack. fix with monitor data later
         data = pd.DataFrame(
             data_list, columns=['total_rewards', 'loss', 'explore_var'])
-        fig = viz.plot_line(data, ['total_rewards', 'explore_var'], save=True, draw=False)
-        fig_2 = viz.plot_line(data, ['loss'], save=True, draw=False)
+        fig = viz.plot_line(data, ['total_rewards', 'explore_var'], save=False, draw=True)
+        fig_2 = viz.plot_line(data, ['loss'], save=False, draw=True)
         self.close()
         # TODO session data checker method
         return self.data
