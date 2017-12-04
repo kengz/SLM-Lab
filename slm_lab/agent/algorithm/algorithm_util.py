@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torch.autograd import Variable
+import torch.nn.functional as F
 
 '''Functions used by more than one algorithm'''
 
@@ -26,8 +27,14 @@ def act_with_epsilon_greedy(net, state, epsilon):
 
 
 def act_with_boltzmann(net, state, tau):
-    # TODO implement act_with_boltzmann
-    pass
+    a_dim = net.out_dim
+    torch_state = Variable(torch.from_numpy(state).float())
+    out = net.wrap_eval(torch_state)
+    out_with_temp = torch.div(out, tau)
+    probs = F.softmax(out_with_temp).data.numpy()
+    action = np.random.choice(list(range(a_dim)), p=probs)
+    # print("Probs: {}, action: {}".format(probs, action))
+    return action
 
 
 def act_with_gaussian(net, state, stddev):
