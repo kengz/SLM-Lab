@@ -4,35 +4,37 @@
       "name": "VanillaDQN",
       "algorithm": {
         "name": "DQNBase",
-        "action_selection": "epsilon_greedy",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 3,
+        "action_selection": "boltzmann",
+        "explore_var_start": 5.0,
+        "explore_var_end": 1.0,
+        "explore_anneal_epi": 5,
         "initial_data_gather_steps": 10,
+        "training_iters_per_batch" : 2,
+        "training_frequency" : 1
       },
       "memory": {
         "name": "Replay",
-        "max_size": 5000
+        "max_size": 2000
       },
       "net": {
         "net_type": "MLP",
-        "net_layer_params": [null, [16, 8], null],
+        "net_layer_params": [null, [100, 50], null],
         "net_other_params": [],
-        "batch_size": 32,
+        "batch_size": 16,
         "gamma": 0.99,
-        "lr" : 0.01
+        "lr" : 0.001
       }
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 50
+      "max_timestep": 80
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 3,
+      "max_episode": 10,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
