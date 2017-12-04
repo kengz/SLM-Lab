@@ -69,22 +69,12 @@ class DQNBase(Algorithm):
         self.polyak_weight = 0.9
 
     def compute_q_target_values(self, batch):
-        # print('batch')
-        # print(batch['states'])
-        # print(batch['actions'])
-        # print(batch['rewards'])
-        # print(batch['dones'])
-        # print(1 - batch['dones'])
         q_vals = self.net.wrap_eval(batch['states'])
-        # print(f'q_vals {q_vals}')
-
         # Use act_select network to select actions in next state
         # Depending on the algorithm this is either the current
         # net or target net
         q_next_st_act_vals = self.act_select_net.wrap_eval(batch['next_states'])
-        # print(f'q_next_st_act_vals {q_next_st_act_vals}')
         _, q_next_actions = torch.max(q_next_st_act_vals, dim=1)
-
         # Select q_next_st_vals_max based on action selected in q_next_actions
         # Evaluate the action selection using the eval net
         # Depending on the algorithm this is either the current
@@ -98,22 +88,15 @@ class DQNBase(Algorithm):
         # Make future reward 0 if the current state is done
         q_targets_max = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), q_next_st_vals_max)
-
-        # print(f'q_next_actions {q_next_actions}')
-        # print(f'q_next_st_vals {q_next_st_vals}')
-        # print(f'q_next_st_vals_max {q_next_st_vals_max}')
-        # print(f'q_targets_max {q_targets_max}')
-
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_vals
         # So that the loss for these actions is 0
         q_targets = torch.mul(q_targets_max, batch['actions'].data) + \
             torch.mul(q_vals, (1 - batch['actions'].data))
-        # print(f'q_targets {q_targets}')
         return q_targets
 
     def train(self):
-        # TODO Fix for training iters, docstring
+        # TODO docstring
         t = self.agent.agent_space.aeb_space.clock['total_t']
         if t % self.training_frequency == 0 and \
             t > self.initial_data_gather_steps:
