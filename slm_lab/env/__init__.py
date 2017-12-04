@@ -57,7 +57,6 @@ extend_unity_brain()
 
 
 class OpenAIEnv:
-    # TODO render on train_mode false
     # TODO check done on solve_mean_rewards
     def __init__(self, spec, env_space, e=0):
         self.spec = spec
