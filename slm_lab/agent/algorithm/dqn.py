@@ -128,7 +128,8 @@ class DQNBase(Algorithm):
 
     def update(self):
         t = self.agent.agent_space.aeb_space.clock['total_t']
-
+        if t % 100 == 0:
+            print("Total time step: {}".format(t))
         '''Update epsilon or boltzmann for policy after net training'''
         epi = self.agent.agent_space.aeb_space.clock['e']
         rise = self.explore_var_end - self.explore_var_start
@@ -152,3 +153,37 @@ class DQNBase(Algorithm):
             print("Should be 'replace' or 'polyak'. Exiting ...")
             sys.exit()
         return self.explore_var
+
+
+class DQN(DQNBase):
+
+    def __init__(self, agent):
+        super(DQN, self).__init__(agent)
+
+    def post_body_init(self):
+        '''Initializes the part of algorithm needing a body to exist first.'''
+        super(DQN, self).post_body_init()
+        self.act_select_net = self.target_net
+        self.eval_net = self.target_net
+        # Network update params
+        algorithm_spec = self.agent.spec['algorithm']
+        self.update_type = algorithm_spec['update_type']
+        self.update_frequency = algorithm_spec['update_frequency']
+        self.polyak_weight = algorithm_spec['polyak_weight']
+
+
+class DoubleDQN(DQNBase):
+
+    def __init__(self, agent):
+        super(DoubleDQN, self).__init__(agent)
+
+    def post_body_init(self):
+        '''Initializes the part of algorithm needing a body to exist first.'''
+        super(DoubleDQN, self).post_body_init()
+        self.act_select_net = self.net
+        self.eval_net = self.target_net
+        # Network update params
+        algorithm_spec = self.agent.spec['algorithm']
+        self.update_type = algorithm_spec['update_type']
+        self.update_frequency = algorithm_spec['update_frequency']
+        self.polyak_weight = algorithm_spec['polyak_weight']

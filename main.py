@@ -8,7 +8,8 @@ def main():
     # logger.set_level('DEBUG')
     # spec = spec_util.get('base.json', 'base_case')
     # spec = spec_util.get('base.json', 'multi_env')
-    spec = spec_util.get('dqn.json', 'dqn_base_case')
+    # spec = spec_util.get('dqn.json', 'dqn_base_case')
+    spec = spec_util.get('dqn.json', 'dqn_standard_case')
     trial = Trial(spec)
     trial_data = trial.run()
 
