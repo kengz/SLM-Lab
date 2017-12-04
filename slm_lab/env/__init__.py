@@ -4,6 +4,7 @@ Contains graduated components from experiments for building/using environment.
 Provides the rich experience for agent embodiment, reflects the curriculum and allows teaching (possibly allows teacher to enter).
 To be designed by human and evolution module, based on the curriculum and fitness metrics.
 '''
+import gym
 import numpy as np
 import pydash as _
 from slm_lab.lib import logger, util
@@ -56,8 +57,67 @@ extend_unity_brain()
 
 
 class OpenAIEnv:
-    # TODO merge OpenAI Env in SLM Lab
-    pass
+    # TODO check done on solve_mean_rewards
+    def __init__(self, spec, env_space, e=0):
+        self.spec = spec
+        util.set_attr(self, self.spec)
+        self.name = self.spec['name']
+        self.env_space = env_space
+        self.index = e
+        self.ab_proj = self.env_space.e_ab_proj[self.index]
+        self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
+        self.u_env = gym.make(self.name)
+
+    def post_body_init(self):
+        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
+        pass
+
+    def is_discrete(self, a):
+        '''Check if an agent (brain) is subject to discrete actions'''
+        return self.u_env.action_space.__class__.__name__ != 'Box'  # continuous
+
+    def get_action_dim(self, a):
+        '''Get the action dim for an agent (brain) in env'''
+        if self.is_discrete(a=0):
+            action_dim = self.u_env.action_space.n
+        else:
+            action_dim = self.u_env.action_space.shape[0]
+        return action_dim
+
+    def get_observable(self, a):
+        '''Get the observable for an agent (brain) in env'''
+        # TODO detect if is pong from pixel
+        return {'state': True, 'visual': False}
+
+    def get_observable_dim(self, a):
+        '''Get the observable dim for an agent (brain) in env'''
+        state_dim = self.u_env.observation_space.shape[0]
+        if (len(self.u_env.observation_space.shape) > 1):
+            state_dim = self.u_env.observation_space.shape
+        return {'state': state_dim}
+
+    def reset(self):
+        state = []
+        body_state = self.u_env.reset()
+        for a, b in self.ab_proj:
+            state.append(body_state)
+        assert len(state) == 1, 'OpenAI Gym supports only single body'
+        return state
+
+    def step(self, action):
+        assert len(action) == 1, 'OpenAI Gym supports only single body'
+        if not self.train_mode:
+            self.u_env.render()
+        body_action = action[0]
+        body_state, body_reward, body_done, _info = self.u_env.step(
+            body_action)
+        reward = [body_reward]
+        state = [body_state]
+        done = [body_done]
+        return reward, state, done
+
+    def close(self):
+        self.u_env.close()
 
 
 class Env:
@@ -118,7 +178,8 @@ class Env:
         return self.get_brain(a).get_observable_dim()
 
     def reset(self):
-        env_info_dict = self.u_env.reset(train_mode=self.train_mode, config=self.spec.get('unity'))
+        env_info_dict = self.u_env.reset(
+            train_mode=self.train_mode, config=self.spec.get('unity'))
         state = []
         for a, b in self.ab_proj:
             a_name = self.u_env.brain_names[a]
@@ -159,8 +220,12 @@ class EnvSpace:
         self.aeb_space = aeb_space
         aeb_space.env_space = self
         self.e_ab_proj = aeb_space.e_ab_proj
-        self.envs = [Env(_.merge(spec['meta'].copy(), e_spec), self, e)
-                     for e, e_spec in enumerate(spec['env'])]
+        try:
+            self.envs = [Env(_.merge(spec['meta'].copy(), e_spec), self, e)
+                         for e, e_spec in enumerate(spec['env'])]
+        except Exception as e:
+            self.envs = [OpenAIEnv(_.merge(spec['meta'].copy(), e_spec), self, e)
+                         for e, e_spec in enumerate(spec['env'])]
         self.max_timestep = np.amax([env.max_timestep for env in self.envs])
 
     def post_body_init(self):
