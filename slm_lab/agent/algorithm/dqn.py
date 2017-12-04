@@ -95,7 +95,7 @@ class DQNBase(Algorithm):
                 q_targets = self.compute_q_target_values(batch)
                 y = Variable(q_targets)
                 loss = self.net.training_step(batch['states'], y)
-                print(f'loss {loss.data[0]}\n')
+                # print(f'loss {loss.data[0]}\n')
             return loss.data[0]
         else:
             return None
@@ -114,3 +114,4 @@ class DQNBase(Algorithm):
         slope = rise / float(self.explore_anneal_epi)
         self.explore_var = max(
             slope * epi + self.explore_var_start, self.explore_var_end)
+        return self.explore_var

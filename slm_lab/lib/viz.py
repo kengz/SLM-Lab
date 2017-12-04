@@ -15,8 +15,7 @@ from slm_lab import config
 
 PLOT_FILEDIR = util.smart_path('data')
 os.makedirs(PLOT_FILEDIR, exist_ok=True)
-if util.is_jupyter():
-    py.init_notebook_mode(connected=True)
+py.init_notebook_mode(connected=True)
 
 
 def save_image(figure, filename=None):
