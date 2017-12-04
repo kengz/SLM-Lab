@@ -17,14 +17,14 @@ os-homedir@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/os-homedir/-/os-homedir-1.0.2.tgz#ffbc4988336e0e833de0c168c7ef152121aa7fb3"
 
-slm-env-3dball@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/slm-env-3dball/-/slm-env-3dball-1.0.1.tgz#7a299fa56c2eba9f7afda49199bd8789a1e5597e"
+slm-env-3dball@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/slm-env-3dball/-/slm-env-3dball-1.0.2.tgz#1a5df339b306c949b28824198f5c8b58a7c7f99a"
 
-slm-env-gridworld@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/slm-env-gridworld/-/slm-env-gridworld-1.0.1.tgz#ecdee8c33dc9f3f7a99da3d1319d4357e47e2b4e"
+slm-env-gridworld@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/slm-env-gridworld/-/slm-env-gridworld-1.0.2.tgz#7f1ba887db58e5146da9e7b5e397fca32cda27e9"
 
-slm-env-tennis@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/slm-env-tennis/-/slm-env-tennis-1.0.0.tgz#ac2e04e23be4fb771520e05819d7fce1811b167f"
+slm-env-tennis@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/slm-env-tennis/-/slm-env-tennis-1.0.1.tgz#3bd86567c9b74341661661c8dd336fc570fc45d8"
