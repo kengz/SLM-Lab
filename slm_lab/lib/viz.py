@@ -19,6 +19,8 @@ py.init_notebook_mode(connected=True)
 
 
 def save_image(figure, filename=None):
+    if os.environ.get('PY_ENV') == 'test':
+        return
     if filename is None:
         filename = _.get(figure, 'layout.title') + '.png'
     filepath = f'{PLOT_FILEDIR}/{filename}'
@@ -49,7 +51,8 @@ def create_label(
         title=None, y_title=None, x_title=None, legend_name=None):
     '''Create label dict for go.Layout with smart resolution'''
     legend_name = legend_name or y_col
-    y_col_list, x_col_list, legend_name_list = _.map_([y_col, x_col, legend_name], util.cast_list)
+    y_col_list, x_col_list, legend_name_list = _.map_(
+        [y_col, x_col, legend_name], util.cast_list)
     y_title = str(y_title or ','.join(y_col_list))
     x_title = str(x_title or ','.join(x_col_list))
     title = title or f'{y_title} vs {x_title}'

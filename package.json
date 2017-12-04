@@ -17,8 +17,8 @@
   "private": false,
   "dependencies": {
     "config": "^1.28.0",
-    "slm-env-3dball": "^1.0.1",
-    "slm-env-gridworld": "^1.0.1",
-    "slm-env-tennis": "^1.0.0"
+    "slm-env-3dball": "^1.0.2",
+    "slm-env-gridworld": "^1.0.2",
+    "slm-env-tennis": "^1.0.1"
   }
 }

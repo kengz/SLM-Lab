@@ -27,6 +27,7 @@ _(Work In Progress)_ An experimentation framework for Reinforcement Learning usi
     ```
 
 4.  Setup the created config files:
+    -   sign up for a free [Plotly account](https://plot.ly/) and get the API key to put in the config files below.
     -   `config/default.json` for local development, used when `grunt` is ran without a production flag.
     -   `config/production.json` for production lab run when `grunt -prod` is ran with the production flag `-prod`.
 
