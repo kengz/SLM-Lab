@@ -67,6 +67,8 @@ class OpenAIEnv:
         self.ab_proj = self.env_space.e_ab_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
         self.u_env = gym.make(self.name)
+        self.max_timestep = self.max_timestep or self.u_env.spec.tags.get(
+            'wrapper_config.TimeLimit.max_episode_steps')
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
@@ -220,12 +222,13 @@ class EnvSpace:
         self.aeb_space = aeb_space
         aeb_space.env_space = self
         self.e_ab_proj = aeb_space.e_ab_proj
-        try:
-            self.envs = [Env(_.merge(spec['meta'].copy(), e_spec), self, e)
-                         for e, e_spec in enumerate(spec['env'])]
-        except Exception as e:
-            self.envs = [OpenAIEnv(_.merge(spec['meta'].copy(), e_spec), self, e)
-                         for e, e_spec in enumerate(spec['env'])]
+        self.envs = []
+        for e, e_spec in enumerate(spec['env']):
+            try:
+                env = Env(_.merge(spec['meta'].copy(), e_spec), self, e)
+            except Exception:
+                env = OpenAIEnv(_.merge(spec['meta'].copy(), e_spec), self, e)
+            self.envs.append(env)
         self.max_timestep = np.amax([env.max_timestep for env in self.envs])
 
     def post_body_init(self):

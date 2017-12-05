@@ -72,7 +72,7 @@ class DQNBase(Algorithm):
             torch.mul((1 - batch['dones'].data),
                       self.net.wrap_eval(batch['next_states']))
         # print(f'q_targets_all {q_targets_all}')
-        q_targets_max, _ = torch.max(q_targets_all, dim=1)
+        q_targets_max, _idx = torch.max(q_targets_all, dim=1)
         # print(f'q_targets_max {q_targets_max}')
         # print(f'q_targets_all size {q_targets_all.size()}')
 
