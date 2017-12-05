@@ -43,6 +43,7 @@ class DQNBase(Algorithm):
             *net_spec['net_layer_params'],
             *net_spec['net_other_params'],
             net_spec['lr'])
+        print(self.net)
         self.target_net = nets[net_spec['net_type']](
             *net_spec['net_layer_params'],
             *net_spec['net_other_params'],
@@ -70,6 +71,7 @@ class DQNBase(Algorithm):
         self.initial_data_gather_steps = algorithm_spec['initial_data_gather_steps']
         self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
         self.training_frequency = algorithm_spec['training_frequency']
+        self.num_epoch = algorithm_spec['num_epoch']
 
         # Network update params
         self.update_type = "replace"
@@ -110,20 +112,27 @@ class DQNBase(Algorithm):
         if t % self.training_frequency == 0 and \
                 t > self.initial_data_gather_steps:
             # print("Training")
-            batch = self.agent.memory.get_batch(self.batch_size)
+            total_loss = 0.0
+            for b in range(self.num_epoch):
+                batch = self.agent.memory.get_batch(self.batch_size)
+                batch_loss = 0.0
+                ''' Package data into pytorch variables '''
+                float_data_list = [
+                    'states', 'actions', 'rewards', 'dones', 'next_states']
+                for k in float_data_list:
+                    batch[k] = Variable(torch.from_numpy(batch[k]).float())
 
-            ''' Package data into pytorch variables '''
-            float_data_list = [
-                'states', 'actions', 'rewards', 'dones', 'next_states']
-            for k in float_data_list:
-                batch[k] = Variable(torch.from_numpy(batch[k]).float())
-
-            for i in range(self.training_iters_per_batch):
-                q_targets = self.compute_q_target_values(batch)
-                y = Variable(q_targets)
-                loss = self.net.training_step(batch['states'], y)
-                # print(f'loss {loss.data[0]}')
-            return loss.data[0]
+                for i in range(self.training_iters_per_batch):
+                    q_targets = self.compute_q_target_values(batch)
+                    y = Variable(q_targets)
+                    loss = self.net.training_step(batch['states'], y)
+                    batch_loss += loss.data[0]
+                    # print(f'loss {loss.data[0]}')
+                batch_loss /= self.training_iters_per_batch
+                # print(f'batch_loss {batch_loss}')
+                total_loss += batch_loss
+            # print(f'total_loss {total_loss}')
+            return total_loss
         else:
             # print("NOT training")
             return None
@@ -150,7 +159,7 @@ class DQNBase(Algorithm):
         '''Update target net with current net'''
         if self.update_type == "replace":
             if t % self.update_frequency == 0:
-                print("Updating net by replacing")
+                # print("Updating net by replacing")
                 self.target_net = copy.deepcopy(self.net)
         elif self.update_type == "polyak":
             # print("Updating net by averaging")
@@ -165,7 +174,7 @@ class DQNBase(Algorithm):
 
 
 class DQN(DQNBase):
-
+    # TODO: Check this is working
     def __init__(self, agent):
         super(DQN, self).__init__(agent)
 
@@ -175,14 +184,20 @@ class DQN(DQNBase):
         self.act_select_net = self.target_net
         self.eval_net = self.target_net
         # Network update params
-        algorithm_spec = self.agent.spec['algorithm']
-        self.update_type = algorithm_spec['update_type']
-        self.update_frequency = algorithm_spec['update_frequency']
-        self.polyak_weight = algorithm_spec['polyak_weight']
+        net_spec = self.agent.spec['net']
+        self.update_type = net_spec['network_update_type']
+        self.update_frequency = net_spec['network_update_frequency']
+        self.polyak_weight = net_spec['network_update_weight']
+        print("Network update: {}, type: {}, frequency: weight: {}",
+            self.update_type, self.update_frequency, self.polyak_weight)
 
+    def update(self):
+        super(DQN, self).update()
+        self.act_select_net = self.target_net
+        self.eval_net = self.target_net
 
 class DoubleDQN(DQNBase):
-
+    # TODO: Check this is working
     def __init__(self, agent):
         super(DoubleDQN, self).__init__(agent)
 
@@ -192,7 +207,12 @@ class DoubleDQN(DQNBase):
         self.act_select_net = self.net
         self.eval_net = self.target_net
         # Network update params
-        algorithm_spec = self.agent.spec['algorithm']
-        self.update_type = algorithm_spec['update_type']
-        self.update_frequency = algorithm_spec['update_frequency']
-        self.polyak_weight = algorithm_spec['polyak_weight']
+        net_spec = self.agent.spec['net']
+        self.update_type = net_spec['network_update_type']
+        self.update_frequency = net_spec['network_update_frequency']
+        self.polyak_weight = net_spec['network_update_weight']
+
+    def update(self):
+        super(DoubleDQN, self).update()
+        self.act_select_net = self.net
+        self.eval_net = self.target_net

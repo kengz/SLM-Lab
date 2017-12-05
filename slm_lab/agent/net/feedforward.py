@@ -16,7 +16,7 @@ class MLPNet(nn.Module):
                  out_dim,
                  lr=0.01,
                  optim=optim.Adam,
-                 loss_fn=F.smooth_l1_loss,
+                 loss_fn=F.mse_loss,
                  clamp_grad=False):
         '''
         in_dim: dimension of the inputs
@@ -26,7 +26,7 @@ class MLPNet(nn.Module):
         loss_fn: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient to + / - 1
         @example:
-        net = MLPNet(1000, [512, 256, 128], 10, optim.Adam, nn.SmoothL1Loss)
+        net = MLPNet(1000, [512, 256, 128], 10, optim.Adam, F.mse_loss)
         '''
         super(MLPNet, self).__init__()
         self.in_dim = in_dim
@@ -47,11 +47,12 @@ class MLPNet(nn.Module):
         else:
             self.out_layer = nn.Linear(in_dim, out_dim)
         self.num_hid_layers = len(self.hid_layers)
-        
+
         # TODO allow proper passing of optim arguments like lr, momentum.
         # TODO propagate pattern to other nets one this is done
         self.optim = optim(self.parameters(), lr=lr)
         self.loss_fn = loss_fn
+        print(self.loss_fn, self.optim)
         self.clamp_grad = clamp_grad
         self.init_params()
 
@@ -93,11 +94,12 @@ class MLPNet(nn.Module):
         Sometimes the trainable params tests pass (see nn_test.py), other times they dont.
         Biases are all set to 0.01
         '''
-        initrange = 0.2
+        initrange = 0.1
         biasinit = 0.01
         lin_layers = self.hid_layers + list([self.out_layer])
         for layer in lin_layers:
-            layer.weight.data.uniform_(-initrange, initrange)
+            # layer.weight.data.uniform_(-initrange, initrange)
+            torch.nn.init.xavier_uniform(layer.weight.data)
             layer.bias.data.fill_(biasinit)
 
     def gather_trainable_params(self):
