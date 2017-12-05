@@ -12,8 +12,10 @@ df = pd.DataFrame({
 })
 
 fig = viz.plot_area(df, ['x', 'y'])
+fig = viz.plot_area(df, ['x'], y2_col=['y'])
 fig = viz.plot_area(df, ['x', 'y'], stack=True)
 fig = viz.plot_bar(df, ['y', 'x'])
 fig = viz.plot_line(df, ['y', 'x'], save=False)
+fig = viz.plot_line(df, ['x'], y2_col=['y'])
 fig = viz.plot_scatter(df, ['y', 'x'])
 fig = viz.plot_histogram(df, ['y'])
