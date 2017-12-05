@@ -67,6 +67,8 @@ class OpenAIEnv:
         self.ab_proj = self.env_space.e_ab_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
         self.u_env = gym.make(self.name)
+        self.max_timestep = self.max_timestep or self.u_env.spec.tags.get(
+            'wrapper_config.TimeLimit.max_episode_steps')
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
