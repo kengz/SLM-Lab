@@ -75,7 +75,7 @@ class Session:
                 [rewards, total_rewards, loss, explore_var])
             if bool(done_space):
                 break
-        logger.info(f'total_rewards {total_rewards}')
+        logger.info(f'epi {self.aeb_space.clock["e"]}, total_rewards {total_rewards}')
         # TODO compose episode data properly with monitor
         episode_data = pd.DataFrame(
             episode_data_list, columns=['rewards', 'total_rewards', 'loss', 'explore_var'])
@@ -88,15 +88,29 @@ class Session:
             logger.debug(f'episode {e}')
             episode_data = self.run_episode()
             data_list.append([
-                episode_data['total_rewards'].sum(),
+                episode_data['total_rewards'].max(),  # last
                 episode_data['loss'].mean(),
-                episode_data['explore_var'].min(),
+                episode_data['explore_var'].max(),
             ])
         # TODO tmp hack. fix with monitor data later
         data = pd.DataFrame(
             data_list, columns=['total_rewards', 'loss', 'explore_var'])
-        fig = viz.plot_line(data, ['total_rewards', 'explore_var'], save=False, draw=True)
-        fig_2 = viz.plot_line(data, ['loss'], save=False, draw=True)
+        fig1 = viz.plot_line(data, ['total_rewards'],
+                             y2_col=['explore_var'], draw=False)
+        fig2 = viz.plot_line(data, ['loss'], draw=False)
+        fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
+        fig.append_trace(fig1.data[0], 1, 1)
+        fig.append_trace(fig1.data[1], 2, 1)
+        fig.append_trace(fig2.data[0], 3, 1)
+        fig.layout['yaxis1'].update(fig1.layout['yaxis'])
+        fig.layout['yaxis2'].update(fig1.layout['yaxis2'])
+        fig.layout['yaxis1'].update(domain=[0.55, 1])
+        fig.layout['yaxis3'].update(fig2.layout['yaxis'])
+        fig.layout['yaxis3'].update(domain=[0, 0.45])
+        fig.layout.update(_.pick(fig1.layout, ['legend']))
+        fig.layout.update(title='total_rewards vs time', width=500, height=400)
+        viz.py.iplot(fig)
+
         self.close()
         # TODO session data checker method
         return self.data

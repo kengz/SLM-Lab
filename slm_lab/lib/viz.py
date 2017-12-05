@@ -9,6 +9,7 @@ import pydash as _
 from plotly import (
     graph_objs as go,
     offline as py,
+    tools,
 )
 from slm_lab.lib import util
 from slm_lab import config
@@ -74,18 +75,18 @@ def create_layout(
     '''simplified method to generate Layout'''
     layout = go.Layout(
         title=title,
-        legend=dict(x=0.0, y=-0.4, orientation='h'),
+        legend=dict(x=0.0, y=-0.25, orientation='h'),
         yaxis=dict(rangemode='tozero', title=y_title),
         xaxis=dict(type=x_type, title=x_title),
         width=width, height=height,
-        margin=go.Margin(l=70, r=70, t=70, b=70),
+        margin=go.Margin(l=60, r=60, t=60, b=60),
     )
     layout.update(layout_kwargs)
     return layout
 
 
 def plot_go(
-        df, y_col=None, x_col='index',
+        df, y_col=None, x_col='index', y2_col=None,
         title=None, y_title=None, x_title=None, x_type=None,
         legend_name=None, width=500, height=350, draw=True,
         save=False, filename=None,
@@ -104,20 +105,37 @@ def plot_go(
 
     label = create_label(y_col, x_col, title, y_title, x_title, legend_name)
     layout = create_layout(
-        x_type=x_type, width=width, height=height,
-        layout_kwargs=layout_kwargs,
+        x_type=x_type, width=width, height=height, layout_kwargs=layout_kwargs,
         **_.pick(label, ['title', 'y_title', 'x_title']))
-
     y_col_list, x_col_list = label['y_col_list'], label['x_col_list']
-    trace_num = max(len(y_col_list), len(y_col_list))
+
+    if y2_col is not None:
+        label2 = create_label(
+            y2_col, x_col, title, y_title, x_title, legend_name)
+        layout.update(dict(yaxis2=dict(
+            rangemode='tozero', title=label2['y_title'],
+            side='right', overlaying='y1', anchor='x1',
+        )))
+        y2_col_list, x_col_list = label2['y_col_list'], label2['x_col_list']
+        label2_legend_name_list = label2['legend_name_list']
+    else:
+        y2_col_list = []
+        label2_legend_name_list = []
+
+    combo_y_col_list = y_col_list + y2_col_list
+    combo_legend_name_list = label[
+        'legend_name_list'] + label2_legend_name_list
+    trace_num = max(len(combo_y_col_list), len(x_col_list))
     data = []
     for idx in range(trace_num):
-        y_c, x_c = _.get(y_col_list, idx), _.get(x_col_list, idx)
+        y_c, x_c = _.get(combo_y_col_list, idx), _.get(x_col_list, idx)
         df_y, df_x = _.get(df, y_c), _.get(df, x_c)
         trace = _.get(go, trace_class)(
             y=df_y, x=df_x,
-            name=label['legend_name_list'][idx])
+            name=combo_legend_name_list[idx])
         trace.update(trace_kwargs)
+        if idx >= len(y_col_list):
+            trace.update(dict(yaxis='y2', xaxis='x1'))
         data.append(trace)
 
     figure = go.Figure(data=data, layout=layout)
@@ -137,7 +155,8 @@ def plot_area(
         df, y_col = args[:2]
         stack_df = stack_cumsum(df, y_col)
         args = (stack_df,) + args[1:]
-    trace_kwargs = _.merge(dict(fill=fill), trace_kwargs)
+    trace_kwargs = _.merge(
+        dict(fill=fill, mode='lines', line=dict(width=1)), trace_kwargs)
     layout_kwargs = _.merge(dict(), layout_kwargs)
     return plot_go(
         *args, trace_class='Scatter',
@@ -163,7 +182,8 @@ def plot_line(
     trace_kwargs=None, layout_kwargs=None,
         **kwargs):
     '''Plot line from df'''
-    trace_kwargs = _.merge(dict(), trace_kwargs)
+    trace_kwargs = _.merge(
+        dict(mode='lines', line=dict(width=1)), trace_kwargs)
     layout_kwargs = _.merge(dict(), layout_kwargs)
     return plot_go(
         *args, trace_class='Scatter',
