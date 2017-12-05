@@ -75,7 +75,7 @@ class Session:
                 [rewards, total_rewards, loss, explore_var])
             if bool(done_space):
                 break
-        logger.info(f'total_rewards {total_rewards}')
+        logger.info(f'epi {self.aeb_space.clock["e"]}, total_rewards {total_rewards}')
         # TODO compose episode data properly with monitor
         episode_data = pd.DataFrame(
             episode_data_list, columns=['rewards', 'total_rewards', 'loss', 'explore_var'])
@@ -88,9 +88,9 @@ class Session:
             logger.debug(f'episode {e}')
             episode_data = self.run_episode()
             data_list.append([
-                episode_data['total_rewards'].sum(),
+                episode_data['total_rewards'].max(),  # last
                 episode_data['loss'].mean(),
-                episode_data['explore_var'].min(),
+                episode_data['explore_var'].max(),
             ])
         # TODO tmp hack. fix with monitor data later
         data = pd.DataFrame(
