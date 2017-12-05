@@ -12,6 +12,8 @@ def main():
     # spec = spec_util.get('dqn.json', 'dqn_standard_case')
     spec = spec_util.get('dqn.json', 'dqn_3dball')
     # spec = spec_util.get('dqn.json', 'dqn_gridworld')
+    # spec = spec_util.get('dqn.json', 'dqn_cartpole')
+    # spec = spec_util.get('dqn.json', 'dqn_lunar')
     trial = Trial(spec)
     trial_data = trial.run()
 

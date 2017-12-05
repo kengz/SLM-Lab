@@ -21,6 +21,11 @@ jobs:
           - v1-dependencies-{{ checksum "environment.yml" }}
 
       - run:
+          name: Install apt-get packages for gym
+          command: |
+            sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig
+
+      - run:
           name: Install NodeJS dependencies
           command: |
             if which yarn >/dev/null; then
@@ -96,6 +101,10 @@ jobs:
           keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
 
+      - run:
+          name: Install apt-get packages for gym
+          command: |
+            sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig
       - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:
           name: Run Python tests
