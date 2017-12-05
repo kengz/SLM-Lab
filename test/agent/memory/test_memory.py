@@ -112,10 +112,10 @@ class TestMemory:
         experiences = test_memory[2]
         for e in experiences:
             memory.add_experience(*e)
-        _ = memory.get_batch(batch_size)
+        _batch = memory.get_batch(batch_size)
         old_idx = deepcopy(memory.current_batch_indices).tolist()
         for i in range(5):
-            _ = memory.get_batch(batch_size)
+            _batch = memory.get_batch(batch_size)
             new_idx = memory.current_batch_indices.tolist()
             assert old_idx != new_idx
             old_idx = deepcopy(memory.current_batch_indices).tolist()

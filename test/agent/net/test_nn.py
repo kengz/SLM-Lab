@@ -77,7 +77,7 @@ class TestNet:
         loss = test_nets[3]
         steps = test_nets[4]
         for i in range(steps):
-            _ = net.training_step(x, y)
+            net.training_step(x, y)
         flag = True
         for p in net.parameters():
             if p.grad is None:
