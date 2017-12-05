@@ -26,7 +26,15 @@ _(Work In Progress)_ An experimentation framework for Reinforcement Learning usi
     cd ../SLM-Lab/
     ```
 
-4.  Setup the created config files:
+4. Install OpenAI Gym (gym is already installed in step 2; below are system dependencies):
+    ```shell
+    # Linux
+    apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig
+    # MacOS
+    brew install cmake boost boost-python sdl2 swig wget
+    ```
+
+5.  Setup the created config files:
     -   sign up for a free [Plotly account](https://plot.ly/) and get the API key to put in the config files below.
     -   `config/default.json` for local development, used when `grunt` is ran without a production flag.
     -   `config/production.json` for production lab run when `grunt -prod` is ran with the production flag `-prod`.
