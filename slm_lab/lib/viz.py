@@ -74,11 +74,11 @@ def create_layout(
     '''simplified method to generate Layout'''
     layout = go.Layout(
         title=title,
-        legend=dict(x=0.0, y=-0.4, orientation='h'),
+        legend=dict(x=0.0, y=-0.25, orientation='h'),
         yaxis=dict(rangemode='tozero', title=y_title),
         xaxis=dict(type=x_type, title=x_title),
         width=width, height=height,
-        margin=go.Margin(l=70, r=70, t=70, b=70),
+        margin=go.Margin(l=70, r=50, t=60, b=60),
     )
     layout.update(layout_kwargs)
     return layout
@@ -137,7 +137,8 @@ def plot_area(
         df, y_col = args[:2]
         stack_df = stack_cumsum(df, y_col)
         args = (stack_df,) + args[1:]
-    trace_kwargs = _.merge(dict(fill=fill), trace_kwargs)
+    trace_kwargs = _.merge(
+        dict(fill=fill, mode='lines', line=dict(width=1)), trace_kwargs)
     layout_kwargs = _.merge(dict(), layout_kwargs)
     return plot_go(
         *args, trace_class='Scatter',
@@ -163,7 +164,8 @@ def plot_line(
     trace_kwargs=None, layout_kwargs=None,
         **kwargs):
     '''Plot line from df'''
-    trace_kwargs = _.merge(dict(), trace_kwargs)
+    trace_kwargs = _.merge(
+        dict(mode='lines', line=dict(width=1)), trace_kwargs)
     layout_kwargs = _.merge(dict(), layout_kwargs)
     return plot_go(
         *args, trace_class='Scatter',
