@@ -63,7 +63,7 @@ class Session:
             logger.debug(f'action_space {action_space}')
             (reward_space, state_space,
              done_space) = self.env_space.step(action_space)
-            rewards = np.sum(reward_space.data_proj)
+            rewards = np.sum(_.flatten_deep(reward_space.data_proj))
             total_rewards += rewards
             logger.debug(
                 f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')

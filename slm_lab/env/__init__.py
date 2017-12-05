@@ -222,12 +222,13 @@ class EnvSpace:
         self.aeb_space = aeb_space
         aeb_space.env_space = self
         self.e_ab_proj = aeb_space.e_ab_proj
-        try:
-            self.envs = [Env(_.merge(spec['meta'].copy(), e_spec), self, e)
-                         for e, e_spec in enumerate(spec['env'])]
-        except Exception as e:
-            self.envs = [OpenAIEnv(_.merge(spec['meta'].copy(), e_spec), self, e)
-                         for e, e_spec in enumerate(spec['env'])]
+        self.envs = []
+        for e, e_spec in enumerate(spec['env']):
+            try:
+                env = Env(_.merge(spec['meta'].copy(), e_spec), self, e)
+            except Exception:
+                env = OpenAIEnv(_.merge(spec['meta'].copy(), e_spec), self, e)
+            self.envs.append(env)
         self.max_timestep = np.amax([env.max_timestep for env in self.envs])
 
     def post_body_init(self):
