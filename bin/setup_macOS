@@ -18,7 +18,7 @@ else
 fi
 
 echo "--- Installing brew system dependencies ---"
-hb_list=(cmake boost boost-python wget curl)
+hb_list=(cmake boost boost-python sdl2 swig wget curl)
 for item in "${hb_list[@]}"; do
   brew info "${item}" | grep --quiet "Not installed" && brew install "${item}"
 done
