@@ -9,6 +9,7 @@ import pydash as _
 from plotly import (
     graph_objs as go,
     offline as py,
+    tools,
 )
 from slm_lab.lib import util
 from slm_lab import config
