@@ -35,37 +35,34 @@ class DQNBase(Algorithm):
         net_spec = self.agent.spec['net']
         net_spec['net_layer_params'][0] = state_dim
         net_spec['net_layer_params'][-1] = action_dim
+        # TODO expose optim and other params of net to interface
         self.net = nets[net_spec['net_type']](
             *net_spec['net_layer_params'],
             *net_spec['net_other_params'])
+        # TODO adjust learning rate http://pytorch.org/docs/master/optim.html#how-to-adjust-learning-rate
+        # TODO hackish optimizer learning rate, also it fails for SGD wtf
+        for param_group in self.net.optim.param_groups:
+            param_group['lr'] = net_spec['lr']
         # TODO three nets for different part of Q function
         # In base algorithm should all be pointer to the same net - then update compute q target values and action functions
-        self.batch_size = net_spec['batch_size']
-        self.gamma = net_spec['gamma']
+        # TODO other params from spec did not get used yet
 
         algorithm_spec = self.agent.spec['algorithm']
+        # TODO use module get attr for this instead of dict
         self.action_selection = act_fns[algorithm_spec['action_selection']]
+        self.gamma = algorithm_spec['gamma']
 
         # explore_var is epsilon, tau or etc.
         self.explore_var_start = algorithm_spec['explore_var_start']
         self.explore_var_end = algorithm_spec['explore_var_end']
         self.explore_var = self.explore_var_start
         self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
-        self.training_iters_per_batch = 1
-        self.training_frequency = 1
+        self.num_epoch = algorithm_spec['num_epoch']
+        self.training_frequency = algorithm_spec['training_frequency']
+        self.batch_size = algorithm_spec['batch_size']
 
     def compute_q_target_values(self, batch):
         # Make future reward 0 if the current state is done
-        float_data_list = [
-            'states', 'actions', 'rewards', 'dones', 'next_states']
-        for k in float_data_list:
-            batch[k] = Variable(torch.from_numpy(batch[k]).float())
-        # print('batch')
-        # print(batch['states'])
-        # print(batch['actions'])
-        # print(batch['rewards'])
-        # print(batch['dones'])
-        # print(1 - batch['dones'])
         q_vals = self.net.wrap_eval(batch['states'])
         # print(f'q_vals {q_vals}')
         q_targets_all = batch['rewards'].data + self.gamma * \
@@ -89,12 +86,25 @@ class DQNBase(Algorithm):
     def train(self):
         # TODO Fix for training iters, docstring
         t = self.agent.agent_space.aeb_space.clock['t']
-        if t % self.training_frequency == 0:
+        # TODO min timestep properly
+        if t > 5 and t % self.training_frequency == 0:
             batch = self.agent.memory.get_batch(self.batch_size)
-            for i in range(self.training_iters_per_batch):
+            # TODO do conversion properly, maybe do a pytorch get_batch? nah, do a util method of batch to variable_batch
+            float_data_list = [
+                'states', 'actions', 'rewards', 'dones', 'next_states']
+            for k in float_data_list:
+                batch[k] = Variable(torch.from_numpy(batch[k]).float())
+            # print('batch')
+            # print(batch['states'])
+            # print(batch['actions'])
+            # print(batch['rewards'])
+            # print(batch['dones'])
+            # print(1 - batch['dones'])
+            for epoch in range(self.num_epoch):
                 q_targets = self.compute_q_target_values(batch)
                 y = Variable(q_targets)
                 loss = self.net.training_step(batch['states'], y)
+                # TODO get avg loss
                 # print(f'loss {loss.data[0]}\n')
             return loss.data[0]
         else:
