@@ -68,6 +68,7 @@ dependencies:
 - tk=8.5.19=2
 - tornado=4.5.2=py36_0
 - traitlets=4.3.2=py36_0
+- ujson=1.35=py36_0
 - wcwidth=0.1.7=py36_0
 - wheel=0.30.0=py_1
 - xlrd=1.1.0
@@ -80,12 +81,12 @@ dependencies:
 - plotly=2.0.11=py36_0
 - requests=2.14.2=py36_0
 - scipy=0.19.1=np113py36_0
-- ujson=1.35=py36_0
 - pytorch=0.2.0
 - torchvision=0.1.9
 - pip:
   - backports.functools-lru-cache==1.4
   - bleach==1.5.0
+  - box2d-kengz==2.3.3
   - colorlover==0.2.1
   - et-xmlfile==1.0.1
   - gym[all]==0.9.4
