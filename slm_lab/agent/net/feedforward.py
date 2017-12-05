@@ -41,10 +41,13 @@ class MLPNet(nn.Module):
             setattr(self, 'linear_' + str(i), l)
             self.hid_layers.append(l)
         if len(hid_dim) > 0:
+            # TODO parametrize output layer activation too
             self.out_layer = nn.Linear(hid_dim[-1], out_dim)
         else:
             self.out_layer = nn.Linear(in_dim, out_dim)
         self.num_hid_layers = len(self.hid_layers)
+        # TODO allow proper passing of optim arguments like lr, momentum.
+        # TODO propagate pattern to other nets one this is done
         self.optim = optim(self.parameters())
         self.loss_fn = loss_fn
         self.clamp_grad = clamp_grad
@@ -52,8 +55,9 @@ class MLPNet(nn.Module):
 
     def forward(self, x):
         '''The feedforward step'''
+        # TODO parametrize the activation function choice
         for i in range(self.num_hid_layers):
-            x = F.relu((self.hid_layers[i](x)))
+            x = F.sigmoid((self.hid_layers[i](x)))
         x = self.out_layer(x)
         return x
 
