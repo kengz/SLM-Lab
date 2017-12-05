@@ -18,7 +18,7 @@
         "net_layer_params": [null, [8], null],
         "net_other_params": [],
         "batch_size": 16,
-        "num_epoch": 5,
+        "training_iters_per_batch": 5,
         "training_frequency": 1,
         "network_update_type": "complete",
         "network_update_weight": 0,
@@ -96,7 +96,8 @@
         "training_frequency" : 1,
         "update_type" : "replace",
         "update_frequency" : 500,
-        "polyak_weight" : 0.99
+        "polyak_weight" : 0.99,
+        "gamma": 0.99,
       },
       "memory": {
         "name": "Replay",
@@ -111,7 +112,6 @@
         "network_update_type": "complete",
         "network_update_weight": 0,
         "network_update_frequency": 1.0,
-        "gamma": 0.99,
         "lr" : 0.001
       }
     }],
@@ -188,7 +188,8 @@
         "action_selection": "epsilon_greedy",
         "explore_var_start": 1.0,
         "explore_var_end": 0.1,
-        "explore_anneal_epi": 15
+        "explore_anneal_epi": 15,
+        "gamma": 0.99
       },
       "memory": {
         "name": "Replay",
@@ -204,7 +205,6 @@
         "network_update_type": "complete",
         "network_update_weight": 0,
         "network_update_frequency": 1.0,
-        "gamma": 0.99
       }
     }],
     "env": [{
