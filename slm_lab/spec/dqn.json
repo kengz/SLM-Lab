@@ -64,7 +64,7 @@
         "net_other_params": [],
         "batch_size": 16,
         "gamma": 0.99,
-        "lr": 0.001
+        "optim_param": {"lr": 0.02}
       }
     }],
     "env": [{
@@ -112,7 +112,7 @@
         "network_update_type": "complete",
         "network_update_weight": 0,
         "network_update_frequency": 1.0,
-        "lr": 0.001
+        "optim_param": {"lr": 0.02}
       }
     }],
     "env": [{
@@ -164,7 +164,7 @@
         "network_update_type": "replace",
         "network_update_weight": 0,
         "network_update_frequency": 1.0,
-        "lr": 0.02,
+        "optim_param": {"lr": 0.02},
         "batch_size": 16
       }
     }],

@@ -1,13 +1,14 @@
-import sys
 import numpy as np
+import pydash as _
+import sys
 import torch
-import copy
-from torch.autograd import Variable
-from slm_lab.agent.algorithm.base import Algorithm
+from copy import deepcopy
 from slm_lab.agent.algorithm.algorithm_util import act_fns, update_fns
+from slm_lab.agent.algorithm.base import Algorithm
+from slm_lab.agent.memory import Replay
 from slm_lab.agent.net import nets
 from slm_lab.agent.net.common import *
-from slm_lab.agent.memory import Replay
+from torch.autograd import Variable
 
 
 class DQNBase(Algorithm):
@@ -38,16 +39,17 @@ class DQNBase(Algorithm):
         net_spec = self.agent.spec['net']
         net_spec['net_layer_params'][0] = state_dim
         net_spec['net_layer_params'][-1] = action_dim
-        # TODO expose optim and other params of net to interface
+        # TODO careful with positional param falling into wrong place, for safety use explicit dicts with keys instead of list for it
+        # what are some examples of net_other_params?
         self.net = nets[net_spec['net_type']](
             *net_spec['net_layer_params'],
-            *net_spec['net_other_params'],
-            net_spec['lr'])
+            # *net_spec['net_other_params'],
+            optim_param=_.get(net_spec, 'optim_param', {}))
         print(self.net)
         self.target_net = nets[net_spec['net_type']](
             *net_spec['net_layer_params'],
-            *net_spec['net_other_params'],
-            net_spec['lr'])
+            # *net_spec['net_other_params'],
+            optim_param=_.get(net_spec, 'optim_param', {}))
         self.act_select_net = self.net
         self.eval_net = self.net
         self.batch_size = net_spec['batch_size']
@@ -157,7 +159,7 @@ class DQNBase(Algorithm):
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
                 # print('Updating net by replacing')
-                self.target_net = copy.deepcopy(self.net)
+                self.target_net = deepcopy(self.net)
         elif self.update_type == 'polyak':
             # print('Updating net by averaging')
             avg_params = self.polyak_weight * flatten_params(self.target_net) + \

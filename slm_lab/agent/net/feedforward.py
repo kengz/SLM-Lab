@@ -14,7 +14,7 @@ class MLPNet(nn.Module):
                  in_dim,
                  hid_dim,
                  out_dim,
-                 lr=0.01,
+                 optim_param,
                  optim=optim.Adam,
                  loss_fn=F.mse_loss,
                  clamp_grad=False):
@@ -48,9 +48,8 @@ class MLPNet(nn.Module):
             self.out_layer = nn.Linear(in_dim, out_dim)
         self.num_hid_layers = len(self.hid_layers)
 
-        # TODO allow proper passing of optim arguments like lr, momentum.
         # TODO propagate pattern to other nets one this is done
-        self.optim = optim(self.parameters(), lr=lr)
+        self.optim = optim(self.parameters(), **optim_param)
         self.loss_fn = loss_fn
         print(self.loss_fn, self.optim)
         self.clamp_grad = clamp_grad
