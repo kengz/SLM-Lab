@@ -65,13 +65,9 @@
         "net_type": "MLP",
         "net_layer_params": [null, [], null],
         "net_other_params": [],
-        "hid_layers_activation": "sigmoid",
-        "out_layer_activation": "linear",
-        "network_update_type": "replace",
-        "network_update_weight": 0,
-        "network_update_frequency": 1.0,
-        "lr": 0.01,
-        "batch_size": 32,
+        "batch_size": 16,
+        "gamma": 0.99,
+        "optim_param": {"lr": 0.02}
       }
     }],
     "env": [{
@@ -98,13 +94,13 @@
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
         "explore_anneal_epi": 20,
-        "initial_data_gather_steps": 50,
-        "training_iters_per_batch" : 10,
-        "training_frequency" : 1,
-        "update_type" : "replace",
-        "update_frequency" : 500,
-        "polyak_weight" : 0.99,
-        "gamma": 0.99,
+        "training_min_timestep": 50,
+        "training_iters_per_batch": 10,
+        "training_frequency": 1,
+        "update_type": "replace",
+        "update_frequency": 500,
+        "polyak_weight": 0.99,
+        "gamma": 0.99
       },
       "memory": {
         "name": "Replay",
@@ -119,7 +115,7 @@
         "network_update_type": "complete",
         "network_update_weight": 0,
         "network_update_frequency": 1.0,
-        "lr" : 0.001
+        "optim_param": {"lr": 0.02}
       }
     }],
     "env": [{
@@ -152,10 +148,10 @@
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
         "explore_anneal_epi": 10,
+        "training_min_timestep": 10,
         "training_frequency": 1,
-        "initial_data_gather_steps" : 10,
-        "training_iters_per_batch" : 3,
-        "num_epoch" : 5
+        "training_epoch": 5,
+        "training_iters_per_batch": 3
 
       },
       "memory": {
@@ -171,8 +167,8 @@
         "network_update_type": "replace",
         "network_update_weight": 0,
         "network_update_frequency": 1.0,
-        "lr": 0.02,
-        "batch_size": 16,
+        "optim_param": {"lr": 0.02},
+        "batch_size": 16
       }
     }],
     "env": [{
@@ -210,7 +206,7 @@
         "net_layer_params": [null, [16, 8], null],
         "net_other_params": [],
         "batch_size": 16,
-        "num_epoch": 5,
+        "training_epoch": 5,
         "training_frequency": 1,
         "network_update_type": "complete",
         "network_update_weight": 0,
