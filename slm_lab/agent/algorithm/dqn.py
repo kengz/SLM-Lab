@@ -50,6 +50,10 @@ class DQNBase(Algorithm):
         self.action_policy_net = self.net
         self.eval_net = self.net
         self.batch_size = net_spec['batch_size']
+        # Default network update params for base
+        self.update_type = 'replace'
+        self.update_frequency = 1
+        self.polyak_weight = 0.9
 
         # TODO adjust learning rate http://pytorch.org/docs/master/optim.html#how-to-adjust-learning-rate
         # TODO hackish optimizer learning rate, also it fails for SGD wtf
@@ -69,11 +73,6 @@ class DQNBase(Algorithm):
         self.training_frequency = algorithm_spec['training_frequency']
         self.training_epoch = algorithm_spec['training_epoch']
         self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
-
-        # Network update params
-        self.update_type = 'replace'
-        self.update_frequency = 1
-        self.polyak_weight = 0.9
 
     def compute_q_target_values(self, batch):
         q_vals = self.net.wrap_eval(batch['states'])
@@ -181,9 +180,9 @@ class DQN(DQNBase):
         self.eval_net = self.target_net
         # Network update params
         net_spec = self.agent.spec['net']
-        self.update_type = net_spec['network_update_type']
-        self.update_frequency = net_spec['network_update_frequency']
-        self.polyak_weight = net_spec['network_update_weight']
+        self.update_type = net_spec['update_type']
+        self.update_frequency = net_spec['update_frequency']
+        self.polyak_weight = net_spec['polyak_weight']
         print(
             f'Network update: type: {self.update_type}, frequency: {self.update_frequency}, weight: {self.polyak_weight}')
 
@@ -205,9 +204,9 @@ class DoubleDQN(DQNBase):
         self.eval_net = self.target_net
         # Network update params
         net_spec = self.agent.spec['net']
-        self.update_type = net_spec['network_update_type']
-        self.update_frequency = net_spec['network_update_frequency']
-        self.polyak_weight = net_spec['network_update_weight']
+        self.update_type = net_spec['update_type']
+        self.update_frequency = net_spec['update_frequency']
+        self.polyak_weight = net_spec['polyak_weight']
 
     def update(self):
         super(DoubleDQN, self).update()
