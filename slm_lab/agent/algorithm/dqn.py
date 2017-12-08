@@ -21,7 +21,7 @@ class DQNBase(Algorithm):
     net: instance of an slm_lab/agent/net
     memory: instance of an slm_lab/agent/memory
     batch_size: how many examples from memory to sample at each training step
-    action_selection: function (from common.py) that determines how to select actions
+    action_policy: function (from common.py) that determines how to select actions
     gamma: Real number in range [0, 1]. Determines how much to discount the future
     state_dim: dimension of the state space
     action_dim: dimensions of the action space
@@ -59,7 +59,7 @@ class DQNBase(Algorithm):
 
         algorithm_spec = self.agent.spec['algorithm']
         # TODO use module get attr for this instead of dict
-        self.action_selection = act_fns[algorithm_spec['action_selection']]
+        self.action_policy = act_fns[algorithm_spec['action_policy']]
         self.gamma = algorithm_spec['gamma']
 
         # explore_var is epsilon, tau or etc.
@@ -138,7 +138,7 @@ class DQNBase(Algorithm):
 
     def body_act_discrete(self, body, body_state):
         # TODO can handle identical bodies now; to use body_net for specific body.
-        return self.action_selection(
+        return self.action_policy(
             self.net,
             body_state,
             self.explore_var)

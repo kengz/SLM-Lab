@@ -4,7 +4,7 @@
       "name": "VanillaDQN",
       "algorithm": {
         "name": "DQNBase",
-        "action_selection": "epsilon_greedy",
+        "action_policy": "epsilon_greedy",
         "explore_var_start": 1.0,
         "explore_var_end": 0.1,
         "explore_anneal_epi": 30
@@ -46,7 +46,7 @@
       "name": "VanillaDQN",
       "algorithm": {
         "name": "DQNBase",
-        "action_selection": "epsilon_greedy",
+        "action_policy": "epsilon_greedy",
         "gamma": 0.95,
         "explore_var_start": 1.0,
         "explore_var_end": 0.1,
@@ -90,7 +90,7 @@
       "name": "StandardDQN",
       "algorithm": {
         "name": "DoubleDQN",
-        "action_selection": "boltzmann",
+        "action_policy": "boltzmann",
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
         "explore_anneal_epi": 20,
@@ -143,7 +143,7 @@
       "name": "VanillaDQN",
       "algorithm": {
         "name": "DQNBase",
-        "action_selection": "boltzmann",
+        "action_policy": "boltzmann",
         "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
@@ -191,7 +191,7 @@
       "name": "VanillaDQN",
       "algorithm": {
         "name": "DQNBase",
-        "action_selection": "epsilon_greedy",
+        "action_policy": "epsilon_greedy",
         "explore_var_start": 1.0,
         "explore_var_end": 0.1,
         "explore_anneal_epi": 15,
