@@ -44,12 +44,12 @@ class DQNBase(Algorithm):
         self.net = nets[net_spec['net_type']](
             *net_spec['net_layer_params'],
             # *net_spec['net_other_params'],
-            optim_param=_.get(net_spec, 'optim_param', {}))
+            optim_param=_.get(net_spec, 'optim_param'))
         print(self.net)
         self.target_net = nets[net_spec['net_type']](
             *net_spec['net_layer_params'],
             # *net_spec['net_other_params'],
-            optim_param=_.get(net_spec, 'optim_param', {}))
+            optim_param=_.get(net_spec, 'optim_param'))
         self.act_select_net = self.net
         self.eval_net = self.net
         self.batch_size = net_spec['batch_size']

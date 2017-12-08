@@ -14,7 +14,7 @@ class MLPNet(nn.Module):
                  in_dim,
                  hid_dim,
                  out_dim,
-                 optim_param,
+                 optim_param=None,
                  optim=optim.Adam,
                  loss_fn=F.mse_loss,
                  clamp_grad=False):
@@ -38,9 +38,9 @@ class MLPNet(nn.Module):
             else:
                 in_D = hid_dim[i - 1]
             out_D = hid_dim[i]
-            l = nn.Linear(in_D, out_D)
-            setattr(self, 'linear_' + str(i), l)
-            self.hid_layers.append(l)
+            lin = nn.Linear(in_D, out_D)
+            setattr(self, 'linear_' + str(i), lin)
+            self.hid_layers.append(lin)
         if len(hid_dim) > 0:
             # TODO parametrize output layer activation too
             self.out_layer = nn.Linear(hid_dim[-1], out_dim)
@@ -49,6 +49,7 @@ class MLPNet(nn.Module):
         self.num_hid_layers = len(self.hid_layers)
 
         # TODO propagate pattern to other nets one this is done
+        optim_param = optim_param or {}
         self.optim = optim(self.parameters(), **optim_param)
         self.loss_fn = loss_fn
         print(self.loss_fn, self.optim)
