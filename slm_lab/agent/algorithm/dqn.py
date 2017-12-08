@@ -61,13 +61,12 @@ class DQNBase(Algorithm):
         algorithm_spec = self.agent.spec['algorithm']
         # TODO use module get attr for this instead of dict
         self.action_policy = act_fns[algorithm_spec['action_policy']]
-        self.gamma = algorithm_spec['gamma']
-
         # explore_var is epsilon, tau or etc.
         self.explore_var_start = algorithm_spec['explore_var_start']
         self.explore_var_end = algorithm_spec['explore_var_end']
         self.explore_var = self.explore_var_start
         self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
+        self.gamma = algorithm_spec['gamma']
 
         self.training_min_timestep = algorithm_spec['training_min_timestep']
         self.training_frequency = algorithm_spec['training_frequency']

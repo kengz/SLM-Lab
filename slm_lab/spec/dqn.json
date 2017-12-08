@@ -1,13 +1,66 @@
 {
+  "dqn_spec_template": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQNBase",
+        "action_policy": "boltzmann",
+        "explore_var_start": 5.0,
+        "explore_var_end": 1.0,
+        "explore_anneal_epi": 10,
+        "gamma": 0.999,
+        "training_min_timestep": 10,
+        "training_frequency": 1,
+        "training_epoch": 5,
+        "training_iters_per_batch": 3
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 10000
+      },
+      "net": {
+        "type": "MLP",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "out_layer_activation": "linear",
+        "optim_param": {
+          "lr": 0.02
+        },
+        "batch_size": 16,
+        "update_type": "replace",
+        "update_frequency": 1.0,
+        "polyak_weight": 0
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 50,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": true
+    }
+  },
   "dqn_3dball": {
     "agent": [{
       "name": "VanillaDQN",
       "algorithm": {
         "name": "DQNBase",
-        "action_policy": "epsilon_greedy",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 30
+        "action_policy": "boltzmann",
+        "explore_var_start": 5.0,
+        "explore_var_end": 1.0,
+        "explore_anneal_epi": 10,
+        "gamma": 0.999,
+        "training_min_timestep": 10,
+        "training_frequency": 1,
+        "training_epoch": 5,
+        "training_iters_per_batch": 3
       },
       "memory": {
         "name": "Replay",
@@ -15,14 +68,16 @@
       },
       "net": {
         "type": "MLP",
-        "hid_layers": [8],
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "out_layer_activation": "linear",
+        "optim_param": {
+          "lr": 0.02
+        },
         "batch_size": 16,
-        "training_iters_per_batch": 5,
-        "training_frequency": 1,
         "update_type": "complete",
-        "polyak_weight": 0,
         "update_frequency": 1.0,
-        "gamma": 0.99
+        "polyak_weight": 0
       }
     }],
     "env": [{
@@ -46,15 +101,14 @@
       "algorithm": {
         "name": "DQNBase",
         "action_policy": "epsilon_greedy",
-        "gamma": 0.95,
         "explore_var_start": 1.0,
         "explore_var_end": 0.1,
         "explore_anneal_epi": 50,
+        "gamma": 0.95,
+        "training_min_timestep": 10,
         "training_frequency": 1,
-        "initial_data_gather_steps": 30,
-        "training_iters_per_batch": 10,
-        "num_epoch": 5
-
+        "training_epoch": 5,
+        "training_iters_per_batch": 3
       },
       "memory": {
         "name": "Replay",
@@ -62,12 +116,16 @@
       },
       "net": {
         "type": "MLP",
-        "hid_layers": [],
-        "batch_size": 16,
-        "gamma": 0.99,
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "out_layer_activation": "linear",
         "optim_param": {
           "lr": 0.02
-        }
+        },
+        "batch_size": 16,
+        "update_type": "replace",
+        "update_frequency": 1.0,
+        "polyak_weight": 0
       }
     }],
     "env": [{
@@ -80,60 +138,6 @@
     },
     "meta": {
       "max_episode": 250,
-      "max_session": 1,
-      "max_trial": 1,
-      "train_mode": true
-    }
-  },
-  "dqn_standard_case": {
-    "agent": [{
-      "name": "StandardDQN",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_policy": "boltzmann",
-        "explore_var_start": 5.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
-        "training_min_timestep": 50,
-        "training_iters_per_batch": 10,
-        "training_frequency": 1,
-        "update_type": "replace",
-        "update_frequency": 500,
-        "polyak_weight": 0.99,
-        "gamma": 0.99
-      },
-      "memory": {
-        "name": "Replay",
-        "max_size": 5000
-      },
-      "net": {
-        "type": "MLP",
-        "hid_layers": [50, 20],
-        "batch_size": 32,
-        "training_frequency": 1,
-        "update_type": "complete",
-        "polyak_weight": 0,
-        "update_frequency": 1.0,
-        "optim_param": {
-          "lr": 0.02
-        }
-      }
-    }],
-    "env": [{
-      "name": "gridworld",
-      "max_timestep": 200,
-      "unity": {
-        "gridSize": 6,
-        "numObstacles": 2,
-        "numGoals": 2
-      }
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "max_episode": 1000,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
@@ -188,58 +192,38 @@
       "train_mode": true
     }
   },
-  "dqn_lunar": {
+  "dqn_test_case": {
     "agent": [{
-      "name": "VanillaDQN",
+      "name": "DQN",
       "algorithm": {
         "name": "DQNBase",
-        "action_policy": "epsilon_greedy",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 15,
-        "gamma": 0.99
+        "action_policy": "boltzmann",
+        "explore_var_start": 5.0,
+        "explore_var_end": 1.0,
+        "explore_anneal_epi": 10,
+        "gamma": 0.999,
+        "training_min_timestep": 10,
+        "training_frequency": 1,
+        "training_epoch": 5,
+        "training_iters_per_batch": 3
       },
       "memory": {
         "name": "Replay",
-        "max_size": 5000
+        "max_size": 10000
       },
       "net": {
         "type": "MLP",
-        "hid_layers": [16, 8],
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "out_layer_activation": "linear",
+        "optim_param": {
+          "lr": 0.02
+        },
         "batch_size": 16,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "update_type": "complete",
-        "polyak_weight": 0,
-        "update_frequency": 1.0
+        "update_type": "replace",
+        "update_frequency": 1.0,
+        "polyak_weight": 0
       }
-    }],
-    "env": [{
-      "name": "LunarLander-v2",
-      "max_timestep": null
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "max_episode": 400,
-      "max_session": 1,
-      "max_trial": 1,
-      "train_mode": false
-    }
-  },
-  "dqn_test_case": {
-    "agent": [{
-      "name": "TestCase",
-      "algorithm": {
-        "name": "Random"
-      },
-      "memory": {
-        "name": "Replay",
-        "max_size": 5000
-      },
-      "net": {}
     }],
     "env": [{
       "name": "gridworld",
