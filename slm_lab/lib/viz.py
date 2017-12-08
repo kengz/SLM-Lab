@@ -125,14 +125,15 @@ def plot_go(
     combo_y_col_list = y_col_list + y2_col_list
     combo_legend_name_list = label[
         'legend_name_list'] + label2_legend_name_list
-    trace_num = max(len(combo_y_col_list), len(x_col_list))
+    y_col_num, x_col_num = len(combo_y_col_list), len(x_col_list)
+    trace_num = max(y_col_num, x_col_num)
     data = []
     for idx in range(trace_num):
-        y_c, x_c = _.get(combo_y_col_list, idx), _.get(x_col_list, idx)
+        y_c = _.get(combo_y_col_list, idx % y_col_num)
+        x_c = _.get(x_col_list, idx % x_col_num)
         df_y, df_x = _.get(df, y_c), _.get(df, x_c)
         trace = _.get(go, trace_class)(
-            y=df_y, x=df_x,
-            name=combo_legend_name_list[idx])
+            y=df_y, x=df_x, name=combo_legend_name_list[idx])
         trace.update(trace_kwargs)
         if idx >= len(y_col_list):
             trace.update(dict(yaxis='y2', xaxis='x1'))
