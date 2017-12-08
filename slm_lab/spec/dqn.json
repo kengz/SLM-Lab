@@ -46,21 +46,24 @@
       "name": "VanillaDQN",
       "algorithm": {
         "name": "DQNBase",
-        "action_selection": "boltzmann",
-        "explore_var_start": 5.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 10,
-        "training_min_timestep": 50,
-        "training_iters_per_batch": 10,
-        "training_frequency": 1
+        "action_selection": "epsilon_greedy",
+        "gamma": 0.95,
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 50,
+        "training_frequency": 1,
+        "initial_data_gather_steps" : 30,
+        "training_iters_per_batch" : 10,
+        "num_epoch" : 5
+
       },
       "memory": {
         "name": "Replay",
-        "max_size": 3000
+        "max_size": 10000
       },
       "net": {
         "net_type": "MLP",
-        "net_layer_params": [null, [50, 20], null],
+        "net_layer_params": [null, [], null],
         "net_other_params": [],
         "batch_size": 16,
         "gamma": 0.99,
@@ -76,7 +79,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 100,
+      "max_episode": 250,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
