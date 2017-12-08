@@ -37,18 +37,15 @@ class DQNBase(Algorithm):
         state_dim = default_body.state_dim
         action_dim = default_body.action_dim
         net_spec = self.agent.spec['net']
-        net_spec['net_layer_params'][0] = state_dim
-        net_spec['net_layer_params'][-1] = action_dim
-        # TODO careful with positional param falling into wrong place, for safety use explicit dicts with keys instead of list for it
-        # what are some examples of net_other_params?
+        net_spec['net_layers'][0] = state_dim
+        net_spec['net_layers'][-1] = action_dim
+        # TODO set optimizer choice, loss_fn, from leftover net_spec
         self.net = nets[net_spec['net_type']](
-            *net_spec['net_layer_params'],
-            # *net_spec['net_other_params'],
+            *net_spec['net_layers'],
             optim_param=_.get(net_spec, 'optim_param'))
         print(self.net)
         self.target_net = nets[net_spec['net_type']](
-            *net_spec['net_layer_params'],
-            # *net_spec['net_other_params'],
+            *net_spec['net_layers'],
             optim_param=_.get(net_spec, 'optim_param'))
         self.act_select_net = self.net
         self.eval_net = self.net
