@@ -34,20 +34,20 @@ class DQNBase(Algorithm):
         '''Initializes the part of algorithm needing a body to exist first.'''
         # TODO generalize
         default_body = self.agent.bodies[0]
+        # autoset net head and tail
+        # TODO auto-architecture to handle multi-head, multi-tail nets
         state_dim = default_body.state_dim
         action_dim = default_body.action_dim
         net_spec = self.agent.spec['net']
-        net_spec['net_layers'][0] = state_dim
-        net_spec['net_layers'][-1] = action_dim
         # TODO set optimizer choice, loss_fn, from leftover net_spec
-        self.net = nets[net_spec['net_type']](
-            *net_spec['net_layers'],
+        self.net = nets[net_spec['type']](
+            state_dim, net_spec['hid_layers'], action_dim,
             optim_param=_.get(net_spec, 'optim_param'))
         print(self.net)
-        self.target_net = nets[net_spec['net_type']](
-            *net_spec['net_layers'],
+        self.target_net = nets[net_spec['type']](
+            state_dim, net_spec['hid_layers'], action_dim,
             optim_param=_.get(net_spec, 'optim_param'))
-        self.act_select_net = self.net
+        self.action_policy_net = self.net
         self.eval_net = self.net
         self.batch_size = net_spec['batch_size']
 
@@ -80,7 +80,7 @@ class DQNBase(Algorithm):
         # Use act_select network to select actions in next state
         # Depending on the algorithm this is either the current
         # net or target net
-        q_next_st_act_vals = self.act_select_net.wrap_eval(
+        q_next_st_act_vals = self.action_policy_net.wrap_eval(
             batch['next_states'])
         _val, q_next_actions = torch.max(q_next_st_act_vals, dim=1)
         # Select q_next_st_vals_max based on action selected in q_next_actions
@@ -177,7 +177,7 @@ class DQN(DQNBase):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         super(DQN, self).post_body_init()
-        self.act_select_net = self.target_net
+        self.action_policy_net = self.target_net
         self.eval_net = self.target_net
         # Network update params
         net_spec = self.agent.spec['net']
@@ -189,7 +189,7 @@ class DQN(DQNBase):
 
     def update(self):
         super(DQN, self).update()
-        self.act_select_net = self.target_net
+        self.action_policy_net = self.target_net
         self.eval_net = self.target_net
 
 
@@ -201,7 +201,7 @@ class DoubleDQN(DQNBase):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         super(DoubleDQN, self).post_body_init()
-        self.act_select_net = self.net
+        self.action_policy_net = self.net
         self.eval_net = self.target_net
         # Network update params
         net_spec = self.agent.spec['net']
@@ -211,5 +211,5 @@ class DoubleDQN(DQNBase):
 
     def update(self):
         super(DoubleDQN, self).update()
-        self.act_select_net = self.net
+        self.action_policy_net = self.net
         self.eval_net = self.target_net

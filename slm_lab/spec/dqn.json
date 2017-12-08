@@ -14,8 +14,8 @@
         "max_size": 5000
       },
       "net": {
-        "net_type": "MLP",
-        "net_layers": [null, [8], null],
+        "type": "MLP",
+        "hid_layers": [8],
         "batch_size": 16,
         "training_iters_per_batch": 5,
         "training_frequency": 1,
@@ -61,8 +61,8 @@
         "max_size": 10000
       },
       "net": {
-        "net_type": "MLP",
-        "net_layers": [null, [], null],
+        "type": "MLP",
+        "hid_layers": [],
         "batch_size": 16,
         "gamma": 0.99,
         "optim_param": {"lr": 0.02}
@@ -105,8 +105,8 @@
         "max_size": 5000
       },
       "net": {
-        "net_type": "MLP",
-        "net_layers": [null, [50, 20], null],
+        "type": "MLP",
+        "hid_layers": [50, 20],
         "batch_size": 32,
         "training_frequency": 1,
         "network_update_type": "complete",
@@ -156,8 +156,8 @@
         "max_size": 10000
       },
       "net": {
-        "net_type": "MLP",
-        "net_layers": [null, [64], null],
+        "type": "MLP",
+        "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "out_layer_activation": "linear",
         "network_update_type": "replace",
@@ -198,8 +198,8 @@
         "max_size": 5000
       },
       "net": {
-        "net_type": "MLP",
-        "net_layers": [null, [16, 8], null],
+        "type": "MLP",
+        "hid_layers": [16, 8],
         "batch_size": 16,
         "training_epoch": 5,
         "training_frequency": 1,
