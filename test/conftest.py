@@ -1,18 +1,18 @@
+from slm_lab.agent import Agent, AgentSpace
+from slm_lab.agent.memory import Replay
+from slm_lab.agent.net.convnet import ConvNet
+from slm_lab.agent.net.feedforward import MLPNet
+from slm_lab.env import Env, EnvSpace
+from slm_lab.experiment.monitor import AEBSpace
+from slm_lab.lib import util
+from slm_lab.spec import spec_util
+from torch.autograd import Variable
 import pandas as pd
 import pytest
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
-from slm_lab.spec import spec_util
-from slm_lab.agent import Agent, AgentSpace
-from slm_lab.agent.net.feedforward import MLPNet
-from slm_lab.agent.net.convnet import ConvNet
-from slm_lab.agent.memory import Replay
-from slm_lab.env import Env, EnvSpace
-from slm_lab.experiment.monitor import AEBSpace
-from slm_lab.lib import util
-from torch.autograd import Variable
+import torch.optim as optim
 
 
 spec = None

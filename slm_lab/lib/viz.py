@@ -3,16 +3,16 @@ The data visualization module
 TODO pie, swarm, box plots
 '''
 
-import os
-import plotly
-import pydash as _
 from plotly import (
     graph_objs as go,
     offline as py,
     tools,
 )
-from slm_lab.lib import util
 from slm_lab import config
+from slm_lab.lib import util
+import os
+import plotly
+import pydash as _
 
 PLOT_FILEDIR = util.smart_path('data')
 os.makedirs(PLOT_FILEDIR, exist_ok=True)

@@ -18,10 +18,10 @@ Agent components:
 - algorithm (with net, policy)
 - memory
 '''
-import pydash as _
 from slm_lab.agent import algorithm, memory
 from slm_lab.experiment.monitor import info_space
 from slm_lab.lib import util
+import pydash as _
 
 
 class Agent:

@@ -2,10 +2,10 @@
 Example Hydrogen notebook
 Use `lab` as your Hydrogen kernel and run below interactively
 '''
-import pandas as pd
-import pydash as _
 from IPython.display import Latex
 from slm_lab.lib import util, viz
+import pandas as pd
+import pydash as _
 
 df = pd.DataFrame({
     'a': [0, 1, 2, 3, 4],

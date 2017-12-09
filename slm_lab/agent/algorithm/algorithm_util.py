@@ -1,9 +1,11 @@
+'''
+Functions used by more than one algorithm
+TODO refactor properly later
+'''
+from torch.autograd import Variable
 import numpy as np
 import torch
-from torch.autograd import Variable
 import torch.nn.functional as F
-
-'''Functions used by more than one algorithm'''
 
 
 def act_with_epsilon_greedy(net, state, epsilon):
@@ -33,7 +35,7 @@ def act_with_boltzmann(net, state, tau):
     out_with_temp = torch.div(out, tau)
     probs = F.softmax(out_with_temp).data.numpy()
     action = np.random.choice(list(range(a_dim)), p=probs)
-    # print("Probs: {}, action: {}".format(probs, action))
+    # print('Probs: {}, action: {}'.format(probs, action))
     return action
 
 
@@ -57,10 +59,14 @@ def update_gaussian(net, state, stddev):
     pass
 
 
-act_fns = {'epsilon_greedy': act_with_epsilon_greedy,
-           'boltzmann': act_with_boltzmann,
-           'gaussian': act_with_gaussian}
+act_fns = {
+    'epsilon_greedy': act_with_epsilon_greedy,
+    'boltzmann': act_with_boltzmann,
+    'gaussian': act_with_gaussian
+}
 
-update_fns = {'epsilon_greedy': update_epsilon_greedy,
-              'boltzmann': update_boltzmann,
-              'gaussian': update_gaussian}
+update_fns = {
+    'epsilon_greedy': update_epsilon_greedy,
+    'boltzmann': update_boltzmann,
+    'gaussian': update_gaussian
+}

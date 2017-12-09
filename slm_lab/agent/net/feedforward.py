@@ -1,8 +1,8 @@
+from torch import optim
+from torch.autograd import Variable
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch import optim
-from torch.autograd import Variable
 
 
 class MLPNet(nn.Module):

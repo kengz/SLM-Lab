@@ -1,14 +1,14 @@
+from copy import deepcopy
+from slm_lab.agent import net
+from slm_lab.agent.algorithm.algorithm_util import act_fns, update_fns
+from slm_lab.agent.algorithm.base import Algorithm
+from slm_lab.agent.memory import Replay
+from slm_lab.agent.net import net_util
+from torch.autograd import Variable
 import numpy as np
 import pydash as _
 import sys
 import torch
-from copy import deepcopy
-from slm_lab.agent.algorithm.algorithm_util import act_fns, update_fns
-from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.agent.memory import Replay
-from slm_lab.agent import net
-from slm_lab.agent.net import net_util
-from torch.autograd import Variable
 
 
 class DQNBase(Algorithm):

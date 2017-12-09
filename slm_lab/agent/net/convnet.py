@@ -1,11 +1,10 @@
+from slm_lab.agent.net.feedforward import MLPNet
+from torch import optim
+from torch.autograd import Variable
+from torch.nn import Module
 import torch
 import torch.nn as nn
-from torch import optim
-from torch.nn import Module
 import torch.nn.functional as F
-from torch.autograd import Variable
-from slm_lab.agent.net.feedforward import MLPNet
-# from feedforward import MLPNet
 
 
 class ConvNet(MLPNet):

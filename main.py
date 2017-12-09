@@ -1,7 +1,7 @@
-from slm_lab.spec import spec_util
 from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Session, Trial
 from slm_lab.lib import logger, util
+from slm_lab.spec import spec_util
 
 
 def main():

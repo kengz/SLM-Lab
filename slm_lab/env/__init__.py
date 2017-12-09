@@ -4,14 +4,14 @@ Contains graduated components from experiments for building/using environment.
 Provides the rich experience for agent embodiment, reflects the curriculum and allows teaching (possibly allows teacher to enter).
 To be designed by human and evolution module, based on the curriculum and fitness metrics.
 '''
-import gym
-import numpy as np
-import pydash as _
+from slm_lab.experiment.monitor import info_space
 from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
 from unityagents.environment import logger as unity_logger
-from slm_lab.experiment.monitor import info_space
+import gym
+import numpy as np
+import pydash as _
 
 unity_logger.setLevel('WARN')
 

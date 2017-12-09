@@ -1,10 +1,10 @@
+from convnet import ConvNet
+from torch import optim
+from torch.autograd import Variable
 import torch
 import torch.nn as nn
-from torch import optim
-from convnet import ConvNet
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.autograd import Variable
 
 dummy_input = Variable(torch.ones((2, 3, 32, 32)))
 net = ConvNet((3, 32, 32),

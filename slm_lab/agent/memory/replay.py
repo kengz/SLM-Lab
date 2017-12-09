@@ -1,6 +1,6 @@
 from collections import Iterable
-import numpy as np
 from slm_lab.agent.memory.base import Memory
+import numpy as np
 
 
 class Replay(Memory):

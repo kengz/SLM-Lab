@@ -2,8 +2,8 @@
 The random agent algorithm
 For basic dev purpose.
 '''
-import numpy as np
 from slm_lab.agent.algorithm.base import Algorithm
+import numpy as np
 
 
 class Random(Algorithm):

@@ -1,14 +1,14 @@
+from datetime import datetime
+from slm_lab import ROOT_DIR
 import collections
 import json
-import os
 import numpy as np
+import os
 import pandas as pd
 import pydash as _
 import regex as re
 import ujson
 import yaml
-from datetime import datetime
-from slm_lab import ROOT_DIR
 
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
