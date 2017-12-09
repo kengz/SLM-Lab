@@ -38,7 +38,7 @@ def set_loss_fn(cls, loss_param):
     return loss_fn
 
 
-def set_activation_fn(cls, activation_param):
+def set_activation_fn(cls, activation):
     '''Helper to parse activation function param and construct activation_fn for net'''
-    activation_fn = getattr(F, activation_param, 'relu')
+    activation_fn = getattr(F, activation, F.relu)
     return activation_fn
