@@ -1,6 +1,5 @@
-from torch import optim
+from slm_lab.agent.net import net_util
 from torch.autograd import Variable
-import pydash as _
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -16,7 +15,7 @@ class MLPNet(nn.Module):
                  hid_dim,
                  out_dim,
                  optim_param=None,
-                 loss_fn=F.mse_loss,
+                 loss_param=None,
                  clamp_grad=False):
         '''
         in_dim: dimension of the inputs
@@ -26,7 +25,7 @@ class MLPNet(nn.Module):
         loss_fn: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient to + / - 1
         @example:
-        net = MLPNet(1000, [512, 256, 128], 10, optim.Adam, F.mse_loss)
+        net = MLPNet(1000, [512, 256, 128], 10, optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'})
         '''
         super(MLPNet, self).__init__()
         self.in_dim = in_dim
@@ -48,13 +47,8 @@ class MLPNet(nn.Module):
             self.out_layer = nn.Linear(in_dim, out_dim)
         self.num_hid_layers = len(self.hid_layers)
 
-        # TODO propagate pattern to other nets one this is done
-        optim_param = optim_param or {}
-        OptimClass = getattr(optim, _.get(optim_param, 'name', 'Adam'))
-        optim_param.pop('name', None)
-        self.optim = OptimClass(self.parameters(), **optim_param)
-
-        self.loss_fn = loss_fn
+        self.optim = net_util.set_optim(self, optim_param)
+        self.loss_fn = net_util.set_loss_fn(self, loss_param)
         print(self.loss_fn, self.optim)
         self.clamp_grad = clamp_grad
         self.init_params()

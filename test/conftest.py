@@ -24,7 +24,8 @@ env = None
 @pytest.fixture(scope='session')
 def test_spec():
     global spec
-    spec = spec_util.get('base.json', 'test_case')
+    spec = spec_util.get('base.json', 'base_case')
+    spec['meta']['train_mode'] = True
     return spec
 
 
@@ -119,8 +120,8 @@ def test_multiline_str():
              [],
              [],
              10,
-             optim.Adam,
-             F.smooth_l1_loss,
+             {'name': 'Adam'},
+             {'name': 'smooth_l1_loss'},
              False,
              False),
         Variable(torch.ones((2, 3, 32, 32))),
@@ -132,8 +133,8 @@ def test_multiline_str():
               [16, 32, (5, 5), 2, 0, 1]],
              [100],
              10,
-             optim.Adam,
-             F.smooth_l1_loss,
+             {'name': 'Adam'},
+             {'name': 'smooth_l1_loss'},
              False,
              False),
         Variable(torch.ones((2, 3, 32, 32))),
@@ -145,8 +146,8 @@ def test_multiline_str():
                  [16, 32, (5, 5), 2, 0, 1]],
              [100, 50],
              10,
-             optim.Adam,
-             F.smooth_l1_loss,
+             {'name': 'Adam'},
+             {'name': 'smooth_l1_loss'},
              False,
              True),
         Variable(torch.ones((2, 3, 32, 32))),
@@ -159,8 +160,8 @@ def test_multiline_str():
               [32, 64, (5, 5), 1, 0, 2]],
              [100],
              10,
-             optim.Adam,
-             F.smooth_l1_loss,
+             {'name': 'Adam'},
+             {'name': 'smooth_l1_loss'},
              True,
              False),
         Variable(torch.ones((2, 3, 32, 32))),
@@ -173,8 +174,8 @@ def test_multiline_str():
               [32, 64, (5, 5), 1, 0, 2]],
              [100],
              10,
-             optim.Adam,
-             F.smooth_l1_loss,
+             {'name': 'Adam'},
+             {'name': 'smooth_l1_loss'},
              True,
              True),
      Variable(torch.ones((2, 3, 32, 32))),
@@ -187,8 +188,8 @@ def test_multiline_str():
               [32, 64, (3, 3), 1, 0, 1]],
              [100, 50],
              10,
-             optim.Adam,
-             F.smooth_l1_loss,
+             {'name': 'Adam'},
+             {'name': 'smooth_l1_loss'},
              False,
              False),
      Variable(torch.ones((2, 3, 32, 32))),
@@ -201,8 +202,8 @@ def test_multiline_str():
               [32, 64, (3, 3), 1, 0, 1]],
              [100, 50],
              10,
-             optim.Adam,
-             F.smooth_l1_loss,
+             {'name': 'Adam'},
+             {'name': 'smooth_l1_loss'},
              False,
              True),
      Variable(torch.ones((2, 3, 32, 32))),

@@ -27,6 +27,9 @@
           "name": "Adam",
           "lr": 0.02
         },
+        "loss": {
+          "name": "mse_loss"
+        },
         "batch_size": 16,
         "update_type": "replace",
         "update_frequency": 1.0,
@@ -34,17 +37,17 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
-      "max_timestep": null
+      "name": "3dball",
+      "max_timestep": 50
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 50,
-      "max_session": 1,
-      "max_trial": 1,
+      "max_episode": 3,
+      "max_session": 3,
+      "max_trial": 3,
       "train_mode": true
     }
   },
@@ -218,7 +221,11 @@
         "hid_layers_activation": "sigmoid",
         "out_layer_activation": "linear",
         "optim": {
+          "name": "Adam",
           "lr": 0.02
+        },
+        "loss": {
+          "name": "mse_loss"
         },
         "batch_size": 16,
         "update_type": "replace",
@@ -236,7 +243,7 @@
     },
     "meta": {
       "max_episode": 3,
-      "max_session": 1,
+      "max_session": 3,
       "max_trial": 1,
       "train_mode": true
     }

@@ -1,4 +1,7 @@
+from functools import partial
+import pydash as _
 import torch
+import torch.nn.functional as F
 
 
 def flatten_params(net):
@@ -14,3 +17,22 @@ def load_params(net, flattened):
             flattened[offset:offset + param.nelement()]).view(param.size())
         offset += param.nelement()
     return net
+
+
+def set_optim(cls, optim_param):
+    '''Helper to parse optim param and construct optim for net'''
+    optim_param = optim_param or {}
+    OptimClass = getattr(torch.optim, _.get(optim_param, 'name', 'Adam'))
+    optim_param.pop('name', None)
+    optim = OptimClass(cls.parameters(), **optim_param)
+    return optim
+
+
+def set_loss_fn(cls, loss_param):
+    '''Helper to parse loss param and construct loss_fn for net'''
+    loss_param = loss_param or {}
+    loss_fn = getattr(F, _.get(loss_param, 'name', 'mse_loss'))
+    loss_param.pop('name', None)
+    if not _.is_empty(loss_param):
+        loss_fn = partial(loss_fn, **loss_param)
+    return loss_fn

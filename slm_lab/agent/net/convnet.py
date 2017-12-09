@@ -1,5 +1,5 @@
+from slm_lab.agent.net import net_util
 from slm_lab.agent.net.feedforward import MLPNet
-from torch import optim
 from torch.autograd import Variable
 from torch.nn import Module
 import torch
@@ -20,8 +20,8 @@ class ConvNet(MLPNet):
                  conv_hid,
                  flat_hid,
                  out_dim,
-                 optim=optim.Adam,
-                 loss_fn=F.smooth_l1_loss,
+                 optim_param=None,
+                 loss_param=None,
                  clamp_grad=False,
                  batch_norm=True):
         '''
@@ -44,8 +44,8 @@ class ConvNet(MLPNet):
                 [36, 128, (5, 5), 1, 0, (2, 2)]],
                 [100],
                 10,
-                optim.Adam,
-                F.smooth_l1_loss)
+                optim_param={'name': 'Adam'},
+                loss_param={'name': 'mse_loss'})
         '''
         # Calling super on greatgrandfather class
         Module.__init__(self)
@@ -59,8 +59,10 @@ class ConvNet(MLPNet):
         self.build_flat_layers(flat_hid, out_dim)
         self.num_hid_layers = len(self.conv_layers) \
             + len(self.flat_layers)
-        self.optim = optim(self.parameters())
-        self.loss_fn = loss_fn
+
+        self.optim = net_util.set_optim(self, optim_param)
+        self.loss_fn = net_util.set_loss_fn(self, loss_param)
+        print(self.loss_fn, self.optim)
         self.clamp_grad = clamp_grad
         self.init_params()
 
