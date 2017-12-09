@@ -238,6 +238,10 @@ class MultitaskDQN(DQNBase):
         self.action_dims = [body.action_dim for body in self.agent.bodies]
         self.total_state_dim = sum(self.state_dims)
         self.total_action_dim = sum(self.action_dims)
+        print(
+            f'multitask state_dims: {self.state_dims}, sum {self.total_state_dim}')
+        print(
+            f'multitask action_dims: {self.action_dims}, sum {self.total_action_dim}')
         net_spec = self.agent.spec['net']
         self.net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim,
@@ -331,3 +335,16 @@ class MultitaskDQN(DQNBase):
         q_targets = torch.mul(q_targets_max, combined_actions.data) + \
             torch.mul(q_vals, (1 - combined_actions.data))
         return q_targets
+
+    def act(self, state):
+        '''override the spread-per-body act'''
+        body_states = []
+        for eb_idx, body in enumerate(self.agent.bodies):
+            body_states.append(state[eb_idx])
+        flat_body_states = np.array(body_states).flatten()
+        # get action, chunk it per body
+        # TODO uh not even action policy yet, but batched from net, split each into policy. cuz action_policy returns only a single action now
+        # flat_body_actions = self.action_policy(
+        #     self.net, flat_body_states, self.explore_var)
+        action = np.split(flat_body_actions, len(self.agent.bodies))
+        return action

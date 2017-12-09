@@ -54,7 +54,7 @@
     "agent": [{
       "name": "VanillaDQN",
       "algorithm": {
-        "name": "DQNBase",
+        "name": "MultitaskDQN",
         "action_policy": "boltzmann",
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
