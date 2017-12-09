@@ -37,7 +37,7 @@
       }
     }],
     "env": [{
-      "name": "3dball",
+      "name": "gridworld",
       "max_timestep": 50
     }],
     "body": {

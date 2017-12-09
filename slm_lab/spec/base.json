@@ -31,6 +31,33 @@
       "train_mode": false
     }
   },
+  "base_case_openai": {
+    "agent": [{
+      "name": "BaseDemo",
+      "algorithm": {
+        "name": "Random"
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 5000
+      },
+      "net": {}
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": 20
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 3,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": false
+    }
+  },
   "multi_body": {
     "agent": [{
       "name": "BaseDemo",
