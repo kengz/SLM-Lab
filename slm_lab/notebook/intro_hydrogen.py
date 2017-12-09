@@ -87,7 +87,7 @@ Latex(r'''\begin{eqnarray}
 \ \ \ \ \ \ \ \  \text{1. Calculate target values for each example} \\
 \ \ \ \ \ \ \ \  y_i = r_i + \gamma \ \max\limits_{a'} Q(s'_i, a'; \theta_{i-1})|s_i, a_i \\
 \ \ \ \ \ \ \ \ \text{2. Update network parameters, using MSE loss} \\
-\ \ \ \ \ \ \ \ L_i(\theta_i) = \frac{1}{2} \sum_i || (y_i - Q(s_i,a_i; \theta_i))^2 ||^2 \\
+\ \ \ \ \ \ \ \ L_i(\theta_i) = \frac{1}{2} \sum_i || (y_i - Q(s_i,a_i; \theta_i)) ||^2 \\
 \end{eqnarray}''')
 
 
@@ -149,7 +149,7 @@ Latex(r'''\begin{eqnarray}
 \ \ \ \ \ \ \ \  \text{Calculate target values for each example} \\
 \ \ \ \ \ \ \ \  y_i = r_i + V(s'_i) \\
 \ \ \ \ \ \ \ \ \text{Update network parameters, using MSE loss} \\
-\ \ \ \ \ \ \ \ L_i(\theta_i) = \frac{1}{2} \sum_i || (y_i - V(s_i; \theta_i))^2 ||^2 \\
+\ \ \ \ \ \ \ \ L_i(\theta_i) = \frac{1}{2} \sum_i || (y_i - V(s_i; \theta_i)) ||^2 \\
 \ \ \ \ \text{3. Evaluate A} \\
 \ \ \ \ A^\pi(s_i,a_i) = r(s_i, a_i) + V^\pi (s'_i) - V^\pi (s_i)\\
 \ \ \ \ \text{4. Calculate gradient} \\
