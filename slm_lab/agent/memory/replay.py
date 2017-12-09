@@ -57,12 +57,11 @@ class Replay(Memory):
 
     def update(self, action, reward, state, done):
         # interface
-        # TODO store directly from data_space?
-        # TODO this is still single body, generalize
-        body_idx = 0
-        self.add_experience(
-            self.last_state[body_idx], action[body_idx], reward[body_idx], state[body_idx], done[body_idx]
-        )
+        # add memory from all bodies, interleave
+        # TODO proper body-based storage
+        for eb_idx, body in enumerate(self.agent.bodies):
+            self.add_experience(
+                self.last_state[eb_idx], action[eb_idx], reward[eb_idx], state[eb_idx], done[eb_idx])
         self.last_state = state
 
     def add_experience(self,
