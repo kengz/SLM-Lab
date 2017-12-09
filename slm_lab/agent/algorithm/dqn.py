@@ -232,11 +232,10 @@ class MultitaskDQN(DQNBase):
     def post_body_init(self):
         super(MultitaskDQN, self).post_body_init()
         '''Re-initialize nets with multi-task dimensions'''
-        default_body = self.agent.bodies[0]
         '''Assumes state_dim and action_dim contain lists of dimensions'''
         '''Assume 1D for now'''
-        self.state_dims = default_body.state_dim
-        self.action_dims = default_body.action_dim
+        self.state_dims = [body.state_dim for body in self.agent.bodies]
+        self.action_dims = [body.action_dim for body in self.agent.bodies]
         self.total_state_dim = sum(self.state_dims)
         self.total_action_dim = sum(self.action_dims)
         net_spec = self.agent.spec['net']
@@ -253,6 +252,8 @@ class MultitaskDQN(DQNBase):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
+        self.action_policy_net = self.net
+        self.eval_net = self.net
 
     def get_batch(self):
         batch_1 = self.agent.memory_task1.get_batch(self.batch_size)
