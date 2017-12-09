@@ -36,3 +36,9 @@ def set_loss_fn(cls, loss_param):
     if not _.is_empty(loss_param):
         loss_fn = partial(loss_fn, **loss_param)
     return loss_fn
+
+
+def set_activation_fn(cls, activation_param):
+    '''Helper to parse activation function param and construct activation_fn for net'''
+    activation_fn = getattr(F, activation_param, 'relu')
+    return activation_fn

@@ -42,12 +42,14 @@ class DQNBase(Algorithm):
         self.net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
             optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'))
+            loss_param=_.get(net_spec, 'loss'),
+            hid_activation_param=_.get(net_spec, 'hid_layers_activation'))
         print(self.net)
         self.target_net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
             optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'))
+            loss_param=_.get(net_spec, 'loss'),
+            hid_activation_param=_.get(net_spec, 'hid_layers_activation'))
         self.action_policy_net = self.net
         self.eval_net = self.net
         self.batch_size = net_spec['batch_size']
