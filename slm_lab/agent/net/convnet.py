@@ -76,15 +76,15 @@ class ConvNet(MLPNet):
 
     def build_conv_layers(self, conv_hid):
         for i, layer in enumerate(conv_hid):
-            l = nn.Conv2d(
+            lin = nn.Conv2d(
                 conv_hid[i][0],
                 conv_hid[i][1],
                 conv_hid[i][2],
                 stride=conv_hid[i][3],
                 padding=conv_hid[i][4],
                 dilation=conv_hid[i][5])
-            setattr(self, 'conv_' + str(i), l)
-            self.conv_layers.append(l)
+            setattr(self, 'conv_' + str(i), lin)
+            self.conv_layers.append(lin)
             # Don't include batch norm in the first layer
             if self.batch_norm and i != 0:
                 b = nn.BatchNorm2d(conv_hid[i][1])
@@ -94,18 +94,13 @@ class ConvNet(MLPNet):
     def build_flat_layers(self, flat_hid, out_dim):
         self.flat_dim = self.get_conv_output_size()
         for i, layer in enumerate(flat_hid):
-            if i == 0:
-                in_D = self.flat_dim
-            else:
-                in_D = flat_hid[i - 1]
+            in_D = self.flat_dim if i == 0 else flat_hid[i - 1]
             out_D = flat_hid[i]
-            l = nn.Linear(in_D, out_D)
-            setattr(self, 'linear_' + str(i), l)
-            self.flat_layers.append(l)
-        if len(flat_hid) > 0:
-            self.out_layer = nn.Linear(flat_hid[-1], out_dim)
-        else:
-            self.out_layer = nn.Linear(self.flat_dim, out_dim)
+            lin = nn.Linear(in_D, out_D)
+            setattr(self, 'linear_' + str(i), lin)
+            self.flat_layers.append(lin)
+        in_D = flat_hid[-1] if len(flat_hid) > 0 else self.flat_dim
+        self.out_layer = nn.Linear(in_D, out_dim)
 
     def forward(self, x):
         '''The feedforward step'''

@@ -7,7 +7,7 @@ import torch.nn.functional as F
 
 class MLPNet(nn.Module):
     '''
-    Class for generating arbitrary sized feedforward neural network, with ReLU activations
+    Class for generating arbitrary sized feedforward neural network
     '''
 
     def __init__(self,
@@ -31,20 +31,16 @@ class MLPNet(nn.Module):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.hid_layers = []
+        # TODO parametrize the activation function choice
         for i, layer in enumerate(hid_dim):
-            if i == 0:
-                in_D = in_dim
-            else:
-                in_D = hid_dim[i - 1]
+            in_D = in_dim if i == 0 else hid_dim[i - 1]
             out_D = hid_dim[i]
             lin = nn.Linear(in_D, out_D)
             setattr(self, 'linear_' + str(i), lin)
             self.hid_layers.append(lin)
-        if len(hid_dim) > 0:
-            # TODO parametrize output layer activation too
-            self.out_layer = nn.Linear(hid_dim[-1], out_dim)
-        else:
-            self.out_layer = nn.Linear(in_dim, out_dim)
+        # TODO parametrize output layer activation too
+        in_D = hid_dim[-1] if len(hid_dim) > 0 else in_dim
+        self.out_layer = nn.Linear(in_D, out_dim)
         self.num_hid_layers = len(self.hid_layers)
 
         self.optim = net_util.set_optim(self, optim_param)
