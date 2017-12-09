@@ -11,6 +11,7 @@ from unityagents.brain import BrainParameters
 from unityagents.environment import logger as unity_logger
 import gym
 import numpy as np
+import os
 import pydash as _
 
 unity_logger.setLevel('WARN')
@@ -138,7 +139,7 @@ class Env:
         self.ab_proj = self.env_space.e_ab_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
         self.u_env = UnityEnvironment(
-            file_name=util.get_env_path(self.name), worker_id=self.index)
+            file_name=util.get_env_path(self.name), worker_id=os.getpid() + self.index)
         self.check_u_brain_to_agent()
 
     def check_u_brain_to_agent(self):
