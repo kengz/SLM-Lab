@@ -39,7 +39,6 @@ class DQNBase(Algorithm):
         state_dim = default_body.state_dim
         action_dim = default_body.action_dim
         net_spec = self.agent.spec['net']
-        # TODO set optimizer choice, loss_fn, from leftover net_spec
         self.net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
             optim_param=_.get(net_spec, 'optim'),
@@ -61,7 +60,6 @@ class DQNBase(Algorithm):
         # TODO hackish optimizer learning rate, also it fails for SGD wtf
 
         algorithm_spec = self.agent.spec['algorithm']
-        # TODO use module get attr for this instead of dict
         self.action_policy = act_fns[algorithm_spec['action_policy']]
         # explore_var is epsilon, tau or etc.
         self.explore_var_start = algorithm_spec['explore_var_start']
@@ -112,7 +110,7 @@ class DQNBase(Algorithm):
             for _b in range(self.training_epoch):
                 batch = self.agent.memory.get_batch(self.batch_size)
                 batch_loss = 0.0
-                '''Package data into pytorch variables'''
+                # Package data into pytorch variables
                 float_data_list = [
                     'states', 'actions', 'rewards', 'dones', 'next_states']
                 for k in float_data_list:
