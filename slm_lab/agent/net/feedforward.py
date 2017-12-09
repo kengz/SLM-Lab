@@ -14,9 +14,9 @@ class MLPNet(nn.Module):
                  in_dim,
                  hid_dim,
                  out_dim,
+                 hid_layers_activation=None,
                  optim_param=None,
                  loss_param=None,
-                 hid_activation_param=None,
                  clamp_grad=False):
         '''
         in_dim: dimension of the inputs
@@ -24,7 +24,7 @@ class MLPNet(nn.Module):
         out_dim: dimension of the ouputs
         optim: optimizer
         loss_param: measure of error between model predictions and correct outputs
-        hid_activation_param: activation function for the hidden layers
+        hid_layers_activation: activation function for the hidden layers
         out_activation_param: activation function for the last layer
         clamp_grad: whether to clamp the gradient to + / - 1
         @example:
@@ -46,10 +46,11 @@ class MLPNet(nn.Module):
         self.out_layer = nn.Linear(in_D, out_dim)
         self.num_hid_layers = len(self.hid_layers)
 
+        self.hid_layers_activation_fn = net_util.set_activation_fn(
+            self, hid_layers_activation)
         self.optim = net_util.set_optim(self, optim_param)
         self.loss_fn = net_util.set_loss_fn(self, loss_param)
-        self.hid_layer_activation_fn = net_util.set_activation_fn(self, hid_activation_param)
-        print(self.loss_fn, self.optim, self.hid_layer_activation_fn)
+        print(self.hid_layers_activation_fn, self.optim, self.loss_fn)
         self.clamp_grad = clamp_grad
         self.init_params()
 
@@ -57,7 +58,7 @@ class MLPNet(nn.Module):
         '''The feedforward step'''
         # TODO parametrize the activation function choice
         for i in range(self.num_hid_layers):
-            x = self.hid_layer_activation_fn((self.hid_layers[i](x)))
+            x = self.hid_layers_activation_fn((self.hid_layers[i](x)))
         x = self.out_layer(x)
         return x
 

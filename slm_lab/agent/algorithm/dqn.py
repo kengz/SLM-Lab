@@ -41,15 +41,17 @@ class DQNBase(Algorithm):
         net_spec = self.agent.spec['net']
         self.net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
-            hid_activation_param=_.get(net_spec, 'hid_layers_activation'))
+        )
         print(self.net)
         self.target_net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
-            hid_activation_param=_.get(net_spec, 'hid_layers_activation'))
+        )
         self.action_policy_net = self.net
         self.eval_net = self.net
         self.batch_size = net_spec['batch_size']
@@ -240,15 +242,17 @@ class MultitaskDQN(DQNBase):
         net_spec = self.agent.spec['net']
         self.net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
-            hid_activation_param=_.get(net_spec, 'hid_layers_activation'))
+        )
         print(self.net)
         self.target_net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
-            hid_activation_param=_.get(net_spec, 'hid_layers_activation'))
+        )
 
     def get_batch(self):
         batch_1 = self.agent.memory_task1.get_batch(self.batch_size)
