@@ -19,7 +19,7 @@
         "max_size": 10000
       },
       "net": {
-        "type": "MLP",
+        "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "out_layer_activation": "linear",
@@ -67,7 +67,7 @@
         "max_size": 5000
       },
       "net": {
-        "type": "MLP",
+        "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "out_layer_activation": "linear",
@@ -115,7 +115,7 @@
         "max_size": 10000
       },
       "net": {
-        "type": "MLP",
+        "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "out_layer_activation": "linear",
@@ -164,7 +164,7 @@
         "max_size": 10000
       },
       "net": {
-        "type": "MLP",
+        "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "out_layer_activation": "linear",
@@ -212,7 +212,7 @@
         "max_size": 10000
       },
       "net": {
-        "type": "MLP",
+        "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "out_layer_activation": "linear",

@@ -6,8 +6,8 @@ from copy import deepcopy
 from slm_lab.agent.algorithm.algorithm_util import act_fns, update_fns
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.memory import Replay
-from slm_lab.agent.net import nets
-from slm_lab.agent.net.common import *
+from slm_lab.agent import net
+from slm_lab.agent.net import net_util
 from torch.autograd import Variable
 
 
@@ -40,11 +40,11 @@ class DQNBase(Algorithm):
         action_dim = default_body.action_dim
         net_spec = self.agent.spec['net']
         # TODO set optimizer choice, loss_fn, from leftover net_spec
-        self.net = nets[net_spec['type']](
+        self.net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
             optim_param=_.get(net_spec, 'optim_param'))
         print(self.net)
-        self.target_net = nets[net_spec['type']](
+        self.target_net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
             optim_param=_.get(net_spec, 'optim_param'))
         self.action_policy_net = self.net
@@ -157,9 +157,9 @@ class DQNBase(Algorithm):
                 self.target_net = deepcopy(self.net)
         elif self.update_type == 'polyak':
             # print('Updating net by averaging')
-            avg_params = self.polyak_weight * flatten_params(self.target_net) + \
-                (1 - self.polyak_weight) * flatten_params(self.net)
-            self.target_net = load_params(self.target_net, avg_params)
+            avg_params = self.polyak_weight * net_util.flatten_params(self.target_net) + \
+                (1 - self.polyak_weight) * net_util.flatten_params(self.net)
+            self.target_net = net_util.load_params(self.target_net, avg_params)
         else:
             print('Unknown network update type.')
             print('Should be "replace" or "polyak". Exiting ...')
