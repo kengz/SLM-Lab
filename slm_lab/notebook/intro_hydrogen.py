@@ -59,9 +59,17 @@ Q^{\pi}(s,a) = E\big[\sum_{t\geq0}\gamma^t r_t|s_0=s, a_0=a,\pi \big] \\
 \end{eqnarray}''')
 
 Latex(r'''\begin{eqnarray}
-\text{Bellman equation for optimal policy: } \\
-Q^* (s,a) = E_{s' \sim \xi}\big[r + \gamma \ \max\limits_{a'} Q^* (s', a')|s, a \big] \\
+\pi(s) = \max\limits_{a} Q(s, a) \\
+\end{eqnarray}''')
 
+
+Latex(r'''\begin{eqnarray}
+\text{Bellman equation for optimal policy: } \\
+Q^* (s,a) = r(s, a) + \gamma E\big[V(s' | s, a)\big]  \\
+Q^* (s,a) \approx r(s, a) + \gamma \ \max\limits_{a'} Q^* (s', a')|s, a  \\
+\end{eqnarray}''')
+
+Latex(r'''\begin{eqnarray}
 \text{Neural net approx. with param } \theta: Q(s,a; \theta) \approx Q^* (s,a) \\
 
 \text{Forward pass, loss function: } L_i(\theta_i) = E_{s,a \sim p(\cdot)}\big[ (y_i - Q(s,a; \theta_i))^2 \big] \\
@@ -69,6 +77,19 @@ Q^* (s,a) = E_{s' \sim \xi}\big[r + \gamma \ \max\limits_{a'} Q^* (s', a')|s, a 
 
 \text{Backward pass: } \nabla_\theta L_i(\theta_i) = E_{s,a \sim p(\cdot), s \sim \xi}\big[ L_i(\theta_i) - \nabla_{\theta_i} Q(s,a; \theta_i) \big] \\
 \end{eqnarray}''')
+
+
+Latex(r'''\begin{eqnarray}
+\text{Algorithm DQN}
+\text{For i = 1 .... N:} \\
+\ \ \ \ \text{Gather data } {(s_i, a_i, s'_i, r_i)} \ \text{by acting in the environment using some policy} \\
+\ \ \ \ \text{for j = 1 ... K:} \\
+\ \ \ \ \ \ \ \  \text{1. Calculate target values for each example} \\
+\ \ \ \ \ \ \ \  y_i = r_i + \gamma \ \max\limits_{a'} Q(s'_i, a'; \theta_{i-1})|s_i, a_i \\
+\ \ \ \ \ \ \ \ \text{2. Update network parameters, using MSE loss} \\
+\ \ \ \ \ \ \ \ L_i(\theta_i) = \frac{1}{2} \sum_i || (y_i - Q(s_i,a_i; \theta_i))^2 ||^2 \\
+\end{eqnarray}''')
+
 
 Latex(r'''\begin{eqnarray}
 \text{Define a class of parametrized policies, } \Pi = \{\pi_\theta, \theta \in \mathbb{R}^m\} \\
@@ -88,7 +109,18 @@ Latex(r'''\begin{eqnarray}
 2.\ \text{add discount factor } r(\tau) = \sum\limits_{t' \geq t} \gamma^{t'-t} r_{t'} \\
 3.\ \text{introduce baseline } r(\tau) = \sum\limits_{t' \geq t} \gamma^{t'-t} r_{t'} - b(s_t) \\
 4.\ \text{advantage function } r(\tau) = Q^\pi (s_t, a_t) - V^\pi (s_t) = A^\pi(s_t,a_t) \\
-\nabla_\theta J(\theta) \approx \sum_{t \geq 0} \big( Q^{\pi_\theta} (s_t, a_t) - V^{\pi_\theta} (s_t) \big) \nabla_\theta log \pi_\theta(a_t|s_t) =  \\
+\nabla_\theta J(\theta) \approx \sum_{t \geq 0} \big( Q^{\pi_\theta} (s_t, a_t) - V^{\pi_\theta} (s_t) \big) \nabla_\theta log \pi_\theta(a_t|s_t)  \\
+
+\nabla_\theta J(\theta) \approx \sum_{t \geq 0} \big( A^{\pi_\theta} (s_t, a_t) \big) \nabla_\theta log \pi_\theta(a_t|s_t)  \\
+A^\pi(s_t,a_t) = Q^\pi (s_t, a_t) - V^\pi (s_t) \\
+A^\pi(s_t,a_t) = r(s_t, a_t) + V^\pi (s'_t) - V^\pi (s_t) \\
+\end{eqnarray}''')
+
+
+Latex(r'''\begin{eqnarray}
+Q^\pi (s_t, a_t) = r(s_t, a_t) + \sum\limits_{t' = t + 1} E_{\pi_\theta} [r(s'_t, a'_t) | s_t, a_t] \\
+Q^\pi (s_t, a_t) = r(s_t, a_t) + E_{s_{t+1} \sim p(s_{t+1} | s_t, a_t)} \big[V^{\pi}(s_{t + 1})\big] \\
+Q^\pi (s_t, a_t) \approx r(s_t, a_t) + V^{\pi}(s_{t + 1}) \\
 \end{eqnarray}''')
 
 Latex(r'''\begin{eqnarray}
@@ -100,6 +132,32 @@ Latex(r'''\begin{eqnarray}
 \quad \text{end for} \\
 \text{end for} \\
 \end{eqnarray}''')
+
+
+Latex(r'''\begin{eqnarray}
+\text{Bellman equation for optimal policy: } \\
+Q^* (s,a) = r(s, a) + \gamma E\big[V(s' | s, a)\big]  \\
+V (s_t) = r(s_t, a_t) + V(s'_t)  \\
+\end{eqnarray}''')
+
+Latex(r'''\begin{eqnarray}
+\text{Algorithm Actor Critic}
+\text{For i = 1 .... N:} \\
+\ \ \ \ \text{1. Gather data } {(s_i, a_i, s'_i, r_i)} \ \text{by acting in the environment using your policy} \\
+\ \ \ \ \text{2. Update V} \\
+\ \ \ \ \text{for j = 1 ... K:} \\
+\ \ \ \ \ \ \ \  \text{Calculate target values for each example} \\
+\ \ \ \ \ \ \ \  y_i = r_i + V(s'_i) \\
+\ \ \ \ \ \ \ \ \text{Update network parameters, using MSE loss} \\
+\ \ \ \ \ \ \ \ L_i(\theta_i) = \frac{1}{2} \sum_i || (y_i - V(s_i; \theta_i))^2 ||^2 \\
+\ \ \ \ \text{3. Evaluate A} \\
+\ \ \ \ A^\pi(s_i,a_i) = r(s_i, a_i) + V^\pi (s'_i) - V^\pi (s_i)\\
+\ \ \ \ \text{4. Calculate gradient} \\
+\ \ \ \ \nabla_{\phi}J(\phi) \approx \sum_i A^\pi_t(s_i, a_i) \nabla_\phi log \pi_\phi (a_i | s_i)\\
+\ \ \ \ \text{5. Use gradient to update parameters } \phi  \\
+\end{eqnarray}''')
+
+
 
 Latex(r'''\begin{eqnarray}
 \text{Algorithm Actor-Critic:} \\
