@@ -9,7 +9,7 @@
     "update-env": "conda env update -f environment.yml",
     "test": "python setup.py test",
     "clear": "find . | grep -E '(__pycache__|.pyc|.pyo|.egg*|.cache|htmlcov|.coverage|dist)' | xargs rm -rf",
-    "kill": "lsof -i tcp:5005 | awk 'NR!=1 {print $2}' | xargs kill"
+    "kill": "pkill -f slm-env ipykernel &"
   },
   "repository": "https://github.com/kengz/SLM-Lab.git",
   "author": "kengz <kengzwl@gmail.com>, lgraesser",
