@@ -1,8 +1,8 @@
+from slm_lab.agent import Agent
+from slm_lab.lib import util
 import os
 import pandas as pd
 import pytest
-from slm_lab.lib import util
-from slm_lab.agent import Agent
 
 
 def test_calc_timestamp_diff():

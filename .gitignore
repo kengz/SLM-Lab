@@ -21,6 +21,9 @@ venv/
 # NodeJS
 node_modules/
 
+# Gym
+gym/
+
 # System
 .DS_Store
 

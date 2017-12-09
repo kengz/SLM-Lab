@@ -1,6 +1,6 @@
+from slm_lab.experiment.monitor import AEBSpace
 import numpy as np
 import pytest
-from slm_lab.experiment.monitor import AEBSpace
 
 
 def test_aeb_data_space_dual_data_proj(test_spec):

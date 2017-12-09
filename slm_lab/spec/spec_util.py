@@ -3,12 +3,12 @@ The spec util
 Handles the Lab experiment spec: reading, writing(evolution), validation and default setting
 Expands the spec and params into consumable inputs in info space for lab units.
 '''
+from slm_lab.lib import logger, util
 import itertools
 import json
 import numpy as np
 import os
 import pydash as _
-from slm_lab.lib import logger, util
 
 SPEC_DIR = 'slm_lab/spec'
 '''

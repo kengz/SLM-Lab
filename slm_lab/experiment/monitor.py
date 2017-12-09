@@ -21,11 +21,11 @@ Agents - AgentSpace - AEBSpace - EnvSpace - Envs
 '''
 # TODO - plug to NoSQL graph db, using graphql notation, and data backup
 # TODO - data_space viewer and stats method for evaluating and planning experiments
-import numpy as np
-import pydash as _
 from copy import deepcopy
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+import numpy as np
+import pydash as _
 
 # These correspond to the control unit classes, lower cased
 COOR_AXES = [

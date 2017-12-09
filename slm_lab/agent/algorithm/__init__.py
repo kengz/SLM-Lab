@@ -5,5 +5,5 @@ Uses the nets module to build neural networks as the relevant function approxima
 '''
 
 # expose all the classes
-from .random import *
 from .dqn import *
+from .random import *

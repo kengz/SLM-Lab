@@ -1,7 +1,7 @@
+from slm_lab.lib import util
 import logging
 import os
 import sys
-from slm_lab.lib import util
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # mute tf warnings on optimized setup
 LOG_FILEPATH = util.smart_path(

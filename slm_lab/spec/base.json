@@ -31,9 +31,9 @@
       "train_mode": false
     }
   },
-  "test_case": {
+  "base_case_openai": {
     "agent": [{
-      "name": "BaseTest",
+      "name": "BaseDemo",
       "algorithm": {
         "name": "Random"
       },
@@ -44,7 +44,7 @@
       "net": {}
     }],
     "env": [{
-      "name": "gridworld",
+      "name": "CartPole-v0",
       "max_timestep": 20
     }],
     "body": {
@@ -55,7 +55,7 @@
       "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
-      "train_mode": true
+      "train_mode": false
     }
   },
   "multi_body": {

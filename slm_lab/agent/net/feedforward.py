@@ -1,21 +1,21 @@
+from slm_lab.agent.net import net_util
+from torch.autograd import Variable
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch import optim
-from torch.autograd import Variable
 
 
 class MLPNet(nn.Module):
     '''
-    Class for generating arbitrary sized feedforward neural network, with ReLU activations
+    Class for generating arbitrary sized feedforward neural network
     '''
 
     def __init__(self,
                  in_dim,
                  hid_dim,
                  out_dim,
-                 optim=optim.Adam,
-                 loss_fn=F.smooth_l1_loss,
+                 optim_param=None,
+                 loss_param=None,
                  clamp_grad=False):
         '''
         in_dim: dimension of the inputs
@@ -25,35 +25,35 @@ class MLPNet(nn.Module):
         loss_fn: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient to + / - 1
         @example:
-        net = MLPNet(1000, [512, 256, 128], 10, optim.Adam, nn.SmoothL1Loss)
+        net = MLPNet(1000, [512, 256, 128], 10, optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'})
         '''
         super(MLPNet, self).__init__()
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.hid_layers = []
+        # TODO parametrize the activation function choice
         for i, layer in enumerate(hid_dim):
-            if i == 0:
-                in_D = in_dim
-            else:
-                in_D = hid_dim[i - 1]
+            in_D = in_dim if i == 0 else hid_dim[i - 1]
             out_D = hid_dim[i]
-            l = nn.Linear(in_D, out_D)
-            setattr(self, 'linear_' + str(i), l)
-            self.hid_layers.append(l)
-        if len(hid_dim) > 0:
-            self.out_layer = nn.Linear(hid_dim[-1], out_dim)
-        else:
-            self.out_layer = nn.Linear(in_dim, out_dim)
+            lin = nn.Linear(in_D, out_D)
+            setattr(self, 'linear_' + str(i), lin)
+            self.hid_layers.append(lin)
+        # TODO parametrize output layer activation too
+        in_D = hid_dim[-1] if len(hid_dim) > 0 else in_dim
+        self.out_layer = nn.Linear(in_D, out_dim)
         self.num_hid_layers = len(self.hid_layers)
-        self.optim = optim(self.parameters())
-        self.loss_fn = loss_fn
+
+        self.optim = net_util.set_optim(self, optim_param)
+        self.loss_fn = net_util.set_loss_fn(self, loss_param)
+        print(self.loss_fn, self.optim)
         self.clamp_grad = clamp_grad
         self.init_params()
 
     def forward(self, x):
         '''The feedforward step'''
+        # TODO parametrize the activation function choice
         for i in range(self.num_hid_layers):
-            x = F.relu((self.hid_layers[i](x)))
+            x = F.sigmoid((self.hid_layers[i](x)))
         x = self.out_layer(x)
         return x
 
@@ -87,11 +87,12 @@ class MLPNet(nn.Module):
         Sometimes the trainable params tests pass (see nn_test.py), other times they dont.
         Biases are all set to 0.01
         '''
-        initrange = 0.2
+        initrange = 0.1
         biasinit = 0.01
         lin_layers = self.hid_layers + list([self.out_layer])
         for layer in lin_layers:
-            layer.weight.data.uniform_(-initrange, initrange)
+            # layer.weight.data.uniform_(-initrange, initrange)
+            torch.nn.init.xavier_uniform(layer.weight.data)
             layer.bias.data.fill_(biasinit)
 
     def gather_trainable_params(self):

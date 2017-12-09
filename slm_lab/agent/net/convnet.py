@@ -1,11 +1,10 @@
+from slm_lab.agent.net import net_util
+from slm_lab.agent.net.feedforward import MLPNet
+from torch.autograd import Variable
+from torch.nn import Module
 import torch
 import torch.nn as nn
-from torch import optim
-from torch.nn import Module
 import torch.nn.functional as F
-from torch.autograd import Variable
-from slm_lab.agent.net.feedforward import MLPNet
-# from feedforward import MLPNet
 
 
 class ConvNet(MLPNet):
@@ -21,8 +20,8 @@ class ConvNet(MLPNet):
                  conv_hid,
                  flat_hid,
                  out_dim,
-                 optim=optim.Adam,
-                 loss_fn=F.smooth_l1_loss,
+                 optim_param=None,
+                 loss_param=None,
                  clamp_grad=False,
                  batch_norm=True):
         '''
@@ -45,8 +44,8 @@ class ConvNet(MLPNet):
                 [36, 128, (5, 5), 1, 0, (2, 2)]],
                 [100],
                 10,
-                optim.Adam,
-                F.smooth_l1_loss)
+                optim_param={'name': 'Adam'},
+                loss_param={'name': 'mse_loss'})
         '''
         # Calling super on greatgrandfather class
         Module.__init__(self)
@@ -60,8 +59,10 @@ class ConvNet(MLPNet):
         self.build_flat_layers(flat_hid, out_dim)
         self.num_hid_layers = len(self.conv_layers) \
             + len(self.flat_layers)
-        self.optim = optim(self.parameters())
-        self.loss_fn = loss_fn
+
+        self.optim = net_util.set_optim(self, optim_param)
+        self.loss_fn = net_util.set_loss_fn(self, loss_param)
+        print(self.loss_fn, self.optim)
         self.clamp_grad = clamp_grad
         self.init_params()
 
@@ -75,15 +76,15 @@ class ConvNet(MLPNet):
 
     def build_conv_layers(self, conv_hid):
         for i, layer in enumerate(conv_hid):
-            l = nn.Conv2d(
+            lin = nn.Conv2d(
                 conv_hid[i][0],
                 conv_hid[i][1],
                 conv_hid[i][2],
                 stride=conv_hid[i][3],
                 padding=conv_hid[i][4],
                 dilation=conv_hid[i][5])
-            setattr(self, 'conv_' + str(i), l)
-            self.conv_layers.append(l)
+            setattr(self, 'conv_' + str(i), lin)
+            self.conv_layers.append(lin)
             # Don't include batch norm in the first layer
             if self.batch_norm and i != 0:
                 b = nn.BatchNorm2d(conv_hid[i][1])
@@ -93,18 +94,13 @@ class ConvNet(MLPNet):
     def build_flat_layers(self, flat_hid, out_dim):
         self.flat_dim = self.get_conv_output_size()
         for i, layer in enumerate(flat_hid):
-            if i == 0:
-                in_D = self.flat_dim
-            else:
-                in_D = flat_hid[i - 1]
+            in_D = self.flat_dim if i == 0 else flat_hid[i - 1]
             out_D = flat_hid[i]
-            l = nn.Linear(in_D, out_D)
-            setattr(self, 'linear_' + str(i), l)
-            self.flat_layers.append(l)
-        if len(flat_hid) > 0:
-            self.out_layer = nn.Linear(flat_hid[-1], out_dim)
-        else:
-            self.out_layer = nn.Linear(self.flat_dim, out_dim)
+            lin = nn.Linear(in_D, out_D)
+            setattr(self, 'linear_' + str(i), lin)
+            self.flat_layers.append(lin)
+        in_D = flat_hid[-1] if len(flat_hid) > 0 else self.flat_dim
+        self.out_layer = nn.Linear(in_D, out_dim)
 
     def forward(self, x):
         '''The feedforward step'''

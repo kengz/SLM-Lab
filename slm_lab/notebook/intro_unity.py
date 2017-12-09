@@ -10,10 +10,10 @@ ml-agents Python API doc:
 https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Unity-Agents---Python-API.md
 '''
 
-import numpy as np
-import time
 from slm_lab.lib import util
 from unityagents import UnityEnvironment
+import numpy as np
+import time
 
 # # Multiple env classes simultaneously
 # env_path = environment.get_env_path('3dball')

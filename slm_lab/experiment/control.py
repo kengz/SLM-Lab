@@ -2,13 +2,13 @@
 The control module
 Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Session
 '''
-import numpy as np
-import pandas as pd
-import pydash as _
 from slm_lab.agent import Agent, AgentSpace
 from slm_lab.env import Env, EnvSpace
 from slm_lab.experiment.monitor import info_space, AEBSpace
 from slm_lab.lib import logger, util, viz
+import numpy as np
+import pandas as pd
+import pydash as _
 
 
 class Session:
@@ -104,11 +104,12 @@ class Session:
         fig.append_trace(fig2.data[0], 3, 1)
         fig.layout['yaxis1'].update(fig1.layout['yaxis'])
         fig.layout['yaxis2'].update(fig1.layout['yaxis2'])
+        fig.layout['yaxis2'].update(showgrid=False)
         fig.layout['yaxis1'].update(domain=[0.55, 1])
         fig.layout['yaxis3'].update(fig2.layout['yaxis'])
         fig.layout['yaxis3'].update(domain=[0, 0.45])
         fig.layout.update(_.pick(fig1.layout, ['legend']))
-        fig.layout.update(title='total_rewards vs time', width=500, height=400)
+        fig.layout.update(title='total_rewards vs time', width=500, height=600)
         viz.py.iplot(fig)
 
         self.close()

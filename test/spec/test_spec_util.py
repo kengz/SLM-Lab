@@ -1,7 +1,7 @@
+
+from slm_lab.spec import spec_util
 import numpy as np
 import pytest
-from slm_lab.spec import spec_util
-
 
 def test_check():
     spec = spec_util.get('base.json', 'base_case')

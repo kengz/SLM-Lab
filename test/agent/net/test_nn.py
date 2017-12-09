@@ -1,7 +1,7 @@
-import pytest
-import torch
 from torch.autograd import Variable
 import numpy as np
+import pytest
+import torch
 SMALL_NUM = 0.000000001
 LARGE_NUM = 100000
 

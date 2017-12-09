@@ -1,7 +1,7 @@
+from slm_lab.experiment.control import Session, Trial
 import os
 import pandas as pd
 import pytest
-from slm_lab.experiment.control import Session, Trial
 
 
 # TODO test control steps in detail when complete

@@ -1,10 +1,14 @@
-import numpy as np
-import torch
-from torch.autograd import Variable
+from copy import deepcopy
+from slm_lab.agent import net
+from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns
 from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.agent.algorithm.algorithm_util import act_fns, update_fns
-from slm_lab.agent.net import nets
 from slm_lab.agent.memory import Replay
+from slm_lab.agent.net import net_util
+from torch.autograd import Variable
+import numpy as np
+import pydash as _
+import sys
+import torch
 
 
 class DQNBase(Algorithm):
@@ -17,7 +21,7 @@ class DQNBase(Algorithm):
     net: instance of an slm_lab/agent/net
     memory: instance of an slm_lab/agent/memory
     batch_size: how many examples from memory to sample at each training step
-    action_selection: function (from common.py) that determines how to select actions
+    action_policy: function (from common.py) that determines how to select actions
     gamma: Real number in range [0, 1]. Determines how much to discount the future
     state_dim: dimension of the state space
     action_dim: dimensions of the action space
@@ -30,88 +34,180 @@ class DQNBase(Algorithm):
         '''Initializes the part of algorithm needing a body to exist first.'''
         # TODO generalize
         default_body = self.agent.bodies[0]
+        # autoset net head and tail
+        # TODO auto-architecture to handle multi-head, multi-tail nets
         state_dim = default_body.state_dim
         action_dim = default_body.action_dim
         net_spec = self.agent.spec['net']
-        net_spec['net_layer_params'][0] = state_dim
-        net_spec['net_layer_params'][-1] = action_dim
-        self.net = nets[net_spec['net_type']](
-            *net_spec['net_layer_params'],
-            *net_spec['net_other_params'])
-        # TODO three nets for different part of Q function
-        # In base algorithm should all be pointer to the same net - then update compute q target values and action functions
+        self.net = getattr(net, net_spec['type'])(
+            state_dim, net_spec['hid_layers'], action_dim,
+            optim_param=_.get(net_spec, 'optim'),
+            loss_param=_.get(net_spec, 'loss'))
+        print(self.net)
+        self.target_net = getattr(net, net_spec['type'])(
+            state_dim, net_spec['hid_layers'], action_dim,
+            optim_param=_.get(net_spec, 'optim'),
+            loss_param=_.get(net_spec, 'loss'))
+        self.action_policy_net = self.net
+        self.eval_net = self.net
         self.batch_size = net_spec['batch_size']
-        self.gamma = net_spec['gamma']
+        # Default network update params for base
+        self.update_type = 'replace'
+        self.update_frequency = 1
+        self.polyak_weight = 0.9
+
+        # TODO adjust learning rate http://pytorch.org/docs/master/optim.html#how-to-adjust-learning-rate
+        # TODO hackish optimizer learning rate, also it fails for SGD wtf
 
         algorithm_spec = self.agent.spec['algorithm']
-        self.action_selection = act_fns[algorithm_spec['action_selection']]
-
+        self.action_policy = act_fns[algorithm_spec['action_policy']]
         # explore_var is epsilon, tau or etc.
         self.explore_var_start = algorithm_spec['explore_var_start']
         self.explore_var_end = algorithm_spec['explore_var_end']
         self.explore_var = self.explore_var_start
         self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
-        self.training_iters_per_batch = 1
-        self.training_frequency = 1
+        self.gamma = algorithm_spec['gamma']
+
+        self.training_min_timestep = algorithm_spec['training_min_timestep']
+        self.training_frequency = algorithm_spec['training_frequency']
+        self.training_epoch = algorithm_spec['training_epoch']
+        self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
 
     def compute_q_target_values(self, batch):
-        # Make future reward 0 if the current state is done
-        float_data_list = [
-            'states', 'actions', 'rewards', 'dones', 'next_states']
-        for k in float_data_list:
-            batch[k] = Variable(torch.from_numpy(batch[k]).float())
-        # print('batch')
-        # print(batch['states'])
-        # print(batch['actions'])
-        # print(batch['rewards'])
-        # print(batch['dones'])
-        # print(1 - batch['dones'])
         q_vals = self.net.wrap_eval(batch['states'])
-        # print(f'q_vals {q_vals}')
-        q_targets_all = batch['rewards'].data + self.gamma * \
-            torch.mul((1 - batch['dones'].data),
-                      self.net.wrap_eval(batch['next_states']))
-        # print(f'q_targets_all {q_targets_all}')
-        q_targets_max, _idx = torch.max(q_targets_all, dim=1)
-        # print(f'q_targets_max {q_targets_max}')
-        # print(f'q_targets_all size {q_targets_all.size()}')
-
+        # Use act_select network to select actions in next state
+        # Depending on the algorithm this is either the current
+        # net or target net
+        q_next_st_act_vals = self.action_policy_net.wrap_eval(
+            batch['next_states'])
+        _val, q_next_actions = torch.max(q_next_st_act_vals, dim=1)
+        # Select q_next_st_vals_max based on action selected in q_next_actions
+        # Evaluate the action selection using the eval net
+        # Depending on the algorithm this is either the current
+        # net or target net
+        q_next_st_vals = self.eval_net.wrap_eval(batch['next_states'])
+        idx = torch.from_numpy(np.array(list(range(self.batch_size))))
+        q_next_st_vals_max = q_next_st_vals[idx, q_next_actions]
+        q_next_st_vals_max.unsqueeze_(1)
+        # Compute final q_target using reward and estimated
+        # best Q value from the next state if there is one
+        # Make future reward 0 if the current state is done
+        q_targets_max = batch['rewards'].data + self.gamma * \
+            torch.mul((1 - batch['dones'].data), q_next_st_vals_max)
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_vals
         # So that the loss for these actions is 0
-        q_targets_max.unsqueeze_(1)
-        # print(f'q_targets_max {q_targets_max}')
         q_targets = torch.mul(q_targets_max, batch['actions'].data) + \
             torch.mul(q_vals, (1 - batch['actions'].data))
-        # print(f'q_targets {q_targets}')
         return q_targets
 
     def train(self):
-        # TODO Fix for training iters, docstring
-        t = self.agent.agent_space.aeb_space.clock['t']
-        if t % self.training_frequency == 0:
-            batch = self.agent.memory.get_batch(self.batch_size)
-            for i in range(self.training_iters_per_batch):
-                q_targets = self.compute_q_target_values(batch)
-                y = Variable(q_targets)
-                loss = self.net.training_step(batch['states'], y)
-                # print(f'loss {loss.data[0]}\n')
-            return loss.data[0]
+        # TODO docstring
+        t = self.agent.agent_space.aeb_space.clock['total_t']
+        if (t > self.training_min_timestep and t % self.training_frequency == 0):
+            # print('Training')
+            total_loss = 0.0
+            for _b in range(self.training_epoch):
+                batch = self.agent.memory.get_batch(self.batch_size)
+                batch_loss = 0.0
+                # Package data into pytorch variables
+                float_data_list = [
+                    'states', 'actions', 'rewards', 'dones', 'next_states']
+                for k in float_data_list:
+                    batch[k] = Variable(torch.from_numpy(batch[k]).float())
+
+                for _i in range(self.training_iters_per_batch):
+                    q_targets = self.compute_q_target_values(batch)
+                    y = Variable(q_targets)
+                    loss = self.net.training_step(batch['states'], y)
+                    batch_loss += loss.data[0]
+                    # print(f'loss {loss.data[0]}')
+                batch_loss /= self.training_iters_per_batch
+                # print(f'batch_loss {batch_loss}')
+                total_loss += batch_loss
+            # print(f'total_loss {total_loss}')
+            return total_loss
         else:
+            # print('NOT training')
             return None
 
     def body_act_discrete(self, body, body_state):
         # TODO can handle identical bodies now; to use body_net for specific body.
-        return self.action_selection(
+        return self.action_policy(
             self.net,
             body_state,
             self.explore_var)
 
     def update(self):
+        t = self.agent.agent_space.aeb_space.clock['total_t']
+        if t % 100 == 0:
+            print(f'Total time step: {t}')
         '''Update epsilon or boltzmann for policy after net training'''
         epi = self.agent.agent_space.aeb_space.clock['e']
         rise = self.explore_var_end - self.explore_var_start
         slope = rise / float(self.explore_anneal_epi)
         self.explore_var = max(
-            slope * epi + self.explore_var_start, self.explore_var_end)
+            slope * (epi - 1) + self.explore_var_start, self.explore_var_end)
+        # print(f'Explore var: {self.explore_var}')
+
+        '''Update target net with current net'''
+        if self.update_type == 'replace':
+            if t % self.update_frequency == 0:
+                # print('Updating net by replacing')
+                self.target_net = deepcopy(self.net)
+        elif self.update_type == 'polyak':
+            # print('Updating net by averaging')
+            avg_params = self.polyak_weight * net_util.flatten_params(self.target_net) + \
+                (1 - self.polyak_weight) * net_util.flatten_params(self.net)
+            self.target_net = net_util.load_params(self.target_net, avg_params)
+        else:
+            print('Unknown network update type.')
+            print('Should be "replace" or "polyak". Exiting ...')
+            sys.exit()
         return self.explore_var
+
+
+class DQN(DQNBase):
+    # TODO: Check this is working
+    def __init__(self, agent):
+        super(DQN, self).__init__(agent)
+
+    def post_body_init(self):
+        '''Initializes the part of algorithm needing a body to exist first.'''
+        super(DQN, self).post_body_init()
+        self.action_policy_net = self.target_net
+        self.eval_net = self.target_net
+        # Network update params
+        net_spec = self.agent.spec['net']
+        self.update_type = net_spec['update_type']
+        self.update_frequency = net_spec['update_frequency']
+        self.polyak_weight = net_spec['polyak_weight']
+        print(
+            f'Network update: type: {self.update_type}, frequency: {self.update_frequency}, weight: {self.polyak_weight}')
+
+    def update(self):
+        super(DQN, self).update()
+        self.action_policy_net = self.target_net
+        self.eval_net = self.target_net
+
+
+class DoubleDQN(DQNBase):
+    # TODO: Check this is working
+    def __init__(self, agent):
+        super(DoubleDQN, self).__init__(agent)
+
+    def post_body_init(self):
+        '''Initializes the part of algorithm needing a body to exist first.'''
+        super(DoubleDQN, self).post_body_init()
+        self.action_policy_net = self.net
+        self.eval_net = self.target_net
+        # Network update params
+        net_spec = self.agent.spec['net']
+        self.update_type = net_spec['update_type']
+        self.update_frequency = net_spec['update_frequency']
+        self.polyak_weight = net_spec['polyak_weight']
+
+    def update(self):
+        super(DoubleDQN, self).update()
+        self.action_policy_net = self.net
+        self.eval_net = self.target_net

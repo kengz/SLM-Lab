@@ -1,7 +1,7 @@
-import pytest
-import numpy as np
-from copy import deepcopy
 from collections import Counter
+from copy import deepcopy
+import numpy as np
+import pytest
 
 
 @pytest.mark.skip(reason='TODO restore. WIP memory and fixture for memory')
