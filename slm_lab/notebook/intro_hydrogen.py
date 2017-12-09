@@ -59,7 +59,7 @@ Q^{\pi}(s,a) = E\big[\sum_{t\geq0}\gamma^t r_t|s_0=s, a_0=a,\pi \big] \\
 \end{eqnarray}''')
 
 Latex(r'''\begin{eqnarray}
-\pi(s) = \max\limits_{a} Q(s, a) \\
+\pi^{*}(s) = \max\limits_{a} Q(s, a) \\
 \end{eqnarray}''')
 
 
@@ -95,32 +95,12 @@ Latex(r'''\begin{eqnarray}
 \text{Define a class of parametrized policies, } \Pi = \{\pi_\theta, \theta \in \mathbb{R}^m\} \\
 \text{For each } \pi_\theta \text{, define its value } J(\theta) = E\big[ \sum_{t\geq0}\gamma^t r_t|\pi_\theta \big] \\
 \text{Find the optimal policy } \theta^* = arg\max\limits_\theta J(\theta) \\
-\text{For trajectory } \tau = (s_0, a_0, r_0, s_1, \dots) \text{ and reward function } r(\tau) \\
-J(\theta) = E_{\tau \sim p(\tau; \theta)} \big[ r(\tau) \big] = \int_{\tau} r(\tau) p(\tau; \theta) d\tau \\
+\text{For trajectory } \tau = (s_0, a_0, r_0, s_1, \dots) \text{ and scalar score function } f(\tau) \\
+J(\theta) = E_{\tau \sim p(\tau; \theta)} \big[ f(\tau) \big] = \int_{\tau} f(\tau) p(\tau; \theta) d\tau \\
 
 \text{Gradient update for convergence (with some magic):} \\
-\nabla_\theta J(\theta) = E_{\tau \sim p(\tau; \theta)} \big[ r(\tau) \nabla_\theta logp(\tau; \theta) \big] \\
-\ \ \approx \sum_{t \geq 0} r(\tau) \nabla_\theta log \pi_\theta(a_t|s_t) \\
-\end{eqnarray}''')
-
-Latex(r'''\begin{eqnarray}
-\text{Given } \nabla_\theta J(\theta) \ \approx \sum_{t \geq 0} r(\tau) \nabla_\theta log \pi_\theta(a_t|s_t), \text{improve baseline with: }\\
-1.\ \text{reward as weightage } r(\tau) = \sum\limits_{t' \geq t} r_{t'} \\
-2.\ \text{add discount factor } r(\tau) = \sum\limits_{t' \geq t} \gamma^{t'-t} r_{t'} \\
-3.\ \text{introduce baseline } r(\tau) = \sum\limits_{t' \geq t} \gamma^{t'-t} r_{t'} - b(s_t) \\
-4.\ \text{advantage function } r(\tau) = Q^\pi (s_t, a_t) - V^\pi (s_t) = A^\pi(s_t,a_t) \\
-\nabla_\theta J(\theta) \approx \sum_{t \geq 0} \big( Q^{\pi_\theta} (s_t, a_t) - V^{\pi_\theta} (s_t) \big) \nabla_\theta log \pi_\theta(a_t|s_t)  \\
-
-\nabla_\theta J(\theta) \approx \sum_{t \geq 0} \big( A^{\pi_\theta} (s_t, a_t) \big) \nabla_\theta log \pi_\theta(a_t|s_t)  \\
-A^\pi(s_t,a_t) = Q^\pi (s_t, a_t) - V^\pi (s_t) \\
-A^\pi(s_t,a_t) = r(s_t, a_t) + V^\pi (s'_t) - V^\pi (s_t) \\
-\end{eqnarray}''')
-
-
-Latex(r'''\begin{eqnarray}
-Q^\pi (s_t, a_t) = r(s_t, a_t) + \sum\limits_{t' = t + 1} E_{\pi_\theta} [r(s'_t, a'_t) | s_t, a_t] \\
-Q^\pi (s_t, a_t) = r(s_t, a_t) + E_{s_{t+1} \sim p(s_{t+1} | s_t, a_t)} \big[V^{\pi}(s_{t + 1})\big] \\
-Q^\pi (s_t, a_t) \approx r(s_t, a_t) + V^{\pi}(s_{t + 1}) \\
+\nabla_\theta J(\theta) = E_{\tau \sim p(\tau; \theta)} \big[ f(\tau) \nabla_\theta logp(\tau; \theta) \big] \\
+\ \ \approx \sum_{t \geq 0} f(\tau) \nabla_\theta log \pi_\theta(a_t|s_t) \\
 \end{eqnarray}''')
 
 Latex(r'''\begin{eqnarray}
@@ -128,9 +108,28 @@ Latex(r'''\begin{eqnarray}
 \text{Initialize weights } \theta \text{, learning rate } \alpha \\
 \text{for each episode (trajectory) } \tau = \{s_0, a_0, r_0, s_1, \cdots, r_T\} \sim \pi_\theta \\
 \quad \text{for } t = 0 \text{ to } T \text{ do} \\
-\quad \quad \theta \leftarrow \theta + \alpha \ r(\tau)_t \nabla_\theta log \pi_\theta(a_t|s_t) \\
+\quad \quad \theta \leftarrow \theta + \alpha \ f(\tau)_t \nabla_\theta log \pi_\theta(a_t|s_t) \\
 \quad \text{end for} \\
 \text{end for} \\
+\end{eqnarray}''')
+
+Latex(r'''\begin{eqnarray}
+\text{Given } \nabla_\theta J(\theta) \ \approx \sum_{t \geq 0} f(\tau) \nabla_\theta log \pi_\theta(a_t|s_t), \text{improve baseline with: }\\
+1.\ \text{reward as weightage } f(\tau) = \sum\limits_{t' \geq t} r_{t'} \\
+2.\ \text{add discount factor } f(\tau) = \sum\limits_{t' \geq t} \gamma^{t'-t} r_{t'} \\
+3.\ \text{introduce baseline } f(\tau) = \sum\limits_{t' \geq t} \gamma^{t'-t} r_{t'} - b(s_t) \\
+4.\ \text{advantage function } f(\tau) = Q^\pi (s_t, a_t) - V^\pi (s_t) = A^\pi(s_t,a_t) \\
+\nabla_\theta J(\theta) \approx \sum_{t \geq 0} \big( Q^{\pi_\theta} (s_t, a_t) - V^{\pi_\theta} (s_t) \big) \nabla_\theta log \pi_\theta(a_t|s_t)  \\
+
+\nabla_\theta J(\theta) \approx \sum_{t \geq 0} \big( A^{\pi_\theta} (s_t, a_t) \big) \nabla_\theta log \pi_\theta(a_t|s_t)  \\
+A^\pi(s_t,a_t) = Q^\pi (s_t, a_t) - V^\pi (s_t) \\
+A^\pi(s_t,a_t) = r(s_t, a_t) + V^\pi (s'_t) - V^\pi (s_t) \\
+\end{eqnarray}''')
+
+Latex(r'''\begin{eqnarray}
+Q^\pi (s_t, a_t) = r(s_t, a_t) + \sum\limits_{t' = t + 1} E_{\pi_\theta} [r(s'_t, a'_t) | s_t, a_t] \\
+Q^\pi (s_t, a_t) = r(s_t, a_t) + E_{s_{t+1} \sim p(s_{t+1} | s_t, a_t)} \big[V^{\pi}(s_{t + 1})\big] \\
+Q^\pi (s_t, a_t) \approx r(s_t, a_t) + V^{\pi}(s_{t + 1}) \\
 \end{eqnarray}''')
 
 
@@ -156,8 +155,6 @@ Latex(r'''\begin{eqnarray}
 \ \ \ \ \nabla_{\phi}J(\phi) \approx \sum_i A^\pi_t(s_i, a_i) \nabla_\phi log \pi_\phi (a_i | s_i)\\
 \ \ \ \ \text{5. Use gradient to update parameters } \phi  \\
 \end{eqnarray}''')
-
-
 
 Latex(r'''\begin{eqnarray}
 \text{Algorithm Actor-Critic:} \\
