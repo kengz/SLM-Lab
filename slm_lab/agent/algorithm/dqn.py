@@ -76,6 +76,7 @@ class DQNBase(Algorithm):
         self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
 
     def compute_q_target_values(self, batch):
+        batch = batch['batch']
         q_vals = self.net.wrap_eval(batch['states'])
         # Use act_select network to select actions in next state
         # Depending on the algorithm this is either the current
@@ -103,6 +104,18 @@ class DQNBase(Algorithm):
             torch.mul(q_vals, (1 - batch['actions'].data))
         return q_targets
 
+    def get_batch(self):
+        batch = self.agent.memory.get_batch(self.batch_size)
+        batch_loss = 0.0
+        # Package data into pytorch variables
+        float_data_list = [
+            'states', 'actions', 'rewards', 'dones', 'next_states']
+        for k in float_data_list:
+            batch[k] = Variable(torch.from_numpy(batch[k]).float())
+        # Packaging into a dict to allow for arbitrary number of batches
+        # to be returned. Master batch is always called batch
+        return {'batch': batch}
+
     def train(self):
         # TODO docstring
         t = self.agent.agent_space.aeb_space.clock['total_t']
@@ -110,18 +123,12 @@ class DQNBase(Algorithm):
             # print('Training')
             total_loss = 0.0
             for _b in range(self.training_epoch):
-                batch = self.agent.memory.get_batch(self.batch_size)
+                batch = self.get_batch()
                 batch_loss = 0.0
-                # Package data into pytorch variables
-                float_data_list = [
-                    'states', 'actions', 'rewards', 'dones', 'next_states']
-                for k in float_data_list:
-                    batch[k] = Variable(torch.from_numpy(batch[k]).float())
-
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
                     y = Variable(q_targets)
-                    loss = self.net.training_step(batch['states'], y)
+                    loss = self.net.training_step(batch['batch']['states'], y)
                     batch_loss += loss.data[0]
                     # print(f'loss {loss.data[0]}')
                 batch_loss /= self.training_iters_per_batch
