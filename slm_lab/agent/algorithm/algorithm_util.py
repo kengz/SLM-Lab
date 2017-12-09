@@ -10,7 +10,7 @@ import torch.nn.functional as F
 
 def act_with_epsilon_greedy(net, state, epsilon):
     '''
-    With probability episilon select a random action,
+    With probability epsilon select a random action,
     otherwise select the action associated with the
     largest q value
     '''
@@ -65,7 +65,7 @@ act_fns = {
     'gaussian': act_with_gaussian
 }
 
-update_fns = {
+act_update_fns = {
     'epsilon_greedy': update_epsilon_greedy,
     'boltzmann': update_boltzmann,
     'gaussian': update_gaussian
