@@ -14,6 +14,7 @@ import numpy as np
 import os
 import pydash as _
 
+gym.logger.setLevel('WARN')
 unity_logger.setLevel('WARN')
 
 
