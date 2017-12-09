@@ -1,5 +1,6 @@
 from torch import optim
 from torch.autograd import Variable
+import pydash as _
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -15,7 +16,6 @@ class MLPNet(nn.Module):
                  hid_dim,
                  out_dim,
                  optim_param=None,
-                 optim=optim.Adam,
                  loss_fn=F.mse_loss,
                  clamp_grad=False):
         '''
@@ -50,7 +50,10 @@ class MLPNet(nn.Module):
 
         # TODO propagate pattern to other nets one this is done
         optim_param = optim_param or {}
-        self.optim = optim(self.parameters(), **optim_param)
+        OptimClass = getattr(optim, _.get(optim_param, 'name', 'Adam'))
+        optim_param.pop('name', None)
+        self.optim = OptimClass(self.parameters(), **optim_param)
+
         self.loss_fn = loss_fn
         print(self.loss_fn, self.optim)
         self.clamp_grad = clamp_grad

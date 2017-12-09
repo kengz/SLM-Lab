@@ -23,7 +23,8 @@
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "out_layer_activation": "linear",
-        "optim_param": {
+        "optim": {
+          "name": "Adam",
           "lr": 0.02
         },
         "batch_size": 16,
@@ -71,7 +72,7 @@
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "out_layer_activation": "linear",
-        "optim_param": {
+        "optim": {
           "lr": 0.02
         },
         "batch_size": 16,
@@ -119,7 +120,7 @@
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "out_layer_activation": "linear",
-        "optim_param": {
+        "optim": {
           "lr": 0.02
         },
         "batch_size": 16,
@@ -171,7 +172,7 @@
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
-        "optim_param": {
+        "optim": {
           "lr": 0.02
         },
         "batch_size": 16
@@ -216,7 +217,7 @@
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "out_layer_activation": "linear",
-        "optim_param": {
+        "optim": {
           "lr": 0.02
         },
         "batch_size": 16,
