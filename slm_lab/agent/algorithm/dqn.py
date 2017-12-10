@@ -144,15 +144,12 @@ class DQNBase(Algorithm):
 
     def body_act_discrete(self, body, body_state):
         # TODO can handle identical bodies now; to use body_net for specific body.
-        return self.action_policy(
-            self.net,
-            body_state,
-            self.explore_var)
+        return self.action_policy(body, body_state, self.net, self.explore_var)
 
     def update(self):
         t = self.agent.agent_space.aeb_space.clock['total_t']
-        if t % 100 == 0:
-            print(f'Total time step: {t}')
+        # if t % 100 == 0:
+        # print(f'Total time step: {t}')
         '''Update epsilon or boltzmann for policy after net training'''
         epi = self.agent.agent_space.aeb_space.clock['e']
         rise = self.explore_var_end - self.explore_var_start
@@ -337,14 +334,6 @@ class MultitaskDQN(DQNBase):
         return q_targets
 
     def act(self, state):
-        '''override the spread-per-body act'''
-        body_states = []
-        for eb_idx, body in enumerate(self.agent.bodies):
-            body_states.append(state[eb_idx])
-        flat_body_states = np.array(body_states).flatten()
-        # get action, chunk it per body
-        # TODO uh not even action policy yet, but batched from net, split each into policy. cuz action_policy returns only a single action now
-        # flat_body_actions = self.action_policy(
-        #     self.net, flat_body_states, self.explore_var)
-        action = np.split(flat_body_actions, len(self.agent.bodies))
-        return action
+        '''Override the spread-per-body act. self.action_policy must be a batch multi-body method'''
+        # TODO when backprop need to use relevant r too
+        return self.action_policy(self.agent.bodies, state, self.net, self.explore_var)
