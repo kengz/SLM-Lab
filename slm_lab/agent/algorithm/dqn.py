@@ -327,7 +327,7 @@ class MultitaskDQN(DQNBase):
         q_targets_max_2 = batch_2['rewards'].data + self.gamma * \
             torch.mul((1 - batch_2['dones'].data), q_next_st_vals_max_2)
         # Concat to form full size targets
-        q_targets = torch.cat([q_targets_max_1, q_targets_max_2], dim=1)
+        q_targets_max = torch.cat([q_targets_max_1, q_targets_max_2], dim=1)
         # Also concat actions - each batch should have only two
         # non zero dimensions
         combined_actions = torch.cat(
