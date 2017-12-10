@@ -88,9 +88,9 @@ class Session:
             logger.debug(f'episode {e}')
             episode_data = self.run_episode()
             data_list.append([
-                episode_data['total_rewards'].max(),  # last
+                episode_data['total_rewards'].iloc[-1],  # last
                 episode_data['loss'].mean(),
-                episode_data['explore_var'].max(),
+                episode_data['explore_var'].iloc[-1],
             ])
         # TODO tmp hack. fix with monitor data later
         data = pd.DataFrame(
@@ -111,6 +111,7 @@ class Session:
         fig.layout.update(_.pick(fig1.layout, ['legend']))
         fig.layout.update(title='total_rewards vs time', width=500, height=600)
         viz.py.iplot(fig)
+        viz.save_image(fig)
 
         self.close()
         # TODO session data checker method

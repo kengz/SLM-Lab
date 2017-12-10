@@ -9,7 +9,7 @@
         "explore_var_end": 1.0,
         "explore_anneal_epi": 10,
         "gamma": 0.999,
-        "training_min_timestep": 10,
+        "training_min_timestep": 0,
         "training_frequency": 1,
         "training_epoch": 5,
         "training_iters_per_batch": 3
@@ -60,7 +60,7 @@
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
         "explore_anneal_epi": 15,
-        "training_min_timestep": 10,
+        "training_min_timestep": 0,
         "training_frequency": 1,
         "training_epoch": 5,
         "training_iters_per_batch": 3
@@ -107,7 +107,7 @@
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
         "explore_anneal_epi": 30,
-        "training_min_timestep": 10,
+        "training_min_timestep": 0,
         "training_frequency": 1,
         "training_epoch": 5,
         "training_iters_per_batch": 3
@@ -154,7 +154,7 @@
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
         "explore_anneal_epi": 30,
-        "training_min_timestep": 10,
+        "training_min_timestep": 0,
         "training_frequency": 1,
         "training_epoch": 5,
         "training_iters_per_batch": 3
@@ -217,8 +217,8 @@
         "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
-        "explore_anneal_epi": 15,
-        "training_min_timestep": 10,
+        "explore_anneal_epi": 100,
+        "training_min_timestep": 0,
         "training_frequency": 1,
         "training_epoch": 5,
         "training_iters_per_batch": 3
@@ -229,27 +229,32 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64, 32],
+        "hid_layers": [32],
         "hid_layers_activation": "sigmoid",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "lr": 0.02
+          "lr": 0.0002
         },
         "batch_size": 16
       }
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 200
+      "max_timestep": 40,
+      "unity": {
+        "gridSize": 6,
+        "numObstacles": 2,
+        "numGoals": 1
+      }
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 50,
+      "max_episode": 200,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
@@ -265,7 +270,7 @@
         "explore_var_end": 1.0,
         "explore_anneal_epi": 10,
         "gamma": 0.999,
-        "training_min_timestep": 10,
+        "training_min_timestep": 0,
         "training_frequency": 1,
         "training_epoch": 5,
         "training_iters_per_batch": 3
