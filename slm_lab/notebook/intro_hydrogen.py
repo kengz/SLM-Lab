@@ -80,14 +80,14 @@ Latex(r'''\begin{eqnarray}
 
 
 Latex(r'''\begin{eqnarray}
-\text{Algorithm DQN}
+\text{Algorithm DQN} \\
 \text{For i = 1 .... N:} \\
-\ \ \ \ \text{Gather data } {(s_i, a_i, s'_i, r_i)} \ \text{by acting in the environment using some policy} \\
-\ \ \ \ \text{for j = 1 ... K:} \\
-\ \ \ \ \ \ \ \  \text{1. Calculate target values for each example} \\
-\ \ \ \ \ \ \ \  y_i = r_i + \gamma \ \max\limits_{a'} Q(s'_i, a'; \theta_{i-1})|s_i, a_i \\
-\ \ \ \ \ \ \ \ \text{2. Update network parameters, using MSE loss} \\
-\ \ \ \ \ \ \ \ L_i(\theta_i) = \frac{1}{2} \sum_i || (y_i - Q(s_i,a_i; \theta_i)) ||^2 \\
+\quad \text{Gather data } {(s_i, a_i, r_i, s'_i)} \ \text{by acting in the environment using some policy} \\
+\quad \text{for j = 1 ... K:} \\
+\quad \quad \text{1. Calculate target values for each example} \\
+\quad \quad y_i = r_i + \gamma \ \max\limits_{a'} Q(s'_i, a'; \theta_{i-1})|s_i, a_i \\
+\quad \quad \text{2. Update network parameters, using MSE loss} \\
+\quad \quad L_j(\theta) = \frac{1}{2} \sum_i || (y_i - Q(s_i,a_i; \theta_i)) ||^2 \\
 \end{eqnarray}''')
 
 
@@ -140,20 +140,18 @@ V (s_t) = r(s_t, a_t) + V(s'_t)  \\
 \end{eqnarray}''')
 
 Latex(r'''\begin{eqnarray}
-\text{Algorithm Actor Critic}
+\text{Algorithm Actor Critic} \\
 \text{For i = 1 .... N:} \\
-\ \ \ \ \text{1. Gather data } {(s_i, a_i, s'_i, r_i)} \ \text{by acting in the environment using your policy} \\
-\ \ \ \ \text{2. Update V} \\
-\ \ \ \ \text{for j = 1 ... K:} \\
-\ \ \ \ \ \ \ \  \text{Calculate target values for each example} \\
-\ \ \ \ \ \ \ \  y_i = r_i + V(s'_i) \\
-\ \ \ \ \ \ \ \ \text{Update network parameters, using MSE loss} \\
-\ \ \ \ \ \ \ \ L_i(\theta_i) = \frac{1}{2} \sum_i || (y_i - V(s_i; \theta_i)) ||^2 \\
-\ \ \ \ \text{3. Evaluate A} \\
-\ \ \ \ A^\pi(s_i,a_i) = r(s_i, a_i) + V^\pi (s'_i) - V^\pi (s_i)\\
-\ \ \ \ \text{4. Calculate gradient} \\
-\ \ \ \ \nabla_{\phi}J(\phi) \approx \sum_i A^\pi_t(s_i, a_i) \nabla_\phi log \pi_\phi (a_i | s_i)\\
-\ \ \ \ \text{5. Use gradient to update parameters } \phi  \\
+\quad \text{1. Gather data } {(s_i, a_i, r_i, s'_i)} \ \text{by acting in the environment using your policy} \\
+\quad \text{2. Update V} \\
+\quad \text{for j = 1 ... K:} \\
+\quad \quad \text{Calculate target values for each example} \\
+\quad \quad y_i = r_i + V(s'_i) \\
+\quad \quad \text{Update network parameters, using MSE loss} \\
+\quad \quad L_j(\theta) = \frac{1}{2} \sum_i || (y_i - V(s_i; \theta_i)) ||^2 \\
+\quad \text{3. Evaluate A, } A^\pi(s_i,a_i) = r(s_i, a_i) + V^\pi (s'_i) - V^\pi (s_i)\\
+\quad \text{4. Calculate gradient,} \nabla_{\phi}J(\phi) \approx \sum_i A^\pi_t(s_i, a_i) \nabla_\phi log \pi_\phi (a_i | s_i)\\
+\quad \text{5. Use gradient to update parameters } \phi  \\
 \end{eqnarray}''')
 
 Latex(r'''\begin{eqnarray}
