@@ -27,14 +27,14 @@ def act_with_epsilon_greedy(body, state, net, epsilon):
 
 def multi_act_with_epsilon_greedy(bodies, state, net, epsilon):
     '''Multi-body action on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
-    flat_body_states = np.array(state).flatten()
+    flat_body_states = np.concatenate(state)
     # print(f'epsilon {epsilon}')
     if epsilon > np.random.rand():
         # print('random action')
         action = np.random.randint(a_dim, size=len(bodies))
     else:
         # print('net action')
-        torch_state = Variable(torch.from_numpy(state).float())
+        torch_state = Variable(torch.from_numpy(flat_body_states).float())
         out = net.wrap_eval(torch_state)
         action = []
         for eb_idx, body in enumerate(bodies):
@@ -56,11 +56,12 @@ def act_with_boltzmann(body, state, net, tau):
 
 
 def multi_act_with_boltzmann(bodies, state, net, tau):
-    torch_state = Variable(torch.from_numpy(state).float())
+    flat_body_states = np.concatenate(state)
+    torch_state = Variable(torch.from_numpy(flat_body_states).float())
     out = net.wrap_eval(torch_state)
     out_with_temp = torch.div(out, tau)
     action = []
-    for eb_idx, body in enumerate(agent.bodies):
+    for eb_idx, body in enumerate(bodies):
         start_idx = eb_idx * body.action_dim
         end_idx = start_idx + body.action_dim
         probs = F.softmax(out_with_temp[start_idx: end_idx]).data.numpy()

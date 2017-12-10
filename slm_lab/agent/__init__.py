@@ -53,6 +53,9 @@ class Agent:
     def reset(self, state):
         '''Do agent reset per episode, such as memory pointer'''
         self.memory.reset_last_state(state)
+        # TODO hack add
+        if hasattr(self, 'memory_1'):
+            self.memory_1.reset_last_state(state)
 
     def act(self, state):
         '''Standard act method from algorithm.'''
@@ -63,6 +66,9 @@ class Agent:
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
         self.memory.update(action, reward, state, done)
+        # TODO hack add
+        if hasattr(self, 'memory_1'):
+            self.memory_1.update(action, reward, state, done)
         loss = self.algorithm.train()
         explore_var = self.algorithm.update()
         # TODO tmp return, to unify with monitor auto-fetch later
