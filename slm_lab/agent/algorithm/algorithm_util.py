@@ -37,7 +37,7 @@ def multi_act_with_epsilon_greedy(bodies, state, net, epsilon):
         torch_state = Variable(torch.from_numpy(state).float())
         out = net.wrap_eval(torch_state)
         action = []
-        for eb_idx, body in enumerate(self.agent.bodies):
+        for eb_idx, body in enumerate(bodies):
             start_idx = eb_idx * body.action_dim
             end_idx = start_idx + body.action_dim
             body_action = int(torch.max(out[start_idx: end_idx], dim=0)[1][0])
@@ -52,6 +52,20 @@ def act_with_boltzmann(body, state, net, tau):
     probs = F.softmax(out_with_temp).data.numpy()
     action = np.random.choice(list(range(body.action_dim)), p=probs)
     # print('Probs: {}, action: {}'.format(probs, action))
+    return action
+
+
+def multi_act_with_boltzmann(bodies, state, net, tau):
+    torch_state = Variable(torch.from_numpy(state).float())
+    out = net.wrap_eval(torch_state)
+    out_with_temp = torch.div(out, tau)
+    action = []
+    for eb_idx, body in enumerate(agent.bodies):
+        start_idx = eb_idx * body.action_dim
+        end_idx = start_idx + body.action_dim
+        probs = F.softmax(out_with_temp[start_idx: end_idx]).data.numpy()
+        body_action = np.random.choice(list(range(body.action_dim)), p=probs)
+        action.append(body_action)
     return action
 
 
@@ -79,6 +93,7 @@ act_fns = {
     'epsilon_greedy': act_with_epsilon_greedy,
     'multi_epsilon_greedy': multi_act_with_epsilon_greedy,
     'boltzmann': act_with_boltzmann,
+    'multi_boltzmann': multi_act_with_boltzmann,
     'gaussian': act_with_gaussian
 }
 
