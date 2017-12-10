@@ -25,13 +25,23 @@ def act_with_epsilon_greedy(body, state, net, epsilon):
     return action
 
 
-def multi_act_with_epsilon_greedy(net, state, epsilon):
-    '''
-    Multi-body action at a batch
-    With probability epsilon select a random action,
-    otherwise select the action associated with the
-    largest q value
-    '''
+def multi_act_with_epsilon_greedy(bodies, state, net, epsilon):
+    '''Multi-body action on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
+    flat_body_states = np.array(state).flatten()
+    # print(f'epsilon {epsilon}')
+    if epsilon > np.random.rand():
+        # print('random action')
+        action = np.random.randint(a_dim, size=len(bodies))
+    else:
+        # print('net action')
+        torch_state = Variable(torch.from_numpy(state).float())
+        out = net.wrap_eval(torch_state)
+        action = []
+        for eb_idx, body in enumerate(self.agent.bodies):
+            start_idx = eb_idx * body.action_dim
+            end_idx = start_idx + body.action_dim
+            body_action = int(torch.max(out[start_idx: end_idx], dim=0)[1][0])
+            action.append(body_action)
     return action
 
 

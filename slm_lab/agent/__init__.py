@@ -40,11 +40,10 @@ class Agent:
         self.eb_proj = self.agent_space.a_eb_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
 
-        # TODO repattern, redesign spec
-        AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
-        self.algorithm = AlgoClass(self)
         MemoryClass = getattr(memory, _.get(self.spec, 'memory.name'))
         self.memory = MemoryClass(self)
+        AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
+        self.algorithm = AlgoClass(self)
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
