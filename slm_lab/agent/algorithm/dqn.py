@@ -78,7 +78,6 @@ class DQNBase(Algorithm):
         self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
 
     def compute_q_target_values(self, batch):
-        batch = batch['batch']
         q_vals = self.net.wrap_eval(batch['states'])
         # Use act_select network to select actions in next state
         # Depending on the algorithm this is either the current
@@ -108,15 +107,12 @@ class DQNBase(Algorithm):
 
     def get_batch(self):
         batch = self.agent.memory.get_batch(self.batch_size)
-        batch_loss = 0.0
         # Package data into pytorch variables
         float_data_list = [
             'states', 'actions', 'rewards', 'dones', 'next_states']
         for k in float_data_list:
             batch[k] = Variable(torch.from_numpy(batch[k]).float())
-        # Packaging into a dict to allow for arbitrary number of batches
-        # to be returned. Master batch is always called batch
-        return {'batch': batch}
+        return batch
 
     def train(self):
         # TODO docstring
@@ -130,7 +126,7 @@ class DQNBase(Algorithm):
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
                     y = Variable(q_targets)
-                    loss = self.net.training_step(batch['batch']['states'], y)
+                    loss = self.net.training_step(batch['states'], y)
                     batch_loss += loss.data[0]
                     # print(f'loss {loss.data[0]}')
                 batch_loss /= self.training_iters_per_batch
@@ -275,7 +271,7 @@ class MultitaskDQN(DQNBase):
             'states', 'actions', 'rewards', 'dones', 'next_states']
         for k in float_data_list:
             batch_1[k] = Variable(torch.from_numpy(batch_1[k]).float())
-            batch_2[k] = Variable(torch.from_numpy(batch_1[k]).float())
+            batch_2[k] = Variable(torch.from_numpy(batch_2[k]).float())
         # Concat state
         combined_states = torch.cat(
             [batch_1['states'], batch_2['states']], dim=1)
@@ -283,15 +279,14 @@ class MultitaskDQN(DQNBase):
             [batch_1['next_states'], batch_2['next_states']], dim=1)
         batch = {'states': combined_states,
                  'next_states': combined_next_states}
-        batches = {'batch': batch,
-                   'batch_1': batch_1,
-                   'batch_2': batch_2}
-        return batches
+        # use recursive packaging to carry sub data
+        batch['sub_1'] = batch_1
+        batch['sub_2'] = batch_2
+        return batch
 
     def compute_q_target_values(self, batch):
-        batch = batch['batch']
-        batch_1 = batch['batch_1']
-        batch_2 = batch['batch_1']
+        batch_1 = batch['sub_1']
+        batch_2 = batch['sub_1']
         q_vals = self.net.wrap_eval(batch['states'])
         # Use act_select network to select actions in next state
         # Depending on the algorithm this is either the current
