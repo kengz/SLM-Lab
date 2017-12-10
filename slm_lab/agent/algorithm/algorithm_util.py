@@ -37,11 +37,12 @@ def multi_act_with_epsilon_greedy(bodies, state, net, epsilon):
         torch_state = Variable(torch.from_numpy(flat_body_states).float())
         out = net.wrap_eval(torch_state)
         action = []
+        start_idx = 0
         for eb_idx, body in enumerate(bodies):
-            start_idx = eb_idx * body.action_dim
             end_idx = start_idx + body.action_dim
             body_action = int(torch.max(out[start_idx: end_idx], dim=0)[1][0])
             action.append(body_action)
+            start_idx = end_idx
     return action
 
 
@@ -61,12 +62,13 @@ def multi_act_with_boltzmann(bodies, state, net, tau):
     out = net.wrap_eval(torch_state)
     out_with_temp = torch.div(out, tau)
     action = []
+    start_idx = 0
     for eb_idx, body in enumerate(bodies):
-        start_idx = eb_idx * body.action_dim
         end_idx = start_idx + body.action_dim
         probs = F.softmax(out_with_temp[start_idx: end_idx]).data.numpy()
         body_action = np.random.choice(list(range(body.action_dim)), p=probs)
         action.append(body_action)
+        start_idx = end_idx
     return action
 
 
