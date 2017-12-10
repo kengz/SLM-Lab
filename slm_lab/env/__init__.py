@@ -14,8 +14,8 @@ import numpy as np
 import os
 import pydash as _
 
-gym.logger.setLevel('WARN')
-unity_logger.setLevel('WARN')
+gym.logger.setLevel('ERROR')
+unity_logger.setLevel('ERROR')
 
 
 class BrainExt:
