@@ -208,6 +208,59 @@
       "train_mode": true
     }
   },
+  "dqn_cartpole_gridworld": {
+    "agent": [{
+      "name": "MultitaskDQN",
+      "algorithm": {
+        "name": "MultitaskDQN",
+        "action_policy": "multi_boltzmann",
+        "gamma": 0.999,
+        "explore_var_start": 5.0,
+        "explore_var_end": 1.0,
+        "explore_anneal_epi": 30,
+        "training_min_timestep": 0,
+        "training_frequency": 1,
+        "training_epoch": 5,
+        "training_iters_per_batch": 3
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 10000
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [32],
+        "hid_layers_activation": "sigmoid",
+        "update_type": "replace",
+        "polyak_weight": 0,
+        "update_frequency": 1.0,
+        "optim": {
+          "lr": 0.02
+        },
+        "batch_size": 32
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null
+    }, {
+      "name": "gridworld",
+      "max_timestep": 20
+    }],
+    "body": {
+      "product": "custom",
+      "num": [
+        [0, 0, 0],
+        [0, 1, 0]
+      ]
+    },
+    "meta": {
+      "max_episode": 40,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": true
+    }
+  },
   "dqn_gridworld": {
     "agent": [{
       "name": "VanillaDQN",
