@@ -63,10 +63,17 @@ def multi_act_with_boltzmann(bodies, state, net, tau):
     out_with_temp = torch.div(out, tau)
     action = []
     start_idx = 0
+    # print("Acting...")
     for eb_idx, body in enumerate(bodies):
         end_idx = start_idx + body.action_dim
         probs = F.softmax(out_with_temp[start_idx: end_idx]).data.numpy()
         body_action = np.random.choice(list(range(body.action_dim)), p=probs)
+        # print("Start idx: {}, end: idx: {}, action: {}, dims: {}".format(
+        #     start_idx,
+        #     end_idx,
+        #     body_action,
+        #     out_with_temp[start_idx: end_idx].size()
+        # ))
         action.append(body_action)
         start_idx = end_idx
     return action

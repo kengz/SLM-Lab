@@ -266,6 +266,11 @@ class MultitaskDQN(DQNBase):
     def get_batch(self):
         batch_1 = self.agent.memory.get_batch(self.batch_size)
         batch_2 = self.agent.memory_1.get_batch(self.batch_size)
+        # print("Inside get batch")
+        # print("Batch 1: ")
+        # print(batch_1)
+        # print("Batch 2: ")
+        # print(batch_2)
         # Package data into pytorch variables
         float_data_list = [
             'states', 'actions', 'rewards', 'dones', 'next_states']
@@ -286,7 +291,9 @@ class MultitaskDQN(DQNBase):
 
     def compute_q_target_values(self, batch):
         batch_1 = batch['sub_1']
-        batch_2 = batch['sub_1']
+        batch_2 = batch['sub_2']
+        # print("batch: {}".format(batch['states'].size()))
+        # print("batch: {}".format(batch['states']))
         q_vals = self.net.wrap_eval(batch['states'])
         # Use act_select network to select actions in next state
         # Depending on the algorithm this is either the current
@@ -302,41 +309,60 @@ class MultitaskDQN(DQNBase):
             q_next_st_act_vals[:, self.state_dims[0]:], dim=1)
         # Shift next actions_2 so they have the right indices
         q_next_actions_2 = torch.add(q_next_actions_2, self.state_dims[0])
-
+        # print("Q next actions 1: {}".format(q_next_actions_1.size()))
+        # print("Q next actions 2: {}".format(q_next_actions_2.size()))
         # Select q_next_st_vals_max based on action selected in q_next_actions
         # Evaluate the action selection using the eval net
         # Depending on the algorithm this is either the current
         # net or target net
         q_next_st_vals = self.eval_net.wrap_eval(batch['next_states'])
+        # print("Q next st vals: {}".format(q_next_st_vals.size()))
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
-
         # Calculate values for two sets of actions
         q_next_st_vals_max_1 = q_next_st_vals[idx, q_next_actions_1]
         q_next_st_vals_max_1.unsqueeze_(1)
         q_next_st_vals_max_2 = q_next_st_vals[idx, q_next_actions_2]
         q_next_st_vals_max_2.unsqueeze_(1)
-
+        # print("Q next st vals max 1: {}".format(q_next_st_vals_max_1.size()))
+        # print("Q next st vals max 2: {}".format(q_next_st_vals_max_2.size()))
         # Compute final q_target using reward and estimated
         # best Q value from the next state if there is one
         # Make future reward 0 if the current state is done
         # Do it individually first, then combine
         # Each individual target should automatically expand
         # to the dimension of the relevant action space
-        q_targets_max_1 = batch_1['rewards'].data + self.gamma * \
-            torch.mul((1 - batch_1['dones'].data), q_next_st_vals_max_1)
-        q_targets_max_2 = batch_2['rewards'].data + self.gamma * \
-            torch.mul((1 - batch_2['dones'].data), q_next_st_vals_max_2)
+        q_targets_max_1 = (batch_1['rewards'].data + self.gamma * \
+            torch.mul((1 - batch_1['dones'].data), q_next_st_vals_max_1)).numpy()
+        q_targets_max_2 = (batch_2['rewards'].data + self.gamma * \
+            torch.mul((1 - batch_2['dones'].data), q_next_st_vals_max_2)).numpy()
+        # print("Q targets max 1: {}".format(q_targets_max_1))
+        # print("Q targets max 2: {}".format(q_targets_max_2))
+        # print("Q targets max 1: {}".format(q_targets_max_1.shape))
+        # print("Q targets max 2: {}".format(q_targets_max_2.shape))
         # Concat to form full size targets
+        q_targets_max_1 = torch.from_numpy(np.broadcast_to(q_targets_max_1,
+                                         (q_targets_max_1.shape[0], self.action_dims[0])))
+        q_targets_max_2 = torch.from_numpy(np.broadcast_to(q_targets_max_2,
+                                         (q_targets_max_2.shape[0], self.action_dims[1])))
+        # print("Q targets max broadcast 1: {}".format(q_targets_max_1.size()))
+        # print("Q targets max broadcast 2: {}".format(q_targets_max_2.size()))
         q_targets_max = torch.cat([q_targets_max_1, q_targets_max_2], dim=1)
+        # print("Q targets max: {}".format(q_targets_max.size()))
         # Also concat actions - each batch should have only two
         # non zero dimensions
         combined_actions = torch.cat(
             [batch_1['actions'], batch_2['actions']], dim=1)
+        # print("Batch 1 actions: {}".format(batch_1['actions']))
+        # print("Batch 2 actions: {}".format(batch_2['actions']))
+        # print("Combined actions: {}".format(combined_actions))
+        # print("Combined actions size: {}".format(combined_actions.size()))
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_vals
         # So that the loss for these actions is 0
         q_targets = torch.mul(q_targets_max, combined_actions.data) + \
             torch.mul(q_vals, (1 - combined_actions.data))
+        # print("Q targets size: {}".format(q_targets.size()))
+        # exit()
         return q_targets
 
     def act(self, state):

@@ -271,7 +271,7 @@
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
         "explore_anneal_epi": 300,
-        "training_min_timestep": 0,
+        "training_min_timestep": 10,
         "training_frequency": 1,
         "training_epoch": 5,
         "training_iters_per_batch": 3
