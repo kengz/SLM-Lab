@@ -16,7 +16,16 @@ import pydash as _
 
 PLOT_FILEDIR = util.smart_path('data')
 os.makedirs(PLOT_FILEDIR, exist_ok=True)
-py.init_notebook_mode(connected=True)
+if util.is_jupyter():
+    py.init_notebook_mode(connected=True)
+
+
+def plot(*args, **kwargs):
+    if util.is_jupyter():
+        return py.iplot(*args, **kwargs)
+    else:
+        kwargs.update({'auto_open': _.get(kwargs, 'auto_open', False)})
+        return py.plot(*args, **kwargs)
 
 
 def save_image(figure, filename=None):
@@ -141,7 +150,7 @@ def plot_go(
 
     figure = go.Figure(data=data, layout=layout)
     if draw:
-        py.iplot(figure)
+        plot(figure)
     if save:
         save_image(figure, filename=filename)
     return figure

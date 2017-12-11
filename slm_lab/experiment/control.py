@@ -117,7 +117,7 @@ class Session:
         fig.layout['yaxis3'].update(domain=[0, 0.45])
         fig.layout.update(_.pick(fig1.layout, ['legend']))
         fig.layout.update(title='total_rewards vs time', width=500, height=600)
-        viz.py.iplot(fig)
+        viz.plot(fig)
         viz.save_image(fig)
 
         self.close()
