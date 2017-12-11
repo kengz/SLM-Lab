@@ -101,6 +101,7 @@ class OpenAIEnv:
         return {'state': state_dim}
 
     def reset(self):
+        self.done = False
         state = []
         body_state = self.u_env.reset()
         for a, b in self.ab_proj:
@@ -109,6 +110,9 @@ class OpenAIEnv:
         return state
 
     def step(self, action):
+        # TODO hack for mismaching env timesteps
+        if self.done:
+            self.reset()
         assert len(action) == 1, 'OpenAI Gym supports only single body'
         if not self.train_mode:
             self.u_env.render()
@@ -118,6 +122,7 @@ class OpenAIEnv:
         reward = [body_reward]
         state = [body_state]
         done = [body_done]
+        self.done = bool(np.all(done))
         return reward, state, done
 
     def close(self):
