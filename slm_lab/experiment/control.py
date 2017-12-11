@@ -64,8 +64,8 @@ class Session:
             (reward_space, state_space,
              done_space) = self.env_space.step(action_space)
             rewards = np.sum(_.flatten_deep(reward_space.data_proj))
-            print("Rewards: {}".format(reward_space))
-            print("States: {}".format(state_space))
+            # print("Rewards: {}".format(reward_space))
+            # print("States: {}".format(state_space))
             total_rewards += rewards
             logger.debug(
                 f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')
