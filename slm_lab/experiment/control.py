@@ -55,6 +55,7 @@ class Session:
         # TODO hack. absorb later from monitor
         episode_data_list = []
         total_rewards = 0
+        total_rewards_2 = 0
         for t in range(self.env_space.max_timestep):
             self.aeb_space.tick_clock('t')
             # TODO common refinement of timestep
@@ -63,10 +64,12 @@ class Session:
             logger.debug(f'action_space {action_space}')
             (reward_space, state_space,
              done_space) = self.env_space.step(action_space)
-            rewards = np.sum(_.flatten_deep(reward_space.data_proj))
+            rewards = np.sum(_.flatten_deep(reward_space.get(e=0)))
+            rewards_2 = np.sum(_.flatten_deep(reward_space.get(e=1)))
             # print("Rewards: {}".format(reward_space))
             # print("States: {}".format(state_space))
             total_rewards += rewards
+            total_rewards_2 += rewards_2
             logger.debug(
                 f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')
             # completes cycle of full info for agent_space
@@ -74,13 +77,13 @@ class Session:
             loss, explore_var = self.agent_space.update(
                 action_space, reward_space, state_space, done_space)
             episode_data_list.append(
-                [rewards, total_rewards, loss, explore_var])
+                [rewards, total_rewards, rewards, total_rewards_2, loss, explore_var])
             if bool(done_space):
                 break
-        logger.info(f'epi {self.aeb_space.clock["e"]}, total_rewards {total_rewards}')
+        logger.info(f'epi {self.aeb_space.clock["e"]}, total_rewards {total_rewards}, total_rewards_2 {total_rewards_2}')
         # TODO compose episode data properly with monitor
         episode_data = pd.DataFrame(
-            episode_data_list, columns=['rewards', 'total_rewards', 'loss', 'explore_var'])
+            episode_data_list, columns=['rewards', 'total_rewards', 'rewards', 'total_rewards_2', 'loss', 'explore_var'])
         # episode_data = {}
         return episode_data
 
@@ -91,13 +94,14 @@ class Session:
             episode_data = self.run_episode()
             data_list.append([
                 episode_data['total_rewards'].iloc[-1],  # last
+                episode_data['total_rewards_2'].iloc[-1],  # last
                 episode_data['loss'].mean(),
                 episode_data['explore_var'].iloc[-1],
             ])
         # TODO tmp hack. fix with monitor data later
         data = pd.DataFrame(
-            data_list, columns=['total_rewards', 'loss', 'explore_var'])
-        fig1 = viz.plot_line(data, ['total_rewards'],
+            data_list, columns=['total_rewards', 'total_rewards_2', 'loss', 'explore_var'])
+        fig1 = viz.plot_line(data, ['total_rewards', 'total_rewards_2'],
                              y2_col=['explore_var'], draw=False)
         fig2 = viz.plot_line(data, ['loss'], draw=False)
         fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)

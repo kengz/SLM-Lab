@@ -344,7 +344,7 @@
       "name": "CartPole-v0",
       "max_timestep": null
     }, {
-      "name": "CartPole-v0",
+      "name": "Acrobot-v1",
       "max_timestep": null
     }],
     "body": {
@@ -355,7 +355,7 @@
       "max_episode": 400,
       "max_session": 1,
       "max_trial": 1,
-      "train_mode": true
+      "train_mode": false
     }
   },
   "dqn_gridworld": {
