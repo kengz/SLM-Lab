@@ -344,7 +344,7 @@
       "name": "CartPole-v0",
       "max_timestep": null
     }, {
-      "name": "Acrobot-v1",
+      "name": "CartPole-v0",
       "max_timestep": null
     }],
     "body": {

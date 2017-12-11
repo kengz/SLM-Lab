@@ -304,11 +304,11 @@ class MultitaskDQN(DQNBase):
         # Select two sets of next actions
         # TODO Generalize to more than two tasks
         _val, q_next_actions_1 = torch.max(
-            q_next_st_act_vals[:, :self.state_dims[0]], dim=1)
+            q_next_st_act_vals[:, :self.action_dims[0]], dim=1)
         _val, q_next_actions_2 = torch.max(
-            q_next_st_act_vals[:, self.state_dims[0]:], dim=1)
+            q_next_st_act_vals[:, self.action_dims[0]:], dim=1)
         # Shift next actions_2 so they have the right indices
-        q_next_actions_2 = torch.add(q_next_actions_2, self.state_dims[0])
+        q_next_actions_2 = torch.add(q_next_actions_2, self.action_dims[0])
         # print("Q next actions 1: {}".format(q_next_actions_1.size()))
         # print("Q next actions 2: {}".format(q_next_actions_2.size()))
         # Select q_next_st_vals_max based on action selected in q_next_actions
