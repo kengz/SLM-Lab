@@ -314,10 +314,10 @@
       "algorithm": {
         "name": "MultitaskDQN",
         "action_policy": "multi_boltzmann",
-        "gamma": 0.9999,
+        "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
-        "explore_anneal_epi": 300,
+        "explore_anneal_epi": 15,
         "training_min_timestep": 10,
         "training_frequency": 1,
         "training_epoch": 5,
@@ -329,13 +329,13 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [200, 100],
+        "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "lr": 0.001
+          "lr": 0.02
         },
         "batch_size": 32
       }
