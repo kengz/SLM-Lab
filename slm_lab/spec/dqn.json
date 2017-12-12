@@ -153,7 +153,7 @@
         "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
-        "explore_anneal_epi": 30,
+        "explore_anneal_epi": 70,
         "training_min_timestep": 0,
         "training_frequency": 1,
         "training_epoch": 5,
@@ -165,7 +165,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
+        "hid_layers": [200, 100],
         "hid_layers_activation": "sigmoid",
         "update_type": "replace",
         "polyak_weight": 0,
@@ -178,14 +178,14 @@
     }],
     "env": [{
       "name": "3dball",
-      "max_timestep": 200
+      "max_timestep": 1000
     }],
     "body": {
       "product": "outer",
       "num": 12
     },
     "meta": {
-      "max_episode": 60,
+      "max_episode": 100,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
