@@ -4,6 +4,7 @@ from slm_lab.agent import net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
+from slm_lab.lib import util
 from torch.autograd import Variable
 import numpy as np
 import pydash as _
@@ -255,7 +256,7 @@ class MultitaskDQN(DQNBase):
         # TODO handle this with better design
         # create a new memory for task 2
         MemoryClass = getattr(memory, _.get(self.agent.spec, 'memory.name'))
-        body_space = self.agent.agent_space.aeb_space.body_space
+        body_space = util.s_get(self, 'aeb_space.body_space')
         env_bodies = body_space.get(e=0)
         env_1_bodies = body_space.get(e=1)
         self.agent.memory = MemoryClass(self.agent)
@@ -331,19 +332,21 @@ class MultitaskDQN(DQNBase):
         # Do it individually first, then combine
         # Each individual target should automatically expand
         # to the dimension of the relevant action space
-        q_targets_max_1 = (batch_1['rewards'].data + self.gamma * \
-            torch.mul((1 - batch_1['dones'].data), q_next_st_vals_max_1)).numpy()
-        q_targets_max_2 = (batch_2['rewards'].data + self.gamma * \
-            torch.mul((1 - batch_2['dones'].data), q_next_st_vals_max_2)).numpy()
+        q_targets_max_1 = (batch_1['rewards'].data + self.gamma * torch.mul(
+            (1 - batch_1['dones'].data), q_next_st_vals_max_1)).numpy()
+        q_targets_max_2 = (batch_2['rewards'].data + self.gamma * torch.mul(
+            (1 - batch_2['dones'].data), q_next_st_vals_max_2)).numpy()
         # print("Q targets max 1: {}".format(q_targets_max_1))
         # print("Q targets max 2: {}".format(q_targets_max_2))
         # print("Q targets max 1: {}".format(q_targets_max_1.shape))
         # print("Q targets max 2: {}".format(q_targets_max_2.shape))
         # Concat to form full size targets
-        q_targets_max_1 = torch.from_numpy(np.broadcast_to(q_targets_max_1,
-                                         (q_targets_max_1.shape[0], self.action_dims[0])))
-        q_targets_max_2 = torch.from_numpy(np.broadcast_to(q_targets_max_2,
-                                         (q_targets_max_2.shape[0], self.action_dims[1])))
+        q_targets_max_1 = torch.from_numpy(
+            np.broadcast_to(q_targets_max_1,
+                            (q_targets_max_1.shape[0], self.action_dims[0])))
+        q_targets_max_2 = torch.from_numpy(
+            np.broadcast_to(q_targets_max_2,
+                            (q_targets_max_2.shape[0], self.action_dims[1])))
         # print("Q targets max broadcast 1: {}".format(q_targets_max_1.size()))
         # print("Q targets max broadcast 2: {}".format(q_targets_max_2.size()))
         q_targets_max = torch.cat([q_targets_max_1, q_targets_max_2], dim=1)

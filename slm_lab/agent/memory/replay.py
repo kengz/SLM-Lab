@@ -1,5 +1,6 @@
 from collections import Iterable
 from slm_lab.agent.memory.base import Memory
+from slm_lab.lib import util
 import numpy as np
 
 
@@ -40,7 +41,8 @@ class Replay(Memory):
         # TODO also for multi state, multi actions per body, need to be 3D
         # bodies using this shared memory, should be congruent (have same state_dim, action_dim)
         # TODO add warning that memory is env-specific now
-        self.bodies = bodies or self.agent.agent_space.aeb_space.body_space.get(e=0)
+        self.bodies = bodies or util.s_get(
+            self, 'aeb_space.body_space').get(e=0)
         self.coor_list = [body.coor for body in self.bodies]
         default_body = self.bodies[0]
         self.max_size = self.agent.spec['memory']['max_size']
