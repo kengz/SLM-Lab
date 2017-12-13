@@ -116,7 +116,7 @@ class DQNBase(Algorithm):
 
     def train(self):
         # TODO docstring
-        t = self.agent.agent_space.aeb_space.clock['total_t']
+        t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (t > self.training_min_timestep and t % self.training_frequency == 0):
             # print('Training')
             total_loss = 0.0
@@ -143,11 +143,11 @@ class DQNBase(Algorithm):
         return self.action_policy(body, body_state, self.net, self.explore_var)
 
     def update(self):
-        t = self.agent.agent_space.aeb_space.clock['total_t']
+        t = util.s_get(self, 'aeb_space.clock').get('total_t')
         # if t % 100 == 0:
         # print(f'Total time step: {t}')
         '''Update epsilon or boltzmann for policy after net training'''
-        epi = self.agent.agent_space.aeb_space.clock['e']
+        epi = util.s_get(self, 'aeb_space.clock').get('e')
         rise = self.explore_var_end - self.explore_var_start
         slope = rise / float(self.explore_anneal_epi)
         self.explore_var = max(

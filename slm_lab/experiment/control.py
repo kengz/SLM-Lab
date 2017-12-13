@@ -80,7 +80,7 @@ class Session:
                 [rewards, total_rewards, rewards_2, total_rewards_2, loss, explore_var])
             if bool(done_space):
                 break
-        logger.info(f'epi {self.aeb_space.clock["e"]}, total_rewards {total_rewards}, total_rewards_2 {total_rewards_2}')
+        logger.info(f'epi {self.aeb_space.clock.get("e")}, total_rewards {total_rewards}, total_rewards_2 {total_rewards_2}')
         # TODO compose episode data properly with monitor
         episode_data = pd.DataFrame(
             episode_data_list, columns=['rewards', 'total_rewards', 'rewards_2', 'total_rewards_2', 'loss', 'explore_var'])
