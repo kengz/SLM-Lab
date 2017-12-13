@@ -286,7 +286,6 @@ def s_get(cls, attr_path):
     for attr in path_link + attr_path:
         if not (get_class_name(res, lower=True) in (attr, attr.replace('_', ''))):
             res = getattr(res, attr)
-        print(res)
     return res
 
 

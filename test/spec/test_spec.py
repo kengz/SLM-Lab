@@ -3,6 +3,7 @@ from slm_lab.experiment.control import Trial, Session
 import pytest
 
 
+@pytest.mark.skip(reason='TODO worker_id will clash on same thread? no shdnt. to be fixed')
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('base.json', 'base_case'),
     ('base.json', 'base_case_openai'),
