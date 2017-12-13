@@ -144,8 +144,9 @@ class Env:
         self.index = e
         self.ab_proj = self.env_space.e_ab_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
+        worker_id = int(str(os.getpid() + self.index)[-2:])
         self.u_env = UnityEnvironment(
-            file_name=util.get_env_path(self.name), worker_id=os.getpid() + self.index)
+            file_name=util.get_env_path(self.name), worker_id=worker_id)
         self.check_u_brain_to_agent()
 
     def check_u_brain_to_agent(self):
