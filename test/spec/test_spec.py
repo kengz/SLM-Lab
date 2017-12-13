@@ -1,5 +1,5 @@
 from slm_lab.spec import spec_util
-from slm_lab.experiment.control import Trial
+from slm_lab.experiment.control import Trial, Session
 import pytest
 
 
@@ -16,3 +16,7 @@ def test_base(spec_file, spec_name):
     spec['meta']['train_mode'] = True
     trial = Trial(spec)
     trial_data = trial.run()
+
+
+def test_build_session(test_session):
+    assert isinstance(test_session, Session)
