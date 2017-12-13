@@ -42,6 +42,26 @@ AGENT_DATA_NAMES = ['action']
 ENV_DATA_NAMES = ['state', 'reward', 'done']
 
 
+class Clock:
+    def __init__(self):
+        self.t = 0
+        self.total_t = 0
+        self.e = 0
+
+    def tick(self, unit='t'):
+        if unit == 't':  # timestep
+            self.t += 1
+            self.total_t += 1
+        elif unit == 'e':  # episode, reset timestep
+            self.t = 0
+            self.e += 1
+        else:
+            raise KeyError
+
+    def get(self, unit='t'):
+        return getattr(self, unit)
+
+
 class Body:
     '''
     Body, helpful info reference unit under AEBSpace for sharing info between agent and env.
@@ -50,6 +70,7 @@ class Body:
     def __init__(self, aeb, agent, env):
         self.coor = aeb
         self.a, self.e, self.b = aeb
+        self.clock = Clock()
         self.agent = agent
         self.env = env
         self.observable_dim = self.env.get_observable_dim(self.a)
@@ -156,6 +177,7 @@ class AEBSpace:
         # TODO shove
         # self.info_space = info_space
         self.spec = spec
+        self.clock = Clock()
         self.agent_space = None
         self.env_space = None
         self.body_space = None
@@ -167,9 +189,6 @@ class AEBSpace:
             'e': None,
         }
         self.data_spaces = self.init_data_spaces()
-        self.clock = {
-            unit: 0 for unit in ['t', 'total_t', 'e']
-        }
 
     def compute_aeb_dims(self, coor_list):
         '''
@@ -231,18 +250,6 @@ class AEBSpace:
             data_space = DataSpace(data_name, self.aeb_proj_dual_map, self)
             self.data_spaces[data_name] = data_space
         return self.data_spaces
-
-    def tick_clock(self, unit):
-        '''Tick the clock a unit into future time'''
-        if unit == 't':  # timestep
-            self.clock['t'] += 1
-            self.clock['total_t'] += 1
-        elif unit == 'e':  # episode, reset timestep
-            self.clock['t'] = 0
-            self.clock['e'] += 1
-        else:
-            raise KeyError
-        return self.clock
 
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
