@@ -101,17 +101,18 @@ class DataSpace:
             self.dual_proj_axis = 'a'
         self.data_proj = None
         self.dual_data_proj = None
+        self.data_proj_history = []  # index = clock.absolute_t
 
     def __str__(self):
         s = '['
         x_map = self.aeb_proj_dual_map[self.dual_proj_axis]
         x_yb_proj = self.aeb_space.a_eb_proj if self.dual_proj_axis == 'a' else self.aeb_space.e_ab_proj
         for x, y_map_idx_list in enumerate(x_map):
-            s += f'\n  {self.proj_axis}:{x} ['
+            s += f'\n  {self.dual_proj_axis}:{x} ['
             for x_idx, (y, xb_idx) in enumerate(y_map_idx_list):
                 b = x_yb_proj[x][x_idx][1]
                 data = self.data_proj[y][xb_idx]
-                s += f'({self.dual_proj_axis}:{y},b:{b}) {data} '
+                s += f'({self.proj_axis}:{y},b:{b}) {data} '
             s += ']'
         s += '\n]'
         return s
@@ -148,6 +149,7 @@ class DataSpace:
         @param {[x: [yb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
         '''
         # TODO might wanna keep a history before replacement, shove to DB
+        self.data_proj_history.append(self.data_proj)
         self.data_proj = data_proj
         self.dual_data_proj = self.create_dual_data_proj(data_proj)
 
