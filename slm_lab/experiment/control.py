@@ -4,7 +4,7 @@ Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Se
 '''
 from slm_lab.agent import Agent, AgentSpace
 from slm_lab.env import Env, EnvSpace
-from slm_lab.experiment.monitor import info_space, AEBSpace
+from slm_lab.experiment.monitor import info_space, AEBSpace, get_body_df_dict
 from slm_lab.lib import logger, util, viz
 import numpy as np
 import pandas as pd
@@ -52,73 +52,93 @@ class Session:
         state_space = self.env_space.reset()
         self.agent_space.reset(state_space)
         # RL steps for SARS
-        # TODO hack. absorb later from monitor
-        episode_data_list = []
-        total_rewards = 0
-        total_rewards_2 = 0
+        loss_list = []
+        explore_var_list = []
         for t in range(self.env_space.max_timestep):
             self.aeb_space.clock.tick('t')
+            # TODO tick body clock
             # TODO common refinement of timestep
             # TODO ability to train more on harder environments, or specify update per timestep per body, ratio of data u use to train. something like train_per_new_mem
             action_space = self.agent_space.act(state_space)
             logger.debug(f'action_space {action_space}')
             (reward_space, state_space,
              done_space) = self.env_space.step(action_space)
-            rewards = np.sum(_.flatten_deep(reward_space.get(e=0)))
-            rewards_2 = np.sum(_.flatten_deep(reward_space.get(e=1)))
-            # print("Rewards: {}".format(reward_space))
-            # print("States: {}".format(state_space))
-            total_rewards += rewards
-            total_rewards_2 += rewards_2
             logger.debug(
                 f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')
             # completes cycle of full info for agent_space
             # TODO tmp return, to unify with monitor auto-fetch later
             loss, explore_var = self.agent_space.update(
                 action_space, reward_space, state_space, done_space)
-            episode_data_list.append(
-                [rewards, total_rewards, rewards_2, total_rewards_2, loss, explore_var])
-            if bool(done_space):
+            if loss is not None:
+                loss_list.append(loss)
+            explore_var_list.append(explore_var)
+            # TODO hack for a reliable done, otherwise all needs to be coincidental
+            # if bool(done_space):
+            if done_space.get(a=0)[0]:
                 break
-        logger.info(f'epi {self.aeb_space.clock.get("e")}, total_rewards {total_rewards}, total_rewards_2 {total_rewards_2}')
+        # TODO monitor record all data spaces, including body with body.clock. cuz all data spaces have history
+        # split per body, use done as delim (maybe done need body clock now), split, sum each chunk
+        mean_loss = np.nanmean(loss_list)
+        mean_explore_var = np.nanmean(explore_var_list)
+        # print(self.aeb_space.data_spaces['reward'])
+        # print(self.aeb_space.data_spaces['reward'].data_proj_history)
+        body_df_dict = get_body_df_dict(self.aeb_space)
+        # logger.info(
+        #     f'epi {self.aeb_space.clock.get("e")}, total_rewards {total_rewards}')
         # TODO compose episode data properly with monitor
-        episode_data = pd.DataFrame(
-            episode_data_list, columns=['rewards', 'total_rewards', 'rewards_2', 'total_rewards_2', 'loss', 'explore_var'])
+        episode_data = {
+            'mean_loss': mean_loss,
+            'mean_explore_var': mean_explore_var,
+            'body_df_dict': body_df_dict,
+        }
+        # episode_data = pd.DataFrame(
+        #     episode_data_list, columns=['rewards', 'total_rewards', 'loss', 'explore_var'])
         # episode_data = {}
         return episode_data
 
     def run(self):
-        data_list = []
+        body_df_dict = None
+        epi_loss_list = []
+        epi_explore_var_list = []
         for e in range(_.get(self.spec, 'meta.max_episode')):
             logger.debug(f'episode {e}')
             episode_data = self.run_episode()
-            data_list.append([
-                episode_data['total_rewards'].iloc[-1],  # last
-                episode_data['total_rewards_2'].iloc[-1],  # last
-                episode_data['loss'].mean(),
-                episode_data['explore_var'].iloc[-1],
-            ])
+            epi_loss_list.append(episode_data['mean_loss'])
+            epi_explore_var_list.append(episode_data['mean_explore_var'])
+            # collected over absolute time, so just get at epi end
+            body_df_dict = episode_data['body_df_dict']
         # TODO tmp hack. fix with monitor data later
-        data = pd.DataFrame(
-            data_list, columns=['total_rewards', 'total_rewards_2', 'loss', 'explore_var'])
-        fig1 = viz.plot_line(data, ['total_rewards', 'total_rewards_2'],
-                             y2_col=['explore_var'], draw=False)
-        fig2 = viz.plot_line(data, ['loss'], draw=False)
+        for k, body_df in body_df_dict.items():
+            body_df['e'] = body_df['done'].cumsum()
+            agg_body_df = body_df[['e', 'reward']].groupby('e').agg('sum')
+            body_df_dict[k] = agg_body_df
+
+        loss_df = pd.DataFrame(
+            {'loss': epi_loss_list, 'explore_var': epi_explore_var_list})
+
         fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
-        fig.append_trace(fig1.data[0], 1, 1)
-        fig.append_trace(fig1.data[1], 1, 1)
-        fig.append_trace(fig1.data[2], 2, 1)
-        fig.append_trace(fig2.data[0], 3, 1)
-        fig.layout['yaxis1'].update(fig1.layout['yaxis'])
-        fig.layout['yaxis2'].update(fig1.layout['yaxis2'])
-        fig.layout['yaxis2'].update(showgrid=False)
+
+        loss_fig = viz.plot_line(
+            loss_df, ['loss'], y2_col=['explore_var'], draw=False)
+        fig.append_trace(loss_fig.data[0], 1, 1)
+        fig.append_trace(loss_fig.data[1], 2, 1)
+
+        for k, body_df in body_df_dict.items():
+            body_fig = viz.plot_line(
+                body_df, 'reward', 'e', x_title=k, draw=False)
+            fig.append_trace(body_fig.data[0], 3, 1)
+
+        fig.layout['yaxis1'].update(loss_fig.layout['yaxis'])
         fig.layout['yaxis1'].update(domain=[0.55, 1])
-        fig.layout['yaxis3'].update(fig2.layout['yaxis'])
+        fig.layout['yaxis2'].update(loss_fig.layout['yaxis2'])
+        fig.layout['yaxis2'].update(showgrid=False)
+
+        fig.layout['yaxis3'].update(body_fig.layout['yaxis'])
         fig.layout['yaxis3'].update(domain=[0, 0.45])
-        fig.layout.update(_.pick(fig1.layout, ['legend']))
+        fig.layout.update(_.pick(loss_fig.layout, ['legend']))
         fig.layout.update(title='total_rewards vs time', width=500, height=600)
         viz.plot(fig)
-        viz.save_image(fig)
+        # viz.save_image(fig)
 
         self.close()
         # TODO session data checker method
