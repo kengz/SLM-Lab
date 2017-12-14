@@ -75,6 +75,10 @@ class Session:
             # TODO hack for a reliable done, otherwise all needs to be coincidental
             # if bool(done_space):
             if done_space.get(a=0)[0]:
+                # TODO refactor: set all to terminate on master termination
+                for a, done_proj_a in enumerate(done_space.data_proj):
+                    for a_idx, _done in enumerate(done_proj_a):
+                        done_space.data_proj[a][a_idx] = True
                 break
         # TODO monitor record all data spaces, including body with body.clock. cuz all data spaces have history
         # split per body, use done as delim (maybe done need body clock now), split, sum each chunk
@@ -109,7 +113,11 @@ class Session:
             body_df_dict = episode_data['body_df_dict']
         # TODO tmp hack. fix with monitor data later
         for k, body_df in body_df_dict.items():
-            body_df['e'] = body_df['done'].cumsum()
+            done_list = body_df['done'].tolist()
+            # fix offset in cumsum (True entry belongs to the chunk before it)
+            done_list.insert(0, False)
+            done_list.pop()
+            body_df['e'] = pd.Series(done_list).cumsum()
             agg_body_df = body_df[['e', 'reward']].groupby('e').agg('sum')
             body_df_dict[k] = agg_body_df
 

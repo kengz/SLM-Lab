@@ -122,7 +122,7 @@ class OpenAIEnv:
         reward = [body_reward]
         state = [body_state]
         done = [body_done]
-        self.done = bool(np.all(done))
+        self.done = body_done
         return reward, state, done
 
     def close(self):
