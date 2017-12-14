@@ -79,7 +79,7 @@
         "optim": {
           "lr": 0.02
         },
-        "batch_size": 16
+        "batch_size": 32
       }
     }],
     "env": [{
@@ -126,7 +126,7 @@
         "optim": {
           "lr": 0.02
         },
-        "batch_size": 16
+        "batch_size": 32
       }
     }],
     "env": [{
@@ -141,7 +141,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 40,
+      "max_episode": 50,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
@@ -176,14 +176,14 @@
         "optim": {
           "lr": 0.02
         },
-        "batch_size": 16
+        "batch_size": 32
       }
     }],
     "env": [{
-      "name": "Acrobot-v1",
+      "name": "CartPole-v0",
       "max_timestep": null
     }, {
-      "name": "CartPole-v0",
+      "name": "Acrobot-v1",
       "max_timestep": null
     }],
     "body": {
@@ -191,7 +191,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 5,
+      "max_episode": 50,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
