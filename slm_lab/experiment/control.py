@@ -75,7 +75,7 @@ class Session:
             # TODO hack for a reliable done, otherwise all needs to be coincidental
             # if bool(done_space):
             if done_space.get(a=0)[0]:
-                # TODO refactor: set all to terminate on master termination
+                # TODO refactor: set all to terminate on master termination. Also use the env with longest timestep to prevent being terminated by fast-running env
                 for a, done_proj_a in enumerate(done_space.data_proj):
                     for a_idx, _done in enumerate(done_proj_a):
                         done_space.data_proj[a][a_idx] = True
@@ -147,7 +147,7 @@ class Session:
         fig.layout.update(_.pick(body_fig.layout, ['legend']))
         fig.layout.update(title=self.spec['name'], width=500, height=600)
         viz.plot(fig)
-        # viz.save_image(fig)
+        viz.save_image(fig)
 
         self.close()
         # TODO session data checker method
