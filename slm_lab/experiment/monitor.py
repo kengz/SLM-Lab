@@ -25,6 +25,7 @@ from copy import deepcopy
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import numpy as np
+import pandas as pd
 import pydash as _
 
 # These correspond to the control unit classes, lower cased
@@ -40,6 +41,27 @@ COOR_AXES_ORDER = {
 COOR_DIM = len(COOR_AXES)
 AGENT_DATA_NAMES = ['action']
 ENV_DATA_NAMES = ['state', 'reward', 'done']
+
+
+def get_body_df_dict(aeb_space):
+    body_df_dict = {}
+    reward_proj_h = []
+    done_proj_h = []
+    for a, body_proj_a in enumerate(aeb_space.body_space.data_proj):
+        reward_proj_a_t = np.column_stack(
+            [reward_proj_t[a] for reward_proj_t in aeb_space.data_spaces['reward'].data_proj_history])
+        done_proj_a_t = np.column_stack(
+            [done_proj_t[a] for done_proj_t in aeb_space.data_spaces['done'].data_proj_history])
+        reward_proj_h.append(reward_proj_a_t)
+        done_proj_h.append(done_proj_a_t)
+        for a_idx, body in enumerate(body_proj_a):
+            body.reward_h = reward_proj_a_t[a_idx]
+            body.done_h = done_proj_a_t[a_idx]
+            df = pd.DataFrame({'reward': body.reward_h, 'done': body.done_h})
+            # df['e'] = df['done'].cumsum()
+            # e_df = df[['reward']].group_by('e').agg('sum')
+            body_df_dict[body.coor] = df
+    return body_df_dict
 
 
 class Clock:
@@ -149,9 +171,14 @@ class DataSpace:
         @param {[x: [yb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
         '''
         # TODO might wanna keep a history before replacement, shove to DB
-        self.data_proj_history.append(self.data_proj)
+        # TODO since u have to create anyway, why not just use a canonical form as standard
+        # note: store history in canonical a,e,b form
         self.data_proj = data_proj
         self.dual_data_proj = self.create_dual_data_proj(data_proj)
+        if self.proj_axis == 'a':
+            self.data_proj_history.append(self.data_proj)
+        else:
+            self.data_proj_history.append(self.dual_data_proj)
 
     def get(self, a=None, e=None):
         '''
