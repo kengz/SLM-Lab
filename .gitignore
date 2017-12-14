@@ -35,6 +35,7 @@ gym/
 config/
 data/
 model/
+*.html
 *.log
 *.meta
 *.tfl*
