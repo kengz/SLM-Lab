@@ -115,6 +115,7 @@ def get(spec_file, spec_name):
     assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {_.join(spec_dict.keys(), ",")}'
     spec = spec_dict[spec_name]
     check(spec, spec_name)
+    spec['name'] = spec_name
     return spec
 
 

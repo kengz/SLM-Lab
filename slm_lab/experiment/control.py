@@ -133,7 +133,7 @@ class Session:
 
         for k, body_df in body_df_dict.items():
             body_fig = viz.plot_line(
-                body_df, 'reward', 'e', x_title=k, draw=False)
+                body_df, 'reward', 'e', legend_name=str(k), draw=False)
             fig.append_trace(body_fig.data[0], 3, 1)
 
         fig.layout['yaxis1'].update(loss_fig.layout['yaxis'])
@@ -144,7 +144,8 @@ class Session:
         fig.layout['yaxis3'].update(body_fig.layout['yaxis'])
         fig.layout['yaxis3'].update(domain=[0, 0.45])
         fig.layout.update(_.pick(loss_fig.layout, ['legend']))
-        fig.layout.update(title='total_rewards vs time', width=500, height=600)
+        fig.layout.update(_.pick(body_fig.layout, ['legend']))
+        fig.layout.update(title=self.spec['name'], width=500, height=600)
         viz.plot(fig)
         # viz.save_image(fig)
 
