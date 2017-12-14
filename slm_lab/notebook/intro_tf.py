@@ -99,6 +99,12 @@ cross_entropy = tf.reduce_mean(
 # cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=ylogits)
 # cross_entropy = tf.reduce_mean(cross_entropy) * 100
 
+# # custom gradient
+# grad_W, grad_b = tf.gradients(xs=[W, b], ys=cross_entropy)
+# new_W = W.assign(W - lr * grad_W)
+# new_b = b.assign(b - lr * grad_b)
+# then run sess.run([new_W, new_b, cross_entropy]) instead of sess.run(train)
+
 optimizer = tf.train.GradientDescentOptimizer(0.5)
 train = optimizer.minimize(cross_entropy)
 
