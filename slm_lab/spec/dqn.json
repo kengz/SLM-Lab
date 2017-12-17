@@ -21,7 +21,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "optim": {
           "name": "Adam",
           "lr": 0.02
@@ -72,7 +72,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -119,7 +119,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -169,7 +169,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -219,7 +219,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -269,7 +269,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [200, 100],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -316,7 +316,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [200, 100],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -363,7 +363,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [32],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -427,7 +427,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [32],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -480,7 +480,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [200, 100],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -532,7 +532,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "optim": {
           "name": "Adam",
           "lr": 0.02
