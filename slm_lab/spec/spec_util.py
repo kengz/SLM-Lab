@@ -38,7 +38,8 @@ SPEC_FORMAT = {
         "max_session": int,
         "max_trial": (type(None), int),
         "train_mode": bool
-    }
+    },
+    "name": str
 }
 
 
@@ -59,6 +60,7 @@ def check_body_spec(spec):
     '''Base method to check body spec for AEB space resolution'''
     ae_product = _.get(spec, 'body.product')
     body_num = _.get(spec, 'body.num')
+    # TODO allow list in auto-expansion
     if ae_product == 'outer':
         assert isinstance(body_num, int)
     elif ae_product == 'inner':
@@ -70,9 +72,10 @@ def check_body_spec(spec):
         assert isinstance(body_num, list)
 
 
-def check(spec, spec_name=''):
-    '''Check a single spec for validity, optionally given its spec_name'''
+def check(spec):
+    '''Check a single spec for validity'''
     try:
+        spec_name = spec.get('name')
         assert spec.keys() == SPEC_FORMAT.keys(
         ), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
         for agent_spec in spec['agent']:
@@ -95,7 +98,8 @@ def check_all():
         spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
         for spec_name, spec in spec_dict.items():
             try:
-                check(spec, spec_name)
+                spec['name'] = spec_name
+                check(spec)
             except Exception as e:
                 logger.exception(f'spec_file {spec_file} fails spec check')
                 raise e
@@ -114,8 +118,8 @@ def get(spec_file, spec_name):
     spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
     assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {_.join(spec_dict.keys(), ",")}'
     spec = spec_dict[spec_name]
-    check(spec, spec_name)
     spec['name'] = spec_name
+    check(spec)
     return spec
 
 

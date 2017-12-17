@@ -5,7 +5,7 @@ import pytest
 
 def test_check():
     spec = spec_util.get('base.json', 'base_case')
-    assert spec_util.check(spec, spec_name='base_case')
+    assert spec_util.check(spec)
 
 
 def test_check_all():

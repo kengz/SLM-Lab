@@ -6,6 +6,7 @@ import pytest
 
 # TODO test control steps in detail when complete
 
+@pytest.mark.skip(reason='TODO in dev')
 def test_session(test_spec):
     session = Session(test_spec)
     session_data = session.run()
@@ -13,6 +14,7 @@ def test_session(test_spec):
     assert isinstance(session_data, pd.DataFrame)
 
 
+@pytest.mark.skip(reason='TODO in dev')
 def test_trial(test_spec):
     trial = Trial(test_spec)
     trial_data = trial.run()
