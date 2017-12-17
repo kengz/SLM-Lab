@@ -48,6 +48,7 @@ class Session:
         Returns episode_data space.
         '''
         self.aeb_space.clock.tick('e')
+        logger.info(f'Running episode {self.aeb_space.clock.get("e")}')
         # TODO generalize and make state to include observables
         state_space = self.env_space.reset()
         self.agent_space.reset(state_space)

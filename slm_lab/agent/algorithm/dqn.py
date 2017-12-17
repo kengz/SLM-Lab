@@ -53,7 +53,7 @@ class DQNBase(Algorithm):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        self.action_policy_net = self.net
+        self.online_net = self.net
         self.eval_net = self.net
         self.batch_size = net_spec['batch_size']
         # Default network update params for base
@@ -83,7 +83,7 @@ class DQNBase(Algorithm):
         # Use act_select network to select actions in next state
         # Depending on the algorithm this is either the current
         # net or target net
-        q_next_st_act_vals = self.action_policy_net.wrap_eval(
+        q_next_st_act_vals = self.online_net.wrap_eval(
             batch['next_states'])
         _val, q_next_actions = torch.max(q_next_st_act_vals, dim=1)
         # Select q_next_st_vals_max based on action selected in q_next_actions
@@ -180,7 +180,8 @@ class DQN(DQNBase):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         super(DQN, self).post_body_init()
-        self.action_policy_net = self.target_net
+        # TODO rename this as action_net or policy_net
+        self.online_net = self.target_net
         self.eval_net = self.target_net
         # Network update params
         net_spec = self.agent.spec['net']
@@ -192,7 +193,7 @@ class DQN(DQNBase):
 
     def update(self):
         super(DQN, self).update()
-        self.action_policy_net = self.target_net
+        self.online_net = self.target_net
         self.eval_net = self.target_net
 
 
@@ -204,7 +205,7 @@ class DoubleDQN(DQNBase):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         super(DoubleDQN, self).post_body_init()
-        self.action_policy_net = self.net
+        self.online_net = self.net
         self.eval_net = self.target_net
         # Network update params
         net_spec = self.agent.spec['net']
@@ -214,7 +215,7 @@ class DoubleDQN(DQNBase):
 
     def update(self):
         super(DoubleDQN, self).update()
-        self.action_policy_net = self.net
+        self.online_net = self.net
         self.eval_net = self.target_net
 
 
@@ -250,7 +251,7 @@ class MultitaskDQN(DQNBase):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        self.action_policy_net = self.net
+        self.online_net = self.net
         self.eval_net = self.net
 
         # TODO handle this with better design
@@ -299,7 +300,7 @@ class MultitaskDQN(DQNBase):
         # Use act_select network to select actions in next state
         # Depending on the algorithm this is either the current
         # net or target net
-        q_next_st_act_vals = self.action_policy_net.wrap_eval(
+        q_next_st_act_vals = self.online_net.wrap_eval(
             batch['next_states'])
 
         # Select two sets of next actions

@@ -30,6 +30,7 @@ class MLPNet(nn.Module):
         @example:
         net = MLPNet(1000, [512, 256, 128], 10, optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'})
         '''
+        # TODO see openai baselines, model.py,  _mlp is so clean
         super(MLPNet, self).__init__()
         self.in_dim = in_dim
         self.out_dim = out_dim
@@ -46,6 +47,7 @@ class MLPNet(nn.Module):
         self.out_layer = nn.Linear(in_D, out_dim)
         self.num_hid_layers = len(self.hid_layers)
 
+        # TODO cant we do like tf?: layers.fully_connected(out, num_outputs=hidden, activation_fn=None)
         self.hid_layers_activation_fn = net_util.set_activation_fn(
             self, hid_layers_activation)
         self.optim = net_util.set_optim(self, optim_param)
