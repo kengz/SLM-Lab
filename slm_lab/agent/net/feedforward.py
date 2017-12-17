@@ -48,10 +48,10 @@ class MLPNet(nn.Module):
         self.num_hid_layers = len(self.hid_layers)
 
         # TODO cant we do like tf?: layers.fully_connected(out, num_outputs=hidden, activation_fn=None)
-        self.hid_layers_activation_fn = net_util.set_activation_fn(
+        self.hid_layers_activation_fn = net_util.get_activation_fn(
             self, hid_layers_activation)
-        self.optim = net_util.set_optim(self, optim_param)
-        self.loss_fn = net_util.set_loss_fn(self, loss_param)
+        self.optim = net_util.get_optim(self, optim_param)
+        self.loss_fn = net_util.get_loss_fn(self, loss_param)
         print(self.hid_layers_activation_fn, self.optim, self.loss_fn)
         self.clamp_grad = clamp_grad
         self.init_params()

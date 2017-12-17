@@ -62,10 +62,10 @@ class ConvNet(MLPNet):
         self.build_flat_layers(flat_hid, out_dim)
         self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers)
 
-        self.hid_layers_activation_fn = net_util.set_activation_fn(
+        self.hid_layers_activation_fn = net_util.get_activation_fn(
             self, hid_layers_activation)
-        self.optim = net_util.set_optim(self, optim_param)
-        self.loss_fn = net_util.set_loss_fn(self, loss_param)
+        self.optim = net_util.get_optim(self, optim_param)
+        self.loss_fn = net_util.get_loss_fn(self, loss_param)
         print(self.hid_layers_activation_fn, self.optim, self.loss_fn)
         self.clamp_grad = clamp_grad
         self.init_params()
