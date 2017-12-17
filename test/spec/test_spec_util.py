@@ -18,16 +18,16 @@ def test_get():
     assert spec is not None
 
 
-@pytest.mark.parametrize('aeb_coor_list,is_compact', [
+@pytest.mark.parametrize('aeb_list,is_compact', [
     ([(0, 0, 0), (0, 1, 0), (0, 1, 1)], True),
     ([(0, 0, 0), (0, 1, 0), (0, 1, 2)], False),
     ([(0, 0, 0), (0, 1, 1)], False),
 ])
-def test_is_aeb_compact(aeb_coor_list, is_compact):
-    assert spec_util.is_aeb_compact(aeb_coor_list) == is_compact
+def test_is_aeb_compact(aeb_list, is_compact):
+    assert spec_util.is_aeb_compact(aeb_list) == is_compact
 
 
-@pytest.mark.parametrize('spec_name,aeb_coor_list', [
+@pytest.mark.parametrize('spec_name,aeb_list', [
     ('multi_agent', [(0, 0, 0),
                      (0, 0, 1),
                      (0, 0, 2),
@@ -90,7 +90,7 @@ def test_is_aeb_compact(aeb_coor_list, is_compact):
                         (0, 1, 10),
                         (0, 1, 11)]),
 ])
-def test_resolve_aeb(spec_name, aeb_coor_list):
+def test_resolve_aeb(spec_name, aeb_list):
     spec = spec_util.get('base.json', spec_name)
-    resolved_aeb_coor_list = spec_util.resolve_aeb(spec)
-    assert resolved_aeb_coor_list == aeb_coor_list
+    resolved_aeb_list = spec_util.resolve_aeb(spec)
+    assert resolved_aeb_list == aeb_list

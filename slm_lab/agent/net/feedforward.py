@@ -35,6 +35,7 @@ class MLPNet(nn.Module):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.hid_layers = []
+        # TODO more concise creation using nn.Sequential
         # TODO parametrize the activation function choice
         for i, layer in enumerate(hid_dim):
             in_D = in_dim if i == 0 else hid_dim[i - 1]

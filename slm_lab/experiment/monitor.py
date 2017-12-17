@@ -60,7 +60,7 @@ def get_body_df_dict(aeb_space):
             df = pd.DataFrame({'reward': body.reward_h, 'done': body.done_h})
             # df['e'] = df['done'].cumsum()
             # e_df = df[['reward']].group_by('e').agg('sum')
-            body_df_dict[body.coor] = df
+            body_df_dict[body.aeb] = df
     return body_df_dict
 
 
@@ -90,7 +90,7 @@ class Body:
     '''
 
     def __init__(self, aeb, agent, env):
-        self.coor = aeb
+        self.aeb = aeb
         self.a, self.e, self.b = aeb
         self.clock = Clock()
         self.agent = agent
@@ -210,8 +210,8 @@ class AEBSpace:
         self.agent_space = None
         self.env_space = None
         self.body_space = None
-        self.coor_list = spec_util.resolve_aeb(self.spec)
-        self.aeb_shape, self.a_eb_proj = self.compute_aeb_dims(self.coor_list)
+        self.aeb_list = spec_util.resolve_aeb(self.spec)
+        self.aeb_shape, self.a_eb_proj = self.compute_aeb_dims(self.aeb_list)
         self.e_ab_proj = None
         self.aeb_proj_dual_map = {
             'a': None,
@@ -219,14 +219,14 @@ class AEBSpace:
         }
         self.data_spaces = self.init_data_spaces()
 
-    def compute_aeb_dims(self, coor_list):
+    def compute_aeb_dims(self, aeb_list):
         '''
-        Compute the aeb_shape and a_eb_proj from coor_list, which are used to resolve agent_space and env_space.
-        @param {[(a, e, b)]} coor_list The array of aeb coors
+        Compute the aeb_shape and a_eb_proj from aeb_list, which are used to resolve agent_space and env_space.
+        @param {[(a, e, b)]} aeb_list The array of aeb coors
         @returns {array([a, e, b]), [a: [(e, b)]]} aeb_shape, a_eb_proj
         '''
-        aeb_shape = util.get_aeb_shape(coor_list)
-        a_aeb_groups = _.group_by(coor_list, lambda aeb: aeb[0])
+        aeb_shape = util.get_aeb_shape(aeb_list)
+        a_aeb_groups = _.group_by(aeb_list, lambda aeb: aeb[0])
         a_eb_proj = []
         for a, aeb_list in a_aeb_groups.items():
             a_eb_proj.append(

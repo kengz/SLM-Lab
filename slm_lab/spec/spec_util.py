@@ -121,14 +121,14 @@ def get(spec_file, spec_name):
     return spec
 
 
-def is_aeb_compact(aeb_coor_list):
+def is_aeb_compact(aeb_list):
     '''
-    Check if aeb space (aeb_coor_list) is compact; uniq count must equal shape in each of a,e axes. For b, per unique a,e hash, uniq must equal shape.'''
-    aeb_shape = util.get_aeb_shape(aeb_coor_list)
-    aeb_uniq = [len(np.unique(col)) for col in np.transpose(aeb_coor_list)]
+    Check if aeb space (aeb_list) is compact; uniq count must equal shape in each of a,e axes. For b, per unique a,e hash, uniq must equal shape.'''
+    aeb_shape = util.get_aeb_shape(aeb_list)
+    aeb_uniq = [len(np.unique(col)) for col in np.transpose(aeb_list)]
     ae_compact = np.array_equal(aeb_shape, aeb_uniq)
     b_compact = True
-    for ae, ae_b_list in _.group_by(aeb_coor_list, lambda aeb: f'{aeb[0]}{aeb[1]}').items():
+    for ae, ae_b_list in _.group_by(aeb_list, lambda aeb: f'{aeb[0]}{aeb[1]}').items():
         b_shape = util.get_aeb_shape(ae_b_list)[2]
         b_uniq = [len(np.unique(col)) for col in np.transpose(ae_b_list)][2]
         b_compact = b_compact and np.array_equal(b_shape, b_uniq)
@@ -140,11 +140,11 @@ def resolve_aeb(spec):
     '''
     Resolve an experiment spec into the full list of points (coordinates) in AEB space.
     @param {dict} spec An experiment spec.
-    @returns {list} aeb_coor_list Resolved array of points in AEB space.
+    @returns {list} aeb_list Resolved array of points in AEB space.
     @example
 
     spec = spec_util.get('base.json', 'general_inner')
-    aeb_coor_list = spec_util.resolve_aeb(spec)
+    aeb_list = spec_util.resolve_aeb(spec)
     # => [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
     '''
     agent_num = len(spec['agent'])
@@ -153,23 +153,23 @@ def resolve_aeb(spec):
     body_num = _.get(spec, 'body.num')
     body_num_list = body_num if _.is_list(body_num) else [body_num] * env_num
 
-    aeb_coor_list = []
+    aeb_list = []
     if ae_product == 'outer':
         for e in range(env_num):
-            sub_aeb_coor_list = list(itertools.product(
+            sub_aeb_list = list(itertools.product(
                 range(agent_num), [e], range(body_num_list[e])))
-            aeb_coor_list.extend(sub_aeb_coor_list)
+            aeb_list.extend(sub_aeb_list)
     elif ae_product == 'inner':
         for a, e in zip(range(agent_num), range(env_num)):
-            sub_aeb_coor_list = list(
+            sub_aeb_list = list(
                 itertools.product([a], [e], range(body_num_list[e])))
-            aeb_coor_list.extend(sub_aeb_coor_list)
-    else:  # custom AEB, body_num is a coor_list
-        aeb_coor_list = [tuple(aeb) for aeb in body_num]
-    aeb_coor_list.sort()
+            aeb_list.extend(sub_aeb_list)
+    else:  # custom AEB, body_num is a aeb_list
+        aeb_list = [tuple(aeb) for aeb in body_num]
+    aeb_list.sort()
     assert is_aeb_compact(
-        aeb_coor_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
-    return aeb_coor_list
+        aeb_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
+    return aeb_list
 
 
 def resolve_param(spec):

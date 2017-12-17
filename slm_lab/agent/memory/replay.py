@@ -43,7 +43,7 @@ class Replay(Memory):
         # TODO add warning that memory is env-specific now
         self.bodies = bodies or util.s_get(
             self, 'aeb_space.body_space').get(e=0)
-        self.coor_list = [body.coor for body in self.bodies]
+        self.aeb_list = [body.aeb for body in self.bodies]
         default_body = self.bodies[0]
         self.max_size = self.agent.spec['memory']['max_size']
         self.state_dim = default_body.state_dim
@@ -67,7 +67,7 @@ class Replay(Memory):
         # TODO proper body-based storage
         for eb_idx, body in enumerate(self.agent.bodies):
             # add only those belonging to the bodies using this memory
-            if body.coor in self.coor_list:
+            if body.aeb in self.aeb_list:
                 self.add_experience(
                     self.last_state[eb_idx], action[eb_idx], reward[eb_idx], state[eb_idx], done[eb_idx])
         self.last_state = state
