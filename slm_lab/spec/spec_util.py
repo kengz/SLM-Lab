@@ -60,11 +60,9 @@ def check_body_spec(spec):
     '''Base method to check body spec for AEB space resolution'''
     ae_product = _.get(spec, 'body.product')
     body_num = _.get(spec, 'body.num')
-    # TODO allow list in auto-expansion
     if ae_product == 'outer':
-        assert isinstance(body_num, int)
+        pass
     elif ae_product == 'inner':
-        assert isinstance(body_num, int)
         agent_num = len(spec['agent'])
         env_num = len(spec['env'])
         assert agent_num == env_num, 'Agent and Env spec length must be equal for body `inner` product. Given {agent_num}, {env_num}'
@@ -153,17 +151,22 @@ def resolve_aeb(spec):
     env_num = len(spec['env'])
     ae_product = _.get(spec, 'body.product')
     body_num = _.get(spec, 'body.num')
+    body_num_list = body_num if _.is_list(body_num) else [body_num] * env_num
 
+    aeb_coor_list = []
     if ae_product == 'outer':
-        aeb_coor_list = list(itertools.product(
-            range(agent_num), range(env_num), range(body_num)))
+        for e in range(env_num):
+            sub_aeb_coor_list = list(itertools.product(
+                range(agent_num), [e], range(body_num_list[e])))
+            aeb_coor_list.extend(sub_aeb_coor_list)
     elif ae_product == 'inner':
-        ae_coor_itr = zip(range(agent_num), range(env_num))
-        aeb_coor_list = list(itertools.product(
-            ae_coor_itr, range(body_num)))
-        aeb_coor_list = [(a, e, b) for ((a, e), b) in aeb_coor_list]
+        for a, e in zip(range(agent_num), range(env_num)):
+            sub_aeb_coor_list = list(
+                itertools.product([a], [e], range(body_num_list[e])))
+            aeb_coor_list.extend(sub_aeb_coor_list)
     else:  # custom AEB, body_num is a coor_list
-        aeb_coor_list = [tuple(aeb) for aeb in sorted(body_num)]
+        aeb_coor_list = [tuple(aeb) for aeb in body_num]
+    aeb_coor_list.sort()
     assert is_aeb_compact(
         aeb_coor_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
     return aeb_coor_list
