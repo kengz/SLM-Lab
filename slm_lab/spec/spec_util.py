@@ -47,7 +47,7 @@ def check_comp_spec(comp_spec, comp_spec_format):
     '''Base method to check component spec'''
     for spec_k, spec_format_v in comp_spec_format.items():
         comp_spec_v = comp_spec[spec_k]
-        if isinstance(spec_format_v, list):
+        if _.is_list(spec_format_v):
             v_set = spec_format_v
             assert comp_spec_v in v_set, f'Component spec value {_.pick(comp_spec, spec_k)} needs to be one of {util.to_json(v_set)}'
         else:
@@ -67,7 +67,7 @@ def check_body_spec(spec):
         env_num = len(spec['env'])
         assert agent_num == env_num, 'Agent and Env spec length must be equal for body `inner` product. Given {agent_num}, {env_num}'
     else:  # custom AEB
-        assert isinstance(body_num, list)
+        assert _.is_list(body_num)
 
 
 def check(spec):

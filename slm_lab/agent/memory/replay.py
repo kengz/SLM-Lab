@@ -1,7 +1,7 @@
-from collections import Iterable
 from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import util
 import numpy as np
+import pydash as _
 
 
 class Replay(Memory):
@@ -86,7 +86,7 @@ class Replay(Memory):
         # spread numbers in numpy since direct list setting is impossible
         self.states[self.head, :] = state[:]
         # make action into one_hot
-        if isinstance(action, Iterable):
+        if _.is_iterable(action):
             # non-singular action
             # self.actions[self.head] = one hot of multi-action (matrix) on a 3rd axis, to be implement
             raise NotImplementedError

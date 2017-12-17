@@ -2,6 +2,7 @@ from slm_lab.agent import Agent
 from slm_lab.lib import util
 import os
 import pandas as pd
+import pydash as _
 import pytest
 
 
@@ -21,11 +22,11 @@ def test_cast_df(test_df, test_list):
 
 
 def test_cast_list(test_list, test_str):
-    assert isinstance(test_list, list)
-    assert isinstance(util.cast_list(test_list), list)
+    assert _.is_list(test_list)
+    assert _.is_list(util.cast_list(test_list))
 
-    assert not isinstance(test_str, list)
-    assert isinstance(util.cast_list(test_str), list)
+    assert not _.is_list(test_str)
+    assert _.is_list(util.cast_list(test_str))
 
 
 def test_dedent(test_multiline_str):
@@ -54,7 +55,7 @@ def test_get_fn_list():
 
 def test_get_timestamp():
     timestamp = util.get_timestamp()
-    assert isinstance(timestamp, str)
+    assert _.is_string(timestamp)
     assert util.RE_FILE_TS.match(timestamp)
 
 

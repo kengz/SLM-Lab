@@ -57,7 +57,7 @@ def cast_df(val):
 
 def cast_list(val):
     '''missing pydash method to cast value as list'''
-    if isinstance(val, list):
+    if _.is_list(val):
         return val
     else:
         return [val]
@@ -102,7 +102,7 @@ def get_class_attr(obj):
     '''Get the class attr of an object as dict'''
     attr_dict = {}
     for k, v in obj.__dict__.items():
-        if hasattr(v, '__dict__') or isinstance(v, tuple):
+        if hasattr(v, '__dict__') or _.is_tuple(v):
             val = str(v)
         else:
             val = v
@@ -188,7 +188,7 @@ def is_sub_dict(sub_dict, super_dict):
         super_v = super_dict[sub_k]
         if type(sub_v) != type(super_v):
             return False
-        if isinstance(sub_v, dict):
+        if _.is_dict(sub_v):
             if not is_sub_dict(sub_v, super_v):
                 return False
         else:
