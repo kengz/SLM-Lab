@@ -3,6 +3,7 @@ from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.net.feedforward import MLPNet
 from slm_lab.env import Env, EnvSpace
+from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import AEBSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
@@ -27,6 +28,15 @@ def test_spec():
     spec = spec_util.get('base.json', 'base_case')
     spec['meta']['train_mode'] = True
     return spec
+
+
+# TODO properly use in tests
+@pytest.fixture(scope='session')
+def test_session(test_spec):
+    trial = Trial(test_spec)
+    session = trial.init_session()
+    yield session
+    session.close()
 
 
 @pytest.fixture(scope='session')
@@ -120,10 +130,10 @@ def test_multiline_str():
              [],
              [],
              10,
-             {'name': 'Adam'},
-             {'name': 'smooth_l1_loss'},
-             False,
-             False),
+             optim_param={'name': 'Adam'},
+             loss_param={'name': 'smooth_l1_loss'},
+             clamp_grad=False,
+             batch_norm=False),
         Variable(torch.ones((2, 3, 32, 32))),
      Variable(torch.zeros(2, 10)),
      None,
@@ -133,10 +143,10 @@ def test_multiline_str():
               [16, 32, (5, 5), 2, 0, 1]],
              [100],
              10,
-             {'name': 'Adam'},
-             {'name': 'smooth_l1_loss'},
-             False,
-             False),
+             optim_param={'name': 'Adam'},
+             loss_param={'name': 'smooth_l1_loss'},
+             clamp_grad=False,
+             batch_norm=False),
         Variable(torch.ones((2, 3, 32, 32))),
      Variable(torch.zeros(2, 10)),
      None,
@@ -146,10 +156,10 @@ def test_multiline_str():
                  [16, 32, (5, 5), 2, 0, 1]],
              [100, 50],
              10,
-             {'name': 'Adam'},
-             {'name': 'smooth_l1_loss'},
-             False,
-             True),
+             optim_param={'name': 'Adam'},
+             loss_param={'name': 'smooth_l1_loss'},
+             clamp_grad=False,
+             batch_norm=True),
         Variable(torch.ones((2, 3, 32, 32))),
      Variable(torch.zeros(2, 10)),
      None,
@@ -160,10 +170,10 @@ def test_multiline_str():
               [32, 64, (5, 5), 1, 0, 2]],
              [100],
              10,
-             {'name': 'Adam'},
-             {'name': 'smooth_l1_loss'},
-             True,
-             False),
+             optim_param={'name': 'Adam'},
+             loss_param={'name': 'smooth_l1_loss'},
+             clamp_grad=True,
+             batch_norm=False),
         Variable(torch.ones((2, 3, 32, 32))),
      Variable(torch.zeros(2, 10)),
      None,
@@ -174,10 +184,10 @@ def test_multiline_str():
               [32, 64, (5, 5), 1, 0, 2]],
              [100],
              10,
-             {'name': 'Adam'},
-             {'name': 'smooth_l1_loss'},
-             True,
-             True),
+             optim_param={'name': 'Adam'},
+             loss_param={'name': 'smooth_l1_loss'},
+             clamp_grad=True,
+             batch_norm=True),
      Variable(torch.ones((2, 3, 32, 32))),
      Variable(torch.zeros(2, 10)),
      None,
@@ -188,10 +198,10 @@ def test_multiline_str():
               [32, 64, (3, 3), 1, 0, 1]],
              [100, 50],
              10,
-             {'name': 'Adam'},
-             {'name': 'smooth_l1_loss'},
-             False,
-             False),
+             optim_param={'name': 'Adam'},
+             loss_param={'name': 'smooth_l1_loss'},
+             clamp_grad=False,
+             batch_norm=False),
      Variable(torch.ones((2, 3, 32, 32))),
      Variable(torch.zeros(2, 10)),
      None,
@@ -202,10 +212,10 @@ def test_multiline_str():
               [32, 64, (3, 3), 1, 0, 1]],
              [100, 50],
              10,
-             {'name': 'Adam'},
-             {'name': 'smooth_l1_loss'},
-             False,
-             True),
+             optim_param={'name': 'Adam'},
+             loss_param={'name': 'smooth_l1_loss'},
+             clamp_grad=False,
+             batch_norm=True),
      Variable(torch.ones((2, 3, 32, 32))),
      Variable(torch.zeros(2, 10)),
      None,

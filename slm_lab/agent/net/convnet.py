@@ -20,6 +20,7 @@ class ConvNet(MLPNet):
                  conv_hid,
                  flat_hid,
                  out_dim,
+                 hid_layers_activation=None,
                  optim_param=None,
                  loss_param=None,
                  clamp_grad=False,
@@ -33,8 +34,10 @@ class ConvNet(MLPNet):
         flat_hid: list of dense layers following the convolutional layers
         out_dim: dimension of the ouputs
         optim: optimizer
-        loss_fn: measure of error between model
+        loss_param: measure of error between model
         predictions and correct outputs
+        hid_layers_activation: activation function for the hidden layers
+        out_activation_param: activation function for the last layer
         clamp_grad: whether to clamp the gradient to + / - 1
         batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
         @example:
@@ -57,12 +60,13 @@ class ConvNet(MLPNet):
         self.flat_layers = []
         self.build_conv_layers(conv_hid)
         self.build_flat_layers(flat_hid, out_dim)
-        self.num_hid_layers = len(self.conv_layers) \
-            + len(self.flat_layers)
+        self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers)
 
+        self.hid_layers_activation_fn = net_util.set_activation_fn(
+            self, hid_layers_activation)
         self.optim = net_util.set_optim(self, optim_param)
         self.loss_fn = net_util.set_loss_fn(self, loss_param)
-        print(self.loss_fn, self.optim)
+        print(self.hid_layers_activation_fn, self.optim, self.loss_fn)
         self.clamp_grad = clamp_grad
         self.init_params()
 
@@ -108,12 +112,12 @@ class ConvNet(MLPNet):
         for i, layer in enumerate(self.conv_layers):
             if bn_flag and i != 0:
                 bn = self.batch_norms[i - 1]
-                x = F.relu(bn(layer(x)))
+                x = self.hid_layers_activation_fn(bn(layer(x)))
             else:
-                x = F.relu(layer(x))
+                x = self.hid_layers_activation_fn(layer(x))
         x = x.view(-1, self.flat_dim)
         for layer in self.flat_layers:
-            x = F.relu(layer(x))
+            x = self.hid_layers_activation_fn(layer(x))
         x = self.out_layer(x)
         return x
 

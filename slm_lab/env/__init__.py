@@ -14,8 +14,8 @@ import numpy as np
 import os
 import pydash as _
 
-gym.logger.setLevel('WARN')
-unity_logger.setLevel('WARN')
+gym.logger.setLevel('ERROR')
+unity_logger.setLevel('ERROR')
 
 
 class BrainExt:
@@ -101,6 +101,7 @@ class OpenAIEnv:
         return {'state': state_dim}
 
     def reset(self):
+        self.done = False
         state = []
         body_state = self.u_env.reset()
         for a, b in self.ab_proj:
@@ -109,6 +110,9 @@ class OpenAIEnv:
         return state
 
     def step(self, action):
+        # TODO hack for mismaching env timesteps
+        if self.done:
+            self.reset()
         assert len(action) == 1, 'OpenAI Gym supports only single body'
         if not self.train_mode:
             self.u_env.render()
@@ -118,6 +122,7 @@ class OpenAIEnv:
         reward = [body_reward]
         state = [body_state]
         done = [body_done]
+        self.done = body_done
         return reward, state, done
 
     def close(self):
@@ -139,8 +144,9 @@ class Env:
         self.index = e
         self.ab_proj = self.env_space.e_ab_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
+        worker_id = int(f'{os.getpid()}{self.index}'[-4:])
         self.u_env = UnityEnvironment(
-            file_name=util.get_env_path(self.name), worker_id=os.getpid() + self.index)
+            file_name=util.get_env_path(self.name), worker_id=worker_id)
         self.check_u_brain_to_agent()
 
     def check_u_brain_to_agent(self):

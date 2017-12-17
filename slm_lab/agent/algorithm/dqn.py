@@ -1,9 +1,10 @@
 from copy import deepcopy
+from slm_lab.agent import memory
 from slm_lab.agent import net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns
 from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.agent.memory import Replay
 from slm_lab.agent.net import net_util
+from slm_lab.lib import util
 from torch.autograd import Variable
 import numpy as np
 import pydash as _
@@ -41,14 +42,18 @@ class DQNBase(Algorithm):
         net_spec = self.agent.spec['net']
         self.net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'))
+            loss_param=_.get(net_spec, 'loss'),
+        )
         print(self.net)
         self.target_net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'))
-        self.action_policy_net = self.net
+            loss_param=_.get(net_spec, 'loss'),
+        )
+        self.online_net = self.net
         self.eval_net = self.net
         self.batch_size = net_spec['batch_size']
         # Default network update params for base
@@ -78,7 +83,7 @@ class DQNBase(Algorithm):
         # Use act_select network to select actions in next state
         # Depending on the algorithm this is either the current
         # net or target net
-        q_next_st_act_vals = self.action_policy_net.wrap_eval(
+        q_next_st_act_vals = self.online_net.wrap_eval(
             batch['next_states'])
         _val, q_next_actions = torch.max(q_next_st_act_vals, dim=1)
         # Select q_next_st_vals_max based on action selected in q_next_actions
@@ -101,21 +106,24 @@ class DQNBase(Algorithm):
             torch.mul(q_vals, (1 - batch['actions'].data))
         return q_targets
 
+    def get_batch(self):
+        batch = self.agent.memory.get_batch(self.batch_size)
+        # Package data into pytorch variables
+        float_data_list = [
+            'states', 'actions', 'rewards', 'dones', 'next_states']
+        for k in float_data_list:
+            batch[k] = Variable(torch.from_numpy(batch[k]).float())
+        return batch
+
     def train(self):
         # TODO docstring
-        t = self.agent.agent_space.aeb_space.clock['total_t']
+        t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (t > self.training_min_timestep and t % self.training_frequency == 0):
             # print('Training')
             total_loss = 0.0
             for _b in range(self.training_epoch):
-                batch = self.agent.memory.get_batch(self.batch_size)
+                batch = self.get_batch()
                 batch_loss = 0.0
-                # Package data into pytorch variables
-                float_data_list = [
-                    'states', 'actions', 'rewards', 'dones', 'next_states']
-                for k in float_data_list:
-                    batch[k] = Variable(torch.from_numpy(batch[k]).float())
-
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
                     y = Variable(q_targets)
@@ -133,17 +141,14 @@ class DQNBase(Algorithm):
 
     def body_act_discrete(self, body, body_state):
         # TODO can handle identical bodies now; to use body_net for specific body.
-        return self.action_policy(
-            self.net,
-            body_state,
-            self.explore_var)
+        return self.action_policy(body, body_state, self.net, self.explore_var)
 
     def update(self):
-        t = self.agent.agent_space.aeb_space.clock['total_t']
-        if t % 100 == 0:
-            print(f'Total time step: {t}')
+        t = util.s_get(self, 'aeb_space.clock').get('total_t')
+        # if t % 100 == 0:
+        # print(f'Total time step: {t}')
         '''Update epsilon or boltzmann for policy after net training'''
-        epi = self.agent.agent_space.aeb_space.clock['e']
+        epi = util.s_get(self, 'aeb_space.clock').get('e')
         rise = self.explore_var_end - self.explore_var_start
         slope = rise / float(self.explore_anneal_epi)
         self.explore_var = max(
@@ -175,7 +180,8 @@ class DQN(DQNBase):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         super(DQN, self).post_body_init()
-        self.action_policy_net = self.target_net
+        # TODO rename this as action_net or policy_net
+        self.online_net = self.target_net
         self.eval_net = self.target_net
         # Network update params
         net_spec = self.agent.spec['net']
@@ -187,7 +193,7 @@ class DQN(DQNBase):
 
     def update(self):
         super(DQN, self).update()
-        self.action_policy_net = self.target_net
+        self.online_net = self.target_net
         self.eval_net = self.target_net
 
 
@@ -199,7 +205,7 @@ class DoubleDQN(DQNBase):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         super(DoubleDQN, self).post_body_init()
-        self.action_policy_net = self.net
+        self.online_net = self.net
         self.eval_net = self.target_net
         # Network update params
         net_spec = self.agent.spec['net']
@@ -209,5 +215,161 @@ class DoubleDQN(DQNBase):
 
     def update(self):
         super(DoubleDQN, self).update()
-        self.action_policy_net = self.net
+        self.online_net = self.net
         self.eval_net = self.target_net
+
+
+class MultitaskDQN(DQNBase):
+    # TODO: Check this is working
+    def __init__(self, agent):
+        super(MultitaskDQN, self).__init__(agent)
+
+    def post_body_init(self):
+        super(MultitaskDQN, self).post_body_init()
+        '''Re-initialize nets with multi-task dimensions'''
+        '''Assumes state_dim and action_dim contain lists of dimensions'''
+        '''Assume 1D for now'''
+        self.state_dims = [body.state_dim for body in self.agent.bodies]
+        self.action_dims = [body.action_dim for body in self.agent.bodies]
+        self.total_state_dim = sum(self.state_dims)
+        self.total_action_dim = sum(self.action_dims)
+        print(
+            f'multitask state_dims: {self.state_dims}, sum {self.total_state_dim}')
+        print(
+            f'multitask action_dims: {self.action_dims}, sum {self.total_action_dim}')
+        net_spec = self.agent.spec['net']
+        self.net = getattr(net, net_spec['type'])(
+            self.total_state_dim, net_spec['hid_layers'], self.total_action_dim,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
+            optim_param=_.get(net_spec, 'optim'),
+            loss_param=_.get(net_spec, 'loss'),
+        )
+        print(self.net)
+        self.target_net = getattr(net, net_spec['type'])(
+            self.total_state_dim, net_spec['hid_layers'], self.total_action_dim,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
+            optim_param=_.get(net_spec, 'optim'),
+            loss_param=_.get(net_spec, 'loss'),
+        )
+        self.online_net = self.net
+        self.eval_net = self.net
+
+        # TODO handle this with better design
+        # create a new memory for task 2
+        MemoryClass = getattr(memory, _.get(self.agent.spec, 'memory.name'))
+        body_space = util.s_get(self, 'aeb_space.body_space')
+        env_bodies = body_space.get(e=0)
+        env_1_bodies = body_space.get(e=1)
+        self.agent.memory = MemoryClass(self.agent)
+        self.agent.memory.post_body_init(env_bodies)
+        self.agent.memory_1 = MemoryClass(self.agent)
+        self.agent.memory_1.post_body_init(env_1_bodies)
+
+    def get_batch(self):
+        batch_1 = self.agent.memory.get_batch(self.batch_size)
+        batch_2 = self.agent.memory_1.get_batch(self.batch_size)
+        # print("Inside get batch")
+        # print("Batch 1: ")
+        # print(batch_1)
+        # print("Batch 2: ")
+        # print(batch_2)
+        # Package data into pytorch variables
+        float_data_list = [
+            'states', 'actions', 'rewards', 'dones', 'next_states']
+        for k in float_data_list:
+            batch_1[k] = Variable(torch.from_numpy(batch_1[k]).float())
+            batch_2[k] = Variable(torch.from_numpy(batch_2[k]).float())
+        # Concat state
+        combined_states = torch.cat(
+            [batch_1['states'], batch_2['states']], dim=1)
+        combined_next_states = torch.cat(
+            [batch_1['next_states'], batch_2['next_states']], dim=1)
+        batch = {'states': combined_states,
+                 'next_states': combined_next_states}
+        # use recursive packaging to carry sub data
+        batch['sub_1'] = batch_1
+        batch['sub_2'] = batch_2
+        return batch
+
+    def compute_q_target_values(self, batch):
+        batch_1 = batch['sub_1']
+        batch_2 = batch['sub_2']
+        # print("batch: {}".format(batch['states'].size()))
+        # print("batch: {}".format(batch['states']))
+        q_vals = self.net.wrap_eval(batch['states'])
+        # Use act_select network to select actions in next state
+        # Depending on the algorithm this is either the current
+        # net or target net
+        q_next_st_act_vals = self.online_net.wrap_eval(
+            batch['next_states'])
+
+        # Select two sets of next actions
+        # TODO Generalize to more than two tasks
+        _val, q_next_actions_1 = torch.max(
+            q_next_st_act_vals[:, :self.action_dims[0]], dim=1)
+        _val, q_next_actions_2 = torch.max(
+            q_next_st_act_vals[:, self.action_dims[0]:], dim=1)
+        # Shift next actions_2 so they have the right indices
+        q_next_actions_2 = torch.add(q_next_actions_2, self.action_dims[0])
+        # print("Q next actions 1: {}".format(q_next_actions_1.size()))
+        # print("Q next actions 2: {}".format(q_next_actions_2.size()))
+        # Select q_next_st_vals_max based on action selected in q_next_actions
+        # Evaluate the action selection using the eval net
+        # Depending on the algorithm this is either the current
+        # net or target net
+        q_next_st_vals = self.eval_net.wrap_eval(batch['next_states'])
+        # print("Q next st vals: {}".format(q_next_st_vals.size()))
+        idx = torch.from_numpy(np.array(list(range(self.batch_size))))
+        # Calculate values for two sets of actions
+        q_next_st_vals_max_1 = q_next_st_vals[idx, q_next_actions_1]
+        q_next_st_vals_max_1.unsqueeze_(1)
+        q_next_st_vals_max_2 = q_next_st_vals[idx, q_next_actions_2]
+        q_next_st_vals_max_2.unsqueeze_(1)
+        # print("Q next st vals max 1: {}".format(q_next_st_vals_max_1.size()))
+        # print("Q next st vals max 2: {}".format(q_next_st_vals_max_2.size()))
+        # Compute final q_target using reward and estimated
+        # best Q value from the next state if there is one
+        # Make future reward 0 if the current state is done
+        # Do it individually first, then combine
+        # Each individual target should automatically expand
+        # to the dimension of the relevant action space
+        q_targets_max_1 = (batch_1['rewards'].data + self.gamma * torch.mul(
+            (1 - batch_1['dones'].data), q_next_st_vals_max_1)).numpy()
+        q_targets_max_2 = (batch_2['rewards'].data + self.gamma * torch.mul(
+            (1 - batch_2['dones'].data), q_next_st_vals_max_2)).numpy()
+        # print("Q targets max 1: {}".format(q_targets_max_1))
+        # print("Q targets max 2: {}".format(q_targets_max_2))
+        # print("Q targets max 1: {}".format(q_targets_max_1.shape))
+        # print("Q targets max 2: {}".format(q_targets_max_2.shape))
+        # Concat to form full size targets
+        q_targets_max_1 = torch.from_numpy(
+            np.broadcast_to(q_targets_max_1,
+                            (q_targets_max_1.shape[0], self.action_dims[0])))
+        q_targets_max_2 = torch.from_numpy(
+            np.broadcast_to(q_targets_max_2,
+                            (q_targets_max_2.shape[0], self.action_dims[1])))
+        # print("Q targets max broadcast 1: {}".format(q_targets_max_1.size()))
+        # print("Q targets max broadcast 2: {}".format(q_targets_max_2.size()))
+        q_targets_max = torch.cat([q_targets_max_1, q_targets_max_2], dim=1)
+        # print("Q targets max: {}".format(q_targets_max.size()))
+        # Also concat actions - each batch should have only two
+        # non zero dimensions
+        combined_actions = torch.cat(
+            [batch_1['actions'], batch_2['actions']], dim=1)
+        # print("Batch 1 actions: {}".format(batch_1['actions']))
+        # print("Batch 2 actions: {}".format(batch_2['actions']))
+        # print("Combined actions: {}".format(combined_actions))
+        # print("Combined actions size: {}".format(combined_actions.size()))
+        # We only want to train the network for the action selected
+        # For all other actions we set the q_target = q_vals
+        # So that the loss for these actions is 0
+        q_targets = torch.mul(q_targets_max, combined_actions.data) + \
+            torch.mul(q_vals, (1 - combined_actions.data))
+        # print("Q targets size: {}".format(q_targets.size()))
+        # exit()
+        return q_targets
+
+    def act(self, state):
+        '''Override the spread-per-body act. self.action_policy must be a batch multi-body method'''
+        # TODO when backprop need to use relevant r too
+        return self.action_policy(self.agent.bodies, state, self.net, self.explore_var)

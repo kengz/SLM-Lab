@@ -9,10 +9,10 @@ net = ConvNet((3, 32, 32),
                [16, 32, (5, 5), 2, 0, 1]],
               [100, 50],
               10,
-              {'name': 'Adam'},
-              {'name': 'smooth_l1_loss'},
-              False,
-              False)
+              optim_param={'name': 'Adam'},
+              loss_param={'name': 'smooth_l1_loss'},
+              clamp_grad=False,
+              batch_norm=False)
 
 print(net)
 out = net(dummy_input)
@@ -22,10 +22,10 @@ net = ConvNet((3, 32, 32),
                [16, 32, (5, 5), 2, 0, 1]],
               [100, 50],
               10,
-              {'name': 'Adam'},
-              {'name': 'smooth_l1_loss'},
-              False,
-              True)
+              optim_param={'name': 'Adam'},
+              loss_param={'name': 'smooth_l1_loss'},
+              clamp_grad=False,
+              batch_norm=True)
 
 print(net)
 out = net(dummy_input)
@@ -36,10 +36,10 @@ net = ConvNet((3, 32, 32),
                [32, 64, (3, 3), 1, 0, 1]],
               [100, 50],
               10,
-              {'name': 'Adam'},
-              {'name': 'smooth_l1_loss'},
-              False,
-              False)
+              optim_param={'name': 'Adam'},
+              loss_param={'name': 'smooth_l1_loss'},
+              clamp_grad=False,
+              batch_norm=False)
 
 print(net)
 out = net(dummy_input)
@@ -50,10 +50,10 @@ net = ConvNet((3, 32, 32),
                [32, 64, (3, 3), 1, 0, 1]],
               [100, 50],
               10,
-              {'name': 'Adam'},
-              {'name': 'smooth_l1_loss'},
-              False,
-              True)
+              optim_param={'name': 'Adam'},
+              loss_param={'name': 'smooth_l1_loss'},
+              clamp_grad=False,
+              batch_norm=True)
 
 print(net)
 out = net(dummy_input)

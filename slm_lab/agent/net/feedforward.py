@@ -14,6 +14,7 @@ class MLPNet(nn.Module):
                  in_dim,
                  hid_dim,
                  out_dim,
+                 hid_layers_activation=None,
                  optim_param=None,
                  loss_param=None,
                  clamp_grad=False):
@@ -22,11 +23,14 @@ class MLPNet(nn.Module):
         hid_dim: list containing dimensions of the hidden layers
         out_dim: dimension of the ouputs
         optim: optimizer
-        loss_fn: measure of error between model predictions and correct outputs
+        loss_param: measure of error between model predictions and correct outputs
+        hid_layers_activation: activation function for the hidden layers
+        out_activation_param: activation function for the last layer
         clamp_grad: whether to clamp the gradient to + / - 1
         @example:
         net = MLPNet(1000, [512, 256, 128], 10, optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'})
         '''
+        # TODO see openai baselines, model.py,  _mlp is so clean
         super(MLPNet, self).__init__()
         self.in_dim = in_dim
         self.out_dim = out_dim
@@ -43,9 +47,12 @@ class MLPNet(nn.Module):
         self.out_layer = nn.Linear(in_D, out_dim)
         self.num_hid_layers = len(self.hid_layers)
 
+        # TODO cant we do like tf?: layers.fully_connected(out, num_outputs=hidden, activation_fn=None)
+        self.hid_layers_activation_fn = net_util.set_activation_fn(
+            self, hid_layers_activation)
         self.optim = net_util.set_optim(self, optim_param)
         self.loss_fn = net_util.set_loss_fn(self, loss_param)
-        print(self.loss_fn, self.optim)
+        print(self.hid_layers_activation_fn, self.optim, self.loss_fn)
         self.clamp_grad = clamp_grad
         self.init_params()
 
@@ -53,7 +60,7 @@ class MLPNet(nn.Module):
         '''The feedforward step'''
         # TODO parametrize the activation function choice
         for i in range(self.num_hid_layers):
-            x = F.sigmoid((self.hid_layers[i](x)))
+            x = self.hid_layers_activation_fn((self.hid_layers[i](x)))
         x = self.out_layer(x)
         return x
 
@@ -63,6 +70,7 @@ class MLPNet(nn.Module):
         '''
         # Sets model in training mode and zero the gradients
         self.train()
+        self.zero_grad()
         self.optim.zero_grad()
         out = self(x)
         loss = self.loss_fn(out, y)

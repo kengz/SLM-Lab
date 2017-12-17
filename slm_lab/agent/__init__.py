@@ -40,11 +40,10 @@ class Agent:
         self.eb_proj = self.agent_space.a_eb_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
 
-        # TODO repattern, redesign spec
-        AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
-        self.algorithm = AlgoClass(self)
         MemoryClass = getattr(memory, _.get(self.spec, 'memory.name'))
         self.memory = MemoryClass(self)
+        AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
+        self.algorithm = AlgoClass(self)
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
@@ -54,6 +53,9 @@ class Agent:
     def reset(self, state):
         '''Do agent reset per episode, such as memory pointer'''
         self.memory.reset_last_state(state)
+        # TODO hack add
+        if hasattr(self, 'memory_1'):
+            self.memory_1.reset_last_state(state)
 
     def act(self, state):
         '''Standard act method from algorithm.'''
@@ -64,6 +66,9 @@ class Agent:
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
         self.memory.update(action, reward, state, done)
+        # TODO hack add
+        if hasattr(self, 'memory_1'):
+            self.memory_1.update(action, reward, state, done)
         loss = self.algorithm.train()
         explore_var = self.algorithm.update()
         # TODO tmp return, to unify with monitor auto-fetch later

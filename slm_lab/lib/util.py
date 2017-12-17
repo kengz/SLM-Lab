@@ -14,6 +14,7 @@ DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 RE_INDENT = re.compile('(^\n)|(?!\n)\s{2,}|(\n\s+)$')
+SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
 
 
 class LabJsonEncoder(json.JSONEncoder):
@@ -259,6 +260,33 @@ def read_as_plain(data_path):
         data = open_file.read()
     open_file.close()
     return data
+
+
+def s_get(cls, attr_path):
+    '''
+    Method to get attribute across space via inferring agent <-> env paths.
+    @example
+    self.agent.agent_space.aeb_space.clock
+    # equivalently
+    util.s_get(self, 'aeb_space.clock')
+    '''
+    from_class_name = get_class_name(cls, lower=True)
+    from_idx = _.find_index(
+        SPACE_PATH, lambda s: from_class_name in (s, s.replace('_', '')))
+    from_idx = max(from_idx, 0)
+    attr_path = attr_path.split('.')
+    to_idx = SPACE_PATH.index(attr_path[0])
+    assert -1 not in (from_idx, to_idx)
+    if from_idx < to_idx:
+        path_link = SPACE_PATH[from_idx: to_idx]
+    else:
+        path_link = _.reverse(SPACE_PATH[to_idx: from_idx])
+
+    res = cls
+    for attr in path_link + attr_path:
+        if not (get_class_name(res, lower=True) in (attr, attr.replace('_', ''))):
+            res = getattr(res, attr)
+    return res
 
 
 def set_attr(obj, attr_dict):

@@ -1,5 +1,6 @@
 from collections import Iterable
 from slm_lab.agent.memory.base import Memory
+from slm_lab.lib import util
 import numpy as np
 
 
@@ -31,14 +32,19 @@ class Replay(Memory):
     def __init__(self, agent):
         super(Replay, self).__init__(agent)
 
-    def post_body_init(self):
+    def post_body_init(self, bodies=None):
         '''
         Initializes the part of algorithm needing a body to exist first.
         Can also be used to clear the memory.
         '''
         # TODO update for multi bodies
         # TODO also for multi state, multi actions per body, need to be 3D
-        default_body = self.agent.bodies[0]
+        # bodies using this shared memory, should be congruent (have same state_dim, action_dim)
+        # TODO add warning that memory is env-specific now
+        self.bodies = bodies or util.s_get(
+            self, 'aeb_space.body_space').get(e=0)
+        self.coor_list = [body.coor for body in self.bodies]
+        default_body = self.bodies[0]
         self.max_size = self.agent.spec['memory']['max_size']
         self.state_dim = default_body.state_dim
         self.action_dim = default_body.action_dim
@@ -57,12 +63,13 @@ class Replay(Memory):
 
     def update(self, action, reward, state, done):
         # interface
-        # TODO store directly from data_space?
-        # TODO this is still single body, generalize
-        body_idx = 0
-        self.add_experience(
-            self.last_state[body_idx], action[body_idx], reward[body_idx], state[body_idx], done[body_idx]
-        )
+        # add memory from all bodies, interleave
+        # TODO proper body-based storage
+        for eb_idx, body in enumerate(self.agent.bodies):
+            # add only those belonging to the bodies using this memory
+            if body.coor in self.coor_list:
+                self.add_experience(
+                    self.last_state[eb_idx], action[eb_idx], reward[eb_idx], state[eb_idx], done[eb_idx])
         self.last_state = state
 
     def add_experience(self,

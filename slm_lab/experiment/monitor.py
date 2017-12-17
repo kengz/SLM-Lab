@@ -25,6 +25,7 @@ from copy import deepcopy
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import numpy as np
+import pandas as pd
 import pydash as _
 
 # These correspond to the control unit classes, lower cased
@@ -42,6 +43,47 @@ AGENT_DATA_NAMES = ['action']
 ENV_DATA_NAMES = ['state', 'reward', 'done']
 
 
+def get_body_df_dict(aeb_space):
+    body_df_dict = {}
+    reward_proj_h = []
+    done_proj_h = []
+    for a, body_proj_a in enumerate(aeb_space.body_space.data_proj):
+        reward_proj_a_t = np.column_stack(
+            [reward_proj_t[a] for reward_proj_t in aeb_space.data_spaces['reward'].data_proj_history])
+        done_proj_a_t = np.column_stack(
+            [done_proj_t[a] for done_proj_t in aeb_space.data_spaces['done'].data_proj_history])
+        reward_proj_h.append(reward_proj_a_t)
+        done_proj_h.append(done_proj_a_t)
+        for a_idx, body in enumerate(body_proj_a):
+            body.reward_h = reward_proj_a_t[a_idx]
+            body.done_h = done_proj_a_t[a_idx]
+            df = pd.DataFrame({'reward': body.reward_h, 'done': body.done_h})
+            # df['e'] = df['done'].cumsum()
+            # e_df = df[['reward']].group_by('e').agg('sum')
+            body_df_dict[body.coor] = df
+    return body_df_dict
+
+
+class Clock:
+    def __init__(self):
+        self.t = 0
+        self.total_t = 0
+        self.e = 0
+
+    def tick(self, unit='t'):
+        if unit == 't':  # timestep
+            self.t += 1
+            self.total_t += 1
+        elif unit == 'e':  # episode, reset timestep
+            self.t = 0
+            self.e += 1
+        else:
+            raise KeyError
+
+    def get(self, unit='t'):
+        return getattr(self, unit)
+
+
 class Body:
     '''
     Body, helpful info reference unit under AEBSpace for sharing info between agent and env.
@@ -50,6 +92,7 @@ class Body:
     def __init__(self, aeb, agent, env):
         self.coor = aeb
         self.a, self.e, self.b = aeb
+        self.clock = Clock()
         self.agent = agent
         self.env = env
         self.observable_dim = self.env.get_observable_dim(self.a)
@@ -80,17 +123,18 @@ class DataSpace:
             self.dual_proj_axis = 'a'
         self.data_proj = None
         self.dual_data_proj = None
+        self.data_proj_history = []  # index = clock.absolute_t
 
     def __str__(self):
         s = '['
         x_map = self.aeb_proj_dual_map[self.dual_proj_axis]
         x_yb_proj = self.aeb_space.a_eb_proj if self.dual_proj_axis == 'a' else self.aeb_space.e_ab_proj
         for x, y_map_idx_list in enumerate(x_map):
-            s += f'\n  {self.proj_axis}:{x} ['
+            s += f'\n  {self.dual_proj_axis}:{x} ['
             for x_idx, (y, xb_idx) in enumerate(y_map_idx_list):
                 b = x_yb_proj[x][x_idx][1]
                 data = self.data_proj[y][xb_idx]
-                s += f'({self.dual_proj_axis}:{y},b:{b}) {data} '
+                s += f'({self.proj_axis}:{y},b:{b}) {data} '
             s += ']'
         s += '\n]'
         return s
@@ -127,8 +171,14 @@ class DataSpace:
         @param {[x: [yb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
         '''
         # TODO might wanna keep a history before replacement, shove to DB
+        # TODO since u have to create anyway, why not just use a canonical form as standard
+        # note: store history in canonical a,e,b form
         self.data_proj = data_proj
         self.dual_data_proj = self.create_dual_data_proj(data_proj)
+        if self.proj_axis == 'a':
+            self.data_proj_history.append(self.data_proj)
+        else:
+            self.data_proj_history.append(self.dual_data_proj)
 
     def get(self, a=None, e=None):
         '''
@@ -156,6 +206,7 @@ class AEBSpace:
         # TODO shove
         # self.info_space = info_space
         self.spec = spec
+        self.clock = Clock()
         self.agent_space = None
         self.env_space = None
         self.body_space = None
@@ -167,9 +218,6 @@ class AEBSpace:
             'e': None,
         }
         self.data_spaces = self.init_data_spaces()
-        self.clock = {
-            unit: 0 for unit in ['t', 'total_t', 'e']
-        }
 
     def compute_aeb_dims(self, coor_list):
         '''
@@ -231,18 +279,6 @@ class AEBSpace:
             data_space = DataSpace(data_name, self.aeb_proj_dual_map, self)
             self.data_spaces[data_name] = data_space
         return self.data_spaces
-
-    def tick_clock(self, unit):
-        '''Tick the clock a unit into future time'''
-        if unit == 't':  # timestep
-            self.clock['t'] += 1
-            self.clock['total_t'] += 1
-        elif unit == 'e':  # episode, reset timestep
-            self.clock['t'] = 0
-            self.clock['e'] += 1
-        else:
-            raise KeyError
-        return self.clock
 
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''

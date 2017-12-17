@@ -77,6 +77,13 @@ def test_is_sub_dict():
     assert not util.is_sub_dict(incon_nested_super_dict, nested_sub_dict)
 
 
+def test_s_get(test_agent):
+    clock = util.s_get(test_agent, 'aeb_space.clock')
+    assert clock.get('t') == 0
+    clock = util.s_get(test_agent, 'aeb_space').clock
+    assert clock.get('t') == 0
+
+
 def test_set_attr():
     class Foo:
         bar = 0
