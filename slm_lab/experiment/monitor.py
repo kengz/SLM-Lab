@@ -96,7 +96,7 @@ class Body:
         self.agent = agent
         self.env = env
         self.observable_dim = self.env.get_observable_dim(self.a)
-        # TODO use tuples for state_dim for pixel-based in the future
+        # TODO use tuples for state_dim for pixel-based in the future, generalize all and call as shape
         self.state_dim = self.observable_dim['state']
         self.action_dim = self.env.get_action_dim(self.a)
         self.is_discrete = self.env.is_discrete(self.a)
@@ -107,97 +107,63 @@ class Body:
 
 class DataSpace:
     '''
-    AEB data space - data container with an AEB space hashed to index of a flat list of stored data
+    AEB data space. Store all data from RL system in standard aeb-shaped tensors.
     '''
     # TODO prolly keep episodic, timestep historic data series, to DB per episode
 
-    def __init__(self, data_name, aeb_proj_dual_map, aeb_space):
-        self.data_name = data_name
-        self.aeb_proj_dual_map = aeb_proj_dual_map
+    def __init__(self, data_name, data_shape, aeb_space):
         self.aeb_space = aeb_space
-        if data_name in AGENT_DATA_NAMES or data_name == 'body':
-            self.proj_axis = 'a'
-            self.dual_proj_axis = 'e'
-        else:
-            self.proj_axis = 'e'
-            self.dual_proj_axis = 'a'
-        self.data_proj = None
-        self.dual_data_proj = None
-        self.data_proj_history = []  # index = clock.absolute_t
+        self.data_name = data_name
+        self.data_shape = data_shape  # aeb..
+
+        # data from env have shape (eab), need to transpose
+        self.to_transpose = self.data_name in ENV_DATA_NAMES
+        self.nan_tmpl = np.full(self.data_shape[3:], np.nan)
+
+        self.data = None  # standard data in aeb shape
+        self.t_data = None
+        # TODO shove history to DB
+        self.data_history = []  # index = clock.absolute_t
 
     def __str__(self):
-        s = '['
-        x_map = self.aeb_proj_dual_map[self.dual_proj_axis]
-        x_yb_proj = self.aeb_space.a_eb_proj if self.dual_proj_axis == 'a' else self.aeb_space.e_ab_proj
-        for x, y_map_idx_list in enumerate(x_map):
-            s += f'\n  {self.dual_proj_axis}:{x} ['
-            for x_idx, (y, xb_idx) in enumerate(y_map_idx_list):
-                b = x_yb_proj[x][x_idx][1]
-                data = self.data_proj[y][xb_idx]
-                s += f'({self.proj_axis}:{y},b:{b}) {data} '
-            s += ']'
-        s += '\n]'
-        return s
+        return str(self.data)
 
     def __bool__(self):
-        '''Get AND of all entries, reduce 2 times on 2D axes of AE, then convert to py bool'''
-        return bool(np.all(np.all(self.data_proj)))
+        return bool(np.all(self.data))
 
-    def create_dual_data_proj(self, data_proj):
+    def add(self, raw_data):
         '''
-        Every data_proj from agent will be used by env, and vice versa.
-        Hence, on receiving data_proj, construct and cache the dual for fast access later.
-        @param {[y: [xb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
-        @returns {[x: [yb_idx:[body_data]]} dual_data_proj, with axes flipped.
+        Take raw data from RL system and construct numpy object self.data, then add to self.data_history.
+        Extend raw_data to rectangular shape padded with nan template, then turn it into numpy tensor. If data is from env, auto-transpose the data to aeb standard shape.
+        @param {[x: [y: [body_data]]} raw_data As collected in RL sytem.
+        @returns {array} data Tensor in standard aeb shape.
         '''
-        x_map = self.aeb_proj_dual_map[self.dual_proj_axis]
-        x_data_proj = []
-        try:
-            for _x, y_map_idx_list in enumerate(x_map):
-                x_data_proj_x = []
-                for _x_idx, (y, xb_idx) in enumerate(y_map_idx_list):
-                    data = data_proj[y][xb_idx]
-                    x_data_proj_x.append(data)
-                x_data_proj.append(x_data_proj_x)
-        except Exception as e:
-            logger.exception(
-                f'Dimension mismatch of data space {self.data_name}. Expected aeb_proj_map: {x_map}, received input data_proj: {data_proj}')
-            raise e
-        return x_data_proj
-
-    def add(self, data_proj):
-        '''
-        Add a new instance of data projection to data_space from agent_space or env_space. Creates a dual_data_proj.
-        @param {[x: [yb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
-        '''
-        # TODO might wanna keep a history before replacement, shove to DB
-        # TODO since u have to create anyway, why not just use a canonical form as standard
-        # note: store history in canonical a,e,b form
-        self.data_proj = data_proj
-        self.dual_data_proj = self.create_dual_data_proj(data_proj)
-        if self.proj_axis == 'a':
-            self.data_proj_history.append(self.data_proj)
+        for _x, x_list in enumerate(raw_data):
+            body_num = self.data_shape[2]  # b of aeb
+            pad_len = body_num - len(x_list)
+            x_list.extend([self.nan_tmpl] * pad_len)
+        new_data = np.array(raw_data)  # no type restriction, auto-infer
+        if self.to_transpose:  # data from env has shape eab
+            self.data = new_data.T
+            self.t_data = new_data
         else:
-            self.data_proj_history.append(self.dual_data_proj)
+            self.data = new_data
+            self.t_data = new_data.T
+        # record new data to history immediately
+        self.data_history.append(self.data)
+        return self.data
 
     def get(self, a=None, e=None):
         '''
-        Get the data_proj for a or e axis to be used by agent_space, env_space respectively, automatically projected and resolved.
+        Get the data projected on a or e axes for use by agent_space, env_space.
         @param {int} a The index a of an agent in agent_space
         @param {int} e The index e of an env in env_space
-        @returns {[yb_idx:[body_data]_x} data_proj[x], where x, y could be a, e interchangeably.
+        @returns {array} data_x Where x is a or e.
         '''
         if a is not None:
-            proj_axis = 'a'
-            proj_idx = a
+            return self.data[a]
         else:
-            proj_axis = 'e'
-            proj_idx = e
-        assert proj_idx > -1
-        if proj_axis == self.proj_axis:
-            return self.data_proj[proj_idx]
-        else:
-            return self.dual_data_proj[proj_idx]
+            return self.t_data[e]
 
 
 class AEBSpace:
