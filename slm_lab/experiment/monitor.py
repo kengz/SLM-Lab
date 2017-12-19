@@ -115,8 +115,8 @@ class DataSpace:
         self.aeb_space = aeb_space
         self.aeb_shape = aeb_space.aeb_shape
 
-        # data from env have shape (eab), need to transpose
-        self.to_transpose = self.data_name in ENV_DATA_NAMES
+        # data from env have shape (eab), need to swap
+        self.to_swap = self.data_name in ENV_DATA_NAMES
 
         self.data = None  # standard data in aeb shape
         self.t_data = None
@@ -133,22 +133,22 @@ class DataSpace:
     def add(self, data):
         '''
         Take raw data from RL system and construct numpy object self.data, then add to self.data_history.
-        Extend data to rectangular shape padded with nan template, then turn it into numpy tensor. If data is from env, auto-transpose the data to aeb standard shape.
+        Extend data to rectangular shape padded with nan template, then turn it into numpy tensor. If data is from env, auto-swap the data to aeb standard shape.
         @param {[x: [y: [body_data]]} data As collected in RL sytem.
         @returns {array} data Tensor in standard aeb shape.
         '''
-        body_num = self.aeb_shape[2]  # b of aeb
-        for _x, x_list in enumerate(data):
-            for y, y_list in enumerate(x_list):
-                pad_len = body_num - len(y_list)
-                y_list.extend([np.nan] * pad_len)
+        # body_num = self.aeb_shape[2]  # b of aeb
+        # for _x, x_arr in enumerate(data):
+        #     for y, y_arr in enumerate(x_arr):
+        #         pad_len = body_num - len(y_arr)
+        #         y_arr.pad([np.nan] * pad_len)
         new_data = np.array(data)  # no type restriction, auto-infer
-        if self.to_transpose:  # data from env has shape eab
-            self.data = new_data.T
+        if self.to_swap:  # data from env has shape eab
             self.t_data = new_data
+            self.data = new_data.swapaxes(0, 1)
         else:
             self.data = new_data
-            self.t_data = new_data.T
+            self.t_data = new_data.swapaxes(0, 1)
         self.data_history.append(self.data)
         return self.data
 
@@ -200,14 +200,14 @@ class AEBSpace:
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
         self.body_space = DataSpace('body', self)
-        body_proj = np.full(self.aeb_shape, np.nan, dtype=object)
+        body_data = np.full(self.aeb_shape, np.nan, dtype=object)
         for (a, e, b), sig in np.ndenumerate(self.aeb_sig):
             if sig == 1:
                 agent = self.agent_space.get(a)
                 env = self.env_space.get(e)
                 body = Body((a, e, b), agent, env)
-                body_proj[(a, e, b)] = body
-        self.body_space.add(body_proj)
+                body_data[(a, e, b)] = body
+        self.body_space.add(body_data)
         for agent in self.agent_space.agents:
             agent.bodies = self.body_space.get(a=agent.index)
         for env in self.env_space.envs:
