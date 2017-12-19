@@ -66,7 +66,6 @@ class OpenAIEnv:
         self.name = self.spec['name']
         self.env_space = env_space
         self.index = e
-        self.ab_proj = self.env_space.e_ab_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
         self.u_env = gym.make(self.name)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get(
@@ -142,7 +141,6 @@ class Env:
         self.name = self.spec['name']
         self.env_space = env_space
         self.index = e
-        self.ab_proj = self.env_space.e_ab_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
         worker_id = int(f'{os.getpid()}{self.index}'[-4:])
         self.u_env = UnityEnvironment(
@@ -229,7 +227,6 @@ class EnvSpace:
         self.spec = spec
         self.aeb_space = aeb_space
         aeb_space.env_space = self
-        self.e_ab_proj = aeb_space.e_ab_proj
         self.envs = []
         for e, e_spec in enumerate(spec['env']):
             try:

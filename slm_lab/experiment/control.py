@@ -77,11 +77,7 @@ class Session:
             # if bool(done_space):
             if done_space.get(a=0)[0]:
                 # TODO refactor: set all to terminate on master termination. Also use the env with longest timestep to prevent being terminated by fast-running env
-                for a, _eb in enumerate(self.aeb_space.a_eb_proj):
-                    done_proj_a = done_space.get(a=a)
-                    # TODO still need to standardize all data proj to aeb
-                    for a_idx, _done in enumerate(done_proj_a):
-                        done_proj_a[a_idx] = True
+                np.fill(done_space.data, bool)
                 break
         # TODO monitor record all data spaces, including body with body.clock. cuz all data spaces have history
         # split per body, use done as delim (maybe done need body clock now), split, sum each chunk

@@ -175,13 +175,7 @@ class AEBSpace:
         self.env_space = None
         self.body_space = None
         (self.aeb_list, self.aeb_shape, self.aeb_sig) = self.get_aeb_info(self.spec)
-        # self.a_eb_proj = None
-        # self.e_ab_proj = None
-        # self.aeb_proj_dual_map = {
-        #     'a': None,
-        #     'e': None,
-        # }
-        # self.data_spaces = self.init_data_spaces()
+        self.data_spaces = self.init_data_spaces()
 
     def get_aeb_info(cls, spec):
         '''
@@ -221,7 +215,6 @@ class AEBSpace:
 
     def post_body_init(self):
         '''Run init for agent, env components that need bodies to exist first, e.g. memory or architecture.'''
-        self.init_data_spaces()
         self.agent_space.post_body_init()
         self.env_space.post_body_init()
 

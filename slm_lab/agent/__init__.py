@@ -37,7 +37,6 @@ class Agent:
         self.name = self.spec['name']
         self.agent_space = agent_space
         self.index = a
-        self.eb_proj = self.agent_space.a_eb_proj[self.index]
         self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
 
         MemoryClass = getattr(memory, _.get(self.spec, 'memory.name'))
@@ -91,9 +90,8 @@ class AgentSpace:
         self.spec = spec
         self.aeb_space = aeb_space
         aeb_space.agent_space = self
-        self.a_eb_proj = aeb_space.a_eb_proj
-        self.agents = [Agent(a_spec, self, a)
-                       for a, a_spec in enumerate(spec['agent'])]
+        self.agents = [
+            Agent(a_spec, self, a) for a, a_spec in enumerate(spec['agent'])]
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
