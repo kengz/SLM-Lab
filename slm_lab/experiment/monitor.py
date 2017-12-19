@@ -109,20 +109,19 @@ class DataSpace:
     '''
     AEB data space. Store all data from RL system in standard aeb-shaped tensors.
     '''
-    # TODO prolly keep episodic, timestep historic data series, to DB per episode
 
-    def __init__(self, data_name, data_shape, aeb_space):
-        self.aeb_space = aeb_space
+    def __init__(self, data_name, aeb_space):
         self.data_name = data_name
-        self.data_shape = data_shape  # aeb..
+        self.aeb_space = aeb_space
+        self.aeb_shape = aeb_space.aeb_shape
 
         # data from env have shape (eab), need to transpose
         self.to_transpose = self.data_name in ENV_DATA_NAMES
-        self.nan_tmpl = np.full(self.data_shape[3:], np.nan)
 
         self.data = None  # standard data in aeb shape
         self.t_data = None
         # TODO shove history to DB
+        # TODO keep time/episode data too, will be cheap
         self.data_history = []  # index = clock.absolute_t
 
     def __str__(self):
@@ -139,9 +138,9 @@ class DataSpace:
         @returns {array} data Tensor in standard aeb shape.
         '''
         for _x, x_list in enumerate(raw_data):
-            body_num = self.data_shape[2]  # b of aeb
+            body_num = self.aeb_shape[2]  # b of aeb
             pad_len = body_num - len(x_list)
-            x_list.extend([self.nan_tmpl] * pad_len)
+            x_list.extend([np.nan] * pad_len)
         new_data = np.array(raw_data)  # no type restriction, auto-infer
         if self.to_transpose:  # data from env has shape eab
             self.data = new_data.T
@@ -149,7 +148,6 @@ class DataSpace:
         else:
             self.data = new_data
             self.t_data = new_data.T
-        # record new data to history immediately
         self.data_history.append(self.data)
         return self.data
 
@@ -160,7 +158,7 @@ class DataSpace:
         @param {int} e The index e of an env in env_space
         @returns {array} data_x Where x is a or e.
         '''
-        if a is not None:
+        if e is None:
             return self.data[a]
         else:
             return self.t_data[e]
@@ -176,88 +174,45 @@ class AEBSpace:
         self.agent_space = None
         self.env_space = None
         self.body_space = None
-        self.aeb_list = spec_util.resolve_aeb(self.spec)
-        self.aeb_shape, self.a_eb_proj = self.compute_aeb_dims(self.aeb_list)
-        self.e_ab_proj = None
-        self.aeb_proj_dual_map = {
-            'a': None,
-            'e': None,
-        }
-        self.data_spaces = self.init_data_spaces()
+        (self.aeb_list, self.aeb_shape, self.aeb_sig) = self.get_aeb_info(self.spec)
+        # self.a_eb_proj = None
+        # self.e_ab_proj = None
+        # self.aeb_proj_dual_map = {
+        #     'a': None,
+        #     'e': None,
+        # }
+        # self.data_spaces = self.init_data_spaces()
 
-    def compute_aeb_dims(self, aeb_list):
+    def get_aeb_info(cls, spec):
         '''
-        Compute the aeb_shape and a_eb_proj from aeb_list, which are used to resolve agent_space and env_space.
-        @param {[(a, e, b)]} aeb_list The array of aeb coors
-        @returns {array([a, e, b]), [a: [(e, b)]]} aeb_shape, a_eb_proj
+        Get from spec the aeb_list, aeb_shape and aeb_sig, which are used to resolve agent_space and env_space.
+        @returns {list, (a,e,b), array([a, e, b])} aeb_list, aeb_shape, aeb_sig
         '''
+        aeb_list = spec_util.resolve_aeb(spec)
         aeb_shape = util.get_aeb_shape(aeb_list)
-        a_aeb_groups = _.group_by(aeb_list, lambda aeb: aeb[0])
-        a_eb_proj = []
-        for a, aeb_list in a_aeb_groups.items():
-            a_eb_proj.append(
-                util.to_tuple_list(np.array(aeb_list)[:, 1:]))
-        assert len(a_eb_proj) == len(self.spec['agent'])
-        return aeb_shape, a_eb_proj
-
-    def compute_dual_map(cls, a_eb_proj):
-        '''
-        Compute the direct dual map and dual proj of the given proj by swapping a, e
-        @param {[a: [(e, b)]]} a_eb_proj The aeb space projected onto a-axis
-        @returns {[e: [(a, eb_idx)]], [e: [(a, b)]]} e_ab_dual_map, e_ab_proj
-        '''
-        flat_aeb_list = []
-        for a, eb_list in enumerate(a_eb_proj):
-            for eb_idx, (e, b) in enumerate(eb_list):
-                flat_aeb_list.append((a, e, b, eb_idx))
-        flat_aeb_list = sorted(flat_aeb_list)
-
-        e_ab_dual_map = []
-        e_ab_proj = []
-        e_aeb_groups = _.group_by(flat_aeb_list, lambda row: row[1])
-        for e, eab_list in e_aeb_groups.items():
-            e_ab_dual_map.append(util.to_tuple_list(
-                np.array(eab_list)[:, (0, 3)]))
-            e_ab_proj.append(util.to_tuple_list(np.array(eab_list)[:, (0, 2)]))
-        return e_ab_dual_map, e_ab_proj
-
-    def init_aeb_proj_dual_map(self):
-        '''
-        Initialize the AEB projection dual map to map aeb_data_space between agent space and env space.
-        agent_space output data_proj, shape [a, [(e, b)]]
-        env_space output data_proj shape [e, [(a, b)]]
-        '''
-        e_ab_dual_map, e_ab_proj = self.compute_dual_map(self.a_eb_proj)
-        a_eb_dual_map, check_a_eb_proj = self.compute_dual_map(e_ab_proj)
-        assert np.array_equal(self.a_eb_proj, check_a_eb_proj)
-
-        self.e_ab_proj = e_ab_proj
-        self.aeb_proj_dual_map['a'] = a_eb_dual_map
-        self.aeb_proj_dual_map['e'] = e_ab_dual_map
+        aeb_sig = np.full(aeb_shape, np.nan)
+        for aeb in aeb_list:
+            aeb_sig.itemset(aeb, 1)
+        return aeb_list, aeb_shape, aeb_sig
 
     def init_data_spaces(self):
-        '''Initialize the data_space that contains all the data for the Lab.'''
         self.data_spaces = {
-            data_name: None for data_name in _.concat(AGENT_DATA_NAMES, ENV_DATA_NAMES)
+            data_name: DataSpace(data_name, self)
+            for data_name in AGENT_DATA_NAMES + ENV_DATA_NAMES
         }
-        self.init_aeb_proj_dual_map()
-        for data_name in self.data_spaces:
-            data_space = DataSpace(data_name, self.aeb_proj_dual_map, self)
-            self.data_spaces[data_name] = data_space
         return self.data_spaces
 
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
-        self.body_space = DataSpace('body', self.aeb_proj_dual_map, self)
-        data_proj = deepcopy(self.a_eb_proj)
-        for a, eb_list in enumerate(self.a_eb_proj):
-            for eb_idx, (e, b) in enumerate(eb_list):
+        self.body_space = DataSpace('body', self)
+        body_proj = np.full(self.aeb_shape, np.nan, dtype=object)
+        for (a, e, b), sig in np.ndenumerate(self.aeb_sig):
+            if sig == 1:
                 agent = self.agent_space.get(a)
                 env = self.env_space.get(e)
                 body = Body((a, e, b), agent, env)
-                data_proj[a][eb_idx] = body
-        self.body_space.add(data_proj)
-
+                body_proj[(a, e, b)] = body
+        self.body_space.add(body_proj)
         for agent in self.agent_space.agents:
             agent.bodies = self.body_space.get(a=agent.index)
         for env in self.env_space.envs:
@@ -266,6 +221,7 @@ class AEBSpace:
 
     def post_body_init(self):
         '''Run init for agent, env components that need bodies to exist first, e.g. memory or architecture.'''
+        self.init_data_spaces()
         self.agent_space.post_body_init()
         self.env_space.post_body_init()
 
