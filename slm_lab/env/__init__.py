@@ -104,7 +104,7 @@ class OpenAIEnv:
         state = np.full(self.bodies.shape, np.nan, dtype=object)
         for a, b_list in enumerate(self.bodies):
             for b, body in enumerate(b_list):
-                if np.isnan(body):
+                if body is np.nan:
                     continue
                 body_state = self.u_env.reset()
                 # set body_data
@@ -129,7 +129,7 @@ class OpenAIEnv:
         done = reward.copy()
         for a, b_list in enumerate(self.bodies):
             for b, body in enumerate(b_list):
-                if np.isnan(body):
+                if body is np.nan:
                     continue
                 body_state = self.u_env.reset()
                 # set body_data
@@ -201,7 +201,7 @@ class Env:
         '''Get the observable dim for an agent (brain) in env'''
         return self.get_brain(a).get_observable_dim()
 
-    def get_env_info(self, a):
+    def get_env_info(self, env_info_dict, a):
         a_name = self.u_env.brain_names[a]
         a_env_info = env_info_dict[a_name]
         return a_env_info
@@ -213,9 +213,9 @@ class Env:
         for a, b_list in enumerate(self.bodies):
             for b, body in enumerate(b_list):
                 # TODO refactor this
-                if np.isnan(body):
+                if body is np.nan:
                     continue
-                a_env_info = self.get_env_info(a)
+                a_env_info = self.get_env_info(env_info_dict, a)
                 self.check_u_agent_to_body(a_env_info, a)
                 # set body_data
                 state[(a, b)] = a_env_info.states[b]
@@ -229,9 +229,9 @@ class Env:
         done = reward.copy()
         for a, b_list in enumerate(self.bodies):
             for b, body in enumerate(b_list):
-                if np.isnan(body):
+                if body is np.nan:
                     continue
-                a_env_info = self.get_env_info(a)
+                a_env_info = self.get_env_info(env_info_dict, a)
                 # set body_data
                 reward[(a, b)] = a_env_info.rewards[b]
                 state[(a, b)] = a_env_info.states[b]

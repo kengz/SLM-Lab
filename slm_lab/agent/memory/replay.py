@@ -41,10 +41,12 @@ class Replay(Memory):
         # TODO also for multi state, multi actions per body, need to be 3D
         # bodies using this shared memory, should be congruent (have same state_dim, action_dim)
         # TODO add warning that memory is env-specific now
+        # TODO decide which projection of bodies to use
         self.bodies = bodies or util.s_get(
             self, 'aeb_space.body_space').get(e=0)
-        self.aeb_list = [body.aeb for body in self.bodies]
-        default_body = self.bodies[0]
+        flat_bodies = util.flatten_nonnan(self.bodies)
+        self.aeb_list = [body.aeb for body in flat_bodies]
+        default_body = flat_bodies[0]
         self.max_size = self.agent.spec['memory']['max_size']
         self.state_dim = default_body.state_dim
         self.action_dim = default_body.action_dim

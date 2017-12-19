@@ -34,7 +34,7 @@ class DQNBase(Algorithm):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         # TODO generalize
-        default_body = self.agent.bodies[0]
+        default_body = self.agent.bodies[(0, 0)]
         # autoset net head and tail
         # TODO auto-architecture to handle multi-head, multi-tail nets
         state_dim = default_body.state_dim
@@ -229,8 +229,9 @@ class MultitaskDQN(DQNBase):
         '''Re-initialize nets with multi-task dimensions'''
         '''Assumes state_dim and action_dim contain lists of dimensions'''
         '''Assume 1D for now'''
-        self.state_dims = [body.state_dim for body in self.agent.bodies]
-        self.action_dims = [body.action_dim for body in self.agent.bodies]
+        flat_bodies = util.flatten_nonnan(self.agent.bodies)
+        self.state_dims = [body.state_dim for body in flat_bodies]
+        self.action_dims = [body.action_dim for body in flat_bodies]
         self.total_state_dim = sum(self.state_dims)
         self.total_action_dim = sum(self.action_dims)
         print(

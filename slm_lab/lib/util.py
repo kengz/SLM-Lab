@@ -64,7 +64,10 @@ def cast_list(val):
 
 
 def count_nonnan(arr):
-    return np.count_nonzero(~np.isnan(arr))
+    try:
+        return np.count_nonzero(~np.isnan(arr))
+    except Exception:
+        return len(flatten_nonnan(arr))
 
 
 def dedent(string):
@@ -86,6 +89,14 @@ def flatten_dict(d, parent_key='', sep='.'):
         else:
             items.append((new_key, v))
     return dict(items)
+
+
+def flatten_nonnan(arr):
+    flat_arr = arr.flatten()
+    try:
+        return flat_arr[~np.isnan(flat_arr)]
+    except Exception:
+        return np.array([v for v in flat_arr if v is not np.nan])
 
 
 def get_aeb_shape(aeb_list):
