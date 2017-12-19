@@ -84,7 +84,7 @@ class Session:
         mean_loss = np.nanmean(loss_list)
         mean_explore_var = np.nanmean(explore_var_list)
         # print(self.aeb_space.data_spaces['reward'])
-        # print(self.aeb_space.data_spaces['reward'].data_proj_history)
+        # print(self.aeb_space.data_spaces['reward'].data_history)
         body_df_dict = get_body_df_dict(self.aeb_space)
         # logger.info(
         #     f'epi {self.aeb_space.clock.get("e")}, total_rewards {total_rewards}')

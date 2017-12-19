@@ -63,10 +63,12 @@ def cast_list(val):
         return [val]
 
 
+def count_nonnan(arr):
+    return np.count_nonzero(~np.isnan(arr))
+
+
 def dedent(string):
-    '''
-    Method to dedent the broken python multiline string
-    '''
+    '''Method to dedent the broken python multiline string'''
     return RE_INDENT.sub('', string)
 
 

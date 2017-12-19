@@ -37,7 +37,7 @@ class Agent:
         self.name = self.spec['name']
         self.agent_space = agent_space
         self.index = a
-        self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
+        self.bodies = None
 
         MemoryClass = getattr(memory, _.get(self.spec, 'memory.name'))
         self.memory = MemoryClass(self)
@@ -89,6 +89,7 @@ class AgentSpace:
     def __init__(self, spec, aeb_space):
         self.spec = spec
         self.aeb_space = aeb_space
+        self.aeb_shape = aeb_space.aeb_shape
         aeb_space.agent_space = self
         self.agents = [
             Agent(a_spec, self, a) for a, a_spec in enumerate(spec['agent'])]
@@ -107,12 +108,12 @@ class AgentSpace:
             agent.reset(state)
 
     def act(self, state_space):
-        action_proj = []
+        action_data = []
         for a, agent in enumerate(self.agents):
             state = state_space.get(a=a)
             action = agent.act(state)
-            action_proj.append(action)
-        action_space = self.aeb_space.add('action', action_proj)
+            action_data.append(action)
+        action_space = self.aeb_space.add('action', action_data)
         return action_space
 
     def update(self, action_space, reward_space, state_space, done_space):

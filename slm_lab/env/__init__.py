@@ -66,7 +66,7 @@ class OpenAIEnv:
         self.name = self.spec['name']
         self.env_space = env_space
         self.index = e
-        self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
+        self.bodies = None
         self.u_env = gym.make(self.name)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get(
             'wrapper_config.TimeLimit.max_episode_steps')
@@ -101,26 +101,41 @@ class OpenAIEnv:
 
     def reset(self):
         self.done = False
-        state = []
-        body_state = self.u_env.reset()
-        for a, b in self.ab_proj:
-            state.append(body_state)
-        assert len(state) == 1, 'OpenAI Gym supports only single body'
+        state = np.full(self.bodies.shape, np.nan, dtype=object)
+        for a, b_list in enumerate(self.bodies):
+            for b, body in enumerate(b_list):
+                if np.isnan(body):
+                    continue
+                body_state = self.u_env.reset()
+                # set body_data
+                state[(a, b)] = body_state
+        non_nan_cnt = util.count_nonnan(state)
+        assert util.count_nonnan(
+            state) == 1, 'OpenAI Gym supports only single body'
         return state
 
     def step(self, action):
         # TODO hack for mismaching env timesteps
         if self.done:
             self.reset()
+        # TODO spread action from agent
         assert len(action) == 1, 'OpenAI Gym supports only single body'
         if not self.train_mode:
             self.u_env.render()
         body_action = action[0]
-        body_state, body_reward, body_done, _info = self.u_env.step(
-            body_action)
-        reward = [body_reward]
-        state = [body_state]
-        done = [body_done]
+        (body_state, body_reward, body_done, _info) = self.u_env.step(body_action)
+        reward = np.full(self.bodies.shape, np.nan)
+        state = np.full(self.bodies.shape, np.nan, dtype=object)
+        done = reward.copy()
+        for a, b_list in enumerate(self.bodies):
+            for b, body in enumerate(b_list):
+                if np.isnan(body):
+                    continue
+                body_state = self.u_env.reset()
+                # set body_data
+                reward[(a, b)] = body_reward
+                state[(a, b)] = body_state
+                done[(a, b)] = body_done
         self.done = body_done
         return reward, state, done
 
@@ -141,27 +156,28 @@ class Env:
         self.name = self.spec['name']
         self.env_space = env_space
         self.index = e
-        self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
+        # TODO rename with consistent semantics and data_space, maybe body_e
+        self.bodies = None
         worker_id = int(f'{os.getpid()}{self.index}'[-4:])
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name), worker_id=worker_id)
-        self.check_u_brain_to_agent()
+        # TODO experiment to find out optimal benchmarking max_timestep, set
 
     def check_u_brain_to_agent(self):
         '''Check the size match between unity brain and agent'''
         u_brain_num = self.u_env.number_brains
-        agent_num = util.get_aeb_shape(self.ab_proj)[0]
+        agent_num = len(self.bodies)
         assert u_brain_num == agent_num, f'There must be a Unity brain for each agent; failed check brain: {u_brain_num} == agent: {agent_num}.'
 
     def check_u_agent_to_body(self, a_env_info, a):
         '''Check the size match between unity agent and body'''
         u_agent_num = len(a_env_info.agents)
-        a_body_num = len(_.filter_(self.ab_proj, lambda ab: ab[0] == a))
+        a_body_num = util.count_nonnan(self.bodies[a])
         assert u_agent_num == a_body_num, f'There must be a Unity agent for each body; failed check agent: {u_agent_num} == body: {a_body_num}.'
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        pass
+        self.check_u_brain_to_agent()
 
     def get_brain(self, a):
         '''Get the unity-equivalent of agent, i.e. brain, to access its info'''
@@ -185,32 +201,41 @@ class Env:
         '''Get the observable dim for an agent (brain) in env'''
         return self.get_brain(a).get_observable_dim()
 
+    def get_env_info(self, a):
+        a_name = self.u_env.brain_names[a]
+        a_env_info = env_info_dict[a_name]
+        return a_env_info
+
     def reset(self):
         env_info_dict = self.u_env.reset(
             train_mode=self.train_mode, config=self.spec.get('unity'))
-        state = []
-        for a, b in self.ab_proj:
-            a_name = self.u_env.brain_names[a]
-            a_env_info = env_info_dict[a_name]
-            self.check_u_agent_to_body(a_env_info, a)
-            body_state = a_env_info.states[b]
-            state.append(body_state)
+        state = np.full(self.bodies.shape, np.nan, dtype=object)
+        for a, b_list in enumerate(self.bodies):
+            for b, body in enumerate(b_list):
+                # TODO refactor this
+                if np.isnan(body):
+                    continue
+                a_env_info = self.get_env_info(a)
+                self.check_u_agent_to_body(a_env_info, a)
+                # set body_data
+                state[(a, b)] = a_env_info.states[b]
         return state
 
     def step(self, action):
+        # TODO spread action from agent
         env_info_dict = self.u_env.step(action)
-        reward = []
-        state = []
-        done = []
-        for a, b in self.ab_proj:
-            a_name = self.u_env.brain_names[a]
-            a_env_info = env_info_dict[a_name]
-            body_reward = a_env_info.rewards[b]
-            reward.append(body_reward)
-            body_state = a_env_info.states[b]
-            state.append(body_state)
-            body_done = a_env_info.local_done[b]
-            done.append(body_done)
+        reward = np.full(self.bodies.shape, np.nan)
+        state = np.full(self.bodies.shape, np.nan, dtype=object)
+        done = reward.copy()
+        for a, b_list in enumerate(self.bodies):
+            for b, body in enumerate(b_list):
+                if np.isnan(body):
+                    continue
+                a_env_info = self.get_env_info(a)
+                # set body_data
+                reward[(a, b)] = a_env_info.rewards[b]
+                state[(a, b)] = a_env_info.states[b]
+                done[(a, b)] = a_env_info.local_done[b]
         return reward, state, done
 
     def close(self):
@@ -226,6 +251,7 @@ class EnvSpace:
     def __init__(self, spec, aeb_space):
         self.spec = spec
         self.aeb_space = aeb_space
+        self.aeb_shape = aeb_space.aeb_shape
         aeb_space.env_space = self
         self.envs = []
         for e, e_spec in enumerate(spec['env']):
@@ -245,26 +271,27 @@ class EnvSpace:
         return self.envs[e]
 
     def reset(self):
-        state_proj = []
+        state_data = np.full(self.aeb_shape, np.nan, dtype=object)
         for env in self.envs:
             state = env.reset()
-            state_proj.append(state)
-        state_space = self.aeb_space.add('state', state_proj)
+            state_data[env.index] = state
+        state_space = self.aeb_space.add('state', state_data)
         return state_space
 
     def step(self, action_space):
-        reward_proj = []
-        state_proj = []
-        done_proj = []
-        for e, env in enumerate(self.envs):
+        reward_data = np.full(self.aeb_shape, np.nan)
+        state_data = np.full(self.aeb_shape, np.nan, dtype=object)
+        done_data = reward.copy()
+        for env in self.envs:
+            e = env.index
             action = action_space.get(e=e)
             reward, state, done = env.step(action)
-            reward_proj.append(reward)
-            state_proj.append(state)
-            done_proj.append(done)
-        reward_space = self.aeb_space.add('reward', reward_proj)
-        state_space = self.aeb_space.add('state', state_proj)
-        done_space = self.aeb_space.add('done', done_proj)
+            reward_data[e] = reward
+            state_data[e] = state
+            done_data[e] = done
+        reward_space = self.aeb_space.add('reward', reward_data)
+        state_space = self.aeb_space.add('state', state_data)
+        done_space = self.aeb_space.add('done', done_data)
         return reward_space, state_space, done_space
 
     def close(self):

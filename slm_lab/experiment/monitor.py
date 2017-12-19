@@ -130,18 +130,19 @@ class DataSpace:
     def __bool__(self):
         return bool(np.all(self.data))
 
-    def add(self, raw_data):
+    def add(self, data):
         '''
         Take raw data from RL system and construct numpy object self.data, then add to self.data_history.
-        Extend raw_data to rectangular shape padded with nan template, then turn it into numpy tensor. If data is from env, auto-transpose the data to aeb standard shape.
-        @param {[x: [y: [body_data]]} raw_data As collected in RL sytem.
+        Extend data to rectangular shape padded with nan template, then turn it into numpy tensor. If data is from env, auto-transpose the data to aeb standard shape.
+        @param {[x: [y: [body_data]]} data As collected in RL sytem.
         @returns {array} data Tensor in standard aeb shape.
         '''
-        for _x, x_list in enumerate(raw_data):
-            body_num = self.aeb_shape[2]  # b of aeb
-            pad_len = body_num - len(x_list)
-            x_list.extend([np.nan] * pad_len)
-        new_data = np.array(raw_data)  # no type restriction, auto-infer
+        body_num = self.aeb_shape[2]  # b of aeb
+        for _x, x_list in enumerate(data):
+            for y, y_list in enumerate(x_list):
+                pad_len = body_num - len(y_list)
+                y_list.extend([np.nan] * pad_len)
+        new_data = np.array(data)  # no type restriction, auto-infer
         if self.to_transpose:  # data from env has shape eab
             self.data = new_data.T
             self.t_data = new_data
@@ -218,15 +219,15 @@ class AEBSpace:
         self.agent_space.post_body_init()
         self.env_space.post_body_init()
 
-    def add(self, data_name, data_proj):
+    def add(self, data_name, data):
         '''
-        Add a data projection to a data space, e.g. data_proj actions collected per body, per agent, from agent_space, with AEB shape projected on a-axis, added to action_space.
+        Add a data to a data space, e.g. data actions collected per body, per agent, from agent_space, with AEB shape projected on a-axis, added to action_space.
         @param {str} data_name
-        @param {[x: [yb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
+        @param {[x: [yb_idx:[body_data]]} data, where x, y could be a, e interchangeably.
         @returns {DataSpace} data_space (aeb is implied)
         '''
         data_space = self.data_spaces[data_name]
-        data_space.add(data_proj)
+        data_space.add(data)
         return data_space
 
 
