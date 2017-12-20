@@ -6,7 +6,7 @@ import numpy as np
 
 class Replay(Memory):
     '''
-    Simple storage for storing agent experiences and sampling from them for agent training
+    Stores agent experiences and samples from them for agent training
 
     An experience consists of
         - state: representation of a state
