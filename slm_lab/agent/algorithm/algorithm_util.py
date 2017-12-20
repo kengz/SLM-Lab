@@ -100,9 +100,3 @@ act_fns = {
     'multi_boltzmann': multi_act_with_boltzmann,
     'gaussian': act_with_gaussian
 }
-
-act_update_fns = {
-    'epsilon_greedy': update_epsilon_greedy,
-    'boltzmann': update_boltzmann,
-    'gaussian': update_gaussian
-}
