@@ -102,6 +102,9 @@ class OnPolicyReplay(Replay):
                                     'next_states': [],
                                     'dones' : [],
                                     'priorities': []}
+            # If agent has collected the desired number of episodes, it is ready to train
+            if len(self.states) == self.agent.algorithm.num_epis:
+                self.agent.algorithm.to_train = 1
         # Track memory size and num experiences
         self.true_size += 1
         if true_size > 1000:
