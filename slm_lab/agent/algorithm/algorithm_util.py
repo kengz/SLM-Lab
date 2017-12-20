@@ -93,22 +93,6 @@ def act_with_gaussian(body, state, net, stddev):
     # TODO implement act_with_gaussian
     pass
 
-# TODO - do we need these? Update handled in the agent
-def update_epsilon_greedy(body, state, net, stddev):
-    # TODO implement act_with_gaussian
-    pass
-
-# TODO - do we need these? Update handled in the agent
-def update_boltzmann(body, state, net, stddev):
-    # TODO implement act_with_gaussian
-    pass
-
-# TODO - do we need these? Update handled in the agent
-def update_gaussian(body, state, net, stddev):
-    # TODO implement act_with_gaussian
-    pass
-
-
 act_fns = {
     'epsilon_greedy': act_with_epsilon_greedy,
     'multi_epsilon_greedy': multi_act_with_epsilon_greedy,
