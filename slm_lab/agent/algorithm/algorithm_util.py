@@ -98,5 +98,6 @@ act_fns = {
     'multi_epsilon_greedy': multi_act_with_epsilon_greedy,
     'boltzmann': act_with_boltzmann,
     'multi_boltzmann': multi_act_with_boltzmann,
-    'gaussian': act_with_gaussian
+    'gaussian': act_with_gaussian,
+    'softmax': act_with_softmax
 }
