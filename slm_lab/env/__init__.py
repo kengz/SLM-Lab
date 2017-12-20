@@ -67,13 +67,14 @@ class OpenAIEnv:
         self.env_space = env_space
         self.index = e
         self.bodies = None
+        self.flat_bodies = None  # flatten_nonnan version of bodies
         self.u_env = gym.make(self.name)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get(
             'wrapper_config.TimeLimit.max_episode_steps')
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        pass
+        self.flat_bodies = util.flatten_nonnan(self.bodies)
 
     def is_discrete(self, a):
         '''Check if an agent (brain) is subject to discrete actions'''
@@ -158,6 +159,7 @@ class Env:
         self.index = e
         # TODO rename with consistent semantics and data_space, maybe body_e
         self.bodies = None
+        self.flat_bodies = None  # flatten_nonnan version of bodies
         worker_id = int(f'{os.getpid()}{self.index}'[-4:])
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name), worker_id=worker_id)
@@ -177,6 +179,7 @@ class Env:
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
+        self.flat_bodies = util.flatten_nonnan(self.bodies)
         self.check_u_brain_to_agent()
 
     def get_brain(self, a):
@@ -281,7 +284,7 @@ class EnvSpace:
     def step(self, action_space):
         reward_data = np.full(self.aeb_shape, np.nan)
         state_data = np.full(self.aeb_shape, np.nan, dtype=object)
-        done_data = reward.copy()
+        done_data = reward_data.copy()
         for env in self.envs:
             e = env.index
             action = action_space.get(e=e)

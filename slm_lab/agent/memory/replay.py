@@ -42,11 +42,12 @@ class Replay(Memory):
         # bodies using this shared memory, should be congruent (have same state_dim, action_dim)
         # TODO add warning that memory is env-specific now
         # TODO decide which projection of bodies to use
-        self.bodies = bodies or util.s_get(
-            self, 'aeb_space.body_space').get(e=0)
-        flat_bodies = util.flatten_nonnan(self.bodies)
-        self.aeb_list = [body.aeb for body in flat_bodies]
-        default_body = flat_bodies[0]
+        # TODO make memory per body
+        # TODO remove the bodies arg
+        bodies = bodies or self.agent.bodies
+        e_flat_bodies = util.flatten_nonnan(bodies[0])
+        self.aeb_list = [body.aeb for body in e_flat_bodies]
+        default_body = e_flat_bodies[0]
         self.max_size = self.agent.spec['memory']['max_size']
         self.state_dim = default_body.state_dim
         self.action_dim = default_body.action_dim
@@ -67,11 +68,16 @@ class Replay(Memory):
         # interface
         # add memory from all bodies, interleave
         # TODO proper body-based storage
-        for eb_idx, body in enumerate(self.agent.bodies):
-            # add only those belonging to the bodies using this memory
+        print('last_state')
+        print(self.last_state)
+        print('action')
+        print(action)
+        print('reward')
+        print(reward)
+        for (e, b), body in np.ndenumerate(self.agent.bodies):
             if body.aeb in self.aeb_list:
                 self.add_experience(
-                    self.last_state[eb_idx], action[eb_idx], reward[eb_idx], state[eb_idx], done[eb_idx])
+                    self.last_state[(e, b)], action[(e, b)], reward[(e, b)], state[(e, b)], done[(e, b)])
         self.last_state = state
 
     def add_experience(self,

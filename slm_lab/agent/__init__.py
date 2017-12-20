@@ -38,6 +38,7 @@ class Agent:
         self.agent_space = agent_space
         self.index = a
         self.bodies = None
+        self.flat_bodies = None  # flatten_nonnan version of bodies
 
         MemoryClass = getattr(memory, _.get(self.spec, 'memory.name'))
         self.memory = MemoryClass(self)
@@ -46,6 +47,7 @@ class Agent:
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
+        self.flat_bodies = util.flatten_nonnan(self.bodies)
         self.memory.post_body_init()
         self.algorithm.post_body_init()
 

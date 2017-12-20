@@ -229,7 +229,7 @@ class MultitaskDQN(DQNBase):
         '''Re-initialize nets with multi-task dimensions'''
         '''Assumes state_dim and action_dim contain lists of dimensions'''
         '''Assume 1D for now'''
-        flat_bodies = util.flatten_nonnan(self.agent.bodies)
+        flat_bodies = self.agent.flat_bodies
         self.state_dims = [body.state_dim for body in flat_bodies]
         self.action_dims = [body.action_dim for body in flat_bodies]
         self.total_state_dim = sum(self.state_dims)
@@ -373,4 +373,4 @@ class MultitaskDQN(DQNBase):
     def act(self, state):
         '''Override the spread-per-body act. self.action_policy must be a batch multi-body method'''
         # TODO when backprop need to use relevant r too
-        return self.action_policy(self.agent.bodies, state, self.net, self.explore_var)
+        return self.action_policy(self.agent.flat_bodies, state, self.net, self.explore_var)

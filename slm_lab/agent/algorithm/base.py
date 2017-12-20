@@ -36,8 +36,9 @@ class Algorithm(ABC):
     def act(self, state):
         '''Interface-level agent act method for all its bodies. Resolves state to body_state; get body_action and compose into action.'''
         action = []
-        for eb_idx, body in enumerate(self.agent.bodies):
-            body_state = state[eb_idx]
+        # TODO enumerate in 3D, spread properly
+        for body in self.agent.flat_bodies:
+            body_state = state[(body.e, body.b)]
             body_action = self.body_act(body, body_state)
             action.append(body_action)
         return action
