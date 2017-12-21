@@ -66,15 +66,15 @@ class OpenAIEnv:
         self.name = self.spec['name']
         self.env_space = env_space
         self.index = e
-        self.bodies = None
-        self.flat_bodies = None  # flatten_nonnan version of bodies
+        self.body_e = None
+        self.compact_body_e = None  # flatten_nonnan version of bodies
         self.u_env = gym.make(self.name)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get(
             'wrapper_config.TimeLimit.max_episode_steps')
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        self.flat_bodies = util.flatten_nonnan(self.bodies)
+        self.compact_body_e = util.flatten_nonnan(self.body_e)
 
     def is_discrete(self, a):
         '''Check if an agent (brain) is subject to discrete actions'''
@@ -102,14 +102,13 @@ class OpenAIEnv:
 
     def reset(self):
         self.done = False
-        state = np.full(self.bodies.shape, np.nan, dtype=object)
-        for a, b_list in enumerate(self.bodies):
-            for b, body in enumerate(b_list):
-                if body is np.nan:
-                    continue
-                body_state = self.u_env.reset()
-                # set body_data
-                state[(a, b)] = body_state
+        state = np.full(self.body_e.shape, np.nan, dtype=object)
+        for (a, b), body in np.ndenumerate(self.body_e):
+            if body is np.nan:
+                continue
+            body_state = self.u_env.reset()
+            # set body_data
+            state[(a, b)] = body_state
         non_nan_cnt = util.count_nonnan(state)
         assert util.count_nonnan(
             state) == 1, 'OpenAI Gym supports only single body'
@@ -125,18 +124,16 @@ class OpenAIEnv:
             self.u_env.render()
         body_action = action[0]
         (body_state, body_reward, body_done, _info) = self.u_env.step(body_action)
-        reward = np.full(self.bodies.shape, np.nan)
-        state = np.full(self.bodies.shape, np.nan, dtype=object)
+        reward = np.full(self.body_e.shape, np.nan)
+        state = np.full(self.body_e.shape, np.nan, dtype=object)
         done = reward.copy()
-        for a, b_list in enumerate(self.bodies):
-            for b, body in enumerate(b_list):
-                if body is np.nan:
-                    continue
-                body_state = self.u_env.reset()
-                # set body_data
-                reward[(a, b)] = body_reward
-                state[(a, b)] = body_state
-                done[(a, b)] = body_done
+        for (a, b), body in np.ndenumerate(self.body_e):
+            if body is np.nan:
+                continue
+            # set body_data
+            reward[(a, b)] = body_reward
+            state[(a, b)] = body_state
+            done[(a, b)] = body_done
         self.done = body_done
         return reward, state, done
 
@@ -158,8 +155,8 @@ class Env:
         self.env_space = env_space
         self.index = e
         # TODO rename with consistent semantics and data_space, maybe body_e
-        self.bodies = None
-        self.flat_bodies = None  # flatten_nonnan version of bodies
+        self.body_e = None
+        self.compact_body_e = None  # flatten_nonnan version of bodies
         worker_id = int(f'{os.getpid()}{self.index}'[-4:])
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name), worker_id=worker_id)
@@ -168,18 +165,18 @@ class Env:
     def check_u_brain_to_agent(self):
         '''Check the size match between unity brain and agent'''
         u_brain_num = self.u_env.number_brains
-        agent_num = len(self.bodies)
+        agent_num = len(self.body_e)
         assert u_brain_num == agent_num, f'There must be a Unity brain for each agent; failed check brain: {u_brain_num} == agent: {agent_num}.'
 
     def check_u_agent_to_body(self, a_env_info, a):
         '''Check the size match between unity agent and body'''
         u_agent_num = len(a_env_info.agents)
-        a_body_num = util.count_nonnan(self.bodies[a])
+        a_body_num = util.count_nonnan(self.body_e[a])
         assert u_agent_num == a_body_num, f'There must be a Unity agent for each body; failed check agent: {u_agent_num} == body: {a_body_num}.'
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        self.flat_bodies = util.flatten_nonnan(self.bodies)
+        self.compact_body_e = util.flatten_nonnan(self.body_e)
         self.check_u_brain_to_agent()
 
     def get_brain(self, a):
@@ -212,33 +209,31 @@ class Env:
     def reset(self):
         env_info_dict = self.u_env.reset(
             train_mode=self.train_mode, config=self.spec.get('unity'))
-        state = np.full(self.bodies.shape, np.nan, dtype=object)
-        for a, b_list in enumerate(self.bodies):
-            for b, body in enumerate(b_list):
-                # TODO refactor this
-                if body is np.nan:
-                    continue
-                a_env_info = self.get_env_info(env_info_dict, a)
-                self.check_u_agent_to_body(a_env_info, a)
-                # set body_data
-                state[(a, b)] = a_env_info.states[b]
+        state = np.full(self.body_e.shape, np.nan, dtype=object)
+        for (a, b), body in np.ndenumerate(self.body_e):
+            # TODO refactor this
+            if body is np.nan:
+                continue
+            a_env_info = self.get_env_info(env_info_dict, a)
+            self.check_u_agent_to_body(a_env_info, a)
+            # set body_data
+            state[(a, b)] = a_env_info.states[b]
         return state
 
     def step(self, action):
         # TODO spread action from agent
         env_info_dict = self.u_env.step(action)
-        reward = np.full(self.bodies.shape, np.nan)
-        state = np.full(self.bodies.shape, np.nan, dtype=object)
+        reward = np.full(self.body_e.shape, np.nan)
+        state = np.full(self.body_e.shape, np.nan, dtype=object)
         done = reward.copy()
-        for a, b_list in enumerate(self.bodies):
-            for b, body in enumerate(b_list):
-                if body is np.nan:
-                    continue
-                a_env_info = self.get_env_info(env_info_dict, a)
-                # set body_data
-                reward[(a, b)] = a_env_info.rewards[b]
-                state[(a, b)] = a_env_info.states[b]
-                done[(a, b)] = a_env_info.local_done[b]
+        for (a, b), body in np.ndenumerate(self.body_e):
+            if body is np.nan:
+                continue
+            a_env_info = self.get_env_info(env_info_dict, a)
+            # set body_data
+            reward[(a, b)] = a_env_info.rewards[b]
+            state[(a, b)] = a_env_info.states[b]
+            done[(a, b)] = a_env_info.local_done[b]
         return reward, state, done
 
     def close(self):

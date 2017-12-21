@@ -133,15 +133,11 @@ class DataSpace:
     def add(self, data):
         '''
         Take raw data from RL system and construct numpy object self.data, then add to self.data_history.
-        Extend data to rectangular shape padded with nan template, then turn it into numpy tensor. If data is from env, auto-swap the data to aeb standard shape.
-        @param {[x: [y: [body_data]]} data As collected in RL sytem.
+        If data is from env, auto-swap the data to aeb standard shape.
+        @param {[x: [y: [body_v]]} data As collected in RL sytem.
         @returns {array} data Tensor in standard aeb shape.
         '''
-        # body_num = self.aeb_shape[2]  # b of aeb
-        # for _x, x_arr in enumerate(data):
-        #     for y, y_arr in enumerate(x_arr):
-        #         pad_len = body_num - len(y_arr)
-        #         y_arr.pad([np.nan] * pad_len)
+        # TODO maybe really take raw and reconstruct into volume using bodies
         new_data = np.array(data)  # no type restriction, auto-infer
         if self.to_swap:  # data from env has shape eab
             self.t_data = new_data
@@ -200,18 +196,18 @@ class AEBSpace:
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
         self.body_space = DataSpace('body', self)
-        body_data = np.full(self.aeb_shape, np.nan, dtype=object)
+        body_v = np.full(self.aeb_shape, np.nan, dtype=object)
         for (a, e, b), sig in np.ndenumerate(self.aeb_sig):
             if sig == 1:
                 agent = self.agent_space.get(a)
                 env = self.env_space.get(e)
                 body = Body((a, e, b), agent, env)
-                body_data[(a, e, b)] = body
-        self.body_space.add(body_data)
+                body_v[(a, e, b)] = body
+        self.body_space.add(body_v)
         for agent in self.agent_space.agents:
-            agent.bodies = self.body_space.get(a=agent.index)
+            agent.body_a = self.body_space.get(a=agent.index)
         for env in self.env_space.envs:
-            env.bodies = self.body_space.get(e=env.index)
+            env.body_e = self.body_space.get(e=env.index)
         return self.body_space
 
     def post_body_init(self):
@@ -223,7 +219,7 @@ class AEBSpace:
         '''
         Add a data to a data space, e.g. data actions collected per body, per agent, from agent_space, with AEB shape projected on a-axis, added to action_space.
         @param {str} data_name
-        @param {[x: [yb_idx:[body_data]]} data, where x, y could be a, e interchangeably.
+        @param {[x: [yb_idx:[body_v]]} data, where x, y could be a, e interchangeably.
         @returns {DataSpace} data_space (aeb is implied)
         '''
         data_space = self.data_spaces[data_name]
