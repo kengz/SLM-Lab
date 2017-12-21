@@ -67,14 +67,14 @@ class OpenAIEnv:
         self.env_space = env_space
         self.index = e
         self.body_e = None
-        self.compact_body_e = None  # flatten_nonnan version of bodies
+        self.flat_nonan_body_e = None  # flatten_nonan version of bodies
         self.u_env = gym.make(self.name)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get(
             'wrapper_config.TimeLimit.max_episode_steps')
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        self.compact_body_e = util.flatten_nonnan(self.body_e)
+        self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
 
     def is_discrete(self, a):
         '''Check if an agent (brain) is subject to discrete actions'''
@@ -156,7 +156,7 @@ class Env:
         self.index = e
         # TODO rename with consistent semantics and data_space, maybe body_e
         self.body_e = None
-        self.compact_body_e = None  # flatten_nonnan version of bodies
+        self.flat_nonan_body_e = None  # flatten_nonan version of bodies
         worker_id = int(f'{os.getpid()}{self.index}'[-4:])
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name), worker_id=worker_id)
@@ -176,7 +176,7 @@ class Env:
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        self.compact_body_e = util.flatten_nonnan(self.body_e)
+        self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
         self.check_u_brain_to_agent()
 
     def get_brain(self, a):

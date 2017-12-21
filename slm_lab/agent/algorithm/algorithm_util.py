@@ -25,24 +25,27 @@ def act_with_epsilon_greedy(body, state, net, epsilon):
     return action
 
 
-def multi_act_with_epsilon_greedy(flat_bodies, state, net, epsilon):
+def multi_act_with_epsilon_greedy(flat_nonan_body_a, state, net, epsilon):
     '''Multi-body action on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
+    # TODO state will be the wrong shape too
     flat_body_states = np.concatenate(state)
     # print(f'epsilon {epsilon}')
     if epsilon > np.random.rand():
         # print('random action')
-        action = np.random.randint(a_dim, size=len(flat_bodies))
+        action = np.random.randint(a_dim, size=len(flat_nonan_body_a))
     else:
         # print('net action')
         torch_state = Variable(torch.from_numpy(flat_body_states).float())
         out = net.wrap_eval(torch_state)
         action = []
         start_idx = 0
-        for body in flat_bodies:
+        for body in flat_nonan_body_a:
             end_idx = start_idx + body.action_dim
             body_action = int(torch.max(out[start_idx: end_idx], dim=0)[1][0])
             action.append(body_action)
             start_idx = end_idx
+    # TODO restitch action into 2d
+    # TODO start renaming s,a,r with the v, a, e convention
     return action
 
 
@@ -56,7 +59,7 @@ def act_with_boltzmann(body, state, net, tau):
     return action
 
 
-def multi_act_with_boltzmann(flat_bodies, state, net, tau):
+def multi_act_with_boltzmann(flat_nonan_body_a, state, net, tau):
     flat_body_states = np.concatenate(state)
     torch_state = Variable(torch.from_numpy(flat_body_states).float())
     out = net.wrap_eval(torch_state)
@@ -64,7 +67,7 @@ def multi_act_with_boltzmann(flat_bodies, state, net, tau):
     action = []
     start_idx = 0
     # print("Acting...")
-    for body in flat_bodies:
+    for body in flat_nonan_body_a:
         end_idx = start_idx + body.action_dim
         probs = F.softmax(out_with_temp[start_idx: end_idx]).data.numpy()
         body_action = np.random.choice(list(range(body.action_dim)), p=probs)

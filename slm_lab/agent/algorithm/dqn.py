@@ -34,7 +34,7 @@ class DQNBase(Algorithm):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         # TODO generalize
-        default_body = self.agent.bodies[(0, 0)]
+        default_body = self.agent.body_a[(0, 0)]
         # autoset net head and tail
         # TODO auto-architecture to handle multi-head, multi-tail nets
         state_dim = default_body.state_dim
@@ -229,9 +229,10 @@ class MultitaskDQN(DQNBase):
         '''Re-initialize nets with multi-task dimensions'''
         '''Assumes state_dim and action_dim contain lists of dimensions'''
         '''Assume 1D for now'''
-        flat_bodies = self.agent.flat_bodies
-        self.state_dims = [body.state_dim for body in flat_bodies]
-        self.action_dims = [body.action_dim for body in flat_bodies]
+        self.state_dims = [
+            body.state_dim for body in self.agent.flat_nonan_body_a]
+        self.action_dims = [
+            body.action_dim for body in self.agent.flat_nonan_body_a]
         self.total_state_dim = sum(self.state_dims)
         self.total_action_dim = sum(self.action_dims)
         print(
@@ -259,12 +260,12 @@ class MultitaskDQN(DQNBase):
         # create a new memory for task 2
         MemoryClass = getattr(memory, _.get(self.agent.spec, 'memory.name'))
         body_space = util.s_get(self, 'aeb_space.body_space')
-        env_bodies = body_space.get(e=0)
-        env_1_bodies = body_space.get(e=1)
+        body_e0 = body_space.get(e=0)
+        body_e1 = body_space.get(e=1)
         self.agent.memory = MemoryClass(self.agent)
-        self.agent.memory.post_body_init(env_bodies)
+        self.agent.memory.post_body_init(body_e0)
         self.agent.memory_1 = MemoryClass(self.agent)
-        self.agent.memory_1.post_body_init(env_1_bodies)
+        self.agent.memory_1.post_body_init(body_e1)
 
     def get_batch(self):
         batch_1 = self.agent.memory.get_batch(self.batch_size)
@@ -373,4 +374,4 @@ class MultitaskDQN(DQNBase):
     def act(self, state):
         '''Override the spread-per-body act. self.action_policy must be a batch multi-body method'''
         # TODO when backprop need to use relevant r too
-        return self.action_policy(self.agent.flat_bodies, state, self.net, self.explore_var)
+        return self.action_policy(self.agent.flat_nonan_body_a, state, self.net, self.explore_var)

@@ -32,7 +32,7 @@ class Replay(Memory):
     def __init__(self, agent):
         super(Replay, self).__init__(agent)
 
-    def post_body_init(self, bodies=None):
+    def post_body_init(self, body_e=None):
         '''
         Initializes the part of algorithm needing a body to exist first.
         Can also be used to clear the memory.
@@ -44,10 +44,11 @@ class Replay(Memory):
         # TODO decide which projection of bodies to use
         # TODO make memory per body
         # TODO remove the bodies arg
-        bodies = bodies or self.agent.bodies
-        e_flat_bodies = util.flatten_nonnan(bodies[0])
-        self.aeb_list = [body.aeb for body in e_flat_bodies]
-        default_body = e_flat_bodies[0]
+        if body_e is None:
+            body_e = util.s_get(self, 'env_space.envs')[0].body_e
+        flat_nonan_body_e = util.flatten_nonan(body_e)
+        self.aeb_list = [body.aeb for body in flat_nonan_body_e]
+        default_body = flat_nonan_body_e[0]
         self.max_size = self.agent.spec['memory']['max_size']
         self.state_dim = default_body.state_dim
         self.action_dim = default_body.action_dim
@@ -66,7 +67,7 @@ class Replay(Memory):
 
     def update(self, action, reward, state, done):
         # interface
-        # add memory from all bodies, interleave
+        # add memory from all body_a, interleave
         # TODO proper body-based storage
         print('last_state')
         print(self.last_state)
@@ -74,7 +75,7 @@ class Replay(Memory):
         print(action)
         print('reward')
         print(reward)
-        for (e, b), body in np.ndenumerate(self.agent.bodies):
+        for (e, b), body in np.ndenumerate(self.agent.body_a):
             if body.aeb in self.aeb_list:
                 self.add_experience(
                     self.last_state[(e, b)], action[(e, b)], reward[(e, b)], state[(e, b)], done[(e, b)])

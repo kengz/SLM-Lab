@@ -77,7 +77,7 @@ class Session:
             # if bool(done_space):
             if done_space.get(a=0)[0]:
                 # TODO refactor: set all to terminate on master termination. Also use the env with longest timestep to prevent being terminated by fast-running env
-                np.fill(done_space.data, bool)
+                done_space.data.fill(1)
                 break
         # TODO monitor record all data spaces, including body with body.clock. cuz all data spaces have history
         # split per body, use done as delim (maybe done need body clock now), split, sum each chunk

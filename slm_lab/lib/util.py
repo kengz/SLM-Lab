@@ -67,7 +67,7 @@ def count_nonnan(arr):
     try:
         return np.count_nonzero(~np.isnan(arr))
     except Exception:
-        return len(flatten_nonnan(arr))
+        return len(flatten_nonan(arr))
 
 
 def dedent(string):
@@ -91,7 +91,7 @@ def flatten_dict(d, parent_key='', sep='.'):
     return dict(items)
 
 
-def flatten_nonnan(arr):
+def flatten_nonan(arr):
     flat_arr = arr.flatten()
     try:
         return flat_arr[~np.isnan(flat_arr)]
