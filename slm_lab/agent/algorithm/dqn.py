@@ -1,5 +1,4 @@
 from copy import deepcopy
-from slm_lab.agent import memory
 from slm_lab.agent import net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns
 from slm_lab.agent.algorithm.base import Algorithm
@@ -256,18 +255,8 @@ class MultitaskDQN(DQNBase):
         self.online_net = self.net
         self.eval_net = self.net
 
-        # TODO handle this with better design
-        # create a new memory for task 2
-        MemoryClass = getattr(memory, _.get(self.agent.spec, 'memory.name'))
-        body_space = util.s_get(self, 'aeb_space.body_space')
-        body_e0 = body_space.get(e=0)
-        body_e1 = body_space.get(e=1)
-        self.agent.memory = MemoryClass(self.agent)
-        self.agent.memory.post_body_init(body_e0)
-        self.agent.memory_1 = MemoryClass(self.agent)
-        self.agent.memory_1.post_body_init(body_e1)
-
     def get_batch(self):
+        # TODO use body memory and aligh with dim
         batch_1 = self.agent.memory.get_batch(self.batch_size)
         batch_2 = self.agent.memory_1.get_batch(self.batch_size)
         # print("Inside get batch")

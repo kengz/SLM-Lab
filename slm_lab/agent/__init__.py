@@ -18,7 +18,7 @@ Agent components:
 - algorithm (with net, policy)
 - memory
 '''
-from slm_lab.agent import algorithm, memory
+from slm_lab.agent import algorithm
 from slm_lab.experiment.monitor import info_space
 from slm_lab.lib import util
 import pydash as _
@@ -40,23 +40,18 @@ class Agent:
         self.body_a = None
         self.flat_nonan_body_a = None  # flatten_nonan version of bodies
 
-        MemoryClass = getattr(memory, _.get(self.spec, 'memory.name'))
-        self.memory = MemoryClass(self)
         AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
         self.algorithm = AlgoClass(self)
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         self.flat_nonan_body_a = util.flatten_nonan(self.body_a)
-        self.memory.post_body_init()
         self.algorithm.post_body_init()
 
     def reset(self, state):
         '''Do agent reset per episode, such as memory pointer'''
+        # TODO spread over body space, body.memory.reset_last_state(state)
         self.memory.reset_last_state(state)
-        # TODO hack add
-        if hasattr(self, 'memory_1'):
-            self.memory_1.reset_last_state(state)
 
     def act(self, state):
         '''Standard act method from algorithm.'''
@@ -66,10 +61,8 @@ class Agent:
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
+        # TODO spread over body space, body.memory.update
         self.memory.update(action, reward, state, done)
-        # TODO hack add
-        if hasattr(self, 'memory_1'):
-            self.memory_1.update(action, reward, state, done)
         loss = self.algorithm.train()
         explore_var = self.algorithm.update()
         # TODO tmp return, to unify with monitor auto-fetch later

@@ -29,29 +29,12 @@ class Replay(Memory):
     This allows for other implementations to sample based on the experience priorities
     '''
 
-    def __init__(self, agent):
-        super(Replay, self).__init__(agent)
+    def __init__(self, body):
+        super(Replay, self).__init__(body)
 
-    def post_body_init(self, body_e=None):
-        '''
-        Initializes the part of algorithm needing a body to exist first.
-        Can also be used to clear the memory.
-        '''
-        # TODO update for multi bodies
-        # TODO also for multi state, multi actions per body, need to be 3D
-        # bodies using this shared memory, should be congruent (have same state_dim, action_dim)
-        # TODO add warning that memory is env-specific now
-        # TODO decide which projection of bodies to use
-        # TODO make memory per body
-        # TODO remove the bodies arg
-        if body_e is None:
-            body_e = util.s_get(self, 'env_space.envs')[0].body_e
-        flat_nonan_body_e = util.flatten_nonan(body_e)
-        self.aeb_list = [body.aeb for body in flat_nonan_body_e]
-        default_body = flat_nonan_body_e[0]
         self.max_size = self.agent.spec['memory']['max_size']
-        self.state_dim = default_body.state_dim
-        self.action_dim = default_body.action_dim
+        self.state_dim = self.body.state_dim
+        self.action_dim = self.body.action_dim
 
         self.states = np.zeros((self.max_size, self.state_dim))
         self.actions = np.zeros((self.max_size, self.action_dim))
@@ -66,30 +49,12 @@ class Replay(Memory):
         self.total_experiences = 0
 
     def update(self, action, reward, state, done):
-        # interface
-        # add memory from all body_a, interleave
-        # TODO proper body-based storage
-        print('last_state')
-        print(self.last_state)
-        print('action')
-        print(action)
-        print('reward')
-        print(reward)
-        for (e, b), body in np.ndenumerate(self.agent.body_a):
-            if body.aeb in self.aeb_list:
-                self.add_experience(
-                    self.last_state[(e, b)], action[(e, b)], reward[(e, b)], state[(e, b)], done[(e, b)])
+        '''interface method to update memory'''
+        self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
 
-    def add_experience(self,
-                       state,
-                       action,
-                       reward,
-                       next_state,
-                       done,
-                       priority=1):
-        '''Interface helper method for update() to add experience to memory, expanding the memory size if necessary'''
-        # TODO this is still single body
+    def add_experience(self, state, action, reward, next_state, done, priority=1):
+        '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
         # spread numbers in numpy since direct list setting is impossible
@@ -110,19 +75,7 @@ class Replay(Memory):
             self.true_size += 1
         self.total_experiences += 1
 
-    def get_most_recent_experience(self):
-        '''Returns the most recent experience'''
-        # TODO need to foolproof index reference error. Simple as add a dict. if not private method, data format need be consistent with batch format with keys.
-        experience = []
-        experience.append(self.states[self.head])
-        experience.append(self.actions[self.head])
-        experience.append(self.rewards[self.head])
-        experience.append(self.next_states[self.head])
-        experience.append(self.dones[self.head])
-        experience.append(self.priorities[self.head])
-        return experience
-
-    def get_batch(self, batch_size):
+    def get_batch(self, batch_size, latest=False):
         '''
         Returns a batch of batch_size samples.
         Batch is stored as a dict.
@@ -135,6 +88,9 @@ class Replay(Memory):
                      'dones'       : dones,
                      'priorities'  : priorities}
         '''
+        # TODO if latest, return unused. implement
+        if latest:
+            raise NotImplementedError
         self.batch_idxs = self.sample_idxs(batch_size)
         batch = {}
         batch['states'] = self.states[self.batch_idxs]
