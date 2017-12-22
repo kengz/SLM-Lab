@@ -49,23 +49,23 @@ class Agent:
         self.flat_nonan_body_a = util.flatten_nonan(self.body_a)
         self.algorithm.post_body_init()
 
-    def reset(self, state):
+    def reset(self, state_a):
         '''Do agent reset per episode, such as memory pointer'''
         for (e, b), body in np.ndenumerate(self.body_a):
-            body.memory.reset_last_state(state[(e, b)])
+            body.memory.reset_last_state(state_a[(e, b)])
 
-    def act(self, state):
+    def act(self, state_a):
         '''Standard act method from algorithm.'''
-        return self.algorithm.act(state)
+        return self.algorithm.act(state_a)
 
-    def update(self, action, reward, state, done):
+    def update(self, action, reward, state_a, done):
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
         # TODO spread over body space, body.memory.update
         for (e, b), body in np.ndenumerate(self.body_a):
             body.memory.update(
-                action[(e, b)], reward[(e, b)], state[(e, b)], done[(e, b)])
+                action[(e, b)], reward[(e, b)], state_a[(e, b)], done[(e, b)])
         loss = self.algorithm.train()
         explore_var = self.algorithm.update()
         # TODO tmp return, to unify with monitor auto-fetch later
@@ -102,14 +102,14 @@ class AgentSpace:
 
     def reset(self, state_space):
         for a, agent in enumerate(self.agents):
-            state = state_space.get(a=a)
-            agent.reset(state)
+            state_a = state_space.get(a=a)
+            agent.reset(state_a)
 
     def act(self, state_space):
         action_data = []
         for a, agent in enumerate(self.agents):
-            state = state_space.get(a=a)
-            action = agent.act(state)
+            state_a = state_space.get(a=a)
+            action = agent.act(state_a)
             action_data.append(action)
         action_space = self.aeb_space.add('action', action_data)
         return action_space
@@ -118,9 +118,9 @@ class AgentSpace:
         for a, agent in enumerate(self.agents):
             action = action_space.get(a=a)
             reward = reward_space.get(a=a)
-            state = state_space.get(a=a)
+            state_a = state_space.get(a=a)
             done = done_space.get(a=a)
-            loss, explore_var = agent.update(action, reward, state, done)
+            loss, explore_var = agent.update(action, reward, state_a, done)
         # TODO tmp, single body (last); use monitor later
         return loss, explore_var
 

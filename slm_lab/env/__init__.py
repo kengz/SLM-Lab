@@ -102,17 +102,17 @@ class OpenAIEnv:
 
     def reset(self):
         self.done = False
-        state = np.full(self.body_e.shape, np.nan, dtype=object)
+        state_e = np.full(self.body_e.shape, np.nan, dtype=object)
         for (a, b), body in np.ndenumerate(self.body_e):
             if body is np.nan:
                 continue
-            body_state = self.u_env.reset()
+            state = self.u_env.reset()
             # set body_data
-            state[(a, b)] = body_state
-        non_nan_cnt = util.count_nonnan(state)
+            state_e[(a, b)] = state
+        non_nan_cnt = util.count_nonnan(state_e)
         assert util.count_nonnan(
-            state) == 1, 'OpenAI Gym supports only single body'
-        return state
+            state_e) == 1, 'OpenAI Gym supports only single body'
+        return state_e
 
     def step(self, action):
         # TODO hack for mismaching env timesteps
@@ -123,19 +123,19 @@ class OpenAIEnv:
         if not self.train_mode:
             self.u_env.render()
         body_action = action[(0, 0)]
-        (body_state, body_reward, body_done, _info) = self.u_env.step(body_action)
+        (state, body_reward, body_done, _info) = self.u_env.step(body_action)
         reward = np.full(self.body_e.shape, np.nan)
-        state = np.full(self.body_e.shape, np.nan, dtype=object)
+        state_e = np.full(self.body_e.shape, np.nan, dtype=object)
         done = reward.copy()
         for (a, b), body in np.ndenumerate(self.body_e):
             if body is np.nan:
                 continue
             # set body_data
             reward[(a, b)] = body_reward
-            state[(a, b)] = body_state
+            state_e[(a, b)] = state
             done[(a, b)] = body_done
         self.done = body_done
-        return reward, state, done
+        return reward, state_e, done
 
     def close(self):
         self.u_env.close()
@@ -209,7 +209,7 @@ class Env:
     def reset(self):
         env_info_dict = self.u_env.reset(
             train_mode=self.train_mode, config=self.spec.get('unity'))
-        state = np.full(self.body_e.shape, np.nan, dtype=object)
+        state_e = np.full(self.body_e.shape, np.nan, dtype=object)
         for (a, b), body in np.ndenumerate(self.body_e):
             # TODO refactor this
             if body is np.nan:
@@ -217,14 +217,14 @@ class Env:
             a_env_info = self.get_env_info(env_info_dict, a)
             self.check_u_agent_to_body(a_env_info, a)
             # set body_data
-            state[(a, b)] = a_env_info.states[b]
-        return state
+            state_e[(a, b)] = a_env_info.states[b]
+        return state_e
 
     def step(self, action):
         # TODO spread action from agent
         env_info_dict = self.u_env.step(action)
         reward = np.full(self.body_e.shape, np.nan)
-        state = np.full(self.body_e.shape, np.nan, dtype=object)
+        state_e = np.full(self.body_e.shape, np.nan, dtype=object)
         done = reward.copy()
         for (a, b), body in np.ndenumerate(self.body_e):
             if body is np.nan:
@@ -232,9 +232,9 @@ class Env:
             a_env_info = self.get_env_info(env_info_dict, a)
             # set body_data
             reward[(a, b)] = a_env_info.rewards[b]
-            state[(a, b)] = a_env_info.states[b]
+            state_e[(a, b)] = a_env_info.states[b]
             done[(a, b)] = a_env_info.local_done[b]
-        return reward, state, done
+        return reward, state_e, done
 
     def close(self):
         self.u_env.close()
@@ -269,26 +269,26 @@ class EnvSpace:
         return self.envs[e]
 
     def reset(self):
-        state_data = np.full(self.aeb_shape, np.nan, dtype=object)
+        state_v = np.full(self.aeb_shape, np.nan, dtype=object)
         for env in self.envs:
-            state = env.reset()
-            state_data[env.index] = state
-        state_space = self.aeb_space.add('state', state_data)
+            state_e = env.reset()
+            state_v[env.index] = state_e
+        state_space = self.aeb_space.add('state', state_v)
         return state_space
 
     def step(self, action_space):
         reward_data = np.full(self.aeb_shape, np.nan)
-        state_data = np.full(self.aeb_shape, np.nan, dtype=object)
+        state_v = np.full(self.aeb_shape, np.nan, dtype=object)
         done_data = reward_data.copy()
         for env in self.envs:
             e = env.index
             action = action_space.get(e=e)
-            reward, state, done = env.step(action)
+            reward, state_e, done = env.step(action)
             reward_data[e] = reward
-            state_data[e] = state
+            state_v[e] = state_e
             done_data[e] = done
         reward_space = self.aeb_space.add('reward', reward_data)
-        state_space = self.aeb_space.add('state', state_data)
+        state_space = self.aeb_space.add('state', state_v)
         done_space = self.aeb_space.add('done', done_data)
         return reward_space, state_space, done_space
 

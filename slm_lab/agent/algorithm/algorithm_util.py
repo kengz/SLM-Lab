@@ -25,17 +25,17 @@ def act_with_epsilon_greedy(body, state, net, epsilon):
     return action
 
 
-def multi_act_with_epsilon_greedy(flat_nonan_body_a, state, net, epsilon):
+def multi_act_with_epsilon_greedy(flat_nonan_body_a, state_a, net, epsilon):
     '''Multi-body action on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
-    # TODO state will be the wrong shape too
-    flat_body_states = np.concatenate(state)
+    # TODO state_a will be the wrong shape too
+    cat_state_a = np.concatenate(state_a)
     # print(f'epsilon {epsilon}')
     if epsilon > np.random.rand():
         # print('random action')
         action = np.random.randint(a_dim, size=len(flat_nonan_body_a))
     else:
         # print('net action')
-        torch_state = Variable(torch.from_numpy(flat_body_states).float())
+        torch_state = Variable(torch.from_numpy(cat_state_a).float())
         out = net.wrap_eval(torch_state)
         action = []
         start_idx = 0
@@ -59,9 +59,9 @@ def act_with_boltzmann(body, state, net, tau):
     return action
 
 
-def multi_act_with_boltzmann(flat_nonan_body_a, state, net, tau):
-    flat_body_states = np.concatenate(state)
-    torch_state = Variable(torch.from_numpy(flat_body_states).float())
+def multi_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
+    cat_state_a = np.concatenate(state_a)
+    torch_state = Variable(torch.from_numpy(cat_state_a).float())
     out = net.wrap_eval(torch_state)
     out_with_temp = torch.div(out, tau)
     action = []

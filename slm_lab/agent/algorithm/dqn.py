@@ -139,9 +139,9 @@ class DQNBase(Algorithm):
             # print('NOT training')
             return None
 
-    def body_act_discrete(self, body, body_state):
+    def body_act_discrete(self, body, state):
         # TODO can handle identical bodies now; to use body_net for specific body.
-        return self.action_policy(body, body_state, self.net, self.explore_var)
+        return self.action_policy(body, state, self.net, self.explore_var)
 
     def update(self):
         t = util.s_get(self, 'aeb_space.clock').get('total_t')
@@ -362,7 +362,7 @@ class MultitaskDQN(DQNBase):
         # exit()
         return q_targets
 
-    def act(self, state):
+    def act(self, state_a):
         '''Override the spread-per-body act. self.action_policy must be a batch multi-body method'''
         # TODO when backprop need to use relevant r too
-        return self.action_policy(self.agent.flat_nonan_body_a, state, self.net, self.explore_var)
+        return self.action_policy(self.agent.flat_nonan_body_a, state_a, self.net, self.explore_var)
