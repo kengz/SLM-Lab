@@ -72,7 +72,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "relu",
+        "hid_layers_activation": "sigmoid",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,

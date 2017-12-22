@@ -45,23 +45,17 @@ ENV_DATA_NAMES = ['state', 'reward', 'done']
 
 
 def get_body_df_dict(aeb_space):
+    # TODO rewrite this whole shit
     body_df_dict = {}
-    reward_proj_h = []
-    done_proj_h = []
-    for a, body_proj_a in enumerate(aeb_space.body_space.data_proj):
-        reward_proj_a_t = np.column_stack(
-            [reward_proj_t[a] for reward_proj_t in aeb_space.data_spaces['reward'].data_proj_history])
-        done_proj_a_t = np.column_stack(
-            [done_proj_t[a] for done_proj_t in aeb_space.data_spaces['done'].data_proj_history])
-        reward_proj_h.append(reward_proj_a_t)
-        done_proj_h.append(done_proj_a_t)
-        for a_idx, body in enumerate(body_proj_a):
-            body.reward_h = reward_proj_a_t[a_idx]
-            body.done_h = done_proj_a_t[a_idx]
-            df = pd.DataFrame({'reward': body.reward_h, 'done': body.done_h})
-            # df['e'] = df['done'].cumsum()
-            # e_df = df[['reward']].group_by('e').agg('sum')
-            body_df_dict[body.aeb] = df
+    reward_h_v = np.stack(
+        aeb_space.data_spaces['reward'].data_history, axis=3)
+    done_h_v = np.stack(
+        aeb_space.data_spaces['done'].data_history, axis=3)
+    for aeb, body in np.ndenumerate(aeb_space.body_space.data):
+        body.reward_h = reward_h_v[aeb]
+        body.done_h = done_h_v[aeb]
+        df = pd.DataFrame({'reward': body.reward_h, 'done': body.done_h})
+        body_df_dict[aeb] = df
     return body_df_dict
 
 
