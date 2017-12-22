@@ -36,4 +36,42 @@
       "train_mode": true
     }
   },
+  "reinforce_cartpole": {
+    "agent": [{
+      "name": "Reinforce",
+      "algorithm": {
+        "name": "ReinforceDiscrete",
+        "action_policy": "softmax",
+        "gamma": 0.99,
+        "num_epis_to_collect": 1
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
+        "clamp_grad": true,
+        "optim": {
+          "name": "Adam",
+          "lr": 0.00001
+        },
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 5000,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": true
+    }
+  },
 }

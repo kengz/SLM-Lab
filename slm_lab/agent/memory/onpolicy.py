@@ -54,11 +54,11 @@ class OnPolicyReplay(Replay):
         self.next_states = []
         self.dones = []
         self.priorities = []
-        self.current_episode = {'states' : [],
+        self.current_episode = {'states': [],
                                 'actions': [],
                                 'rewards': [],
                                 'next_states': [],
-                                'dones' : [],
+                                'dones': [],
                                 'priorities': []}
         self.most_recent = [None, None, None, None, None, None]
         self.true_size = 0  # Size of the current memory
@@ -89,6 +89,7 @@ class OnPolicyReplay(Replay):
         self.most_recent[4] = done
         self.most_recent[5] = priority
         # If episode ended, add to memory and clear current_episode
+        # print("Done: {}".format(done))
         if done:
             self.states.append(self.current_episode['states'])
             self.actions.append(self.current_episode['actions'])
@@ -96,18 +97,18 @@ class OnPolicyReplay(Replay):
             self.next_states.append(self.current_episode['next_states'])
             self.dones.append(self.current_episode['dones'])
             self.priorities.append(self.current_episode['priorities'])
-            self.current_episode = {'states' : [],
+            self.current_episode = {'states': [],
                                     'actions': [],
                                     'rewards': [],
                                     'next_states': [],
-                                    'dones' : [],
+                                    'dones': [],
                                     'priorities': []}
             # If agent has collected the desired number of episodes, it is ready to train
             if len(self.states) == self.agent.algorithm.num_epis:
                 self.agent.algorithm.to_train = 1
         # Track memory size and num experiences
         self.true_size += 1
-        if true_size > 1000:
+        if self.true_size > 1000:
             logger.warn("Memory size exceeded {}".format(true_size))
         self.total_experiences += 1
 
@@ -136,7 +137,7 @@ class OnPolicyReplay(Replay):
         batch['dones'] = self.dones
         batch['priorities'] = self.priorities
         # Reset memory
-        post_body_init()
+        self.post_body_init()
         return batch
 
     def update_priorities(self, priorities):
