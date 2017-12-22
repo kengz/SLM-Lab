@@ -32,7 +32,7 @@ class Replay(Memory):
     def __init__(self, body):
         super(Replay, self).__init__(body)
 
-        self.max_size = self.agent.spec['memory']['max_size']
+        self.max_size = self.body.agent.spec['memory']['max_size']
         self.state_dim = self.body.state_dim
         self.action_dim = self.body.action_dim
 

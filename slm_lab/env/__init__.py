@@ -122,7 +122,7 @@ class OpenAIEnv:
         assert len(action) == 1, 'OpenAI Gym supports only single body'
         if not self.train_mode:
             self.u_env.render()
-        body_action = action[0]
+        body_action = action[(0, 0)]
         (body_state, body_reward, body_done, _info) = self.u_env.step(body_action)
         reward = np.full(self.body_e.shape, np.nan)
         state = np.full(self.body_e.shape, np.nan, dtype=object)

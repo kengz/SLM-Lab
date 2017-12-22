@@ -21,6 +21,7 @@ Agent components:
 from slm_lab.agent import algorithm
 from slm_lab.experiment.monitor import info_space
 from slm_lab.lib import util
+import numpy as np
 import pydash as _
 
 
@@ -50,8 +51,8 @@ class Agent:
 
     def reset(self, state):
         '''Do agent reset per episode, such as memory pointer'''
-        # TODO spread over body space, body.memory.reset_last_state(state)
-        self.memory.reset_last_state(state)
+        for (e, b), body in np.ndenumerate(self.body_a):
+            body.memory.reset_last_state(state[(e, b)])
 
     def act(self, state):
         '''Standard act method from algorithm.'''
@@ -62,7 +63,9 @@ class Agent:
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
         # TODO spread over body space, body.memory.update
-        self.memory.update(action, reward, state, done)
+        for (e, b), body in np.ndenumerate(self.body_a):
+            body.memory.update(
+                action[(e, b)], reward[(e, b)], state[(e, b)], done[(e, b)])
         loss = self.algorithm.train()
         explore_var = self.algorithm.update()
         # TODO tmp return, to unify with monitor auto-fetch later
