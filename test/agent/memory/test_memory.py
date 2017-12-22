@@ -45,29 +45,6 @@ class TestMemory:
         assert memory.dones[memory.head] == exp[4]
         assert memory.priorities[memory.head] == 1
 
-    def test_get_most_recent_experience(self, test_memory):
-        '''
-        Adds 6 experiences to the memory and checks
-        that the most recent experience is equal
-        to the last experience added
-        '''
-        memory = test_memory[0]
-        memory.post_body_init()
-        experiences = test_memory[2]
-        last_exp = None
-        for i in range(6):
-            exp = experiences[i]
-            memory.add_experience(*exp)
-            last_exp = deepcopy(exp)
-        exp = memory.get_most_recent_experience()
-        # Handle states and actions with multiple dimensions
-        for orig_exp, mem_exp in zip(last_exp, exp):
-            if mem_exp.size > 1:
-                for i in range(mem_exp.size):
-                    assert orig_exp[i] == mem_exp[i]
-            else:
-                assert orig_exp == mem_exp
-
     def test_wrap(self, test_memory):
         '''Tests that the memory wraps round when it is at capacity'''
         memory = test_memory[0]

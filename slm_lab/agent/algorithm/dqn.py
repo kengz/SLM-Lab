@@ -106,7 +106,8 @@ class DQNBase(Algorithm):
         return q_targets
 
     def get_batch(self):
-        batch = self.agent.memory.get_batch(self.batch_size)
+        # TODO generalize to gather from all bodies
+        batch = self.agent.body[(0,0)].get_batch(self.batch_size)
         # Package data into pytorch variables
         float_data_list = [
             'states', 'actions', 'rewards', 'dones', 'next_states']
@@ -256,9 +257,10 @@ class MultitaskDQN(DQNBase):
         self.eval_net = self.net
 
     def get_batch(self):
-        # TODO use body memory and aligh with dim
-        batch_1 = self.agent.memory.get_batch(self.batch_size)
-        batch_2 = self.agent.memory_1.get_batch(self.batch_size)
+        # TODO loop over, gather per e.
+        # TODO generalize for any number of e (len of body_a)
+        batch_1 = self.agent.body_a[(0, 0)].get_batch(self.batch_size)
+        batch_2 = self.agent.body_a[(1, 0)].get_batch(self.batch_size)
         # print("Inside get batch")
         # print("Batch 1: ")
         # print(batch_1)
