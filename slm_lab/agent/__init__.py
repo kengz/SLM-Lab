@@ -58,14 +58,14 @@ class Agent:
         '''Standard act method from algorithm.'''
         return self.algorithm.act(state_a)
 
-    def update(self, action_a, reward, state_a, done):
+    def update(self, action_a, reward_a, state_a, done):
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
         # TODO spread over body space, body.memory.update
         for (e, b), body in np.ndenumerate(self.body_a):
             body.memory.update(
-                action_a[(e, b)], reward[(e, b)], state_a[(e, b)], done[(e, b)])
+                action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done[(e, b)])
         loss = self.algorithm.train()
         explore_var = self.algorithm.update()
         # TODO tmp return, to unify with monitor auto-fetch later
@@ -117,10 +117,10 @@ class AgentSpace:
     def update(self, action_space, reward_space, state_space, done_space):
         for a, agent in enumerate(self.agents):
             action_a = action_space.get(a=a)
-            reward = reward_space.get(a=a)
+            reward_a = reward_space.get(a=a)
             state_a = state_space.get(a=a)
             done = done_space.get(a=a)
-            loss, explore_var = agent.update(action_a, reward, state_a, done)
+            loss, explore_var = agent.update(action_a, reward_a, state_a, done)
         # TODO tmp, single body (last); use monitor later
         return loss, explore_var
 
