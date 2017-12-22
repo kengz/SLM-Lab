@@ -26,27 +26,27 @@ def act_with_epsilon_greedy(body, state, net, epsilon):
 
 
 def multi_act_with_epsilon_greedy(flat_nonan_body_a, state_a, net, epsilon):
-    '''Multi-body action on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
+    '''Multi-body action_a on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
     # TODO state_a will be the wrong shape too
     cat_state_a = np.concatenate(state_a)
     # print(f'epsilon {epsilon}')
     if epsilon > np.random.rand():
-        # print('random action')
-        action = np.random.randint(a_dim, size=len(flat_nonan_body_a))
+        # print('random action_a')
+        action_a = np.random.randint(a_dim, size=len(flat_nonan_body_a))
     else:
-        # print('net action')
+        # print('net action_a')
         torch_state = Variable(torch.from_numpy(cat_state_a).float())
         out = net.wrap_eval(torch_state)
-        action = []
+        action_a = []
         start_idx = 0
         for body in flat_nonan_body_a:
             end_idx = start_idx + body.action_dim
-            body_action = int(torch.max(out[start_idx: end_idx], dim=0)[1][0])
-            action.append(body_action)
+            action = int(torch.max(out[start_idx: end_idx], dim=0)[1][0])
+            action_a.append(action)
             start_idx = end_idx
-    # TODO restitch action into 2d
+    # TODO restitch action_a into 2d
     # TODO start renaming s,a,r with the v, a, e convention
-    return action
+    return action_a
 
 
 def act_with_boltzmann(body, state, net, tau):
@@ -64,22 +64,22 @@ def multi_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
     torch_state = Variable(torch.from_numpy(cat_state_a).float())
     out = net.wrap_eval(torch_state)
     out_with_temp = torch.div(out, tau)
-    action = []
+    action_a = []
     start_idx = 0
     # print("Acting...")
     for body in flat_nonan_body_a:
         end_idx = start_idx + body.action_dim
         probs = F.softmax(out_with_temp[start_idx: end_idx]).data.numpy()
-        body_action = np.random.choice(list(range(body.action_dim)), p=probs)
-        # print("Start idx: {}, end: idx: {}, action: {}, dims: {}".format(
+        action = np.random.choice(list(range(body.action_dim)), p=probs)
+        # print("Start idx: {}, end: idx: {}, action_a: {}, dims: {}".format(
         #     start_idx,
         #     end_idx,
-        #     body_action,
+        #     action,
         #     out_with_temp[start_idx: end_idx].size()
         # ))
-        action.append(body_action)
+        action_a.append(action)
         start_idx = end_idx
-    return action
+    return action_a
 
 
 def act_with_gaussian(body, state, net, stddev):

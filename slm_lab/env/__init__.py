@@ -114,16 +114,15 @@ class OpenAIEnv:
             state_e) == 1, 'OpenAI Gym supports only single body'
         return state_e
 
-    def step(self, action):
+    def step(self, action_e):
         # TODO hack for mismaching env timesteps
         if self.done:
             self.reset()
-        # TODO spread action from agent
-        assert len(action) == 1, 'OpenAI Gym supports only single body'
+        assert len(action_e) == 1, 'OpenAI Gym supports only single body'
         if not self.train_mode:
             self.u_env.render()
-        body_action = action[(0, 0)]
-        (state, body_reward, body_done, _info) = self.u_env.step(body_action)
+        action = action_e[(0, 0)]
+        (state, body_reward, body_done, _info) = self.u_env.step(action)
         reward = np.full(self.body_e.shape, np.nan)
         state_e = np.full(self.body_e.shape, np.nan, dtype=object)
         done = reward.copy()
@@ -220,9 +219,8 @@ class Env:
             state_e[(a, b)] = a_env_info.states[b]
         return state_e
 
-    def step(self, action):
-        # TODO spread action from agent
-        env_info_dict = self.u_env.step(action)
+    def step(self, action_e):
+        env_info_dict = self.u_env.step(action_e)
         reward = np.full(self.body_e.shape, np.nan)
         state_e = np.full(self.body_e.shape, np.nan, dtype=object)
         done = reward.copy()
@@ -282,8 +280,8 @@ class EnvSpace:
         done_data = reward_data.copy()
         for env in self.envs:
             e = env.index
-            action = action_space.get(e=e)
-            reward, state_e, done = env.step(action)
+            action_e = action_space.get(e=e)
+            reward, state_e, done = env.step(action_e)
             reward_data[e] = reward
             state_v[e] = state_e
             done_data[e] = done

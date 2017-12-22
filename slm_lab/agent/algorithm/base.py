@@ -18,14 +18,14 @@ class Algorithm(ABC):
         raise NotImplementedError
 
     def body_act_discrete(self, body, state):
-        '''Implement atomic discrete body_action, or throw NotImplementedError. E.g. fetch body_action from net given body info.'''
+        '''Implement atomic discrete action, or throw NotImplementedError. E.g. fetch action from net given body info.'''
         raise NotImplementedError
-        return body_action
+        return action
 
     def body_act_continuous(self, body, state):
-        '''Implement atomic continuous body_action, or throw NotImplementedError. E.g. fetch body_action from net given body info.'''
+        '''Implement atomic continuous action, or throw NotImplementedError. E.g. fetch action from net given body info.'''
         raise NotImplementedError
-        return body_action
+        return action
 
     def body_act(self, body, state):
         '''Standard atomic body_act method. Atomic body logic should be implemented in submethods.'''
@@ -35,14 +35,14 @@ class Algorithm(ABC):
             return self.body_act_continuous(body, state)
 
     def act(self, state_a):
-        '''Interface-level agent act method for all its bodies. Resolves state to state; get body_action and compose into action.'''
-        action = np.full(self.agent.body_a.shape, np.nan, dtype=object)
+        '''Interface-level agent act method for all its bodies. Resolves state to state; get action and compose into action.'''
+        action_a = np.full(self.agent.body_a.shape, np.nan, dtype=object)
         for (e, b), body in np.ndenumerate(self.agent.body_a):
             if body is np.nan:
                 continue
             state = state_a[(e, b)]
-            action[(e, b)] = self.body_act(body, state)
-        return action
+            action_a[(e, b)] = self.body_act(body, state)
+        return action_a
 
     @abstractmethod
     def train(self):
