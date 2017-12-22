@@ -19,7 +19,6 @@ Agent components:
 - memory
 '''
 from slm_lab.agent import algorithm
-from slm_lab.experiment.monitor import info_space
 from slm_lab.lib import util
 import numpy as np
 import pydash as _
@@ -31,13 +30,12 @@ class Agent:
     Standardizes the Agent design to work in Lab.
     Access Envs properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
-    # TODO ok need architecture spec for each agent: disjoint or joint, time or space multiplicity
 
     def __init__(self, spec, agent_space, a=0):
         self.spec = spec
         self.name = self.spec['name']
         self.agent_space = agent_space
-        self.index = a
+        self.a = a
         self.body_a = None
         self.flat_nonan_body_a = None  # flatten_nonan version of bodies
 
@@ -120,7 +118,8 @@ class AgentSpace:
             reward_a = reward_space.get(a=a)
             state_a = state_space.get(a=a)
             done_a = done_space.get(a=a)
-            loss, explore_var = agent.update(action_a, reward_a, state_a, done_a)
+            loss, explore_var = agent.update(
+                action_a, reward_a, state_a, done_a)
         # TODO tmp, single body (last); use monitor later
         return loss, explore_var
 

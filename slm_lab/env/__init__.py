@@ -4,7 +4,6 @@ Contains graduated components from experiments for building/using environment.
 Provides the rich experience for agent embodiment, reflects the curriculum and allows teaching (possibly allows teacher to enter).
 To be designed by human and evolution module, based on the curriculum and fitness metrics.
 '''
-from slm_lab.experiment.monitor import info_space
 from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
@@ -65,7 +64,7 @@ class OpenAIEnv:
         util.set_attr(self, self.spec)
         self.name = self.spec['name']
         self.env_space = env_space
-        self.index = e
+        self.e = e
         self.body_e = None
         self.flat_nonan_body_e = None  # flatten_nonan version of bodies
         self.u_env = gym.make(self.name)
@@ -152,7 +151,7 @@ class Env:
         util.set_attr(self, self.spec)
         self.name = self.spec['name']
         self.env_space = env_space
-        self.index = e
+        self.e = e
         # TODO rename with consistent semantics and data_space, maybe body_e
         self.body_e = None
         self.flat_nonan_body_e = None  # flatten_nonan version of bodies
@@ -270,7 +269,7 @@ class EnvSpace:
         state_v = np.full(self.aeb_shape, np.nan, dtype=object)
         for env in self.envs:
             state_e = env.reset()
-            state_v[env.index] = state_e
+            state_v[env.e] = state_e
         state_space = self.aeb_space.add('state', state_v)
         return state_space
 
@@ -279,7 +278,7 @@ class EnvSpace:
         state_v = np.full(self.aeb_shape, np.nan, dtype=object)
         done_v = reward_v.copy()
         for env in self.envs:
-            e = env.index
+            e = env.e
             action_e = action_space.get(e=e)
             reward_e, state_e, done_e = env.step(action_e)
             reward_v[e] = reward_e

@@ -203,9 +203,9 @@ class AEBSpace:
                 body_v[(a, e, b)] = body
         self.body_space.add(body_v)
         for agent in self.agent_space.agents:
-            agent.body_a = self.body_space.get(a=agent.index)
+            agent.body_a = self.body_space.get(a=agent.a)
         for env in self.env_space.envs:
-            env.body_e = self.body_space.get(e=env.index)
+            env.body_e = self.body_space.get(e=env.e)
         return self.body_space
 
     def post_body_init(self):
