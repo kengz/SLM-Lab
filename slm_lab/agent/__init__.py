@@ -16,7 +16,7 @@ Main SLM components (refer to SLM doc for more):
 
 Agent components:
 - algorithm (with net, policy)
-- memory
+- memory (per body)
 '''
 from slm_lab.agent import algorithm
 from slm_lab.lib import util
@@ -60,7 +60,6 @@ class Agent:
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
-        # TODO spread over body space, body.memory.update
         for (e, b), body in np.ndenumerate(self.body_a):
             body.memory.update(
                 action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
@@ -88,7 +87,7 @@ class AgentSpace:
         self.aeb_shape = aeb_space.aeb_shape
         aeb_space.agent_space = self
         self.agents = [
-            Agent(a_spec, self, a) for a, a_spec in enumerate(spec['agent'])]
+            Agent(agent_spec, self, a) for a, agent_spec in enumerate(spec['agent'])]
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
@@ -120,7 +119,7 @@ class AgentSpace:
             done_a = done_space.get(a=a)
             loss, explore_var = agent.update(
                 action_a, reward_a, state_a, done_a)
-        # TODO tmp, single body (last); use monitor later
+        # TODO tmp, single body loss (last); use monitor later
         return loss, explore_var
 
     def close(self):

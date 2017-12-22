@@ -3,7 +3,7 @@ from slm_lab.agent import net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
-from slm_lab.lib import util
+from slm_lab.lib import logger, util
 from torch.autograd import Variable
 import numpy as np
 import pydash as _
@@ -32,12 +32,11 @@ class DQNBase(Algorithm):
 
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
-        # TODO generalize
-        default_body = self.agent.body_a[(0, 0)]
-        # autoset net head and tail
-        # TODO auto-architecture to handle multi-head, multi-tail nets
-        state_dim = default_body.state_dim
-        action_dim = default_body.action_dim
+        # TODO generalize to iterate over bodies if is parallelized
+        assert len(self.agent.flat_nonan_body_a) == 1
+        body = self.agent.flat_nonan_body_a[0]  # singleton algo
+        state_dim = body.state_dim
+        action_dim = body.action_dim
         net_spec = self.agent.spec['net']
         self.net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
@@ -45,7 +44,6 @@ class DQNBase(Algorithm):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        print(self.net)
         self.target_net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -76,6 +74,8 @@ class DQNBase(Algorithm):
         self.training_frequency = algorithm_spec['training_frequency']
         self.training_epoch = algorithm_spec['training_epoch']
         self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
+        # TODO standardize agent and env print self
+        logger.info(str(self.net))
 
     def compute_q_target_values(self, batch):
         q_vals = self.net.wrap_eval(batch['states'])
@@ -109,9 +109,9 @@ class DQNBase(Algorithm):
         # TODO generalize to gather from all bodies
         batch = self.agent.body_a[(0, 0)].memory.get_batch(self.batch_size)
         # Package data into pytorch variables
-        float_data_list = [
+        float_data_names = [
             'states', 'actions', 'rewards', 'dones', 'next_states']
-        for k in float_data_list:
+        for k in float_data_names:
             batch[k] = Variable(torch.from_numpy(batch[k]).float())
         return batch
 
@@ -148,6 +148,7 @@ class DQNBase(Algorithm):
         # if t % 100 == 0:
         # print(f'Total time step: {t}')
         '''Update epsilon or boltzmann for policy after net training'''
+        # TODO refactor these info algorithm_util
         epi = util.s_get(self, 'aeb_space.clock').get('e')
         rise = self.explore_var_end - self.explore_var_start
         slope = rise / float(self.explore_anneal_epi)
@@ -221,6 +222,7 @@ class DoubleDQN(DQNBase):
 
 class MultitaskDQN(DQNBase):
     # TODO: Check this is working
+    # TODO auto-architecture to handle multi-head, multi-tail nets
     def __init__(self, agent):
         super(MultitaskDQN, self).__init__(agent)
 
@@ -267,9 +269,9 @@ class MultitaskDQN(DQNBase):
         # print("Batch 2: ")
         # print(batch_2)
         # Package data into pytorch variables
-        float_data_list = [
+        float_data_names = [
             'states', 'actions', 'rewards', 'dones', 'next_states']
-        for k in float_data_list:
+        for k in float_data_names:
             batch_1[k] = Variable(torch.from_numpy(batch_1[k]).float())
             batch_2[k] = Variable(torch.from_numpy(batch_2[k]).float())
         # Concat state
