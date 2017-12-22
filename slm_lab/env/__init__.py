@@ -59,7 +59,7 @@ extend_unity_brain()
 
 
 class OpenAIEnv:
-    # TODO check done on solve_mean_rewards
+    # TODO check done_e on solve_mean_rewards
     def __init__(self, spec, env_space, e=0):
         self.spec = spec
         util.set_attr(self, self.spec)
@@ -101,7 +101,7 @@ class OpenAIEnv:
         return {'state': state_dim}
 
     def reset(self):
-        self.done = False
+        self.done_e = False
         state_e = np.full(self.body_e.shape, np.nan, dtype=object)
         for (a, b), body in np.ndenumerate(self.body_e):
             if body is np.nan:
@@ -116,25 +116,25 @@ class OpenAIEnv:
 
     def step(self, action_e):
         # TODO hack for mismaching env timesteps
-        if self.done:
+        if self.done_e:
             self.reset()
         assert len(action_e) == 1, 'OpenAI Gym supports only single body'
         if not self.train_mode:
             self.u_env.render()
         action = action_e[(0, 0)]
-        (state, reward, body_done, _info) = self.u_env.step(action)
+        (state, reward, done, _info) = self.u_env.step(action)
         reward_e = np.full(self.body_e.shape, np.nan)
         state_e = np.full(self.body_e.shape, np.nan, dtype=object)
-        done = reward_e.copy()
+        done_e = reward_e.copy()
         for (a, b), body in np.ndenumerate(self.body_e):
             if body is np.nan:
                 continue
             # set body_data
             reward_e[(a, b)] = reward
             state_e[(a, b)] = state
-            done[(a, b)] = body_done
-        self.done = body_done
-        return reward_e, state_e, done
+            done_e[(a, b)] = done
+        self.done_e = done
+        return reward_e, state_e, done_e
 
     def close(self):
         self.u_env.close()
@@ -223,7 +223,7 @@ class Env:
         env_info_dict = self.u_env.step(action_e)
         reward_e = np.full(self.body_e.shape, np.nan)
         state_e = np.full(self.body_e.shape, np.nan, dtype=object)
-        done = reward_e.copy()
+        done_e = reward_e.copy()
         for (a, b), body in np.ndenumerate(self.body_e):
             if body is np.nan:
                 continue
@@ -231,8 +231,8 @@ class Env:
             # set body_data
             reward_e[(a, b)] = a_env_info.rewards[b]
             state_e[(a, b)] = a_env_info.states[b]
-            done[(a, b)] = a_env_info.local_done[b]
-        return reward_e, state_e, done
+            done_e[(a, b)] = a_env_info.local_done[b]
+        return reward_e, state_e, done_e
 
     def close(self):
         self.u_env.close()
@@ -277,17 +277,17 @@ class EnvSpace:
     def step(self, action_space):
         reward_v = np.full(self.aeb_shape, np.nan)
         state_v = np.full(self.aeb_shape, np.nan, dtype=object)
-        done_data = reward_v.copy()
+        done_v = reward_v.copy()
         for env in self.envs:
             e = env.index
             action_e = action_space.get(e=e)
-            reward_e, state_e, done = env.step(action_e)
+            reward_e, state_e, done_e = env.step(action_e)
             reward_v[e] = reward_e
             state_v[e] = state_e
-            done_data[e] = done
+            done_v[e] = done_e
         reward_space = self.aeb_space.add('reward', reward_v)
         state_space = self.aeb_space.add('state', state_v)
-        done_space = self.aeb_space.add('done', done_data)
+        done_space = self.aeb_space.add('done', done_v)
         return reward_space, state_space, done_space
 
     def close(self):
