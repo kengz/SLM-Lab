@@ -75,7 +75,7 @@ class Session:
             explore_var_list.append(explore_var)
             # TODO hack for a reliable done, otherwise all needs to be coincidental
             # if bool(done_space):
-            if done_space.get(a=0)[0]:
+            if done_space.get(a=0)[(0,0)]:
                 # TODO refactor: set all to terminate on master termination. Also use the env with longest timestep to prevent being terminated by fast-running env
                 done_space.data.fill(1)
                 break
