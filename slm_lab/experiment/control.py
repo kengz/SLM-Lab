@@ -76,6 +76,7 @@ class Session:
             # TODO hack for a reliable done, otherwise all needs to be coincidental
             # if bool(done_space):
             if done_space.get(a=0)[0]:
+                print("Reward: {}".format(t + 1))
                 # TODO refactor: set all to terminate on master termination. Also use the env with longest timestep to prevent being terminated by fast-running env
                 for a, _eb in enumerate(self.aeb_space.a_eb_proj):
                     done_proj_a = done_space.get(a=a)

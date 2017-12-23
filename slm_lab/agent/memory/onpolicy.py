@@ -89,7 +89,6 @@ class OnPolicyReplay(Replay):
         self.most_recent[4] = done
         self.most_recent[5] = priority
         # If episode ended, add to memory and clear current_episode
-        # print("Done: {}".format(done))
         if done:
             self.states.append(self.current_episode['states'])
             self.actions.append(self.current_episode['actions'])
@@ -143,3 +142,59 @@ class OnPolicyReplay(Replay):
     def update_priorities(self, priorities):
         ''' Not relevant for this memory'''
         pass
+
+
+class OnPolicyBatchReplay(OnPolicyReplay):
+    '''
+    Same as OnPolicyReplay Memory with the following difference.
+
+    The memory does not have a fixed size. Instead the memory stores data from N experiences, where N is determined by the user. After N experiences, all of the examples are returned to the agent to learn from.
+
+    In contrast, OnPolicyReplay stores entire episodes and stores them in a nested structure. OnPolicyBatchReplay stores experiences in a flat structure.
+    '''
+    def add_experience(self,
+                       state,
+                       action,
+                       reward,
+                       next_state,
+                       done,
+                       priority=1):
+        '''Interface helper method for update() to add experience to memory'''
+        # TODO this is still single body
+        self.states.append(state)
+        self.actions.append(action)
+        self.rewards.append(reward)
+        self.next_states.append(next_state)
+        self.dones.append(done)
+        self.priorities.append(priority)
+        # Set most recent
+        self.most_recent[0] = state
+        self.most_recent[1] = action
+        self.most_recent[2] = reward
+        self.most_recent[3] = next_state
+        self.most_recent[4] = done
+        self.most_recent[5] = priority
+        # Track memory size and num experiences
+        self.true_size += 1
+        if self.true_size > 1000:
+            logger.warn("Memory size exceeded {}".format(true_size))
+        self.total_experiences += 1
+        # Decide if agent is to train
+        if (len(self.states)) == self.agent.algorithm.training_frequency:
+            self.agent.algorithm.to_train = 1
+            # print("Memory size: {}".format(self.true_size))
+
+    def get_batch(self):
+        '''
+        Returns all the examples from memory in a single batch
+        Batch is stored as a dict.
+        Keys are the names of the different elements of an experience. Values are an array of the corresponding sampled elements
+        e.g.
+            batch = {'states'      : states,
+                     'actions'     : actions,
+                     'rewards'     : rewards,
+                     'next_states' : next_states,
+                     'dones'       : dones,
+                     'priorities'  : priorities}
+        '''
+        return super(OnPolicyBatchReplay, self).get_batch()

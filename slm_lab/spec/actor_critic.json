@@ -1,24 +1,30 @@
 {
-  "reinforce_spec_template": {
+  "actor_critic_spec_template": {
     "agent": [{
-      "name": "Reinforce",
+      "name": "ActorCritic",
       "algorithm": {
-        "name": "ReinforceDiscrete",
+        "name": "ACDiscrete",
         "action_policy": "softmax",
         "gamma": 0.99,
-        "num_epis_to_collect": 1
+        "training_frequency": 8,
+        "training_iters_per_batch": 3
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_actor": {
+          "name": "Adam",
+          "lr": 0.001
+        },
+        "optim_critic": {
           "name": "Adam",
           "lr": 0.02
         },
+        "clamp_grad": true,
       }
     }],
     "env": [{
@@ -36,27 +42,32 @@
       "train_mode": true
     }
   },
-  "reinforce_cartpole": {
+  "actor_critic_cartpole": {
     "agent": [{
-      "name": "Reinforce",
+      "name": "ActorCritic",
       "algorithm": {
-        "name": "ReinforceDiscrete",
+        "name": "ACDiscrete",
         "action_policy": "softmax",
         "gamma": 0.999,
-        "num_epis_to_collect": 1
+        "training_frequency": 4,
+        "training_iters_per_batch": 3
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "clamp_grad": true,
-        "optim": {
+        "optim_actor": {
           "name": "Adam",
-          "lr": 0.0001
+          "lr": 0.00001
         },
+        "optim_critic": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "clamp_grad": true,
       }
     }],
     "env": [{
@@ -73,5 +84,5 @@
       "max_trial": 1,
       "train_mode": true
     }
-  },
+  }
 }
