@@ -75,7 +75,7 @@ class Replay(Memory):
             self.true_size += 1
         self.total_experiences += 1
 
-    def get_batch(self, batch_size, latest=False):
+    def sample(self, batch_size, latest=False):
         '''
         Returns a batch of batch_size samples.
         Batch is stored as a dict.

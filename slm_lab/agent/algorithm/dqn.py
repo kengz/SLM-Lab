@@ -103,9 +103,9 @@ class DQNBase(Algorithm):
             torch.mul(q_vals, (1 - batch['actions'].data))
         return q_targets
 
-    def get_batch(self):
+    def sample(self):
         # TODO generalize to gather from all bodies
-        batch = self.agent.body_a[(0, 0)].memory.get_batch(self.batch_size)
+        batch = self.agent.body_a[(0, 0)].memory.sample(self.batch_size)
         # Package data into pytorch variables
         float_data_names = [
             'states', 'actions', 'rewards', 'dones', 'next_states']
@@ -120,7 +120,7 @@ class DQNBase(Algorithm):
             # print('Training')
             total_loss = 0.0
             for _b in range(self.training_epoch):
-                batch = self.get_batch()
+                batch = self.sample()
                 batch_loss = 0.0
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
@@ -254,11 +254,11 @@ class MultitaskDQN(DQNBase):
         self.online_net = self.net
         self.eval_net = self.net
 
-    def get_batch(self):
+    def sample(self):
         # TODO loop over, gather per e.
         # TODO generalize for any number of e (len of body_a)
-        batch_1 = self.agent.body_a[(0, 0)].memory.get_batch(self.batch_size)
-        batch_2 = self.agent.body_a[(1, 0)].memory.get_batch(self.batch_size)
+        batch_1 = self.agent.body_a[(0, 0)].memory.sample(self.batch_size)
+        batch_2 = self.agent.body_a[(1, 0)].memory.sample(self.batch_size)
         # print("Inside get batch")
         # print("Batch 1: ")
         # print(batch_1)
