@@ -31,6 +31,7 @@ class ACDiscrete(ReinforceDiscrete):
             optim_param=_.get(net_spec, 'optim_actor'),
             loss_param=_.get(net_spec, 'loss'), # Note: Not used for PG algos
             clamp_grad=_.get(net_spec, 'clamp_grad'),
+            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         )
         print(self.actor)
         self.critic = getattr(net, net_spec['type'])(
@@ -39,6 +40,7 @@ class ACDiscrete(ReinforceDiscrete):
             optim_param=_.get(net_spec, 'optim_critic'),
             loss_param=_.get(net_spec, 'loss'), # Note: Not used for PG algos
             clamp_grad=_.get(net_spec, 'clamp_grad'),
+            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         )
         print(self.critic)
         algorithm_spec = self.agent.spec['algorithm']
@@ -100,6 +102,7 @@ class ACDiscrete(ReinforceDiscrete):
             # print("next state: {}".format(next_state_vals.size()))
             y = Variable(next_state_vals)
             loss = self.critic.training_step(batch['states'], y).data[0]
+            # self.critic.print_grad_norms()
         return loss
 
     def calculate_advantage(self, batch):
@@ -122,7 +125,11 @@ class ACDiscrete(ReinforceDiscrete):
         policy_loss = torch.cat(policy_loss).sum()
         loss = policy_loss.data[0]
         policy_loss.backward()
+        if self.actor.clamp_grad:
+            print("Clipping gradient actor")
+            torch.nn.utils.clip_grad_norm(self.actor.parameters(), self.actor.clamp_grad_val)
         self.actor.optim.step()
+        # self.actor.print_grad_norms()
         self.to_train = 0
         self.saved_log_probs = []
         return loss

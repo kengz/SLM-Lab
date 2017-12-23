@@ -35,6 +35,7 @@ class ReinforceDiscrete(Algorithm):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
             clamp_grad=_.get(net_spec, 'clamp_grad'),
+            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         )
         print(self.net)
         algorithm_spec = self.agent.spec['algorithm']
@@ -65,6 +66,9 @@ class ReinforceDiscrete(Algorithm):
             loss = policy_loss.data[0]
             print("Policy loss: {}".format(policy_loss.data[0]))
             policy_loss.backward()
+            if self.net.clamp_grad:
+                print("Clipping gradient...")
+                torch.nn.utils.clip_grad_norm(self.net.parameters(), self.net.clamp_grad_val)
             self.net.optim.step()
             self.to_train = 0
             self.saved_log_probs = []
