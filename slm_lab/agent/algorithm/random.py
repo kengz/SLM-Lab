@@ -26,7 +26,9 @@ class Random(Algorithm):
         return action
 
     def train(self):
-        return
+        loss = -1.
+        return loss
 
     def update(self):
-        return
+        explore_var = 1.
+        return explore_var
