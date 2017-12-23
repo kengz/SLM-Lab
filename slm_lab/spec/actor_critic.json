@@ -49,19 +49,19 @@
         "name": "ACDiscrete",
         "action_policy": "softmax",
         "gamma": 0.999,
-        "training_frequency": 4,
-        "training_iters_per_batch": 3
+        "training_frequency": 16,
+        "training_iters_per_batch": 5
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers": [128],
+        "hid_layers_activation": "relu",
         "optim_actor": {
           "name": "Adam",
-          "lr": 0.00001
+          "lr": 0.02
         },
         "optim_critic": {
           "name": "Adam",

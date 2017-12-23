@@ -87,18 +87,18 @@ class ACDiscrete(ReinforceDiscrete):
         return batch
 
     def train_critic(self, batch):
-        state_vals = self.critic.wrap_eval(batch['states'])
-        next_state_vals = self.critic.wrap_eval(batch['next_states'])
-        # print("state: {}".format(state_vals.size()))
-        # print("next state: {}".format(next_state_vals.size()))
-        # Add reward and discount
-        next_state_vals = batch['rewards'].data + self.gamma * \
-            torch.mul((1 - batch['dones'].data), next_state_vals)
-        # print("next state: {}".format(next_state_vals.size()))
-        y = Variable(next_state_vals)
         # Train critic
         loss = 0
         for _i in range(self.training_iters_per_batch):
+            state_vals = self.critic.wrap_eval(batch['states'])
+            next_state_vals = self.critic.wrap_eval(batch['next_states'])
+            # print("state: {}".format(state_vals.size()))
+            # print("next state: {}".format(next_state_vals.size()))
+            # Add reward and discount
+            next_state_vals = batch['rewards'].data + self.gamma * \
+                torch.mul((1 - batch['dones'].data), next_state_vals)
+            # print("next state: {}".format(next_state_vals.size()))
+            y = Variable(next_state_vals)
             loss = self.critic.training_step(batch['states'], y).data[0]
         return loss
 
