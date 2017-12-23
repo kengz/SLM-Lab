@@ -117,6 +117,7 @@ class OpenAIEnv:
             self.reset()
         if not self.train_mode:
             self.u_env.render()
+        action_e = util.flatten_nonan(action_e)
         assert len(action_e) == 1, 'OpenAI Gym supports only single body'
         action = action_e[(0, 0)]
         (state, reward, done, _info) = self.u_env.step(action)
@@ -209,6 +210,7 @@ class Env:
         return state_e
 
     def step(self, action_e):
+        action_e = util.flatten_nonan(action_e)
         env_info_dict = self.u_env.step(action_e)
         reward_e = np.full(self.body_e.shape, np.nan)
         state_e = np.full(self.body_e.shape, np.nan, dtype=object)

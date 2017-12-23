@@ -91,16 +91,22 @@ def flatten_dict(d, parent_key='', sep='.'):
     return dict(items)
 
 
-def flatten_nonan(arr):
-    flat_arr = arr.flatten()
+def filter_nonan(arr):
+    '''Filter to np array with no nan'''
     try:
-        return flat_arr[~np.isnan(flat_arr)]
+        return arr[~np.isnan(arr)]
     except Exception:
         mixed_type = []
-        for v in flat_arr:
+        for v in arr:
             if not gen_isnan(v):
                 mixed_type.append(v)
         return np.array(mixed_type)
+
+
+def flatten_nonan(arr):
+    '''Flatten and filter to np array with no nan'''
+    flat_arr = arr.flatten()
+    return filter_nonan(flat_arr)
 
 
 def gen_isnan(v):
