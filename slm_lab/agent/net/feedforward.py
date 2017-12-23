@@ -17,7 +17,8 @@ class MLPNet(nn.Module):
                  hid_layers_activation=None,
                  optim_param=None,
                  loss_param=None,
-                 clamp_grad=False):
+                 clamp_grad=False,
+                 clamp_grad_val=1):
         '''
         in_dim: dimension of the inputs
         hid_dim: list containing dimensions of the hidden layers
@@ -54,6 +55,7 @@ class MLPNet(nn.Module):
         self.loss_fn = net_util.set_loss_fn(self, loss_param)
         print(self.hid_layers_activation_fn, self.optim, self.loss_fn)
         self.clamp_grad = clamp_grad
+        self.clamp_grad_val = clamp_grad_val
         self.init_params()
 
     def forward(self, x):
@@ -76,8 +78,8 @@ class MLPNet(nn.Module):
         loss = self.loss_fn(out, y)
         loss.backward()
         if self.clamp_grad:
-            for param in self.parameters():
-                param.grad.data.clamp_(-1, 1)
+            print("Clipping gradient")
+            torch.nn.utils.clip_grad_norm(self.parameters(), self.clamp_grad_val)
         self.optim.step()
         return loss
 
@@ -114,3 +116,9 @@ class MLPNet(nn.Module):
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
         return None
+
+    def print_grad_norms(self):
+        lin_layers = self.hid_layers + list([self.out_layer])
+        for i, layer in enumerate(lin_layers):
+            print("Gradient norm layer {}: {}".format(
+                i, torch.norm(layer.weight.grad)))
