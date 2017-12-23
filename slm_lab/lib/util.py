@@ -335,6 +335,7 @@ def s_get(cls, attr_path):
 
 def self_desc(cls):
     '''Method to get self description, used at init.'''
+    # TODO improve on what to print, and if dict, make to_json
     desc_list = [f' - {k} = {v}' for k, v in get_class_attr(cls).items()]
     desc_list.insert(0, f'{get_class_name(cls)}:')
     desc = '\n'.join(desc_list)
