@@ -66,6 +66,7 @@ class OpenAIEnv:
         util.set_attr(self, self.spec)
         self.name = self.spec['name']
         self.env_space = env_space
+        self.data_spaces = env_space.aeb_space.data_spaces
         self.e = e
         self.body_e = None
         self.flat_nonan_body_e = None  # flatten_nonan version of bodies
@@ -103,7 +104,7 @@ class OpenAIEnv:
 
     def reset(self):
         self.done_e = False
-        state_e = np.full(self.body_e.shape, np.nan, dtype=object)
+        state_e = self.data_spaces['state'].init_data_s(e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[(a, b)] = state
@@ -121,9 +122,9 @@ class OpenAIEnv:
         assert len(action_e) == 1, 'OpenAI Gym supports only single body'
         action = action_e[(0, 0)]
         (state, reward, done, _info) = self.u_env.step(action)
-        reward_e = np.full(self.body_e.shape, np.nan)
-        state_e = np.full(self.body_e.shape, np.nan, dtype=object)
-        done_e = reward_e.copy()
+        reward_e = self.data_spaces['reward'].init_data_s(e=self.e)
+        state_e = self.data_spaces['state'].init_data_s(e=self.e)
+        done_e = self.data_spaces['done'].init_data_s(e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             reward_e[(a, b)] = reward
             state_e[(a, b)] = state
@@ -147,6 +148,7 @@ class Env:
         util.set_attr(self, self.spec)
         self.name = self.spec['name']
         self.env_space = env_space
+        self.data_spaces = env_space.aeb_space.data_spaces
         self.e = e
         self.body_e = None
         self.flat_nonan_body_e = None  # flatten_nonan version of bodies
@@ -202,7 +204,7 @@ class Env:
     def reset(self):
         env_info_dict = self.u_env.reset(
             train_mode=self.train_mode, config=self.spec.get('unity'))
-        state_e = np.full(self.body_e.shape, np.nan, dtype=object)
+        state_e = self.data_spaces['state'].init_data_s(e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             self.check_u_agent_to_body(env_info_a, a)
@@ -212,9 +214,9 @@ class Env:
     def step(self, action_e):
         action_e = util.flatten_nonan(action_e)
         env_info_dict = self.u_env.step(action_e)
-        reward_e = np.full(self.body_e.shape, np.nan)
-        state_e = np.full(self.body_e.shape, np.nan, dtype=object)
-        done_e = reward_e.copy()
+        reward_e = self.data_spaces['reward'].init_data_s(e=self.e)
+        state_e = self.data_spaces['state'].init_data_s(e=self.e)
+        done_e = self.data_spaces['done'].init_data_s(e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             reward_e[(a, b)] = env_info_a.rewards[b]

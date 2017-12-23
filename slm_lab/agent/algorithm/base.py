@@ -37,7 +37,7 @@ class Algorithm(ABC):
 
     def act(self, state_a):
         '''Interface-level agent act method for all its bodies. Resolves state to state; get action and compose into action.'''
-        action_a = np.full(self.agent.body_a.shape, np.nan, dtype=object)
+        action_a = self.agent.data_spaces['action'].init_data_s(a=self.agent.a)
         for (e, b), body in util.ndenumerate_nonan(self.agent.body_a):
             state = state_a[(e, b)]
             action_a[(e, b)] = self.body_act(body, state)

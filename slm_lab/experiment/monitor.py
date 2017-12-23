@@ -118,6 +118,8 @@ class DataSpace:
         self.swap_aeb_shape = self.aeb_shape[1], self.aeb_shape[0], self.aeb_shape[2]
 
         self.data_shape = self.swap_aeb_shape if self.to_swap else self.aeb_shape
+        self.data_type = object if self.data_name in [
+            'state', 'action'] else np.float32
         self.data = None  # standard data in aeb shape
         self.swap_data = None
         # TODO shove history to DB
@@ -142,12 +144,14 @@ class DataSpace:
 
     def init_data_v(self):
         '''Method to init a data volume filled with np.nan'''
-        if self.data_name in ['state', 'action']:
-            dtype = object
-        else:
-            dtype = np.float32
-        data_v = np.full(self.data_shape, np.nan, dtype=dtype)
+        data_v = np.full(self.data_shape, np.nan, dtype=self.data_type)
         return data_v
+
+    def init_data_s(self, a=None, e=None):
+        '''Method to init a data surface (subset of data volume) filled with np.nan.'''
+        body_s = self.aeb_space.body_space.get(a=a, e=e)
+        data_s = np.full(body_s.shape, np.nan, dtype=self.data_type)
+        return data_s
 
     def add(self, data_v):
         '''

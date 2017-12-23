@@ -35,6 +35,7 @@ class Agent:
         self.spec = spec
         self.name = self.spec['name']
         self.agent_space = agent_space
+        self.data_spaces = agent_space.aeb_space.data_spaces
         self.a = a
         self.body_a = None
         self.flat_nonan_body_a = None  # flatten_nonan version of bodies
