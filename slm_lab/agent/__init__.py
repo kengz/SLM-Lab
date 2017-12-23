@@ -55,7 +55,8 @@ class Agent:
 
     def act(self, state_a):
         '''Standard act method from algorithm.'''
-        return self.algorithm.act(state_a)
+        action_a = self.algorithm.act(state_a)
+        return action_a
 
     def update(self, action_a, reward_a, state_a, done_a):
         '''
@@ -101,22 +102,23 @@ class AgentSpace:
 
     def reset(self, state_space):
         logger.debug('AgentSpace.reset')
-        for a, agent in enumerate(self.agents):
-            state_a = state_space.get(a=a)
+        for agent in self.agents:
+            state_a = state_space.get(a=agent.a)
             agent.reset(state_a)
 
     def act(self, state_space):
         action_v = self.aeb_space.data_spaces['action'].init_data_v()
-        for a, agent in enumerate(self.agents):
+        for agent in self.agents:
+            a = agent.a
             state_a = state_space.get(a=a)
             action_a = agent.act(state_a)
-            # TODO reshape back to eb 2D
             action_v[a, 0:len(action_a)] = action_a
         action_space = self.aeb_space.add('action', action_v)
         return action_space
 
     def update(self, action_space, reward_space, state_space, done_space):
-        for a, agent in enumerate(self.agents):
+        for agent in self.agents:
+            a = agent.a
             action_a = action_space.get(a=a)
             reward_a = reward_space.get(a=a)
             state_a = state_space.get(a=a)

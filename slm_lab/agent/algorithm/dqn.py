@@ -32,8 +32,6 @@ class DQNBase(Algorithm):
 
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
-        # TODO generalize to iterate over bodies if is parallelized
-        assert len(self.agent.flat_nonan_body_a) == 1
         body = self.agent.flat_nonan_body_a[0]  # singleton algo
         state_dim = body.state_dim
         action_dim = body.action_dim
@@ -229,8 +227,6 @@ class MultitaskDQN(DQNBase):
     def post_body_init(self):
         super(MultitaskDQN, self).post_body_init()
         '''Re-initialize nets with multi-task dimensions'''
-        '''Assumes state_dim and action_dim contain lists of dimensions'''
-        '''Assume 1D for now'''
         self.state_dims = [
             body.state_dim for body in self.agent.flat_nonan_body_a]
         self.action_dims = [
@@ -365,6 +361,7 @@ class MultitaskDQN(DQNBase):
         return q_targets
 
     def act(self, state_a):
-        '''Override the spread-per-body act. self.action_policy must be a batch multi-body method'''
-        # TODO when backprop need to use relevant r too
-        return self.action_policy(self.agent.flat_nonan_body_a, state_a, self.net, self.explore_var)
+        '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
+        flat_nonan_action_a = self.action_policy(
+            self.agent.flat_nonan_body_a, state_a, self.net, self.explore_var)
+        return super(MultitaskDQN, self).flat_nonan_to_action_a(flat_nonan_action_a)

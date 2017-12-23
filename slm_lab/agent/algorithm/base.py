@@ -43,6 +43,14 @@ class Algorithm(ABC):
             action_a[(e, b)] = self.body_act(body, state)
         return action_a
 
+    def flat_nonan_to_action_a(self, flat_nonan_action_a):
+        '''Reshape flat_nonan_action_a from a single pass back into the API-conforming action-a'''
+        action_a = self.agent.data_spaces['action'].init_data_s(a=self.agent.a)
+        for body, action in zip(self.agent.flat_nonan_body_a, flat_nonan_action_a):
+            e, b = body.e, body.b
+            action_a[(e, b)] = action
+        return action_a
+
     @abstractmethod
     def train(self):
         '''Implement algorithm train, or throw NotImplementedError'''

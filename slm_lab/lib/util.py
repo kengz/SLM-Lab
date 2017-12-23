@@ -100,12 +100,12 @@ def filter_nonan(arr):
         for v in arr:
             if not gen_isnan(v):
                 mixed_type.append(v)
-        return np.array(mixed_type)
+        return np.array(mixed_type, dtype=arr.dtype)
 
 
 def flatten_nonan(arr):
-    '''Flatten (once) and filter to np array with no nan'''
-    flat_arr = flatten_once(arr)
+    '''Flatten and filter to np array with no nan'''
+    flat_arr = arr.reshape(-1)
     return filter_nonan(flat_arr)
 
 
@@ -117,7 +117,10 @@ def flatten_once(arr):
 def gen_isnan(v):
     '''Check isnan for general type (np.isnan is only operable on np type)'''
     try:
-        return np.isnan(v)
+        if type(v).__module__ == np.__name__:
+            return np.isnan(v).all()
+        else:
+            return v is None
     except Exception:
         return False
 
