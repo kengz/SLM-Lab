@@ -98,12 +98,22 @@ def flatten_nonan(arr):
     except Exception:
         mixed_type = []
         for v in flat_arr:
-            try:
-                if not np.isnan(v):
-                    mixed_type.append(v)
-            except Exception as e:
+            if not gen_isnan(v):
                 mixed_type.append(v)
         return np.array(mixed_type)
+
+
+def gen_isnan(v):
+    '''Check isnan for general type (np.isnan is only operable on np type)'''
+    try:
+        return np.isnan(v)
+    except Exception:
+        return False
+
+
+def ndenumerate_nonan(arr):
+    '''Generic ndenumerate for np.ndenumerate with only not gen_isnan values'''
+    return (idx_v for idx_v in np.ndenumerate(arr) if not gen_isnan(idx_v[1]))
 
 
 def get_aeb_shape(aeb_list):

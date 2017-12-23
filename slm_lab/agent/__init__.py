@@ -49,7 +49,7 @@ class Agent:
 
     def reset(self, state_a):
         '''Do agent reset per episode, such as memory pointer'''
-        for (e, b), body in np.ndenumerate(self.body_a):
+        for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.reset_last_state(state_a[(e, b)])
 
     def act(self, state_a):
@@ -60,7 +60,7 @@ class Agent:
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
-        for (e, b), body in np.ndenumerate(self.body_a):
+        for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.update(
                 action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
         loss = self.algorithm.train()

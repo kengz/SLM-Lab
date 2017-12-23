@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod, abstractproperty
+from slm_lab.lib import util
 import numpy as np
 
 
@@ -37,9 +38,7 @@ class Algorithm(ABC):
     def act(self, state_a):
         '''Interface-level agent act method for all its bodies. Resolves state to state; get action and compose into action.'''
         action_a = np.full(self.agent.body_a.shape, np.nan, dtype=object)
-        for (e, b), body in np.ndenumerate(self.agent.body_a):
-            if body is np.nan:
-                continue
+        for (e, b), body in util.ndenumerate_nonan(self.agent.body_a):
             state = state_a[(e, b)]
             action_a[(e, b)] = self.body_act(body, state)
         return action_a

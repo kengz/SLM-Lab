@@ -117,7 +117,7 @@ class DataSpace:
         self.to_swap = self.data_name in ENV_DATA_NAMES
 
         self.data = None  # standard data in aeb shape
-        self.t_data = None
+        self.swap_data = None
         # TODO shove history to DB
         # TODO keep time/episode data too, will be cheap
         self.data_history = []  # index = clock.absolute_t
@@ -138,11 +138,11 @@ class DataSpace:
         # TODO maybe really take raw and reconstruct into volume using bodies
         new_data = np.array(data)  # no type restriction, auto-infer
         if self.to_swap:  # data from env has shape eab
-            self.t_data = new_data
+            self.swap_data = new_data
             self.data = new_data.swapaxes(0, 1)
         else:
             self.data = new_data
-            self.t_data = new_data.swapaxes(0, 1)
+            self.swap_data = new_data.swapaxes(0, 1)
         self.data_history.append(self.data)
         return self.data
 
@@ -156,7 +156,7 @@ class DataSpace:
         if e is None:
             return self.data[a]
         else:
-            return self.t_data[e]
+            return self.swap_data[e]
 
 
 class AEBSpace:

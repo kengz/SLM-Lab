@@ -104,9 +104,7 @@ class OpenAIEnv:
     def reset(self):
         self.done_e = False
         state_e = np.full(self.body_e.shape, np.nan, dtype=object)
-        for (a, b), body in np.ndenumerate(self.body_e):
-            if body is np.nan:
-                continue
+        for (a, b), body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[(a, b)] = state
         non_nan_cnt = util.count_nonan(state_e)
@@ -125,9 +123,7 @@ class OpenAIEnv:
         reward_e = np.full(self.body_e.shape, np.nan)
         state_e = np.full(self.body_e.shape, np.nan, dtype=object)
         done_e = reward_e.copy()
-        for (a, b), body in np.ndenumerate(self.body_e):
-            if body is np.nan:
-                continue
+        for (a, b), body in util.ndenumerate_nonan(self.body_e):
             reward_e[(a, b)] = reward
             state_e[(a, b)] = state
             done_e[(a, b)] = done
@@ -206,10 +202,7 @@ class Env:
         env_info_dict = self.u_env.reset(
             train_mode=self.train_mode, config=self.spec.get('unity'))
         state_e = np.full(self.body_e.shape, np.nan, dtype=object)
-        for (a, b), body in np.ndenumerate(self.body_e):
-            # TODO refactor this
-            if body is np.nan:
-                continue
+        for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             self.check_u_agent_to_body(env_info_a, a)
             state_e[(a, b)] = env_info_a.states[b]
@@ -220,9 +213,7 @@ class Env:
         reward_e = np.full(self.body_e.shape, np.nan)
         state_e = np.full(self.body_e.shape, np.nan, dtype=object)
         done_e = reward_e.copy()
-        for (a, b), body in np.ndenumerate(self.body_e):
-            if body is np.nan:
-                continue
+        for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             reward_e[(a, b)] = env_info_a.rewards[b]
             state_e[(a, b)] = env_info_a.states[b]
@@ -242,7 +233,8 @@ class EnvSpace:
     def __init__(self, spec, aeb_space):
         self.spec = spec
         self.aeb_space = aeb_space
-        self.aeb_shape = aeb_space.aeb_shape
+        aeb_shape = aeb_space.aeb_shape
+        self.swap_aeb_shape = [aeb_shape[1], aeb_shape[0], aeb_shape[2]]
         aeb_space.env_space = self
         self.envs = []
         for e, env_spec in enumerate(spec['env']):
@@ -264,17 +256,17 @@ class EnvSpace:
         return self.envs[e]
 
     def reset(self):
-        state_v = np.full(self.aeb_shape, np.nan, dtype=object)
+        state_v = np.full(self.swap_aeb_shape, np.nan, dtype=object)
         for env in self.envs:
             state_e = env.reset()
             state_v[env.e] = state_e
-        state_space = self.aeb_space.add('state', state_v)
+        state_space = self.aeb_space.add('state', state_v.swapaxes(0, 1))
         logger.debug(f'EnvSpace.reset. state_space: {state_space}')
         return state_space
 
     def step(self, action_space):
-        reward_v = np.full(self.aeb_shape, np.nan)
-        state_v = np.full(self.aeb_shape, np.nan, dtype=object)
+        reward_v = np.full(self.swap_aeb_shape, np.nan)
+        state_v = np.full(self.swap_aeb_shape, np.nan, dtype=object)
         done_v = reward_v.copy()
         for env in self.envs:
             e = env.e
@@ -283,9 +275,9 @@ class EnvSpace:
             reward_v[e] = reward_e
             state_v[e] = state_e
             done_v[e] = done_e
-        reward_space = self.aeb_space.add('reward', reward_v)
-        state_space = self.aeb_space.add('state', state_v)
-        done_space = self.aeb_space.add('done', done_v)
+        reward_space = self.aeb_space.add('reward', reward_v.swapaxes(0, 1))
+        state_space = self.aeb_space.add('state', state_v.swapaxes(0, 1))
+        done_space = self.aeb_space.add('done', done_v.swapaxes(0, 1))
         return reward_space, state_space, done_space
 
     def close(self):
