@@ -123,7 +123,17 @@ class DataSpace:
         self.data_history = []  # index = clock.absolute_t
 
     def __str__(self):
-        return str(self.data)
+        s = '['
+        for a, a_arr in enumerate(self.data):
+            s += f'\n  a:{a} ['
+            for e, e_arr in enumerate(a_arr):
+                s += f'\n    e:{e} ['
+                for b, val in enumerate(e_arr):
+                    s += f'\n      b:{b} {val}'
+                s += ']'
+            s += ']'
+        s += '\n]'
+        return s
 
     def __bool__(self):
         return bool(np.all(self.data))
