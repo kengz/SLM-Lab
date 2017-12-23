@@ -1,4 +1,5 @@
 from slm_lab.lib import util
+import coloredlogs
 import logging
 import os
 import sys
@@ -30,6 +31,7 @@ lab_logger.setLevel(LOG_LEVEL)
 lab_logger.addHandler(fh)
 lab_logger.addHandler(sh)
 lab_logger.propagate = False
+coloredlogs.install(level=LOG_LEVEL, logger=lab_logger, fmt=LOG_FORMAT)
 
 
 def set_level(lvl):
