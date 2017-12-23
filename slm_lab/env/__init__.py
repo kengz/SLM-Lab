@@ -109,7 +109,7 @@ class OpenAIEnv:
                 continue
             state = self.u_env.reset()
             state_e[(a, b)] = state
-        non_nan_cnt = util.count_nonnan(state_e)
+        non_nan_cnt = util.count_nonan(state_e)
         assert non_nan_cnt == 1, 'OpenAI Gym supports only single body'
         return state_e
 
@@ -167,7 +167,7 @@ class Env:
     def check_u_agent_to_body(self, env_info_a, a):
         '''Check the size match between unity agent and body'''
         u_agent_num = len(env_info_a.agents)
-        body_num = util.count_nonnan(self.body_e[a])
+        body_num = util.count_nonan(self.body_e[a])
         assert u_agent_num == body_num, f'There must be a Unity agent for each body; failed check agent: {u_agent_num} == body: {body_num}.'
 
     def post_body_init(self):

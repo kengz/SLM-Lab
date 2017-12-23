@@ -63,7 +63,7 @@ def cast_list(val):
         return [val]
 
 
-def count_nonnan(arr):
+def count_nonan(arr):
     try:
         return np.count_nonzero(~np.isnan(arr))
     except Exception:
@@ -96,7 +96,14 @@ def flatten_nonan(arr):
     try:
         return flat_arr[~np.isnan(flat_arr)]
     except Exception:
-        return np.array([v for v in flat_arr if v is not np.nan])
+        mixed_type = []
+        for v in flat_arr:
+            try:
+                if not np.isnan(v):
+                    mixed_type.append(v)
+            except Exception as e:
+                mixed_type.append(v)
+        return np.array(mixed_type)
 
 
 def get_aeb_shape(aeb_list):
