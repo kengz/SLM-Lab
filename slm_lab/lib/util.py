@@ -104,9 +104,14 @@ def filter_nonan(arr):
 
 
 def flatten_nonan(arr):
-    '''Flatten and filter to np array with no nan'''
-    flat_arr = arr.flatten()
+    '''Flatten (once) and filter to np array with no nan'''
+    flat_arr = flatten_once(arr)
     return filter_nonan(flat_arr)
+
+
+def flatten_once(arr):
+    '''Flatten np array only once instead if all the way by flatten()'''
+    return arr.reshape(-1, *arr.shape[2:])
 
 
 def gen_isnan(v):
