@@ -19,7 +19,7 @@ Agent components:
 - memory (per body)
 '''
 from slm_lab.agent import algorithm
-from slm_lab.lib import util
+from slm_lab.lib import logger, util
 import numpy as np
 import pydash as _
 
@@ -93,11 +93,13 @@ class AgentSpace:
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         for agent in self.agents:
             agent.post_body_init()
+        logger.info(util.self_desc(self))
 
     def get(self, a):
         return self.agents[a]
 
     def reset(self, state_space):
+        logger.debug('AgentSpace.reset')
         for a, agent in enumerate(self.agents):
             state_a = state_space.get(a=a)
             agent.reset(state_a)
@@ -123,5 +125,6 @@ class AgentSpace:
         return loss, explore_var
 
     def close(self):
+        logger.info('AgentSpace.close')
         for agent in self.agents:
             agent.close()

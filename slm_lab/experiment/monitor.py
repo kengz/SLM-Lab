@@ -210,6 +210,7 @@ class AEBSpace:
 
     def post_body_init(self):
         '''Run init for agent, env components that need bodies to exist first, e.g. memory or architecture.'''
+        logger.info(util.self_desc(self))
         self.agent_space.post_body_init()
         self.env_space.post_body_init()
 

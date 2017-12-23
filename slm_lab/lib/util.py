@@ -26,7 +26,7 @@ class LabJsonEncoder(json.JSONEncoder):
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
         else:
-            return super(MyEncoder, self).default(obj)
+            return str(obj)
 
 
 def calc_timestamp_diff(ts2, ts1):
@@ -300,6 +300,14 @@ def s_get(cls, attr_path):
         if not (get_class_name(res, lower=True) in (attr, attr.replace('_', ''))):
             res = getattr(res, attr)
     return res
+
+
+def self_desc(cls):
+    '''Method to get self description, used at init.'''
+    desc_list = [f' - {k} = {v}' for k, v in get_class_attr(cls).items()]
+    desc_list.insert(0, f'{get_class_name(cls)}:')
+    desc = '\n'.join(desc_list)
+    return desc
 
 
 def set_attr(obj, attr_dict):

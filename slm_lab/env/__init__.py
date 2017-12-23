@@ -9,12 +9,14 @@ from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
 from unityagents.environment import logger as unity_logger
 import gym
+import logging
 import numpy as np
 import os
 import pydash as _
 
-gym.logger.setLevel('ERROR')
-unity_logger.setLevel('ERROR')
+logging.getLogger('gym').setLevel(logging.WARN)
+logging.getLogger('requests').setLevel(logging.WARN)
+logging.getLogger('unityagents').setLevel(logging.WARN)
 
 
 class BrainExt:
@@ -151,7 +153,7 @@ class Env:
         self.e = e
         self.body_e = None
         self.flat_nonan_body_e = None  # flatten_nonan version of bodies
-        worker_id = int(f'{os.getpid()}{self.index}'[-4:])
+        worker_id = int(f'{os.getpid()}{self.e}'[-4:])
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name), worker_id=worker_id)
         # TODO experiment to find out optimal benchmarking max_timestep, set
@@ -256,6 +258,7 @@ class EnvSpace:
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         for env in self.envs:
             env.post_body_init()
+        logger.info(util.self_desc(self))
 
     def get(self, e):
         return self.envs[e]
@@ -266,6 +269,7 @@ class EnvSpace:
             state_e = env.reset()
             state_v[env.e] = state_e
         state_space = self.aeb_space.add('state', state_v)
+        logger.debug(f'EnvSpace.reset. state_space: {state_space}')
         return state_space
 
     def step(self, action_space):
@@ -285,5 +289,6 @@ class EnvSpace:
         return reward_space, state_space, done_space
 
     def close(self):
+        logger.info('EnvSpace.close')
         for env in self.envs:
             env.close()
