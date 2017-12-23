@@ -115,7 +115,9 @@ class DataSpace:
 
         # data from env have shape (eab), need to swap
         self.to_swap = self.data_name in ENV_DATA_NAMES
+        self.swap_aeb_shape = self.aeb_shape[1], self.aeb_shape[0], self.aeb_shape[2]
 
+        self.data_shape = self.swap_aeb_shape if self.to_swap else self.aeb_shape
         self.data = None  # standard data in aeb shape
         self.swap_data = None
         # TODO shove history to DB
@@ -138,15 +140,23 @@ class DataSpace:
     def __bool__(self):
         return bool(np.all(self.data))
 
-    def add(self, data):
+    def init_data_v(self):
+        '''Method to init a data volume filled with np.nan'''
+        if self.data_name in ['state', 'action']:
+            dtype = object
+        else:
+            dtype = np.float32
+        data_v = np.full(self.data_shape, np.nan, dtype=dtype)
+        return data_v
+
+    def add(self, data_v):
         '''
         Take raw data from RL system and construct numpy object self.data, then add to self.data_history.
         If data is from env, auto-swap the data to aeb standard shape.
-        @param {[x: [y: [body_v]]} data As collected in RL sytem.
+        @param {[x: [y: [body_v]]} data_v As collected in RL sytem.
         @returns {array} data Tensor in standard aeb shape.
         '''
-        # TODO maybe really take raw and reconstruct into volume using bodies
-        new_data = np.array(data)  # no type restriction, auto-infer
+        new_data = np.array(data_v)  # no type restriction, auto-infer
         if self.to_swap:  # data from env has shape eab
             self.swap_data = new_data
             self.data = new_data.swapaxes(0, 1)

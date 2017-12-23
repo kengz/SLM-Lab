@@ -105,11 +105,12 @@ class AgentSpace:
             agent.reset(state_a)
 
     def act(self, state_space):
-        action_v = []
+        action_v = self.aeb_space.data_spaces['action'].init_data_v()
         for a, agent in enumerate(self.agents):
             state_a = state_space.get(a=a)
             action_a = agent.act(state_a)
-            action_v.append(action_a)
+            # TODO reshape back to eb 2D
+            action_v[a, 0:len(action_a)] = action_a
         action_space = self.aeb_space.add('action', action_v)
         return action_space
 

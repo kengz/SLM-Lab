@@ -233,8 +233,6 @@ class EnvSpace:
     def __init__(self, spec, aeb_space):
         self.spec = spec
         self.aeb_space = aeb_space
-        aeb_shape = aeb_space.aeb_shape
-        self.swap_aeb_shape = [aeb_shape[1], aeb_shape[0], aeb_shape[2]]
         aeb_space.env_space = self
         self.envs = []
         for e, env_spec in enumerate(spec['env']):
@@ -256,28 +254,28 @@ class EnvSpace:
         return self.envs[e]
 
     def reset(self):
-        state_v = np.full(self.swap_aeb_shape, np.nan, dtype=object)
+        state_v = self.aeb_space.data_spaces['state'].init_data_v()
         for env in self.envs:
             state_e = env.reset()
-            state_v[env.e] = state_e
-        state_space = self.aeb_space.add('state', state_v.swapaxes(0, 1))
+            state_v[env.e, 0:len(state_e)] = state_e
+        state_space = self.aeb_space.add('state', state_v)
         logger.debug(f'EnvSpace.reset. state_space: {state_space}')
         return state_space
 
     def step(self, action_space):
-        reward_v = np.full(self.swap_aeb_shape, np.nan)
-        state_v = np.full(self.swap_aeb_shape, np.nan, dtype=object)
-        done_v = reward_v.copy()
+        reward_v = self.aeb_space.data_spaces['reward'].init_data_v()
+        state_v = self.aeb_space.data_spaces['state'].init_data_v()
+        done_v = self.aeb_space.data_spaces['done'].init_data_v()
         for env in self.envs:
             e = env.e
             action_e = action_space.get(e=e)
             reward_e, state_e, done_e = env.step(action_e)
-            reward_v[e] = reward_e
-            state_v[e] = state_e
-            done_v[e] = done_e
-        reward_space = self.aeb_space.add('reward', reward_v.swapaxes(0, 1))
-        state_space = self.aeb_space.add('state', state_v.swapaxes(0, 1))
-        done_space = self.aeb_space.add('done', done_v.swapaxes(0, 1))
+            reward_v[e, 0:len(reward_e)] = reward_e
+            state_v[e, 0:len(state_e)] = state_e
+            done_v[e, 0:len(done_e)] = done_e
+        reward_space = self.aeb_space.add('reward', reward_v)
+        state_space = self.aeb_space.add('state', state_v)
+        done_space = self.aeb_space.add('done', done_v)
         return reward_space, state_space, done_space
 
     def close(self):
