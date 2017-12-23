@@ -25,6 +25,7 @@
           "lr": 0.02
         },
         "clamp_grad": true,
+        "clamp_grad_val": 1.0
       }
     }],
     "env": [{
@@ -49,8 +50,8 @@
         "name": "ACDiscrete",
         "action_policy": "softmax",
         "gamma": 0.999,
-        "training_frequency": 16,
-        "training_iters_per_batch": 5
+        "training_frequency": 32,
+        "training_iters_per_batch": 4
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -61,13 +62,14 @@
         "hid_layers_activation": "relu",
         "optim_actor": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.015
         },
         "optim_critic": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.03
         },
-        "clamp_grad": true,
+        "clamp_grad": false,
+        "clamp_grad_val": 10.0
       }
     }],
     "env": [{

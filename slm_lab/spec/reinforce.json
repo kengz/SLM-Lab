@@ -50,12 +50,13 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
-        "clamp_grad": true,
+        "hid_layers": [128],
+        "hid_layers_activation": "relu",
+        "clamp_grad": false,
+        "clamp_grad_val": 1.0,
         "optim": {
           "name": "Adam",
-          "lr": 0.0001
+          "lr": 0.03
         },
       }
     }],
