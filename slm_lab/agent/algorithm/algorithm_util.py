@@ -57,7 +57,7 @@ def act_with_boltzmann(body, state, net, tau):
 
 def multi_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
     flat_nonan_state_a = util.flatten_nonan(state_a)
-    cat_state_a = np.concatenate(flat_nonan_state_a)
+    cat_state_a = np.concatenate(flat_nonan_state_a).astype(float)
     torch_state = Variable(torch.from_numpy(cat_state_a).float())
     out = net.wrap_eval(torch_state)
     out_with_temp = torch.div(out, tau)
