@@ -92,6 +92,13 @@ def test_list():
 
 
 @pytest.fixture
+def test_obj():
+    class Foo:
+        bar = 'bar'
+    return Foo()
+
+
+@pytest.fixture
 def test_str():
     data = 'lorem ipsum dolor'
     assert isinstance(data, str)

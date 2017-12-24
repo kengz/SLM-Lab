@@ -108,7 +108,7 @@ class OpenAIEnv:
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[(a, b)] = state
-        non_nan_cnt = util.count_nonan(state_e)
+        non_nan_cnt = util.count_nonan(state_e.flatten())
         assert non_nan_cnt == 1, 'OpenAI Gym supports only single body'
         return state_e
 
@@ -160,13 +160,14 @@ class Env:
         '''Check the size match between unity brain and agent'''
         u_brain_num = self.u_env.number_brains
         agent_num = len(self.body_e)
-        assert u_brain_num == agent_num, f'There must be a Unity brain for each agent; failed check brain: {u_brain_num} == agent: {agent_num}.'
+        assert u_brain_num == agent_num, f'There must be a Unity brain for each agent. e:{self.e}, brain: {u_brain_num} != agent: {agent_num}.'
 
     def check_u_agent_to_body(self, env_info_a, a):
         '''Check the size match between unity agent and body'''
         u_agent_num = len(env_info_a.agents)
         body_num = util.count_nonan(self.body_e[a])
-        assert u_agent_num == body_num, f'There must be a Unity agent for each body; failed check agent: {u_agent_num} == body: {body_num}.'
+        print(self.body_e[a])
+        assert u_agent_num == body_num, f'There must be a Unity agent for each body; a:{a}, e:{self.e}, agent_num: {u_agent_num} != body_num: {body_num}.'
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''

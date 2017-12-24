@@ -67,7 +67,7 @@ def count_nonan(arr):
     try:
         return np.count_nonzero(~np.isnan(arr))
     except Exception:
-        return len(flatten_nonan(arr))
+        return len(filter_nonan(arr))
 
 
 def dedent(string):
@@ -117,17 +117,9 @@ def flatten_once(arr):
 def gen_isnan(v):
     '''Check isnan for general type (np.isnan is only operable on np type)'''
     try:
-        if type(v).__module__ == np.__name__:
-            return np.isnan(v).all()
-        else:
-            return v is None
+        return np.isnan(v).all()
     except Exception:
-        return False
-
-
-def ndenumerate_nonan(arr):
-    '''Generic ndenumerate for np.ndenumerate with only not gen_isnan values'''
-    return (idx_v for idx_v in np.ndenumerate(arr) if not gen_isnan(idx_v[1]))
+        return v is None
 
 
 def get_aeb_shape(aeb_list):
@@ -239,6 +231,11 @@ def is_sub_dict(sub_dict, super_dict):
             if sub_k not in super_dict:
                 return False
     return True
+
+
+def ndenumerate_nonan(arr):
+    '''Generic ndenumerate for np.ndenumerate with only not gen_isnan values'''
+    return (idx_v for idx_v in np.ndenumerate(arr) if not gen_isnan(idx_v[1]))
 
 
 def read(data_path):
