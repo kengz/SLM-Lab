@@ -166,7 +166,6 @@ class Env:
         '''Check the size match between unity agent and body'''
         u_agent_num = len(env_info_a.agents)
         body_num = util.count_nonan(self.body_e[a])
-        print(self.body_e[a])
         assert u_agent_num == body_num, f'There must be a Unity agent for each body; a:{a}, e:{self.e}, agent_num: {u_agent_num} != body_num: {body_num}.'
 
     def post_body_init(self):

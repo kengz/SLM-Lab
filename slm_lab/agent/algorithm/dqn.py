@@ -164,8 +164,8 @@ class DQNBase(Algorithm):
                 (1 - self.polyak_weight) * net_util.flatten_params(self.net)
             self.target_net = net_util.load_params(self.target_net, avg_params)
         else:
-            print('Unknown network update type.')
-            print('Should be "replace" or "polyak". Exiting ...')
+            logger.error('Unknown network update type.')
+            logger.error('Should be "replace" or "polyak". Exiting ...')
             sys.exit()
         return self.explore_var
 
@@ -232,9 +232,9 @@ class MultitaskDQN(DQNBase):
             body.action_dim for body in self.agent.flat_nonan_body_a]
         self.total_state_dim = sum(self.state_dims)
         self.total_action_dim = sum(self.action_dims)
-        print(
+        logger.info(
             f'multitask state_dims: {self.state_dims}, sum {self.total_state_dim}')
-        print(
+        logger.info(
             f'multitask action_dims: {self.action_dims}, sum {self.total_action_dim}')
         net_spec = self.agent.spec['net']
         self.net = getattr(net, net_spec['type'])(
@@ -243,7 +243,7 @@ class MultitaskDQN(DQNBase):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        print(self.net)
+        logger.info(str(self.net))
         self.target_net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),

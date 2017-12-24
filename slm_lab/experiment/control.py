@@ -29,7 +29,6 @@ class Session:
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
         self.aeb_space.init_body_space()
-        print(self.aeb_space.body_space)
         self.aeb_space.post_body_init()
 
     def close(self):
