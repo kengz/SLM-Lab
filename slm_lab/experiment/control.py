@@ -2,8 +2,8 @@
 The control module
 Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Session
 '''
-from slm_lab.agent import Agent, AgentSpace
-from slm_lab.env import Env, EnvSpace
+from slm_lab.agent import AgentSpace
+from slm_lab.env import EnvSpace
 from slm_lab.experiment.monitor import info_space, AEBSpace, get_body_df_dict
 from slm_lab.lib import logger, util, viz
 import numpy as np
@@ -24,12 +24,11 @@ class Session:
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
         self.data = pd.DataFrame()
-        # TODO put resolved space from spec into monitor.info_space
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
+        logger.info(util.self_desc(self))
         self.aeb_space.init_body_space()
-        print(self.aeb_space.body_space)
         self.aeb_space.post_body_init()
 
     def close(self):
@@ -74,21 +73,14 @@ class Session:
                 loss_list.append(loss)
             explore_var_list.append(explore_var)
             # TODO hack for a reliable done, otherwise all needs to be coincidental
-            # if bool(done_space):
-            if done_space.get(a=0)[0]:
-                # TODO refactor: set all to terminate on master termination. Also use the env with longest timestep to prevent being terminated by fast-running env
-                for a, _eb in enumerate(self.aeb_space.a_eb_proj):
-                    done_proj_a = done_space.get(a=a)
-                    # TODO still need to standardize all data proj to aeb
-                    for a_idx, _done in enumerate(done_proj_a):
-                        done_proj_a[a_idx] = True
+            if done_space.get(a=0)[(0, 0)]:
+                # TODO make all run independently with relative speed
+                done_space.data.fill(1)
                 break
         # TODO monitor record all data spaces, including body with body.clock. cuz all data spaces have history
         # split per body, use done as delim (maybe done need body clock now), split, sum each chunk
         mean_loss = np.nanmean(loss_list)
         mean_explore_var = np.nanmean(explore_var_list)
-        # print(self.aeb_space.data_spaces['reward'])
-        # print(self.aeb_space.data_spaces['reward'].data_proj_history)
         body_df_dict = get_body_df_dict(self.aeb_space)
         # logger.info(
         #     f'epi {self.aeb_space.clock.get("e")}, total_rewards {total_rewards}')

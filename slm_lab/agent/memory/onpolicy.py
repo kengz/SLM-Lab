@@ -28,53 +28,33 @@ class OnPolicyReplay(Replay):
         - The memory is cleared automatically when a batch is given to the agent.
     '''
 
-    def __init__(self, agent):
-        super(OnPolicyReplay, self).__init__(agent)
+    def __init__(self, body):
         # Don't want total experiences reset when memory is
         self.total_experiences = 0
+        self.state_dim = self.body.state_dim
+        self.action_dim = self.body.action_dim
+        self.reset()
 
-    def post_body_init(self, bodies=None):
-        '''
-        Initializes the part of algorithm needing a body to exist first.
-        Can also be used to clear the memory.
-        '''
-        # TODO update for multi bodies
-        # TODO also for multi state, multi actions per body, need to be 3D
-        # bodies using this shared memory, should be congruent (have same state_dim, action_dim)
-        # TODO add warning that memory is env-specific now
-        self.bodies = bodies or util.s_get(
-            self, 'aeb_space.body_space').get(e=0)
-        self.coor_list = [body.coor for body in self.bodies]
-        default_body = self.bodies[0]
-        self.state_dim = default_body.state_dim
-        self.action_dim = default_body.action_dim
+    def reset(self):
+        '''reset memory'''
         self.states = []
         self.actions = []
         self.rewards = []
         self.next_states = []
         self.dones = []
         self.priorities = []
-        self.current_episode = {'states': [],
-                                'actions': [],
-                                'rewards': [],
-                                'next_states': [],
-                                'dones': [],
-                                'priorities': []}
+        self.current_episode = {
+            'states': [],
+            'actions': [],
+            'rewards': [],
+            'next_states': [],
+            'dones': [],
+            'priorities': []}
         self.most_recent = [None, None, None, None, None, None]
         self.true_size = 0  # Size of the current memory
 
-    def update(self, action, reward, state, done):
-        super(OnPolicyReplay, self).update(action, reward, state, done)
-
-    def add_experience(self,
-                       state,
-                       action,
-                       reward,
-                       next_state,
-                       done,
-                       priority=1):
+    def add_experience(self, state, action, reward, next_state, done, priority=1):
         '''Interface helper method for update() to add experience to memory'''
-        # TODO this is still single body
         self.current_episode['states'].append(state)
         self.current_episode['actions'].append(action)
         self.current_episode['rewards'].append(reward)
@@ -97,26 +77,23 @@ class OnPolicyReplay(Replay):
             self.next_states.append(self.current_episode['next_states'])
             self.dones.append(self.current_episode['dones'])
             self.priorities.append(self.current_episode['priorities'])
-            self.current_episode = {'states': [],
-                                    'actions': [],
-                                    'rewards': [],
-                                    'next_states': [],
-                                    'dones': [],
-                                    'priorities': []}
+            self.current_episode = {
+                'states': [],
+                'actions': [],
+                'rewards': [],
+                'next_states': [],
+                'dones': [],
+                'priorities': []}
             # If agent has collected the desired number of episodes, it is ready to train
-            if len(self.states) == self.agent.algorithm.num_epis:
+            if len(self.states) == self.agent.algorithm.num_epi_before_training:
                 self.agent.algorithm.to_train = 1
         # Track memory size and num experiences
         self.true_size += 1
         if self.true_size > 1000:
-            logger.warn("Memory size exceeded {}".format(true_size))
+            logger.warn(f'Memory size exceeded {true_size}')
         self.total_experiences += 1
 
-    def get_most_recent_experience(self):
-        '''Returns the most recent experience'''
-        return self.most_recent
-
-    def get_batch(self):
+    def sample(self):
         '''
         Returns all the examples from memory in a single batch
         Batch is stored as a dict.
@@ -137,7 +114,7 @@ class OnPolicyReplay(Replay):
         batch['dones'] = self.dones
         batch['priorities'] = self.priorities
         # Reset memory
-        self.post_body_init()
+        self.reset()
         return batch
 
     def update_priorities(self, priorities):

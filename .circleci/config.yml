@@ -69,7 +69,7 @@ jobs:
             if pip list | grep "^unityagents " >/dev/null; then
               echo "unityagents of ml-agents already present"
             else
-              git clone https://github.com/kengz/ml-agents.git ~/ml-agents/
+              git clone https://github.com/Unity-Technologies/ml-agents.git ~/ml-agents/
               cd ~/ml-agents/python && git pull
               pip install .
               cd ~/SLM-Lab

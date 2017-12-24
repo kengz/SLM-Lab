@@ -1,7 +1,7 @@
-from collections import Iterable
 from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import util
 import numpy as np
+import pydash as _
 
 
 class Replay(Memory):
@@ -29,26 +29,15 @@ class Replay(Memory):
     This allows for other implementations to sample based on the experience priorities
     '''
 
-    def __init__(self, agent):
-        super(Replay, self).__init__(agent)
+    def __init__(self, body):
+        super(Replay, self).__init__(body)
 
-    def post_body_init(self, bodies=None):
-        '''
-        Initializes the part of algorithm needing a body to exist first.
-        Can also be used to clear the memory.
-        '''
-        # TODO update for multi bodies
-        # TODO also for multi state, multi actions per body, need to be 3D
-        # bodies using this shared memory, should be congruent (have same state_dim, action_dim)
-        # TODO add warning that memory is env-specific now
-        self.bodies = bodies or util.s_get(
-            self, 'aeb_space.body_space').get(e=0)
-        self.coor_list = [body.coor for body in self.bodies]
-        default_body = self.bodies[0]
-        self.max_size = self.agent.spec['memory']['max_size']
-        self.state_dim = default_body.state_dim
-        self.action_dim = default_body.action_dim
+        self.max_size = self.body.agent.spec['memory']['max_size']
+        self.state_dim = self.body.state_dim
+        self.action_dim = self.body.action_dim
+        self.reset()
 
+    def reset(self):
         self.states = np.zeros((self.max_size, self.state_dim))
         self.actions = np.zeros((self.max_size, self.action_dim))
         self.rewards = np.zeros((self.max_size, 1))
@@ -62,38 +51,24 @@ class Replay(Memory):
         self.total_experiences = 0
 
     def update(self, action, reward, state, done):
-        # interface
-        # add memory from all bodies, interleave
-        # TODO proper body-based storage
-        for eb_idx, body in enumerate(self.agent.bodies):
-            # add only those belonging to the bodies using this memory
-            if body.coor in self.coor_list:
-                self.add_experience(
-                    self.last_state[eb_idx], action[eb_idx], reward[eb_idx], state[eb_idx], done[eb_idx])
+        '''interface method to update memory'''
+        self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
 
-    def add_experience(self,
-                       state,
-                       action,
-                       reward,
-                       next_state,
-                       done,
-                       priority=1):
-        '''Interface helper method for update() to add experience to memory, expanding the memory size if necessary'''
-        # TODO this is still single body
+    def add_experience(self, state, action, reward, next_state, done, priority=1):
+        '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
-        # spread numbers in numpy since direct list setting is impossible
-        self.states[self.head, :] = state[:]
+        self.states[self.head] = state
         # make action into one_hot
-        if isinstance(action, Iterable):
+        if _.is_iterable(action):
             # non-singular action
             # self.actions[self.head] = one hot of multi-action (matrix) on a 3rd axis, to be implement
             raise NotImplementedError
         else:
             self.actions[self.head][action] = 1
         self.rewards[self.head] = reward
-        self.next_states[self.head, :] = next_state[:]
+        self.next_states[self.head] = next_state
         self.dones[self.head] = done
         self.priorities[self.head] = priority
         # Actually occupied size of memory
@@ -101,19 +76,7 @@ class Replay(Memory):
             self.true_size += 1
         self.total_experiences += 1
 
-    def get_most_recent_experience(self):
-        '''Returns the most recent experience'''
-        # TODO need to foolproof index reference error. Simple as add a dict. if not private method, data format need be consistent with batch format with keys.
-        experience = []
-        experience.append(self.states[self.head])
-        experience.append(self.actions[self.head])
-        experience.append(self.rewards[self.head])
-        experience.append(self.next_states[self.head])
-        experience.append(self.dones[self.head])
-        experience.append(self.priorities[self.head])
-        return experience
-
-    def get_batch(self, batch_size):
+    def sample(self, batch_size, latest=False):
         '''
         Returns a batch of batch_size samples.
         Batch is stored as a dict.
@@ -126,14 +89,18 @@ class Replay(Memory):
                      'dones'       : dones,
                      'priorities'  : priorities}
         '''
-        self.batch_idxs = self.sample_idxs(batch_size)
+        # TODO if latest, return unused. implement
+        if latest:
+            raise NotImplementedError
+        batch_idxs = self.sample_idxs(batch_size)
+        self.batch_idxs = batch_idxs
         batch = {}
-        batch['states'] = self.states[self.batch_idxs]
-        batch['actions'] = self.actions[self.batch_idxs]
-        batch['rewards'] = self.rewards[self.batch_idxs]
-        batch['next_states'] = self.next_states[self.batch_idxs]
-        batch['dones'] = self.dones[self.batch_idxs]
-        batch['priorities'] = self.priorities[self.batch_idxs]
+        batch['states'] = self.states[batch_idxs]
+        batch['actions'] = self.actions[batch_idxs]
+        batch['rewards'] = self.rewards[batch_idxs]
+        batch['next_states'] = self.next_states[batch_idxs]
+        batch['dones'] = self.dones[batch_idxs]
+        batch['priorities'] = self.priorities[batch_idxs]
         return batch
 
     def sample_idxs(self, batch_size):

@@ -5,6 +5,7 @@
       "algorithm": {
         "name": "DQNBase",
         "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
         "explore_anneal_epi": 10,
@@ -21,7 +22,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "optim": {
           "name": "Adam",
           "lr": 0.02
@@ -56,6 +57,7 @@
       "algorithm": {
         "name": "DQNBase",
         "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
         "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
@@ -91,7 +93,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 50,
+      "max_episode": 30,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
@@ -103,6 +105,7 @@
       "algorithm": {
         "name": "MultitaskDQN",
         "action_policy": "multi_boltzmann",
+        "action_policy_update": "linear_decay",
         "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
@@ -119,7 +122,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -153,6 +156,7 @@
       "algorithm": {
         "name": "MultitaskDQN",
         "action_policy": "multi_boltzmann",
+        "action_policy_update": "linear_decay",
         "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
@@ -169,7 +173,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -203,6 +207,7 @@
       "algorithm": {
         "name": "MultitaskDQN",
         "action_policy": "multi_boltzmann",
+        "action_policy_update": "linear_decay",
         "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
@@ -219,7 +224,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -253,6 +258,7 @@
       "algorithm": {
         "name": "DQNBase",
         "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
         "gamma": 0.9999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
@@ -269,7 +275,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [200, 100],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -300,6 +306,7 @@
       "algorithm": {
         "name": "DQNBase",
         "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
         "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
@@ -316,7 +323,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [200, 100],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -347,6 +354,7 @@
       "algorithm": {
         "name": "MultitaskDQN",
         "action_policy": "multi_boltzmann",
+        "action_policy_update": "linear_decay",
         "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
@@ -363,7 +371,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [32],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -381,22 +389,8 @@
       "max_timestep": 200
     }],
     "body": {
-      "product": "custom",
-      "num": [
-        [0, 0, 0],
-        [0, 1, 0],
-        [0, 1, 1],
-        [0, 1, 2],
-        [0, 1, 3],
-        [0, 1, 4],
-        [0, 1, 5],
-        [0, 1, 6],
-        [0, 1, 7],
-        [0, 1, 8],
-        [0, 1, 9],
-        [0, 1, 10],
-        [0, 1, 11]
-      ]
+      "product": "outer",
+      "num": [1, 12]
     },
     "meta": {
       "max_episode": 40,
@@ -411,6 +405,7 @@
       "algorithm": {
         "name": "MultitaskDQN",
         "action_policy": "multi_boltzmann",
+        "action_policy_update": "linear_decay",
         "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
@@ -427,7 +422,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [32],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -445,11 +440,8 @@
       "max_timestep": 20
     }],
     "body": {
-      "product": "custom",
-      "num": [
-        [0, 0, 0],
-        [0, 1, 0]
-      ]
+      "product": "outer",
+      "num": 1
     },
     "meta": {
       "max_episode": 40,
@@ -464,6 +456,7 @@
       "algorithm": {
         "name": "DQNBase",
         "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
         "gamma": 0.99,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
@@ -480,7 +473,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [200, 100],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "update_type": "replace",
         "polyak_weight": 0,
         "update_frequency": 1.0,
@@ -516,6 +509,7 @@
       "algorithm": {
         "name": "DQNBase",
         "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
         "explore_anneal_epi": 10,
@@ -532,7 +526,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "optim": {
           "name": "Adam",
           "lr": 0.02
