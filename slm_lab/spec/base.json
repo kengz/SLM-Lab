@@ -113,7 +113,7 @@
     }],
     "body": {
       "product": "outer",
-      "num": 32
+      "num": 6
     },
     "meta": {
       "max_episode": 3,
@@ -183,7 +183,7 @@
     }],
     "body": {
       "product": "outer",
-      "num": [32, 32]
+      "num": [1, 6]
     },
     "meta": {
       "max_episode": 3,
