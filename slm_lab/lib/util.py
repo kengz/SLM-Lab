@@ -1,5 +1,6 @@
 from datetime import datetime
 from slm_lab import ROOT_DIR
+from torch.autograd import Variable
 import collections
 import json
 import numpy as np
@@ -7,6 +8,7 @@ import os
 import pandas as pd
 import pydash as _
 import regex as re
+import torch
 import ujson
 import yaml
 
@@ -61,6 +63,15 @@ def cast_list(val):
         return val
     else:
         return [val]
+
+
+def concat_dict(d_list):
+    '''Concatenate all the dicts by their array values'''
+    cat_dict = {}
+    for k in d_list[0]:
+        arr = np.concatenate([d[k] for d in d_list])
+        cat_dict[k] = arr
+    return cat_dict
 
 
 def count_nonan(arr):
@@ -443,3 +454,11 @@ def write_as_plain(data, data_path):
         open_file.write(str(data))
     open_file.close()
     return data_path
+
+
+def to_torch_batch(batch):
+    '''Mutate a batch (dict) to make its values from numpy into PyTorch Variable'''
+    float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
+    for k in float_data_names:
+        batch[k] = Variable(torch.from_numpy(batch[k]).float())
+    return batch

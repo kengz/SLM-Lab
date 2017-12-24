@@ -103,13 +103,10 @@ class DQNBase(Algorithm):
         return q_targets
 
     def sample(self):
-        # TODO generalize to gather from all bodies
-        batch = self.agent.body_a[(0, 0)].memory.sample(self.batch_size)
-        # Package data into pytorch variables
-        float_data_names = [
-            'states', 'actions', 'rewards', 'dones', 'next_states']
-        for k in float_data_names:
-            batch[k] = Variable(torch.from_numpy(batch[k]).float())
+        batches = [body.memory.sample(self.batch_size)
+                   for body in self.agent.flat_nonan_body_a]
+        batch = util.concat_dict(batches)
+        util.to_torch_batch(batch)
         return batch
 
     def train(self):
@@ -255,17 +252,11 @@ class MultitaskDQN(DQNBase):
 
     def sample(self):
         # NOTE the purpose of multi-body is to parallelize and get more batch_sizes
-        batches = []
-        for body in self.agent.flat_nonan_body_a:
-            batch_b = body.memory.sample(self.batch_size)
-            batches.append(batch_b)
-
+        batches = [body.memory.sample(self.batch_size)
+                   for body in self.agent.flat_nonan_body_a]
         # Package data into pytorch variables
-        float_data_names = [
-            'states', 'actions', 'rewards', 'dones', 'next_states']
-        for ba, batch_b in enumerate(batches):
-            for k in float_data_names:
-                batch_b[k] = Variable(torch.from_numpy(batch_b[k]).float())
+        for batch_b in batches:
+            util.to_torch_batch(batch_b)
         # Concat state
         combined_states = torch.cat(
             [batch_b['states'] for batch_b in batches], dim=1)

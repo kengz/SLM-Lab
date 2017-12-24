@@ -4,7 +4,7 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
 test_args = [
-    '-n 2',
+    '-n 4',
     '--cov-report=html',
     '--cov-report=term',
     '--cov-report=xml',
