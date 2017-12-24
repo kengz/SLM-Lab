@@ -18,7 +18,7 @@
         "optim": {
           "name": "Adam",
           "lr": 0.02
-        },
+        }
       }
     }],
     "env": [{
@@ -56,7 +56,7 @@
         "optim": {
           "name": "Adam",
           "lr": 0.00001
-        },
+        }
       }
     }],
     "env": [{
@@ -73,5 +73,5 @@
       "max_trial": 1,
       "train_mode": true
     }
-  },
+  }
 }
