@@ -257,35 +257,36 @@ class MultitaskDQN(DQNBase):
 
     def compute_q_target_values(self, batch):
         batches = batch['batches']
-        # TODO make split eval tail-wise softmax, otherwise will skew to just one tail
         q_sts = self.net.wrap_eval(batch['states'])
+        logger.debug(f'Q sts: {q_sts}')
         # TODO parametrize usage of eval or target_net
         q_next_st_acts = self.online_net.wrap_eval(
             batch['next_states'])
-
-        # TODO Generalize to more than two tasks
+        logger.debug(f'Q next st act vals: {q_next_st_acts}')
         start_idx = 0
         q_next_acts = []
         for body in self.agent.flat_nonan_body_a:
             end_idx = start_idx + body.action_dim
             _val, q_next_act_b = torch.max(
                 q_next_st_acts[:, start_idx:end_idx], dim=1)
+            # Shift action so that they have the right indices in combined layer
+            q_next_act_b += start_idx
             logger.debug(f'Q next action for body {body.aeb}: {q_next_act_b.size()}')
+            logger.debug(f'Q next action for body {body.aeb}: {q_next_act_b}')
             q_next_acts.append(q_next_act_b)
             start_idx = end_idx
-        # TODO uhh what's this?
-        # Shift next actions_2 so they have the right indices
-        # q_next_actions_2 = torch.add(q_next_actions_2, self.action_dims[0])
+
         # Select q_next_st_maxs based on action selected in q_next_acts
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         logger.debug(f'Q next_states: {q_next_sts.size()}')
-
+        logger.debug(f'Q next_states: {q_next_sts}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
         q_next_st_maxs = []
         for q_next_act_b in q_next_acts:
             q_next_st_max_b = q_next_sts[idx, q_next_act_b]
             q_next_st_max_b.unsqueeze_(1)
             logger.debug(f'Q next_states max {q_next_st_max_b.size()}')
+            logger.debug(f'Q next_states max {q_next_st_max_b}')
             q_next_st_maxs.append(q_next_st_max_b)
 
         # Compute final q_target using reward and estimated best Q value from the next state if there is one. Make future reward 0 if the current state is done. Do it individually first, then combine. Each individual target should automatically expand to the dimension of the relevant action space
@@ -300,16 +301,20 @@ class MultitaskDQN(DQNBase):
             q_targets_maxs.append(q_targets_max_b)
             logger.debug(f'Q targets max: {q_targets_max_b.size()}')
         q_targets_maxs = torch.cat(q_targets_maxs, dim=1)
+        logger.debug(f'Q targets maxes: {q_targets_maxs.size()}')
+        logger.debug(f'Q targets maxes: {q_targets_maxs}')
         # Also concat actions - each batch should have only two non zero dimensions
         actions = [batch_b['actions'] for batch_b in batches]
         combined_actions = torch.cat(actions, dim=1)
         logger.debug(f'combined_actions: {combined_actions.size()}')
+        logger.debug(f'combined_actions: {combined_actions}')
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_sts
         # So that the loss for these actions is 0
         q_targets = torch.mul(q_targets_maxs, combined_actions.data) + \
             torch.mul(q_sts, (1 - combined_actions.data))
         logger.debug(f'Q targets: {q_targets.size()}')
+        logger.debug(f'Q targets: {q_targets}')
         return q_targets
 
     def act(self, state_a):
