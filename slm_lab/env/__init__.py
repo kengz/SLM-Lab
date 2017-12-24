@@ -4,18 +4,19 @@ Contains graduated components from experiments for building/using environment.
 Provides the rich experience for agent embodiment, reflects the curriculum and allows teaching (possibly allows teacher to enter).
 To be designed by human and evolution module, based on the curriculum and fitness metrics.
 '''
-from slm_lab.experiment.monitor import info_space
 from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
 from unityagents.environment import logger as unity_logger
 import gym
+import logging
 import numpy as np
 import os
 import pydash as _
 
-gym.logger.setLevel('ERROR')
-unity_logger.setLevel('ERROR')
+logging.getLogger('gym').setLevel(logging.WARN)
+logging.getLogger('requests').setLevel(logging.WARN)
+logging.getLogger('unityagents').setLevel(logging.WARN)
 
 
 class BrainExt:
@@ -59,22 +60,24 @@ extend_unity_brain()
 
 
 class OpenAIEnv:
-    # TODO check done on solve_mean_rewards
+    # TODO check done_e on solve_mean_rewards
     def __init__(self, spec, env_space, e=0):
         self.spec = spec
         util.set_attr(self, self.spec)
         self.name = self.spec['name']
         self.env_space = env_space
-        self.index = e
-        self.ab_proj = self.env_space.e_ab_proj[self.index]
-        self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
+        self.data_spaces = env_space.aeb_space.data_spaces
+        self.e = e
+        self.body_e = None
+        self.flat_nonan_body_e = None  # flatten_nonan version of bodies
         self.u_env = gym.make(self.name)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get(
             'wrapper_config.TimeLimit.max_episode_steps')
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        pass
+        self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
+        logger.info(util.self_desc(self))
 
     def is_discrete(self, a):
         '''Check if an agent (brain) is subject to discrete actions'''
@@ -101,38 +104,42 @@ class OpenAIEnv:
         return {'state': state_dim}
 
     def reset(self):
-        self.done = False
-        state = []
-        body_state = self.u_env.reset()
-        for a, b in self.ab_proj:
-            state.append(body_state)
-        assert len(state) == 1, 'OpenAI Gym supports only single body'
-        return state
+        self.done_e = False
+        state_e = self.data_spaces['state'].init_data_s(e=self.e)
+        for (a, b), body in util.ndenumerate_nonan(self.body_e):
+            state = self.u_env.reset()
+            state_e[(a, b)] = state
+        non_nan_cnt = util.count_nonan(state_e.flatten())
+        assert non_nan_cnt == 1, 'OpenAI Gym supports only single body'
+        return state_e
 
-    def step(self, action):
+    def step(self, action_e):
         # TODO hack for mismaching env timesteps
-        if self.done:
+        if self.done_e:
             self.reset()
-        assert len(action) == 1, 'OpenAI Gym supports only single body'
         if not self.train_mode:
             self.u_env.render()
-        body_action = action[0]
-        body_state, body_reward, body_done, _info = self.u_env.step(
-            body_action)
-        reward = [body_reward]
-        state = [body_state]
-        done = [body_done]
-        self.done = body_done
-        return reward, state, done
+        assert len(action_e) == 1, 'OpenAI Gym supports only single body'
+        action = action_e[(0, 0)]
+        (state, reward, done, _info) = self.u_env.step(action)
+        reward_e = self.data_spaces['reward'].init_data_s(e=self.e)
+        state_e = self.data_spaces['state'].init_data_s(e=self.e)
+        done_e = self.data_spaces['done'].init_data_s(e=self.e)
+        for (a, b), body in util.ndenumerate_nonan(self.body_e):
+            reward_e[(a, b)] = reward
+            state_e[(a, b)] = state
+            done_e[(a, b)] = done
+        self.done_e = done
+        return reward_e, state_e, done_e
 
     def close(self):
         self.u_env.close()
 
 
-class Env:
+class UnityEnv:
     '''
     Class for all Envs.
-    Standardizes the Env design to work in Lab.
+    Standardizes the UnityEnv design to work in Lab.
     Access Agents properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
@@ -141,35 +148,38 @@ class Env:
         util.set_attr(self, self.spec)
         self.name = self.spec['name']
         self.env_space = env_space
-        self.index = e
-        self.ab_proj = self.env_space.e_ab_proj[self.index]
-        self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
-        worker_id = int(f'{os.getpid()}{self.index}'[-4:])
+        self.data_spaces = env_space.aeb_space.data_spaces
+        self.e = e
+        self.body_e = None
+        self.flat_nonan_body_e = None  # flatten_nonan version of bodies
+        worker_id = int(f'{os.getpid()}{self.e+int(_.unique_id())}'[-4:])
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name), worker_id=worker_id)
-        self.check_u_brain_to_agent()
+        # TODO experiment to find out optimal benchmarking max_timestep, set
 
     def check_u_brain_to_agent(self):
         '''Check the size match between unity brain and agent'''
         u_brain_num = self.u_env.number_brains
-        agent_num = util.get_aeb_shape(self.ab_proj)[0]
-        assert u_brain_num == agent_num, f'There must be a Unity brain for each agent; failed check brain: {u_brain_num} == agent: {agent_num}.'
+        agent_num = len(self.body_e)
+        assert u_brain_num == agent_num, f'There must be a Unity brain for each agent. e:{self.e}, brain: {u_brain_num} != agent: {agent_num}.'
 
-    def check_u_agent_to_body(self, a_env_info, a):
+    def check_u_agent_to_body(self, env_info_a, a):
         '''Check the size match between unity agent and body'''
-        u_agent_num = len(a_env_info.agents)
-        a_body_num = len(_.filter_(self.ab_proj, lambda ab: ab[0] == a))
-        assert u_agent_num == a_body_num, f'There must be a Unity agent for each body; failed check agent: {u_agent_num} == body: {a_body_num}.'
+        u_agent_num = len(env_info_a.agents)
+        body_num = util.count_nonan(self.body_e[a])
+        assert u_agent_num == body_num, f'There must be a Unity agent for each body; a:{a}, e:{self.e}, agent_num: {u_agent_num} != body_num: {body_num}.'
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        pass
+        self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
+        self.check_u_brain_to_agent()
+        logger.info(util.self_desc(self))
 
     def get_brain(self, a):
         '''Get the unity-equivalent of agent, i.e. brain, to access its info'''
-        a_name = self.u_env.brain_names[a]
-        a_brain = self.u_env.brains[a_name]
-        return a_brain
+        name_a = self.u_env.brain_names[a]
+        brain_a = self.u_env.brains[name_a]
+        return brain_a
 
     def is_discrete(self, a):
         '''Check if an agent (brain) is subject to discrete actions'''
@@ -187,33 +197,33 @@ class Env:
         '''Get the observable dim for an agent (brain) in env'''
         return self.get_brain(a).get_observable_dim()
 
+    def get_env_info(self, env_info_dict, a):
+        name_a = self.u_env.brain_names[a]
+        env_info_a = env_info_dict[name_a]
+        return env_info_a
+
     def reset(self):
         env_info_dict = self.u_env.reset(
             train_mode=self.train_mode, config=self.spec.get('unity'))
-        state = []
-        for a, b in self.ab_proj:
-            a_name = self.u_env.brain_names[a]
-            a_env_info = env_info_dict[a_name]
-            self.check_u_agent_to_body(a_env_info, a)
-            body_state = a_env_info.states[b]
-            state.append(body_state)
-        return state
+        state_e = self.data_spaces['state'].init_data_s(e=self.e)
+        for (a, b), body in util.ndenumerate_nonan(self.body_e):
+            env_info_a = self.get_env_info(env_info_dict, a)
+            self.check_u_agent_to_body(env_info_a, a)
+            state_e[(a, b)] = env_info_a.states[b]
+        return state_e
 
-    def step(self, action):
-        env_info_dict = self.u_env.step(action)
-        reward = []
-        state = []
-        done = []
-        for a, b in self.ab_proj:
-            a_name = self.u_env.brain_names[a]
-            a_env_info = env_info_dict[a_name]
-            body_reward = a_env_info.rewards[b]
-            reward.append(body_reward)
-            body_state = a_env_info.states[b]
-            state.append(body_state)
-            body_done = a_env_info.local_done[b]
-            done.append(body_done)
-        return reward, state, done
+    def step(self, action_e):
+        action_e = util.flatten_nonan(action_e)
+        env_info_dict = self.u_env.step(action_e)
+        reward_e = self.data_spaces['reward'].init_data_s(e=self.e)
+        state_e = self.data_spaces['state'].init_data_s(e=self.e)
+        done_e = self.data_spaces['done'].init_data_s(e=self.e)
+        for (a, b), body in util.ndenumerate_nonan(self.body_e):
+            env_info_a = self.get_env_info(env_info_dict, a)
+            reward_e[(a, b)] = env_info_a.rewards[b]
+            state_e[(a, b)] = env_info_a.states[b]
+            done_e[(a, b)] = env_info_a.local_done[b]
+        return reward_e, state_e, done_e
 
     def close(self):
         self.u_env.close()
@@ -227,15 +237,16 @@ class EnvSpace:
 
     def __init__(self, spec, aeb_space):
         self.spec = spec
+        self.env_spec = spec['env']
         self.aeb_space = aeb_space
         aeb_space.env_space = self
-        self.e_ab_proj = aeb_space.e_ab_proj
         self.envs = []
-        for e, e_spec in enumerate(spec['env']):
+        for e, env_spec in enumerate(self.env_spec):
+            env_spec = _.merge(spec['meta'].copy(), env_spec)
             try:
-                env = OpenAIEnv(_.merge(spec['meta'].copy(), e_spec), self, e)
+                env = OpenAIEnv(env_spec, self, e)
             except gym.error.Error:
-                env = Env(_.merge(spec['meta'].copy(), e_spec), self, e)
+                env = UnityEnv(env_spec, self, e)
             self.envs.append(env)
         self.max_timestep = np.amax([env.max_timestep for env in self.envs])
 
@@ -243,33 +254,37 @@ class EnvSpace:
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         for env in self.envs:
             env.post_body_init()
+        logger.info(util.self_desc(self))
 
     def get(self, e):
         return self.envs[e]
 
     def reset(self):
-        state_proj = []
+        state_v = self.aeb_space.data_spaces['state'].init_data_v()
         for env in self.envs:
-            state = env.reset()
-            state_proj.append(state)
-        state_space = self.aeb_space.add('state', state_proj)
+            state_e = env.reset()
+            state_v[env.e, 0:len(state_e)] = state_e
+        state_space = self.aeb_space.add('state', state_v)
+        logger.debug(f'EnvSpace.reset. state_space: {state_space}')
         return state_space
 
     def step(self, action_space):
-        reward_proj = []
-        state_proj = []
-        done_proj = []
-        for e, env in enumerate(self.envs):
-            action = action_space.get(e=e)
-            reward, state, done = env.step(action)
-            reward_proj.append(reward)
-            state_proj.append(state)
-            done_proj.append(done)
-        reward_space = self.aeb_space.add('reward', reward_proj)
-        state_space = self.aeb_space.add('state', state_proj)
-        done_space = self.aeb_space.add('done', done_proj)
+        reward_v = self.aeb_space.data_spaces['reward'].init_data_v()
+        state_v = self.aeb_space.data_spaces['state'].init_data_v()
+        done_v = self.aeb_space.data_spaces['done'].init_data_v()
+        for env in self.envs:
+            e = env.e
+            action_e = action_space.get(e=e)
+            reward_e, state_e, done_e = env.step(action_e)
+            reward_v[e, 0:len(reward_e)] = reward_e
+            state_v[e, 0:len(state_e)] = state_e
+            done_v[e, 0:len(done_e)] = done_e
+        reward_space = self.aeb_space.add('reward', reward_v)
+        state_space = self.aeb_space.add('state', state_v)
+        done_space = self.aeb_space.add('done', done_v)
         return reward_space, state_space, done_space
 
     def close(self):
+        logger.info('EnvSpace.close')
         for env in self.envs:
             env.close()

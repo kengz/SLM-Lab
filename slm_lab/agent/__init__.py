@@ -16,11 +16,11 @@ Main SLM components (refer to SLM doc for more):
 
 Agent components:
 - algorithm (with net, policy)
-- memory
+- memory (per body)
 '''
-from slm_lab.agent import algorithm, memory
-from slm_lab.experiment.monitor import info_space
-from slm_lab.lib import util
+from slm_lab.agent import algorithm
+from slm_lab.lib import logger, util
+import numpy as np
 import pydash as _
 
 
@@ -30,45 +30,42 @@ class Agent:
     Standardizes the Agent design to work in Lab.
     Access Envs properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
-    # TODO ok need architecture spec for each agent: disjoint or joint, time or space multiplicity
 
     def __init__(self, spec, agent_space, a=0):
         self.spec = spec
         self.name = self.spec['name']
         self.agent_space = agent_space
-        self.index = a
-        self.eb_proj = self.agent_space.a_eb_proj[self.index]
-        self.bodies = None  # consistent with ab_proj, set in aeb_space.init_body_space()
+        self.data_spaces = agent_space.aeb_space.data_spaces
+        self.a = a
+        self.body_a = None
+        self.flat_nonan_body_a = None  # flatten_nonan version of bodies
 
-        MemoryClass = getattr(memory, _.get(self.spec, 'memory.name'))
-        self.memory = MemoryClass(self)
         AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
         self.algorithm = AlgoClass(self)
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        self.memory.post_body_init()
+        self.flat_nonan_body_a = util.flatten_nonan(self.body_a)
         self.algorithm.post_body_init()
+        logger.info(util.self_desc(self))
 
-    def reset(self, state):
+    def reset(self, state_a):
         '''Do agent reset per episode, such as memory pointer'''
-        self.memory.reset_last_state(state)
-        # TODO hack add
-        if hasattr(self, 'memory_1'):
-            self.memory_1.reset_last_state(state)
+        for (e, b), body in util.ndenumerate_nonan(self.body_a):
+            body.memory.reset_last_state(state_a[(e, b)])
 
-    def act(self, state):
+    def act(self, state_a):
         '''Standard act method from algorithm.'''
-        return self.algorithm.act(state)
+        action_a = self.algorithm.act(state_a)
+        return action_a
 
-    def update(self, action, reward, state, done):
+    def update(self, action_a, reward_a, state_a, done_a):
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
-        self.memory.update(action, reward, state, done)
-        # TODO hack add
-        if hasattr(self, 'memory_1'):
-            self.memory_1.update(action, reward, state, done)
+        for (e, b), body in util.ndenumerate_nonan(self.body_a):
+            body.memory.update(
+                action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
         loss = self.algorithm.train()
         explore_var = self.algorithm.update()
         # TODO tmp return, to unify with monitor auto-fetch later
@@ -89,44 +86,51 @@ class AgentSpace:
 
     def __init__(self, spec, aeb_space):
         self.spec = spec
+        self.agent_spec = spec['agent']
         self.aeb_space = aeb_space
+        self.aeb_shape = aeb_space.aeb_shape
         aeb_space.agent_space = self
-        self.a_eb_proj = aeb_space.a_eb_proj
-        self.agents = [Agent(a_spec, self, a)
-                       for a, a_spec in enumerate(spec['agent'])]
+        self.agents = [
+            Agent(agent_spec, self, a) for a, agent_spec in enumerate(self.agent_spec)]
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         for agent in self.agents:
             agent.post_body_init()
+        logger.info(util.self_desc(self))
 
     def get(self, a):
         return self.agents[a]
 
     def reset(self, state_space):
-        for a, agent in enumerate(self.agents):
-            state = state_space.get(a=a)
-            agent.reset(state)
+        logger.debug('AgentSpace.reset')
+        for agent in self.agents:
+            state_a = state_space.get(a=agent.a)
+            agent.reset(state_a)
 
     def act(self, state_space):
-        action_proj = []
-        for a, agent in enumerate(self.agents):
-            state = state_space.get(a=a)
-            action = agent.act(state)
-            action_proj.append(action)
-        action_space = self.aeb_space.add('action', action_proj)
+        action_v = self.aeb_space.data_spaces['action'].init_data_v()
+        for agent in self.agents:
+            a = agent.a
+            state_a = state_space.get(a=a)
+            action_a = agent.act(state_a)
+            action_v[a, 0:len(action_a)] = action_a
+        action_space = self.aeb_space.add('action', action_v)
         return action_space
 
     def update(self, action_space, reward_space, state_space, done_space):
-        for a, agent in enumerate(self.agents):
-            action = action_space.get(a=a)
-            reward = reward_space.get(a=a)
-            state = state_space.get(a=a)
-            done = done_space.get(a=a)
-            loss, explore_var = agent.update(action, reward, state, done)
-        # TODO tmp, single body (last); use monitor later
+        for agent in self.agents:
+            a = agent.a
+            action_a = action_space.get(a=a)
+            reward_a = reward_space.get(a=a)
+            state_a = state_space.get(a=a)
+            done_a = done_space.get(a=a)
+            loss, explore_var = agent.update(
+                action_a, reward_a, state_a, done_a)
+        # TODO tmp, single body loss (last); use monitor later
         return loss, explore_var
 
     def close(self):
+        logger.info('AgentSpace.close')
         for agent in self.agents:
             agent.close()

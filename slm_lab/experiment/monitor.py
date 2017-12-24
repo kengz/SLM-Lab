@@ -22,6 +22,7 @@ Agents - AgentSpace - AEBSpace - EnvSpace - Envs
 # TODO - plug to NoSQL graph db, using graphql notation, and data backup
 # TODO - data_space viewer and stats method for evaluating and planning experiments
 from copy import deepcopy
+from slm_lab.agent import memory
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import numpy as np
@@ -44,23 +45,17 @@ ENV_DATA_NAMES = ['state', 'reward', 'done']
 
 
 def get_body_df_dict(aeb_space):
+    # TODO rewrite this whole shit
     body_df_dict = {}
-    reward_proj_h = []
-    done_proj_h = []
-    for a, body_proj_a in enumerate(aeb_space.body_space.data_proj):
-        reward_proj_a_t = np.column_stack(
-            [reward_proj_t[a] for reward_proj_t in aeb_space.data_spaces['reward'].data_proj_history])
-        done_proj_a_t = np.column_stack(
-            [done_proj_t[a] for done_proj_t in aeb_space.data_spaces['done'].data_proj_history])
-        reward_proj_h.append(reward_proj_a_t)
-        done_proj_h.append(done_proj_a_t)
-        for a_idx, body in enumerate(body_proj_a):
-            body.reward_h = reward_proj_a_t[a_idx]
-            body.done_h = done_proj_a_t[a_idx]
-            df = pd.DataFrame({'reward': body.reward_h, 'done': body.done_h})
-            # df['e'] = df['done'].cumsum()
-            # e_df = df[['reward']].group_by('e').agg('sum')
-            body_df_dict[body.coor] = df
+    reward_h_v = np.stack(
+        aeb_space.data_spaces['reward'].data_history, axis=3)
+    done_h_v = np.stack(
+        aeb_space.data_spaces['done'].data_history, axis=3)
+    for aeb, body in util.ndenumerate_nonan(aeb_space.body_space.data):
+        body.reward_h = reward_h_v[aeb]
+        body.done_h = done_h_v[aeb]
+        df = pd.DataFrame({'reward': body.reward_h, 'done': body.done_h})
+        body_df_dict[aeb] = df
     return body_df_dict
 
 
@@ -90,16 +85,19 @@ class Body:
     '''
 
     def __init__(self, aeb, agent, env):
-        self.coor = aeb
+        self.aeb = aeb
         self.a, self.e, self.b = aeb
-        self.clock = Clock()
         self.agent = agent
         self.env = env
         self.observable_dim = self.env.get_observable_dim(self.a)
-        # TODO use tuples for state_dim for pixel-based in the future
+        # TODO use tuples for state_dim for pixel-based in the future, generalize all and call as shape
         self.state_dim = self.observable_dim['state']
         self.action_dim = self.env.get_action_dim(self.a)
         self.is_discrete = self.env.is_discrete(self.a)
+
+        self.clock = Clock()
+        MemoryClass = getattr(memory, _.get(self.agent.spec, 'memory.name'))
+        self.memory = MemoryClass(self)
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
@@ -107,97 +105,84 @@ class Body:
 
 class DataSpace:
     '''
-    AEB data space - data container with an AEB space hashed to index of a flat list of stored data
+    AEB data space. Store all data from RL system in standard aeb-shaped tensors.
     '''
-    # TODO prolly keep episodic, timestep historic data series, to DB per episode
 
-    def __init__(self, data_name, aeb_proj_dual_map, aeb_space):
+    def __init__(self, data_name, aeb_space):
         self.data_name = data_name
-        self.aeb_proj_dual_map = aeb_proj_dual_map
         self.aeb_space = aeb_space
-        if data_name in AGENT_DATA_NAMES or data_name == 'body':
-            self.proj_axis = 'a'
-            self.dual_proj_axis = 'e'
-        else:
-            self.proj_axis = 'e'
-            self.dual_proj_axis = 'a'
-        self.data_proj = None
-        self.dual_data_proj = None
-        self.data_proj_history = []  # index = clock.absolute_t
+        self.aeb_shape = aeb_space.aeb_shape
+
+        # data from env have shape (eab), need to swap
+        self.to_swap = self.data_name in ENV_DATA_NAMES
+        self.swap_aeb_shape = self.aeb_shape[1], self.aeb_shape[0], self.aeb_shape[2]
+
+        self.data_shape = self.swap_aeb_shape if self.to_swap else self.aeb_shape
+        self.data_type = object if self.data_name in [
+            'state', 'action'] else np.float32
+        self.data = None  # standard data in aeb shape
+        self.swap_data = None
+        # TODO shove history to DB
+        # TODO keep time/episode data too, will be cheap
+        self.data_history = []  # index = clock.absolute_t
 
     def __str__(self):
+        if self.data is None:
+            return '<None>'
         s = '['
-        x_map = self.aeb_proj_dual_map[self.dual_proj_axis]
-        x_yb_proj = self.aeb_space.a_eb_proj if self.dual_proj_axis == 'a' else self.aeb_space.e_ab_proj
-        for x, y_map_idx_list in enumerate(x_map):
-            s += f'\n  {self.dual_proj_axis}:{x} ['
-            for x_idx, (y, xb_idx) in enumerate(y_map_idx_list):
-                b = x_yb_proj[x][x_idx][1]
-                data = self.data_proj[y][xb_idx]
-                s += f'({self.proj_axis}:{y},b:{b}) {data} '
+        for a, a_arr in enumerate(self.data):
+            s += f'\n  a:{a} ['
+            for e, e_arr in enumerate(a_arr):
+                s += f'\n    e:{e} ['
+                for b, val in enumerate(e_arr):
+                    s += f'\n      b:{b} {val}'
+                s += ']'
             s += ']'
         s += '\n]'
         return s
 
     def __bool__(self):
-        '''Get AND of all entries, reduce 2 times on 2D axes of AE, then convert to py bool'''
-        return bool(np.all(np.all(self.data_proj)))
+        return bool(np.all(self.data))
 
-    def create_dual_data_proj(self, data_proj):
-        '''
-        Every data_proj from agent will be used by env, and vice versa.
-        Hence, on receiving data_proj, construct and cache the dual for fast access later.
-        @param {[y: [xb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
-        @returns {[x: [yb_idx:[body_data]]} dual_data_proj, with axes flipped.
-        '''
-        x_map = self.aeb_proj_dual_map[self.dual_proj_axis]
-        x_data_proj = []
-        try:
-            for _x, y_map_idx_list in enumerate(x_map):
-                x_data_proj_x = []
-                for _x_idx, (y, xb_idx) in enumerate(y_map_idx_list):
-                    data = data_proj[y][xb_idx]
-                    x_data_proj_x.append(data)
-                x_data_proj.append(x_data_proj_x)
-        except Exception as e:
-            logger.exception(
-                f'Dimension mismatch of data space {self.data_name}. Expected aeb_proj_map: {x_map}, received input data_proj: {data_proj}')
-            raise e
-        return x_data_proj
+    def init_data_v(self):
+        '''Method to init a data volume filled with np.nan'''
+        data_v = np.full(self.data_shape, np.nan, dtype=self.data_type)
+        return data_v
 
-    def add(self, data_proj):
+    def init_data_s(self, a=None, e=None):
+        '''Method to init a data surface (subset of data volume) filled with np.nan.'''
+        body_s = self.aeb_space.body_space.get(a=a, e=e)
+        data_s = np.full(body_s.shape, np.nan, dtype=self.data_type)
+        return data_s
+
+    def add(self, data_v):
         '''
-        Add a new instance of data projection to data_space from agent_space or env_space. Creates a dual_data_proj.
-        @param {[x: [yb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
+        Take raw data from RL system and construct numpy object self.data, then add to self.data_history.
+        If data is from env, auto-swap the data to aeb standard shape.
+        @param {[x: [y: [body_v]]} data_v As collected in RL sytem.
+        @returns {array} data Tensor in standard aeb shape.
         '''
-        # TODO might wanna keep a history before replacement, shove to DB
-        # TODO since u have to create anyway, why not just use a canonical form as standard
-        # note: store history in canonical a,e,b form
-        self.data_proj = data_proj
-        self.dual_data_proj = self.create_dual_data_proj(data_proj)
-        if self.proj_axis == 'a':
-            self.data_proj_history.append(self.data_proj)
+        new_data = np.array(data_v)  # no type restriction, auto-infer
+        if self.to_swap:  # data from env has shape eab
+            self.swap_data = new_data
+            self.data = new_data.swapaxes(0, 1)
         else:
-            self.data_proj_history.append(self.dual_data_proj)
+            self.data = new_data
+            self.swap_data = new_data.swapaxes(0, 1)
+        self.data_history.append(self.data)
+        return self.data
 
     def get(self, a=None, e=None):
         '''
-        Get the data_proj for a or e axis to be used by agent_space, env_space respectively, automatically projected and resolved.
+        Get the data projected on a or e axes for use by agent_space, env_space.
         @param {int} a The index a of an agent in agent_space
         @param {int} e The index e of an env in env_space
-        @returns {[yb_idx:[body_data]_x} data_proj[x], where x, y could be a, e interchangeably.
+        @returns {array} data_x Where x is a or e.
         '''
-        if a is not None:
-            proj_axis = 'a'
-            proj_idx = a
+        if e is None:
+            return self.data[a]
         else:
-            proj_axis = 'e'
-            proj_idx = e
-        assert proj_idx > -1
-        if proj_axis == self.proj_axis:
-            return self.data_proj[proj_idx]
-        else:
-            return self.dual_data_proj[proj_idx]
+            return self.swap_data[e]
 
 
 class AEBSpace:
@@ -210,108 +195,60 @@ class AEBSpace:
         self.agent_space = None
         self.env_space = None
         self.body_space = None
-        self.coor_list = spec_util.resolve_aeb(self.spec)
-        self.aeb_shape, self.a_eb_proj = self.compute_aeb_dims(self.coor_list)
-        self.e_ab_proj = None
-        self.aeb_proj_dual_map = {
-            'a': None,
-            'e': None,
-        }
+        (self.aeb_list, self.aeb_shape, self.aeb_sig) = self.get_aeb_info(self.spec)
         self.data_spaces = self.init_data_spaces()
 
-    def compute_aeb_dims(self, coor_list):
+    def get_aeb_info(cls, spec):
         '''
-        Compute the aeb_shape and a_eb_proj from coor_list, which are used to resolve agent_space and env_space.
-        @param {[(a, e, b)]} coor_list The array of aeb coors
-        @returns {array([a, e, b]), [a: [(e, b)]]} aeb_shape, a_eb_proj
+        Get from spec the aeb_list, aeb_shape and aeb_sig, which are used to resolve agent_space and env_space.
+        @returns {list, (a,e,b), array([a, e, b])} aeb_list, aeb_shape, aeb_sig
         '''
-        aeb_shape = util.get_aeb_shape(coor_list)
-        a_aeb_groups = _.group_by(coor_list, lambda aeb: aeb[0])
-        a_eb_proj = []
-        for a, aeb_list in a_aeb_groups.items():
-            a_eb_proj.append(
-                util.to_tuple_list(np.array(aeb_list)[:, 1:]))
-        assert len(a_eb_proj) == len(self.spec['agent'])
-        return aeb_shape, a_eb_proj
-
-    def compute_dual_map(cls, a_eb_proj):
-        '''
-        Compute the direct dual map and dual proj of the given proj by swapping a, e
-        @param {[a: [(e, b)]]} a_eb_proj The aeb space projected onto a-axis
-        @returns {[e: [(a, eb_idx)]], [e: [(a, b)]]} e_ab_dual_map, e_ab_proj
-        '''
-        flat_aeb_list = []
-        for a, eb_list in enumerate(a_eb_proj):
-            for eb_idx, (e, b) in enumerate(eb_list):
-                flat_aeb_list.append((a, e, b, eb_idx))
-        flat_aeb_list = sorted(flat_aeb_list)
-
-        e_ab_dual_map = []
-        e_ab_proj = []
-        e_aeb_groups = _.group_by(flat_aeb_list, lambda row: row[1])
-        for e, eab_list in e_aeb_groups.items():
-            e_ab_dual_map.append(util.to_tuple_list(
-                np.array(eab_list)[:, (0, 3)]))
-            e_ab_proj.append(util.to_tuple_list(np.array(eab_list)[:, (0, 2)]))
-        return e_ab_dual_map, e_ab_proj
-
-    def init_aeb_proj_dual_map(self):
-        '''
-        Initialize the AEB projection dual map to map aeb_data_space between agent space and env space.
-        agent_space output data_proj, shape [a, [(e, b)]]
-        env_space output data_proj shape [e, [(a, b)]]
-        '''
-        e_ab_dual_map, e_ab_proj = self.compute_dual_map(self.a_eb_proj)
-        a_eb_dual_map, check_a_eb_proj = self.compute_dual_map(e_ab_proj)
-        assert np.array_equal(self.a_eb_proj, check_a_eb_proj)
-
-        self.e_ab_proj = e_ab_proj
-        self.aeb_proj_dual_map['a'] = a_eb_dual_map
-        self.aeb_proj_dual_map['e'] = e_ab_dual_map
+        aeb_list = spec_util.resolve_aeb(spec)
+        aeb_shape = util.get_aeb_shape(aeb_list)
+        aeb_sig = np.full(aeb_shape, np.nan)
+        for aeb in aeb_list:
+            aeb_sig.itemset(aeb, 1)
+        return aeb_list, aeb_shape, aeb_sig
 
     def init_data_spaces(self):
-        '''Initialize the data_space that contains all the data for the Lab.'''
         self.data_spaces = {
-            data_name: None for data_name in _.concat(AGENT_DATA_NAMES, ENV_DATA_NAMES)
+            data_name: DataSpace(data_name, self)
+            for data_name in AGENT_DATA_NAMES + ENV_DATA_NAMES
         }
-        self.init_aeb_proj_dual_map()
-        for data_name in self.data_spaces:
-            data_space = DataSpace(data_name, self.aeb_proj_dual_map, self)
-            self.data_spaces[data_name] = data_space
         return self.data_spaces
 
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
-        self.body_space = DataSpace('body', self.aeb_proj_dual_map, self)
-        data_proj = deepcopy(self.a_eb_proj)
-        for a, eb_list in enumerate(self.a_eb_proj):
-            for eb_idx, (e, b) in enumerate(eb_list):
+        self.body_space = DataSpace('body', self)
+        body_v = np.full(self.aeb_shape, np.nan, dtype=object)
+        for (a, e, b), sig in np.ndenumerate(self.aeb_sig):
+            if sig == 1:
                 agent = self.agent_space.get(a)
                 env = self.env_space.get(e)
                 body = Body((a, e, b), agent, env)
-                data_proj[a][eb_idx] = body
-        self.body_space.add(data_proj)
-
+                body_v[(a, e, b)] = body
+        self.body_space.add(body_v)
         for agent in self.agent_space.agents:
-            agent.bodies = self.body_space.get(a=agent.index)
+            agent.body_a = self.body_space.get(a=agent.a)
         for env in self.env_space.envs:
-            env.bodies = self.body_space.get(e=env.index)
+            env.body_e = self.body_space.get(e=env.e)
         return self.body_space
 
     def post_body_init(self):
         '''Run init for agent, env components that need bodies to exist first, e.g. memory or architecture.'''
+        logger.info(util.self_desc(self))
         self.agent_space.post_body_init()
         self.env_space.post_body_init()
 
-    def add(self, data_name, data_proj):
+    def add(self, data_name, data):
         '''
-        Add a data projection to a data space, e.g. data_proj actions collected per body, per agent, from agent_space, with AEB shape projected on a-axis, added to action_space.
+        Add a data to a data space, e.g. data actions collected per body, per agent, from agent_space, with AEB shape projected on a-axis, added to action_space.
         @param {str} data_name
-        @param {[x: [yb_idx:[body_data]]} data_proj, where x, y could be a, e interchangeably.
+        @param {[x: [yb_idx:[body_v]]} data, where x, y could be a, e interchangeably.
         @returns {DataSpace} data_space (aeb is implied)
         '''
         data_space = self.data_spaces[data_name]
-        data_space.add(data_proj)
+        data_space.add(data)
         return data_space
 
 

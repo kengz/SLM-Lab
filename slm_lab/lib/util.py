@@ -1,5 +1,6 @@
 from datetime import datetime
 from slm_lab import ROOT_DIR
+from torch.autograd import Variable
 import collections
 import json
 import numpy as np
@@ -7,6 +8,7 @@ import os
 import pandas as pd
 import pydash as _
 import regex as re
+import torch
 import ujson
 import yaml
 
@@ -26,7 +28,7 @@ class LabJsonEncoder(json.JSONEncoder):
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
         else:
-            return super(MyEncoder, self).default(obj)
+            return str(obj)
 
 
 def calc_timestamp_diff(ts2, ts1):
@@ -57,16 +59,30 @@ def cast_df(val):
 
 def cast_list(val):
     '''missing pydash method to cast value as list'''
-    if isinstance(val, list):
+    if _.is_list(val):
         return val
     else:
         return [val]
 
 
+def concat_dict(d_list):
+    '''Concatenate all the dicts by their array values'''
+    cat_dict = {}
+    for k in d_list[0]:
+        arr = np.concatenate([d[k] for d in d_list])
+        cat_dict[k] = arr
+    return cat_dict
+
+
+def count_nonan(arr):
+    try:
+        return np.count_nonzero(~np.isnan(arr))
+    except Exception:
+        return len(filter_nonan(arr))
+
+
 def dedent(string):
-    '''
-    Method to dedent the broken python multiline string
-    '''
+    '''Method to dedent the broken python multiline string'''
     return RE_INDENT.sub('', string)
 
 
@@ -86,8 +102,39 @@ def flatten_dict(d, parent_key='', sep='.'):
     return dict(items)
 
 
-def get_aeb_shape(aeb_coor_list):
-    return np.amax(aeb_coor_list, axis=0) + 1
+def filter_nonan(arr):
+    '''Filter to np array with no nan'''
+    try:
+        return arr[~np.isnan(arr)]
+    except Exception:
+        mixed_type = []
+        for v in arr:
+            if not gen_isnan(v):
+                mixed_type.append(v)
+        return np.array(mixed_type, dtype=arr.dtype)
+
+
+def flatten_nonan(arr):
+    '''Flatten and filter to np array with no nan'''
+    flat_arr = arr.reshape(-1)
+    return filter_nonan(flat_arr)
+
+
+def flatten_once(arr):
+    '''Flatten np array only once instead if all the way by flatten()'''
+    return arr.reshape(-1, *arr.shape[2:])
+
+
+def gen_isnan(v):
+    '''Check isnan for general type (np.isnan is only operable on np type)'''
+    try:
+        return np.isnan(v).all()
+    except Exception:
+        return v is None
+
+
+def get_aeb_shape(aeb_list):
+    return np.amax(aeb_list, axis=0) + 1
 
 
 def get_class_name(obj, lower=False):
@@ -102,7 +149,7 @@ def get_class_attr(obj):
     '''Get the class attr of an object as dict'''
     attr_dict = {}
     for k, v in obj.__dict__.items():
-        if hasattr(v, '__dict__') or isinstance(v, tuple):
+        if hasattr(v, '__dict__') or _.is_tuple(v):
             val = str(v)
         else:
             val = v
@@ -188,13 +235,18 @@ def is_sub_dict(sub_dict, super_dict):
         super_v = super_dict[sub_k]
         if type(sub_v) != type(super_v):
             return False
-        if isinstance(sub_v, dict):
+        if _.is_dict(sub_v):
             if not is_sub_dict(sub_v, super_v):
                 return False
         else:
             if sub_k not in super_dict:
                 return False
     return True
+
+
+def ndenumerate_nonan(arr):
+    '''Generic ndenumerate for np.ndenumerate with only not gen_isnan values'''
+    return (idx_v for idx_v in np.ndenumerate(arr) if not gen_isnan(idx_v[1]))
 
 
 def read(data_path):
@@ -287,6 +339,21 @@ def s_get(cls, attr_path):
         if not (get_class_name(res, lower=True) in (attr, attr.replace('_', ''))):
             res = getattr(res, attr)
     return res
+
+
+def self_desc(cls):
+    '''Method to get self description, used at init.'''
+    desc_list = [f'{get_class_name(cls)}:']
+    for k, v in get_class_attr(cls).items():
+        if k == 'spec':
+            continue
+        if _.is_dict(v) or _.is_dict(_.head(v)):
+            desc_v = to_json(v)
+        else:
+            desc_v = v
+        desc_list.append(f'- {k} = {desc_v}')
+    desc = '\n'.join(desc_list)
+    return desc
 
 
 def set_attr(obj, attr_dict):
@@ -393,3 +460,11 @@ def write_as_plain(data, data_path):
         open_file.write(str(data))
     open_file.close()
     return data_path
+
+
+def to_torch_batch(batch):
+    '''Mutate a batch (dict) to make its values from numpy into PyTorch Variable'''
+    float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
+    for k in float_data_names:
+        batch[k] = Variable(torch.from_numpy(batch[k]).float())
+    return batch
