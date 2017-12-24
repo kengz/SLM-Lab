@@ -15,18 +15,20 @@ class Random(Algorithm):
         '''Initializes the part of algorithm needing a body to exist first.'''
         pass
 
-    def body_act_discrete(self, body, body_state):
+    def body_act_discrete(self, body, state):
         '''Random discrete action'''
-        body_action = np.random.randint(body.action_dim)
-        return body_action
+        action = np.random.randint(body.action_dim)
+        return action
 
-    def body_act_continuous(self, body, body_state):
+    def body_act_continuous(self, body, state):
         '''Random continuous action'''
-        body_action = np.random.randn(body.action_dim)
-        return body_action
+        action = np.random.randn(body.action_dim)
+        return action
 
     def train(self):
-        return
+        loss = -1.
+        return loss
 
     def update(self):
-        return
+        explore_var = 1.
+        return explore_var

@@ -36,6 +36,7 @@ class MLPNet(nn.Module):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.hid_layers = []
+        # TODO more concise creation using nn.Sequential
         # TODO parametrize the activation function choice
         for i, layer in enumerate(hid_dim):
             in_D = in_dim if i == 0 else hid_dim[i - 1]
@@ -49,11 +50,10 @@ class MLPNet(nn.Module):
         self.num_hid_layers = len(self.hid_layers)
 
         # TODO cant we do like tf?: layers.fully_connected(out, num_outputs=hidden, activation_fn=None)
-        self.hid_layers_activation_fn = net_util.set_activation_fn(
+        self.hid_layers_activation_fn = net_util.get_activation_fn(
             self, hid_layers_activation)
-        self.optim = net_util.set_optim(self, optim_param)
-        self.loss_fn = net_util.set_loss_fn(self, loss_param)
-        print(self.hid_layers_activation_fn, self.optim, self.loss_fn)
+        self.optim = net_util.get_optim(self, optim_param)
+        self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
         self.init_params()

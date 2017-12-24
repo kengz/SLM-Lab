@@ -3,19 +3,15 @@ from abc import ABC, abstractmethod, abstractproperty
 
 class Memory(ABC):
     '''
-    Abstract class ancestor to all Algorithms,
-    specifies the necessary design blueprint for agent to work in Lab.
+    Abstract class ancestor to all Memories,
+    specifies the necessary design blueprint for agent body to work in Lab.
     Mostly, implement just the abstract methods and properties.
+    Memory is singleton to each body for modularity, and there is no gains to do multi-body memory now. Shall be constructed when body_space is built.
     '''
 
-    def __init__(self, agent):
-        self.agent = agent
+    def __init__(self, body):
+        self.body = body
         self.last_state = None
-
-    @abstractmethod
-    def post_body_init(self):
-        '''Initializes the part of memory needing a body to exist first.'''
-        raise NotImplementedError
 
     def reset_last_state(self, state):
         '''Episodic reset of memory, update last_state to the reset_state from env.'''

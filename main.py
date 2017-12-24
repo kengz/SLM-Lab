@@ -6,13 +6,6 @@ from slm_lab.spec import spec_util
 
 def main():
     # logger.set_level('DEBUG')
-    # spec = spec_util.get('base.json', 'base_case')
-    # spec = spec_util.get('base.json', 'multi_env')
-    # spec = spec_util.get('dqn.json', 'dqn_3dball_single')
-    # spec = spec_util.get('dqn.json', 'dqn_gridworld')
-    # spec = spec_util.get('dqn.json', 'dqn_acrobot')
-    # spec = spec_util.get('dqn.json', 'dqn_3dball_single')
-    # spec = spec_util.get('dqn.json', 'dqn_cartpole_3dball')
     # spec = spec_util.get('dqn.json', 'dqn_cartpole')
     # spec = spec_util.get('dqn.json', 'dqn_cartpole_cartpole')
     # spec = spec_util.get('dqn.json', 'dqn_acrobot_cartpole')
@@ -21,7 +14,8 @@ def main():
     # spec = spec_util.get('reinforce.json', 'reinforce_spec_template')
     # spec = spec_util.get('reinforce.json', 'reinforce_cartpole')
     # spec = spec_util.get('actor_critic.json', 'actor_critic_spec_template')
-    spec = spec_util.get('actor_critic.json', 'actor_critic_cartpole')
+    # spec = spec_util.get('actor_critic.json', 'actor_critic_cartpole')
+    spec = spec_util.get('dqn.json', 'dqn_2dball_cartpole')
     trial = Trial(spec)
     trial_data = trial.run()
 
