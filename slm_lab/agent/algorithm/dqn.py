@@ -79,25 +79,32 @@ class DQNBase(Algorithm):
     def compute_q_target_values(self, batch):
         q_sts = self.net.wrap_eval(batch['states'])
         # Use act_select network to select actions in next state
+        # TODO parametrize usage of eval or target_net
         # Depending on the algorithm this is either the current net or target net
         q_next_st_acts = self.online_net.wrap_eval(batch['next_states'])
         _val, q_next_acts = torch.max(q_next_st_acts, dim=1)
+        logger.debug(f'Q next action: {q_next_acts}')
         # Select q_next_st_maxs based on action selected in q_next_acts
         # Evaluate the action selection using the eval net
         # Depending on the algorithm this is either the current net or target net
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
+        logger.debug(f'Q next_states: {q_next_sts}')
+
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
         q_next_st_maxs = q_next_sts[idx, q_next_acts]
         q_next_st_maxs.unsqueeze_(1)
+        logger.debug(f'Q next_states max {q_next_st_maxs}')
         # Compute final q_target using reward and estimated best Q value from the next state if there is one
         # Make future reward 0 if the current state is done
         q_target_max = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), q_next_st_maxs)
+        logger.debug(f'Q targets max: {q_targets_max}')
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_sts
         # So that the loss for these actions is 0
         q_targets = torch.mul(q_target_max, batch['actions'].data) + \
             torch.mul(q_sts, (1 - batch['actions'].data))
+        logger.debug(f'Q targets: {q_targets}')
         return q_targets
 
     def sample(self):
@@ -140,29 +147,27 @@ class DQNBase(Algorithm):
         t = space_clock.get('t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
-                # print('Updating net by replacing')
+                logger.debug('Updating target_net by replacing')
                 self.target_net = deepcopy(self.net)
         elif self.update_type == 'polyak':
-            # print('Updating net by averaging')
+            logger.debug('Updating net by averaging')
             avg_params = self.polyak_weight * net_util.flatten_params(self.target_net) + \
                 (1 - self.polyak_weight) * net_util.flatten_params(self.net)
             self.target_net = net_util.load_params(self.target_net, avg_params)
         else:
-            logger.error('Unknown network update type.')
-            logger.error('Should be "replace" or "polyak". Exiting ...')
+            logger.error(
+                'Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
             sys.exit()
         return self.explore_var
 
 
 class DQN(DQNBase):
-    # TODO: Check this is working
     def __init__(self, agent):
         super(DQN, self).__init__(agent)
 
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         super(DQN, self).post_body_init()
-        # TODO rename this as action_net or policy_net
         self.online_net = self.target_net
         self.eval_net = self.target_net
         # Network update params
@@ -170,7 +175,7 @@ class DQN(DQNBase):
         self.update_type = net_spec['update_type']
         self.update_frequency = net_spec['update_frequency']
         self.polyak_weight = net_spec['polyak_weight']
-        print(
+        logger.debug(
             f'Network update: type: {self.update_type}, frequency: {self.update_frequency}, weight: {self.polyak_weight}')
 
     def update(self):
@@ -180,7 +185,6 @@ class DQN(DQNBase):
 
 
 class DoubleDQN(DQNBase):
-    # TODO: Check this is working
     def __init__(self, agent):
         super(DoubleDQN, self).__init__(agent)
 
@@ -202,8 +206,6 @@ class DoubleDQN(DQNBase):
 
 
 class MultitaskDQN(DQNBase):
-    # TODO: Check this is working
-    # TODO auto-architecture to handle multi-head, multi-tail nets
     def __init__(self, agent):
         super(MultitaskDQN, self).__init__(agent)
 
@@ -270,26 +272,24 @@ class MultitaskDQN(DQNBase):
             end_idx = start_idx + body.action_dim
             _val, q_next_act_b = torch.max(
                 q_next_st_acts[:, start_idx:end_idx], dim=1)
+            logger.debug(f'Q next action for body {body.aeb}: {q_next_act_b}')
             q_next_acts.append(q_next_act_b)
             start_idx = end_idx
-        # Shift next actions_2 so they have the right indices
         # TODO uhh what's this?
+        # Shift next actions_2 so they have the right indices
         # q_next_actions_2 = torch.add(q_next_actions_2, self.action_dims[0])
-        # print("Q next actions 1: {}".format(q_next_actions_1.size()))
-        # print("Q next actions 2: {}".format(q_next_actions_2.size()))
         # Select q_next_st_maxs based on action selected in q_next_acts
-        # TODO parametrize usage of eval or target_net
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
-        # print("Q next st vals: {}".format(q_next_sts.size()))
-        idx = torch.from_numpy(np.array(list(range(self.batch_size))))
+        logger.debug(f'Q next_states: {q_next_sts}')
 
+        idx = torch.from_numpy(np.array(list(range(self.batch_size))))
         q_next_st_maxs = []
         for q_next_act_b in q_next_acts:
             q_next_st_max_b = q_next_sts[idx, q_next_act_b]
             q_next_st_max_b.unsqueeze_(1)
+            logger.debug(f'Q next_states max {q_next_st_max_b}')
             q_next_st_maxs.append(q_next_st_max_b)
-        # print("Q next st vals max 1: {}".format(q_next_st_vals_max_1.size()))
-        # print("Q next st vals max 2: {}".format(q_next_st_vals_max_2.size()))
+
         # Compute final q_target using reward and estimated best Q value from the next state if there is one. Make future reward 0 if the current state is done. Do it individually first, then combine. Each individual target should automatically expand to the dimension of the relevant action space
         q_targets_maxs = []
         for b, batch_b in enumerate(batches):
@@ -300,30 +300,19 @@ class MultitaskDQN(DQNBase):
                     q_targets_max_b,
                     (q_targets_max_b.shape[0], self.action_dims[b])))
             q_targets_maxs.append(q_targets_max_b)
+            logger.debug(f'Q targets max: {q_targets_max_b}')
         q_targets_maxs = torch.cat(q_targets_maxs, dim=1)
-        # print("Q targets max 1: {}".format(q_targets_max_1))
-        # print("Q targets max 2: {}".format(q_targets_max_2))
-        # print("Q targets max 1: {}".format(q_targets_max_1.shape))
-        # print("Q targets max 2: {}".format(q_targets_max_2.shape))
-        # Concat to form full size targets
-        # print("Q targets max broadcast 1: {}".format(q_targets_max_1.size()))
-        # print("Q targets max broadcast 2: {}".format(q_targets_max_2.size()))
-        # print("Q targets max: {}".format(q_targets_maxs.size()))
-        # Also concat actions - each batch should have only two
-        # non zero dimensions
-        combined_actions = torch.cat(
-            [batch_b['actions'] for batch_b in batches], dim=1)
-        # print("Batch 1 actions: {}".format(batch_1['actions']))
-        # print("Batch 2 actions: {}".format(batch_2['actions']))
-        # print("Combined actions: {}".format(combined_actions))
-        # print("Combined actions size: {}".format(combined_actions.size()))
+        # Also concat actions - each batch should have only two non zero dimensions
+        actions = [batch_b['actions'] for batch_b in batches]
+        combined_actions = torch.cat(actions, dim=1)
+        logger.debug(f'actions per body: {actions}')
+        logger.debug(f'combined_actions: {combined_actions}')
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_sts
         # So that the loss for these actions is 0
         q_targets = torch.mul(q_targets_maxs, combined_actions.data) + \
             torch.mul(q_sts, (1 - combined_actions.data))
-        # print("Q targets size: {}".format(q_targets.size()))
-        # exit()
+        logger.debug(f'Q targets: {q_targets}')
         return q_targets
 
     def act(self, state_a):

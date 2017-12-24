@@ -87,7 +87,7 @@ def update_linear_decay(cls, clock):
     slope = rise / float(cls.explore_anneal_epi)
     cls.explore_var = max(
         slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
-    logger.debug(f'Explore var: {cls.explore_var}')
+    logger.debug(f'explore_var: {cls.explore_var}')
     return cls.explore_var
 
 
