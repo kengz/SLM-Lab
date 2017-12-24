@@ -8,6 +8,7 @@ import pytest
     ('base.json', 'base_case_openai'),
     ('base.json', 'multi_body'),
     ('base.json', 'multi_env'),
+    # ('base.json', 'multi_agent'),
     # ('base.json', 'multi_agent_multi_env'),
     ('dqn.json', 'dqn_spec_template'),
     ('dqn.json', 'dqn_test_case'),

@@ -108,12 +108,12 @@
       "net": {}
     }],
     "env": [{
-      "name": "3dball",
+      "name": "tennis",
       "max_timestep": 20
     }],
     "body": {
       "product": "outer",
-      "num": 6
+      "num": 32
     },
     "meta": {
       "max_episode": 3,
@@ -175,15 +175,15 @@
       "net": {}
     }],
     "env": [{
-      "name": "gridworld",
+      "name": "tennis",
       "max_timestep": 20
     }, {
-      "name": "3dball",
+      "name": "tennis",
       "max_timestep": 20
     }],
     "body": {
       "product": "outer",
-      "num": [1, 6]
+      "num": [32, 32]
     },
     "meta": {
       "max_episode": 3,
