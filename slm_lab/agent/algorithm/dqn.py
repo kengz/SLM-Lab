@@ -61,6 +61,7 @@ class DQNBase(Algorithm):
 
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
+        self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
         # explore_var is epsilon, tau or etc.
         self.explore_var_start = algorithm_spec['explore_var_start']
         self.explore_var_end = algorithm_spec['explore_var_end']
@@ -78,20 +79,17 @@ class DQNBase(Algorithm):
     def compute_q_target_values(self, batch):
         q_sts = self.net.wrap_eval(batch['states'])
         # Use act_select network to select actions in next state
-        # Depending on the algorithm this is either the current
-        # net or target net
+        # Depending on the algorithm this is either the current net or target net
         q_next_st_acts = self.online_net.wrap_eval(batch['next_states'])
         _val, q_next_acts = torch.max(q_next_st_acts, dim=1)
         # Select q_next_st_maxs based on action selected in q_next_acts
         # Evaluate the action selection using the eval net
-        # Depending on the algorithm this is either the current
-        # net or target net
+        # Depending on the algorithm this is either the current net or target net
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
         q_next_st_maxs = q_next_sts[idx, q_next_acts]
         q_next_st_maxs.unsqueeze_(1)
-        # Compute final q_target using reward and estimated
-        # best Q value from the next state if there is one
+        # Compute final q_target using reward and estimated best Q value from the next state if there is one
         # Make future reward 0 if the current state is done
         q_target_max = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), q_next_st_maxs)
@@ -110,10 +108,9 @@ class DQNBase(Algorithm):
         return batch
 
     def train(self):
-        # TODO docstring
         t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (t > self.training_min_timestep and t % self.training_frequency == 0):
-            # print('Training')
+            logger.debug(f'Training at t: {t}')
             total_loss = 0.0
             for _b in range(self.training_epoch):
                 batch = self.sample()
@@ -123,34 +120,24 @@ class DQNBase(Algorithm):
                     y = Variable(q_targets)
                     loss = self.net.training_step(batch['states'], y)
                     batch_loss += loss.data[0]
-                    # print(f'loss {loss.data[0]}')
                 batch_loss /= self.training_iters_per_batch
-                # print(f'batch_loss {batch_loss}')
                 total_loss += batch_loss
-            # print(f'total_loss {total_loss}')
+            logger.debug(f'total_loss {total_loss}')
             return total_loss
         else:
-            # print('NOT training')
+            logger.debug('NOT training')
             return None
 
     def body_act_discrete(self, body, state):
-        # TODO can handle identical bodies now; to use body_net for specific body.
         return self.action_policy(body, state, self.net, self.explore_var)
 
     def update(self):
-        t = util.s_get(self, 'aeb_space.clock').get('total_t')
-        # if t % 100 == 0:
-        # print(f'Total time step: {t}')
-        '''Update epsilon or boltzmann for policy after net training'''
-        # TODO refactor these info algorithm_util
-        epi = util.s_get(self, 'aeb_space.clock').get('e')
-        rise = self.explore_var_end - self.explore_var_start
-        slope = rise / float(self.explore_anneal_epi)
-        self.explore_var = max(
-            slope * (epi - 1) + self.explore_var_start, self.explore_var_end)
-        # print(f'Explore var: {self.explore_var}')
+        space_clock = util.s_get(self, 'aeb_space.clock')
+        # update explore_var
+        self.action_policy_update(self, space_clock)
 
-        '''Update target net with current net'''
+        # Update target net with current net
+        t = space_clock.get('t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
                 # print('Updating net by replacing')
