@@ -136,10 +136,10 @@ class OpenAIEnv:
         self.u_env.close()
 
 
-class Env:
+class UnityEnv:
     '''
     Class for all Envs.
-    Standardizes the Env design to work in Lab.
+    Standardizes the UnityEnv design to work in Lab.
     Access Agents properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
@@ -246,7 +246,7 @@ class EnvSpace:
             try:
                 env = OpenAIEnv(env_spec, self, e)
             except gym.error.Error:
-                env = Env(env_spec, self, e)
+                env = UnityEnv(env_spec, self, e)
             self.envs.append(env)
         self.max_timestep = np.amax([env.max_timestep for env in self.envs])
 
