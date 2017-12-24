@@ -151,7 +151,7 @@ class Env:
         self.e = e
         self.body_e = None
         self.flat_nonan_body_e = None  # flatten_nonan version of bodies
-        worker_id = int(f'{os.getpid()}{self.e}'[-4:])
+        worker_id = int(f'{os.getpid()}{self.e+int(_.unique_id())}'[-4:])
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name), worker_id=worker_id)
         # TODO experiment to find out optimal benchmarking max_timestep, set
