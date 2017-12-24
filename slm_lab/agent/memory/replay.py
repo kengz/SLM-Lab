@@ -57,8 +57,7 @@ class Replay(Memory):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
-        # spread numbers in numpy since direct list setting is impossible
-        self.states[self.head, :] = state[:]
+        self.states[self.head] = state
         # make action into one_hot
         if _.is_iterable(action):
             # non-singular action
@@ -67,7 +66,7 @@ class Replay(Memory):
         else:
             self.actions[self.head][action] = 1
         self.rewards[self.head] = reward
-        self.next_states[self.head, :] = next_state[:]
+        self.next_states[self.head] = next_state
         self.dones[self.head] = done
         self.priorities[self.head] = priority
         # Actually occupied size of memory
@@ -91,14 +90,15 @@ class Replay(Memory):
         # TODO if latest, return unused. implement
         if latest:
             raise NotImplementedError
-        self.batch_idxs = self.sample_idxs(batch_size)
+        batch_idxs = self.sample_idxs(batch_size)
+        self.batch_idxs = batch_idxs
         batch = {}
-        batch['states'] = self.states[self.batch_idxs]
-        batch['actions'] = self.actions[self.batch_idxs]
-        batch['rewards'] = self.rewards[self.batch_idxs]
-        batch['next_states'] = self.next_states[self.batch_idxs]
-        batch['dones'] = self.dones[self.batch_idxs]
-        batch['priorities'] = self.priorities[self.batch_idxs]
+        batch['states'] = self.states[batch_idxs]
+        batch['actions'] = self.actions[batch_idxs]
+        batch['rewards'] = self.rewards[batch_idxs]
+        batch['next_states'] = self.next_states[batch_idxs]
+        batch['dones'] = self.dones[batch_idxs]
+        batch['priorities'] = self.priorities[batch_idxs]
         return batch
 
     def sample_idxs(self, batch_size):

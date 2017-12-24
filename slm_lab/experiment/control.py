@@ -24,7 +24,6 @@ class Session:
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
         self.data = pd.DataFrame()
-        # TODO put resolved space from spec into monitor.info_space
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
@@ -73,17 +72,14 @@ class Session:
                 loss_list.append(loss)
             explore_var_list.append(explore_var)
             # TODO hack for a reliable done, otherwise all needs to be coincidental
-            # if bool(done_space):
-            if done_space.get(a=0)[(0,0)]:
-                # TODO refactor: set all to terminate on master termination. Also use the env with longest timestep to prevent being terminated by fast-running env
+            if done_space.get(a=0)[(0, 0)]:
+                # TODO make all run independently with relative speed
                 done_space.data.fill(1)
                 break
         # TODO monitor record all data spaces, including body with body.clock. cuz all data spaces have history
         # split per body, use done as delim (maybe done need body clock now), split, sum each chunk
         mean_loss = np.nanmean(loss_list)
         mean_explore_var = np.nanmean(explore_var_list)
-        # print(self.aeb_space.data_spaces['reward'])
-        # print(self.aeb_space.data_spaces['reward'].data_history)
         body_df_dict = get_body_df_dict(self.aeb_space)
         # logger.info(
         #     f'epi {self.aeb_space.clock.get("e")}, total_rewards {total_rewards}')
