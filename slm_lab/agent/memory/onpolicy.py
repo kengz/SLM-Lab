@@ -89,8 +89,6 @@ class OnPolicyReplay(Replay):
                 self.agent.algorithm.to_train = 1
         # Track memory size and num experiences
         self.true_size += 1
-        if self.true_size > 1000:
-            logger.warn(f'Memory size exceeded {true_size}')
         self.total_experiences += 1
 
     def sample(self):
