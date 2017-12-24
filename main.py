@@ -8,6 +8,7 @@ def main():
     # logger.set_level('DEBUG')
     # spec = spec_util.get('dqn.json', 'dqn_cartpole')
     # spec = spec_util.get('dqn.json', 'dqn_cartpole_cartpole')
+    # spec = spec_util.get('dqn.json', 'dqn_cartpole_cartpole_cartpole')
     # spec = spec_util.get('dqn.json', 'dqn_acrobot_cartpole')
     spec = spec_util.get('dqn.json', 'dqn_2dball_cartpole')
     trial = Trial(spec)
