@@ -47,6 +47,7 @@ class Agent:
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         self.flat_nonan_body_a = util.flatten_nonan(self.body_a)
         self.algorithm.post_body_init()
+        logger.info(util.self_desc(self))
 
     def reset(self, state_a):
         '''Do agent reset per episode, such as memory pointer'''
@@ -85,11 +86,12 @@ class AgentSpace:
 
     def __init__(self, spec, aeb_space):
         self.spec = spec
+        self.agent_spec = spec['agent']
         self.aeb_space = aeb_space
         self.aeb_shape = aeb_space.aeb_shape
         aeb_space.agent_space = self
         self.agents = [
-            Agent(agent_spec, self, a) for a, agent_spec in enumerate(spec['agent'])]
+            Agent(agent_spec, self, a) for a, agent_spec in enumerate(self.agent_spec)]
 
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''

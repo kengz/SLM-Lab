@@ -20,11 +20,9 @@ class DedentFormatter(logging.Formatter):
 
 
 os.makedirs(os.path.dirname(LOG_FILEPATH), exist_ok=True)
-dedent_formatter = DedentFormatter(LOG_FORMAT)
 color_formatter = colorlog.ColoredFormatter(
     '%(log_color)s[%(asctime)s %(levelname)s]%(reset)s %(message)s')
 fh = logging.FileHandler(LOG_FILEPATH)
-fh.setFormatter(dedent_formatter)
 sh = logging.StreamHandler(sys.stdout)
 sh.setFormatter(color_formatter)
 

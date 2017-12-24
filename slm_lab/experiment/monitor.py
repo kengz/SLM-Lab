@@ -127,6 +127,8 @@ class DataSpace:
         self.data_history = []  # index = clock.absolute_t
 
     def __str__(self):
+        if self.data is None:
+            return '<None>'
         s = '['
         for a, a_arr in enumerate(self.data):
             s += f'\n  a:{a} ['

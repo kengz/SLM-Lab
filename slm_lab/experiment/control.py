@@ -27,6 +27,7 @@ class Session:
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
+        logger.info(util.self_desc(self))
         self.aeb_space.init_body_space()
         self.aeb_space.post_body_init()
 

@@ -77,6 +77,7 @@ class OpenAIEnv:
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
+        logger.info(util.self_desc(self))
 
     def is_discrete(self, a):
         '''Check if an agent (brain) is subject to discrete actions'''
@@ -172,6 +173,7 @@ class Env:
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
         self.check_u_brain_to_agent()
+        logger.info(util.self_desc(self))
 
     def get_brain(self, a):
         '''Get the unity-equivalent of agent, i.e. brain, to access its info'''
@@ -235,10 +237,11 @@ class EnvSpace:
 
     def __init__(self, spec, aeb_space):
         self.spec = spec
+        self.env_spec = spec['env']
         self.aeb_space = aeb_space
         aeb_space.env_space = self
         self.envs = []
-        for e, env_spec in enumerate(spec['env']):
+        for e, env_spec in enumerate(self.env_spec):
             env_spec = _.merge(spec['meta'].copy(), env_spec)
             try:
                 env = OpenAIEnv(env_spec, self, e)

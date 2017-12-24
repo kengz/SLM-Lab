@@ -74,7 +74,6 @@ class DQNBase(Algorithm):
         self.training_epoch = algorithm_spec['training_epoch']
         self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
         # TODO standardize agent and env print self
-        logger.info(str(self.net))
 
     def compute_q_target_values(self, batch):
         q_sts = self.net.wrap_eval(batch['states'])
@@ -178,6 +177,7 @@ class DQN(DQNBase):
         self.polyak_weight = net_spec['polyak_weight']
         logger.debug(
             f'Network update: type: {self.update_type}, frequency: {self.update_frequency}, weight: {self.polyak_weight}')
+        logger.info(util.self_desc(self))
 
     def update(self):
         super(DQN, self).update()
@@ -199,6 +199,7 @@ class DoubleDQN(DQNBase):
         self.update_type = net_spec['update_type']
         self.update_frequency = net_spec['update_frequency']
         self.polyak_weight = net_spec['polyak_weight']
+        logger.info(util.self_desc(self))
 
     def update(self):
         super(DoubleDQN, self).update()
@@ -219,10 +220,6 @@ class MultitaskDQN(DQNBase):
             body.action_dim for body in self.agent.flat_nonan_body_a]
         self.total_state_dim = sum(self.state_dims)
         self.total_action_dim = sum(self.action_dims)
-        logger.info(
-            f'multitask state_dims: {self.state_dims}, sum {self.total_state_dim}')
-        logger.info(
-            f'multitask action_dims: {self.action_dims}, sum {self.total_action_dim}')
         net_spec = self.agent.spec['net']
         self.net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim,
@@ -230,7 +227,6 @@ class MultitaskDQN(DQNBase):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        logger.info(str(self.net))
         self.target_net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -239,6 +235,7 @@ class MultitaskDQN(DQNBase):
         )
         self.online_net = self.net
         self.eval_net = self.net
+        logger.info(util.self_desc(self))
 
     def sample(self):
         # NOTE the purpose of multi-body is to parallelize and get more batch_sizes
