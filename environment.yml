@@ -11,7 +11,6 @@ dependencies:
 - ca-certificates=2017.7.27.1=0
 - certifi=2017.7.27.1=py36_0
 - cffi=1.10.0=py36_0
-- coloredlogs=7.1=py36_0
 - colorlog=3.1.0=py36_0
 - coverage=4.4.1=py36_0
 - cycler=0.10.0=py36_0
