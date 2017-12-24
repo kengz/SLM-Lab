@@ -6,7 +6,7 @@ import pydash as _
 
 class Replay(Memory):
     '''
-    Simple storage for storing agent experiences and sampling from them for agent training
+    Stores agent experiences and samples from them for agent training
 
     An experience consists of
         - state: representation of a state
@@ -35,7 +35,9 @@ class Replay(Memory):
         self.max_size = self.body.agent.spec['memory']['max_size']
         self.state_dim = self.body.state_dim
         self.action_dim = self.body.action_dim
+        self.reset()
 
+    def reset(self):
         self.states = np.zeros((self.max_size, self.state_dim))
         self.actions = np.zeros((self.max_size, self.action_dim))
         self.rewards = np.zeros((self.max_size, 1))

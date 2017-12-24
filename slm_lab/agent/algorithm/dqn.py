@@ -75,6 +75,9 @@ class DQNBase(Algorithm):
         self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
         # TODO standardize agent and env print self
 
+    def body_act_discrete(self, body, state):
+        return self.action_policy(body, state, self.net, self.explore_var)
+
     def compute_q_target_values(self, batch):
         q_sts = self.net.wrap_eval(batch['states'])
         # Use act_select network to select actions in next state
@@ -134,9 +137,6 @@ class DQNBase(Algorithm):
         else:
             logger.debug('NOT training')
             return None
-
-    def body_act_discrete(self, body, state):
-        return self.action_policy(body, state, self.net, self.explore_var)
 
     def update(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
@@ -237,6 +237,12 @@ class MultitaskDQN(DQNBase):
         self.eval_net = self.net
         logger.info(util.self_desc(self))
 
+    def act(self, state_a):
+        '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
+        flat_nonan_action_a = self.action_policy(
+            self.agent.flat_nonan_body_a, state_a, self.net, self.explore_var)
+        return super(MultitaskDQN, self).flat_nonan_to_action_a(flat_nonan_action_a)
+
     def sample(self):
         # NOTE the purpose of multi-body is to parallelize and get more batch_sizes
         batches = [body.memory.sample(self.batch_size)
@@ -270,7 +276,8 @@ class MultitaskDQN(DQNBase):
             end_idx = start_idx + body.action_dim
             _val, q_next_act_b = torch.max(
                 q_next_st_acts[:, start_idx:end_idx], dim=1)
-            logger.debug(f'Q next action for body {body.aeb}: {q_next_act_b.size()}')
+            logger.debug(
+                f'Q next action for body {body.aeb}: {q_next_act_b.size()}')
             q_next_acts.append(q_next_act_b)
             start_idx = end_idx
         # TODO uhh what's this?
@@ -311,9 +318,3 @@ class MultitaskDQN(DQNBase):
             torch.mul(q_sts, (1 - combined_actions.data))
         logger.debug(f'Q targets: {q_targets.size()}')
         return q_targets
-
-    def act(self, state_a):
-        '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
-        flat_nonan_action_a = self.action_policy(
-            self.agent.flat_nonan_body_a, state_a, self.net, self.explore_var)
-        return super(MultitaskDQN, self).flat_nonan_to_action_a(flat_nonan_action_a)

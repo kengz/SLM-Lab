@@ -1,0 +1,120 @@
+from collections import Iterable
+from slm_lab.agent.memory.replay import Replay
+from slm_lab.lib import logger, util
+import numpy as np
+
+
+class OnPolicyReplay(Replay):
+    '''
+    Stores agent experiences and returns them in a batch for agent training.
+
+    An experience consists of
+        - state: representation of a state
+        - action: action taken.
+                - One hot encoding (discrete)
+                - Real numbers representing mean on action dist (continuous)
+        - reward: scalar value
+        - next state: representation of next state (should be same as state)
+        - done: 0 / 1 representing if the current state is the last in an episode
+        - priority (optional): scalar value, unnormalized
+
+    The memory does not have a fixed size. Instead the memory stores data from N episodes, where N is determined by the user. After N episodes, all of the examples are returned to the agent to learn from.
+
+    When the examples are returned to the agent, the memory is cleared to prevent the agent from learning from off policy experiences. This memory is intended for on policy algorithms.
+
+    Differences vs. Replay memory:
+        - Experiences are nested into episodes. In Replay experiences are flat, and episode is not tracked
+        - The entire memory constitues a batch. In Replay batches are sampled from memory.
+        - The memory is cleared automatically when a batch is given to the agent.
+    '''
+
+    def __init__(self, body):
+        # Don't want total experiences reset when memory is
+        self.total_experiences = 0
+        self.state_dim = self.body.state_dim
+        self.action_dim = self.body.action_dim
+        self.reset()
+
+    def reset(self):
+        '''reset memory'''
+        self.states = []
+        self.actions = []
+        self.rewards = []
+        self.next_states = []
+        self.dones = []
+        self.priorities = []
+        self.current_episode = {
+            'states': [],
+            'actions': [],
+            'rewards': [],
+            'next_states': [],
+            'dones': [],
+            'priorities': []}
+        self.most_recent = [None, None, None, None, None, None]
+        self.true_size = 0  # Size of the current memory
+
+    def add_experience(self, state, action, reward, next_state, done, priority=1):
+        '''Interface helper method for update() to add experience to memory'''
+        self.current_episode['states'].append(state)
+        self.current_episode['actions'].append(action)
+        self.current_episode['rewards'].append(reward)
+        self.current_episode['next_states'].append(next_state)
+        self.current_episode['dones'].append(done)
+        self.current_episode['priorities'].append(priority)
+        # Set most recent
+        self.most_recent[0] = state
+        self.most_recent[1] = action
+        self.most_recent[2] = reward
+        self.most_recent[3] = next_state
+        self.most_recent[4] = done
+        self.most_recent[5] = priority
+        # If episode ended, add to memory and clear current_episode
+        # print("Done: {}".format(done))
+        if done:
+            self.states.append(self.current_episode['states'])
+            self.actions.append(self.current_episode['actions'])
+            self.rewards.append(self.current_episode['rewards'])
+            self.next_states.append(self.current_episode['next_states'])
+            self.dones.append(self.current_episode['dones'])
+            self.priorities.append(self.current_episode['priorities'])
+            self.current_episode = {
+                'states': [],
+                'actions': [],
+                'rewards': [],
+                'next_states': [],
+                'dones': [],
+                'priorities': []}
+            # If agent has collected the desired number of episodes, it is ready to train
+            if len(self.states) == self.agent.algorithm.num_epi_before_training:
+                self.agent.algorithm.to_train = 1
+        # Track memory size and num experiences
+        self.true_size += 1
+        self.total_experiences += 1
+
+    def sample(self):
+        '''
+        Returns all the examples from memory in a single batch
+        Batch is stored as a dict.
+        Keys are the names of the different elements of an experience. Values are nested lists of the corresponding sampled elements. Elements are nested into episodes
+        e.g.
+            batch = {'states'      : [[s_epi1],[s_epi2],...],
+                     'actions'     : [[a_epi1],[a_epi2],...],
+                     'rewards'     : [[r_epi1],[r_epi2],...],
+                     'next_states' : [[ns_epi1],[ns_epi2],...],
+                     'dones'       : [[d_epi1],[d_epi2],...],
+                     'priorities'  : [[p_epi1],[p_epi2],...]}
+        '''
+        batch = {}
+        batch['states'] = self.states
+        batch['actions'] = self.actions
+        batch['rewards'] = self.rewards
+        batch['next_states'] = self.next_states
+        batch['dones'] = self.dones
+        batch['priorities'] = self.priorities
+        # Reset memory
+        self.reset()
+        return batch
+
+    def update_priorities(self, priorities):
+        ''' Not relevant for this memory'''
+        pass

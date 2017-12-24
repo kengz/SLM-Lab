@@ -15,7 +15,6 @@ class Memory(ABC):
 
     def reset_last_state(self, state):
         '''Episodic reset of memory, update last_state to the reset_state from env.'''
-        # TODO this is per body, need to generalize
         self.last_state = state
 
     @abstractmethod

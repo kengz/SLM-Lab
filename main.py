@@ -9,7 +9,9 @@ def main():
     # spec = spec_util.get('dqn.json', 'dqn_cartpole')
     # spec = spec_util.get('dqn.json', 'dqn_cartpole_cartpole')
     # spec = spec_util.get('dqn.json', 'dqn_acrobot_cartpole')
-    spec = spec_util.get('dqn.json', 'dqn_2dball_cartpole')
+    # spec = spec_util.get('dqn.json', 'dqn_2dball_cartpole')
+    # spec = spec_util.get('reinforce.json', 'reinforce_spec_template')
+    spec = spec_util.get('reinforce.json', 'reinforce_cartpole')
     trial = Trial(spec)
     trial_data = trial.run()
 
