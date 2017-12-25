@@ -128,7 +128,7 @@ class ConvNet(MLPNet):
         Biases are all set to 0.01
         '''
         biasinit = 0.01
-        layers = self.conv_layers + self.flat   _layers
+        layers = self.conv_layers + self.flat_layers
         for layer in layers:
             classname = layer.__class__.__name__
             if classname.find('Linear') != -1 or classname.find('Conv') != -1:
