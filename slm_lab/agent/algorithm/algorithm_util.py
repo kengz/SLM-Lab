@@ -82,7 +82,7 @@ def act_with_gaussian(body, state, net, stddev):
 
 def update_linear_decay(cls, clock):
     t = clock.get('total_t')
-    epi = clock.get('e')
+    epi = clock.get('epi')
     rise = cls.explore_var_end - cls.explore_var_start
     slope = rise / float(cls.explore_anneal_epi)
     cls.explore_var = max(

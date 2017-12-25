@@ -41,109 +41,29 @@ class Session:
         self.env_space.close()
         logger.info('Session done, closing.')
 
-    def run_episode(self):
+    def run_all_episodes(self):
         '''
-        Main RL loop, runs a single episode over timesteps, generalized to spaces from singleton.
-        Returns episode_data space.
+        Run all episodes, where each env can step and reset at its own clock_speed and timeline. Will terminate when all envs done running max_episode.
         '''
-        self.aeb_space.clock.tick('e')
-        logger.info(f'Running episode {self.aeb_space.clock.get("e")}')
-        # TODO generalize and make state to include observables
         state_space = self.env_space.reset()
         self.agent_space.reset(state_space)
-        # RL steps for SARS
-        loss_list = []
-        explore_var_list = []
-        for t in range(self.env_space.max_timestep):
-            self.aeb_space.clock.tick('t')
-            # TODO tick body clock
-            # TODO common refinement of timestep
-            # TODO ability to train more on harder environments, or specify update per timestep per body, ratio of data u use to train. something like train_per_new_mem
+        while True:
+            end_session = self.aeb_space.tick_clocks()
+            if end_session:
+                break
+
             action_space = self.agent_space.act(state_space)
-            logger.debug(f'action_space {action_space}')
             (reward_space, state_space,
              done_space) = self.env_space.step(action_space)
-            logger.debug(
-                f'reward_space: {reward_space}, state_space: {state_space}, done_space: {done_space}')
-            # completes cycle of full info for agent_space
-            # TODO tmp return, to unify with monitor auto-fetch later
-            loss, explore_var = self.agent_space.update(
+            self.agent_space.update(
                 action_space, reward_space, state_space, done_space)
-            if loss is not None:
-                loss_list.append(loss)
-            explore_var_list.append(explore_var)
-            # TODO hack for a reliable done, otherwise all needs to be coincidental
-            if done_space.get(a=0)[(0, 0)]:
-                # TODO make all run independently with relative speed
-                done_space.data.fill(1)
-                break
-        # TODO monitor record all data spaces, including body with body.clock. cuz all data spaces have history
-        # split per body, use done as delim (maybe done need body clock now), split, sum each chunk
-        mean_loss = np.nanmean(loss_list)
-        mean_explore_var = np.nanmean(explore_var_list)
-        body_df_dict = get_body_df_dict(self.aeb_space)
-        # logger.info(
-        #     f'epi {self.aeb_space.clock.get("e")}, total_rewards {total_rewards}')
-        # TODO compose episode data properly with monitor
-        episode_data = {
-            'mean_loss': mean_loss,
-            'mean_explore_var': mean_explore_var,
-            'body_df_dict': body_df_dict,
-        }
-        # episode_data = pd.DataFrame(
-        #     episode_data_list, columns=['rewards', 'total_rewards', 'loss', 'explore_var'])
-        # episode_data = {}
+        # TODO collect data from different clock speed
+        episode_data = {}
         return episode_data
 
     def run(self):
-        body_df_dict = None
-        epi_loss_list = []
-        epi_explore_var_list = []
-        for e in range(_.get(self.spec, 'meta.max_episode')):
-            logger.debug(f'episode {e}')
-            episode_data = self.run_episode()
-            epi_loss_list.append(episode_data['mean_loss'])
-            epi_explore_var_list.append(episode_data['mean_explore_var'])
-            # collected over absolute time, so just get at epi end
-            body_df_dict = episode_data['body_df_dict']
-        # TODO tmp hack. fix with monitor data later
-        for k, body_df in body_df_dict.items():
-            done_list = body_df['done'].tolist()
-            # fix offset in cumsum (True entry belongs to the chunk before it)
-            done_list.insert(0, False)
-            done_list.pop()
-            body_df['e'] = pd.Series(done_list).cumsum()
-            agg_body_df = body_df[['e', 'reward']].groupby('e').agg('sum')
-            body_df_dict[k] = agg_body_df
-
-        loss_df = pd.DataFrame(
-            {'loss': epi_loss_list, 'explore_var': epi_explore_var_list})
-
-        fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
-
-        loss_fig = viz.plot_line(
-            loss_df, ['loss'], y2_col=['explore_var'], draw=False)
-        fig.append_trace(loss_fig.data[0], 1, 1)
-        fig.append_trace(loss_fig.data[1], 2, 1)
-
-        for k, body_df in body_df_dict.items():
-            body_fig = viz.plot_line(
-                body_df, 'reward', 'e', legend_name=str(k), draw=False)
-            fig.append_trace(body_fig.data[0], 3, 1)
-
-        fig.layout['yaxis1'].update(loss_fig.layout['yaxis'])
-        fig.layout['yaxis1'].update(domain=[0.55, 1])
-        fig.layout['yaxis2'].update(loss_fig.layout['yaxis2'])
-        fig.layout['yaxis2'].update(showgrid=False)
-
-        fig.layout['yaxis3'].update(body_fig.layout['yaxis'])
-        fig.layout['yaxis3'].update(domain=[0, 0.45])
-        fig.layout.update(_.pick(loss_fig.layout, ['legend']))
-        fig.layout.update(_.pick(body_fig.layout, ['legend']))
-        fig.layout.update(title=self.spec['name'], width=500, height=600)
-        viz.plot(fig)
-        viz.save_image(fig)
-
+        self.run_all_episodes()
+        # TODO resore viz
         self.close()
         # TODO session data checker method
         return self.data
