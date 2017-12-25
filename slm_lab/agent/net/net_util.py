@@ -1,7 +1,9 @@
 from functools import partial
 import pydash as _
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
+from slm_lab.lib import logger
 
 
 def flatten_params(net):
@@ -9,11 +11,19 @@ def flatten_params(net):
     return torch.cat([param.data.view(-1) for param in net.parameters()], 0)
 
 
-def get_activation_fn(cls, activation):
-    '''Helper to parse activation function param and construct activation_fn for net'''
-    activation = activation or 'relu'
-    activation_fn = getattr(F, activation)
-    return activation_fn
+def get_activation_fn(activation):
+    '''Helper to generate activation function layers for net'''
+    layer = None
+    if activation == 'sigmoid':
+        layer = nn.Sigmoid()
+    elif activation == 'lrelu':
+        layer = nn.LeakyReLU(negative_slope=0.05)
+    elif activation == 'tanh':
+        layer = nn.Tanh()
+    else:
+        logger.debug("No activation fn or unrecognised activation fn")
+        layer = nn.ReLU()
+    return layer
 
 
 def get_loss_fn(cls, loss_param):

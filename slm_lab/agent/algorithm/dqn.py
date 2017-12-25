@@ -42,6 +42,7 @@ class DQNBase(Algorithm):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
+        print(self.net)
         self.target_net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
