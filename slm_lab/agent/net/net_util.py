@@ -20,6 +20,8 @@ def get_activation_fn(activation):
         layer = nn.LeakyReLU(negative_slope=0.05)
     elif activation == 'tanh':
         layer = nn.Tanh()
+    elif activation == 'relu':
+        layer = nn.ReLU()
     else:
         logger.debug("No activation fn or unrecognised activation fn")
         layer = nn.ReLU()
