@@ -31,6 +31,7 @@ class MLPNet(nn.Module):
         net = MLPNet(1000, [512, 256, 128], 10, 'relu', optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'}, clamp_grad=True, clamp_grad_val2.0)
         '''
         super(MLPNet, self).__init__()
+        # Create net and initialize params
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.layers = []
@@ -43,6 +44,7 @@ class MLPNet(nn.Module):
         self.layers += [nn.Linear(in_D, out_dim)]
         self.model = nn.Sequential(*self.layers)
         self.init_params()
+        # Init other net variables
         self.optim = net_util.get_optim(self, optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
