@@ -28,7 +28,7 @@ class MLPNet(nn.Module):
         loss_param: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
         @example:
-        net = MLPNet(1000, [512, 256, 128], 10, 'relu', optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'}, clamp_grad=True, clamp_grad_val2.0)
+        net = MLPNet(1000, [512, 256, 128], 10, hid_layers_activation='relu', optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'}, clamp_grad=True, clamp_grad_val2.0)
         '''
         super(MLPNet, self).__init__()
         # Create net and initialize params
