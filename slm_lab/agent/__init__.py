@@ -108,9 +108,11 @@ class AgentSpace:
 
     def reset(self, state_space):
         logger.debug('AgentSpace.reset')
+        _action_v = self.aeb_space.data_spaces['action'].init_data_v()
         for agent in self.agents:
             state_a = state_space.get(a=agent.a)
             agent.reset(state_a)
+        _action_space = self.aeb_space.add('action', _action_v)
 
     def act(self, state_space):
         action_v = self.aeb_space.data_spaces['action'].init_data_v()
