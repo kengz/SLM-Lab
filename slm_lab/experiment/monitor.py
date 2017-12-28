@@ -41,37 +41,34 @@ COOR_AXES_ORDER = {
 }
 COOR_DIM = len(COOR_AXES)
 AGENT_DATA_NAMES = ['action']
-ENV_DATA_NAMES = ['state', 'reward', 'done']
-
-
-def get_body_df_dict(aeb_space):
-    # TODO rewrite this whole shit
-    body_df_dict = {}
-    reward_h_v = np.stack(
-        aeb_space.data_spaces['reward'].data_history, axis=3)
-    done_h_v = np.stack(
-        aeb_space.data_spaces['done'].data_history, axis=3)
-    for aeb, body in util.ndenumerate_nonan(aeb_space.body_space.data):
-        body.reward_h = reward_h_v[aeb]
-        body.done_h = done_h_v[aeb]
-        df = pd.DataFrame({'reward': body.reward_h, 'done': body.done_h})
-        body_df_dict[aeb] = df
-    return body_df_dict
+ENV_DATA_NAMES = ['reward', 'state', 'done']
 
 
 class Clock:
-    def __init__(self):
+    '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0, but epi begins at 1, env step begins at 1.'''
+
+    def __init__(self, clock_speed=1):
+        self.clock_speed = int(clock_speed)
+        self.ticks = 0
         self.t = 0
         self.total_t = 0
-        self.e = 0
+        self.epi = 1
+
+    def to_step(self):
+        '''Step signal from clock_speed. Step only if the base unit of time in this clock has moved. Used to control if env of different clock_speed should step()'''
+        return self.ticks % self.clock_speed == 0
 
     def tick(self, unit='t'):
         if unit == 't':  # timestep
-            self.t += 1
-            self.total_t += 1
-        elif unit == 'e':  # episode, reset timestep
+            if self.to_step():
+                self.t += 1
+                self.total_t += 1
+            else:
+                pass
+            self.ticks += 1
+        elif unit == 'epi':  # episode, reset timestep
+            self.epi += 1
             self.t = 0
-            self.e += 1
         else:
             raise KeyError
 
@@ -90,12 +87,12 @@ class Body:
         self.agent = agent
         self.env = env
         self.observable_dim = self.env.get_observable_dim(self.a)
+        # TODO generalize and make state_space to include observables
         # TODO use tuples for state_dim for pixel-based in the future, generalize all and call as shape
         self.state_dim = self.observable_dim['state']
         self.action_dim = self.env.get_action_dim(self.a)
         self.is_discrete = self.env.is_discrete(self.a)
 
-        self.clock = Clock()
         MemoryClass = getattr(memory, _.get(self.agent.spec, 'memory.name'))
         self.memory = MemoryClass(self)
 
@@ -120,7 +117,7 @@ class DataSpace:
         self.data_shape = self.swap_aeb_shape if self.to_swap else self.aeb_shape
         self.data_type = object if self.data_name in [
             'state', 'action'] else np.float32
-        self.data = None  # standard data in aeb shape
+        self.data = None  # standard data in aeb_shape
         self.swap_data = None
         # TODO shove history to DB
         # TODO keep time/episode data too, will be cheap
@@ -142,7 +139,7 @@ class DataSpace:
         return s
 
     def __bool__(self):
-        return bool(np.all(self.data))
+        return util.gen_all(self.data)
 
     def init_data_v(self):
         '''Method to init a data volume filled with np.nan'''
@@ -191,7 +188,7 @@ class AEBSpace:
         # TODO shove
         # self.info_space = info_space
         self.spec = spec
-        self.clock = Clock()
+        self.clock = None  # the finest common refinement as space clock
         self.agent_space = None
         self.env_space = None
         self.body_space = None
@@ -236,6 +233,7 @@ class AEBSpace:
 
     def post_body_init(self):
         '''Run init for agent, env components that need bodies to exist first, e.g. memory or architecture.'''
+        self.clock = self.env_space.get_base_clock()
         logger.info(util.self_desc(self))
         self.agent_space.post_body_init()
         self.env_space.post_body_init()
@@ -250,6 +248,25 @@ class AEBSpace:
         data_space = self.data_spaces[data_name]
         data_space.add(data)
         return data_space
+
+    def tick_clocks(self):
+        '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''
+        done_space = self.data_spaces['done']
+        body_end_sessions = []
+        for env in self.env_space.envs:
+            clock = env.clock
+            done = env.done or clock.get('t') > env.max_timestep
+            if done:
+                logger.info(
+                    f'Done: env {env.e} epi {clock.get("epi")}, t {clock.get("t")}')
+                clock.tick('epi')
+            else:
+                clock.tick('t')
+            env_end_session = clock.get('epi') > _.get(
+                self.spec, 'meta.max_episode')
+            body_end_sessions.append(env_end_session)
+        end_session = all(body_end_sessions)
+        return end_session
 
 
 # TODO put AEBSpace into InfoSpace, propagate method usage, shove into DB
