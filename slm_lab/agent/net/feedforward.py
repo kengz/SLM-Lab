@@ -157,10 +157,13 @@ class MultiMLPNet(nn.Module):
         self.shared_layers = []
         self.body = self.make_shared_body(self.state_out_concat, hid_dim, hid_layers_activation)
         self.action_heads_layers = []
-        self.action_heads_models = self.make_action_heads(self.out_dim, hid_layers_activation)
+        in_D = hid_dim[-1] if len(hid_dim) > 0 else self.state_out_concat
+        self.action_heads_models = self.make_action_heads(in_D, self.out_dim, hid_layers_activation)
         self.init_params()
         # Init other net variables
-        self.optim = net_util.get_optim(self, optim_param)
+        self.params = [model.parameters() for model in self.state_heads_models] + self.body.parameters() + [model.parameters() for model in self.action_heads_models]
+        # TODO Flatten params
+        self.optim = net_util.get_optim(self.params, optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
@@ -189,9 +192,20 @@ class MultiMLPNet(nn.Module):
             self.shared_layers += [net_util.get_activation_fn(hid_layers_activation)]
         return nn.Sequential(*self.shared_layers)
 
-    def make_action_heads(self, act_heads, hid_layers_activation):
-        # TODO: make sure of add guard for no hidden layers.
-        pass
+    def make_action_heads(self, in_dim, act_heads, hid_layers_activation):
+        act_heads_models = []
+        for head in act_heads:
+            layers = []
+            for i, layer in enumerate(head):
+                in_D = head[i - 1] if i > 0 else in_dim
+                out_D = head[i]
+                layers += [nn.Linear(in_D, out_D)]
+                # No activation function in the last layer
+                if i < len(head) - 1:
+                    layers += [net_util.get_activation_fn(hid_layers_activation)]
+            self.action_heads_layers.append(layers)
+            act_heads_models.append(nn.Sequential(*layers))
+        return act_heads_models
 
     def forward(self, states):
         '''The feedforward step'''
@@ -204,3 +218,71 @@ class MultiMLPNet(nn.Module):
         for i, act_model in enumerate(self.action_heads_models):
             final_outs += act_model(body_out)
         return final_outs
+
+    def __print():
+        # TODO print override so all the nets __print
+        pass
+
+    def set_train_eval(self, train=True):
+        nets = self.state_heads_models + self.action_heads_models
+        for net in nets:
+            if train:
+                net.train()
+                self.body.train()
+            else:
+                net.eval()
+                self.body.eval()
+
+    def training_step(self, x, y):
+        '''
+        Takes a single training step: one forward and one backwards pass
+        '''
+        self.set_train_eval(True)
+        self.optim.zero_grad()
+        outs = self(x)
+        total_loss = 0
+        losses = []
+        for i, out in enumerate(outs):
+            loss = self.loss_fn(out, y[i])
+            total_loss += loss
+            losses += loss
+        total_loss.backward()
+        if self.clamp_grad:
+            torch.nn.utils.clip_grad_norm(self.params, self.clamp_grad_val)
+        self.optim.step()
+        return total_loss, losses
+
+    def wrap_eval(self, x):
+        '''
+        Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
+        '''
+        self.set_train_eval(False)
+        return self(x).data
+
+    def init_params(self):
+        '''
+        Initializes all of the model's parameters using xavier uniform initialization.
+        Note: There appears to be unreproduceable behaviours in pyTorch for xavier init
+        Sometimes the trainable params tests pass (see nn_test.py), other times they dont.
+        Biases are all set to 0.01
+        '''
+        biasinit = 0.01
+        layers = self.state_heads_layers + self.shared_layers + self.action_heads_layers
+        # TODO Flatten layers
+        for layer in layers:
+            classname = layer.__class__.__name__
+            if classname.find('Linear') != -1:
+                torch.nn.init.xavier_uniform(layer.weight.data)
+                layer.bias.data.fill_(biasinit)
+
+    def gather_trainable_params(self):
+        '''
+        Gathers parameters that should be trained into a list returns: copy of a list of fixed params
+        '''
+        return [param.clone() for param in self.params]
+
+    def gather_fixed_params(self):
+        '''
+        Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
+        '''
+        return None
