@@ -148,7 +148,7 @@ class MultiMLPNet(nn.Module):
         @example:
         net = MLPNet([[800, 200], [400, 200]], [100, 50, 25], [[10], [15]], hid_layers_activation='relu', optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'}, clamp_grad=True, clamp_grad_val2.0)
         '''
-        super(MLPNet, self).__init__()
+        super(MultiMLPNet, self).__init__()
         # Create net and initialize params
         self.in_dim = in_dim
         self.out_dim = out_dim
@@ -161,9 +161,13 @@ class MultiMLPNet(nn.Module):
         self.action_heads_models = self.make_action_heads(in_D, self.out_dim, hid_layers_activation)
         self.init_params()
         # Init other net variables
-        self.params = [model.parameters() for model in self.state_heads_models] + self.body.parameters() + [model.parameters() for model in self.action_heads_models]
-        # TODO Flatten params
-        self.optim = net_util.get_optim(self.params, optim_param)
+        self.params = []
+        for model in self.state_heads_models:
+            self.params.extend(list(model.parameters()))
+        self.params.extend(list(self.body.parameters()))
+        for model in self.action_heads_models:
+            self.params.extend(list(model.parameters()))
+        self.optim = net_util.get_optim_multitask(self.params, optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
@@ -212,14 +216,14 @@ class MultiMLPNet(nn.Module):
         state_outs = []
         final_outs = []
         for i, state in enumerate(states):
-            state_outs += self.state_heads_models[i](state)
+            state_outs += [self.state_heads_models[i](state)]
         state_outs = torch.cat(state_outs, dim=1)
         body_out = self.body(state_outs)
         for i, act_model in enumerate(self.action_heads_models):
-            final_outs += act_model(body_out)
+            final_outs += [act_model(body_out)]
         return final_outs
 
-    def __print__(self):
+    def print_nets(self):
         for net in self.state_heads_models:
             print(net)
         print(self.body)
@@ -270,8 +274,12 @@ class MultiMLPNet(nn.Module):
         Biases are all set to 0.01
         '''
         biasinit = 0.01
-        layers = self.state_heads_layers + self.shared_layers + self.action_heads_layers
-        # TODO Flatten layers
+        layers = []
+        for l in self.state_heads_layers:
+            layers.extend(l)
+        layers.extend(self.shared_layers)
+        for l in self.action_heads_layers:
+            layers.extend(l)
         for layer in layers:
             classname = layer.__class__.__name__
             if classname.find('Linear') != -1:
