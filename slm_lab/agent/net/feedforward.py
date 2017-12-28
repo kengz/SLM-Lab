@@ -219,9 +219,12 @@ class MultiMLPNet(nn.Module):
             final_outs += act_model(body_out)
         return final_outs
 
-    def __print():
-        # TODO print override so all the nets __print
-        pass
+    def __print__(self):
+        for net in self.state_heads_models:
+            print(net)
+        print(self.body)
+        for net in self.action_heads_models:
+            print(net)
 
     def set_train_eval(self, train=True):
         nets = self.state_heads_models + self.action_heads_models
