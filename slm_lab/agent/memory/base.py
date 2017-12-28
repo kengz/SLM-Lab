@@ -14,13 +14,12 @@ class Memory(ABC):
         self.last_state = None
 
     def reset_last_state(self, state):
-        '''Episodic reset of memory, update last_state to the reset_state from env.'''
-        # TODO this is per body, need to generalize
+        '''Do reset of body memory per session during agent_space.reset() to set last_state'''
         self.last_state = state
 
     @abstractmethod
     def update(self, action, reward, state, done):
-        '''Implement memory update given the full info from the latest timestep. Hint: use self.last_state to construct SARS.'''
+        '''Implement memory update given the full info from the latest timestep. Hint: use self.last_state to construct SARS. NOTE: guard for np.nan reward and done when individual env resets.'''
         raise NotImplementedError
 
     # TODO standardize sample method

@@ -125,6 +125,11 @@ def flatten_once(arr):
     return arr.reshape(-1, *arr.shape[2:])
 
 
+def gen_all(v):
+    '''Generic np.all that also returns false if array is all np.nan'''
+    return bool(np.all(v) and ~np.all(np.isnan(v)))
+
+
 def gen_isnan(v):
     '''Check isnan for general type (np.isnan is only operable on np type)'''
     try:

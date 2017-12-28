@@ -49,8 +49,9 @@ class Replay(Memory):
         self.total_experiences = 0
 
     def update(self, action, reward, state, done):
-        '''interface method to update memory'''
-        self.add_experience(self.last_state, action, reward, state, done)
+        '''Interface method to update memory'''
+        if not np.isnan(reward):
+            self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
 
     def add_experience(self, state, action, reward, next_state, done, priority=1):

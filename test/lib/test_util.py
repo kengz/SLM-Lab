@@ -79,6 +79,18 @@ def test_flatten_nonan(arr, res):
     assert np.array_equal(util.flatten_nonan(arr), res)
 
 
+@pytest.mark.parametrize('v,isall', [
+    ([1, 1], True),
+    ([True, True], True),
+    ([np.nan, 1], True),
+    ([0, 1], False),
+    ([False, True], False),
+    ([np.nan, np.nan], False),
+])
+def test_gen_all(v, isall):
+    assert util.gen_all(v) == isall
+
+
 @pytest.mark.parametrize('v,isnan', [
     (0, False),
     (1, False),
@@ -136,10 +148,10 @@ def test_ndenumerate_nonan():
 
 
 def test_s_get(test_agent):
-    clock = util.s_get(test_agent, 'aeb_space.clock')
-    assert clock.get('t') == 0
-    clock = util.s_get(test_agent, 'aeb_space').clock
-    assert clock.get('t') == 0
+    spec = util.s_get(test_agent, 'aeb_space.spec')
+    assert _.is_dict(spec)
+    spec = util.s_get(test_agent, 'aeb_space').spec
+    assert _.is_dict(spec)
 
 
 def test_set_attr():
