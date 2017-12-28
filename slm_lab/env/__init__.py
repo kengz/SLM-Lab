@@ -110,24 +110,28 @@ class OpenAIEnv:
 
     def reset(self):
         self.done = False
+        _reward_e = self.data_spaces['reward'].init_data_s(e=self.e)
         state_e = self.data_spaces['state'].init_data_s(e=self.e)
+        _done_e = self.data_spaces['done'].init_data_s(e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[(a, b)] = state
-        non_nan_cnt = util.count_nonan(state_e.flatten())
-        assert non_nan_cnt == 1, 'OpenAI Gym supports only single body'
-        return state_e
-
-    def step(self, action_e):
-        # TODO step only if self.clock.to_step()
-        if self.done:
-            self.reset()
+        # TODO internalize render code
         if not self.train_mode:
             self.u_env.render()
-        assert len(action_e) == 1, 'OpenAI Gym supports only single body'
+        non_nan_cnt = util.count_nonan(state_e.flatten())
+        assert non_nan_cnt == 1, 'OpenAI Gym supports only single body'
+        return _reward_e, state_e, _done_e
 
+    def step(self, action_e):
+        assert len(action_e) == 1, 'OpenAI Gym supports only single body'
+        # TODO implement clock_speed: step only if self.clock.to_step()
+        if self.done:
+            return self.reset()
         action = action_e[(0, 0)]
         (state, reward, done, _info) = self.u_env.step(action)
+        if not self.train_mode:
+            self.u_env.render()
         reward_e = self.data_spaces['reward'].init_data_s(e=self.e)
         state_e = self.data_spaces['state'].init_data_s(e=self.e)
         done_e = self.data_spaces['done'].init_data_s(e=self.e)
@@ -219,17 +223,19 @@ class UnityEnv:
         self.done = False
         env_info_dict = self.u_env.reset(
             train_mode=self.train_mode, config=self.spec.get('unity'))
+        _reward_e = self.data_spaces['reward'].init_data_s(e=self.e)
         state_e = self.data_spaces['state'].init_data_s(e=self.e)
+        _done_e = self.data_spaces['done'].init_data_s(e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             self.check_u_agent_to_body(env_info_a, a)
             state_e[(a, b)] = env_info_a.states[b]
-        return state_e
+        return _reward_e, state_e, _done_e
 
     def step(self, action_e):
-        # TODO step only if self.clock.to_step()
+        # TODO implement clock_speed: step only if self.clock.to_step()
         if self.done:
-            self.reset()
+            return self.reset()
         action_e = util.flatten_nonan(action_e)
         env_info_dict = self.u_env.step(action_e)
         reward_e = self.data_spaces['reward'].init_data_s(e=self.e)
@@ -286,13 +292,17 @@ class EnvSpace:
         return clock
 
     def reset(self):
+        _reward_v = self.aeb_space.data_spaces['reward'].init_data_v()
         state_v = self.aeb_space.data_spaces['state'].init_data_v()
+        _done_v = self.aeb_space.data_spaces['done'].init_data_v()
         for env in self.envs:
-            state_e = env.reset()
+            _reward_e, state_e, _done_e = env.reset()
             state_v[env.e, 0:len(state_e)] = state_e
+        _reward_space = self.aeb_space.add('reward', _reward_v)
         state_space = self.aeb_space.add('state', state_v)
+        _done_space = self.aeb_space.add('done', _done_v)
         logger.debug(f'EnvSpace.reset. state_space: {state_space}')
-        return state_space
+        return _reward_space, state_space, _done_space
 
     def step(self, action_space):
         reward_v = self.aeb_space.data_spaces['reward'].init_data_v()

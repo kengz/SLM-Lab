@@ -45,16 +45,15 @@ class Session:
         '''
         Run all episodes, where each env can step and reset at its own clock_speed and timeline. Will terminate when all envs done running max_episode.
         '''
-        state_space = self.env_space.reset()
+        _reward_space, state_space, _done_space = self.env_space.reset()
         self.agent_space.reset(state_space)
         while True:
             end_session = self.aeb_space.tick_clocks()
             if end_session:
                 break
-
             action_space = self.agent_space.act(state_space)
-            (reward_space, state_space,
-             done_space) = self.env_space.step(action_space)
+            reward_space, state_space, done_space = self.env_space.step(
+                action_space)
             self.agent_space.update(
                 action_space, reward_space, state_space, done_space)
         # TODO collect data from different clock speed

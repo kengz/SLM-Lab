@@ -50,7 +50,7 @@ class Agent:
         logger.info(util.self_desc(self))
 
     def reset(self, state_a):
-        '''Do agent reset per episode, such as memory pointer'''
+        '''Do agent reset per session, such as memory pointer'''
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.reset_last_state(state_a[(e, b)])
 

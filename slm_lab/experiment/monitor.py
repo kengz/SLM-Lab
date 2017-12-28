@@ -41,7 +41,7 @@ COOR_AXES_ORDER = {
 }
 COOR_DIM = len(COOR_AXES)
 AGENT_DATA_NAMES = ['action']
-ENV_DATA_NAMES = ['state', 'reward', 'done']
+ENV_DATA_NAMES = ['reward', 'state', 'done']
 
 
 def get_body_df_dict(aeb_space):
