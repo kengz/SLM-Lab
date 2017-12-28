@@ -45,10 +45,11 @@ ENV_DATA_NAMES = ['reward', 'state', 'done']
 
 
 class Clock:
+    '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0, but epi begins at 1, env step begins at 1.'''
+
     def __init__(self, clock_speed=1):
         self.clock_speed = int(clock_speed)
         self.ticks = 0
-        # units such that when ticked and entered, it starts at 1
         self.t = 0
         self.total_t = 0
         self.epi = 1
@@ -68,7 +69,6 @@ class Clock:
         elif unit == 'epi':  # episode, reset timestep
             self.epi += 1
             self.t = 0
-            self.tick('t')
         else:
             raise KeyError
 
@@ -255,9 +255,10 @@ class AEBSpace:
         body_end_sessions = []
         for env in self.env_space.envs:
             clock = env.clock
-            done = (util.gen_all(done_space.get(e=env.e)) or
-                    clock.get('t') > env.max_timestep)
+            done = env.done or clock.get('t') > env.max_timestep
             if done:
+                logger.info(
+                    f'Done: env {env.e} epi {clock.get("epi")}, t {clock.get("t")}')
                 clock.tick('epi')
             else:
                 clock.tick('t')

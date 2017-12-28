@@ -57,15 +57,12 @@ class Session:
                 action_space)
             self.agent_space.update(
                 action_space, reward_space, state_space, done_space)
-        # TODO collect data from different clock speed
-        episode_data = {}
-        return episode_data
+        session_data = analysis.analyze_session(self)
+        self.data = session_data
 
     def run(self):
         self.run_all_episodes()
-        # TODO resore viz
         self.close()
-        # TODO session data checker method
         return self.data
 
 
@@ -96,7 +93,6 @@ class Trial:
             logger.debug(f'session {s}')
             self.init_session().run()
         self.close()
-        # TODO trial data checker method
         return self.data
 
 
@@ -133,7 +129,6 @@ class Experiment:
             logger.debug(f'trial {t}')
             self.init_trial().run()
         self.close()
-        # TODO exp data checker method
         return self.data
 
 
