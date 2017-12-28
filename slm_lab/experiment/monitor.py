@@ -44,21 +44,6 @@ AGENT_DATA_NAMES = ['action']
 ENV_DATA_NAMES = ['reward', 'state', 'done']
 
 
-def get_body_df_dict(aeb_space):
-    # TODO rewrite this whole shit
-    body_df_dict = {}
-    reward_h_v = np.stack(
-        aeb_space.data_spaces['reward'].data_history, axis=3)
-    done_h_v = np.stack(
-        aeb_space.data_spaces['done'].data_history, axis=3)
-    for aeb, body in util.ndenumerate_nonan(aeb_space.body_space.data):
-        body.reward_h = reward_h_v[aeb]
-        body.done_h = done_h_v[aeb]
-        df = pd.DataFrame({'reward': body.reward_h, 'done': body.done_h})
-        body_df_dict[aeb] = df
-    return body_df_dict
-
-
 class Clock:
     def __init__(self, clock_speed=1):
         self.clock_speed = int(clock_speed)

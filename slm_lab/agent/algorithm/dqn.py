@@ -133,7 +133,7 @@ class DQNBase(Algorithm):
             return total_loss
         else:
             logger.debug('NOT training')
-            return None
+            return np.nan
 
     def body_act_discrete(self, body, state):
         return self.action_policy(body, state, self.net, self.explore_var)
