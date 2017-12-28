@@ -101,3 +101,106 @@ class MLPNet(nn.Module):
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
         return None
+
+
+class MultiMLPNet(nn.Module):
+    '''
+    Class for generating arbitrary sized feedforward neural network
+    '''
+
+    def __init__(self,
+                 in_dim,
+                 hid_dim,
+                 out_dim,
+                 hid_layers_activation=None,
+                 optim_param=None,
+                 loss_param=None,
+                 clamp_grad=False,
+                 clamp_grad_val=1.0):
+        '''
+        Multi state processing heads, single shared body, and multi action heads.
+        There is one state and action head per environment
+        Example:
+
+          Action env 1     Action env 2
+         _______|______    _______|______
+        |  Act head 1  |  |  Act head 2  |
+        |______________|  |______________|
+                |                  |
+                |__________________|
+         ________________|_______________
+        |          Shared body           |
+        |________________________________|
+                         |
+                 ________|_______
+                |                |
+         _______|______    ______|_______
+        | State head 1 |  | State head 2 |
+        |______________|  |______________|
+
+        in_dim: list of lists containing dimensions of the state processing heads
+        hid_dim: list containing dimensions of the hidden layers
+        out_dim: list of lists containing dimensions of the ouputs
+        optim_param: parameters for initializing the optimizer
+        hid_layers_activation: activation function for the hidden layers
+        loss_param: measure of error between model predictions and correct outputs
+        clamp_grad: whether to clamp the gradient
+        @example:
+        net = MLPNet([[800, 200], [400, 200]], [100, 50, 25], [[10], [15]], hid_layers_activation='relu', optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'}, clamp_grad=True, clamp_grad_val2.0)
+        '''
+        super(MLPNet, self).__init__()
+        # Create net and initialize params
+        self.in_dim = in_dim
+        self.out_dim = out_dim
+        self.state_heads_layers = []
+        self.state_heads_models = self.make_state_heads(self.in_dim, hid_layers_activation)
+        self.shared_layers = []
+        self.body = self.make_shared_body(self.state_out_concat, hid_dim, hid_layers_activation)
+        self.action_heads_layers = []
+        self.action_heads_models = self.make_action_heads(self.out_dim, hid_layers_activation)
+        self.init_params()
+        # Init other net variables
+        self.optim = net_util.get_optim(self, optim_param)
+        self.loss_fn = net_util.get_loss_fn(self, loss_param)
+        self.clamp_grad = clamp_grad
+        self.clamp_grad_val = clamp_grad_val
+
+    def make_state_heads(self, state_heads, hid_layers_activation):
+        self.state_out_concat = 0
+        state_heads_models = []
+        for head in state_heads:
+            layers = []
+            for i, layer in enumerate(head):
+                if i != 0:
+                    in_D = head[i - 1]
+                    out_D = head[i]
+                    layers += [nn.Linear(in_D, out_D)]
+                    layers += [net_util.get_activation_fn(hid_layers_activation)]
+            self.state_out_concat += head[-1]
+            self.state_heads_layers.append(layers)
+            state_heads_models.append(nn.Sequential(*layers))
+        return state_heads_models
+
+    def make_shared_body(self, in_dim, dims, hid_layers_activation):
+        for i, layer in enumerate(dims):
+            in_D = in_dim if i == 0 else dims[i - 1]
+            out_D = dims[i]
+            self.shared_layers += [nn.Linear(in_D, out_D)]
+            self.shared_layers += [net_util.get_activation_fn(hid_layers_activation)]
+        return nn.Sequential(*self.shared_layers)
+
+    def make_action_heads(self, act_heads, hid_layers_activation):
+        # TODO: make sure of add guard for no hidden layers.
+        pass
+
+    def forward(self, states):
+        '''The feedforward step'''
+        state_outs = []
+        final_outs = []
+        for i, state in enumerate(states):
+            state_outs += self.state_heads_models[i](state)
+        state_outs = torch.cat(state_outs, dim=1)
+        body_out = self.body(state_outs)
+        for i, act_model in enumerate(self.action_heads_models):
+            final_outs += act_model(body_out)
+        return final_outs
