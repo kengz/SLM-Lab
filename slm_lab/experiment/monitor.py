@@ -154,7 +154,7 @@ class DataSpace:
         return s
 
     def __bool__(self):
-        return bool(np.all(self.data))
+        return util.gen_all(self.data)
 
     def init_data_v(self):
         '''Method to init a data volume filled with np.nan'''
@@ -270,11 +270,8 @@ class AEBSpace:
         body_end_sessions = []
         for env in self.env_space.envs:
             clock = env.clock
-            if done_space.data is None:
-                done = False
-            else:
-                done = (np.all(done_space.get(e=env.e)) or
-                        clock.get('t') > env.max_timestep)
+            done = (util.gen_all(done_space.get(e=env.e)) or
+                    clock.get('t') > env.max_timestep)
             if done:
                 clock.tick('epi')
             else:

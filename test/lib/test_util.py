@@ -79,6 +79,18 @@ def test_flatten_nonan(arr, res):
     assert np.array_equal(util.flatten_nonan(arr), res)
 
 
+@pytest.mark.parametrize('v,all', [
+    ([1, 1], True),
+    ([True, True], True),
+    ([np.nan, 1], True),
+    ([0, 1], False),
+    ([False, True], False),
+    ([np.nan, np.nan], False),
+])
+def test_gen_all(v, isnan):
+    assert util.gen_all(v) == isnan
+
+
 @pytest.mark.parametrize('v,isnan', [
     (0, False),
     (1, False),

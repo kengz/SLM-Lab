@@ -139,7 +139,7 @@ class OpenAIEnv:
             reward_e[(a, b)] = reward
             state_e[(a, b)] = state
             done_e[(a, b)] = done
-        self.done = np.all(done_e)
+        self.done = util.gen_all(done_e)
         if self.done:
             logger.info(
                 f'Done: env {self.e} epi {self.clock.get("epi")}, t {self.clock.get("t")}')
@@ -246,7 +246,7 @@ class UnityEnv:
             reward_e[(a, b)] = env_info_a.rewards[b]
             state_e[(a, b)] = env_info_a.states[b]
             done_e[(a, b)] = env_info_a.local_done[b]
-        self.done = np.all(done_e)
+        self.done = util.gen_all(done_e)
         if self.done:
             logger.info(
                 f'Done: env {self.e} epi {self.clock.get("epi")}, t {self.clock.get("t")}')
