@@ -17,8 +17,7 @@ class ConvNet(MLPNet):
 
     def __init__(self,
                  in_dim,
-                 conv_hid,
-                 flat_hid,
+                 hid_layers,
                  out_dim,
                  hid_layers_activation=None,
                  optim_param=None,
@@ -28,11 +27,13 @@ class ConvNet(MLPNet):
                  batch_norm=True):
         '''
         in_dim: dimension of the inputs
-        conv_hid: list containing dimensions of the convolutional hidden layers. Asssumed to all come before the flat layers.
-            Note: a convolutional layer should specify the in_channel, out_channels, kernel_size, stride (of kernel steps), padding, and dilation (spacing between kernel points) E.g. [3, 16, (5, 5), 1, 0, (2, 2)]
-            For more details, see http://pytorch.org/docs/master/nn.html#conv2d and https://github.com/vdumoulin/conv_arithmetic/blob/master/README.md
+        hid_layers: tuple consisting of two elements. (conv_hid, flat_hid)
+                    Note: tuple must contain two elements, use empty list if no such layers.
+            1. conv_hid: list containing dimensions of the convolutional hidden layers. Asssumed to all come before the flat layers.
+                Note: a convolutional layer should specify the in_channel, out_channels, kernel_size, stride (of kernel steps), padding, and dilation (spacing between kernel points) E.g. [3, 16, (5, 5), 1, 0, (2, 2)]
+                For more details, see http://pytorch.org/docs/master/nn.html#conv2d and https://github.com/vdumoulin/conv_arithmetic/blob/master/README.md
 
-        flat_hid: list of dense layers following the convolutional layers
+            2. flat_hid: list of dense layers following the convolutional layers
         out_dim: dimension of the ouputs
         optim_param: parameters for initializing the optimizer
         loss_param: measure of error between model
@@ -44,9 +45,8 @@ class ConvNet(MLPNet):
         @example:
         net = ConvNet(
                 (3, 32, 32),
-                [[3, 36, (5, 5), 1, 0, (2, 2)],
-                [36, 128, (5, 5), 1, 0, (2, 2)]],
-                [100],
+                ([[3, 36, (5, 5), 1, 0, (2, 2)],[36, 128, (5, 5), 1, 0, (2, 2)]],
+                [100]),
                 10,
                 hid_layers_activation='relu',
                 optim_param={'name': 'Adam'},
@@ -60,9 +60,9 @@ class ConvNet(MLPNet):
         self.out_dim = out_dim
         self.batch_norm = batch_norm
         self.conv_layers = []
-        self.conv_model = self.build_conv_layers(conv_hid, hid_layers_activation)
+        self.conv_model = self.build_conv_layers(hid_layers[0], hid_layers_activation)
         self.flat_layers = []
-        self.dense_model = self.build_flat_layers(flat_hid, out_dim, hid_layers_activation)
+        self.dense_model = self.build_flat_layers(hid_layers[1], out_dim, hid_layers_activation)
         self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers) - 1
         self.init_params()
         # Init other net variables
