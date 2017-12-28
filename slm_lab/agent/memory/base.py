@@ -19,7 +19,7 @@ class Memory(ABC):
 
     @abstractmethod
     def update(self, action, reward, state, done):
-        '''Implement memory update given the full info from the latest timestep. Hint: use self.last_state to construct SARS.'''
+        '''Implement memory update given the full info from the latest timestep. Hint: use self.last_state to construct SARS. NOTE: guard for np.nan reward and done when individual env resets.'''
         raise NotImplementedError
 
     # TODO standardize sample method
