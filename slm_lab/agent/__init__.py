@@ -39,6 +39,9 @@ class Agent:
         self.a = a
         self.body_a = None
         self.flat_nonan_body_a = None  # flatten_nonan version of bodies
+        # agent session data TODO make body-based
+        self.loss_history = []
+        self.explore_var_history = []
 
         AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
         self.algorithm = AlgoClass(self)
@@ -50,7 +53,7 @@ class Agent:
         logger.info(util.self_desc(self))
 
     def reset(self, state_a):
-        '''Do agent reset per episode, such as memory pointer'''
+        '''Do agent reset per session, such as memory pointer'''
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.reset_last_state(state_a[(e, b)])
 
@@ -66,10 +69,11 @@ class Agent:
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.update(
                 action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
+        # TODO finer loss and explore_var per body
         loss = self.algorithm.train()
         explore_var = self.algorithm.update()
-        # TODO tmp return, to unify with monitor auto-fetch later
-        return loss, explore_var
+        self.loss_history.append(loss)
+        self.explore_var_history.append(explore_var)
 
     def close(self):
         '''Close agent at the end of a session, e.g. save model'''
@@ -104,9 +108,11 @@ class AgentSpace:
 
     def reset(self, state_space):
         logger.debug('AgentSpace.reset')
+        _action_v = self.aeb_space.data_spaces['action'].init_data_v()
         for agent in self.agents:
             state_a = state_space.get(a=agent.a)
             agent.reset(state_a)
+        _action_space = self.aeb_space.add('action', _action_v)
 
     def act(self, state_space):
         action_v = self.aeb_space.data_spaces['action'].init_data_v()
@@ -125,10 +131,7 @@ class AgentSpace:
             reward_a = reward_space.get(a=a)
             state_a = state_space.get(a=a)
             done_a = done_space.get(a=a)
-            loss, explore_var = agent.update(
-                action_a, reward_a, state_a, done_a)
-        # TODO tmp, single body loss (last); use monitor later
-        return loss, explore_var
+            agent.update(action_a, reward_a, state_a, done_a)
 
     def close(self):
         logger.info('AgentSpace.close')
