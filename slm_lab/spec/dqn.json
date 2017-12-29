@@ -262,7 +262,7 @@
         "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_anneal_epi": 30,
         "training_min_timestep": 10,
         "training_frequency": 1,
         "training_epoch": 5,
@@ -300,7 +300,7 @@
       "max_episode": 50,
       "max_session": 1,
       "max_trial": 1,
-      "train_mode": false
+      "train_mode": true
     }
   },
   "dqn_2dball_cartpole": {
@@ -337,11 +337,11 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
-      "max_timestep": null
-    }, {
       "name": "2DBall",
       "max_timestep": 200
+    }, {
+      "name": "CartPole-v0",
+      "max_timestep": null
     }],
     "body": {
       "product": "outer",
@@ -351,7 +351,7 @@
       "max_episode": 60,
       "max_session": 1,
       "max_trial": 1,
-      "train_mode": false
+      "train_mode": true
     }
   },
   "dqn_acrobot": {
@@ -436,10 +436,10 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "Acrobot-v1",
       "max_timestep": null
     }, {
-      "name": "Acrobot-v1",
+      "name": "CartPole-v0",
       "max_timestep": null
     }],
     "body": {

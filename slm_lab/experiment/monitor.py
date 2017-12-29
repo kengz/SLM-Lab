@@ -139,7 +139,7 @@ class DataSpace:
         return s
 
     def __bool__(self):
-        return util.gen_all(self.data)
+        return util.nonan_all(self.data)
 
     def init_data_v(self):
         '''Method to init a data volume filled with np.nan'''
