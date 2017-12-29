@@ -3,7 +3,7 @@
     "agent": [{
       "name": "DQN",
       "algorithm": {
-        "name": "DQNBase",
+        "name": "DQN",
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
         "explore_var_start": 5.0,
@@ -24,7 +24,7 @@
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "optim": {
-          "name": "Adam",
+          "name": "SGD",
           "lr": 0.02
         },
         "loss": {
@@ -55,7 +55,7 @@
     "agent": [{
       "name": "VanillaDQN",
       "algorithm": {
-        "name": "DQNBase",
+        "name": "DQN",
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
         "gamma": 0.999,
@@ -79,7 +79,7 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "lr": 0.02
+          "name": "Adam"
         },
         "batch_size": 32
       }
@@ -127,7 +127,7 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "lr": 0.02
+          "name": "Adam"
         },
         "batch_size": 32
       }
@@ -178,7 +178,7 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "lr": 0.02
+          "name": "Adam"
         },
         "batch_size": 32
       }
@@ -199,57 +199,6 @@
     },
     "meta": {
       "max_episode": 100,
-      "max_session": 1,
-      "max_trial": 1,
-      "train_mode": true
-    }
-  },
-  "dqn_acrobot_cartpole": {
-    "agent": [{
-      "name": "MultitaskDQN",
-      "algorithm": {
-        "name": "MultitaskDQN",
-        "action_policy": "multi_boltzmann",
-        "action_policy_update": "linear_decay",
-        "gamma": 0.999,
-        "explore_var_start": 5.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 15,
-        "training_min_timestep": 10,
-        "training_frequency": 1,
-        "training_epoch": 5,
-        "training_iters_per_batch": 3
-      },
-      "memory": {
-        "name": "Replay",
-        "max_size": 10000
-      },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [64],
-        "hid_layers_activation": "relu",
-        "update_type": "replace",
-        "polyak_weight": 0,
-        "update_frequency": 1.0,
-        "optim": {
-          "lr": 0.02
-        },
-        "batch_size": 32
-      }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
-      "max_timestep": null
-    }, {
-      "name": "Acrobot-v1",
-      "max_timestep": null
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "max_episode": 50,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
@@ -283,7 +232,7 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "lr": 0.02
+          "name": "Adam"
         },
         "batch_size": 32
       }
@@ -310,7 +259,7 @@
     "agent": [{
       "name": "VanillaDQN",
       "algorithm": {
-        "name": "DQNBase",
+        "name": "DQN",
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
         "gamma": 0.9999,
@@ -334,7 +283,7 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "lr": 0.001
+          "name": "Adam"
         },
         "batch_size": 16
       }
@@ -354,11 +303,62 @@
       "train_mode": true
     }
   },
+  "dqn_acrobot_cartpole": {
+    "agent": [{
+      "name": "MultitaskDQN",
+      "algorithm": {
+        "name": "MultitaskDQN",
+        "action_policy": "multi_boltzmann",
+        "action_policy_update": "linear_decay",
+        "gamma": 0.999,
+        "explore_var_start": 5.0,
+        "explore_var_end": 1.0,
+        "explore_anneal_epi": 15,
+        "training_min_timestep": 10,
+        "training_frequency": 1,
+        "training_epoch": 5,
+        "training_iters_per_batch": 3
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 10000
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
+        "update_type": "replace",
+        "polyak_weight": 0,
+        "update_frequency": 1.0,
+        "optim": {
+          "name": "Adam"
+        },
+        "batch_size": 32
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null
+    }, {
+      "name": "Acrobot-v1",
+      "max_timestep": null
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 50,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": true
+    }
+  },
   "dqn_3dball_single": {
     "agent": [{
       "name": "VanillaDQN",
       "algorithm": {
-        "name": "DQNBase",
+        "name": "DQN",
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
         "gamma": 0.999,
@@ -382,7 +382,7 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "lr": 0.02
+          "name": "Adam"
         },
         "batch_size": 32
       }
@@ -430,7 +430,7 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "lr": 0.02
+          "name": "Adam"
         },
         "batch_size": 32
       }
@@ -481,7 +481,7 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "lr": 0.02
+          "name": "Adam"
         },
         "batch_size": 32
       }
@@ -508,7 +508,7 @@
     "agent": [{
       "name": "VanillaDQN",
       "algorithm": {
-        "name": "DQNBase",
+        "name": "DQN",
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
         "gamma": 0.99,
@@ -532,7 +532,7 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "lr": 0.005
+          "name": "Adam"
         },
         "batch_size": 32
       }
@@ -561,7 +561,7 @@
     "agent": [{
       "name": "DQN",
       "algorithm": {
-        "name": "DQNBase",
+        "name": "DQN",
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
         "explore_var_start": 5.0,
@@ -582,8 +582,7 @@
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "optim": {
-          "name": "Adam",
-          "lr": 0.02
+          "name": "Adam"
         },
         "loss": {
           "name": "mse_loss"
