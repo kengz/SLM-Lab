@@ -125,11 +125,6 @@ def flatten_once(arr):
     return arr.reshape(-1, *arr.shape[2:])
 
 
-def gen_all(v):
-    '''Generic np.all that also returns false if array is all np.nan'''
-    return bool(np.all(v) and ~np.all(np.isnan(v)))
-
-
 def gen_isnan(v):
     '''Check isnan for general type (np.isnan is only operable on np type)'''
     try:
@@ -252,6 +247,11 @@ def is_sub_dict(sub_dict, super_dict):
 def ndenumerate_nonan(arr):
     '''Generic ndenumerate for np.ndenumerate with only not gen_isnan values'''
     return (idx_v for idx_v in np.ndenumerate(arr) if not gen_isnan(idx_v[1]))
+
+
+def nonan_all(v):
+    '''Generic np.all that also returns false if array is all np.nan'''
+    return bool(np.all(v) and ~np.all(np.isnan(v)))
 
 
 def read(data_path):

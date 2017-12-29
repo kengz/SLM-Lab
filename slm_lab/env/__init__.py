@@ -139,7 +139,8 @@ class OpenAIEnv:
             reward_e[(a, b)] = reward
             state_e[(a, b)] = state
             done_e[(a, b)] = done
-        self.done = util.gen_all(done_e)
+        self.done = (util.nonan_all(done_e) or
+                     self.clock.get('t') > self.max_timestep)
         return reward_e, state_e, done_e
 
     def close(self):
@@ -243,7 +244,8 @@ class UnityEnv:
             reward_e[(a, b)] = env_info_a.rewards[b]
             state_e[(a, b)] = env_info_a.states[b]
             done_e[(a, b)] = env_info_a.local_done[b]
-        self.done = util.gen_all(done_e)
+        self.done = (util.nonan_all(done_e) or
+                     self.clock.get('t') > self.max_timestep)
         return reward_e, state_e, done_e
 
     def close(self):
