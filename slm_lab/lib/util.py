@@ -31,6 +31,18 @@ class LabJsonEncoder(json.JSONEncoder):
             return str(obj)
 
 
+def aeb_df_to_df_dict(aeb_df):
+    '''Convert a multiindex aeb_df with column levels (a,e,b,col) to data_dict[aeb] = df'''
+    df_dict = {}
+    aeb_idx_list = _.uniq(
+        [(a, e, b) for a, e, b, col in aeb_df.columns.tolist()])
+    for aeb_idx in aeb_idx_list:
+        df = aeb_df.loc[:, aeb_idx]
+        aeb = tuple(int(s) for s in aeb_idx)
+        df_dict[aeb] = df
+    return df_dict
+
+
 def calc_timestamp_diff(ts2, ts1):
     '''
     Calculate the time from timestamps ts1 to ts2
@@ -254,7 +266,7 @@ def nonan_all(v):
     return bool(np.all(v) and ~np.all(np.isnan(v)))
 
 
-def read(data_path):
+def read(data_path, **kwargs):
     '''
     Universal data reading method with smart data parsing
     - {.csv, .xlsx, .xls} to DataFrame
@@ -289,30 +301,30 @@ def read(data_path):
         raise FileNotFoundError(data_path)
     ext = get_file_ext(data_path)
     if ext in DF_FILE_EXT:
-        data = read_as_df(data_path)
+        data = read_as_df(data_path, **kwargs)
     else:
-        data = read_as_plain(data_path)
+        data = read_as_plain(data_path, **kwargs)
     return data
 
 
-def read_as_df(data_path):
+def read_as_df(data_path, **kwargs):
     '''Submethod to read data as DataFrame'''
     ext = get_file_ext(data_path)
     if ext in ['.xlsx', 'xls']:
-        data = pd.read_excel(data_path)
+        data = pd.read_excel(data_path, **kwargs)
     else:  # .csv
-        data = pd.read_csv(data_path)
+        data = pd.read_csv(data_path, **kwargs)
     return data
 
 
-def read_as_plain(data_path):
+def read_as_plain(data_path, **kwargs):
     '''Submethod to read data as plain type'''
     open_file = open(data_path, 'r')
     ext = get_file_ext(data_path)
     if ext == '.json':
-        data = ujson.load(open_file)
+        data = ujson.load(open_file, **kwargs)
     elif ext == '.yml':
-        data = yaml.load(open_file)
+        data = yaml.load(open_file, **kwargs)
     else:
         data = open_file.read()
     open_file.close()
