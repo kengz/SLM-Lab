@@ -53,7 +53,7 @@
   },
   "dqn_cartpole": {
     "agent": [{
-      "name": "VanillaDQN",
+      "name": "DQN",
       "algorithm": {
         "name": "DQN",
         "action_policy": "boltzmann",
@@ -204,6 +204,105 @@
       "train_mode": true
     }
   },
+  "dqn_2dball": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "gamma": 0.999,
+        "explore_var_start": 5.0,
+        "explore_var_end": 1.0,
+        "explore_anneal_epi": 20,
+        "training_min_timestep": 0,
+        "training_frequency": 1,
+        "training_epoch": 5,
+        "training_iters_per_batch": 3
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 10000
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "update_type": "replace",
+        "polyak_weight": 0,
+        "update_frequency": 1.0,
+        "optim": {
+          "name": "Adam"
+        },
+        "batch_size": 32
+      }
+    }],
+    "env": [{
+      "name": "2DBall",
+      "max_timestep": 200
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 50,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": true
+    }
+  },
+  "dqn_2dball_2dball": {
+    "agent": [{
+      "name": "MultitaskDQN",
+      "algorithm": {
+        "name": "MultitaskDQN",
+        "action_policy": "multi_boltzmann",
+        "action_policy_update": "linear_decay",
+        "gamma": 0.999,
+        "explore_var_start": 5.0,
+        "explore_var_end": 1.0,
+        "explore_anneal_epi": 20,
+        "training_min_timestep": 10,
+        "training_frequency": 1,
+        "training_epoch": 5,
+        "training_iters_per_batch": 3
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 10000
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "update_type": "replace",
+        "polyak_weight": 0,
+        "update_frequency": 1.0,
+        "optim": {
+          "name": "Adam"
+        },
+        "batch_size": 32
+      }
+    }],
+    "env": [{
+      "name": "2DBall",
+      "max_timestep": 200
+    }, {
+      "name": "2DBall",
+      "max_timestep": 200
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 50,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": false
+    }
+  },
   "dqn_2dball_cartpole": {
     "agent": [{
       "name": "MultitaskDQN",
@@ -214,7 +313,7 @@
         "gamma": 0.999,
         "explore_var_start": 5.0,
         "explore_var_end": 1.0,
-        "explore_anneal_epi": 15,
+        "explore_anneal_epi": 30,
         "training_min_timestep": 10,
         "training_frequency": 1,
         "training_epoch": 5,
@@ -242,14 +341,14 @@
       "max_timestep": null
     }, {
       "name": "2DBall",
-      "max_timestep": 1000
+      "max_timestep": 200
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 50,
+      "max_episode": 60,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false
@@ -257,7 +356,7 @@
   },
   "dqn_acrobot": {
     "agent": [{
-      "name": "VanillaDQN",
+      "name": "DQN",
       "algorithm": {
         "name": "DQN",
         "action_policy": "boltzmann",
@@ -356,7 +455,7 @@
   },
   "dqn_3dball_single": {
     "agent": [{
-      "name": "VanillaDQN",
+      "name": "DQN",
       "algorithm": {
         "name": "DQN",
         "action_policy": "boltzmann",
@@ -506,7 +605,7 @@
   },
   "dqn_gridworld": {
     "agent": [{
-      "name": "VanillaDQN",
+      "name": "DQN",
       "algorithm": {
         "name": "DQN",
         "action_policy": "boltzmann",
