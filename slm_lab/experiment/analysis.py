@@ -16,7 +16,7 @@ def get_session_data(session):
     done_h_v = np.stack(
         aeb_space.data_spaces['done'].data_history, axis=3)
 
-    mdp_data = {}
+    mdp_df_dict = {}
     for aeb in aeb_space.aeb_list:
         # remove last entry (env reset after termination)
         reward_h = reward_h_v[aeb][:-1]
@@ -29,10 +29,12 @@ def get_session_data(session):
         })
         agg_df = df.groupby('epi').agg('sum')
         agg_df.reset_index(drop=False, inplace=True)
-        # TODO write file properly once session_data is in tabular form
-        print(agg_df)
-        util.write(agg_df, f"data/{session.spec['name']}_{aeb}_mdp_data.csv")
-        mdp_data[aeb] = agg_df
+        mdp_df_dict[aeb] = agg_df
+    # multi-indexed with (a,e,b), 3 extra levels
+    mdp_df = pd.concat(mdp_df_dict, axis=1)
+    print(mdp_df)
+    util.write(mdp_df, f"data/{session.spec['name']}_mdp_df.csv")
+    # to read, use: util.read(filepath, header=[0, 1, 2, 3])
 
     agent_data = {}
     for agent in aeb_space.agent_space.agents:
@@ -54,10 +56,10 @@ def get_session_data(session):
         agg_df.reset_index(drop=False, inplace=True)
         agent_data[agent.a] = agg_df
     # TODO form proper session data for plot and return
-    return mdp_data, agent_data
+    return mdp_df_dict, agent_data
 
 
-def plot_session(session, mdp_data, agent_data):
+def plot_session(session, mdp_df_dict, agent_data):
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
 
     for a, df in agent_data.items():
@@ -66,7 +68,7 @@ def plot_session(session, mdp_data, agent_data):
         fig.append_trace(agent_fig.data[0], 1, 1)
         fig.append_trace(agent_fig.data[1], 2, 1)
 
-    for aeb, df in mdp_data.items():
+    for aeb, df in mdp_df_dict.items():
         body_fig = viz.plot_line(
             df, 'reward', 'epi', legend_name=str(aeb), draw=False)
         fig.append_trace(body_fig.data[0], 3, 1)
@@ -87,7 +89,7 @@ def plot_session(session, mdp_data, agent_data):
 
 def analyze_session(session):
     '''Gather session data, plot, and return session data'''
-    mdp_data, agent_data = get_session_data(session)
+    mdp_df_dict, agent_data = get_session_data(session)
     session_data = pd.DataFrame()
-    plot_session(session, mdp_data, agent_data)
+    plot_session(session, mdp_df_dict, agent_data)
     return session_data
