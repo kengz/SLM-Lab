@@ -4,7 +4,7 @@ Contains graduated components from experiments for building/using environment.
 Provides the rich experience for agent embodiment, reflects the curriculum and allows teaching (possibly allows teacher to enter).
 To be designed by human and evolution module, based on the curriculum and fitness metrics.
 '''
-from slm_lab.experiment.monitor import Clock
+from slm_lab.experiment.monitor import Clock, ENV_DATA_NAMES
 from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
@@ -66,7 +66,6 @@ class OpenAIEnv:
         util.set_attr(self, self.spec)
         self.name = self.spec['name']
         self.env_space = env_space
-        self.data_spaces = env_space.aeb_space.data_spaces
         self.e = e
         self.body_e = None
         self.flat_nonan_body_e = None  # flatten_nonan version of bodies
@@ -110,9 +109,8 @@ class OpenAIEnv:
 
     def reset(self):
         self.done = False
-        _reward_e = self.data_spaces['reward'].init_data_s(e=self.e)
-        state_e = self.data_spaces['state'].init_data_s(e=self.e)
-        _done_e = self.data_spaces['done'].init_data_s(e=self.e)
+        _reward_e, state_e, _done_e = self.env_space.aeb_space.init_data_s(
+            ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[(a, b)] = state
@@ -132,9 +130,8 @@ class OpenAIEnv:
         (state, reward, done, _info) = self.u_env.step(action)
         if not self.train_mode:
             self.u_env.render()
-        reward_e = self.data_spaces['reward'].init_data_s(e=self.e)
-        state_e = self.data_spaces['state'].init_data_s(e=self.e)
-        done_e = self.data_spaces['done'].init_data_s(e=self.e)
+        reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(
+            ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             reward_e[(a, b)] = reward
             state_e[(a, b)] = state
@@ -159,7 +156,6 @@ class UnityEnv:
         util.set_attr(self, self.spec)
         self.name = self.spec['name']
         self.env_space = env_space
-        self.data_spaces = env_space.aeb_space.data_spaces
         self.e = e
         self.body_e = None
         self.flat_nonan_body_e = None  # flatten_nonan version of bodies
@@ -221,9 +217,8 @@ class UnityEnv:
         self.done = False
         env_info_dict = self.u_env.reset(
             train_mode=self.train_mode, config=self.spec.get('unity'))
-        _reward_e = self.data_spaces['reward'].init_data_s(e=self.e)
-        state_e = self.data_spaces['state'].init_data_s(e=self.e)
-        _done_e = self.data_spaces['done'].init_data_s(e=self.e)
+        _reward_e, state_e, _done_e = self.env_space.aeb_space.init_data_s(
+            ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             self.check_u_agent_to_body(env_info_a, a)
@@ -236,9 +231,8 @@ class UnityEnv:
             return self.reset()
         action_e = util.flatten_nonan(action_e)
         env_info_dict = self.u_env.step(action_e)
-        reward_e = self.data_spaces['reward'].init_data_s(e=self.e)
-        state_e = self.data_spaces['state'].init_data_s(e=self.e)
-        done_e = self.data_spaces['done'].init_data_s(e=self.e)
+        reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(
+            ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             reward_e[(a, b)] = env_info_a.rewards[b]
@@ -288,22 +282,19 @@ class EnvSpace:
         return clock
 
     def reset(self):
-        _reward_v = self.aeb_space.data_spaces['reward'].init_data_v()
-        state_v = self.aeb_space.data_spaces['state'].init_data_v()
-        _done_v = self.aeb_space.data_spaces['done'].init_data_v()
+        _reward_v, state_v, _done_v = self.aeb_space.init_data_v(
+            ENV_DATA_NAMES)
         for env in self.envs:
             _reward_e, state_e, _done_e = env.reset()
             state_v[env.e, 0:len(state_e)] = state_e
-        _reward_space = self.aeb_space.add('reward', _reward_v)
-        state_space = self.aeb_space.add('state', state_v)
-        _done_space = self.aeb_space.add('done', _done_v)
+        _reward_space, state_space, _done_space = self.aeb_space.add(
+            ENV_DATA_NAMES, [_reward_v, state_v, _done_v])
         logger.debug(f'EnvSpace.reset. state_space: {state_space}')
         return _reward_space, state_space, _done_space
 
     def step(self, action_space):
-        reward_v = self.aeb_space.data_spaces['reward'].init_data_v()
-        state_v = self.aeb_space.data_spaces['state'].init_data_v()
-        done_v = self.aeb_space.data_spaces['done'].init_data_v()
+        reward_v, state_v, done_v = self.aeb_space.init_data_v(
+            ENV_DATA_NAMES)
         for env in self.envs:
             e = env.e
             action_e = action_space.get(e=e)
@@ -311,9 +302,8 @@ class EnvSpace:
             reward_v[e, 0:len(reward_e)] = reward_e
             state_v[e, 0:len(state_e)] = state_e
             done_v[e, 0:len(done_e)] = done_e
-        reward_space = self.aeb_space.add('reward', reward_v)
-        state_space = self.aeb_space.add('state', state_v)
-        done_space = self.aeb_space.add('done', done_v)
+        reward_space, state_space, done_space = self.aeb_space.add(
+            ENV_DATA_NAMES, [reward_v, state_v, done_v])
         return reward_space, state_space, done_space
 
     def close(self):

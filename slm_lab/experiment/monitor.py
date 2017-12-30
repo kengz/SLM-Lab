@@ -214,6 +214,14 @@ class AEBSpace:
         }
         return self.data_spaces
 
+    def init_data_s(self, data_names, a=None, e=None):
+        '''Shortcut to init data_s_1, data_s_2, ...'''
+        return [self.data_spaces[data_name].init_data_s(a=a, e=e) for data_name in data_names]
+
+    def init_data_v(self, data_names):
+        '''Shortcut to init data_v_1, data_v_2, ...'''
+        return [self.data_spaces[data_name].init_data_v() for data_name in data_names]
+
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
         self.body_space = DataSpace('body', self)
@@ -238,16 +246,20 @@ class AEBSpace:
         self.agent_space.post_body_init()
         self.env_space.post_body_init()
 
-    def add(self, data_name, data):
+    def add(self, data_name, data_v):
         '''
         Add a data to a data space, e.g. data actions collected per body, per agent, from agent_space, with AEB shape projected on a-axis, added to action_space.
-        @param {str} data_name
-        @param {[x: [yb_idx:[body_v]]} data, where x, y could be a, e interchangeably.
+        Could also be a shortcut to do batch add data_v_1, data_v_2, ...
+        @param {str|[str]} data_name
+        @param {[x: [yb_idx:[body_v]]} data_v, where x, y could be a, e interchangeably.
         @returns {DataSpace} data_space (aeb is implied)
         '''
-        data_space = self.data_spaces[data_name]
-        data_space.add(data)
-        return data_space
+        if _.is_string(data_name):
+            data_space = self.data_spaces[data_name]
+            data_space.add(data_v)
+            return data_space
+        else:
+            return [self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v)]
 
     def tick_clocks(self):
         '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''
