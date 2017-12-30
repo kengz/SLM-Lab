@@ -222,6 +222,11 @@ class AEBSpace:
         '''Shortcut to init data_v_1, data_v_2, ...'''
         return [self.data_spaces[data_name].init_data_v() for data_name in data_names]
 
+    def get_history_v(self, data_name):
+        '''Get a data_v history and stack into a data_h_v (history volume)'''
+        data_h_v = np.stack(self.data_spaces[data_name].data_history, axis=3)
+        return data_h_v
+
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
         self.body_space = DataSpace('body', self)

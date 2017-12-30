@@ -7,28 +7,31 @@ import pandas as pd
 import pydash as _
 from slm_lab.lib import logger, util, viz
 
+DATA_AGG_FNS = {
+    'reward': 'sum',
+    'loss': 'mean',
+    'explore_var': 'mean',
+}
+
 
 def get_session_data(session):
     '''Gather data from session: MDP, Agent, Env data, and form session_data.'''
     aeb_space = session.aeb_space
-    reward_h_v = np.stack(
-        aeb_space.data_spaces['reward'].data_history, axis=3)
-    done_h_v = np.stack(
-        aeb_space.data_spaces['done'].data_history, axis=3)
-    loss_h_v = np.stack(
-        aeb_space.data_spaces['loss'].data_history, axis=3)
-    explore_var_h_v = np.stack(
-        aeb_space.data_spaces['explore_var'].data_history, axis=3)
+    done_h_v = aeb_space.get_history_v('done')
+    reward_h_v = aeb_space.get_history_v('reward')
+    loss_h_v = aeb_space.get_history_v('loss')
+    explore_var_h_v = aeb_space.get_history_v('explore_var')
 
     session_df_dict = {}
     for aeb in aeb_space.aeb_list:
         # remove last entry (env reset after termination)
+        done_h = done_h_v[aeb][:-1]
+        reset_idx = np.isnan(done_h)
+        nonreset_idx = ~reset_idx
+        epi_h = reset_idx.astype(int).cumsum()
         reward_h = reward_h_v[aeb][:-1]
         loss_h = loss_h_v[aeb][:-1]
         explore_var_h = explore_var_h_v[aeb][:-1]
-        reset_idx = np.isnan(reward_h)
-        nonreset_idx = ~reset_idx
-        epi_h = reset_idx.astype(int).cumsum()
         # TODO save a non-agg data to db for mutual info research
         df = pd.DataFrame({
             'epi': epi_h[nonreset_idx],
@@ -36,8 +39,8 @@ def get_session_data(session):
             'loss': loss_h[nonreset_idx],
             'explore_var': explore_var_h[nonreset_idx],
         })
-        agg_df = df.groupby('epi').agg(
-            {'reward': 'sum', 'loss': 'mean', 'explore_var': 'mean'})
+        # TODO refactor this to a dict on top
+        agg_df = df.groupby('epi').agg(DATA_AGG_FNS)
         agg_df.reset_index(drop=False, inplace=True)
         session_df_dict[aeb] = agg_df
     # multi-indexed with (a,e,b), 3 extra levels
