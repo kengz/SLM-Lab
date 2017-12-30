@@ -39,9 +39,6 @@ class Agent:
         self.a = a
         self.body_a = None
         self.flat_nonan_body_a = None  # flatten_nonan version of bodies
-        # agent session data TODO make body-based
-        self.loss_history = []
-        self.explore_var_history = []
 
         AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
         self.algorithm = AlgoClass(self)
@@ -72,8 +69,12 @@ class Agent:
         # TODO finer loss and explore_var per body
         loss = self.algorithm.train()
         explore_var = self.algorithm.update()
-        self.loss_history.append(loss)
-        self.explore_var_history.append(explore_var)
+        loss_a = self.data_spaces['loss'].init_data_s(a=self.a)
+        explore_var_a = self.data_spaces['explore_var'].init_data_s(a=self.a)
+        for (e, b), body in util.ndenumerate_nonan(self.body_a):
+            loss_a[(e, b)] = loss
+            explore_var_a[(e, b)] = explore_var
+        return loss_a, explore_var_a
 
     def close(self):
         '''Close agent at the end of a session, e.g. save model'''
@@ -109,10 +110,14 @@ class AgentSpace:
     def reset(self, state_space):
         logger.debug('AgentSpace.reset')
         _action_v = self.aeb_space.data_spaces['action'].init_data_v()
+        _loss_v = self.aeb_space.data_spaces['loss'].init_data_v()
+        _explore_var_v = self.aeb_space.data_spaces['explore_var'].init_data_v()
         for agent in self.agents:
             state_a = state_space.get(a=agent.a)
             agent.reset(state_a)
         _action_space = self.aeb_space.add('action', _action_v)
+        _loss_space = self.aeb_space.add('loss', _loss_v)
+        _explore_var_space = self.aeb_space.add('explore_var', _explore_var_v)
 
     def act(self, state_space):
         action_v = self.aeb_space.data_spaces['action'].init_data_v()
@@ -125,13 +130,23 @@ class AgentSpace:
         return action_space
 
     def update(self, action_space, reward_space, state_space, done_space):
+        # TODO refactor all into data addition API
+        # TODO ensure submethods return np.nan for loss or explore_var instead of None
+        loss_v = self.aeb_space.data_spaces['loss'].init_data_v()
+        explore_var_v = self.aeb_space.data_spaces['explore_var'].init_data_v()
         for agent in self.agents:
             a = agent.a
             action_a = action_space.get(a=a)
             reward_a = reward_space.get(a=a)
             state_a = state_space.get(a=a)
             done_a = done_space.get(a=a)
-            agent.update(action_a, reward_a, state_a, done_a)
+            loss_a, explore_var_a = agent.update(
+                action_a, reward_a, state_a, done_a)
+            loss_v[a, 0:len(loss_a)] = loss_a
+            explore_var_v[a, 0:len(explore_var_a)] = explore_var_a
+        loss_space = self.aeb_space.add('loss', loss_v)
+        explore_var_space = self.aeb_space.add('explore_var', explore_var_v)
+        return loss_space
 
     def close(self):
         logger.info('AgentSpace.close')

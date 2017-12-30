@@ -15,62 +15,51 @@ def get_session_data(session):
         aeb_space.data_spaces['reward'].data_history, axis=3)
     done_h_v = np.stack(
         aeb_space.data_spaces['done'].data_history, axis=3)
+    loss_h_v = np.stack(
+        aeb_space.data_spaces['loss'].data_history, axis=3)
+    explore_var_h_v = np.stack(
+        aeb_space.data_spaces['explore_var'].data_history, axis=3)
 
-    mdp_df_dict = {}
+    session_df_dict = {}
     for aeb in aeb_space.aeb_list:
         # remove last entry (env reset after termination)
         reward_h = reward_h_v[aeb][:-1]
+        loss_h = loss_h_v[aeb][:-1]
+        explore_var_h = explore_var_h_v[aeb][:-1]
         reset_idx = np.isnan(reward_h)
         nonreset_idx = ~reset_idx
         epi_h = reset_idx.astype(int).cumsum()
+        # TODO save a non-agg data to db for mutual info research
         df = pd.DataFrame({
-            'reward': reward_h[nonreset_idx],
             'epi': epi_h[nonreset_idx],
-        })
-        agg_df = df.groupby('epi').agg('sum')
-        agg_df.reset_index(drop=False, inplace=True)
-        mdp_df_dict[aeb] = agg_df
-    # multi-indexed with (a,e,b), 3 extra levels
-    mdp_df = pd.concat(mdp_df_dict, axis=1)
-    print(mdp_df)
-    util.write(mdp_df, f"data/{session.spec['name']}_mdp_df.csv")
-    # to read, use: util.read(filepath, header=[0, 1, 2, 3])
-
-    agent_data = {}
-    for agent in aeb_space.agent_space.agents:
-        body = agent.flat_nonan_body_a[0]
-        aeb = body.aeb
-        loss_h = np.array(agent.loss_history)
-        explore_var_h = np.array(agent.explore_var_history)
-
-        reward_h = reward_h_v[aeb][:-1]
-        reset_idx = np.isnan(reward_h)
-        nonreset_idx = ~reset_idx
-        epi_h = reset_idx.astype(int).cumsum()
-        df = pd.DataFrame({
+            'reward': reward_h[nonreset_idx],
             'loss': loss_h[nonreset_idx],
             'explore_var': explore_var_h[nonreset_idx],
-            'epi': epi_h[nonreset_idx],
         })
-        agg_df = df.groupby('epi').agg('mean')
+        agg_df = df.groupby('epi').agg(
+            {'reward': 'sum', 'loss': 'mean', 'explore_var': 'mean'})
         agg_df.reset_index(drop=False, inplace=True)
-        agent_data[agent.a] = agg_df
-    # TODO form proper session data for plot and return
-    return mdp_df_dict, agent_data
+        session_df_dict[aeb] = agg_df
+    # multi-indexed with (a,e,b), 3 extra levels
+    session_df = pd.concat(session_df_dict, axis=1)
+    print(session_df)
+    util.write(session_df, f"data/{session.spec['name']}_session_df.csv")
+    # to read, use: util.read(filepath, header=[0, 1, 2, 3])
+    return session_df_dict
 
 
-def plot_session(session, mdp_df_dict, agent_data):
+def plot_session(session, session_df_dict):
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
-
-    for a, df in agent_data.items():
+    for (a, e, b), agg_df in session_df_dict.items():
+        aeb_str = f'{a}{e}{b}'
+        # TODO swap plot order, group legend and colors
         agent_fig = viz.plot_line(
-            df, ['loss'], y2_col=['explore_var'], draw=False)
+            agg_df, ['loss'], y2_col=['explore_var'], legend_name=[f'loss {aeb_str}', f'explore_var {aeb_str}'], draw=False)
         fig.append_trace(agent_fig.data[0], 1, 1)
         fig.append_trace(agent_fig.data[1], 2, 1)
 
-    for aeb, df in mdp_df_dict.items():
         body_fig = viz.plot_line(
-            df, 'reward', 'epi', legend_name=str(aeb), draw=False)
+            agg_df, 'reward', 'epi', legend_name=f'reward {aeb_str}', draw=False)
         fig.append_trace(body_fig.data[0], 3, 1)
 
     fig.layout['yaxis1'].update(agent_fig.layout['yaxis'])
@@ -89,7 +78,7 @@ def plot_session(session, mdp_df_dict, agent_data):
 
 def analyze_session(session):
     '''Gather session data, plot, and return session data'''
-    mdp_df_dict, agent_data = get_session_data(session)
+    session_df_dict = get_session_data(session)
     session_data = pd.DataFrame()
-    plot_session(session, mdp_df_dict, agent_data)
+    plot_session(session, session_df_dict)
     return session_data

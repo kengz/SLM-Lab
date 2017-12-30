@@ -40,7 +40,7 @@ COOR_AXES_ORDER = {
     axis: idx for idx, axis in enumerate(COOR_AXES)
 }
 COOR_DIM = len(COOR_AXES)
-AGENT_DATA_NAMES = ['action']
+AGENT_DATA_NAMES = ['action', 'loss', 'explore_var']
 ENV_DATA_NAMES = ['reward', 'state', 'done']
 
 
