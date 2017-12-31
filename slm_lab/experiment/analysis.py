@@ -25,8 +25,8 @@ def get_session_data(session):
     agg_data_names = ['epi'] + list(DATA_AGG_FNS.keys())
     data_h_v_dict = {data_name: aeb_space.get_history_v(data_name)
                      for data_name in data_names}
-    session_db_data_dict = {}
-    session_data_dict = {}
+    aeb_db_data_dict = {}
+    aeb_data_dict = {}
     for aeb in aeb_space.aeb_list:
         data_h_dict = {data_name: data_h_v[aeb]
                        for data_name, data_h_v in data_h_v_dict.items()}
@@ -41,9 +41,9 @@ def get_session_data(session):
         agg_df = df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
         agg_df.reset_index(drop=False, inplace=True)
         # TODO save full data to db
-        session_db_data_dict[aeb] = df
-        session_data_dict[aeb] = agg_df
-    session_data = pd.concat(session_data_dict, axis=1)
+        aeb_db_data_dict[aeb] = df
+        aeb_data_dict[aeb] = agg_df
+    session_data = pd.concat(aeb_data_dict, axis=1)
     logger.debug(f'{session_data}')
     return session_data
 
@@ -110,9 +110,11 @@ def analyze_session(session):
 
 def analyze_trial(trial):
     '''Gather trial data, plot, and return trial data (df) for high level agg.'''
-    return trial_df
+    trial_data = pd.concat(trial.session_data_dict, axis=1)
+    logger.debug(f'{trial_data}')
+    return trial_data
 
 
 def analyze_experiment(experiment):
     '''Gather experiment data, plot, and return experiment data (df) for high level agg.'''
-    return experiment_df
+    return experiment_data
