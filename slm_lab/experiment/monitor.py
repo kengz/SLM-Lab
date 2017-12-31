@@ -22,7 +22,8 @@ Agents - AgentSpace - AEBSpace - EnvSpace - Envs
 # TODO - plug to NoSQL graph db, using graphql notation, and data backup
 # TODO - data_space viewer and stats method for evaluating and planning experiments
 from copy import deepcopy
-from slm_lab.agent import memory
+from slm_lab.agent import AGENT_DATA_NAMES, Body
+from slm_lab.env import ENV_DATA_NAMES, Clock
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import numpy as np
@@ -40,64 +41,6 @@ COOR_AXES_ORDER = {
     axis: idx for idx, axis in enumerate(COOR_AXES)
 }
 COOR_DIM = len(COOR_AXES)
-AGENT_DATA_NAMES = ['action', 'loss', 'explore_var']
-ENV_DATA_NAMES = ['reward', 'state', 'done']
-
-
-class Clock:
-    '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0, but epi begins at 1, env step begins at 1.'''
-
-    def __init__(self, clock_speed=1):
-        self.clock_speed = int(clock_speed)
-        self.ticks = 0
-        self.t = 0
-        self.total_t = 0
-        self.epi = 1
-
-    def to_step(self):
-        '''Step signal from clock_speed. Step only if the base unit of time in this clock has moved. Used to control if env of different clock_speed should step()'''
-        return self.ticks % self.clock_speed == 0
-
-    def tick(self, unit='t'):
-        if unit == 't':  # timestep
-            if self.to_step():
-                self.t += 1
-                self.total_t += 1
-            else:
-                pass
-            self.ticks += 1
-        elif unit == 'epi':  # episode, reset timestep
-            self.epi += 1
-            self.t = 0
-        else:
-            raise KeyError
-
-    def get(self, unit='t'):
-        return getattr(self, unit)
-
-
-class Body:
-    '''
-    Body, helpful info reference unit under AEBSpace for sharing info between agent and env.
-    '''
-
-    def __init__(self, aeb, agent, env):
-        self.aeb = aeb
-        self.a, self.e, self.b = aeb
-        self.agent = agent
-        self.env = env
-        self.observable_dim = self.env.get_observable_dim(self.a)
-        # TODO generalize and make state_space to include observables
-        # TODO use tuples for state_dim for pixel-based in the future, generalize all and call as shape
-        self.state_dim = self.observable_dim['state']
-        self.action_dim = self.env.get_action_dim(self.a)
-        self.is_discrete = self.env.is_discrete(self.a)
-
-        MemoryClass = getattr(memory, _.get(self.agent.spec, 'memory.name'))
-        self.memory = MemoryClass(self)
-
-    def __str__(self):
-        return 'body: ' + util.to_json(util.get_class_attr(self))
 
 
 class DataSpace:

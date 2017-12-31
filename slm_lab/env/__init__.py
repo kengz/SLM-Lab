@@ -4,7 +4,6 @@ Contains graduated components from experiments for building/using environment.
 Provides the rich experience for agent embodiment, reflects the curriculum and allows teaching (possibly allows teacher to enter).
 To be designed by human and evolution module, based on the curriculum and fitness metrics.
 '''
-from slm_lab.experiment.monitor import Clock, ENV_DATA_NAMES
 from slm_lab.lib import logger, util
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
@@ -15,9 +14,43 @@ import numpy as np
 import os
 import pydash as _
 
+ENV_DATA_NAMES = ['reward', 'state', 'done']
+
 logging.getLogger('gym').setLevel(logging.WARN)
 logging.getLogger('requests').setLevel(logging.WARN)
 logging.getLogger('unityagents').setLevel(logging.WARN)
+
+
+class Clock:
+    '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0, but epi begins at 1, env step begins at 1.'''
+
+    def __init__(self, clock_speed=1):
+        self.clock_speed = int(clock_speed)
+        self.ticks = 0
+        self.t = 0
+        self.total_t = 0
+        self.epi = 1
+
+    def to_step(self):
+        '''Step signal from clock_speed. Step only if the base unit of time in this clock has moved. Used to control if env of different clock_speed should step()'''
+        return self.ticks % self.clock_speed == 0
+
+    def tick(self, unit='t'):
+        if unit == 't':  # timestep
+            if self.to_step():
+                self.t += 1
+                self.total_t += 1
+            else:
+                pass
+            self.ticks += 1
+        elif unit == 'epi':  # episode, reset timestep
+            self.epi += 1
+            self.t = 0
+        else:
+            raise KeyError
+
+    def get(self, unit='t'):
+        return getattr(self, unit)
 
 
 class BrainExt:

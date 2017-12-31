@@ -19,10 +19,36 @@ Agent components:
 - memory (per body)
 '''
 from slm_lab.agent import algorithm
-from slm_lab.experiment.monitor import AGENT_DATA_NAMES
+from slm_lab.agent import memory
 from slm_lab.lib import logger, util
 import numpy as np
 import pydash as _
+
+AGENT_DATA_NAMES = ['action', 'loss', 'explore_var']
+
+
+class Body:
+    '''
+    Body, helpful info reference unit under AEBSpace for sharing info between agent and env.
+    '''
+
+    def __init__(self, aeb, agent, env):
+        self.aeb = aeb
+        self.a, self.e, self.b = aeb
+        self.agent = agent
+        self.env = env
+        self.observable_dim = self.env.get_observable_dim(self.a)
+        # TODO generalize and make state_space to include observables
+        # TODO use tuples for state_dim for pixel-based in the future, generalize all and call as shape
+        self.state_dim = self.observable_dim['state']
+        self.action_dim = self.env.get_action_dim(self.a)
+        self.is_discrete = self.env.is_discrete(self.a)
+
+        MemoryClass = getattr(memory, _.get(self.agent.spec, 'memory.name'))
+        self.memory = MemoryClass(self)
+
+    def __str__(self):
+        return 'body: ' + util.to_json(util.get_class_attr(self))
 
 
 class Agent:

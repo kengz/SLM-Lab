@@ -2,11 +2,13 @@
 The analysis module
 Handles the analyses of the info and data space for experiment evaluation and design.
 '''
+from slm_lab.agent import AGENT_DATA_NAMES
+from slm_lab.env import ENV_DATA_NAMES
+from slm_lab.lib import logger, util, viz
 import colorlover as cl
 import numpy as np
 import pandas as pd
 import pydash as _
-from slm_lab.lib import logger, util, viz
 
 DATA_AGG_FNS = {
     'reward': 'sum',
@@ -18,30 +20,26 @@ DATA_AGG_FNS = {
 def get_session_data(session):
     '''Gather data from session: MDP, Agent, Env data, and form session_data.'''
     aeb_space = session.aeb_space
-    done_h_v = aeb_space.get_history_v('done')
-    reward_h_v = aeb_space.get_history_v('reward')
-    loss_h_v = aeb_space.get_history_v('loss')
-    explore_var_h_v = aeb_space.get_history_v('explore_var')
-
+    data_names = AGENT_DATA_NAMES + ENV_DATA_NAMES
+    agg_data_names = ['epi'] + list(DATA_AGG_FNS.keys())
+    data_h_v_dict = {data_name: aeb_space.get_history_v(data_name)
+                     for data_name in data_names}
+    session_db_df_dict = {}
     session_df_dict = {}
     for aeb in aeb_space.aeb_list:
         # remove last entry (env reset after termination)
-        done_h = done_h_v[aeb][:-1]
-        reset_idx = np.isnan(done_h)
+        data_h_dict = {data_name: data_h_v[aeb][:-1]
+                       for data_name, data_h_v in data_h_v_dict.items()}
+        reset_idx = np.isnan(data_h_dict['done'])
         nonreset_idx = ~reset_idx
         epi_h = reset_idx.astype(int).cumsum()
-        reward_h = reward_h_v[aeb][:-1]
-        loss_h = loss_h_v[aeb][:-1]
-        explore_var_h = explore_var_h_v[aeb][:-1]
-        # TODO save a non-agg data to db for mutual info research
-        df = pd.DataFrame({
-            'epi': epi_h[nonreset_idx],
-            'reward': reward_h[nonreset_idx],
-            'loss': loss_h[nonreset_idx],
-            'explore_var': explore_var_h[nonreset_idx],
-        })
-        agg_df = df.groupby('epi').agg(DATA_AGG_FNS)
+        data_h_dict['epi'] = epi_h
+        df = pd.DataFrame({data_name: data_h_dict[data_name][nonreset_idx]
+                           for data_name in ['epi'] + data_names})
+        agg_df = df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
         agg_df.reset_index(drop=False, inplace=True)
+        # TODO save full data to db
+        session_db_df_dict[aeb] = df
         session_df_dict[aeb] = agg_df
     return session_df_dict
 

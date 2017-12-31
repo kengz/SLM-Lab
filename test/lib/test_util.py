@@ -1,5 +1,5 @@
 from slm_lab.agent import Agent
-from slm_lab.experiment.monitor import Clock
+from slm_lab.env import Clock
 from slm_lab.lib import util
 import numpy as np
 import os
