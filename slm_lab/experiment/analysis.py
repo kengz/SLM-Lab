@@ -11,6 +11,7 @@ import pandas as pd
 import pydash as _
 
 DATA_AGG_FNS = {
+    't': 'sum',
     'reward': 'sum',
     'loss': 'mean',
     'explore_var': 'mean',
@@ -32,9 +33,11 @@ def get_session_data(session):
         reset_idx = np.isnan(data_h_dict['done'])
         nonreset_idx = ~reset_idx
         epi_h = reset_idx.astype(int).cumsum()
+        t_h = np.ones(reset_idx.shape)
         data_h_dict['epi'] = epi_h
+        data_h_dict['t'] = t_h
         df = pd.DataFrame({data_name: data_h_dict[data_name][nonreset_idx]
-                           for data_name in ['epi'] + data_names})
+                           for data_name in ['epi', 't'] + data_names})
         agg_df = df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
         agg_df.reset_index(drop=False, inplace=True)
         # TODO save full data to db
