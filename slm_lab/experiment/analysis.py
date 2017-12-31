@@ -43,12 +43,6 @@ def get_session_data(session):
         agg_df = df.groupby('epi').agg(DATA_AGG_FNS)
         agg_df.reset_index(drop=False, inplace=True)
         session_df_dict[aeb] = agg_df
-    # multi-indexed with (a,e,b), 3 extra levels
-    session_df = pd.concat(session_df_dict, axis=1)
-    print(session_df)
-    util.write(session_df, f"data/{session.spec['name']}_session_df.csv")
-    # to read, use: session_df = util.read(filepath, header=[0, 1, 2, 3])
-    # session_df_dict = util.aeb_df_to_df_dict(session_df)
     return session_df_dict
 
 
@@ -84,11 +78,32 @@ def plot_session(session, session_df_dict):
     fig.layout.update(_.pick(fig_2.layout, ['legend']))
     fig.layout.update(title=session.spec['name'], width=500, height=600)
     viz.plot(fig)
-    viz.save_image(fig)
+    return fig
+
+
+def save_session_data(session_spec, session_df_dict, session_fig):
+    '''
+    Save the session data: spec, df, plot.
+    session_df is multi-indexed with (a,e,b), 3 extra levels
+    to read, use: session_df = util.read(filepath, header=[0, 1, 2, 3])
+    session_df_dict = util.aeb_df_to_df_dict(session_df)
+    @returns session_df for trial/experiment level agg.
+    '''
+    # TODO generalize to use experiment timestamp, id, sesison coor in info space, to replace timestamp
+    spec_name = session_spec['name']
+    prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
+    util.write(session_spec, f'{prepath}_spec.json')
+
+    session_df = pd.concat(session_df_dict, axis=1)
+    logger.debug(f'{session_df}')
+    util.write(session_df, f'{prepath}_session_df.csv')
+    viz.save_image(session_fig, f'{prepath}_session_graph.png')
+    return session_df
 
 
 def analyze_session(session):
-    '''Gather session data, plot, and return session data'''
+    '''Gather session data, plot, and return session data (session_df) for high level agg.'''
     session_df_dict = get_session_data(session)
-    plot_session(session, session_df_dict)
-    return session_df_dict
+    session_fig = plot_session(session, session_df_dict)
+    session_df = save_session_data(session.spec, session_df_dict, session_fig)
+    return session_df
