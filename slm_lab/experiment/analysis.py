@@ -64,14 +64,14 @@ def plot_session(session, session_df_dict):
         fig.append_trace(fig_2.data[0], 2, 1)
         fig.append_trace(fig_2.data[1], 3, 1)
 
-    fig.layout['xaxis1'].update(title='epi')
+    fig.layout['xaxis1'].update(title='epi', zerolinewidth=1)
     fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
     fig.layout['yaxis1'].update(domain=[0.55, 1])
 
     fig.layout['yaxis2'].update(fig_2.layout['yaxis'])
     fig.layout['yaxis2'].update(showgrid=False, domain=[0, 0.45])
     fig.layout['yaxis3'].update(fig_2.layout['yaxis2'])
-    fig.layout['yaxis3'].update(overlaying='y2')
+    fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
     fig.layout.update(_.pick(fig_1.layout, ['legend']))
     fig.layout.update(_.pick(fig_2.layout, ['legend']))
     fig.layout.update(title=session.spec['name'], width=500, height=600)
