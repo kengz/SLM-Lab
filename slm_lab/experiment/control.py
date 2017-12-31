@@ -24,7 +24,7 @@ class Session:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.data = pd.DataFrame()
+        self.data = None
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
@@ -78,7 +78,8 @@ class Trial:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.data = pd.DataFrame()
+        self.session_data_dict = {}
+        self.data = None
         self.session = None
 
     def init_session(self):
@@ -91,7 +92,7 @@ class Trial:
     def run(self):
         for s in range(_.get(self.spec, 'meta.max_session')):
             logger.debug(f'session {s}')
-            session_data = self.init_session().run()
+            self.session_data_dict[s] = self.init_session().run()
         trial_data = analysis.analyze_trial(self)
         self.data = trial_data
         self.close()
@@ -116,7 +117,8 @@ class Experiment:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.data = pd.DataFrame()
+        self.trial_data_dict = {}
+        self.data = None
         self.trial = None
 
     def init_trial(self):
@@ -129,7 +131,7 @@ class Experiment:
     def run(self):
         for t in range(_.get(self.spec, 'meta.max_trial')):
             logger.debug(f'trial {t}')
-            self.init_trial().run()
+            self.trial_data_dict[t] = self.init_trial().run()
         experiment_data = analysis.analyze_experiment(self)
         self.data = experiment_data
         self.close()

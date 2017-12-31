@@ -25,8 +25,8 @@ def get_session_data(session):
     agg_data_names = ['epi'] + list(DATA_AGG_FNS.keys())
     data_h_v_dict = {data_name: aeb_space.get_history_v(data_name)
                      for data_name in data_names}
-    session_db_df_dict = {}
-    session_df_dict = {}
+    session_db_data_dict = {}
+    session_data_dict = {}
     for aeb in aeb_space.aeb_list:
         data_h_dict = {data_name: data_h_v[aeb]
                        for data_name, data_h_v in data_h_v_dict.items()}
@@ -41,22 +41,24 @@ def get_session_data(session):
         agg_df = df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
         agg_df.reset_index(drop=False, inplace=True)
         # TODO save full data to db
-        session_db_df_dict[aeb] = df
-        session_df_dict[aeb] = agg_df
-    return session_df_dict
+        session_db_data_dict[aeb] = df
+        session_data_dict[aeb] = agg_df
+    session_data = pd.concat(session_data_dict, axis=1)
+    logger.debug(f'{session_data}')
+    return session_data
 
 
-def plot_session(session, session_df_dict):
-    aeb_list = sorted(session_df_dict.keys())
-    aeb_count = len(aeb_list)
+def plot_session(session, session_data):
+    aeb_space = session.aeb_space
+    aeb_count = len(aeb_space.aeb_list)
     if aeb_count <= 8:
         palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
     else:
         palette = util.interp(cl.scales['8']['qual']['Set2'], aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
-    for idx, (a, e, b) in enumerate(aeb_list):
+    for idx, (a, e, b) in enumerate(aeb_space.aeb_list):
         aeb_str = f'{a}{e}{b}'
-        agg_df = session_df_dict[(a, e, b)]
+        agg_df = session_data.loc[:, (a, e, b)]
         fig_1 = viz.plot_line(
             agg_df, 'reward', 'epi', legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
         fig.append_trace(fig_1.data[0], 1, 1)
@@ -81,32 +83,29 @@ def plot_session(session, session_df_dict):
     return fig
 
 
-def save_session_data(session_spec, session_df_dict, session_fig):
+def save_session_data(session_spec, session_data, session_fig):
     '''
     Save the session data: spec, df, plot.
-    session_df is multi-indexed with (a,e,b), 3 extra levels
-    to read, use: session_df = util.read(filepath, header=[0, 1, 2, 3])
-    session_df_dict = util.aeb_df_to_df_dict(session_df)
-    @returns session_df for trial/experiment level agg.
+    session_data is multi-indexed with (a,e,b), 3 extra levels
+    to read, use: session_data = util.read(filepath, header=[0, 1, 2, 3])
+    session_data = util.aeb_df_to_df_dict(session_data)
+    @returns session_data for trial/experiment level agg.
     '''
     # TODO generalize to use experiment timestamp, id, sesison coor in info space, to replace timestamp
     spec_name = session_spec['name']
     prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
+    logger.info(f'Saving session data to {prepath}_*')
     util.write(session_spec, f'{prepath}_spec.json')
-
-    session_df = pd.concat(session_df_dict, axis=1)
-    logger.debug(f'{session_df}')
-    util.write(session_df, f'{prepath}_session_df.csv')
+    util.write(session_data, f'{prepath}_session_df.csv')
     viz.save_image(session_fig, f'{prepath}_session_graph.png')
-    return session_df
 
 
 def analyze_session(session):
     '''Gather session data, plot, and return session data (df) for high level agg.'''
-    session_df_dict = get_session_data(session)
-    session_fig = plot_session(session, session_df_dict)
-    session_df = save_session_data(session.spec, session_df_dict, session_fig)
-    return session_df
+    session_data = get_session_data(session)
+    session_fig = plot_session(session, session_data)
+    save_session_data(session.spec, session_data, session_fig)
+    return session_data
 
 
 def analyze_trial(trial):
