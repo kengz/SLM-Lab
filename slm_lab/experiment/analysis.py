@@ -2,92 +2,106 @@
 The analysis module
 Handles the analyses of the info and data space for experiment evaluation and design.
 '''
+from slm_lab.agent import AGENT_DATA_NAMES
+from slm_lab.env import ENV_DATA_NAMES
+from slm_lab.lib import logger, util, viz
+import colorlover as cl
 import numpy as np
 import pandas as pd
 import pydash as _
-from slm_lab.lib import logger, util, viz
+
+DATA_AGG_FNS = {
+    'reward': 'sum',
+    'loss': 'mean',
+    'explore_var': 'mean',
+}
 
 
 def get_session_data(session):
     '''Gather data from session: MDP, Agent, Env data, and form session_data.'''
     aeb_space = session.aeb_space
-    reward_h_v = np.stack(
-        aeb_space.data_spaces['reward'].data_history, axis=3)
-    done_h_v = np.stack(
-        aeb_space.data_spaces['done'].data_history, axis=3)
-
-    mdp_data = {}
+    data_names = AGENT_DATA_NAMES + ENV_DATA_NAMES
+    agg_data_names = ['epi'] + list(DATA_AGG_FNS.keys())
+    data_h_v_dict = {data_name: aeb_space.get_history_v(data_name)
+                     for data_name in data_names}
+    session_db_df_dict = {}
+    session_df_dict = {}
     for aeb in aeb_space.aeb_list:
         # remove last entry (env reset after termination)
-        reward_h = reward_h_v[aeb][:-1]
-        reset_idx = np.isnan(reward_h)
+        data_h_dict = {data_name: data_h_v[aeb][:-1]
+                       for data_name, data_h_v in data_h_v_dict.items()}
+        reset_idx = np.isnan(data_h_dict['done'])
         nonreset_idx = ~reset_idx
         epi_h = reset_idx.astype(int).cumsum()
-        df = pd.DataFrame({
-            'reward': reward_h[nonreset_idx],
-            'epi': epi_h[nonreset_idx],
-        })
-        agg_df = df.groupby('epi').agg('sum')
+        data_h_dict['epi'] = epi_h
+        df = pd.DataFrame({data_name: data_h_dict[data_name][nonreset_idx]
+                           for data_name in ['epi'] + data_names})
+        agg_df = df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
         agg_df.reset_index(drop=False, inplace=True)
-        # TODO write file properly once session_data is in tabular form
-        print(agg_df)
-        util.write(agg_df, f"data/{session.spec['name']}_{aeb}_mdp_data.csv")
-        mdp_data[aeb] = agg_df
-
-    agent_data = {}
-    for agent in aeb_space.agent_space.agents:
-        body = agent.flat_nonan_body_a[0]
-        aeb = body.aeb
-        loss_h = np.array(agent.loss_history)
-        explore_var_h = np.array(agent.explore_var_history)
-
-        reward_h = reward_h_v[aeb][:-1]
-        reset_idx = np.isnan(reward_h)
-        nonreset_idx = ~reset_idx
-        epi_h = reset_idx.astype(int).cumsum()
-        df = pd.DataFrame({
-            'loss': loss_h[nonreset_idx],
-            'explore_var': explore_var_h[nonreset_idx],
-            'epi': epi_h[nonreset_idx],
-        })
-        agg_df = df.groupby('epi').agg('mean')
-        agg_df.reset_index(drop=False, inplace=True)
-        agent_data[agent.a] = agg_df
-    # TODO form proper session data for plot and return
-    return mdp_data, agent_data
+        # TODO save full data to db
+        session_db_df_dict[aeb] = df
+        session_df_dict[aeb] = agg_df
+    return session_df_dict
 
 
-def plot_session(session, mdp_data, agent_data):
+def plot_session(session, session_df_dict):
+    aeb_list = sorted(session_df_dict.keys())
+    aeb_count = len(aeb_list)
+    if aeb_count <= 8:
+        palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
+    else:
+        palette = util.interp(cl.scales['8']['qual']['Set2'], aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
+    for idx, (a, e, b) in enumerate(aeb_list):
+        aeb_str = f'{a}{e}{b}'
+        agg_df = session_df_dict[(a, e, b)]
+        fig_1 = viz.plot_line(
+            agg_df, 'reward', 'epi', legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
+        fig.append_trace(fig_1.data[0], 1, 1)
 
-    for a, df in agent_data.items():
-        agent_fig = viz.plot_line(
-            df, ['loss'], y2_col=['explore_var'], draw=False)
-        fig.append_trace(agent_fig.data[0], 1, 1)
-        fig.append_trace(agent_fig.data[1], 2, 1)
+        fig_2 = viz.plot_line(
+            agg_df, ['loss'], 'epi', y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
+        fig.append_trace(fig_2.data[0], 2, 1)
+        fig.append_trace(fig_2.data[1], 3, 1)
 
-    for aeb, df in mdp_data.items():
-        body_fig = viz.plot_line(
-            df, 'reward', 'epi', legend_name=str(aeb), draw=False)
-        fig.append_trace(body_fig.data[0], 3, 1)
-
-    fig.layout['yaxis1'].update(agent_fig.layout['yaxis'])
+    fig.layout['xaxis1'].update(title='epi', zerolinewidth=1)
+    fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
     fig.layout['yaxis1'].update(domain=[0.55, 1])
-    fig.layout['yaxis2'].update(agent_fig.layout['yaxis2'])
-    fig.layout['yaxis2'].update(showgrid=False)
 
-    fig.layout['yaxis3'].update(body_fig.layout['yaxis'])
-    fig.layout['yaxis3'].update(domain=[0, 0.45])
-    fig.layout.update(_.pick(agent_fig.layout, ['legend']))
-    fig.layout.update(_.pick(body_fig.layout, ['legend']))
+    fig.layout['yaxis2'].update(fig_2.layout['yaxis'])
+    fig.layout['yaxis2'].update(showgrid=False, domain=[0, 0.45])
+    fig.layout['yaxis3'].update(fig_2.layout['yaxis2'])
+    fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
+    fig.layout.update(_.pick(fig_1.layout, ['legend']))
+    fig.layout.update(_.pick(fig_2.layout, ['legend']))
     fig.layout.update(title=session.spec['name'], width=500, height=600)
     viz.plot(fig)
-    viz.save_image(fig)
+    return fig
+
+
+def save_session_data(session_spec, session_df_dict, session_fig):
+    '''
+    Save the session data: spec, df, plot.
+    session_df is multi-indexed with (a,e,b), 3 extra levels
+    to read, use: session_df = util.read(filepath, header=[0, 1, 2, 3])
+    session_df_dict = util.aeb_df_to_df_dict(session_df)
+    @returns session_df for trial/experiment level agg.
+    '''
+    # TODO generalize to use experiment timestamp, id, sesison coor in info space, to replace timestamp
+    spec_name = session_spec['name']
+    prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
+    util.write(session_spec, f'{prepath}_spec.json')
+
+    session_df = pd.concat(session_df_dict, axis=1)
+    logger.debug(f'{session_df}')
+    util.write(session_df, f'{prepath}_session_df.csv')
+    viz.save_image(session_fig, f'{prepath}_session_graph.png')
+    return session_df
 
 
 def analyze_session(session):
-    '''Gather session data, plot, and return session data'''
-    mdp_data, agent_data = get_session_data(session)
-    session_data = pd.DataFrame()
-    plot_session(session, mdp_data, agent_data)
-    return session_data
+    '''Gather session data, plot, and return session data (session_df) for high level agg.'''
+    session_df_dict = get_session_data(session)
+    session_fig = plot_session(session, session_df_dict)
+    session_df = save_session_data(session.spec, session_df_dict, session_fig)
+    return session_df
