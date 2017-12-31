@@ -58,7 +58,7 @@ def plot_session(session, session_df_dict):
     if aeb_count <= 8:
         palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
     else:
-        palette = cl.interp(cl.scales['8']['qual']['Set2'], aeb_count)
+        palette = util.interp(cl.scales['8']['qual']['Set2'], aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
     for idx, (a, e, b) in enumerate(aeb_list):
         aeb_str = f'{a}{e}{b}'
