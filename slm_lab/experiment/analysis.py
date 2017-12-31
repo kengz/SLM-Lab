@@ -102,8 +102,18 @@ def save_session_data(session_spec, session_df_dict, session_fig):
 
 
 def analyze_session(session):
-    '''Gather session data, plot, and return session data (session_df) for high level agg.'''
+    '''Gather session data, plot, and return session data (df) for high level agg.'''
     session_df_dict = get_session_data(session)
     session_fig = plot_session(session, session_df_dict)
     session_df = save_session_data(session.spec, session_df_dict, session_fig)
     return session_df
+
+
+def analyze_trial(trial):
+    '''Gather trial data, plot, and return trial data (df) for high level agg.'''
+    return trial_df
+
+
+def analyze_experiment(experiment):
+    '''Gather experiment data, plot, and return experiment data (df) for high level agg.'''
+    return experiment_df
