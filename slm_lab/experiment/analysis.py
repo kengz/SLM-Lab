@@ -2,6 +2,7 @@
 The analysis module
 Handles the analyses of the info and data space for experiment evaluation and design.
 '''
+import colorlover as cl
 import numpy as np
 import pandas as pd
 import pydash as _
@@ -39,7 +40,6 @@ def get_session_data(session):
             'loss': loss_h[nonreset_idx],
             'explore_var': explore_var_h[nonreset_idx],
         })
-        # TODO refactor this to a dict on top
         agg_df = df.groupby('epi').agg(DATA_AGG_FNS)
         agg_df.reset_index(drop=False, inplace=True)
         session_df_dict[aeb] = agg_df
@@ -47,33 +47,41 @@ def get_session_data(session):
     session_df = pd.concat(session_df_dict, axis=1)
     print(session_df)
     util.write(session_df, f"data/{session.spec['name']}_session_df.csv")
-    # to read, use: util.read(filepath, header=[0, 1, 2, 3])
+    # to read, use: session_df = util.read(filepath, header=[0, 1, 2, 3])
+    # session_df_dict = util.aeb_df_to_df_dict(session_df)
     return session_df_dict
 
 
 def plot_session(session, session_df_dict):
+    aeb_list = sorted(session_df_dict.keys())
+    aeb_count = len(aeb_list)
+    if aeb_count <= 8:
+        palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
+    else:
+        palette = cl.interp(cl.scales['8']['qual']['Set2'], aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
-    for (a, e, b), agg_df in session_df_dict.items():
+    for idx, (a, e, b) in enumerate(aeb_list):
         aeb_str = f'{a}{e}{b}'
-        # TODO swap plot order, group legend and colors
-        agent_fig = viz.plot_line(
-            agg_df, ['loss'], y2_col=['explore_var'], legend_name=[f'loss {aeb_str}', f'explore_var {aeb_str}'], draw=False)
-        fig.append_trace(agent_fig.data[0], 1, 1)
-        fig.append_trace(agent_fig.data[1], 2, 1)
+        agg_df = session_df_dict[(a, e, b)]
+        fig_1 = viz.plot_line(
+            agg_df, 'reward', 'epi', legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
+        fig.append_trace(fig_1.data[0], 1, 1)
 
-        body_fig = viz.plot_line(
-            agg_df, 'reward', 'epi', legend_name=f'reward {aeb_str}', draw=False)
-        fig.append_trace(body_fig.data[0], 3, 1)
+        fig_2 = viz.plot_line(
+            agg_df, ['loss'], 'epi', y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
+        fig.append_trace(fig_2.data[0], 2, 1)
+        fig.append_trace(fig_2.data[1], 3, 1)
 
-    fig.layout['yaxis1'].update(agent_fig.layout['yaxis'])
+    fig.layout['xaxis1'].update(title='epi')
+    fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
     fig.layout['yaxis1'].update(domain=[0.55, 1])
-    fig.layout['yaxis2'].update(agent_fig.layout['yaxis2'])
-    fig.layout['yaxis2'].update(showgrid=False)
 
-    fig.layout['yaxis3'].update(body_fig.layout['yaxis'])
-    fig.layout['yaxis3'].update(domain=[0, 0.45])
-    fig.layout.update(_.pick(agent_fig.layout, ['legend']))
-    fig.layout.update(_.pick(body_fig.layout, ['legend']))
+    fig.layout['yaxis2'].update(fig_2.layout['yaxis'])
+    fig.layout['yaxis2'].update(showgrid=False, domain=[0, 0.45])
+    fig.layout['yaxis3'].update(fig_2.layout['yaxis2'])
+    fig.layout['yaxis3'].update(overlaying='y2')
+    fig.layout.update(_.pick(fig_1.layout, ['legend']))
+    fig.layout.update(_.pick(fig_2.layout, ['legend']))
     fig.layout.update(title=session.spec['name'], width=500, height=600)
     viz.plot(fig)
     viz.save_image(fig)
@@ -82,6 +90,5 @@ def plot_session(session, session_df_dict):
 def analyze_session(session):
     '''Gather session data, plot, and return session data'''
     session_df_dict = get_session_data(session)
-    session_data = pd.DataFrame()
     plot_session(session, session_df_dict)
-    return session_data
+    return session_df_dict
