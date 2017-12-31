@@ -96,7 +96,7 @@ def save_session_data(session_spec, session_data, session_fig):
     prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
     logger.info(f'Saving session data to {prepath}_*')
     util.write(session_spec, f'{prepath}_spec.json')
-    util.write(session_data, f'{prepath}_session_df.csv')
+    util.write(session_data, f'{prepath}_session_data.csv')
     viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
 
@@ -110,8 +110,11 @@ def analyze_session(session):
 
 def analyze_trial(trial):
     '''Gather trial data, plot, and return trial data (df) for high level agg.'''
+    spec_name = trial.spec['name']
+    prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
     trial_data = pd.concat(trial.session_data_dict, axis=1)
     logger.debug(f'{trial_data}')
+    util.write(trial_data, f'{prepath}_trial_data.csv')
     return trial_data
 
 
