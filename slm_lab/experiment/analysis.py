@@ -27,8 +27,7 @@ def get_session_data(session):
     session_db_df_dict = {}
     session_df_dict = {}
     for aeb in aeb_space.aeb_list:
-        # remove last entry (env reset after termination)
-        data_h_dict = {data_name: data_h_v[aeb][:-1]
+        data_h_dict = {data_name: data_h_v[aeb]
                        for data_name, data_h_v in data_h_v_dict.items()}
         reset_idx = np.isnan(data_h_dict['done'])
         nonreset_idx = ~reset_idx
