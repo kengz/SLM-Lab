@@ -45,6 +45,7 @@ class MLPNet(nn.Module):
         self.model = nn.Sequential(*self.layers)
         self.init_params()
         # Init other net variables
+        self.params = list(self.model.parameters())
         self.optim = net_util.get_optim(self, optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
