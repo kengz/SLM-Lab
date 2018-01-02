@@ -47,6 +47,15 @@ def get_optim(cls, optim_param):
     return optim
 
 
+def get_optim_multinet(params, optim_param):
+    '''Helper to parse optim param and construct optim for net'''
+    optim_param = optim_param or {}
+    OptimClass = getattr(torch.optim, _.get(optim_param, 'name', 'Adam'))
+    optim_param.pop('name', None)
+    optim = OptimClass(params, **optim_param)
+    return optim
+
+
 def load_params(net, flattened):
     '''Source: https://discuss.pytorch.org/t/running-average-of-parameters/902/2'''
     offset = 0
