@@ -42,6 +42,7 @@ _(Work In Progress)_ An experimentation framework for Reinforcement Learning usi
 | update dependency file | `yarn export-env` |
 | update environment | `yarn update-env` |
 | run tests | `yarn test` |
+| reset lab - clear data/ and log/ | `yarn reset` |
 | clear cache | `yarn clear` |
 | kill stuck Unity ports/processes | `yarn kill` |
 
