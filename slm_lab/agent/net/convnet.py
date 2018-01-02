@@ -164,8 +164,6 @@ class ConvNet(nn.Module):
         '''
         Gathers parameters that should be trained into a list returns: copy of a list of fixed params
         '''
-        print(type(self.params))
-        print(len(self.params))
         return [param.clone() for param in self.params]
 
     def gather_fixed_params(self):
