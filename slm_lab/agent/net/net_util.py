@@ -47,7 +47,7 @@ def get_optim(cls, optim_param):
     return optim
 
 
-def get_optim_multitask(params, optim_param):
+def get_optim_multinet(params, optim_param):
     '''Helper to parse optim param and construct optim for net'''
     optim_param = optim_param or {}
     OptimClass = getattr(torch.optim, _.get(optim_param, 'name', 'Adam'))
