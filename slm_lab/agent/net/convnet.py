@@ -9,7 +9,7 @@ import torch.nn.functional as F
 class ConvNet(nn.Module):
     '''
     Class for generating arbitrary sized convolutional neural network,
-    with ReLU activations, and optional batch normalization
+    with optional batch normalization
 
     Assumed that a single input example is organized into a 3D tensor
     '''
@@ -72,11 +72,19 @@ class ConvNet(nn.Module):
         self.clamp_grad_val = clamp_grad_val
 
     def get_conv_output_size(self):
+        '''Helper function to calculate the size of the
+           flattened features after the final convolutional layer'''
         x = Variable(torch.ones(1, *self.in_dim))
         x = self.conv_model(x)
         return x.numel()
 
     def build_conv_layers(self, conv_hid, hid_layers_activation):
+        '''Builds all of the convolutional layers in the network.
+           These layers are turned into a Sequential model and stored
+           in self.conv_model.
+           The entire model consists of two parts:
+                1. self.conv_model
+                2. self.dense_model'''
         for i, layer in enumerate(conv_hid):
             self.conv_layers += [nn.Conv2d(
                 conv_hid[i][0],
@@ -92,6 +100,12 @@ class ConvNet(nn.Module):
         return nn.Sequential(*self.conv_layers)
 
     def build_flat_layers(self, flat_hid, out_dim, hid_layers_activation):
+        '''Builds all of the dense layers in the network.
+           These layers are turned into a Sequential model and stored
+           in self.dense_model.
+           The entire model consists of two parts:
+                1. self.conv_model
+                2. self.dense_model'''
         self.flat_dim = self.get_conv_output_size()
         for i, layer in enumerate(flat_hid):
             in_D = self.flat_dim if i == 0 else flat_hid[i - 1]
