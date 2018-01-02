@@ -128,8 +128,8 @@ class TestNet:
 
     def test_params_not_zero(self, test_nets):
         ''' Checks that the parameters of the net are not zero '''
-        net.print_nets()
         net = test_nets[0]
+        net.print_nets()
         flag = True
         for i, param in enumerate(net.params):
             if torch.sum(torch.abs(param.data)) < SMALL_NUM:
