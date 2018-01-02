@@ -1,5 +1,4 @@
 from slm_lab.agent.net import net_util
-from slm_lab.agent.net.feedforward import MLPNet
 from torch.autograd import Variable
 from torch.nn import Module
 import torch
@@ -7,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class ConvNet(MLPNet):
+class ConvNet(nn.Module):
     '''
     Class for generating arbitrary sized convolutional neural network,
     with ReLU activations, and optional batch normalization
@@ -54,7 +53,7 @@ class ConvNet(MLPNet):
                 clamp_grad=False,
                 batch_norm=True)
         '''
-        Module.__init__(self)
+        super(ConvNet, self).__init__()
         # Create net and initialize params
         self.in_dim = in_dim
         self.out_dim = out_dim
@@ -66,7 +65,8 @@ class ConvNet(MLPNet):
         self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers) - 1
         self.init_params()
         # Init other net variables
-        self.optim = net_util.get_optim(self, optim_param)
+        parameters = list(self.conv_model.parameters()) + list(self.dense_model.parameters())
+        self.optim = net_util.get_optim_multinet(parameters, optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
@@ -111,16 +111,27 @@ class ConvNet(MLPNet):
 
     def training_step(self, x, y):
         '''
-        Takes a single training step: one forwards and one backwards pass
+        Takes a single training step: one forward and one backwards pass
         '''
-        return super(ConvNet, self).training_step(x, y)
+        self.conv_model.train()
+        self.dense_model.train()
+        self.optim.zero_grad()
+        out = self(x)
+        loss = self.loss_fn(out, y)
+        loss.backward()
+        if self.clamp_grad:
+            torch.nn.utils.clip_grad_norm(self.conv_model.parameters(), self.clamp_grad_val)
+            torch.nn.utils.clip_grad_norm(self.dense_model.parameters(), self.clamp_grad_val)
+        self.optim.step()
+        return loss
 
     def wrap_eval(self, x):
         '''
-        Completes one feedforward step, ensuring net is set to evaluation model
-        returns: network output given input x
+        Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
         '''
-        return super(ConvNet, self).wrap_eval(x)
+        self.conv_model.eval()
+        self.dense_model.eval()
+        return self(x).data
 
     def init_params(self):
         '''
