@@ -102,3 +102,7 @@ class MLPNet(nn.Module):
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
         return None
+
+    def print_nets(self):
+        '''Prints entire network'''
+        print(self.model)

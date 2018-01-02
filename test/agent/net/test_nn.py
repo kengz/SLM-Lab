@@ -128,6 +128,7 @@ class TestNet:
 
     def test_params_not_zero(self, test_nets):
         ''' Checks that the parameters of the net are not zero '''
+        net.print_nets()
         net = test_nets[0]
         flag = True
         for i, param in enumerate(net.params):

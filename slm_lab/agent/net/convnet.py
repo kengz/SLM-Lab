@@ -171,3 +171,8 @@ class ConvNet(nn.Module):
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
         return None
+
+    def print_nets(self):
+        '''Prints entire network'''
+        print(self.conv_model)
+        print(self.dense_model)
