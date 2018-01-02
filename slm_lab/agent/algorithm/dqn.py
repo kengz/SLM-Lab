@@ -180,11 +180,6 @@ class DQN(DQNBase):
             f'Network update: type: {self.update_type}, frequency: {self.update_frequency}, weight: {self.polyak_weight}')
         logger.info(util.self_desc(self))
 
-    def update(self):
-        super(DQN, self).update()
-        self.online_net = self.target_net
-        self.eval_net = self.target_net
-
 
 class DoubleDQN(DQNBase):
     def __init__(self, agent):
@@ -201,11 +196,6 @@ class DoubleDQN(DQNBase):
         self.update_frequency = net_spec['update_frequency']
         self.polyak_weight = net_spec['polyak_weight']
         logger.info(util.self_desc(self))
-
-    def update(self):
-        super(DoubleDQN, self).update()
-        self.online_net = self.net
-        self.eval_net = self.target_net
 
 
 class MultitaskDQN(DQNBase):
@@ -272,7 +262,8 @@ class MultitaskDQN(DQNBase):
                 q_next_st_acts[:, start_idx:end_idx], dim=1)
             # Shift action so that they have the right indices in combined layer
             q_next_act_b += start_idx
-            logger.debug(f'Q next action for body {body.aeb}: {q_next_act_b.size()}')
+            logger.debug(
+                f'Q next action for body {body.aeb}: {q_next_act_b.size()}')
             logger.debug(f'Q next action for body {body.aeb}: {q_next_act_b}')
             q_next_acts.append(q_next_act_b)
             start_idx = end_idx

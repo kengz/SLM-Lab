@@ -1,5 +1,5 @@
 from slm_lab.agent import Agent
-from slm_lab.experiment.monitor import Clock
+from slm_lab.env import Clock
 from slm_lab.lib import util
 import numpy as np
 import os
@@ -79,18 +79,6 @@ def test_flatten_nonan(arr, res):
     assert np.array_equal(util.flatten_nonan(arr), res)
 
 
-@pytest.mark.parametrize('v,isall', [
-    ([1, 1], True),
-    ([True, True], True),
-    ([np.nan, 1], True),
-    ([0, 1], False),
-    ([False, True], False),
-    ([np.nan, np.nan], False),
-])
-def test_gen_all(v, isall):
-    assert util.gen_all(v) == isall
-
-
 @pytest.mark.parametrize('v,isnan', [
     (0, False),
     (1, False),
@@ -145,6 +133,18 @@ def test_ndenumerate_nonan():
     for (a, b), body in util.ndenumerate_nonan(arr):
         assert a == b
         assert body == 1
+
+
+@pytest.mark.parametrize('v,isall', [
+    ([1, 1], True),
+    ([True, True], True),
+    ([np.nan, 1], True),
+    ([0, 1], False),
+    ([False, True], False),
+    ([np.nan, np.nan], False),
+])
+def test_nonan_all(v, isall):
+    assert util.nonan_all(v) == isall
 
 
 def test_s_get(test_agent):
