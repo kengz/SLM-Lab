@@ -79,7 +79,7 @@ class TestNet:
         for i in range(steps):
             net.training_step(x, y)
         flag = True
-        for p in net.parameters():
+        for p in net.params:
             if p.grad is None:
                 print("FAIL: no gradient")
                 flag = False
@@ -130,7 +130,7 @@ class TestNet:
         ''' Checks that the parameters of the net are not zero '''
         net = test_nets[0]
         flag = True
-        for i, param in enumerate(net.parameters()):
+        for i, param in enumerate(net.params):
             if torch.sum(torch.abs(param.data)) < SMALL_NUM:
                 print("FAIL: layer {}".format(i))
                 flag = False
