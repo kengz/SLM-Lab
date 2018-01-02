@@ -173,6 +173,8 @@ class MultiMLPNet(nn.Module):
         self.clamp_grad_val = clamp_grad_val
 
     def make_state_heads(self, state_heads, hid_layers_activation):
+        '''Creates each state head. These are stored as Sequential
+           models in self.state_heads_models'''
         self.state_out_concat = 0
         state_heads_models = []
         for head in state_heads:
@@ -189,6 +191,8 @@ class MultiMLPNet(nn.Module):
         return state_heads_models
 
     def make_shared_body(self, in_dim, dims, hid_layers_activation):
+        '''Creates the shared body of the network. Stored as a Sequential
+           model in self.body'''
         for i, layer in enumerate(dims):
             in_D = in_dim if i == 0 else dims[i - 1]
             out_D = dims[i]
@@ -197,6 +201,8 @@ class MultiMLPNet(nn.Module):
         return nn.Sequential(*self.shared_layers)
 
     def make_action_heads(self, in_dim, act_heads, hid_layers_activation):
+        '''Creates each action head. These are stored as Sequential
+           models in self.action_heads_models'''
         act_heads_models = []
         for head in act_heads:
             layers = []
@@ -224,6 +230,7 @@ class MultiMLPNet(nn.Module):
         return final_outs
 
     def print_nets(self):
+        '''Prints the combined network'''
         for net in self.state_heads_models:
             print(net)
         print(self.body)
@@ -231,6 +238,7 @@ class MultiMLPNet(nn.Module):
             print(net)
 
     def set_train_eval(self, train=True):
+        '''Helper function to set model in training or evaluation mode'''
         nets = self.state_heads_models + self.action_heads_models
         for net in nets:
             if train:
@@ -269,8 +277,6 @@ class MultiMLPNet(nn.Module):
     def init_params(self):
         '''
         Initializes all of the model's parameters using xavier uniform initialization.
-        Note: There appears to be unreproduceable behaviours in pyTorch for xavier init
-        Sometimes the trainable params tests pass (see nn_test.py), other times they dont.
         Biases are all set to 0.01
         '''
         biasinit = 0.01
