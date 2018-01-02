@@ -8,6 +8,7 @@
     "export-env": "conda env export > environment.yml",
     "update-env": "conda env update -f environment.yml",
     "test": "python setup.py test",
+    "reset": "rm -rf data/* log/*",
     "clear": "find . | grep -E '(__pycache__|.pyc|.pyo|.egg*|.cache|htmlcov|.coverage|dist)' | xargs rm -rf",
     "kill": "pkill -f slm-env ipykernel &"
   },
