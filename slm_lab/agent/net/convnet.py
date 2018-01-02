@@ -65,8 +65,8 @@ class ConvNet(nn.Module):
         self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers) - 1
         self.init_params()
         # Init other net variables
-        parameters = list(self.conv_model.parameters()) + list(self.dense_model.parameters())
-        self.optim = net_util.get_optim_multinet(parameters, optim_param)
+        self.params = list(self.conv_model.parameters()) + list(self.dense_model.parameters())
+        self.optim = net_util.get_optim_multinet(self.params, optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
@@ -150,10 +150,10 @@ class ConvNet(nn.Module):
         '''
         Gathers parameters that should be trained into a list returns: copy of a list of fixed params
         '''
-        return super(ConvNet, self).gather_trainable_params()
+        return [param.clone() for param in self.params()]
 
     def gather_fixed_params(self):
         '''
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
-        return super(ConvNet, self).gather_fixed_params()
+        return None
