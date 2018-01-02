@@ -118,17 +118,17 @@ def test_multiline_str():
 
 
 @pytest.fixture(scope="class", params=[
-    (MLPNet(10, [5, 3], 2),
+    (MLPNet(10, [5, 3], 2, hid_layers_activation='tanh'),
      Variable(torch.ones((2, 10))),
      Variable(torch.zeros((2, 2))),
      None,
      2),
-    (MLPNet(20, [10, 50, 5], 2),
+    (MLPNet(20, [10, 50, 5], 2, hid_layers_activation='tanh'),
      Variable(torch.ones((2, 20))),
      Variable(torch.zeros((2, 2))),
      None,
      2),
-    (MLPNet(10, [], 5),
+    (MLPNet(10, [], 5, hid_layers_activation='tanh'),
      Variable(torch.ones((2, 10))),
      Variable(torch.zeros((2, 5))),
      None,
