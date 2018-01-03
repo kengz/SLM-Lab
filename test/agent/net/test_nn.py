@@ -11,7 +11,7 @@ class TestNet:
     Base class for unit testing neural network training
     '''
 
-    @pytest.mark.skip(reason='flaky test, see https://circleci.com/gh/kengz/SLM-Lab/263')
+    # @pytest.mark.skip(reason='flaky test, see https://circleci.com/gh/kengz/SLM-Lab/263')
     def test_trainable(self, test_nets):
         '''
         Checks that trainable parameters actually change during training
@@ -69,7 +69,7 @@ class TestNet:
             print("PASS")
         assert flag is True
 
-    @pytest.mark.skip(reason='flaky test, see https://circleci.com/gh/kengz/SLM-Lab/263')
+    # @pytest.mark.skip(reason='flaky test, see https://circleci.com/gh/kengz/SLM-Lab/263')
     def test_gradient_size(self, test_nets):
         ''' Checks for exploding and vanishing gradients '''
         net = test_nets[0]
@@ -79,7 +79,7 @@ class TestNet:
         for i in range(steps):
             net.training_step(x, y)
         flag = True
-        for p in net.parameters():
+        for p in net.params:
             if p.grad is None:
                 print("FAIL: no gradient")
                 flag = False
@@ -129,8 +129,9 @@ class TestNet:
     def test_params_not_zero(self, test_nets):
         ''' Checks that the parameters of the net are not zero '''
         net = test_nets[0]
+        net.print_nets()
         flag = True
-        for i, param in enumerate(net.parameters()):
+        for i, param in enumerate(net.params):
             if torch.sum(torch.abs(param.data)) < SMALL_NUM:
                 print("FAIL: layer {}".format(i))
                 flag = False
