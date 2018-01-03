@@ -26,9 +26,9 @@ class Random(Algorithm):
         return action
 
     def train(self):
-        loss = -1.
+        loss = np.nan
         return loss
 
     def update(self):
-        explore_var = 1.
+        explore_var = np.nan
         return explore_var

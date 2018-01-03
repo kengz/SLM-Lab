@@ -28,12 +28,11 @@ def plot(*args, **kwargs):
         return py.plot(*args, **kwargs)
 
 
-def save_image(figure, filename=None):
+def save_image(figure, filepath=None):
     if os.environ.get('PY_ENV') == 'test':
         return
-    if filename is None:
-        filename = _.get(figure, 'layout.title') + '.png'
-    filepath = f'{PLOT_FILEDIR}/{filename}'
+    if filepath is None:
+        filepath = f"{PLOT_FILEDIR}/{_.get(figure, 'layout.title')}.png"
 
     plotly.tools.set_credentials_file(
         username=_.get(config, 'plotly.username'),
