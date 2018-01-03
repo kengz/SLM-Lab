@@ -318,6 +318,7 @@ class DoubleDQN(DQNBase):
             self.eval_net = self.target_net
         return self.explore_var
 
+
 class MultitaskDQN(DQNBase):
     def __init__(self, agent):
         super(MultitaskDQN, self).__init__(agent)
