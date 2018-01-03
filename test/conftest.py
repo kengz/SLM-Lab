@@ -118,118 +118,161 @@ def test_multiline_str():
 
 
 @pytest.fixture(scope="class", params=[
-    (MLPNet(10, [5, 3], 2),
-     Variable(torch.ones((2, 10))),
-     Variable(torch.zeros((2, 2))),
-     None,
-     2),
-    (MLPNet(20, [10, 50, 5], 2),
-     Variable(torch.ones((2, 20))),
-     Variable(torch.zeros((2, 2))),
-     None,
-     2),
-    (MLPNet(10, [], 5),
-     Variable(torch.ones((2, 10))),
-     Variable(torch.zeros((2, 5))),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             [],
-             [],
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'smooth_l1_loss'},
-             clamp_grad=False,
-             batch_norm=False),
+    (
+        MLPNet,
+        {
+            'in_dim': 10, 'hid_dim': [5, 3], 'out_dim':2
+        },
+        Variable(torch.ones((2, 10))),
+        Variable(torch.zeros((2, 2))),
+        None,
+        2
+    ), (
+        MLPNet,
+        {
+            'in_dim': 20, 'hid_dim': [10, 50, 5], 'out_dim':2
+        },
+        Variable(torch.ones((2, 20))),
+        Variable(torch.zeros((2, 2))),
+        None,
+        2
+    ), (
+        MLPNet,
+        {
+            'in_dim': 10, 'hid_dim': [], 'out_dim':5
+        },
+        Variable(torch.ones((2, 10))),
+        Variable(torch.zeros((2, 5))),
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'conv_hid': [],
+            'flat_hid': [],
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'smooth_l1_loss'},
+            'clamp_grad': False,
+            'batch_norm': False
+        },
         Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             [[3, 16, (5, 5), 2, 0, 1],
-              [16, 32, (5, 5), 2, 0, 1]],
-             [100],
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'smooth_l1_loss'},
-             clamp_grad=False,
-             batch_norm=False),
+        Variable(torch.zeros(2, 10)),
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'conv_hid': [[3, 16, (5, 5), 2, 0, 1],
+                         [16, 32, (5, 5), 2, 0, 1]],
+            'flat_hid': [100],
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'smooth_l1_loss'},
+            'clamp_grad': False,
+            'batch_norm': False
+        },
         Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             [[3, 16, (5, 5), 2, 0, 1],
-                 [16, 32, (5, 5), 2, 0, 1]],
-             [100, 50],
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'smooth_l1_loss'},
-             clamp_grad=False,
-             batch_norm=True),
+        Variable(torch.zeros(2, 10)),
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'conv_hid': [[3, 16, (5, 5), 2, 0, 1],
+                         [16, 32, (5, 5), 2, 0, 1]],
+            'flat_hid': [100, 50],
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'smooth_l1_loss'},
+            'clamp_grad': False,
+            'batch_norm': True
+        },
         Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             [[3, 16, (5, 5), 2, 0, 1],
-              [16, 32, (5, 5), 1, 0, 1],
-              [32, 64, (5, 5), 1, 0, 2]],
-             [100],
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'smooth_l1_loss'},
-             clamp_grad=True,
-             batch_norm=False),
+        Variable(torch.zeros(2, 10)),
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'conv_hid': [[3, 16, (5, 5), 2, 0, 1],
+                         [16, 32, (5, 5), 1, 0, 1],
+                         [32, 64, (5, 5), 1, 0, 2]],
+            'flat_hid': [100],
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'smooth_l1_loss'},
+            'clamp_grad': True,
+            'batch_norm': False
+        },
         Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             [[3, 16, (5, 5), 2, 0, 1],
-              [16, 32, (5, 5), 1, 0, 1],
-              [32, 64, (5, 5), 1, 0, 2]],
-             [100],
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'smooth_l1_loss'},
-             clamp_grad=True,
-             batch_norm=True),
-     Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             [[3, 16, (7, 7), 1, 0, 1],
-              [16, 32, (5, 5), 1, 0, 1],
-              [32, 64, (3, 3), 1, 0, 1]],
-             [100, 50],
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'smooth_l1_loss'},
-             clamp_grad=False,
-             batch_norm=False),
-     Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             [[3, 16, (7, 7), 1, 0, 1],
-              [16, 32, (5, 5), 1, 0, 1],
-              [32, 64, (3, 3), 1, 0, 1]],
-             [100, 50],
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'smooth_l1_loss'},
-             clamp_grad=False,
-             batch_norm=True),
-     Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
+        Variable(torch.zeros(2, 10)),
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'conv_hid': [[3, 16, (5, 5), 2, 0, 1],
+                         [16, 32, (5, 5), 1, 0, 1],
+                         [32, 64, (5, 5), 1, 0, 2]],
+            'flat_hid': [100],
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'smooth_l1_loss'},
+            'clamp_grad': True,
+            'batch_norm': True
+        },
+        Variable(torch.ones((2, 3, 32, 32))),
+        Variable(torch.zeros(2, 10)),
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'conv_hid': [[3, 16, (7, 7), 1, 0, 1],
+                         [16, 32, (5, 5), 1, 0, 1],
+                         [32, 64, (3, 3), 1, 0, 1]],
+            'flat_hid': [100, 50],
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'smooth_l1_loss'},
+            'clamp_grad': False,
+            'batch_norm': False
+        },
+        Variable(torch.ones((2, 3, 32, 32))),
+        Variable(torch.zeros(2, 10)),
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'conv_hid': [[3, 16, (7, 7), 1, 0, 1],
+                         [16, 32, (5, 5), 1, 0, 1],
+                         [32, 64, (3, 3), 1, 0, 1]],
+            'flat_hid': [100, 50],
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'smooth_l1_loss'},
+            'clamp_grad': False,
+            'batch_norm': True
+        },
+        Variable(torch.ones((2, 3, 32, 32))),
+        Variable(torch.zeros(2, 10)),
+        None,
+        2
+    ),
 ])
 def test_nets(request):
-    return request.param
+    net = request.param[0](**request.param[1])
+    res = (net,) + request.param[2:]
+    return res
 
 
 @pytest.fixture(scope="class", params=[(None, None)])
