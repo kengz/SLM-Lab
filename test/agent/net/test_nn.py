@@ -1,17 +1,18 @@
+from flaky import flaky
 from torch.autograd import Variable
 import numpy as np
-import pytest
 import torch
 SMALL_NUM = 0.000000001
 LARGE_NUM = 100000
 
 
+@flaky
 class TestNet:
     '''
     Base class for unit testing neural network training
     '''
 
-    @pytest.mark.skip(reason='flaky test, see https://circleci.com/gh/kengz/SLM-Lab/263')
+    @flaky(max_runs=10)
     def test_trainable(self, test_nets):
         '''
         Checks that trainable parameters actually change during training
@@ -69,7 +70,7 @@ class TestNet:
             print("PASS")
         assert flag is True
 
-    @pytest.mark.skip(reason='flaky test, see https://circleci.com/gh/kengz/SLM-Lab/263')
+    @flaky(max_runs=10)
     def test_gradient_size(self, test_nets):
         ''' Checks for exploding and vanishing gradients '''
         net = test_nets[0]
