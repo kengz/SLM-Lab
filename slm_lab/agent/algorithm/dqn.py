@@ -11,9 +11,102 @@ import sys
 import torch
 
 
-class DQNBase(Algorithm):
+class VanillaDQN(Algorithm):
+    '''
+    Implementation of a simple DQN algorithm.
+    '''
+
+    def __init__(self, agent):
+        super(DQNBase, self).__init__(agent)
+        '''
+        After initialization VanillaDQN has an attribute self.agent which contains
+        '''
+        # TODO explain what happens during init
+
+    def post_body_init(self):
+        '''Initializes the part of algorithm needing a body to exist first.'''
+        # TODO explain what a body is
+        body = self.agent.flat_nonan_body_a[0]  # singleton algo
+        # Initialize the neural network used to learn the Q function from the spec
+        state_dim = body.state_dim  # dimension of the environment state, e.g. 4
+        action_dim = body.action_dim  # dimension of the environment actions, e.g. 2
+        net_spec = self.agent.spec['net']
+        self.net = getattr(net, net_spec['type'])(
+            state_dim, net_spec['hid_layers'], action_dim,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
+            optim_param=_.get(net_spec, 'optim'),
+            loss_param=_.get(net_spec, 'loss'),
+        )
+        self.net.print_nets()
+        # Initialize the other algorithm parameters
+        self.batch_size = net_spec['batch_size']  # how many examples to learn from each training iteration
+        algorithm_spec = self.agent.spec['algorithm']
+        self.action_policy = act_fns[algorithm_spec['action_policy']]
+        self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
+        # explore_var is epsilon or tau depening on the action policy
+        # explore var start, end, and anneal_epi control the trade off between exploration and exploitaton
+        self.explore_var_start = algorithm_spec['explore_var_start']
+        self.explore_var_end = algorithm_spec['explore_var_end']
+        self.explore_var = self.explore_var_start
+        self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
+        self.gamma = algorithm_spec['gamma']  # the discount rate
+        # self.training_min_timestep: how long to wait before starting training
+        self.training_min_timestep = algorithm_spec['training_min_timestep']
+        # self.training_frequency: how often to train
+        self.training_frequency = algorithm_spec['training_frequency']
+        # self.training_epoch =
+        self.training_epoch = algorithm_spec['training_epoch']
+        self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
+
+    def compute_q_target_values(self, batch):
+        pass
+
+    def sample(self):
+        batches = [body.memory.sample(self.batch_size)
+                   for body in self.agent.flat_nonan_body_a]
+        batch = util.concat_dict(batches)
+        util.to_torch_batch(batch)
+        return batch
+
+    def train(self):
+        t = util.s_get(self, 'aeb_space.clock').get('total_t')
+        if (t > self.training_min_timestep and t % self.training_frequency == 0):
+            logger.debug(f'Training at t: {t}')
+            total_loss = 0.0
+            for _b in range(self.training_epoch):
+                batch = self.sample()
+                batch_loss = 0.0
+                for _i in range(self.training_iters_per_batch):
+                    q_targets = self.compute_q_target_values(batch)
+                    y = Variable(q_targets)
+                    loss = self.net.training_step(batch['states'], y)
+                    batch_loss += loss.data[0]
+                batch_loss /= self.training_iters_per_batch
+                total_loss += batch_loss
+            total_loss /= self.training_epoch
+            logger.debug(f'total_loss {total_loss}')
+            return total_loss
+        else:
+            logger.debug('NOT training')
+            return np.nan
+
+    def body_act_discrete(self, body, state):
+        return self.action_policy(body, state, self.net, self.explore_var)
+
+    def update(self):
+        pass
+
+
+class DQNBase(VanillaDQN):
     '''
     Implementation of the base DQN algorithm.
+    This is more general than the VanillaDQN since it allows
+    for two different networks (through self.net and self.target_net).
+    If desired, self.target_net can be updated more slowly
+    to stabilize learning. It also allows for different nets to be used to
+    select the action in the next state and to evaluate the value of that
+    action through self.online_net and self.eval_net
+    Setting all nets to self.net reduces to the VanillaDQN case.
     See Sergey Levine's lecture xxx for more details
     TODO add link
           more detailed comments
@@ -107,38 +200,16 @@ class DQNBase(Algorithm):
         return q_targets
 
     def sample(self):
-        batches = [body.memory.sample(self.batch_size)
-                   for body in self.agent.flat_nonan_body_a]
-        batch = util.concat_dict(batches)
-        util.to_torch_batch(batch)
-        return batch
+        super(DQNBase, self).sample()
 
     def train(self):
-        t = util.s_get(self, 'aeb_space.clock').get('total_t')
-        if (t > self.training_min_timestep and t % self.training_frequency == 0):
-            logger.debug(f'Training at t: {t}')
-            total_loss = 0.0
-            for _b in range(self.training_epoch):
-                batch = self.sample()
-                batch_loss = 0.0
-                for _i in range(self.training_iters_per_batch):
-                    q_targets = self.compute_q_target_values(batch)
-                    y = Variable(q_targets)
-                    loss = self.net.training_step(batch['states'], y)
-                    batch_loss += loss.data[0]
-                batch_loss /= self.training_iters_per_batch
-                total_loss += batch_loss
-            total_loss /= self.training_epoch
-            logger.debug(f'total_loss {total_loss}')
-            return total_loss
-        else:
-            logger.debug('NOT training')
-            return np.nan
+        super(DQNBase, self).train()
 
     def body_act_discrete(self, body, state):
-        return self.action_policy(body, state, self.net, self.explore_var)
+        super(DQNBase, self).body_act_discrete(body, state)
 
     def update(self):
+        '''Updates self.target_net and the action policy variables'''
         space_clock = util.s_get(self, 'aeb_space.clock')
         # update explore_var
         self.action_policy_update(self, space_clock)
