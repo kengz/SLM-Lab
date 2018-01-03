@@ -182,8 +182,8 @@ class DQNBase(VanillaDQN):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        self.online_net = self.net
-        self.eval_net = self.net
+        self.online_net = self.target_net
+        self.eval_net = self.target_net
         self.batch_size = net_spec['batch_size']
         # Default network update params for base
         self.update_type = 'replace'
@@ -256,11 +256,15 @@ class DQNBase(VanillaDQN):
             if t % self.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
                 self.target_net = deepcopy(self.net)
+                self.online_net = self.target_net
+                self.eval_net = self.target_net
         elif self.update_type == 'polyak':
             logger.debug('Updating net by averaging')
             avg_params = self.polyak_weight * net_util.flatten_params(self.target_net) + \
                 (1 - self.polyak_weight) * net_util.flatten_params(self.net)
             self.target_net = net_util.load_params(self.target_net, avg_params)
+            self.online_net = self.target_net
+            self.eval_net = self.target_net
         else:
             logger.error(
                 'Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
@@ -275,8 +279,6 @@ class DQN(DQNBase):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         super(DQN, self).post_body_init()
-        self.online_net = self.target_net
-        self.eval_net = self.target_net
         # Network update params
         net_spec = self.agent.spec['net']
         self.update_type = net_spec['update_type']
@@ -303,6 +305,18 @@ class DoubleDQN(DQNBase):
         self.polyak_weight = net_spec['polyak_weight']
         logger.info(util.self_desc(self))
 
+    def update(self):
+        super(DoubleDQN, self).update()
+        space_clock = util.s_get(self, 'aeb_space.clock')
+        t = space_clock.get('t')
+        if self.update_type == 'replace':
+            if t % self.update_frequency == 0:
+                self.online_net = self.net
+                self.eval_net = self.target_net
+        elif self.update_type == 'polyak':
+            self.online_net = self.net
+            self.eval_net = self.target_net
+        return self.explore_var
 
 class MultitaskDQN(DQNBase):
     def __init__(self, agent):
