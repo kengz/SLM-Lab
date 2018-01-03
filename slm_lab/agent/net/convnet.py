@@ -1,5 +1,4 @@
 from slm_lab.agent.net import net_util
-from slm_lab.agent.net.feedforward import MLPNet
 from torch.autograd import Variable
 from torch.nn import Module
 import torch
@@ -7,160 +6,183 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class ConvNet(MLPNet):
+class ConvNet(nn.Module):
     '''
     Class for generating arbitrary sized convolutional neural network,
-    with ReLU activations, and optional batch normalization
+    with optional batch normalization
 
     Assumed that a single input example is organized into a 3D tensor
     '''
 
     def __init__(self,
                  in_dim,
-                 conv_hid,
-                 flat_hid,
+                 hid_layers,
                  out_dim,
                  hid_layers_activation=None,
                  optim_param=None,
                  loss_param=None,
                  clamp_grad=False,
+                 clamp_grad_val=1.0,
                  batch_norm=True):
         '''
         in_dim: dimension of the inputs
-        conv_hid: list containing dimensions of the convolutional hidden layers. Asssumed to all come before the flat layers.
-            Note: a convolutional layer should specify the in_channel, out_channels, kernel_size, stride (of kernel steps), padding, and dilation (spacing between kernel points) E.g. [3, 16, (5, 5), 1, 0, (2, 2)]
-            For more details, see http://pytorch.org/docs/master/nn.html#conv2d and https://github.com/vdumoulin/conv_arithmetic/blob/master/README.md
+        hid_layers: tuple consisting of two elements. (conv_hid, flat_hid)
+                    Note: tuple must contain two elements, use empty list if no such layers.
+            1. conv_hid: list containing dimensions of the convolutional hidden layers. Asssumed to all come before the flat layers.
+                Note: a convolutional layer should specify the in_channel, out_channels, kernel_size, stride (of kernel steps), padding, and dilation (spacing between kernel points) E.g. [3, 16, (5, 5), 1, 0, (2, 2)]
+                For more details, see http://pytorch.org/docs/master/nn.html#conv2d and https://github.com/vdumoulin/conv_arithmetic/blob/master/README.md
 
-        flat_hid: list of dense layers following the convolutional layers
+            2. flat_hid: list of dense layers following the convolutional layers
         out_dim: dimension of the ouputs
-        optim: optimizer
+        optim_param: parameters for initializing the optimizer
         loss_param: measure of error between model
         predictions and correct outputs
         hid_layers_activation: activation function for the hidden layers
         out_activation_param: activation function for the last layer
-        clamp_grad: whether to clamp the gradient to + / - 1
+        clamp_grad: whether to clamp the gradient
         batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
         @example:
         net = ConvNet(
                 (3, 32, 32),
-                [[3, 36, (5, 5), 1, 0, (2, 2)],
-                [36, 128, (5, 5), 1, 0, (2, 2)]],
-                [100],
+                ([[3, 36, (5, 5), 1, 0, (2, 2)],[36, 128, (5, 5), 1, 0, (2, 2)]],
+                [100]),
                 10,
+                hid_layers_activation='relu',
                 optim_param={'name': 'Adam'},
-                loss_param={'name': 'mse_loss'})
+                loss_param={'name': 'mse_loss'},
+                clamp_grad=False,
+                batch_norm=True)
         '''
-        # Calling super on greatgrandfather class
-        Module.__init__(self)
+        super(ConvNet, self).__init__()
+        # Create net and initialize params
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.batch_norm = batch_norm
         self.conv_layers = []
-        self.batch_norms = []
+        self.conv_model = self.build_conv_layers(
+            hid_layers[0], hid_layers_activation)
         self.flat_layers = []
-        self.build_conv_layers(conv_hid)
-        self.build_flat_layers(flat_hid, out_dim)
-        self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers)
-
-        self.hid_layers_activation_fn = net_util.get_activation_fn(
-            self, hid_layers_activation)
-        self.optim = net_util.get_optim(self, optim_param)
+        self.dense_model = self.build_flat_layers(
+            hid_layers[1], out_dim, hid_layers_activation)
+        self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers) - 1
+        self.init_params()
+        # Init other net variables
+        self.params = list(self.conv_model.parameters()) + \
+            list(self.dense_model.parameters())
+        self.optim = net_util.get_optim_multinet(self.params, optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
-        self.init_params()
+        self.clamp_grad_val = clamp_grad_val
 
     def get_conv_output_size(self):
+        '''Helper function to calculate the size of the
+           flattened features after the final convolutional layer'''
         x = Variable(torch.ones(1, *self.in_dim))
-        bn_flag = len(self.batch_norms) > 0
-        for i, layer in enumerate(self.conv_layers):
-            # Don't need to pass through batch norms to calculate size
-            x = layer(x)
+        x = self.conv_model(x)
         return x.numel()
 
-    def build_conv_layers(self, conv_hid):
+    def build_conv_layers(self, conv_hid, hid_layers_activation):
+        '''Builds all of the convolutional layers in the network.
+           These layers are turned into a Sequential model and stored
+           in self.conv_model.
+           The entire model consists of two parts:
+                1. self.conv_model
+                2. self.dense_model'''
         for i, layer in enumerate(conv_hid):
-            lin = nn.Conv2d(
+            self.conv_layers += [nn.Conv2d(
                 conv_hid[i][0],
                 conv_hid[i][1],
                 conv_hid[i][2],
                 stride=conv_hid[i][3],
                 padding=conv_hid[i][4],
-                dilation=conv_hid[i][5])
-            setattr(self, 'conv_' + str(i), lin)
-            self.conv_layers.append(lin)
+                dilation=conv_hid[i][5])]
+            self.conv_layers += [
+                net_util.get_activation_fn(hid_layers_activation)]
             # Don't include batch norm in the first layer
             if self.batch_norm and i != 0:
-                b = nn.BatchNorm2d(conv_hid[i][1])
-                setattr(self, 'bn_' + str(i), b)
-                self.batch_norms.append(b)
+                self.conv_layers += [nn.BatchNorm2d(conv_hid[i][1])]
+        return nn.Sequential(*self.conv_layers)
 
-    def build_flat_layers(self, flat_hid, out_dim):
+    def build_flat_layers(self, flat_hid, out_dim, hid_layers_activation):
+        '''Builds all of the dense layers in the network.
+           These layers are turned into a Sequential model and stored
+           in self.dense_model.
+           The entire model consists of two parts:
+                1. self.conv_model
+                2. self.dense_model'''
         self.flat_dim = self.get_conv_output_size()
         for i, layer in enumerate(flat_hid):
             in_D = self.flat_dim if i == 0 else flat_hid[i - 1]
             out_D = flat_hid[i]
-            lin = nn.Linear(in_D, out_D)
-            setattr(self, 'linear_' + str(i), lin)
-            self.flat_layers.append(lin)
+            self.flat_layers += [nn.Linear(in_D, out_D)]
+            self.flat_layers += [
+                net_util.get_activation_fn(hid_layers_activation)]
         in_D = flat_hid[-1] if len(flat_hid) > 0 else self.flat_dim
-        self.out_layer = nn.Linear(in_D, out_dim)
+        self.flat_layers += [nn.Linear(in_D, out_dim)]
+        return nn.Sequential(*self.flat_layers)
 
     def forward(self, x):
         '''The feedforward step'''
-        bn_flag = len(self.batch_norms) > 0
-        for i, layer in enumerate(self.conv_layers):
-            if bn_flag and i != 0:
-                bn = self.batch_norms[i - 1]
-                x = self.hid_layers_activation_fn(bn(layer(x)))
-            else:
-                x = self.hid_layers_activation_fn(layer(x))
+        x = self.conv_model(x)
         x = x.view(-1, self.flat_dim)
-        for layer in self.flat_layers:
-            x = self.hid_layers_activation_fn(layer(x))
-        x = self.out_layer(x)
+        x = self.dense_model(x)
         return x
 
     def training_step(self, x, y):
         '''
-        Takes a single training step: one forwards and one backwards pass
+        Takes a single training step: one forward and one backwards pass
         '''
-        return super(ConvNet, self).training_step(x, y)
+        self.conv_model.train()
+        self.dense_model.train()
+        self.optim.zero_grad()
+        out = self(x)
+        loss = self.loss_fn(out, y)
+        loss.backward()
+        if self.clamp_grad:
+            torch.nn.utils.clip_grad_norm(
+                self.conv_model.parameters(), self.clamp_grad_val)
+            torch.nn.utils.clip_grad_norm(
+                self.dense_model.parameters(), self.clamp_grad_val)
+        self.optim.step()
+        return loss
 
-    def eval(self, x):
+    def wrap_eval(self, x):
         '''
-        Completes one feedforward step, ensuring net is set to evaluation model
-        returns: network output given input x
+        Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
         '''
-        return super(ConvNet, self).eval(x)
+        self.conv_model.eval()
+        self.dense_model.eval()
+        return self(x).data
 
     def init_params(self):
         '''
-        Initializes all of the model's parameters using uniform initialization.
-        Note: Ideally it should be xavier initialization, but there appears to be unreproduceable behaviours in pyTorch.
-        Sometimes the trainable params tests pass (see nn_test.py), other times they dont.
+        Initializes all of the model's parameters using xavier uniform initialization.
         Biases are all set to 0.01
         '''
-        initrange = 0.1
         biasinit = 0.01
-        bninitrange = 1.0
-        bnbiasinit = 0.1
-        layers = self.conv_layers + self.flat_layers \
-            + list([self.out_layer])
+        layers = self.conv_layers + self.flat_layers
         for layer in layers:
-            layer.weight.data.uniform_(-initrange, initrange)
-            layer.bias.data.fill_(biasinit)
-        for bn in self.batch_norms:
-            bn.weight.data.uniform_(-bninitrange, bninitrange)
-            bn.bias.data.fill_(bnbiasinit)
+            classname = layer.__class__.__name__
+            if classname.find('Linear') != -1 or classname.find('Conv') != -1:
+                torch.nn.init.xavier_uniform(layer.weight.data)
+                layer.bias.data.fill_(biasinit)
+            if classname.find('BatchNorm') != -1:
+                torch.nn.init.uniform(layer.weight.data)
+                layer.bias.data.fill_(biasinit)
 
     def gather_trainable_params(self):
         '''
         Gathers parameters that should be trained into a list returns: copy of a list of fixed params
         '''
-        return super(ConvNet, self).gather_trainable_params()
+        return [param.clone() for param in self.params]
 
     def gather_fixed_params(self):
         '''
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
-        return super(ConvNet, self).gather_fixed_params()
+        return None
+
+    def print_nets(self):
+        '''Prints entire network'''
+        print(self.conv_model)
+        print(self.dense_model)
