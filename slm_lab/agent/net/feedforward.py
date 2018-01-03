@@ -45,6 +45,7 @@ class MLPNet(nn.Module):
         self.model = nn.Sequential(*self.layers)
         self.init_params()
         # Init other net variables
+        self.params = list(self.model.parameters())
         self.optim = net_util.get_optim(self, optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
@@ -101,6 +102,10 @@ class MLPNet(nn.Module):
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
         return None
+      
+    def print_nets(self):
+        '''Prints entire network'''
+        print(self.model)
 
 
 class MultiMLPNet(nn.Module):
@@ -229,14 +234,6 @@ class MultiMLPNet(nn.Module):
             final_outs += [act_model(body_out)]
         return final_outs
 
-    def print_nets(self):
-        '''Prints the combined network'''
-        for net in self.state_heads_models:
-            print(net)
-        print(self.body)
-        for net in self.action_heads_models:
-            print(net)
-
     def set_train_eval(self, train=True):
         '''Helper function to set model in training or evaluation mode'''
         nets = self.state_heads_models + self.action_heads_models
@@ -303,3 +300,11 @@ class MultiMLPNet(nn.Module):
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
         return None
+
+    def print_nets(self):
+        '''Prints the combined network'''
+        for net in self.state_heads_models:
+            print(net)
+        print(self.body)
+        for net in self.action_heads_models:
+            print(net)

@@ -1,5 +1,4 @@
 from slm_lab.agent.net import net_util
-from slm_lab.agent.net.feedforward import MLPNet
 from torch.autograd import Variable
 from torch.nn import Module
 import torch
@@ -7,10 +6,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class ConvNet(MLPNet):
+class ConvNet(nn.Module):
     '''
     Class for generating arbitrary sized convolutional neural network,
-    with ReLU activations, and optional batch normalization
+    with optional batch normalization
 
     Assumed that a single input example is organized into a 3D tensor
     '''
@@ -54,29 +53,41 @@ class ConvNet(MLPNet):
                 clamp_grad=False,
                 batch_norm=True)
         '''
-        Module.__init__(self)
+        super(ConvNet, self).__init__()
         # Create net and initialize params
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.batch_norm = batch_norm
         self.conv_layers = []
-        self.conv_model = self.build_conv_layers(hid_layers[0], hid_layers_activation)
+        self.conv_model = self.build_conv_layers(
+            hid_layers[0], hid_layers_activation)
         self.flat_layers = []
-        self.dense_model = self.build_flat_layers(hid_layers[1], out_dim, hid_layers_activation)
+        self.dense_model = self.build_flat_layers(
+            hid_layers[1], out_dim, hid_layers_activation)
         self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers) - 1
         self.init_params()
         # Init other net variables
-        self.optim = net_util.get_optim(self, optim_param)
+        self.params = list(self.conv_model.parameters()) + \
+            list(self.dense_model.parameters())
+        self.optim = net_util.get_optim_multinet(self.params, optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
 
     def get_conv_output_size(self):
+        '''Helper function to calculate the size of the
+           flattened features after the final convolutional layer'''
         x = Variable(torch.ones(1, *self.in_dim))
         x = self.conv_model(x)
         return x.numel()
 
     def build_conv_layers(self, conv_hid, hid_layers_activation):
+        '''Builds all of the convolutional layers in the network.
+           These layers are turned into a Sequential model and stored
+           in self.conv_model.
+           The entire model consists of two parts:
+                1. self.conv_model
+                2. self.dense_model'''
         for i, layer in enumerate(conv_hid):
             self.conv_layers += [nn.Conv2d(
                 conv_hid[i][0],
@@ -85,19 +96,27 @@ class ConvNet(MLPNet):
                 stride=conv_hid[i][3],
                 padding=conv_hid[i][4],
                 dilation=conv_hid[i][5])]
-            self.conv_layers += [net_util.get_activation_fn(hid_layers_activation)]
+            self.conv_layers += [
+                net_util.get_activation_fn(hid_layers_activation)]
             # Don't include batch norm in the first layer
             if self.batch_norm and i != 0:
                 self.conv_layers += [nn.BatchNorm2d(conv_hid[i][1])]
         return nn.Sequential(*self.conv_layers)
 
     def build_flat_layers(self, flat_hid, out_dim, hid_layers_activation):
+        '''Builds all of the dense layers in the network.
+           These layers are turned into a Sequential model and stored
+           in self.dense_model.
+           The entire model consists of two parts:
+                1. self.conv_model
+                2. self.dense_model'''
         self.flat_dim = self.get_conv_output_size()
         for i, layer in enumerate(flat_hid):
             in_D = self.flat_dim if i == 0 else flat_hid[i - 1]
             out_D = flat_hid[i]
             self.flat_layers += [nn.Linear(in_D, out_D)]
-            self.flat_layers += [net_util.get_activation_fn(hid_layers_activation)]
+            self.flat_layers += [
+                net_util.get_activation_fn(hid_layers_activation)]
         in_D = flat_hid[-1] if len(flat_hid) > 0 else self.flat_dim
         self.flat_layers += [nn.Linear(in_D, out_dim)]
         return nn.Sequential(*self.flat_layers)
@@ -111,16 +130,29 @@ class ConvNet(MLPNet):
 
     def training_step(self, x, y):
         '''
-        Takes a single training step: one forwards and one backwards pass
+        Takes a single training step: one forward and one backwards pass
         '''
-        return super(ConvNet, self).training_step(x, y)
+        self.conv_model.train()
+        self.dense_model.train()
+        self.optim.zero_grad()
+        out = self(x)
+        loss = self.loss_fn(out, y)
+        loss.backward()
+        if self.clamp_grad:
+            torch.nn.utils.clip_grad_norm(
+                self.conv_model.parameters(), self.clamp_grad_val)
+            torch.nn.utils.clip_grad_norm(
+                self.dense_model.parameters(), self.clamp_grad_val)
+        self.optim.step()
+        return loss
 
     def wrap_eval(self, x):
         '''
-        Completes one feedforward step, ensuring net is set to evaluation model
-        returns: network output given input x
+        Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
         '''
-        return super(ConvNet, self).wrap_eval(x)
+        self.conv_model.eval()
+        self.dense_model.eval()
+        return self(x).data
 
     def init_params(self):
         '''
@@ -134,15 +166,23 @@ class ConvNet(MLPNet):
             if classname.find('Linear') != -1 or classname.find('Conv') != -1:
                 torch.nn.init.xavier_uniform(layer.weight.data)
                 layer.bias.data.fill_(biasinit)
+            if classname.find('BatchNorm') != -1:
+                torch.nn.init.uniform(layer.weight.data)
+                layer.bias.data.fill_(biasinit)
 
     def gather_trainable_params(self):
         '''
         Gathers parameters that should be trained into a list returns: copy of a list of fixed params
         '''
-        return super(ConvNet, self).gather_trainable_params()
+        return [param.clone() for param in self.params]
 
     def gather_fixed_params(self):
         '''
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
-        return super(ConvNet, self).gather_fixed_params()
+        return None
+
+    def print_nets(self):
+        '''Prints entire network'''
+        print(self.conv_model)
+        print(self.dense_model)
