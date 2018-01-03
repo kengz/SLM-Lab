@@ -39,7 +39,8 @@ class VanillaDQN(Algorithm):
         )
         self.net.print_nets()
         # Initialize the other algorithm parameters
-        self.batch_size = net_spec['batch_size']  # how many examples to learn from each training iteration
+        # how many examples to learn from each training iteration
+        self.batch_size = net_spec['batch_size']
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
         self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
@@ -126,6 +127,7 @@ class DQNBase(VanillaDQN):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         body = self.agent.flat_nonan_body_a[0]  # singleton algo
+        # Initialize networks
         state_dim = body.state_dim
         action_dim = body.action_dim
         net_spec = self.agent.spec['net']
@@ -149,10 +151,7 @@ class DQNBase(VanillaDQN):
         self.update_type = 'replace'
         self.update_frequency = 1
         self.polyak_weight = 0.9
-
-        # TODO adjust learning rate http://pytorch.org/docs/master/optim.html#how-to-adjust-learning-rate
-        # TODO hackish optimizer learning rate, also it fails for SGD wtf
-
+        # Initialize other algorithm parameters
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
         self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
@@ -181,7 +180,6 @@ class DQNBase(VanillaDQN):
         # Depending on the algorithm this is either the current net or target net
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         logger.debug(f'Q next_states: {q_next_sts.size()}')
-
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
         q_next_st_maxs = q_next_sts[idx, q_next_acts]
         q_next_st_maxs.unsqueeze_(1)
@@ -209,11 +207,10 @@ class DQNBase(VanillaDQN):
         super(DQNBase, self).body_act_discrete(body, state)
 
     def update(self):
-        '''Updates self.target_net and the action policy variables'''
+        '''Updates self.target_net and the explore variables'''
         space_clock = util.s_get(self, 'aeb_space.clock')
         # update explore_var
         self.action_policy_update(self, space_clock)
-
         # Update target net with current net
         t = space_clock.get('t')
         if self.update_type == 'replace':
