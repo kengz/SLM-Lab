@@ -14,6 +14,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+torch.manual_seed(17)
 
 
 spec = None
@@ -117,11 +118,13 @@ def test_multiline_str():
     return data
 
 
-@pytest.fixture(scope="function", params=[
+@pytest.fixture(scope="class", params=[
     (
         MLPNet,
         {
-            'in_dim': 10, 'hid_dim': [5, 3], 'out_dim':2
+            'in_dim': 10, 'hid_dim': [5, 3],
+            'out_dim':2,
+            'hid_layers_activation': 'tanh',
         },
         Variable(torch.ones((2, 10))),
         Variable(torch.zeros((2, 2))),
@@ -130,7 +133,8 @@ def test_multiline_str():
     ), (
         MLPNet,
         {
-            'in_dim': 20, 'hid_dim': [10, 50, 5], 'out_dim':2
+            'in_dim': 20, 'hid_dim': [10, 50, 5],
+            'out_dim':2, 'hid_layers_activation': 'tanh',
         },
         Variable(torch.ones((2, 20))),
         Variable(torch.zeros((2, 2))),
@@ -139,7 +143,8 @@ def test_multiline_str():
     ), (
         MLPNet,
         {
-            'in_dim': 10, 'hid_dim': [], 'out_dim':5
+            'in_dim': 10, 'hid_dim': [],
+            'out_dim':5, 'hid_layers_activation': 'tanh',
         },
         Variable(torch.ones((2, 10))),
         Variable(torch.zeros((2, 5))),
@@ -149,13 +154,13 @@ def test_multiline_str():
         ConvNet,
         {
             'in_dim': (3, 32, 32),
-            'conv_hid': [],
-            'flat_hid': [],
+            'hid_layers': ([],
+                           []),
             'out_dim': 10,
             'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'smooth_l1_loss'},
+            'loss_param': {'name': 'mse_loss'},
             'clamp_grad': False,
-            'batch_norm': False
+            'batch_norm': False,
         },
         Variable(torch.ones((2, 3, 32, 32))),
         Variable(torch.zeros(2, 10)),
@@ -165,14 +170,14 @@ def test_multiline_str():
         ConvNet,
         {
             'in_dim': (3, 32, 32),
-            'conv_hid': [[3, 16, (5, 5), 2, 0, 1],
-                         [16, 32, (5, 5), 2, 0, 1]],
-            'flat_hid': [100],
+            'hid_layers': ([[3, 16, (5, 5), 2, 0, 1],
+                            [16, 32, (5, 5), 2, 0, 1]],
+                           [100]),
             'out_dim': 10,
             'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'smooth_l1_loss'},
+            'loss_param': {'name': 'mse_loss'},
             'clamp_grad': False,
-            'batch_norm': False
+            'batch_norm': False,
         },
         Variable(torch.ones((2, 3, 32, 32))),
         Variable(torch.zeros(2, 10)),
@@ -182,14 +187,14 @@ def test_multiline_str():
         ConvNet,
         {
             'in_dim': (3, 32, 32),
-            'conv_hid': [[3, 16, (5, 5), 2, 0, 1],
-                         [16, 32, (5, 5), 2, 0, 1]],
-            'flat_hid': [100, 50],
+            'hid_layers': ([[3, 16, (5, 5), 2, 0, 1],
+                            [16, 32, (5, 5), 2, 0, 1]],
+                           [100, 50]),
             'out_dim': 10,
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'smooth_l1_loss'},
+            'optim_param': {'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
             'clamp_grad': False,
-            'batch_norm': True
+            'batch_norm': True,
         },
         Variable(torch.ones((2, 3, 32, 32))),
         Variable(torch.zeros(2, 10)),
@@ -199,15 +204,15 @@ def test_multiline_str():
         ConvNet,
         {
             'in_dim': (3, 32, 32),
-            'conv_hid': [[3, 16, (5, 5), 2, 0, 1],
-                         [16, 32, (5, 5), 1, 0, 1],
-                         [32, 64, (5, 5), 1, 0, 2]],
-            'flat_hid': [100],
+            'hid_layers': ([[3, 16, (5, 5), 2, 0, 1],
+                            [16, 32, (5, 5), 1, 0, 1],
+                            [32, 64, (5, 5), 1, 0, 2]],
+                           [100]),
             'out_dim': 10,
             'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'smooth_l1_loss'},
+            'loss_param': {'name': 'mse_loss'},
             'clamp_grad': True,
-            'batch_norm': False
+            'batch_norm': False,
         },
         Variable(torch.ones((2, 3, 32, 32))),
         Variable(torch.zeros(2, 10)),
@@ -217,15 +222,15 @@ def test_multiline_str():
         ConvNet,
         {
             'in_dim': (3, 32, 32),
-            'conv_hid': [[3, 16, (5, 5), 2, 0, 1],
-                         [16, 32, (5, 5), 1, 0, 1],
-                         [32, 64, (5, 5), 1, 0, 2]],
-            'flat_hid': [100],
+            'hid_layers': ([[3, 16, (5, 5), 2, 0, 1],
+                            [16, 32, (5, 5), 1, 0, 1],
+                            [32, 64, (5, 5), 1, 0, 2]],
+                           [100]),
             'out_dim': 10,
             'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'smooth_l1_loss'},
+            'loss_param': {'name': 'mse_loss'},
             'clamp_grad': True,
-            'batch_norm': True
+            'batch_norm': True,
         },
         Variable(torch.ones((2, 3, 32, 32))),
         Variable(torch.zeros(2, 10)),
@@ -235,15 +240,15 @@ def test_multiline_str():
         ConvNet,
         {
             'in_dim': (3, 32, 32),
-            'conv_hid': [[3, 16, (7, 7), 1, 0, 1],
-                         [16, 32, (5, 5), 1, 0, 1],
-                         [32, 64, (3, 3), 1, 0, 1]],
-            'flat_hid': [100, 50],
+            'hid_layers': ([[3, 16, (7, 7), 1, 0, 1],
+                            [16, 32, (5, 5), 1, 0, 1],
+                            [32, 64, (3, 3), 1, 0, 1]],
+                           [100, 50]),
             'out_dim': 10,
             'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'smooth_l1_loss'},
+            'loss_param': {'name': 'mse_loss'},
             'clamp_grad': False,
-            'batch_norm': False
+            'batch_norm': False,
         },
         Variable(torch.ones((2, 3, 32, 32))),
         Variable(torch.zeros(2, 10)),
@@ -253,15 +258,15 @@ def test_multiline_str():
         ConvNet,
         {
             'in_dim': (3, 32, 32),
-            'conv_hid': [[3, 16, (7, 7), 1, 0, 1],
-                         [16, 32, (5, 5), 1, 0, 1],
-                         [32, 64, (3, 3), 1, 0, 1]],
-            'flat_hid': [100, 50],
+            'hid_layers': ([[3, 16, (7, 7), 1, 0, 1],
+                            [16, 32, (5, 5), 1, 0, 1],
+                            [32, 64, (3, 3), 1, 0, 1]],
+                           [100, 50]),
             'out_dim': 10,
             'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'smooth_l1_loss'},
+            'loss_param': {'name': 'mse_loss'},
             'clamp_grad': False,
-            'batch_norm': True
+            'batch_norm': True,
         },
         Variable(torch.ones((2, 3, 32, 32))),
         Variable(torch.zeros(2, 10)),
