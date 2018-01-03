@@ -161,7 +161,7 @@ class DQNBase(VanillaDQN):
         self.explore_var = self.explore_var_start
         self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
         self.gamma = algorithm_spec['gamma']
-
+        # These parameter control how often and how much to train
         self.training_min_timestep = algorithm_spec['training_min_timestep']
         self.training_frequency = algorithm_spec['training_frequency']
         self.training_epoch = algorithm_spec['training_epoch']
