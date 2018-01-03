@@ -17,11 +17,13 @@ class VanillaDQN(Algorithm):
     '''
 
     def __init__(self, agent):
-        super(DQNBase, self).__init__(agent)
+        super(VanillaDQN, self).__init__(agent)
         '''
         After initialization VanillaDQN has an attribute self.agent which contains
         '''
         # TODO explain what happens during init
+        # Prints the torch random seed to stdout
+        logger.info(f'Torch random seed: {torch.initial_seed()}')
 
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
@@ -37,9 +39,10 @@ class VanillaDQN(Algorithm):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
+        # Prints the network architecture to stdout
         self.net.print_nets()
         # Initialize the other algorithm parameters
-        # how many examples to learn from each training iteration
+        # self.bacth_size: how many examples to learn from each training iteration
         self.batch_size = net_spec['batch_size']
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
@@ -55,14 +58,37 @@ class VanillaDQN(Algorithm):
         self.training_min_timestep = algorithm_spec['training_min_timestep']
         # self.training_frequency: how often to train
         self.training_frequency = algorithm_spec['training_frequency']
-        # self.training_epoch =
+        # self.training_epoch: how many batches to train each time
         self.training_epoch = algorithm_spec['training_epoch']
+        # self.training_iters_per_batch: how many times to train each batch
         self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
 
     def compute_q_target_values(self, batch):
-        pass
+        '''Computes the target Q values for a batch of experiences'''
+        # Calculate the Q values of the current and next states
+        q_sts = self.net.wrap_eval(batch['states'])
+        q_next_st = self.net.wrap_eval(batch['next_states'])
+        logger.debug(f'Q next states: {q_next_st.size()}')
+        # Get the max for each next state
+        q_next_st_max, _ = torch.max(q_next_st, dim=1)
+        # Expand the dims so that q_next_st_max can be broadcast
+        q_next_st_max.unsqueeze_(1)
+        logger.debug(f'Q next_states max {q_next_st_max.size()}')
+        # Compute q_targets using reward and estimated best Q value from the next state if there is one
+        # Make future reward 0 if the current state is done
+        q_targets_max = batch['rewards'].data + self.gamma * \
+            torch.mul((1 - batch['dones'].data), q_next_st_max)
+        logger.debug(f'Q targets max: {q_targets_max.size()}')
+        # We only want to train the network for the action selected
+        # For all other actions we set the q_target = q_sts
+        # So that the loss for these actions is 0
+        q_targets = torch.mul(q_targets_max, batch['actions'].data) + \
+            torch.mul(q_sts, (1 - batch['actions'].data))
+        logger.debug(f'Q targets: {q_targets.size()}')
+        return q_targets
 
     def sample(self):
+        '''Samples a batch from memory of size self.batch_size'''
         batches = [body.memory.sample(self.batch_size)
                    for body in self.agent.flat_nonan_body_a]
         batch = util.concat_dict(batches)
@@ -70,6 +96,14 @@ class VanillaDQN(Algorithm):
         return batch
 
     def train(self):
+        '''Completes one training step for the agent if it is time to train.
+           i.e. the environment timestep is greater than the minimum training
+           timestep and a multiple of the training_frequency.
+           Each training step consists of sampling n batches from the agent's memory.
+              For each of the batches, the target Q values (q_targets) are computed and
+              a single training step is taken k times
+           Otherwise this function does nothing.
+        '''
         t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (t > self.training_min_timestep and t % self.training_frequency == 0):
             logger.debug(f'Training at t: {t}')
@@ -92,10 +126,14 @@ class VanillaDQN(Algorithm):
             return np.nan
 
     def body_act_discrete(self, body, state):
+        ''' Selects and returns a discrete using the action policy'''
         return self.action_policy(body, state, self.net, self.explore_var)
 
     def update(self):
-        pass
+        '''Updates the explore variables'''
+        space_clock = util.s_get(self, 'aeb_space.clock')
+        self.action_policy_update(self, space_clock)
+        return self.explore_var
 
 
 class DQNBase(VanillaDQN):
@@ -168,6 +206,7 @@ class DQNBase(VanillaDQN):
         self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
 
     def compute_q_target_values(self, batch):
+        '''Computes the target Q values for a batch of experiences'''
         q_sts = self.net.wrap_eval(batch['states'])
         # Use act_select network to select actions in next state
         # TODO parametrize usage of eval or target_net
@@ -198,13 +237,13 @@ class DQNBase(VanillaDQN):
         return q_targets
 
     def sample(self):
-        super(DQNBase, self).sample()
+        return super(DQNBase, self).sample()
 
     def train(self):
-        super(DQNBase, self).train()
+        return super(DQNBase, self).train()
 
     def body_act_discrete(self, body, state):
-        super(DQNBase, self).body_act_discrete(body, state)
+        return super(DQNBase, self).body_act_discrete(body, state)
 
     def update(self):
         '''Updates self.target_net and the explore variables'''
