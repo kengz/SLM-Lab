@@ -10,7 +10,7 @@ def main():
     # spec = spec_util.get('dqn.json', 'dqn_cartpole_cartpole')
     # spec = spec_util.get('dqn.json', 'dqn_cartpole_cartpole_cartpole')
     # spec = spec_util.get('dqn.json', 'dqn_acrobot_cartpole')
-    spec = spec_util.get('dqn.json', 'dqn_2dball_cartpole')
+    # spec = spec_util.get('dqn.json', 'dqn_2dball_cartpole')
     Session(spec).run()
 
 
