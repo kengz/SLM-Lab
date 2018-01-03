@@ -346,8 +346,8 @@ class MultitaskDQN(DQNBase):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        self.online_net = self.net
-        self.eval_net = self.net
+        self.online_net = self.target_net
+        self.eval_net = self.target_net
         logger.info(util.self_desc(self))
 
     def sample(self):
