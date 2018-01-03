@@ -117,7 +117,7 @@ def test_multiline_str():
     return data
 
 
-@pytest.fixture(scope="class", params=[
+@pytest.fixture(scope="function", params=[
     (
         MLPNet,
         {
