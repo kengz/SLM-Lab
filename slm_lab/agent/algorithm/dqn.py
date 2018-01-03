@@ -42,7 +42,7 @@ class DQNBase(Algorithm):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        print(self.net)
+        self.net.print_nets()
         self.target_net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -218,6 +218,7 @@ class MultitaskDQN(DQNBase):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
+        self.net.print_nets()
         self.target_net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
