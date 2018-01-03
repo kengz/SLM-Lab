@@ -59,13 +59,16 @@ class ConvNet(nn.Module):
         self.out_dim = out_dim
         self.batch_norm = batch_norm
         self.conv_layers = []
-        self.conv_model = self.build_conv_layers(hid_layers[0], hid_layers_activation)
+        self.conv_model = self.build_conv_layers(
+            hid_layers[0], hid_layers_activation)
         self.flat_layers = []
-        self.dense_model = self.build_flat_layers(hid_layers[1], out_dim, hid_layers_activation)
+        self.dense_model = self.build_flat_layers(
+            hid_layers[1], out_dim, hid_layers_activation)
         self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers) - 1
         self.init_params()
         # Init other net variables
-        self.params = list(self.conv_model.parameters()) + list(self.dense_model.parameters())
+        self.params = list(self.conv_model.parameters()) + \
+            list(self.dense_model.parameters())
         self.optim = net_util.get_optim_multinet(self.params, optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
@@ -93,7 +96,8 @@ class ConvNet(nn.Module):
                 stride=conv_hid[i][3],
                 padding=conv_hid[i][4],
                 dilation=conv_hid[i][5])]
-            self.conv_layers += [net_util.get_activation_fn(hid_layers_activation)]
+            self.conv_layers += [
+                net_util.get_activation_fn(hid_layers_activation)]
             # Don't include batch norm in the first layer
             if self.batch_norm and i != 0:
                 self.conv_layers += [nn.BatchNorm2d(conv_hid[i][1])]
@@ -111,7 +115,8 @@ class ConvNet(nn.Module):
             in_D = self.flat_dim if i == 0 else flat_hid[i - 1]
             out_D = flat_hid[i]
             self.flat_layers += [nn.Linear(in_D, out_D)]
-            self.flat_layers += [net_util.get_activation_fn(hid_layers_activation)]
+            self.flat_layers += [
+                net_util.get_activation_fn(hid_layers_activation)]
         in_D = flat_hid[-1] if len(flat_hid) > 0 else self.flat_dim
         self.flat_layers += [nn.Linear(in_D, out_dim)]
         return nn.Sequential(*self.flat_layers)
@@ -134,8 +139,10 @@ class ConvNet(nn.Module):
         loss = self.loss_fn(out, y)
         loss.backward()
         if self.clamp_grad:
-            torch.nn.utils.clip_grad_norm(self.conv_model.parameters(), self.clamp_grad_val)
-            torch.nn.utils.clip_grad_norm(self.dense_model.parameters(), self.clamp_grad_val)
+            torch.nn.utils.clip_grad_norm(
+                self.conv_model.parameters(), self.clamp_grad_val)
+            torch.nn.utils.clip_grad_norm(
+                self.dense_model.parameters(), self.clamp_grad_val)
         self.optim.step()
         return loss
 
@@ -158,6 +165,9 @@ class ConvNet(nn.Module):
             classname = layer.__class__.__name__
             if classname.find('Linear') != -1 or classname.find('Conv') != -1:
                 torch.nn.init.xavier_uniform(layer.weight.data)
+                layer.bias.data.fill_(biasinit)
+            if classname.find('BatchNorm') != -1:
+                torch.nn.init.uniform(layer.weight.data)
                 layer.bias.data.fill_(biasinit)
 
     def gather_trainable_params(self):
