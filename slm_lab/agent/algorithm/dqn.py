@@ -19,15 +19,20 @@ class VanillaDQN(Algorithm):
     def __init__(self, agent):
         super(VanillaDQN, self).__init__(agent)
         '''
-        After initialization VanillaDQN has an attribute self.agent which contains
+        After initialization VanillaDQN has an attribute self.agent which contains a reference to the entire Agent acting in the environment.
+        Agent components:
+            - algorithm (with a net: neural network function approximator, and a policy: how to act in the environment). One algorithm per agent, shared across all bodies of the agent
+            - memory (one per body)
         '''
-        # TODO explain what happens during init
         # Prints the torch random seed to stdout
         logger.info(f'Torch random seed: {torch.initial_seed()}')
 
     def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
-        # TODO explain what a body is
+        '''Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
+            - Memory (holding experiences obtained by acting in the environment)
+            - State and action dimentions for an environment
+            - Boolean var for if the action space is discrete
+            '''
         body = self.agent.flat_nonan_body_a[0]  # singleton algo
         # Initialize the neural network used to learn the Q function from the spec
         state_dim = body.state_dim  # dimension of the environment state, e.g. 4
@@ -42,7 +47,7 @@ class VanillaDQN(Algorithm):
         # Prints the network architecture to stdout
         self.net.print_nets()
         # Initialize the other algorithm parameters
-        # self.bacth_size: how many examples to learn from each training iteration
+        # self.batch_size: how many examples to learn from each training iteration
         self.batch_size = net_spec['batch_size']
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
