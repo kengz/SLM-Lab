@@ -64,3 +64,19 @@ def load_params(net, flattened):
             flattened[offset:offset + param.nelement()]).view(param.size())
         offset += param.nelement()
     return net
+
+
+def init_layers(layers, layer_type):
+    '''
+    Initializes all of the layers of type 'Linear' or 'Conv' using xavier uniform initialization for the weights and 0.01 for the biases
+    Initializes all layers of type 'BatchNorm' using univform initialization for the weights and the same as above for the biases
+    '''
+    biasinit = 0.01
+    for layer in layers:
+        classname = layer.__class__.__name__
+        if classname.find(layer_type) != -1:
+            if layer_type == 'BatchNorm':
+                torch.nn.init.uniform(layer.weight.data)
+            else:
+                torch.nn.init.xavier_uniform(layer.weight.data)
+            layer.bias.data.fill_(biasinit)

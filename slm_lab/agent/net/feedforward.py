@@ -84,12 +84,7 @@ class MLPNet(nn.Module):
         Sometimes the trainable params tests pass (see nn_test.py), other times they dont.
         Biases are all set to 0.01
         '''
-        biasinit = 0.01
-        for layer in self.layers:
-            classname = layer.__class__.__name__
-            if classname.find('Linear') != -1:
-                torch.nn.init.xavier_uniform(layer.weight.data)
-                layer.bias.data.fill_(biasinit)
+        net_util.init_layers(self.layers, 'Linear')
 
     def gather_trainable_params(self):
         '''
@@ -276,18 +271,13 @@ class MultiMLPNet(nn.Module):
         Initializes all of the model's parameters using xavier uniform initialization.
         Biases are all set to 0.01
         '''
-        biasinit = 0.01
         layers = []
         for l in self.state_heads_layers:
             layers.extend(l)
         layers.extend(self.shared_layers)
         for l in self.action_heads_layers:
             layers.extend(l)
-        for layer in layers:
-            classname = layer.__class__.__name__
-            if classname.find('Linear') != -1:
-                torch.nn.init.xavier_uniform(layer.weight.data)
-                layer.bias.data.fill_(biasinit)
+        net_util.init_layers(layers, 'Linear')
 
     def gather_trainable_params(self):
         '''
