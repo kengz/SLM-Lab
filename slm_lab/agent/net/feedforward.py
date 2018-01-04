@@ -102,7 +102,7 @@ class MLPNet(nn.Module):
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
         return None
-      
+
     def print_nets(self):
         '''Prints entire network'''
         print(self.model)
@@ -257,7 +257,7 @@ class MultiMLPNet(nn.Module):
         for i, out in enumerate(outs):
             loss = self.loss_fn(out, y[i])
             total_loss += loss
-            losses += loss
+            losses.append(loss)
         total_loss.backward()
         if self.clamp_grad:
             torch.nn.utils.clip_grad_norm(self.params, self.clamp_grad_val)
