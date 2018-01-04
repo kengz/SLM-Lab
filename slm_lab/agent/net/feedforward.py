@@ -242,7 +242,7 @@ class MultiMLPNet(nn.Module):
 
     def training_step(self, x, y):
         '''
-        Takes a single training step: one forward and one backwards pass
+        Takes a single training step: one forward and one backwards pass. Both x and y are lists of the same length, one x and y per environment
         '''
         self.set_train_eval(True)
         self.optim.zero_grad()
