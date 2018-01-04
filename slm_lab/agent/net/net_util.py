@@ -6,11 +6,6 @@ import torch.nn.functional as F
 from slm_lab.lib import logger
 
 
-def flatten_params(net):
-    '''Source: https://discuss.pytorch.org/t/running-average-of-parameters/902/2'''
-    return torch.cat([param.data.view(-1) for param in net.parameters()], 0)
-
-
 def get_activation_fn(activation):
     '''Helper to generate activation function layers for net'''
     layer = None
@@ -56,8 +51,15 @@ def get_optim_multinet(params, optim_param):
     return optim
 
 
+def flatten_params(net):
+    '''Flattens all of the parameters in a net
+    Source: https://discuss.pytorch.org/t/running-average-of-parameters/902/2'''
+    return torch.cat([param.data.view(-1) for param in net.parameters()], 0)
+
+
 def load_params(net, flattened):
-    '''Source: https://discuss.pytorch.org/t/running-average-of-parameters/902/2'''
+    '''Loads flattened parameters into a net
+    Source: https://discuss.pytorch.org/t/running-average-of-parameters/902/2'''
     offset = 0
     for param in net.parameters():
         param.data.copy_(
