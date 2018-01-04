@@ -24,7 +24,6 @@ class VanillaDQN(Algorithm):
             - algorithm (with a net: neural network function approximator, and a policy: how to act in the environment). One algorithm per agent, shared across all bodies of the agent
             - memory (one per body)
         '''
-        # Prints the torch random seed to stdout
         logger.info(f'Torch random seed: {torch.initial_seed()}')
 
     def post_body_init(self):
