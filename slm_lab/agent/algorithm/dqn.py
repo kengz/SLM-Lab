@@ -196,7 +196,7 @@ class DQNBase(VanillaDQN):
         # Default network update params for base
         self.update_type = 'replace'
         self.update_frequency = 1
-        self.polyak_weight = 0.9
+        self.polyak_weight = 0.0
 
     def init_non_net_algo_params(self):
         # Initialize other algorithm parameters
