@@ -40,11 +40,15 @@ def get_session_data(session):
         data_h_dict['t'] = t_h
         df = pd.DataFrame({data_name: data_h_dict[data_name][nonreset_idx]
                            for data_name in ['epi', 't'] + data_names})
-        agg_df = df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
-        agg_df.reset_index(drop=False, inplace=True)
+        aeb_data = df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
+        aeb_data.reset_index(drop=False, inplace=True)
         # TODO save full data to db
         aeb_db_data_dict[aeb] = df
-        aeb_data_dict[aeb] = agg_df
+        aeb_data_dict[aeb] = aeb_data
+        body = session.aeb_space.body_space.data[aeb]
+        # TODO move this elsewhere and aggregate/save properly
+        fitness_sr = calc_aeb_fitness_sr(aeb_data, body.env.name)
+        print(fitness_sr)
     session_data = pd.concat(aeb_data_dict, axis=1)
     logger.debug(f'{session_data}')
     return session_data
@@ -60,13 +64,13 @@ def plot_session(session, session_data):
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
     for idx, (a, e, b) in enumerate(aeb_space.aeb_list):
         aeb_str = f'{a}{e}{b}'
-        agg_df = session_data.loc[:, (a, e, b)]
+        aeb_data = session_data.loc[:, (a, e, b)]
         fig_1 = viz.plot_line(
-            agg_df, 'reward', 'epi', legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
+            aeb_data, 'reward', 'epi', legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
         fig.append_trace(fig_1.data[0], 1, 1)
 
         fig_2 = viz.plot_line(
-            agg_df, ['loss'], 'epi', y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
+            aeb_data, ['loss'], 'epi', y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
         fig.append_trace(fig_2.data[0], 2, 1)
         fig.append_trace(fig_2.data[1], 3, 1)
 
@@ -219,6 +223,13 @@ def calc_fitness(fitness_vec):
 
 def calc_aeb_fitness_sr(aeb_data, env_name):
     '''Top level method to calculate fitness for AEB level data (strength, speed, stability)'''
+    logger.info('Dev feature: fitness computation')
+    if len(aeb_data) < MA_WINDOW:
+        logger.warn(f'Run more than {MA_WINDOW} episodes to compute fitness')
+        return None
+    if env_name not in FITNESS_STD:
+        logger.warn(f'The fitness standard for env {env_name} is not built yet. Contact author.')
+        return None
     std = FITNESS_STD.get(env_name)
     aeb_data['total_t'] = aeb_data['t'].cumsum()
     aeb_data['strength'] = calc_strength(
