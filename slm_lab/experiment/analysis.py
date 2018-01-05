@@ -16,6 +16,8 @@ DATA_AGG_FNS = {
     'loss': 'mean',
     'explore_var': 'mean',
 }
+FITNESS_STD = util.read('slm_lab/experiment/fitness_std.json')
+MA_WINDOW = 100
 
 
 def get_session_data(session):
@@ -120,4 +122,118 @@ def analyze_trial(trial):
 
 def analyze_experiment(experiment):
     '''Gather experiment data, plot, and return experiment data (df) for high level agg.'''
+    raise NotImplementedError()
     return experiment_data
+
+
+'''
+Fitness analysis
+'''
+
+
+def calc_strength(aeb_data, rand_epi_reward, std_epi_reward):
+    '''
+    Calculate the strength for each episode:
+    strength_epi = (epi_reward - rand_epi_reward) / (std_epi_reward - rand_epi_reward)
+    Propeties:
+    - random agent has strength ~0, baseline agent has strength ~1.
+    - if an agent achieve x2 rewards, the strength is ~x2, and so on.
+    - strength of learning agent always tends toward positive regardless of the sign of rewards
+    - scale of strength is always standard at 1 and its multiplies, regardless of the scale of actual rewards. Strength stays invariant even as reward gets rescaled.
+    This allows for standard comparison between agents on the same problem using an intuitive measurement of strength. With proper scaling by a difficulty factor, we can compare across problems of different difficulties.
+    '''
+    return (aeb_data['reward'] - rand_epi_reward) / (std_epi_reward - rand_epi_reward)
+
+
+def calc_stable_idx(aeb_data):
+    '''Calculate the index (epi) when strength first becomes stable (using moving avg and working backward)'''
+    # interpolate linearly by strength to account for failure to solve
+    interp_strength = min(1, aeb_data['strength_ma'].max())
+    std_strength_ra_idx = (aeb_data['strength_ma'] == interp_strength).idxmax()
+    # index when it first achieved stable std_strength
+    stable_idx = std_strength_ra_idx - (MA_WINDOW - 1)
+    return stable_idx
+
+
+def calc_std_strength_timestep(aeb_data):
+    '''
+    Calculate the timestep needed to achieve stable (within window) std_strength.
+    For agent failing to achieve std_strength 1, use linear interpolation.
+    '''
+    # interpolate linearly by strength to account for failure to solve
+    interp_strength = min(1, aeb_data['strength_ma'].max())
+    stable_idx = calc_stable_idx(aeb_data)
+    std_strength_timestep = aeb_data.loc[
+        stable_idx, 'total_t'] / interp_strength
+    return std_strength_timestep
+
+
+def calc_speed(aeb_data, std_timestep):
+    '''
+    Calculate the speed (using absolute timesteps) to attain std_strength 1:
+    speed = std_timestep / agent_timestep
+    Propeties:
+    - random agent has speed ~0, baseline agent has speed ~1
+    - if an agent takes x2 timesteps to read std_strength, we can it is 2x slower.
+    - speed of learning agent always tends toward positive regardless of the shape of rewards curve
+    - scale of speed is always standard at 1 and its multiplies, regardless of absolute timestep.
+    This allows an intuitive measurement of learning speed and the standard comparison between agents on the same problem. Absolute timestep also measures the bits of new information given to the agent, which is a more grounded metric. With proper scaling of timescale (or bits scale), we can compare across problems of different difficulties.
+    '''
+    agent_timestep = calc_std_strength_timestep(aeb_data)
+    speed = std_timestep / agent_timestep
+    return speed
+
+
+def is_noisy_mono_inc(sr):
+    '''Check if sr is monotonically increasing, within noise = 5% * std_strength = 0.05 * 1'''
+    zero_noise = -0.05
+    mono_inc_sr = np.diff(sr) >= zero_noise
+    # restore sr to same length
+    mono_inc_sr = np.insert(mono_inc_sr, 0, np.nan)
+    return mono_inc_sr
+
+
+def calc_stability(aeb_data):
+    '''
+    Calculate the stability at maintaining std_strength and higher:
+    stability = ratio of times strength is monotonically increasing with 5% allowance for noise since becoming stable.
+    Propeties:
+    - considers once strength becomes stable (note, stable does not imply stability = 1)
+    - allows for drop in strength of 5% of std_strength, which is invariant to the scale of rewards
+    - if strength is monotonically increasing (with 5% noise), then it is stable
+    - sharp gain in strength is considered stable
+    - works even for partial solution (not attaining std_strength), due to how stable_idx is calculated
+    '''
+    stable_idx = calc_stable_idx(aeb_data)
+    stable_df = aeb_data.loc[stable_idx:, 'strength_mono_inc']
+    stability = stable_df.sum() / len(stable_df)
+    return stability
+
+
+def calc_fitness(fitness_vec):
+    '''Takes a vector of qualifying standardized dimensions of fitness and compute the normalized length as fitness'''
+    std_fitness_vector = np.ones(len(fitness_vec))
+    fitness = np.linalg.norm(fitness_vec) / np.linalg.norm(std_fitness_vector)
+    return fitness
+
+
+def calc_aeb_fitness_sr(aeb_data, env_name):
+    '''Top level method to calculate fitness for AEB level data (strength, speed, stability)'''
+    std = FITNESS_STD.get(env_name)
+    aeb_data['total_t'] = aeb_data['t'].cumsum()
+    aeb_data['strength'] = calc_strength(
+        aeb_data, std['rand_epi_reward'], std['std_epi_reward'])
+    aeb_data['strength_ma'] = aeb_data['strength'].rolling(MA_WINDOW).mean()
+    aeb_data['strength_mono_inc'] = is_noisy_mono_inc(
+        aeb_data['strength']).astype(int)
+
+    strength = aeb_data['strength_ma'].max()
+    speed = calc_speed(aeb_data, std['std_timestep'])
+    stability = calc_stability(aeb_data)
+    fitness = calc_fitness([strength, speed, stability])
+    aeb_fitness_sr = pd.Series({
+        'strength': strength,
+        'speed': speed,
+        'stability': stability,
+        'fitness': fitness})
+    return aeb_fitness_sr
