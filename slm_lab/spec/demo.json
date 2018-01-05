@@ -1,9 +1,9 @@
 {
   "dqn_cartpole": {
     "agent": [{
-      "name": "DQN",
+      "name": "VanillaDQN",
       "algorithm": {
-        "name": "DQN",
+        "name": "VanillaDQN",
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
         "gamma": 0.999,
