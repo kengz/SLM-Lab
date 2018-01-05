@@ -215,7 +215,10 @@ def calc_stability(aeb_data):
 
 
 def calc_fitness(fitness_vec):
-    '''Takes a vector of qualifying standardized dimensions of fitness and compute the normalized length as fitness'''
+    '''
+    Takes a vector of qualifying standardized dimensions of fitness and compute the normalized length as fitness
+    L2 norm because it diminishes lower values but amplifies higher values for comparison.
+    '''
     std_fitness_vector = np.ones(len(fitness_vec))
     fitness = np.linalg.norm(fitness_vec) / np.linalg.norm(std_fitness_vector)
     return fitness
