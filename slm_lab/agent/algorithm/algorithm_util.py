@@ -32,6 +32,7 @@ def multi_act_with_epsilon_greedy(flat_nonan_body_a, state_a, net, epsilon):
             action = np.random.randint(body.action_dim)
             flat_nonan_action_a.append(action)
     else:
+        cat_state_a = cat_state_a.astype('float')
         torch_state = Variable(torch.from_numpy(cat_state_a).float())
         out = net.wrap_eval(torch_state)
         start_idx = 0
@@ -57,12 +58,13 @@ def multi_head_act_with_epsilon_greedy(flat_nonan_body_a, state_a, net, epsilon)
     else:
         torch_states = []
         for state in flat_nonan_state_a:
-            torch_states.append(Variable(torch.from_numpy(state).float()))
+            state = state.astype('float')
+            torch_states.append(Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
         outs = net.wrap_eval(torch_states)
         for output in outs:
-            action = int(torch.max(output, dim=0)[1][0])
+            action = torch.max(output, dim=1)[1][0]
             flat_nonan_action_a.append(action)
-            logger.debug(f'body: {body.aeb}, outputs: {output}, action: {action}')
+            logger.debug(f'outputs: {output}, action: {action}')
     return flat_nonan_action_a
 
 
@@ -96,6 +98,25 @@ def multi_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
     return flat_nonan_action_a
 
 
+def multi_head_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
+    flat_nonan_state_a = util.flatten_nonan(state_a)
+    torch_states = []
+    for state in flat_nonan_state_a:
+        state = state.astype('float')
+        torch_states.append(Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
+    outs = net.wrap_eval(torch_states)
+    out_with_temp = [torch.div(x, tau) for x in outs]
+    flat_nonan_action_a = []
+    for body, output in zip(flat_nonan_body_a, out_with_temp):
+        probs = F.softmax(output).data.numpy()[0]
+        action = np.random.choice(list(range(body.action_dim)), p=probs)
+        logger.debug(f'''
+        body: {body.aeb}, output: {output},
+        probs: {probs}, action: {action}''')
+        flat_nonan_action_a.append(action)
+    return flat_nonan_action_a
+
+
 def act_with_gaussian(body, state, net, stddev):
     # TODO implement act_with_gaussian
     pass
@@ -123,6 +144,7 @@ act_fns = {
     'multi_head_epsilon_greedy': multi_head_act_with_epsilon_greedy,
     'boltzmann': act_with_boltzmann,
     'multi_boltzmann': multi_act_with_boltzmann,
+    'multi_head_boltzmann': multi_head_act_with_boltzmann,
     'gaussian': act_with_gaussian
 }
 
