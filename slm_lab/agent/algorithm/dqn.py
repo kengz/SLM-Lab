@@ -329,7 +329,7 @@ class DoubleDQN(DQNBase):
         return self.explore_var
 
 
-class MultitaskDQN(DQNBase):
+class MultitaskDQN(DQN):
     '''Simplest Multi-task DQN implementation. States and action dimensions are concatenated, and a single shared network is reponsible for processing concatenated states, and generating one action per environment from a single output layer.'''
 
     def __init__(self, agent):
@@ -450,7 +450,7 @@ class MultitaskDQN(DQNBase):
         return super(MultitaskDQN, self).flat_nonan_to_action_a(flat_nonan_action_a)
 
 
-class MultiHeadDQN(DQNBase):
+class MultiHeadDQN(DQN):
     '''Multi-task DQN with separate state and action processors per environment'''
 
     def post_body_init(self):
