@@ -168,6 +168,10 @@ class DQNBase(VanillaDQN):
 
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
+        self.init_nets()
+        self.init_non_net_algo_params()
+
+    def init_nets(self):
         body = self.agent.flat_nonan_body_a[0]  # singleton algo
         # Initialize networks
         state_dim = body.state_dim
@@ -193,6 +197,8 @@ class DQNBase(VanillaDQN):
         self.update_type = 'replace'
         self.update_frequency = 1
         self.polyak_weight = 0.9
+
+    def init_non_net_algo_params(self):
         # Initialize other algorithm parameters
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
@@ -448,7 +454,6 @@ class MultiHeadDQN(DQNBase):
     '''Multi-task DQN with separate state and action processors per environment'''
 
     def post_body_init(self):
-        super(MultiHeadDQN, self).post_body_init()
         '''Re-initialize nets with multi-task dimensions'''
         # NOTE Separate init to MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
         self.state_dims = [
@@ -457,6 +462,8 @@ class MultiHeadDQN(DQNBase):
             [body.action_dim] for body in self.agent.flat_nonan_body_a]
         self.total_state_dim = sum([s[0] for s in self.state_dims])
         self.total_action_dim = sum([a[0] for a in self.action_dims])
+        logger.debug(f'State dims: {self.state_dims}, total: {self.total_state_dim}')
+        logger.debug(f'Action dims: {self.action_dims}, total: {self.total_action_dim}')
         net_spec = self.agent.spec['net']
         self.net = getattr(net, net_spec['type'])(
             self.state_dims, net_spec['hid_layers'], self.action_dims,
