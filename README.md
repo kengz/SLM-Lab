@@ -33,6 +33,18 @@ _(Work In Progress)_ An experimentation framework for Reinforcement Learning usi
 
 ## Usage
 
+### Quickstart
+
+Once you're all set up, run the demo of `DQN` in `CartPole-v0`:
+
+- see `slm_lab/spec/demo.json` for example spec.
+- run the following on terminal, in the repo directory:
+    ```shell
+    source activate lab
+    yarn start
+    ```
+- check the output for data `slm_lab/data/dqn_cartpole/`
+
 ### High Level `yarn` commands
 
 | Function | `command` |
