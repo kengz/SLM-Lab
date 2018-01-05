@@ -167,7 +167,7 @@ class MultiMLPNet(nn.Module):
         self.params.extend(list(self.body.parameters()))
         for model in self.action_heads_models:
             self.params.extend(list(model.parameters()))
-        self.optim = net_util.get_optim_multitask(self.params, optim_param)
+        self.optim = net_util.get_optim_multinet(self.params, optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val

@@ -454,17 +454,21 @@ class MultiHeadDQN(DQN):
     '''Multi-task DQN with separate state and action processors per environment'''
 
     def post_body_init(self):
-        '''Re-initialize nets with multi-task dimensions'''
+        '''Initialize nets and algorithm with multi-task dimensions'''
         # NOTE Separate init to MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
+        net_spec = self.agent.spec['net']
+        if len(net_spec['hid_layers']) > 0:
+            state_head_out_d = int(net_spec['hid_layers'][0] / 4)
+        else:
+            state_head_out_d = 16
         self.state_dims = [
-            [body.state_dim] for body in self.agent.flat_nonan_body_a]
+            [body.state_dim, state_head_out_d] for body in self.agent.flat_nonan_body_a]
         self.action_dims = [
             [body.action_dim] for body in self.agent.flat_nonan_body_a]
         self.total_state_dim = sum([s[0] for s in self.state_dims])
         self.total_action_dim = sum([a[0] for a in self.action_dims])
-        logger.debug(f'State dims: {self.state_dims}, total: {self.total_state_dim}')
-        logger.debug(f'Action dims: {self.action_dims}, total: {self.total_action_dim}')
-        net_spec = self.agent.spec['net']
+        print(f'State dims: {self.state_dims}, total: {self.total_state_dim}')
+        print(f'Action dims: {self.action_dims}, total: {self.total_action_dim}')
         self.net = getattr(net, net_spec['type'])(
             self.state_dims, net_spec['hid_layers'], self.action_dims,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -480,6 +484,12 @@ class MultiHeadDQN(DQN):
         )
         self.online_net = self.target_net
         self.eval_net = self.target_net
+        self.batch_size = net_spec['batch_size']
+        self.update_type = net_spec['update_type']
+        self.update_frequency = net_spec['update_frequency']
+        self.polyak_weight = net_spec['polyak_weight']
+        # Initialize other algorithm parameters
+        self.init_non_net_algo_params()
         logger.info(util.self_desc(self))
 
     def sample(self):
