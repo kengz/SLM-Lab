@@ -450,7 +450,7 @@ class MultitaskDQN(DQN):
         return super(MultitaskDQN, self).flat_nonan_to_action_a(flat_nonan_action_a)
 
 
-class MultiHeadDQN(DQN):
+class MultiHeadDQN(MultitaskDQN):
     '''Multi-task DQN with separate state and action processors per environment'''
 
     def post_body_init(self):
@@ -467,8 +467,8 @@ class MultiHeadDQN(DQN):
             [body.action_dim] for body in self.agent.flat_nonan_body_a]
         self.total_state_dim = sum([s[0] for s in self.state_dims])
         self.total_action_dim = sum([a[0] for a in self.action_dims])
-        print(f'State dims: {self.state_dims}, total: {self.total_state_dim}')
-        print(f'Action dims: {self.action_dims}, total: {self.total_action_dim}')
+        logger.debug(f'State dims: {self.state_dims}, total: {self.total_state_dim}')
+        logger.debug(f'Action dims: {self.action_dims}, total: {self.total_action_dim}')
         self.net = getattr(net, net_spec['type'])(
             self.state_dims, net_spec['hid_layers'], self.action_dims,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -515,20 +515,17 @@ class MultiHeadDQN(DQN):
             batch['next_states'])
         logger.debug(f'Q next st act vals: {q_next_st_acts}')
         q_next_acts = []
-        for q in q_next_st_acts:
+        for i, q in enumerate(q_next_st_acts):
             _val, q_next_act_b = torch.max(q, dim=1)
-            logger.debug(
-                f'Q next action for body {body.aeb}: {q_next_act_b.size()}')
-            logger.debug(f'Q next action for body {body.aeb}: {q_next_act_b}')
+            logger.debug(f'Q next action for body {i}: {q_next_act_b}')
             q_next_acts.append(q_next_act_b)
         # Select q_next_st_maxs based on action selected in q_next_acts
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
-        logger.debug(f'Q next_states: {q_next_sts.size()}')
         logger.debug(f'Q next_states: {q_next_sts}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
         q_next_st_maxs = []
-        for q_next_act_b in q_next_acts:
-            q_next_st_max_b = q_next_sts[idx, q_next_act_b]
+        for q_next_st_val_b, q_next_act_b in zip(q_next_sts, q_next_acts):
+            q_next_st_max_b = q_next_st_val_b[idx, q_next_act_b]
             q_next_st_max_b.unsqueeze_(1)
             logger.debug(f'Q next_states max {q_next_st_max_b.size()}')
             logger.debug(f'Q next_states max {q_next_st_max_b}')
@@ -538,7 +535,7 @@ class MultiHeadDQN(DQN):
         q_targets_maxs = []
         for b, batch_b in enumerate(batches):
             q_targets_max_b = batch_b['rewards'].data + self.gamma * \
-                torch.mul((1 - batch_b['dones'].data), q_next_st_max[b])
+                torch.mul((1 - batch_b['dones'].data), q_next_st_maxs[b])
             q_targets_maxs.append(q_targets_max_b)
             logger.debug(f'Batch {b}, Q targets max: {q_targets_max_b.size()}')
         # As in the standard DQN we only want to train the network for the action selected
@@ -576,7 +573,9 @@ class MultiHeadDQN(DQN):
                     for q in q_targets:
                         y.append(Variable(q))
                     loss, losses = self.net.training_step(batch['states'], y)
-                    batch_loss += loss.data[0]
+                    logger.debug(f'loss {loss}')
+                    logger.debug(f'losses {losses}')
+                    batch_loss += loss
                     if batch_losses is None:
                         batch_losses = losses
                     else:
@@ -592,8 +591,9 @@ class MultiHeadDQN(DQN):
                                     for x in zip(total_losses, batch_losses)]
             total_loss /= self.training_epoch
             total_losses = [float(x) / self.training_epoch for x in total_losses]
-            logger.debug(f'total_loss {total_loss}')
-            logger.debug(f'total losses {total_losses}')
+            if t % 25 == 0:
+                logger.info(f'total_loss {total_loss}')
+                logger.info(f'total losses {total_losses}')
             # TODO: Return other losses as well.
             return total_loss
         else:

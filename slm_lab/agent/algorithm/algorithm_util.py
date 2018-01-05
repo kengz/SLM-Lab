@@ -26,13 +26,14 @@ def multi_act_with_epsilon_greedy(flat_nonan_body_a, state_a, net, epsilon):
     '''Multi-body flat_nonan_action_a on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
     flat_nonan_state_a = util.flatten_nonan(state_a)
     cat_state_a = np.concatenate(flat_nonan_state_a)
+    flat_nonan_action_a = []
     if epsilon > np.random.rand():
-        flat_nonan_action_a = np.random.randint(
-            a_dim, size=len(flat_nonan_body_a))
+        for body in flat_nonan_body_a:
+            action = np.random.randint(body.action_dim)
+            flat_nonan_action_a.append(action)
     else:
         torch_state = Variable(torch.from_numpy(cat_state_a).float())
         out = net.wrap_eval(torch_state)
-        flat_nonan_action_a = []
         start_idx = 0
         for body in flat_nonan_body_a:
             end_idx = start_idx + body.action_dim
@@ -42,6 +43,26 @@ def multi_act_with_epsilon_greedy(flat_nonan_body_a, state_a, net, epsilon):
             logger.debug(f'''
             body: {body.aeb}, net idx: {start_idx}-{end_idx}
             action: {action}''')
+    return flat_nonan_action_a
+
+
+def multi_head_act_with_epsilon_greedy(flat_nonan_body_a, state_a, net, epsilon):
+    '''Multi-headed body flat_nonan_action_a on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
+    flat_nonan_state_a = util.flatten_nonan(state_a)
+    flat_nonan_action_a = []
+    if epsilon > np.random.rand():
+        for body in flat_nonan_body_a:
+            action = np.random.randint(body.action_dim)
+            flat_nonan_action_a.append(action)
+    else:
+        torch_states = []
+        for state in flat_nonan_state_a:
+            torch_states.append(Variable(torch.from_numpy(state).float()))
+        outs = net.wrap_eval(torch_states)
+        for output in outs:
+            action = int(torch.max(output, dim=0)[1][0])
+            flat_nonan_action_a.append(action)
+            logger.debug(f'body: {body.aeb}, outputs: {output}, action: {action}')
     return flat_nonan_action_a
 
 
@@ -99,6 +120,7 @@ def update_gaussian(body, state, net, stddev):
 act_fns = {
     'epsilon_greedy': act_with_epsilon_greedy,
     'multi_epsilon_greedy': multi_act_with_epsilon_greedy,
+    'multi_head_epsilon_greedy': multi_head_act_with_epsilon_greedy,
     'boltzmann': act_with_boltzmann,
     'multi_boltzmann': multi_act_with_boltzmann,
     'gaussian': act_with_gaussian

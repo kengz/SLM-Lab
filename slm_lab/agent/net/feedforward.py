@@ -257,14 +257,14 @@ class MultiMLPNet(nn.Module):
         if self.clamp_grad:
             torch.nn.utils.clip_grad_norm(self.params, self.clamp_grad_val)
         self.optim.step()
-        return total_loss, losses
+        return total_loss.data[0], [l.data[0] for l in losses]
 
     def wrap_eval(self, x):
         '''
         Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
         '''
         self.set_train_eval(False)
-        return self(x).data
+        return [y.data for y in self(x)]
 
     def init_params(self):
         '''
