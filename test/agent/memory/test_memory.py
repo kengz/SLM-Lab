@@ -1,10 +1,12 @@
 from collections import Counter
 from copy import deepcopy
+from flaky import flaky
 import numpy as np
 import pytest
 
 
 @pytest.mark.skip(reason='TODO restore. WIP memory and fixture for memory')
+@flaky
 class TestMemory:
     '''
     Base class for unit testing replay memory
@@ -57,7 +59,7 @@ class TestMemory:
             assert memory.true_size == min(memory.max_size, num_added)
             assert memory.head == (num_added - 1) % memory.max_size
 
-    @pytest.mark.skip(reason='flaky test, see https://circleci.com/gh/kengz/SLM-Lab/262')
+    @flaky(max_runs=10)
     def test_sample(self, test_memory):
         '''
         Tests that a sample of batch size is returned
@@ -77,7 +79,7 @@ class TestMemory:
         assert batch['dones'].shape == (batch_size, 1)
         assert batch['priorities'].shape == (batch_size, 1)
 
-    @pytest.mark.skip(reason='flaky test, see https://circleci.com/gh/kengz/SLM-Lab/296')
+    @flaky(max_runs=10)
     def test_sample_changes(self, test_memory):
         '''
         Tests if memory.current_batch_indices changes

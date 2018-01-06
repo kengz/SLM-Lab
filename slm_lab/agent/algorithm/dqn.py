@@ -11,30 +11,31 @@ import sys
 import torch
 
 
-class DQNBase(Algorithm):
+class VanillaDQN(Algorithm):
     '''
-    Implementation of the base DQN algorithm.
-    See Sergey Levine's lecture xxx for more details
-    TODO add link
-          more detailed comments
-
-    net: instance of an slm_lab/agent/net
-    memory: instance of an slm_lab/agent/memory
-    batch_size: how many examples from memory to sample at each training step
-    action_policy: function (from common.py) that determines how to select actions
-    gamma: Real number in range [0, 1]. Determines how much to discount the future
-    state_dim: dimension of the state space
-    action_dim: dimensions of the action space
+    Implementation of a simple DQN algorithm.
     '''
 
     def __init__(self, agent):
-        super(DQNBase, self).__init__(agent)
+        super(VanillaDQN, self).__init__(agent)
+        '''
+        After initialization VanillaDQN has an attribute self.agent which contains a reference to the entire Agent acting in the environment.
+        Agent components:
+            - algorithm (with a net: neural network function approximator, and a policy: how to act in the environment). One algorithm per agent, shared across all bodies of the agent
+            - memory (one per body)
+        '''
+        logger.info(f'Torch random seed: {torch.initial_seed()}')
 
     def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
+        '''Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
+            - Memory (holding experiences obtained by acting in the environment)
+            - State and action dimentions for an environment
+            - Boolean var for if the action space is discrete
+            '''
         body = self.agent.flat_nonan_body_a[0]  # singleton algo
-        state_dim = body.state_dim
-        action_dim = body.action_dim
+        # Initialize the neural network used to learn the Q function from the spec
+        state_dim = body.state_dim  # dimension of the environment state, e.g. 4
+        action_dim = body.action_dim  # dimension of the environment actions, e.g. 2
         net_spec = self.agent.spec['net']
         self.net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
@@ -42,62 +43,45 @@ class DQNBase(Algorithm):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        print(self.net)
-        self.target_net = getattr(net, net_spec['type'])(
-            state_dim, net_spec['hid_layers'], action_dim,
-            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-            optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'),
-        )
-        self.online_net = self.net
-        self.eval_net = self.net
+        # Prints the network architecture to stdout
+        self.net.print_nets()
+        # Initialize the other algorithm parameters
+        # self.batch_size: how many examples to learn from each training iteration
         self.batch_size = net_spec['batch_size']
-        # Default network update params for base
-        self.update_type = 'replace'
-        self.update_frequency = 1
-        self.polyak_weight = 0.9
-
-        # TODO adjust learning rate http://pytorch.org/docs/master/optim.html#how-to-adjust-learning-rate
-        # TODO hackish optimizer learning rate, also it fails for SGD wtf
-
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
         self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
-        # explore_var is epsilon, tau or etc.
+        # explore_var is epsilon or tau depening on the action policy
+        # explore var start, end, and anneal_epi control the trade off between exploration and exploitaton
         self.explore_var_start = algorithm_spec['explore_var_start']
         self.explore_var_end = algorithm_spec['explore_var_end']
         self.explore_var = self.explore_var_start
         self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
-        self.gamma = algorithm_spec['gamma']
-
+        self.gamma = algorithm_spec['gamma']  # the discount rate
+        # self.training_min_timestep: how long to wait before starting training
         self.training_min_timestep = algorithm_spec['training_min_timestep']
+        # self.training_frequency: how often to train
         self.training_frequency = algorithm_spec['training_frequency']
+        # self.training_epoch: how many batches to train each time
         self.training_epoch = algorithm_spec['training_epoch']
+        # self.training_iters_per_batch: how many times to train each batch
         self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
-        # TODO standardize agent and env print self
 
     def compute_q_target_values(self, batch):
+        '''Computes the target Q values for a batch of experiences'''
+        # Calculate the Q values of the current and next states
         q_sts = self.net.wrap_eval(batch['states'])
-        # Use act_select network to select actions in next state
-        # TODO parametrize usage of eval or target_net
-        # Depending on the algorithm this is either the current net or target net
-        q_next_st_acts = self.online_net.wrap_eval(batch['next_states'])
-        _val, q_next_acts = torch.max(q_next_st_acts, dim=1)
-        logger.debug(f'Q next action: {q_next_acts.size()}')
-        # Select q_next_st_maxs based on action selected in q_next_acts
-        # Evaluate the action selection using the eval net
-        # Depending on the algorithm this is either the current net or target net
-        q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
-        logger.debug(f'Q next_states: {q_next_sts.size()}')
-
-        idx = torch.from_numpy(np.array(list(range(self.batch_size))))
-        q_next_st_maxs = q_next_sts[idx, q_next_acts]
-        q_next_st_maxs.unsqueeze_(1)
-        logger.debug(f'Q next_states max {q_next_st_maxs.size()}')
-        # Compute final q_target using reward and estimated best Q value from the next state if there is one
+        q_next_st = self.net.wrap_eval(batch['next_states'])
+        logger.debug(f'Q next states: {q_next_st.size()}')
+        # Get the max for each next state
+        q_next_st_max, _ = torch.max(q_next_st, dim=1)
+        # Expand the dims so that q_next_st_max can be broadcast
+        q_next_st_max.unsqueeze_(1)
+        logger.debug(f'Q next_states max {q_next_st_max.size()}')
+        # Compute q_targets using reward and estimated best Q value from the next state if there is one
         # Make future reward 0 if the current state is done
         q_targets_max = batch['rewards'].data + self.gamma * \
-            torch.mul((1 - batch['dones'].data), q_next_st_maxs)
+            torch.mul((1 - batch['dones'].data), q_next_st_max)
         logger.debug(f'Q targets max: {q_targets_max.size()}')
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_sts
@@ -108,6 +92,7 @@ class DQNBase(Algorithm):
         return q_targets
 
     def sample(self):
+        '''Samples a batch from memory of size self.batch_size'''
         batches = [body.memory.sample(self.batch_size)
                    for body in self.agent.flat_nonan_body_a]
         batch = util.concat_dict(batches)
@@ -115,6 +100,14 @@ class DQNBase(Algorithm):
         return batch
 
     def train(self):
+        '''Completes one training step for the agent if it is time to train.
+           i.e. the environment timestep is greater than the minimum training
+           timestep and a multiple of the training_frequency.
+           Each training step consists of sampling n batches from the agent's memory.
+              For each of the batches, the target Q values (q_targets) are computed and
+              a single training step is taken k times
+           Otherwise this function does nothing.
+        '''
         t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (t > self.training_min_timestep and t % self.training_frequency == 0):
             logger.debug(f'Training at t: {t}')
@@ -137,28 +130,160 @@ class DQNBase(Algorithm):
             return np.nan
 
     def body_act_discrete(self, body, state):
+        ''' Selects and returns a discrete using the action policy'''
         return self.action_policy(body, state, self.net, self.explore_var)
 
     def update(self):
+        '''Updates the explore variables'''
         space_clock = util.s_get(self, 'aeb_space.clock')
-        # update explore_var
+        self.action_policy_update(self, space_clock)
+        return self.explore_var
+
+
+class DQNBase(VanillaDQN):
+    '''
+    Implementation of the base DQN algorithm.
+    This is more general than the VanillaDQN since it allows
+    for two different networks (through self.net and self.target_net).
+    If desired, self.target_net can be updated more slowly
+    to stabilize learning. It also allows for different nets to be used to
+    select the action in the next state and to evaluate the value of that
+    action through self.online_net and self.eval_net
+    Setting all nets to self.net reduces to the VanillaDQN case.
+    See Sergey Levine's lecture xxx for more details
+    TODO add link
+          more detailed comments
+
+    net: instance of an slm_lab/agent/net
+    memory: instance of an slm_lab/agent/memory
+    batch_size: how many examples from memory to sample at each training step
+    action_policy: function (from algorithm_util.py) that determines how to select actions
+    gamma: Real number in range [0, 1]. Determines how much to discount the future
+    state_dim: dimension of the state space
+    action_dim: dimensions of the action space
+    '''
+
+    def __init__(self, agent):
+        super(DQNBase, self).__init__(agent)
+
+    def post_body_init(self):
+        '''Initializes the part of algorithm needing a body to exist first.'''
+        self.init_nets()
+        self.init_non_net_algo_params()
+
+    def init_nets(self):
+        body = self.agent.flat_nonan_body_a[0]  # singleton algo
+        # Initialize networks
+        state_dim = body.state_dim
+        action_dim = body.action_dim
+        net_spec = self.agent.spec['net']
+        self.net = getattr(net, net_spec['type'])(
+            state_dim, net_spec['hid_layers'], action_dim,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
+            optim_param=_.get(net_spec, 'optim'),
+            loss_param=_.get(net_spec, 'loss'),
+        )
+        self.net.print_nets()
+        self.target_net = getattr(net, net_spec['type'])(
+            state_dim, net_spec['hid_layers'], action_dim,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
+            optim_param=_.get(net_spec, 'optim'),
+            loss_param=_.get(net_spec, 'loss'),
+        )
+        self.online_net = self.target_net
+        self.eval_net = self.target_net
+        self.batch_size = net_spec['batch_size']
+        # Default network update params for base
+        self.update_type = 'replace'
+        self.update_frequency = 1
+        self.polyak_weight = 0.0
+
+    def init_non_net_algo_params(self):
+        # Initialize other algorithm parameters
+        algorithm_spec = self.agent.spec['algorithm']
+        self.action_policy = act_fns[algorithm_spec['action_policy']]
+        self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
+        # explore_var is epsilon, tau or etc.
+        self.explore_var_start = algorithm_spec['explore_var_start']
+        self.explore_var_end = algorithm_spec['explore_var_end']
+        self.explore_var = self.explore_var_start
+        self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
+        self.gamma = algorithm_spec['gamma']
+        # These parameter control how often and how much to train
+        self.training_min_timestep = algorithm_spec['training_min_timestep']
+        self.training_frequency = algorithm_spec['training_frequency']
+        self.training_epoch = algorithm_spec['training_epoch']
+        self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
+
+    def compute_q_target_values(self, batch):
+        '''Computes the target Q values for a batch of experiences'''
+        q_sts = self.net.wrap_eval(batch['states'])
+        # Use act_select network to select actions in next state
+        # TODO parametrize usage of eval or target_net
+        # Depending on the algorithm this is either the current net or target net
+        q_next_st_acts = self.online_net.wrap_eval(batch['next_states'])
+        _val, q_next_acts = torch.max(q_next_st_acts, dim=1)
+        logger.debug(f'Q next action: {q_next_acts.size()}')
+        # Select q_next_st_maxs based on action selected in q_next_acts
+        # Evaluate the action selection using the eval net
+        # Depending on the algorithm this is either the current net or target net
+        q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
+        logger.debug(f'Q next_states: {q_next_sts.size()}')
+        idx = torch.from_numpy(np.array(list(range(self.batch_size))))
+        q_next_st_maxs = q_next_sts[idx, q_next_acts]
+        q_next_st_maxs.unsqueeze_(1)
+        logger.debug(f'Q next_states max {q_next_st_maxs.size()}')
+        # Compute final q_target using reward and estimated best Q value from the next state if there is one
+        # Make future reward 0 if the current state is done
+        q_targets_max = batch['rewards'].data + self.gamma * \
+            torch.mul((1 - batch['dones'].data), q_next_st_maxs)
+        logger.debug(f'Q targets max: {q_targets_max.size()}')
+        # We only want to train the network for the action selected
+        # For all other actions we set the q_target = q_sts
+        # So that the loss for these actions is 0
+        q_targets = torch.mul(q_targets_max, batch['actions'].data) + \
+            torch.mul(q_sts, (1 - batch['actions'].data))
+        logger.debug(f'Q targets: {q_targets.size()}')
+        return q_targets
+
+    def sample(self):
+        return super(DQNBase, self).sample()
+
+    def train(self):
+        return super(DQNBase, self).train()
+
+    def body_act_discrete(self, body, state):
+        return super(DQNBase, self).body_act_discrete(body, state)
+
+    def update_explore_var(self):
+        space_clock = util.s_get(self, 'aeb_space.clock')
         self.action_policy_update(self, space_clock)
 
-        # Update target net with current net
+    def update_nets(self):
+        space_clock = util.s_get(self, 'aeb_space.clock')
         t = space_clock.get('t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
                 self.target_net = deepcopy(self.net)
+                self.online_net = self.target_net
+                self.eval_net = self.target_net
         elif self.update_type == 'polyak':
             logger.debug('Updating net by averaging')
             avg_params = self.polyak_weight * net_util.flatten_params(self.target_net) + \
                 (1 - self.polyak_weight) * net_util.flatten_params(self.net)
             self.target_net = net_util.load_params(self.target_net, avg_params)
+            self.online_net = self.target_net
+            self.eval_net = self.target_net
         else:
             logger.error(
                 'Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
             sys.exit()
+
+    def update(self):
+        '''Updates self.target_net and the explore variables'''
+        self.update_explore_var()
+        self.update_nets()
         return self.explore_var
 
 
@@ -169,8 +294,6 @@ class DQN(DQNBase):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         super(DQN, self).post_body_init()
-        self.online_net = self.target_net
-        self.eval_net = self.target_net
         # Network update params
         net_spec = self.agent.spec['net']
         self.update_type = net_spec['update_type']
@@ -197,8 +320,23 @@ class DoubleDQN(DQNBase):
         self.polyak_weight = net_spec['polyak_weight']
         logger.info(util.self_desc(self))
 
+    def update(self):
+        super(DoubleDQN, self).update()
+        space_clock = util.s_get(self, 'aeb_space.clock')
+        t = space_clock.get('t')
+        if self.update_type == 'replace':
+            if t % self.update_frequency == 0:
+                self.online_net = self.net
+                self.eval_net = self.target_net
+        elif self.update_type == 'polyak':
+            self.online_net = self.net
+            self.eval_net = self.target_net
+        return self.explore_var
 
-class MultitaskDQN(DQNBase):
+
+class MultitaskDQN(DQN):
+    '''Simplest Multi-task DQN implementation. States and action dimensions are concatenated, and a single shared network is reponsible for processing concatenated states, and generating one action per environment from a single output layer.'''
+
     def __init__(self, agent):
         super(MultitaskDQN, self).__init__(agent)
 
@@ -218,14 +356,16 @@ class MultitaskDQN(DQNBase):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
+        self.net.print_nets()
         self.target_net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        self.online_net = self.net
-        self.eval_net = self.net
+        self.online_net = self.target_net
+        self.eval_net = self.target_net
+        self.explore_var = [self.explore_var_start] * len(self.agent.flat_nonan_body_a)
         logger.info(util.self_desc(self))
 
     def sample(self):
@@ -314,3 +454,180 @@ class MultitaskDQN(DQNBase):
         flat_nonan_action_a = self.action_policy(
             self.agent.flat_nonan_body_a, state_a, self.net, self.explore_var)
         return super(MultitaskDQN, self).flat_nonan_to_action_a(flat_nonan_action_a)
+
+    def update_explore_var(self):
+        self.action_policy_update(self, self.agent.flat_nonan_body_a)
+
+    def update(self):
+        return super(MultitaskDQN, self).update()[0]
+
+
+class MultiHeadDQN(MultitaskDQN):
+    '''Multi-task DQN with separate state and action processors per environment'''
+
+    def post_body_init(self):
+        '''Initialize nets and algorithm with multi-task dimensions'''
+        # NOTE Separate init to MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
+        net_spec = self.agent.spec['net']
+        if len(net_spec['hid_layers']) > 0:
+            state_head_out_d = int(net_spec['hid_layers'][0] / 4)
+        else:
+            state_head_out_d = 16
+        self.state_dims = [
+            [body.state_dim, state_head_out_d] for body in self.agent.flat_nonan_body_a]
+        self.action_dims = [
+            [body.action_dim] for body in self.agent.flat_nonan_body_a]
+        self.total_state_dim = sum([s[0] for s in self.state_dims])
+        self.total_action_dim = sum([a[0] for a in self.action_dims])
+        logger.debug(f'State dims: {self.state_dims}, total: {self.total_state_dim}')
+        logger.debug(f'Action dims: {self.action_dims}, total: {self.total_action_dim}')
+        self.net = getattr(net, net_spec['type'])(
+            self.state_dims, net_spec['hid_layers'], self.action_dims,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
+            optim_param=_.get(net_spec, 'optim'),
+            loss_param=_.get(net_spec, 'loss'),
+        )
+        self.net.print_nets()
+        self.target_net = getattr(net, net_spec['type'])(
+            self.state_dims, net_spec['hid_layers'], self.action_dims,
+            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
+            optim_param=_.get(net_spec, 'optim'),
+            loss_param=_.get(net_spec, 'loss'),
+        )
+        self.online_net = self.target_net
+        self.eval_net = self.target_net
+        self.batch_size = net_spec['batch_size']
+        self.update_type = net_spec['update_type']
+        self.update_frequency = net_spec['update_frequency']
+        self.polyak_weight = net_spec['polyak_weight']
+        # Initialize other algorithm parameters
+        self.init_non_net_algo_params()
+        self.explore_var = [self.explore_var_start] * len(self.agent.flat_nonan_body_a)
+        logger.info(util.self_desc(self))
+
+    def sample(self):
+        '''Samples one batch per environment'''
+        batches = [body.memory.sample(self.batch_size)
+                   for body in self.agent.flat_nonan_body_a]
+        # Package data into pytorch variables
+        for batch_b in batches:
+            util.to_torch_batch(batch_b)
+        batch = {'states': [], 'next_states': []}
+        for b in batches:
+            batch['states'].append(b['states'])
+            batch['next_states'].append(b['next_states'])
+        batch['batches'] = batches
+        return batch
+
+    def compute_q_target_values(self, batch):
+        batches = batch['batches']
+        # NOTE: q_sts, q_next_st_acts and q_next_sts are lists
+        q_sts = self.net.wrap_eval(batch['states'])
+        logger.debug(f'Q sts: {q_sts}')
+        q_next_st_acts = self.online_net.wrap_eval(
+            batch['next_states'])
+        logger.debug(f'Q next st act vals: {q_next_st_acts}')
+        q_next_acts = []
+        for i, q in enumerate(q_next_st_acts):
+            _val, q_next_act_b = torch.max(q, dim=1)
+            logger.debug(f'Q next action for body {i}: {q_next_act_b}')
+            q_next_acts.append(q_next_act_b)
+        # Select q_next_st_maxs based on action selected in q_next_acts
+        q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
+        logger.debug(f'Q next_states: {q_next_sts}')
+        idx = torch.from_numpy(np.array(list(range(self.batch_size))))
+        q_next_st_maxs = []
+        for q_next_st_val_b, q_next_act_b in zip(q_next_sts, q_next_acts):
+            q_next_st_max_b = q_next_st_val_b[idx, q_next_act_b]
+            q_next_st_max_b.unsqueeze_(1)
+            logger.debug(f'Q next_states max {q_next_st_max_b.size()}')
+            logger.debug(f'Q next_states max {q_next_st_max_b}')
+            q_next_st_maxs.append(q_next_st_max_b)
+        # Compute q_targets per environment using reward and estimated best Q value from the next state if there is one
+        # Make future reward 0 if the current state is done
+        q_targets_maxs = []
+        for b, batch_b in enumerate(batches):
+            q_targets_max_b = batch_b['rewards'].data + self.gamma * \
+                torch.mul((1 - batch_b['dones'].data), q_next_st_maxs[b])
+            q_targets_maxs.append(q_targets_max_b)
+            logger.debug(f'Batch {b}, Q targets max: {q_targets_max_b.size()}')
+        # As in the standard DQN we only want to train the network for the action selected
+        # For all other actions we set the q_target = q_sts
+        # So that the loss for these actions is 0
+        q_targets = []
+        for b, batch_b in enumerate(batches):
+            q_targets_b = torch.mul(q_targets_maxs[b], batch_b['actions'].data) + \
+                torch.mul(q_sts[b], (1 - batch_b['actions'].data))
+            q_targets.append(q_targets_b)
+            logger.debug(f'Batch {b}, Q targets: {q_targets_b.size()}')
+        return q_targets
+
+    def train(self):
+        '''Completes one training step for the agent if it is time to train.
+           i.e. the environment timestep is greater than the minimum training
+           timestep and a multiple of the training_frequency.
+           Each training step consists of sampling n batches from the agent's memory.
+              For each of the batches, the target Q values (q_targets) are computed and
+              a single training step is taken k times
+           Otherwise this function does nothing.
+        '''
+        t = util.s_get(self, 'aeb_space.clock').get('total_t')
+        if (t > self.training_min_timestep and t % self.training_frequency == 0):
+            logger.debug(f'Training at t: {t}')
+            total_loss = 0.0
+            total_losses = None
+            for _b in range(self.training_epoch):
+                batch = self.sample()
+                batch_loss = 0.0
+                batch_losses = None
+                for _i in range(self.training_iters_per_batch):
+                    q_targets = self.compute_q_target_values(batch)
+                    y = []
+                    for q in q_targets:
+                        y.append(Variable(q))
+                    loss, losses = self.net.training_step(batch['states'], y)
+                    logger.debug(f'loss {loss}')
+                    logger.debug(f'losses {losses}')
+                    batch_loss += loss
+                    if batch_losses is None:
+                        batch_losses = losses
+                    else:
+                        batch_losses = [sum(x)
+                                        for x in zip(batch_losses, losses)]
+                batch_loss /= self.training_iters_per_batch
+                batch_losses = [float(x) / self.training_iters_per_batch for x in batch_losses]
+                total_loss += batch_loss
+                if total_losses is None:
+                    total_losses = batch_losses
+                else:
+                    total_losses = [sum(x)
+                                    for x in zip(total_losses, batch_losses)]
+            total_loss /= self.training_epoch
+            total_losses = [float(x) / self.training_epoch for x in total_losses]
+            if t % 25 == 0:
+                logger.info(f'total_loss {total_loss}')
+                logger.info(f'total losses {total_losses}')
+            # TODO: Return other losses as well.
+            return total_loss
+        else:
+            logger.debug('NOT training')
+            return np.nan
+
+    def update_nets(self):
+        # NOTE: Once polyak updating for multi-headed networks is supported via updates to flatten_params and load_params then this can be removed
+        space_clock = util.s_get(self, 'aeb_space.clock')
+        t = space_clock.get('t')
+        if self.update_type == 'replace':
+            if t % self.update_frequency == 0:
+                logger.debug('Updating target_net by replacing')
+                self.target_net = deepcopy(self.net)
+                self.online_net = self.target_net
+                self.eval_net = self.target_net
+        elif self.update_type == 'polyak':
+            logger.error(
+                '"polyak" updating not supported yet for MultiHeadDQN, please use "replace" instead. Exiting.')
+            sys.exit()
+        else:
+            logger.error(
+                'Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
+            sys.exit()
