@@ -55,7 +55,8 @@ def multi_head_act_with_epsilon_greedy(flat_nonan_body_a, state_a, net, epsilon)
     torch_states = []
     for state in flat_nonan_state_a:
         state = state.astype('float')
-        torch_states.append(Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
+        torch_states.append(
+            Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
     outs = net.wrap_eval(torch_states)
     for body, e, output in zip(flat_nonan_body_a, epsilon, outs):
         logger.debug(f'body: {body.aeb}, epsilon: {e}')
@@ -110,7 +111,8 @@ def multi_head_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
     torch_states = []
     for state in flat_nonan_state_a:
         state = state.astype('float')
-        torch_states.append(Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
+        torch_states.append(
+            Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
     outs = net.wrap_eval(torch_states)
     out_with_temp = [torch.div(x, t) for x, t in zip(outs, tau)]
     logger.debug(f'taus: {tau}, outs: {outs}, out_with_temp: {out_with_temp}')
