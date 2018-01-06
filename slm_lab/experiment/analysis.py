@@ -228,13 +228,16 @@ def calc_fitness(fitness_vec):
 def calc_aeb_fitness_sr(aeb_df, env_name):
     '''Top level method to calculate fitness vector for AEB level data (strength, speed, stability)'''
     logger.info('Dev feature: fitness computation')
+    no_fitness_sr = pd.Series({
+        'strength': 0, 'speed': 0, 'stability': 0, 'fitness': 0})
     if len(aeb_df) < MA_WINDOW:
-        logger.warn(f'Run more than {MA_WINDOW} episodes to compute fitness')
-        return None
+        logger.warn(
+            f'Run more than {MA_WINDOW} episodes to compute proper fitness')
+        return no_fitness_sr
     if env_name not in FITNESS_STD:
         logger.warn(
             f'The fitness standard for env {env_name} is not built yet. Contact author.')
-        return None
+        return no_fitness_sr
     std = FITNESS_STD.get(env_name)
     aeb_df['total_t'] = aeb_df['t'].cumsum()
     aeb_df['strength'] = calc_strength(
@@ -248,8 +251,5 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
     stability = calc_stability(aeb_df)
     fitness = calc_fitness([strength, speed, stability])
     aeb_fitness_sr = pd.Series({
-        'strength': strength,
-        'speed': speed,
-        'stability': stability,
-        'fitness': fitness})
+        'strength': strength, 'speed': speed, 'stability': stability, 'fitness': fitness})
     return aeb_fitness_sr
