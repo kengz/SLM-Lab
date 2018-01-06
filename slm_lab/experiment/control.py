@@ -24,7 +24,7 @@ class Session:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.data = None
+        self.df = None
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
@@ -36,7 +36,7 @@ class Session:
         '''
         Close session and clean up.
         Save agent, close env.
-        Prepare self.data.
+        Prepare self.df.
         '''
         self.agent_space.close()
         self.env_space.close()
@@ -60,10 +60,10 @@ class Session:
 
     def run(self):
         self.run_all_episodes()
-        session_data = analysis.analyze_session(self)
-        self.data = session_data
+        session_df = analysis.analyze_session(self)
+        self.df = session_df
         self.close()
-        return session_data
+        return session_df
 
 
 class Trial:
@@ -78,8 +78,8 @@ class Trial:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.session_data_dict = {}
-        self.data = None
+        self.session_df_dict = {}
+        self.df = None
         self.session = None
 
     def init_session(self):
@@ -92,11 +92,11 @@ class Trial:
     def run(self):
         for s in range(_.get(self.spec, 'meta.max_session')):
             logger.debug(f'session {s}')
-            self.session_data_dict[s] = self.init_session().run()
-        trial_data = analysis.analyze_trial(self)
-        self.data = trial_data
+            self.session_df_dict[s] = self.init_session().run()
+        trial_df = analysis.analyze_trial(self)
+        self.df = trial_df
         self.close()
-        return trial_data
+        return trial_df
 
 
 class Experiment:
@@ -117,8 +117,8 @@ class Experiment:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.trial_data_dict = {}
-        self.data = None
+        self.trial_df_dict = {}
+        self.df = None
         self.trial = None
 
     def init_trial(self):
@@ -131,11 +131,11 @@ class Experiment:
     def run(self):
         for t in range(_.get(self.spec, 'meta.max_trial')):
             logger.debug(f'trial {t}')
-            self.trial_data_dict[t] = self.init_trial().run()
-        experiment_data = analysis.analyze_experiment(self)
-        self.data = experiment_data
+            self.trial_df_dict[t] = self.init_trial().run()
+        experiment_df = analysis.analyze_experiment(self)
+        self.df = experiment_df
         self.close()
-        return experiment_data
+        return experiment_df
 
 
 class EvolutionGraph:

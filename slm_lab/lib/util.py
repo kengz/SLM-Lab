@@ -135,10 +135,10 @@ def gen_isnan(v):
         return v is None
 
 
-def get_data_aeb_list(session_data):
-    '''Get the aeb list for session_data for iterating.'''
+def get_df_aeb_list(session_df):
+    '''Get the aeb list for session_df for iterating.'''
     aeb_list = sorted(_.uniq(
-        [(a, e, b) for a, e, b, col in session_data.columns.tolist()]))
+        [(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
     return aeb_list
 
 
@@ -439,20 +439,20 @@ def self_desc(cls):
     return desc
 
 
-def session_data_to_dict(session_data):
+def session_df_to_data(session_df):
     '''
-    Convert a multiindex session_data (df) with column levels (a,e,b,col) to data_dict[aeb] = df
+    Convert a multiindex session_df (df) with column levels (a,e,b,col) to session_data[aeb] = aeb_df
     @example
 
-    session_data = util.read(filepath, header=[0, 1, 2, 3])
-    aeb_data_dict = util.session_data_to_dict(session_data)
+    session_df = util.read(filepath, header=[0, 1, 2, 3])
+    session_data = util.session_df_to_data(session_df)
     '''
-    aeb_data_dict = {}
-    aeb_list = get_data_aeb_list(session_data)
+    session_data = {}
+    aeb_list = get_df_aeb_list(session_df)
     for aeb in aeb_list:
-        df = session_data.loc[:, aeb]
-        aeb_data_dict[aeb] = df
-    return aeb_data_dict
+        aeb_df = session_df.loc[:, aeb]
+        session_data[aeb] = aeb_df
+    return session_data
 
 
 def set_attr(obj, attr_dict):
