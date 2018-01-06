@@ -255,12 +255,12 @@ class DQNBase(VanillaDQN):
     def body_act_discrete(self, body, state):
         return super(DQNBase, self).body_act_discrete(body, state)
 
-    def update(self):
-        '''Updates self.target_net and the explore variables'''
+    def update_explore_var(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
-        # update explore_var
         self.action_policy_update(self, space_clock)
-        # Update target net with current net
+
+    def update_nets(self):
+        space_clock = util.s_get(self, 'aeb_space.clock')
         t = space_clock.get('t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
@@ -279,6 +279,11 @@ class DQNBase(VanillaDQN):
             logger.error(
                 'Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
             sys.exit()
+
+    def update(self):
+        '''Updates self.target_net and the explore variables'''
+        self.update_explore_var()
+        self.update_nets()
         return self.explore_var
 
 
