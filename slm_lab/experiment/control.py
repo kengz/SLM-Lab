@@ -25,6 +25,7 @@ class Session:
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
         self.df = None
+        self.fitness_df = None
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
@@ -60,10 +61,9 @@ class Session:
 
     def run(self):
         self.run_all_episodes()
-        session_df = analysis.analyze_session(self)
-        self.df = session_df
+        self.df, self.fitness_df = analysis.analyze_session(self)
         self.close()
-        return session_df
+        return self.df, self.fitness_df
 
 
 class Trial:
@@ -79,7 +79,9 @@ class Trial:
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
         self.session_df_dict = {}
+        self.session_fitness_df_dict = {}
         self.df = None
+        self.fitness_df = None
         self.session = None
 
     def init_session(self):
@@ -92,11 +94,11 @@ class Trial:
     def run(self):
         for s in range(_.get(self.spec, 'meta.max_session')):
             logger.debug(f'session {s}')
-            self.session_df_dict[s] = self.init_session().run()
-        trial_df = analysis.analyze_trial(self)
-        self.df = trial_df
+            (self.session_df_dict[s], self.session_fitness_df_dict[s]
+             ) = self.init_session().run()
+        self.df, self.fitness_df = analysis.analyze_trial(self)
         self.close()
-        return trial_df
+        return self.df, self.fitness_df
 
 
 class Experiment:
@@ -118,7 +120,9 @@ class Experiment:
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
         self.trial_df_dict = {}
+        self.trial_fitness_df_dict = {}
         self.df = None
+        self.fitness_df = None
         self.trial = None
 
     def init_trial(self):
@@ -131,11 +135,11 @@ class Experiment:
     def run(self):
         for t in range(_.get(self.spec, 'meta.max_trial')):
             logger.debug(f'trial {t}')
-            self.trial_df_dict[t] = self.init_trial().run()
-        experiment_df = analysis.analyze_experiment(self)
-        self.df = experiment_df
+            (self.trial_df_dict[t], self.trial_fitness_df_dict[t]
+             ) = self.init_trial().run()
+        self.df, self.fitness_df = analysis.analyze_experiment(self)
         self.close()
-        return experiment_df
+        return self.df, self.fitness_df
 
 
 class EvolutionGraph:
