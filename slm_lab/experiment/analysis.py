@@ -55,14 +55,14 @@ def get_session_data(session):
 
 
 def plot_session(session, session_data):
-    aeb_space = session.aeb_space
-    aeb_count = len(aeb_space.aeb_list)
+    aeb_list = util.get_data_aeb_list(session_data)
+    aeb_count = len(aeb_list)
     if aeb_count <= 8:
         palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
     else:
         palette = util.interp(cl.scales['8']['qual']['Set2'], aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
-    for idx, (a, e, b) in enumerate(aeb_space.aeb_list):
+    for idx, (a, e, b) in enumerate(aeb_list):
         aeb_str = f'{a}{e}{b}'
         aeb_data = session_data.loc[:, (a, e, b)]
         fig_1 = viz.plot_line(
@@ -93,8 +93,9 @@ def save_session_data(session_spec, session_data, session_fig):
     '''
     Save the session data: spec, df, plot.
     session_data is multi-indexed with (a,e,b), 3 extra levels
-    to read, use: session_data = util.read(filepath, header=[0, 1, 2, 3])
-    session_data = util.aeb_df_to_df_dict(session_data)
+    to read, use:
+    session_data = util.read(filepath, header=[0, 1, 2, 3])
+    aeb_data_dict = util.session_data_to_dict(session_data)
     @returns session_data for trial/experiment level agg.
     '''
     # TODO generalize to use experiment timestamp, id, sesison coor in info space, to replace timestamp
@@ -225,13 +226,14 @@ def calc_fitness(fitness_vec):
 
 
 def calc_aeb_fitness_sr(aeb_data, env_name):
-    '''Top level method to calculate fitness for AEB level data (strength, speed, stability)'''
+    '''Top level method to calculate fitness vector for AEB level data (strength, speed, stability)'''
     logger.info('Dev feature: fitness computation')
     if len(aeb_data) < MA_WINDOW:
         logger.warn(f'Run more than {MA_WINDOW} episodes to compute fitness')
         return None
     if env_name not in FITNESS_STD:
-        logger.warn(f'The fitness standard for env {env_name} is not built yet. Contact author.')
+        logger.warn(
+            f'The fitness standard for env {env_name} is not built yet. Contact author.')
         return None
     std = FITNESS_STD.get(env_name)
     aeb_data['total_t'] = aeb_data['t'].cumsum()

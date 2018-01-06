@@ -33,18 +33,6 @@ class LabJsonEncoder(json.JSONEncoder):
             return str(obj)
 
 
-def aeb_df_to_df_dict(aeb_df):
-    '''Convert a multiindex aeb_df with column levels (a,e,b,col) to data_dict[aeb] = df'''
-    df_dict = {}
-    aeb_idx_list = _.uniq(
-        [(a, e, b) for a, e, b, col in aeb_df.columns.tolist()])
-    for aeb_idx in aeb_idx_list:
-        df = aeb_df.loc[:, aeb_idx]
-        aeb = tuple(int(s) for s in aeb_idx)
-        df_dict[aeb] = df
-    return df_dict
-
-
 def calc_timestamp_diff(ts2, ts1):
     '''
     Calculate the time from timestamps ts1 to ts2
@@ -145,6 +133,13 @@ def gen_isnan(v):
         return np.isnan(v).all()
     except Exception:
         return v is None
+
+
+def get_data_aeb_list(session_data):
+    '''Get the aeb list for session_data for iterating.'''
+    aeb_list = sorted(_.uniq(
+        [(a, e, b) for a, e, b, col in session_data.columns.tolist()]))
+    return aeb_list
 
 
 def get_aeb_shape(aeb_list):
@@ -442,6 +437,22 @@ def self_desc(cls):
         desc_list.append(f'- {k} = {desc_v}')
     desc = '\n'.join(desc_list)
     return desc
+
+
+def session_data_to_dict(session_data):
+    '''
+    Convert a multiindex session_data (df) with column levels (a,e,b,col) to data_dict[aeb] = df
+    @example
+
+    session_data = util.read(filepath, header=[0, 1, 2, 3])
+    aeb_data_dict = util.session_data_to_dict(session_data)
+    '''
+    aeb_data_dict = {}
+    aeb_list = get_data_aeb_list(session_data)
+    for aeb in aeb_list:
+        df = session_data.loc[:, aeb]
+        aeb_data_dict[aeb] = df
+    return aeb_data_dict
 
 
 def set_attr(obj, attr_dict):
