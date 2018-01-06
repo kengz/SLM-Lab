@@ -179,6 +179,7 @@ class MultiMLPNet(nn.Module):
         state_heads_models = []
         for head in state_heads:
             layers = []
+            assert len(head) > 1
             for i, layer in enumerate(head):
                 if i != 0:
                     in_D = head[i - 1]
@@ -206,6 +207,7 @@ class MultiMLPNet(nn.Module):
         act_heads_models = []
         for head in act_heads:
             layers = []
+            assert len(head) > 0
             for i, layer in enumerate(head):
                 in_D = head[i - 1] if i > 0 else in_dim
                 out_D = head[i]
