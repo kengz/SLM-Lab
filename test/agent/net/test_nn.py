@@ -87,9 +87,10 @@ class TestNet:
     def test_gradient_size(self, test_nets):
         ''' Checks for exploding and vanishing gradients '''
         net = test_nets[0]
-        x, y = test_nets[1], test_nets[2]
-        loss = test_nets[3]
-        steps = test_nets[4]
+        x = self.init_dummy_input(net)
+        y = self.init_dummy_output(net)
+        loss = test_nets[1]
+        steps = test_nets[2]
         for i in range(steps):
             net.training_step(x, y)
         flag = True
@@ -113,7 +114,7 @@ class TestNet:
     def test_loss_input(self, test_nets):
         ''' Checks that the inputs to the loss function are correct '''
         net = test_nets[0]
-        loss = test_nets[3]
+        loss = test_nets[1]
         # TODO e.g. loss is not CrossEntropy when output has one dimension
         #       e.g. softmax has not been applied with CrossEntropy loss
         #       (includes it)

@@ -125,8 +125,6 @@ def test_multiline_str():
             'out_dim':2,
             'hid_layers_activation': 'tanh',
         },
-        Variable(torch.ones((2, 10))),
-        Variable(torch.zeros((2, 2))),
         None,
         2
     ), (
@@ -135,8 +133,6 @@ def test_multiline_str():
             'in_dim': 20, 'hid_dim': [10, 50, 5],
             'out_dim':2, 'hid_layers_activation': 'tanh',
         },
-        Variable(torch.ones((2, 20))),
-        Variable(torch.zeros((2, 2))),
         None,
         2
     ), (
@@ -145,8 +141,6 @@ def test_multiline_str():
             'in_dim': 10, 'hid_dim': [],
             'out_dim':5, 'hid_layers_activation': 'tanh',
         },
-        Variable(torch.ones((2, 10))),
-        Variable(torch.zeros((2, 5))),
         None,
         2
     ), (
@@ -161,8 +155,6 @@ def test_multiline_str():
             'clamp_grad': False,
             'batch_norm': False,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -178,8 +170,6 @@ def test_multiline_str():
             'clamp_grad': False,
             'batch_norm': False,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -195,8 +185,6 @@ def test_multiline_str():
             'clamp_grad': False,
             'batch_norm': True,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -213,8 +201,6 @@ def test_multiline_str():
             'clamp_grad': True,
             'batch_norm': False,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -231,8 +217,6 @@ def test_multiline_str():
             'clamp_grad': True,
             'batch_norm': True,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -249,8 +233,6 @@ def test_multiline_str():
             'clamp_grad': False,
             'batch_norm': False,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -267,8 +249,6 @@ def test_multiline_str():
             'clamp_grad': False,
             'batch_norm': True,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -281,8 +261,6 @@ def test_multiline_str():
             'optim_param':{'name': 'Adam'},
             'loss_param': {'name': 'mse_loss'},
         },
-        [Variable(torch.ones((2, 5))), Variable(torch.ones((2, 8)))],
-        [Variable(torch.zeros(2, 3)), Variable(torch.zeros(2, 2))],
         None,
         2
     ), (
@@ -295,8 +273,6 @@ def test_multiline_str():
             'optim_param':{'name': 'Adam'},
             'loss_param': {'name': 'mse_loss'},
         },
-        [Variable(torch.ones((2, 5))), Variable(torch.ones((2, 8)))],
-        [Variable(torch.zeros(2, 3)), Variable(torch.zeros(2, 2))],
         None,
         2
     ), (
@@ -309,8 +285,6 @@ def test_multiline_str():
             'optim_param':{'name': 'Adam'},
             'loss_param': {'name': 'mse_loss'},
         },
-        [Variable(torch.ones((2, 5))), Variable(torch.ones((2, 8)))],
-        [Variable(torch.zeros(2, 3)), Variable(torch.zeros(2, 2))],
         None,
         2
     ), (
@@ -323,8 +297,6 @@ def test_multiline_str():
             'optim_param':{'name': 'Adam'},
             'loss_param': {'name': 'mse_loss'},
         },
-        [Variable(torch.ones((2, 5))), Variable(torch.ones((2, 8)))],
-        [Variable(torch.zeros(2, 3)), Variable(torch.zeros(2, 2))],
         None,
         2
     ), (
@@ -337,8 +309,6 @@ def test_multiline_str():
             'optim_param':{'name': 'Adam'},
             'loss_param': {'name': 'mse_loss'},
         },
-        [Variable(torch.ones((2, 5))), Variable(torch.ones((2, 8)))],
-        [Variable(torch.zeros(2, 3)), Variable(torch.zeros(2, 2))],
         None,
         2
     ), (
@@ -351,8 +321,6 @@ def test_multiline_str():
             'optim_param':{'name': 'Adam'},
             'loss_param': {'name': 'mse_loss'},
         },
-        [Variable(torch.ones((2, 5))), Variable(torch.ones((2, 8)))],
-        [Variable(torch.zeros(2, 3)), Variable(torch.zeros(2, 2))],
         None,
         2
     ),
