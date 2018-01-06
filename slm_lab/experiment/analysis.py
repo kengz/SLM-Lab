@@ -45,15 +45,12 @@ def get_session_data(session):
         # TODO save full data to db
         session_df_data[aeb] = df
         session_data[aeb] = aeb_df
-        body = session.aeb_space.body_space.data[aeb]
-        # TODO move this elsewhere and aggregate/save properly
-        fitness_sr = calc_aeb_fitness_sr(aeb_df, body.env.name)
-        print(fitness_sr)
     logger.debug(f'{session_data}')
     return session_data
 
 
 def plot_session(session, session_data):
+    '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
     aeb_count = len(session_data)
     if aeb_count <= 8:
         palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
@@ -87,42 +84,71 @@ def plot_session(session, session_data):
     return fig
 
 
-def save_session_data(session_spec, session_data, session_fig):
+def calc_session_fitness_df(session, session_data):
+    '''Calculate the session fitness df'''
+    session_fitness_data = {}
+    for idx, aeb in enumerate(session_data):
+        aeb_df = session_data[aeb]
+        body = session.aeb_space.body_space.data[aeb]
+        aeb_fitness_sr = calc_aeb_fitness_sr(aeb_df, body.env.name)
+        aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[session.index])
+        session_fitness_data[aeb] = aeb_fitness_df
+    session_fitness_df = pd.concat(session_fitness_data, axis=1)
+    session_fitness = session_fitness_df.mean(axis=1, level=3)
+    logger.info(f'Session avg fitness:\n {session_fitness}')
+    return session_fitness_df
+
+
+def save_session_data(session_spec, session_df, session_fig):
     '''
-    Save the session data: spec, df, plot.
-    session_data is multi-indexed with (a,e,b), 3 extra levels
+    Save the session data: df, plot.
+    session_df is multi-indexed with (a,e,b), 3 extra levels
     to read, use:
     session_df = util.read(filepath, header=[0, 1, 2, 3])
     session_data = util.session_df_to_data(session_df)
-    @returns session_data for trial/experiment level agg.
     '''
     # TODO generalize to use experiment timestamp, id, sesison coor in info space, to replace timestamp
     spec_name = session_spec['name']
     prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
     logger.info(f'Saving session data to {prepath}_*')
-    session_df = pd.concat(session_data, axis=1)
-    util.write(session_spec, f'{prepath}_spec.json')
     util.write(session_df, f'{prepath}_session_df.csv')
     viz.save_image(session_fig, f'{prepath}_session_graph.png')
-    return session_df
 
 
 def analyze_session(session):
     '''Gather session data, plot, and return session df for high level agg.'''
     session_data = get_session_data(session)
     session_fig = plot_session(session, session_data)
-    session_df = save_session_data(session.spec, session_data, session_fig)
-    return session_df
+    session_df = pd.concat(session_data, axis=1)
+    session_fitness_df = calc_session_fitness_df(session, session_data)
+    save_session_data(session.spec, session_df, session_fig)
+    return session_df, session_fitness_df
+
+
+def calc_trial_fitness_df(trial):
+    '''Calculate the trial fitness df'''
+    trial_fitness_df = pd.concat(list(trial.session_fitness_df_dict.values()))
+    trial_fitness = trial_fitness_df.mean(axis=1, level=3)
+    logger.info(f'Trial avg fitness:\n {trial_fitness}')
+    return trial_fitness_df
+
+
+def save_trial_data(trial_spec, trial_df):
+    spec_name = trial_spec['name']
+    prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
+    logger.info(f'Saving trial data to {prepath}_*')
+    util.write(trial_spec, f'{prepath}_spec.json')
+    # TODO trial data is composed of saved session data files
+    # util.write(trial_df, f'{prepath}_trial_df.csv')
 
 
 def analyze_trial(trial):
     '''Gather trial data, plot, and return trial df for high level agg.'''
-    spec_name = trial.spec['name']
-    prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
     trial_df = pd.concat(trial.session_df_dict, axis=1)
+    trial_fitness_df = calc_trial_fitness_df(trial)
     logger.debug(f'{trial_df}')
-    util.write(trial_df, f'{prepath}_trial_df.csv')
-    return trial_df
+    save_trial_data(trial.spec, trial_df)
+    return trial_df, trial_fitness_df
 
 
 def analyze_experiment(experiment):
