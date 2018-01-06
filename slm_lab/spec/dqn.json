@@ -55,13 +55,13 @@
     "agent": [{
       "name": "DQN",
       "algorithm": {
-        "name": "VanillaDQN",
+        "name": "DQN",
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
         "gamma": 0.999,
-        "explore_var_start": 5.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 15,
+        "explore_var_start": 1.5,
+        "explore_var_end": 0.3,
+        "explore_anneal_epi": 10,
         "training_min_timestep": 0,
         "training_frequency": 1,
         "training_epoch": 5,
@@ -93,7 +93,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 50,
+      "max_episode": 40,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
