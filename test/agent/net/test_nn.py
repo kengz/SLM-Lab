@@ -11,6 +11,25 @@ class TestNet:
     '''
     Base class for unit testing neural network training
     '''
+    def init_dummy_input(self, net):
+        if type(net.in_dim) is int:
+            dummy_input = Variable(torch.ones(2, net.in_dim))
+        elif net.__class__.__name__.find('MultiMLPNet') != -1:
+            dummy_input = []
+            for indim in net.in_dim:
+                dummy_input.append(Variable(torch.ones(2, indim[0])))
+        else:
+            dummy_input = Variable(torch.ones(2, *net.in_dim))
+        return dummy_input
+
+    def init_dummy_output(self, net):
+        if net.__class__.__name__.find('MultiMLPNet') != -1:
+            dummy_output = []
+            for outdim in net.out_dim:
+                dummy_output.append(Variable(torch.zeros((2, outdim[-1]))))
+        else:
+            dummy_output = Variable(torch.zeros((2, net.out_dim)))
+        return dummy_output
 
     @flaky(max_runs=10)
     def test_trainable(self, test_nets):
@@ -22,11 +41,8 @@ class TestNet:
         net = test_nets[0]
         flag = True
         before_params = net.gather_trainable_params()
-        if type(net.in_dim) is int:
-            dummy_input = Variable(torch.ones(2, net.in_dim))
-        else:
-            dummy_input = Variable(torch.ones(2, *net.in_dim))
-        dummy_output = Variable(torch.zeros((2, net.out_dim)))
+        dummy_input = self.init_dummy_input(net)
+        dummy_output = self.init_dummy_output(net)
         loss = net.training_step(dummy_input, dummy_output)
         after_params = net.gather_trainable_params()
         i = 0
@@ -52,11 +68,8 @@ class TestNet:
         net = test_nets[0]
         flag = True
         before_params = net.gather_fixed_params()
-        if type(net.in_dim) is int:
-            dummy_input = Variable(torch.ones(2, net.in_dim))
-        else:
-            dummy_input = Variable(torch.ones(2, *net.in_dim))
-        dummy_output = Variable(torch.zeros((2, net.out_dim)))
+        dummy_input = self.init_dummy_input(net)
+        dummy_output = self.init_dummy_output(net)
         loss = net.training_step(dummy_input, dummy_output)
         after_params = net.gather_fixed_params()
         i = 0
@@ -74,9 +87,10 @@ class TestNet:
     def test_gradient_size(self, test_nets):
         ''' Checks for exploding and vanishing gradients '''
         net = test_nets[0]
-        x, y = test_nets[1], test_nets[2]
-        loss = test_nets[3]
-        steps = test_nets[4]
+        x = self.init_dummy_input(net)
+        y = self.init_dummy_output(net)
+        loss = test_nets[1]
+        steps = test_nets[2]
         for i in range(steps):
             net.training_step(x, y)
         flag = True
@@ -100,7 +114,7 @@ class TestNet:
     def test_loss_input(self, test_nets):
         ''' Checks that the inputs to the loss function are correct '''
         net = test_nets[0]
-        loss = test_nets[3]
+        loss = test_nets[1]
         # TODO e.g. loss is not CrossEntropy when output has one dimension
         #       e.g. softmax has not been applied with CrossEntropy loss
         #       (includes it)
@@ -109,17 +123,21 @@ class TestNet:
     def test_output(self, test_nets):
         ''' Checks that the output of the net is not zero or nan '''
         net = test_nets[0]
-        if type(net.in_dim) is int:
-            dummy_input = Variable(torch.ones(2, net.in_dim))
-        else:
-            dummy_input = Variable(torch.ones(2, *net.in_dim))
+        dummy_input = self.init_dummy_input(net)
+        dummy_output = self.init_dummy_output(net)
         out = net(dummy_input)
         flag = True
-        if torch.sum(torch.abs(out.data)) < SMALL_NUM:
+        if net.__class__.__name__.find('MultiMLPNet') != -1:
+            zero_test = sum([torch.sum(torch.abs(x.data)) for x in out])
+            nan_test = np.isnan(sum([torch.sum(x.data) for x in out]))
+        else:
+            zero_test = torch.sum(torch.abs(out.data))
+            nan_test = np.isnan(torch.sum(out.data))
+        if zero_test < SMALL_NUM:
             print("FAIL")
             print(out)
             flag = False
-        if np.isnan(torch.sum(out.data)):
+        if nan_test:
             print("FAIL")
             print(out)
             flag = False
