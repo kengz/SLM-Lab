@@ -365,6 +365,7 @@ class MultitaskDQN(DQN):
         )
         self.online_net = self.target_net
         self.eval_net = self.target_net
+        self.explore_var = [self.explore_var_start] * len(self.agent.flat_nonan_body_a)
         logger.info(util.self_desc(self))
 
     def sample(self):
@@ -454,6 +455,12 @@ class MultitaskDQN(DQN):
             self.agent.flat_nonan_body_a, state_a, self.net, self.explore_var)
         return super(MultitaskDQN, self).flat_nonan_to_action_a(flat_nonan_action_a)
 
+    def update_explore_var(self):
+        self.action_policy_update(self, self.agent.flat_nonan_body_a)
+
+    def update(self):
+        return super(MultitaskDQN, self).update()[0]
+
 
 class MultiHeadDQN(MultitaskDQN):
     '''Multi-task DQN with separate state and action processors per environment'''
@@ -495,6 +502,7 @@ class MultiHeadDQN(MultitaskDQN):
         self.polyak_weight = net_spec['polyak_weight']
         # Initialize other algorithm parameters
         self.init_non_net_algo_params()
+        self.explore_var = [self.explore_var_start] * len(self.agent.flat_nonan_body_a)
         logger.info(util.self_desc(self))
 
     def sample(self):
@@ -605,13 +613,9 @@ class MultiHeadDQN(MultitaskDQN):
             logger.debug('NOT training')
             return np.nan
 
-    def update(self):
-        '''Updates self.target_net and the explore variables'''
-        # NOTE: Once polyak updating for multi-headed networks is supported via updates to flatten_params and load_params then this can be removed and reverted to super()
+    def update_nets(self):
+        # NOTE: Once polyak updating for multi-headed networks is supported via updates to flatten_params and load_params then this can be removed
         space_clock = util.s_get(self, 'aeb_space.clock')
-        # update explore_var
-        self.action_policy_update(self, space_clock)
-        # Update target net with current net
         t = space_clock.get('t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
@@ -627,4 +631,3 @@ class MultiHeadDQN(MultitaskDQN):
             logger.error(
                 'Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
             sys.exit()
-        return self.explore_var
