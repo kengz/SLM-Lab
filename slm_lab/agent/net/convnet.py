@@ -159,16 +159,10 @@ class ConvNet(nn.Module):
         Initializes all of the model's parameters using xavier uniform initialization.
         Biases are all set to 0.01
         '''
-        biasinit = 0.01
         layers = self.conv_layers + self.flat_layers
-        for layer in layers:
-            classname = layer.__class__.__name__
-            if classname.find('Linear') != -1 or classname.find('Conv') != -1:
-                torch.nn.init.xavier_uniform(layer.weight.data)
-                layer.bias.data.fill_(biasinit)
-            if classname.find('BatchNorm') != -1:
-                torch.nn.init.uniform(layer.weight.data)
-                layer.bias.data.fill_(biasinit)
+        net_util.init_layers(layers, 'Linear')
+        net_util.init_layers(layers, 'Conv')
+        net_util.init_layers(layers, 'BatchNorm')
 
     def gather_trainable_params(self):
         '''

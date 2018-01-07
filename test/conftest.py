@@ -1,7 +1,7 @@
 from slm_lab.agent import AgentSpace
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
-from slm_lab.agent.net.feedforward import MLPNet
+from slm_lab.agent.net.feedforward import MLPNet, MultiMLPNet
 from slm_lab.env import EnvSpace
 from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import AEBSpace
@@ -14,7 +14,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-torch.manual_seed(17)
 
 
 spec = None
@@ -126,8 +125,6 @@ def test_multiline_str():
             'out_dim':2,
             'hid_layers_activation': 'tanh',
         },
-        Variable(torch.ones((2, 10))),
-        Variable(torch.zeros((2, 2))),
         None,
         2
     ), (
@@ -136,8 +133,6 @@ def test_multiline_str():
             'in_dim': 20, 'hid_dim': [10, 50, 5],
             'out_dim':2, 'hid_layers_activation': 'tanh',
         },
-        Variable(torch.ones((2, 20))),
-        Variable(torch.zeros((2, 2))),
         None,
         2
     ), (
@@ -146,8 +141,6 @@ def test_multiline_str():
             'in_dim': 10, 'hid_dim': [],
             'out_dim':5, 'hid_layers_activation': 'tanh',
         },
-        Variable(torch.ones((2, 10))),
-        Variable(torch.zeros((2, 5))),
         None,
         2
     ), (
@@ -162,8 +155,6 @@ def test_multiline_str():
             'clamp_grad': False,
             'batch_norm': False,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -179,8 +170,6 @@ def test_multiline_str():
             'clamp_grad': False,
             'batch_norm': False,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -196,8 +185,6 @@ def test_multiline_str():
             'clamp_grad': False,
             'batch_norm': True,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -214,8 +201,6 @@ def test_multiline_str():
             'clamp_grad': True,
             'batch_norm': False,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -232,8 +217,6 @@ def test_multiline_str():
             'clamp_grad': True,
             'batch_norm': True,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -250,8 +233,6 @@ def test_multiline_str():
             'clamp_grad': False,
             'batch_norm': False,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
         None,
         2
     ), (
@@ -268,8 +249,78 @@ def test_multiline_str():
             'clamp_grad': False,
             'batch_norm': True,
         },
-        Variable(torch.ones((2, 3, 32, 32))),
-        Variable(torch.zeros(2, 10)),
+        None,
+        2
+    ), (
+        MultiMLPNet,
+        {
+            'in_dim': [[5, 10], [8, 16]],
+            'hid_dim': [64],
+            'out_dim': [[3], [2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        MultiMLPNet,
+        {
+            'in_dim': [[5, 10], [8, 16]],
+            'hid_dim': [],
+            'out_dim': [[3], [2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        MultiMLPNet,
+        {
+            'in_dim': [[5, 10], [8, 16]],
+            'hid_dim': [],
+            'out_dim': [[5, 3], [8, 2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        MultiMLPNet,
+        {
+            'in_dim': [[5, 10, 15], [8, 16]],
+            'hid_dim': [],
+            'out_dim': [[5, 3], [12, 8, 2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        MultiMLPNet,
+        {
+            'in_dim': [[5, 10, 15], [8, 16]],
+            'hid_dim': [32, 64],
+            'out_dim': [[5, 3], [12, 8, 2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        MultiMLPNet,
+        {
+            'in_dim': [[5, 10], [8, 16, 24]],
+            'hid_dim': [32, 64],
+            'out_dim': [[9, 6, 3], [2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
         None,
         2
     ),
