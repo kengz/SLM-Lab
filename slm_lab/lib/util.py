@@ -285,6 +285,31 @@ def is_jupyter():
     return False
 
 
+def is_outlier(points, thres=3.5):
+    '''
+    Detects outliers using MAD modified_z_score method, generalized to work on points.
+    From https://stackoverflow.com/a/22357811/3865298
+    @example
+
+    is_outlier([1, 1, 1])
+    # => array([False, False, False], dtype=bool)
+    is_outlier([1, 1, 2])
+    # => array([False, False,  True], dtype=bool)
+    is_outlier([[1, 1], [1, 1], [1, 2]])
+    # => array([False, False,  True], dtype=bool)
+    '''
+    points = np.array(points)
+    if len(points.shape) == 1:
+        points = points[:, None]
+    median = np.median(points, axis=0)
+    diff = np.sum((points - median)**2, axis=-1)
+    diff = np.sqrt(diff)
+    med_abs_deviation = np.median(diff)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        modified_z_score = 0.6745 * diff / med_abs_deviation
+        return modified_z_score > thres
+
+
 def is_sub_dict(sub_dict, super_dict):
     '''
     Check if sub_dict is a congruent subset of super_dict
