@@ -94,7 +94,8 @@ def calc_session_fitness_df(session, session_data):
         aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[session.index])
         session_fitness_data[aeb] = aeb_fitness_df
     session_fitness_df = pd.concat(session_fitness_data, axis=1)
-    mean_fitness_df = session_fitness_df.mean(axis=1, level=3)
+    mean_fitness_df = session_fitness_df.mean(
+        axis=1, level=3)  # mean across all bodies
     session_fitness = calc_fitness(mean_fitness_df)
     logger.info(f'Session mean fitness: {session_fitness}\n{mean_fitness_df}')
     return session_fitness_df
@@ -140,7 +141,9 @@ def calc_trial_fitness_df(trial):
         aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[trial.index])
         trial_fitness_data[aeb] = aeb_fitness_df
     trial_fitness_df = pd.concat(trial_fitness_data, axis=1)
-    mean_fitness_df = trial_fitness_df.mean(axis=1, level=3)
+    mean_fitness_df = trial_fitness_df.mean(
+        axis=1, level=3)  # mean across all bodies
+    trial_fitness_df = mean_fitness_df  # agg for trial level
     trial_fitness = calc_fitness(mean_fitness_df)
     logger.info(f'Trial mean fitness: {trial_fitness}\n{mean_fitness_df}')
     return trial_fitness_df
