@@ -126,13 +126,6 @@ def analyze_session(session):
     return session_df, session_fitness_df
 
 
-def calc_consistency(fitness_vecs):
-    '''Calculate the consistency of trial by the std dev of its session fitness vectors.'''
-    is_outlier_arr = util.is_outlier(fitness_vecs)
-    consistency = (~is_outlier_arr).sum() / len(is_outlier_arr)
-    return consistency
-
-
 def calc_trial_fitness_df(trial):
     '''Calculate the trial fitness df'''
     trial_fitness_data = {}
@@ -259,6 +252,24 @@ def calc_stability(aeb_df):
     stable_df = aeb_df.loc[stable_idx:, 'strength_mono_inc']
     stability = stable_df.sum() / len(stable_df)
     return stability
+
+
+def calc_consistency(fitness_vecs):
+    '''
+    Calculate the consistency of trial by the fitness_vectors of its sessions:
+    consistency = ratio of non-outlier vectors
+    Properties:
+    - outliers are calculated using MAD modified z-score
+    - if all the fitness vectors are zero, consistency = 0
+    - works for all sorts of session fitness vectors, with the standard scale
+    '''
+    if ~np.any(fitness_vecs):
+        # no consistency if vectors all 0
+        consistency = 0
+    else:
+        is_outlier_arr = util.is_outlier(fitness_vecs)
+        consistency = (~is_outlier_arr).sum() / len(is_outlier_arr)
+    return consistency
 
 
 def calc_fitness(fitness_vec):
