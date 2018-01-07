@@ -87,15 +87,16 @@ def plot_session(session, session_data):
 def calc_session_fitness_df(session, session_data):
     '''Calculate the session fitness df'''
     session_fitness_data = {}
-    for idx, aeb in enumerate(session_data):
+    for aeb in session_data:
         aeb_df = session_data[aeb]
         body = session.aeb_space.body_space.data[aeb]
         aeb_fitness_sr = calc_aeb_fitness_sr(aeb_df, body.env.name)
         aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[session.index])
         session_fitness_data[aeb] = aeb_fitness_df
     session_fitness_df = pd.concat(session_fitness_data, axis=1)
-    session_fitness = session_fitness_df.mean(axis=1, level=3)
-    logger.info(f'Session avg fitness:\n {session_fitness}')
+    mean_fitness_df = session_fitness_df.mean(axis=1, level=3)
+    session_fitness = calc_fitness(mean_fitness_df)
+    logger.info(f'Session mean fitness: {session_fitness}\n{mean_fitness_df}')
     return session_fitness_df
 
 
@@ -112,7 +113,7 @@ def save_session_data(session_spec, session_df, session_fig):
     prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
     logger.info(f'Saving session data to {prepath}_*')
     util.write(session_df, f'{prepath}_session_df.csv')
-    viz.save_image(session_fig, f'{prepath}_session_graph.png')
+    # viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
 
 def analyze_session(session):
@@ -125,11 +126,30 @@ def analyze_session(session):
     return session_df, session_fitness_df
 
 
+def calc_consistency(fitness_vecs):
+    '''Calculate the consistency of trial by the std dev of its session fitness vectors.'''
+    is_outlier_arr = util.is_outlier(fitness_vecs)
+    consistency = (~is_outlier_arr).sum() / len(is_outlier_arr)
+    return consistency
+
+
 def calc_trial_fitness_df(trial):
     '''Calculate the trial fitness df'''
-    trial_fitness_df = pd.concat(list(trial.session_fitness_df_dict.values()))
-    trial_fitness = trial_fitness_df.mean(axis=1, level=3)
-    logger.info(f'Trial avg fitness:\n {trial_fitness}')
+    trial_fitness_data = {}
+    all_session_fitness_df = pd.concat(
+        list(trial.session_fitness_df_dict.values()))
+    for aeb in util.get_df_aeb_list(all_session_fitness_df):
+        aeb_df = all_session_fitness_df.loc[:, aeb]
+        aeb_fitness_sr = aeb_df.mean()
+        consistency = calc_consistency(aeb_df.values)
+        aeb_fitness_sr = aeb_fitness_sr.append(
+            pd.Series({'consistency': consistency}))
+        aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[trial.index])
+        trial_fitness_data[aeb] = aeb_fitness_df
+    trial_fitness_df = pd.concat(trial_fitness_data, axis=1)
+    mean_fitness_df = trial_fitness_df.mean(axis=1, level=3)
+    trial_fitness = calc_fitness(mean_fitness_df)
+    logger.info(f'Trial mean fitness: {trial_fitness}\n{mean_fitness_df}')
     return trial_fitness_df
 
 
@@ -177,7 +197,7 @@ def calc_strength(aeb_df, rand_epi_reward, std_epi_reward):
 
 
 def calc_stable_idx(aeb_df):
-    '''Calculate the index (epi) when strength first becomes stable (using moving avg and working backward)'''
+    '''Calculate the index (epi) when strength first becomes stable (using moving mean and working backward)'''
     # interpolate linearly by strength to account for failure to solve
     interp_strength = min(1, aeb_df['strength_ma'].max())
     std_strength_ra_idx = (aeb_df['strength_ma'] == interp_strength).idxmax()
@@ -246,6 +266,10 @@ def calc_fitness(fitness_vec):
     Takes a vector of qualifying standardized dimensions of fitness and compute the normalized length as fitness
     L2 norm because it diminishes lower values but amplifies higher values for comparison.
     '''
+    if isinstance(fitness_vec, pd.Series):
+        fitness_vec = fitness_vec.values
+    elif isinstance(fitness_vec, pd.DataFrame):
+        fitness_vec = fitness_vec.iloc[0].values
     std_fitness_vector = np.ones(len(fitness_vec))
     fitness = np.linalg.norm(fitness_vec) / np.linalg.norm(std_fitness_vector)
     return fitness
@@ -255,7 +279,7 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
     '''Top level method to calculate fitness vector for AEB level data (strength, speed, stability)'''
     logger.info('Dev feature: fitness computation')
     no_fitness_sr = pd.Series({
-        'strength': 0, 'speed': 0, 'stability': 0, 'fitness': 0})
+        'strength': 0, 'speed': 0, 'stability': 0})
     if len(aeb_df) < MA_WINDOW:
         logger.warn(
             f'Run more than {MA_WINDOW} episodes to compute proper fitness')
@@ -275,7 +299,6 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
     strength = aeb_df['strength_ma'].max()
     speed = calc_speed(aeb_df, std['std_timestep'])
     stability = calc_stability(aeb_df)
-    fitness = calc_fitness([strength, speed, stability])
     aeb_fitness_sr = pd.Series({
-        'strength': strength, 'speed': speed, 'stability': stability, 'fitness': fitness})
+        'strength': strength, 'speed': speed, 'stability': stability})
     return aeb_fitness_sr
