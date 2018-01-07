@@ -113,7 +113,7 @@ def save_session_data(session_spec, session_df, session_fig):
     prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
     logger.info(f'Saving session data to {prepath}_*')
     util.write(session_df, f'{prepath}_session_df.csv')
-    # viz.save_image(session_fig, f'{prepath}_session_graph.png')
+    viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
 
 def analyze_session(session):
