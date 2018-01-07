@@ -33,18 +33,6 @@ class LabJsonEncoder(json.JSONEncoder):
             return str(obj)
 
 
-def aeb_df_to_df_dict(aeb_df):
-    '''Convert a multiindex aeb_df with column levels (a,e,b,col) to data_dict[aeb] = df'''
-    df_dict = {}
-    aeb_idx_list = _.uniq(
-        [(a, e, b) for a, e, b, col in aeb_df.columns.tolist()])
-    for aeb_idx in aeb_idx_list:
-        df = aeb_df.loc[:, aeb_idx]
-        aeb = tuple(int(s) for s in aeb_idx)
-        df_dict[aeb] = df
-    return df_dict
-
-
 def calc_timestamp_diff(ts2, ts1):
     '''
     Calculate the time from timestamps ts1 to ts2
@@ -145,6 +133,13 @@ def gen_isnan(v):
         return np.isnan(v).all()
     except Exception:
         return v is None
+
+
+def get_df_aeb_list(session_df):
+    '''Get the aeb list for session_df for iterating.'''
+    aeb_list = sorted(_.uniq(
+        [(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
+    return aeb_list
 
 
 def get_aeb_shape(aeb_list):
@@ -288,6 +283,31 @@ def is_jupyter():
     except NameError:
         return False
     return False
+
+
+def is_outlier(points, thres=3.5):
+    '''
+    Detects outliers using MAD modified_z_score method, generalized to work on points.
+    From https://stackoverflow.com/a/22357811/3865298
+    @example
+
+    is_outlier([1, 1, 1])
+    # => array([False, False, False], dtype=bool)
+    is_outlier([1, 1, 2])
+    # => array([False, False,  True], dtype=bool)
+    is_outlier([[1, 1], [1, 1], [1, 2]])
+    # => array([False, False,  True], dtype=bool)
+    '''
+    points = np.array(points)
+    if len(points.shape) == 1:
+        points = points[:, None]
+    median = np.median(points, axis=0)
+    diff = np.sum((points - median)**2, axis=-1)
+    diff = np.sqrt(diff)
+    med_abs_deviation = np.median(diff)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        modified_z_score = 0.6745 * diff / med_abs_deviation
+        return modified_z_score > thres
 
 
 def is_sub_dict(sub_dict, super_dict):
@@ -442,6 +462,22 @@ def self_desc(cls):
         desc_list.append(f'- {k} = {desc_v}')
     desc = '\n'.join(desc_list)
     return desc
+
+
+def session_df_to_data(session_df):
+    '''
+    Convert a multiindex session_df (df) with column levels (a,e,b,col) to session_data[aeb] = aeb_df
+    @example
+
+    session_df = util.read(filepath, header=[0, 1, 2, 3])
+    session_data = util.session_df_to_data(session_df)
+    '''
+    session_data = {}
+    aeb_list = get_df_aeb_list(session_df)
+    for aeb in aeb_list:
+        aeb_df = session_df.loc[:, aeb]
+        session_data[aeb] = aeb_df
+    return session_data
 
 
 def set_attr(obj, attr_dict):
