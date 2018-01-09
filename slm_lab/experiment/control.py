@@ -4,7 +4,7 @@ Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Se
 '''
 from slm_lab.agent import AgentSpace
 from slm_lab.env import EnvSpace
-from slm_lab.experiment import analysis
+from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import info_space, AEBSpace
 from slm_lab.lib import logger, util, viz
 import numpy as np
@@ -125,21 +125,30 @@ class Experiment:
         self.fitness_df = None
         self.trial = None
 
-    def init_trial(self):
-        self.trial = Trial(self.spec)
+    # def init_trial(self):
+    #     self.trial = Trial(self.spec)
+    #     return self.trial
+
+    def init_trial(self, spec):
+        self.trial = Trial(spec)
         return self.trial
 
     def close(self):
         logger.info('Experiment done, closing.')
 
     def run(self):
-        for t in range(_.get(self.spec, 'meta.max_trial')):
-            logger.debug(f'trial {t}')
-            (self.trial_df_dict[t], self.trial_fitness_df_dict[t]
-             ) = self.init_trial().run()
+        # for t in range(_.get(self.spec, 'meta.max_trial')):
+        #     logger.debug(f'trial {t}')
+            # (self.trial_df_dict[t], self.trial_fitness_df_dict[t]
+        #      ) = self.init_trial().run()
+        self.run_smac()
         self.df, self.fitness_df = analysis.analyze_experiment(self)
         self.close()
         return self.df, self.fitness_df
+
+
+# TODO tmp hack, remove later. Extnd with search methods
+util.monkey_patch(Experiment, search.ExperimentExt)
 
 
 class EvolutionGraph:

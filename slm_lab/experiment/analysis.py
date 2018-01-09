@@ -169,8 +169,16 @@ def analyze_trial(trial):
 
 def analyze_experiment(experiment):
     '''Gather experiment data, plot, and return experiment df for high level agg.'''
-    raise NotImplementedError()
-    return experiment_df
+    # print('trial_df_dict')
+    # print(experiment.trial_df_dict)
+    # experiment_df = pd.concat(experiment.trial_df_dict, axis=1)
+    # experiment_fitness_df = pd.concat(experiment.trial_fitness_df_dict, axis=1)
+    # logger.debug(f'{experiment_df}')
+    # logger.info(f'{experiment_fitness_df}')
+    # TODO also save fitness
+    # save_experiment_data()
+    # return experiment_df, experiment_fitness_df
+    return None, None
 
 
 '''
