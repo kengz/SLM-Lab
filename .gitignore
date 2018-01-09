@@ -35,6 +35,7 @@ gym/
 config/
 data/
 model/
+smac3*
 *.html
 *.log
 *.meta
