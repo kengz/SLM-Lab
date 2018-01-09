@@ -124,10 +124,9 @@ class Experiment:
         self.df = None
         self.fitness_df = None
         self.trial = None
-
-    # def init_trial(self):
-    #     self.trial = Trial(self.spec)
-    #     return self.trial
+        # TODO generalize to take different search algo
+        SearchClass = getattr(search, 'SMACSearch')
+        self.search = SearchClass(self)
 
     def init_trial(self, spec):
         self.trial = Trial(spec)
@@ -141,14 +140,14 @@ class Experiment:
         #     logger.debug(f'trial {t}')
             # (self.trial_df_dict[t], self.trial_fitness_df_dict[t]
         #      ) = self.init_trial().run()
-        self.run_smac()
+        self.search.run()
         self.df, self.fitness_df = analysis.analyze_experiment(self)
         self.close()
         return self.df, self.fitness_df
 
 
 # TODO tmp hack, remove later. Extnd with search methods
-util.monkey_patch(Experiment, search.SMACSearch)
+# util.monkey_patch(Experiment, search.SMACSearch)
 
 
 class EvolutionGraph:
