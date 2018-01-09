@@ -179,14 +179,14 @@ def get_file_ext(data_path):
     return os.path.splitext(data_path)[-1]
 
 
-def get_fn_list(Cls):
+def get_fn_list(a_cls):
     '''
     Get the callable, non-private functions of a class
     @returns {[*str]} A list of strings of fn names
     '''
     fn_list = _.filter_(
-        dir(Cls),
-        lambda fn: not fn.endswith('__') and callable(getattr(Cls, fn)))
+        dir(a_cls),
+        lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
     return fn_list
 
 
@@ -345,6 +345,13 @@ def is_sub_dict(sub_dict, super_dict):
             if sub_k not in super_dict:
                 return False
     return True
+
+
+def monkey_patch(base_cls, extend_cls):
+    '''Monkey patch a base class with methods from extend_cls'''
+    ext_fn_list = get_fn_list(extend_cls)
+    for fn in ext_fn_list:
+        setattr(base_cls, fn, getattr(extend_cls, fn))
 
 
 def ndenumerate_nonan(arr):
