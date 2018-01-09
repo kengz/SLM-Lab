@@ -48,11 +48,35 @@ def test_dedent(test_multiline_str):
     assert dedented_string == 'lorem ipsum dolor\nsit amet\n\nconsectetur adipiscing elit'
 
 
-def test_flatten_dict(test_dict):
-    assert util.flatten_dict(test_dict) == test_dict
-    assert util.flatten_dict({'a': {'b': 1}}) == {'a.b': 1}
-    assert util.flatten_dict({'a': {'b': 1}}) == {'a.b': 1}
-    assert util.flatten_dict({'a': {'b': 1}}, sep='_') == {'a_b': 1}
+@pytest.mark.parametrize('d,flat_d', [
+    ({'a': 1}, {'a': 1}),
+    ({'a': {'b': 1}}, {'a.b': 1}),
+    ({
+        'level1': {
+            'level2': {
+                'level3': 0,
+                'level3b': 1
+            },
+            'level2b': {
+                'level3': [2, 3]
+            }
+        }
+    }, {'level1.level2.level3': 0,
+        'level1.level2.level3b': 1,
+        'level1.level2b.level3.0': 2,
+        'level1.level2b.level3.1': 3}),
+    ({
+        'level1': {
+            'level2': [
+                  {'level3': 0},
+                  {'level3b': 1}
+            ]
+        }
+    }, {'level1.level2.0.level3': 0,
+        'level1.level2.1.level3b': 1}),
+])
+def test_flatten_dict(d, flat_d):
+    assert util.flatten_dict(d) == flat_d
 
 
 @pytest.mark.parametrize('arr', [

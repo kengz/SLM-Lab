@@ -88,20 +88,22 @@ def dedent(string):
     return RE_INDENT.sub('', string)
 
 
-def flatten_dict(d, parent_key='', sep='.'):
+def flatten_dict(obj, delim='.'):
     '''Missing pydash method to flatten dict'''
-    items = []
-    for k, v in d.items():
-        if parent_key:
-            new_key = parent_key + sep + k
+    nobj = {}
+    for key, val in obj.items():
+        if _.is_dict(val) and not _.is_empty(val):
+            strip = flatten_dict(val, delim)
+            for k, v in strip.items():
+                nobj[key + delim + k] = v
+        elif _.is_list(val) and not _.is_empty(val):
+            for idx, v in enumerate(val):
+                nobj[key + delim + str(idx)] = v
+                if _.is_object(v):
+                    nobj = flatten_dict(nobj, delim)
         else:
-            new_key = k
-
-        if isinstance(v, collections.MutableMapping):
-            items.extend(flatten_dict(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
+            nobj[key] = val
+    return nobj
 
 
 def filter_nonan(arr):
