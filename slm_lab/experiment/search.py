@@ -5,6 +5,8 @@ from ConfigSpace.hyperparameters import (
     CategoricalHyperparameter,
     UniformFloatHyperparameter,
     UniformIntegerHyperparameter,
+    NormalFloatHyperparameter,
+    NormalIntegerHyperparameter,
 )
 from ConfigSpace.conditions import InCondition
 from smac.scenario.scenario import Scenario
@@ -14,13 +16,26 @@ import pandas as pd
 import pydash as _
 
 
-class ExperimentExt:
-    def trial_wrapper(self, cfg_spec):
+class SMACSearch:
+    cls_dict = {
+        'default': CategoricalHyperparameter,
+        'categorical': CategoricalHyperparameter,
+        'uniform_float': UniformFloatHyperparameter,
+        'uniform_integer': UniformIntegerHyperparameter,
+        'normal_float': NormalFloatHyperparameter,
+        'normal_integer': NormalIntegerHyperparameter,
+    }
+
+    def trial_wrapper(self, cs_spec):
         # spec = ...
-        logger.info(f'SMAC spec {cfg_spec}')
+        logger.info(f'SMAC spec {cs_spec}')
         spec = self.spec.copy()
-        spec['agent'][0]['algorithm']['explore_anneal_epi'] = cfg_spec['explore_anneal_epi']
-        spec['agent'][0]['net']['hid_layers_activation'] = cfg_spec['hid_layers_activation']
+        spec.pop('search', None)
+        # TODO collect var dict for plotting later
+        var_dict = {}
+        for k in cs_spec:
+            var_dict[k] = cs_spec[k]
+            _.set_(spec, k, cs_spec[k])
         self.init_trial(spec)
         trial_df, trial_fitness_df = self.trial.run()
         # TODO need to recover data to experiment
@@ -33,14 +48,19 @@ class ExperimentExt:
         return cost
 
     def build_cs(self):
+        '''Build SMAC config space from spec.search, flattened. Use this to set on copy spec from cs_spec later.'''
         cs = ConfigurationSpace()
-
-        c1 = CategoricalHyperparameter(
-            "hid_layers_activation", ["relu", "sigmoid"])
-        cs.add_hyperparameter(c1)
-        c2 = UniformIntegerHyperparameter(
-            "explore_anneal_epi", 10, 60)
-        cs.add_hyperparameter(c2)
+        for k, v in util.flatten_dict(self.spec['search']).items():
+            if '__' in k:
+                key, space_type = k.split('__')
+            else:
+                key, space_type = k, 'default'
+            param_cls = SMACSearch.cls_dict[space_type]
+            if space_type in ('default', 'categorical'):
+                ck = param_cls(key, v)
+            else:
+                ck = param_cls(key, *v)
+            cs.add_hyperparameter(ck)
         return cs
 
     def run_smac(self):

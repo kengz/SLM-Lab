@@ -148,7 +148,7 @@ class Experiment:
 
 
 # TODO tmp hack, remove later. Extnd with search methods
-util.monkey_patch(Experiment, search.ExperimentExt)
+util.monkey_patch(Experiment, search.SMACSearch)
 
 
 class EvolutionGraph:
