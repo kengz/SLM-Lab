@@ -96,7 +96,7 @@ def flatten_dict(obj, delim='.'):
             strip = flatten_dict(val, delim)
             for k, v in strip.items():
                 nobj[key + delim + k] = v
-        elif _.is_list(val) and not _.is_empty(val):
+        elif _.is_list(val) and not _.is_empty(val) and _.is_dict(val[0]):
             for idx, v in enumerate(val):
                 nobj[key + delim + str(idx)] = v
                 if _.is_object(v):

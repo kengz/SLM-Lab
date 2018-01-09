@@ -63,17 +63,20 @@ def test_dedent(test_multiline_str):
         }
     }, {'level1.level2.level3': 0,
         'level1.level2.level3b': 1,
-        'level1.level2b.level3.0': 2,
-        'level1.level2b.level3.1': 3}),
+        'level1.level2b.level3': [2, 3]}),
     ({
         'level1': {
             'level2': [
                   {'level3': 0},
                   {'level3b': 1}
-            ]
+            ],
+            'level2b': {
+                'level3': [2, 3]
+            }
         }
     }, {'level1.level2.0.level3': 0,
-        'level1.level2.1.level3b': 1}),
+        'level1.level2.1.level3b': 1,
+        'level1.level2b.level3': [2, 3]}),
 ])
 def test_flatten_dict(d, flat_d):
     assert util.flatten_dict(d) == flat_d
