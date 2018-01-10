@@ -17,7 +17,7 @@
         "hid_layers_activation": "relu",
         "optim": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.01
         },
       }
     }],
