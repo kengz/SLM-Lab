@@ -1,3 +1,4 @@
+from slm_lab.lib import logger
 from slm_lab.agent.net import net_util
 from torch.autograd import Variable
 import torch
@@ -97,16 +98,20 @@ class MLPNet(nn.Module):
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
         return None
-    
+
     def print_nets(self):
         '''Prints entire network'''
         print(self.model)
 
-    def print_grad_norms(self):
-        lin_layers = self.hid_layers + list([self.out_layer])
-        for i, layer in enumerate(lin_layers):
-            print("Gradient norm layer {}: {}".format(
-                i, torch.norm(layer.weight.grad)))
+    def get_grad_norms(self):
+        '''Returns a list of the norm of the gradients for all parameters'''
+        norms = []
+        for i, param in enumerate(self.params):
+            grad_norm = torch.norm(param.grad.data)
+            if grad_norm is None:
+                logger.info(f'Param with None grad: {param}, layer: {i}')
+            norms.append(grad_norm)
+        return norms
 
 
 class MultiMLPNet(nn.Module):

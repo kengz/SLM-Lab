@@ -75,6 +75,7 @@ class ReinforceDiscrete(Algorithm):
                 logger.info("Clipping gradient...")
                 torch.nn.utils.clip_grad_norm(
                     self.net.parameters(), self.net.clamp_grad_val)
+            logger.debug(f'Gradient norms: {self.net.get_grad_norms()}')
             self.net.optim.step()
             self.to_train = 0
             self.saved_log_probs = []
