@@ -110,19 +110,6 @@ def multi_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
     return flat_nonan_action_a
 
 
-# From https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
-def act_with_softmax(agent, state, net):
-    torch_state = Variable(torch.from_numpy(state).float())
-    probs = F.softmax(net(torch_state))
-    m = Categorical(probs)
-    action = m.sample()
-    agent.saved_log_probs.append(m.log_prob(action))
-    return action.data[0]
-
-
-<<<<<<< HEAD
-=======
-  
 def multi_head_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
     flat_nonan_state_a = util.flatten_nonan(state_a)
     torch_states = []
@@ -144,7 +131,16 @@ def multi_head_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
     return flat_nonan_action_a
 
 
->>>>>>> c41151c7202430cfb2c9d12dc1383c9acce02efb
+# From https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
+def act_with_softmax(agent, state, net):
+    torch_state = Variable(torch.from_numpy(state).float())
+    probs = F.softmax(net(torch_state))
+    m = Categorical(probs)
+    action = m.sample()
+    agent.saved_log_probs.append(m.log_prob(action))
+    return action.data[0]
+
+
 def act_with_gaussian(body, state, net, stddev):
     # TODO implement act_with_gaussian
     pass
