@@ -45,14 +45,13 @@ class SMACSearch:
             cs.add_hyperparameter(ck)
         return cs
 
-    def run_trial(self, cs_spec):
-        '''Wrapper for SMAC's tae_runner to run trial with a cs_spec given by ConfigSpace'''
+    def run_trial(self, cfg):
+        '''Wrapper for SMAC's tae_runner to run trial with a var_spec given by ConfigSpace'''
         spec = self.experiment.spec.copy()
         spec.pop('search', None)
-        var_spec = {}
-        for k in cs_spec:
-            var_spec[k] = cs_spec[k]
-            _.set_(spec, k, cs_spec[k])
+        var_spec = cfg.get_dictionary()
+        for k, v in var_spec.items():
+            _.set_(spec, k, v)
         # TODO proper id from top level
         trial = self.experiment.init_trial(spec)
         trial_df, trial_fitness_df = trial.run()
