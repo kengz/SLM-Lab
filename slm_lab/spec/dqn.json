@@ -57,12 +57,12 @@
           "explore_var_end__uniform_float": [0.1, 1.0]
         },
         "net": {
-          "hid_layers_activation": ["relu", "sigmoid"]
+          "hid_layers_activation__categorical": ["relu", "sigmoid"]
         }
       }],
       "env": [{
         "unity": {
-          "gridSize": [6, 9]
+          "gridSize__categorical": [6, 9]
         }
       }]
     }
@@ -122,7 +122,7 @@
           "explore_var_end__uniform_float": [0.1, 1.0]
         },
         "net": {
-          "hid_layers_activation": ["relu", "sigmoid"]
+          "hid_layers_activation__categorical": ["relu", "sigmoid"]
         }
       }]
     }
