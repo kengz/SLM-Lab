@@ -134,10 +134,13 @@ def multi_head_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
 # From https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
 def act_with_softmax(agent, state, net):
     torch_state = Variable(torch.from_numpy(state).float())
-    probs = F.softmax(net(torch_state))
+    out = net(torch_state)
+    probs = F.softmax(out, dim=0)
     m = Categorical(probs)
     action = m.sample()
+    # logger.debug(f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
     agent.saved_log_probs.append(m.log_prob(action))
+    logger.debug(f'Len log probs: {len(agent.saved_log_probs)}')
     return action.data[0]
 
 

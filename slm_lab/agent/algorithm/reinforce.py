@@ -46,12 +46,23 @@ class ReinforceDiscrete(Algorithm):
     def body_act_discrete(self, body, state):
         return self.action_policy(self, state, self.net)
 
+    def sample(self):
+        '''Samples a batch from memory'''
+        batches = [body.memory.sample()
+                   for body in self.agent.flat_nonan_body_a]
+        batch = util.concat_dict(batches)
+        batch = util.to_torch_nested_batch(batch)
+        return batch
+
     def train(self):
+        # logger.debug(f'Train? {self.to_train}')
         if self.to_train == 1:
             # Only care about the rewards
-            rewards = self.agent.memory.sample()['rewards']
+            rewards = self.sample()['rewards']
             logger.debug(f'Length first epi: {len(rewards[0])}')
             advantage = self.calculate_advantage(rewards)
+            logger.debug(f'Len log probs: {len(self.saved_log_probs)}')
+            logger.debug(f'Len advantage: {advantage.size(0)}')
             assert len(self.saved_log_probs) == advantage.size(0)
             policy_loss = []
             for log_prob, a in zip(self.saved_log_probs, advantage):
@@ -72,17 +83,20 @@ class ReinforceDiscrete(Algorithm):
         else:
             return None
 
-    def calculate_advantage(self, batch):
+    def calculate_advantage(self, raw_rewards):
         advantage = []
-        for epi in batch:
+        logger.debug(f'Raw rewards: {raw_rewards}')
+        for epi_rewards in raw_rewards:
             rewards = []
             R = 0
-            for r in epi[::-1]:
+            for r in epi_rewards[::-1]:
                 R = r + self.gamma * R
                 rewards.insert(0, R)
             rewards = torch.Tensor(rewards)
+            logger.debug(f'Rewards: {rewards}')
             rewards = (rewards - rewards.mean()) / \
                 (rewards.std() + np.finfo(np.float32).eps)
+            logger.debug(f'Normalized rewards: {rewards}')
             advantage.append(rewards)
         advantage = torch.cat(advantage)
         return advantage

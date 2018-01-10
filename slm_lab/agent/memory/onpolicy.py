@@ -38,7 +38,7 @@ class OnPolicyReplay(Memory):
         self.reset_memory()
 
     def reset_memory(self):
-        '''Resets the memory'''
+        '''Resets the memory. Also used to initialize memory vars'''
         self.states = []
         self.actions = []
         self.rewards = []
@@ -69,6 +69,7 @@ class OnPolicyReplay(Memory):
                        priority=1):
         '''Interface helper method for update() to add experience to memory'''
         # TODO this is still single body
+        logger.debug(f'Adding experience...')
         self.current_episode['states'].append(state)
         self.current_episode['actions'].append(action)
         self.current_episode['rewards'].append(reward)
@@ -141,6 +142,10 @@ class OnPolicyBatchReplay(OnPolicyReplay):
 
     In contrast, OnPolicyReplay stores entire episodes and stores them in a nested structure. OnPolicyBatchReplay stores experiences in a flat structure.
     '''
+    def __init__(self, body):
+        super(OnPolicyBatchReplay, self).__init__(body)
+        self.training_frequency = self.body.agent.spec['algorithm']['training_frequency']
+
     def add_experience(self,
                        state,
                        action,
@@ -169,8 +174,8 @@ class OnPolicyBatchReplay(OnPolicyReplay):
             logger.warn("Memory size exceeded {}".format(true_size))
         self.total_experiences += 1
         # Decide if agent is to train
-        if (len(self.states)) == self.agent.algorithm.training_frequency:
-            self.agent.algorithm.to_train = 1
+        if (len(self.states)) == self.training_frequency:
+            self.body.agent.algorithm.to_train = 1
             # print("Memory size: {}".format(self.true_size))
 
     def sample(self):
