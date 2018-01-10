@@ -49,21 +49,17 @@ class SMACSearch:
         '''Wrapper for SMAC's tae_runner to run trial with a cs_spec given by ConfigSpace'''
         spec = self.experiment.spec.copy()
         spec.pop('search', None)
-        # TODO collect var dict for plotting later
-        var_dict = {}
         for k in cs_spec:
-            var_dict[k] = cs_spec[k]
             _.set_(spec, k, cs_spec[k])
-        self.experiment.init_trial(spec)
-        trial_df, trial_fitness_df = self.experiment.trial.run()
-        # TODO need to recover data to experiment
-        # t = self.experiment.trial.index
-        # self.experiment.trial_df_dict[t] = trial_df
-        # self.experiment.trial_fitness_df_dict[t] = trial_fitness_df
+        trial = self.experiment.init_trial(spec)
+        trial_df, trial_fitness_df = trial.run()
+        # trial fitness already avg over sessions and bodies
+        trial_fitness_vec = trial_fitness_df.loc[0].to_dict()
         fitness = analysis.calc_fitness(trial_fitness_df)
         cost = -fitness
-        logger.info(f'Optimized fitness: {fitness}, cost: {cost}')
-        return cost
+        logger.info(
+            f'Optimized cost: {cost}, fitness: {fitness}\n{trial_fitness_vec}')
+        return cost, trial_fitness_vec
 
     def run(self):
         cs = self.build_cs()
@@ -81,4 +77,5 @@ class SMACSearch:
             rng=np.random.RandomState(42),
             tae_runner=self.run_trial)
         incumbent = smac.optimize()
+        print(incumbent)
         return
