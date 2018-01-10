@@ -1,7 +1,7 @@
 from slm_lab.agent import AgentSpace
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
-from slm_lab.agent.net.feedforward import MLPNet
+from slm_lab.agent.net.feedforward import MLPNet, MultiMLPNet
 from slm_lab.env import EnvSpace
 from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import AEBSpace
@@ -14,7 +14,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-torch.manual_seed(17)
 
 
 spec = None
@@ -119,118 +118,217 @@ def test_multiline_str():
 
 
 @pytest.fixture(scope="class", params=[
-    (MLPNet(10, [5, 3], 2, hid_layers_activation='tanh'),
-     Variable(torch.ones((2, 10))),
-     Variable(torch.zeros((2, 2))),
-     None,
-     2),
-    (MLPNet(20, [10, 50, 5], 2, hid_layers_activation='tanh'),
-     Variable(torch.ones((2, 20))),
-     Variable(torch.zeros((2, 2))),
-     None,
-     2),
-    (MLPNet(10, [], 5, hid_layers_activation='tanh'),
-     Variable(torch.ones((2, 10))),
-     Variable(torch.zeros((2, 5))),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             ([],
-             []),
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'mse_loss'},
-             clamp_grad=False,
-             batch_norm=False),
-        Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             ([[3, 16, (5, 5), 2, 0, 1],
-              [16, 32, (5, 5), 2, 0, 1]],
-             [100]),
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'mse_loss'},
-             clamp_grad=False,
-             batch_norm=False),
-        Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             ([[3, 16, (5, 5), 2, 0, 1],
-                 [16, 32, (5, 5), 2, 0, 1]],
-             [100, 50]),
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'mse_loss'},
-             clamp_grad=False,
-             batch_norm=True),
-        Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             ([[3, 16, (5, 5), 2, 0, 1],
-              [16, 32, (5, 5), 1, 0, 1],
-              [32, 64, (5, 5), 1, 0, 2]],
-             [100]),
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'mse_loss'},
-             clamp_grad=True,
-             batch_norm=False),
-        Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             ([[3, 16, (5, 5), 2, 0, 1],
-              [16, 32, (5, 5), 1, 0, 1],
-              [32, 64, (5, 5), 1, 0, 2]],
-             [100]),
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'mse_loss'},
-             clamp_grad=True,
-             batch_norm=True),
-     Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             ([[3, 16, (7, 7), 1, 0, 1],
-              [16, 32, (5, 5), 1, 0, 1],
-              [32, 64, (3, 3), 1, 0, 1]],
-             [100, 50]),
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'mse_loss'},
-             clamp_grad=False,
-             batch_norm=False),
-     Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
-    (ConvNet((3, 32, 32),
-             ([[3, 16, (7, 7), 1, 0, 1],
-              [16, 32, (5, 5), 1, 0, 1],
-              [32, 64, (3, 3), 1, 0, 1]],
-             [100, 50]),
-             10,
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'mse_loss'},
-             clamp_grad=False,
-             batch_norm=True),
-     Variable(torch.ones((2, 3, 32, 32))),
-     Variable(torch.zeros(2, 10)),
-     None,
-     2),
+    (
+        MLPNet,
+        {
+            'in_dim': 10, 'hid_dim': [5, 3],
+            'out_dim':2,
+            'hid_layers_activation': 'tanh',
+        },
+        None,
+        2
+    ), (
+        MLPNet,
+        {
+            'in_dim': 20, 'hid_dim': [10, 50, 5],
+            'out_dim':2, 'hid_layers_activation': 'tanh',
+        },
+        None,
+        2
+    ), (
+        MLPNet,
+        {
+            'in_dim': 10, 'hid_dim': [],
+            'out_dim':5, 'hid_layers_activation': 'tanh',
+        },
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'hid_layers': ([],
+                           []),
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+            'clamp_grad': False,
+            'batch_norm': False,
+        },
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'hid_layers': ([[3, 16, (5, 5), 2, 0, 1],
+                            [16, 32, (5, 5), 2, 0, 1]],
+                           [100]),
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+            'clamp_grad': False,
+            'batch_norm': False,
+        },
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'hid_layers': ([[3, 16, (5, 5), 2, 0, 1],
+                            [16, 32, (5, 5), 2, 0, 1]],
+                           [100, 50]),
+            'out_dim': 10,
+            'optim_param': {'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+            'clamp_grad': False,
+            'batch_norm': True,
+        },
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'hid_layers': ([[3, 16, (5, 5), 2, 0, 1],
+                            [16, 32, (5, 5), 1, 0, 1],
+                            [32, 64, (5, 5), 1, 0, 2]],
+                           [100]),
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+            'clamp_grad': True,
+            'batch_norm': False,
+        },
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'hid_layers': ([[3, 16, (5, 5), 2, 0, 1],
+                            [16, 32, (5, 5), 1, 0, 1],
+                            [32, 64, (5, 5), 1, 0, 2]],
+                           [100]),
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+            'clamp_grad': True,
+            'batch_norm': True,
+        },
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'hid_layers': ([[3, 16, (7, 7), 1, 0, 1],
+                            [16, 32, (5, 5), 1, 0, 1],
+                            [32, 64, (3, 3), 1, 0, 1]],
+                           [100, 50]),
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+            'clamp_grad': False,
+            'batch_norm': False,
+        },
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'hid_layers': ([[3, 16, (7, 7), 1, 0, 1],
+                            [16, 32, (5, 5), 1, 0, 1],
+                            [32, 64, (3, 3), 1, 0, 1]],
+                           [100, 50]),
+            'out_dim': 10,
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+            'clamp_grad': False,
+            'batch_norm': True,
+        },
+        None,
+        2
+    ), (
+        MultiMLPNet,
+        {
+            'in_dim': [[5, 10], [8, 16]],
+            'hid_dim': [64],
+            'out_dim': [[3], [2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        MultiMLPNet,
+        {
+            'in_dim': [[5, 10], [8, 16]],
+            'hid_dim': [],
+            'out_dim': [[3], [2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        MultiMLPNet,
+        {
+            'in_dim': [[5, 10], [8, 16]],
+            'hid_dim': [],
+            'out_dim': [[5, 3], [8, 2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        MultiMLPNet,
+        {
+            'in_dim': [[5, 10, 15], [8, 16]],
+            'hid_dim': [],
+            'out_dim': [[5, 3], [12, 8, 2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        MultiMLPNet,
+        {
+            'in_dim': [[5, 10, 15], [8, 16]],
+            'hid_dim': [32, 64],
+            'out_dim': [[5, 3], [12, 8, 2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        MultiMLPNet,
+        {
+            'in_dim': [[5, 10], [8, 16, 24]],
+            'hid_dim': [32, 64],
+            'out_dim': [[9, 6, 3], [2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ),
 ])
 def test_nets(request):
-    return request.param
+    net = request.param[0](**request.param[1])
+    res = (net,) + request.param[2:]
+    return res
 
 
 @pytest.fixture(scope="class", params=[(None, None)])

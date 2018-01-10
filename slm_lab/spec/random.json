@@ -1,0 +1,56 @@
+{
+  "random_cartpole": {
+    "agent": [{
+      "name": "Random",
+      "algorithm": {
+        "name": "Random"
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 5000
+      },
+      "net": {}
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 1000,
+      "max_session": 5,
+      "max_trial": 1,
+      "train_mode": true
+    }
+  },
+  "random_2dball": {
+    "agent": [{
+      "name": "Random",
+      "algorithm": {
+        "name": "Random"
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 5000
+      },
+      "net": {}
+    }],
+    "env": [{
+      "name": "2DBall",
+      "max_timestep": 200
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 1000,
+      "max_session": 5,
+      "max_trial": 1,
+      "train_mode": true
+    }
+  }
+}
