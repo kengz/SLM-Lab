@@ -14,7 +14,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "optim": {
           "name": "Adam",
           "lr": 0.02
@@ -30,7 +30,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 3,
+      "max_episode": 2,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
@@ -56,7 +56,7 @@
         "clamp_grad_val": 1.0,
         "optim": {
           "name": "Adam",
-          "lr": 0.03
+          "lr": 0.02
         },
       }
     }],

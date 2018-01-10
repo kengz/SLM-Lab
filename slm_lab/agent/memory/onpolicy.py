@@ -58,6 +58,8 @@ class OnPolicyReplay(Memory):
         '''Interface method to update memory'''
         if not np.isnan(reward):
             self.add_experience(self.last_state, action, reward, state, done)
+        else:
+            logger.debug(f'Nan reward')
         self.last_state = state
 
     def add_experience(self,
@@ -69,7 +71,6 @@ class OnPolicyReplay(Memory):
                        priority=1):
         '''Interface helper method for update() to add experience to memory'''
         # TODO this is still single body
-        logger.debug(f'Adding experience...')
         self.current_episode['states'].append(state)
         self.current_episode['actions'].append(action)
         self.current_episode['rewards'].append(reward)

@@ -138,9 +138,8 @@ def act_with_softmax(agent, state, net):
     probs = F.softmax(out, dim=0)
     m = Categorical(probs)
     action = m.sample()
-    # logger.debug(f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
+    logger.debug(f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
     agent.saved_log_probs.append(m.log_prob(action))
-    logger.debug(f'Len log probs: {len(agent.saved_log_probs)}')
     return action.data[0]
 
 

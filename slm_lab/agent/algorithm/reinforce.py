@@ -63,9 +63,14 @@ class ReinforceDiscrete(Algorithm):
             advantage = self.calculate_advantage(rewards)
             logger.debug(f'Len log probs: {len(self.saved_log_probs)}')
             logger.debug(f'Len advantage: {advantage.size(0)}')
+            if len(self.saved_log_probs) != advantage.size(0):
+                # Caused by first reward of episode being nan
+                del self.saved_log_probs[0]
+                logger.debug('Deleting first log prob in epi')
             assert len(self.saved_log_probs) == advantage.size(0)
             policy_loss = []
             for log_prob, a in zip(self.saved_log_probs, advantage):
+                logger.debug(f'log prob: {log_prob.data[0]}, advantage: {a}')
                 policy_loss.append(-log_prob * a)
             self.net.optim.zero_grad()
             policy_loss = torch.cat(policy_loss).sum()
