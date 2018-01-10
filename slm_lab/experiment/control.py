@@ -136,12 +136,9 @@ class Experiment:
         logger.info('Experiment done, closing.')
 
     def run(self):
-        # for t in range(_.get(self.spec, 'meta.max_trial')):
-        #     logger.debug(f'trial {t}')
-            # (self.trial_df_dict[t], self.trial_fitness_df_dict[t]
-        #      ) = self.init_trial().run()
-        self.search.run()
-        self.df, self.fitness_df = analysis.analyze_experiment(self)
+        self.df = self.search.run()
+        print(self.df)
+        analysis.analyze_experiment(self)
         self.close()
         return self.df, self.fitness_df
 
