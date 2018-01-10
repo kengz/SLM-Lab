@@ -16,6 +16,7 @@ dependencies:
 - colorlog=3.1.0=py36_0
 - coverage=4.4.1=py36_0
 - cycler=0.10.0=py36_0
+- cython=0.27.3=py36_0
 - decorator=4.1.2=py36_0
 - docopt=0.6.2=py36_0
 - et_xmlfile=1.0.1=py36_0
