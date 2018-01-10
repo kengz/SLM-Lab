@@ -1,9 +1,9 @@
 from slm_lab.agent import memory
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns
+from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
-from slm_lab.lib import util
+from slm_lab.lib import logger, util
 from torch.autograd import Variable
 import numpy as np
 import torch
@@ -55,7 +55,7 @@ class ReinforceDiscrete(Algorithm):
         if self.to_train == 1:
             # Only care about the rewards
             rewards = self.agent.memory.get_batch()['rewards']
-            print("Length first epi: {}".format(len(rewards[0])))
+            logger.debug(f"Length first epi: {len(rewards[0]}")
             advantage = self.calculate_advantage(rewards)
             assert len(self.saved_log_probs) == advantage.size(0)
             policy_loss = []
@@ -64,14 +64,15 @@ class ReinforceDiscrete(Algorithm):
             self.net.optim.zero_grad()
             policy_loss = torch.cat(policy_loss).sum()
             loss = policy_loss.data[0]
-            print("Policy loss: {}".format(policy_loss.data[0]))
             policy_loss.backward()
             if self.net.clamp_grad:
-                print("Clipping gradient...")
-                torch.nn.utils.clip_grad_norm(self.net.parameters(), self.net.clamp_grad_val)
+                logger.info("Clipping gradient...")
+                torch.nn.utils.clip_grad_norm(
+                    self.net.parameters(), self.net.clamp_grad_val)
             self.net.optim.step()
             self.to_train = 0
             self.saved_log_probs = []
+            logger.debug(f"Policy loss: {loss}")
             return loss
         else:
             return None
