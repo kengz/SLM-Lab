@@ -73,6 +73,7 @@ class ACDiscrete(ReinforceDiscrete):
         else:
             return None
 
+    # TODO - change to net util fn
     def convert_to_variables(self, batch):
         # Package data into pytorch variables
         float_data_list = [
