@@ -74,20 +74,18 @@ class SMACSearch:
         }
         return cost, exp_trial_data
 
-    def get_experiment_df(self, smac):
+    def get_experiment_data(self, smac):
         '''
         Recover the trial_id from smac history RunKeys,
         and the var_spec, fitness_vec, fitness from RunValues
-        Format and return into experiment_df with index = trial_id and columns = [*var_spec, *fitness_vec, fitness]
+        Format and return into experiment_data with index = trial_id and columns = [*var_spec, *fitness_vec, fitness]
         '''
-        sr_list = []
         smac_hist = smac.get_runhistory()
+        experiment_data = {}
         for trial_id, rv in enumerate(smac_hist.data.values()):
             exp_trial_data = rv.additional_info
-            exp_sr = pd.Series(exp_trial_data, name=trial_id)
-            sr_list.append(exp_sr)
-        experiment_df = pd.DataFrame(sr_list)
-        return experiment_df
+            experiment_data[trial_id] = exp_trial_data
+        return experiment_data
 
     def run(self):
         cs = self.build_cs()
@@ -106,5 +104,5 @@ class SMACSearch:
             tae_runner=self.run_trial)
         best_cfg = smac.optimize()  # best var_spec
         best_spec = self.spec_from_cfg(best_cfg)
-        experiment_df = self.get_experiment_df(smac)
-        return best_spec, experiment_df
+        experiment_data = self.get_experiment_data(smac)
+        return best_spec, experiment_data

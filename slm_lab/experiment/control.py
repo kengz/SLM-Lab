@@ -137,8 +137,8 @@ class Experiment:
         logger.info('Experiment done, closing.')
 
     def run(self):
-        self.best_spec, self.df = self.search.run()
-        analysis.analyze_experiment(self)
+        self.best_spec, self.data = self.search.run()
+        self.df = analysis.analyze_experiment(self)
         self.close()
         return self.best_spec, self.df
 

@@ -16,6 +16,7 @@ DATA_AGG_FNS = {
     'loss': 'mean',
     'explore_var': 'mean',
 }
+FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
 FITNESS_STD = util.read('slm_lab/experiment/fitness_std.json')
 MA_WINDOW = 100
 
@@ -161,6 +162,7 @@ def save_trial_data(trial_spec, trial_df):
 
 def analyze_trial(trial):
     '''Gather trial data, plot, and return trial df for high level agg.'''
+    # TODO rename trial_data and standardize
     trial_df = pd.concat(trial.session_df_dict, axis=1)
     trial_fitness_df = calc_trial_fitness_df(trial)
     logger.debug(f'{trial_df}')
@@ -173,7 +175,7 @@ def plot_experiment(experiment, experiment_df):
     Plot the variable specs vs fitness vector of an experiment, each point is a trial
     ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
     '''
-    y_cols = ['fitness', 'strength', 'speed', 'stability', 'consistency']
+    y_cols = ['fitness'] + FITNESS_COLS
     x_cols = _.difference(experiment_df.columns.tolist(), y_cols)
 
     fig = viz.tools.make_subplots(
@@ -211,10 +213,14 @@ def save_experiment_data(best_spec, experiment_df, experiment_fig):
 
 def analyze_experiment(experiment):
     '''Gather experiment data, plot, and return experiment df for high level agg.'''
-    util.write(experiment.df, 'experiment_df.csv')
-    experiment_fig = plot_experiment(experiment, experiment.df)
-    save_experiment_data(experiment.best_spec, experiment.df, experiment_fig)
-    return None, None
+    experiment_df = pd.DataFrame(experiment.data).transpose()
+    cols = FITNESS_COLS + ['fitness']
+    sorted_cols = sorted(_.difference(
+        experiment_df.columns.tolist(), cols)) + cols
+    experiment_df = experiment_df.reindex(sorted_cols, axis=1)
+    experiment_fig = plot_experiment(experiment, experiment_df)
+    save_experiment_data(experiment.best_spec, experiment_df, experiment_fig)
+    return experiment_df
 
 
 '''
