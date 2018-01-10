@@ -17,7 +17,7 @@ DATA_AGG_FNS = {
     'explore_var': 'mean',
 }
 FITNESS_STD = util.read('slm_lab/experiment/fitness_std.json')
-MA_WINDOW = 100
+MA_WINDOW = 10
 
 
 def get_session_data(session):
@@ -79,7 +79,8 @@ def plot_session(session, session_data):
     fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
     fig.layout.update(_.pick(fig_1.layout, ['legend']))
     fig.layout.update(_.pick(fig_2.layout, ['legend']))
-    fig.layout.update(title=session.spec['name'], width=500, height=600)
+    fig.layout.update(
+        title=f'Session Graph: {session.spec["name"]}', width=500, height=600)
     viz.plot(fig)
     return fig
 
@@ -114,7 +115,7 @@ def save_session_data(session_spec, session_df, session_fig):
     prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
     logger.info(f'Saving session data to {prepath}_*')
     util.write(session_df, f'{prepath}_session_df.csv')
-    viz.save_image(session_fig, f'{prepath}_session_graph.png')
+    # viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
 
 def analyze_session(session):
@@ -167,8 +168,42 @@ def analyze_trial(trial):
     return trial_df, trial_fitness_df
 
 
+def plot_experiment(experiment, experiment_df):
+    '''
+    Plot the variable specs vs fitness vector of an experiment, each point is a trial
+    ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
+    '''
+    y_cols = ['fitness', 'strength', 'speed', 'stability', 'consistency']
+    x_cols = _.difference(experiment_df.columns.tolist(), y_cols)
+
+    fig = viz.tools.make_subplots(
+        rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True)
+    for row_idx, y in enumerate(y_cols):
+        for col_idx, x in enumerate(x_cols):
+            trace = viz.go.Scatter(
+                y=experiment_df[y], yaxis=f'y{row_idx+1}',
+                x=experiment_df[x], xaxis=f'x{col_idx+1}',
+                showlegend=False,
+                mode='markers',
+                marker={
+                    'symbol': 'circle-open-dot', 'color': experiment_df['fitness'],
+                    'colorscale': 'YIGnBu', 'reversescale': True
+                },
+            )
+            fig.append_trace(trace, row_idx + 1, col_idx + 1)
+            fig.layout[f'xaxis{col_idx+1}'].update(
+                title='<br>'.join(_.chunk(x, 20)))
+        fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
+    fig.layout.update(
+        title=f'Experiment Graph: {experiment.spec["name"]}', width=800, height=700)
+    viz.plot(fig)
+    return fig
+
+
 def analyze_experiment(experiment):
     '''Gather experiment data, plot, and return experiment df for high level agg.'''
+    util.write(experiment.df, 'experiment_df.csv')
+    experiment_fig = plot_experiment(experiment, experiment.df)
     # print('trial_df_dict')
     # print(experiment.trial_df_dict)
     # experiment_df = pd.concat(experiment.trial_df_dict, axis=1)
