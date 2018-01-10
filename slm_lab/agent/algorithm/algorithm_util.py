@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
-# from torch.distributions import Categorical
+from torch.distributions import Categorical
 
 
 def act_with_epsilon_greedy(body, state, net, epsilon):
@@ -79,22 +79,16 @@ def multi_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
     return flat_nonan_action_a
 
 
-# Adapted from  https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
-def act_with_softmax(agent, body, state, net):
+# From https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
+def act_with_softmax(agent, state, net):
     torch_state = Variable(torch.from_numpy(state).float())
-    out = net(torch_state)
-    probs = F.softmax(out)
-    action = np.random.choice(list(range(body.action_dim)), p=probs.data.numpy())
-    agent.algorithm.saved_log_probs.append(torch.log(probs))
-    # print(type(probs))
-    # print("Action: {}".format(action))
-    return action
-    # m = Categorical(probs)
-    # action = m.sample()
-    # net.saved_log_probs.append(m.log_prob(action))
-    # return action.data[0]
+    probs = F.softmax(net(torch_state))
+    m = Categorical(probs)
+    action = m.sample()
+    agent.saved_log_probs.append(m.log_prob(action))
+    return action.data[0]
 
-  
+
 def act_with_gaussian(body, state, net, stddev):
     # TODO implement act_with_gaussian
     pass

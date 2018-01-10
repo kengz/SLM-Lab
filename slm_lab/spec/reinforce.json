@@ -5,7 +5,7 @@
       "algorithm": {
         "name": "ReinforceDiscrete",
         "action_policy": "softmax",
-        "gamma": 0.99,
+        "gamma": 0.999,
         "num_epis_to_collect": 1
       },
       "memory": {
@@ -50,7 +50,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128],
+        "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clamp_grad": false,
         "clamp_grad_val": 1.0,

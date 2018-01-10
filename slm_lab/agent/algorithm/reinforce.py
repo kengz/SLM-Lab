@@ -22,12 +22,9 @@ class ReinforceDiscrete(Algorithm):
 
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
-        # TODO generalize
-        default_body = self.agent.bodies[0]
-        # autoset net head and tail
-        # TODO auto-architecture to handle multi-head, multi-tail nets
-        state_dim = default_body.state_dim
-        action_dim = default_body.action_dim
+        body = self.agent.flat_nonan_body_a[0]  # singleton algo
+        state_dim = body.state_dim
+        action_dim = body.action_dim
         net_spec = self.agent.spec['net']
         self.net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
@@ -42,20 +39,18 @@ class ReinforceDiscrete(Algorithm):
         self.action_policy = act_fns[algorithm_spec['action_policy']]
         self.num_epis = algorithm_spec['num_epis_to_collect']
         self.gamma = algorithm_spec['gamma']
-        # To save on a forward pass keep the log probs
-        # from each action
+        # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.to_train = 0
 
-    def body_act_discrete(self, body, body_state):
-        # TODO can handle identical bodies now; to use body_net for specific body.
-        return self.action_policy(self.agent, body, body_state, self.net)
+    def body_act_discrete(self, body, state):
+        return self.action_policy(self, state, self.net)
 
     def train(self):
         if self.to_train == 1:
             # Only care about the rewards
-            rewards = self.agent.memory.get_batch()['rewards']
-            logger.debug(f"Length first epi: {len(rewards[0]}")
+            rewards = self.agent.memory.sample()['rewards']
+            logger.debug(f'Length first epi: {len(rewards[0])}')
             advantage = self.calculate_advantage(rewards)
             assert len(self.saved_log_probs) == advantage.size(0)
             policy_loss = []
@@ -72,7 +67,7 @@ class ReinforceDiscrete(Algorithm):
             self.net.optim.step()
             self.to_train = 0
             self.saved_log_probs = []
-            logger.debug(f"Policy loss: {loss}")
+            logger.debug(f'Policy loss: {loss}')
             return loss
         else:
             return None
@@ -86,7 +81,6 @@ class ReinforceDiscrete(Algorithm):
                 R = r + self.gamma * R
                 rewards.insert(0, R)
             rewards = torch.Tensor(rewards)
-            # rewards = (rewards - rewards.mean())
             rewards = (rewards - rewards.mean()) / \
                 (rewards.std() + np.finfo(np.float32).eps)
             advantage.append(rewards)
