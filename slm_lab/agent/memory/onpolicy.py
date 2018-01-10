@@ -139,13 +139,19 @@ class OnPolicyBatchReplay(OnPolicyReplay):
     '''
     Same as OnPolicyReplay Memory with the following difference.
 
-    The memory does not have a fixed size. Instead the memory stores data from N experiences, where N is determined by the user. After N experiences, all of the examples are returned to the agent to learn from.
+    The memory does not have a fixed size. Instead the memory stores data from N experiences, where N is determined by the user. After N experiences or if an episode has ended, all of the examples are returned to the agent to learn from.
 
     In contrast, OnPolicyReplay stores entire episodes and stores them in a nested structure. OnPolicyBatchReplay stores experiences in a flat structure.
     '''
     def __init__(self, body):
-        super(OnPolicyBatchReplay, self).__init__(body)
+        self.body = body
+        self.last_state = None
+        self.state_dim = self.body.state_dim
+        self.action_dim = self.body.action_dim
         self.training_frequency = self.body.agent.spec['algorithm']['training_frequency']
+        # Don't want total experiences reset when memory is
+        self.total_experiences = 0
+        self.reset_memory()
 
     def add_experience(self,
                        state,
@@ -175,9 +181,8 @@ class OnPolicyBatchReplay(OnPolicyReplay):
             logger.warn("Memory size exceeded {}".format(true_size))
         self.total_experiences += 1
         # Decide if agent is to train
-        if (len(self.states)) == self.training_frequency:
+        if done or (len(self.states)) == self.training_frequency:
             self.body.agent.algorithm.to_train = 1
-            # print("Memory size: {}".format(self.true_size))
 
     def sample(self):
         '''
