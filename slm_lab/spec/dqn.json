@@ -49,6 +49,22 @@
       "max_session": 3,
       "max_trial": 3,
       "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_anneal_epi__uniform_integer": [10, 60],
+          "explore_var_end__uniform_float": [0.1, 1.0]
+        },
+        "net": {
+          "hid_layers_activation": ["relu", "sigmoid"]
+        }
+      }],
+      "env": [{
+        "unity": {
+          "gridSize": [6, 9]
+        }
+      }]
     }
   },
   "dqn_cartpole": {
@@ -93,10 +109,22 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 40,
-      "max_session": 1,
-      "max_trial": 1,
+      "max_episode": 200,
+      "max_session": 5,
+      "max_trial": 200,
       "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_anneal_epi__uniform_integer": [10, 60],
+          "explore_var_start__uniform_float": [1.0, 5.0],
+          "explore_var_end__uniform_float": [0.1, 1.0]
+        },
+        "net": {
+          "hid_layers_activation": ["relu", "sigmoid"]
+        }
+      }]
     }
   },
   "dqn_cartpole_multitask": {

@@ -121,6 +121,7 @@ class Experiment:
         self.coor, self.index = info_space.index_lab_comp(self)
         self.trial_df_dict = {}
         self.trial_fitness_df_dict = {}
+        self.best_spec = None
         self.df = None
         self.fitness_df = None
         self.trial = None
@@ -136,11 +137,10 @@ class Experiment:
         logger.info('Experiment done, closing.')
 
     def run(self):
-        self.df = self.search.run()
-        print(self.df)
+        self.best_spec, self.df = self.search.run()
         analysis.analyze_experiment(self)
         self.close()
-        return self.df, self.fitness_df
+        return self.best_spec, self.df
 
 
 # TODO tmp hack, remove later. Extnd with search methods

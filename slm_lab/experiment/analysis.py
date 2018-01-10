@@ -17,7 +17,7 @@ DATA_AGG_FNS = {
     'explore_var': 'mean',
 }
 FITNESS_STD = util.read('slm_lab/experiment/fitness_std.json')
-MA_WINDOW = 10
+MA_WINDOW = 100
 
 
 def get_session_data(session):
@@ -192,27 +192,28 @@ def plot_experiment(experiment, experiment_df):
             )
             fig.append_trace(trace, row_idx + 1, col_idx + 1)
             fig.layout[f'xaxis{col_idx+1}'].update(
-                title='<br>'.join(_.chunk(x, 20)))
+                title='<br>'.join(_.chunk(x, 20)), zerolinewidth=1)
         fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
     fig.layout.update(
-        title=f'Experiment Graph: {experiment.spec["name"]}', width=800, height=700)
+        title=f'Experiment Graph: {experiment.spec["name"]}', width=len(x_cols) * 200, height=len(y_cols) * 200)
     viz.plot(fig)
     return fig
+
+
+def save_experiment_data(best_spec, experiment_df, experiment_fig):
+    spec_name = best_spec['name']
+    prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
+    logger.info(f'Saving experiment data to {prepath}_*')
+    util.write(best_spec, f'{prepath}_best_spec.json')
+    util.write(experiment_df, f'{prepath}_experiment_df.csv')
+    # viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
 
 
 def analyze_experiment(experiment):
     '''Gather experiment data, plot, and return experiment df for high level agg.'''
     util.write(experiment.df, 'experiment_df.csv')
     experiment_fig = plot_experiment(experiment, experiment.df)
-    # print('trial_df_dict')
-    # print(experiment.trial_df_dict)
-    # experiment_df = pd.concat(experiment.trial_df_dict, axis=1)
-    # experiment_fitness_df = pd.concat(experiment.trial_fitness_df_dict, axis=1)
-    # logger.debug(f'{experiment_df}')
-    # logger.info(f'{experiment_fitness_df}')
-    # TODO also save fitness
-    # save_experiment_data()
-    # return experiment_df, experiment_fitness_df
+    save_experiment_data(experiment.best_spec, experiment.df, experiment_fig)
     return None, None
 
 
