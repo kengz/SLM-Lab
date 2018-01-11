@@ -51,7 +51,7 @@
         "action_policy": "softmax",
         "gamma": 0.999,
         "training_frequency": 64,
-        "training_iters_per_batch": 5
+        "training_iters_per_batch": 8
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
