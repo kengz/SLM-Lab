@@ -70,7 +70,6 @@ class OnPolicyReplay(Memory):
                        done,
                        priority=1):
         '''Interface helper method for update() to add experience to memory'''
-        # TODO this is still single body
         self.current_episode['states'].append(state)
         self.current_episode['actions'].append(action)
         self.current_episode['rewards'].append(reward)
@@ -161,7 +160,6 @@ class OnPolicyBatchReplay(OnPolicyReplay):
                        done,
                        priority=1):
         '''Interface helper method for update() to add experience to memory'''
-        # TODO this is still single body
         self.states.append(state)
         self.actions.append(action)
         self.rewards.append(reward)
