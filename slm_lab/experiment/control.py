@@ -77,20 +77,20 @@ class Trial:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.session = None
         self.session_data_dict = {}
         self.data = None
 
-    def init_session(self):
-        self.session = Session(self.spec)
-        return self.session
+    def init_session_and_run(self, session_id):
+        return Session(self.spec).run()
 
     def close(self):
         logger.info('Trial done, closing.')
 
     def run(self):
-        for s in range(_.get(self.spec, 'meta.max_session')):
-            self.session_data_dict[s] = self.init_session().run()
+        session_ids = list(range(self.spec['meta']['max_session']))
+        session_datas = util.parallelize_fn(
+            self.init_session_and_run, session_ids)
+        self.session_data_dict = dict(zip(session_ids, session_datas))
         self.data = analysis.analyze_trial(self)
         self.close()
         return self.data
@@ -114,7 +114,6 @@ class Experiment:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.trial = None
         self.trial_data_dict = {}
         self.best_spec = None
         self.data = None
@@ -122,9 +121,8 @@ class Experiment:
         SearchClass = getattr(search, 'SMACSearch')
         self.search = SearchClass(self)
 
-    def init_trial(self, spec):
-        self.trial = Trial(spec)
-        return self.trial
+    def init_trial_and_run(self, spec):
+        return Trial(spec).run()
 
     def close(self):
         logger.info('Experiment done, closing.')
