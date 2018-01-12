@@ -4,13 +4,13 @@
   "description": "An experimental framework for Reinforcement Learning using Unity and PyTorch.",
   "main": "index.js",
   "scripts": {
-    "start": "python main.py",
+    "start": "python run_slm.py",
     "export-env": "conda env export > environment.yml",
     "update-env": "conda env update -f environment.yml",
     "test": "python setup.py test",
     "reset": "rm -rf data/* log/* smac3*",
     "clear": "find . | grep -E '(__pycache__|.pyc|.pyo|.egg*|.cache|htmlcov|.coverage|dist)' | xargs rm -rf",
-    "kill": "pkill -f slm-env ipykernel &"
+    "kill": "pkill -f slm-env ipykernel run_slm.py &"
   },
   "repository": "https://github.com/kengz/SLM-Lab.git",
   "author": "kengz <kengzwl@gmail.com>, lgraesser",
