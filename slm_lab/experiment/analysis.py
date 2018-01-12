@@ -34,7 +34,9 @@ def get_session_data(session):
     for aeb in session.aeb_space.aeb_list:
         data_h_dict = {
             data_name: data_h_v[aeb] for data_name, data_h_v in data_h_v_dict.items()}
-        reset_idx = np.isnan(data_h_dict['done'])
+        # remove any incomplete session timesteps from tail (due to multienv termination)
+        complete_done_h = np.trim_zeros(data_h_dict['done'], 'b')
+        reset_idx = np.isnan(complete_done_h)
         nonreset_idx = ~reset_idx
         data_h_dict['t'] = np.ones(reset_idx.shape)
         data_h_dict['epi'] = reset_idx.astype(int).cumsum()
