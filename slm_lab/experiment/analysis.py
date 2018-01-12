@@ -49,7 +49,7 @@ def get_session_data(session):
     return session_mdp_data, session_data
 
 
-def plot_session(session, session_data):
+def plot_session(session_spec, session_data):
     '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
     aeb_count = len(session_data)
     if aeb_count <= 8:
@@ -78,7 +78,7 @@ def plot_session(session, session_data):
     fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
     fig.layout.update(_.pick(fig_1.layout, ['legend']))
     fig.layout.update(
-        title=f'Session Graph: {session.spec["name"]}', width=500, height=600)
+        title=f'Session Graph: {session_spec["name"]}', width=500, height=600)
     viz.plot(fig)
     return fig
 
@@ -127,7 +127,7 @@ def analyze_session(session):
     '''
     session_mdp_data, session_data = get_session_data(session)
     session_fitness_df = calc_session_fitness_df(session, session_data)
-    session_fig = plot_session(session, session_data)
+    session_fig = plot_session(session.spec, session_data)
     save_session_data(session.spec, session_mdp_data,
                       session_data, session_fitness_df, session_fig)
     return session_fitness_df
@@ -178,7 +178,7 @@ def analyze_trial(trial):
     return trial_fitness_df
 
 
-def plot_experiment(experiment, experiment_df):
+def plot_experiment(experiment_spec, experiment_df):
     '''
     Plot the variable specs vs fitness vector of an experiment, where each point is a trial.
     ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
@@ -190,9 +190,11 @@ def plot_experiment(experiment, experiment_df):
         rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True)
     for row_idx, y in enumerate(y_cols):
         for col_idx, x in enumerate(x_cols):
+            x_sr = experiment_df[x]
+            guard_cat_x = x_sr.astype(str) if x_sr.dtype == 'object' else x_sr
             trace = viz.go.Scatter(
                 y=experiment_df[y], yaxis=f'y{row_idx+1}',
-                x=experiment_df[x], xaxis=f'x{col_idx+1}',
+                x=guard_cat_x, xaxis=f'x{col_idx+1}',
                 showlegend=False, mode='markers',
                 marker={
                     'symbol': 'circle-open-dot', 'color': experiment_df['fitness'],
@@ -201,10 +203,10 @@ def plot_experiment(experiment, experiment_df):
             )
             fig.append_trace(trace, row_idx + 1, col_idx + 1)
             fig.layout[f'xaxis{col_idx+1}'].update(
-                title='<br>'.join(_.chunk(x, 20)), zerolinewidth=1)
+                title='<br>'.join(_.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
         fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
     fig.layout.update(
-        title=f'Experiment Graph: {experiment.spec["name"]}', width=len(x_cols) * 200, height=700)
+        title=f'Experiment Graph: {experiment_spec["name"]}', width=len(x_cols) * 200, height=700)
     viz.plot(fig)
     return fig
 
@@ -232,7 +234,7 @@ def analyze_experiment(experiment):
     sorted_cols = sorted(_.difference(
         experiment_df.columns.tolist(), cols)) + cols
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
-    experiment_fig = plot_experiment(experiment, experiment_df)
+    experiment_fig = plot_experiment(experiment.spec, experiment_df)
     save_experiment_data(experiment.best_spec, experiment_df, experiment_fig)
     return experiment_df
 
