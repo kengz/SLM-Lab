@@ -24,8 +24,7 @@ class Session:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.df = None
-        self.fitness_df = None
+        self.data = None
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
@@ -61,9 +60,9 @@ class Session:
 
     def run(self):
         self.run_all_episodes()
-        self.df, self.fitness_df = analysis.analyze_session(self)
+        self.data = analysis.analyze_session(self)  # session fitness
         self.close()
-        return self.df, self.fitness_df
+        return self.data
 
 
 class Trial:
@@ -78,11 +77,9 @@ class Trial:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.session_df_dict = {}
-        self.session_fitness_df_dict = {}
-        self.df = None
-        self.fitness_df = None
         self.session = None
+        self.session_data_dict = {}
+        self.data = None
 
     def init_session(self):
         self.session = Session(self.spec)
@@ -93,12 +90,10 @@ class Trial:
 
     def run(self):
         for s in range(_.get(self.spec, 'meta.max_session')):
-            logger.debug(f'session {s}')
-            (self.session_df_dict[s], self.session_fitness_df_dict[s]
-             ) = self.init_session().run()
-        self.df, self.fitness_df = analysis.analyze_trial(self)
+            self.session_data_dict[s] = self.init_session().run()
+        self.data = analysis.analyze_trial(self)
         self.close()
-        return self.df, self.fitness_df
+        return self.data
 
 
 class Experiment:
@@ -119,12 +114,10 @@ class Experiment:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.trial_df_dict = {}
-        self.trial_fitness_df_dict = {}
-        self.best_spec = None
-        self.df = None
-        self.fitness_df = None
         self.trial = None
+        self.trial_data_dict = {}
+        self.best_spec = None
+        self.data = None
         # TODO generalize to take different search algo
         SearchClass = getattr(search, 'SMACSearch')
         self.search = SearchClass(self)
@@ -137,14 +130,10 @@ class Experiment:
         logger.info('Experiment done, closing.')
 
     def run(self):
-        self.best_spec, self.data = self.search.run()
-        self.df = analysis.analyze_experiment(self)
+        self.best_spec, self.trial_data_dict = self.search.run()
+        self.data = analysis.analyze_experiment(self)
         self.close()
-        return self.best_spec, self.df
-
-
-# TODO tmp hack, remove later. Extnd with search methods
-# util.monkey_patch(Experiment, search.SMACSearch)
+        return self.data
 
 
 class EvolutionGraph:
