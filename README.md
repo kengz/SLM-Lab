@@ -20,7 +20,7 @@ _(Work In Progress)_ An experimentation framework for Reinforcement Learning usi
     ```shell
     source activate lab
     cd ..
-    git clone https://github.com/kengz/ml-agents.git
+    git clone https://github.com/Unity-Technologies/ml-agents.git
     cd ml-agents/python
     pip install -e .
     cd ../SLM-Lab/
