@@ -76,6 +76,8 @@ else
   conda create -n lab python=3.6 ipykernel -c conda-forge -c soumith -y
   source activate lab
   python -m ipykernel install --user --name lab
+  # Install pytorch 0.3.0 manually
+  pip install http://download.pytorch.org/whl/cpu/torch-0.3.0.post4-cp36-cp36m-linux_x86_64.whl
 fi
 
 # remove for reset:
@@ -85,6 +87,10 @@ fi
 echo "--- Updating Conda environment ---"
 conda env update -f environment.yml
 conda install -c soumith cuda80 # for CUDA8 on linux
+source activate lab
+# Install pytorch 0.3.0 manually
+pip install http://download.pytorch.org/whl/cpu/torch-0.3.0.post4-cp36-cp36m-linux_x86_64.whl
+source deactivate
 
 source ~/.bashrc
 echo "--- Lab setup complete ---"
