@@ -86,7 +86,6 @@ dependencies:
 - wheel=0.30.0=py36_2
 - xlrd=1.1.0=py_2
 - xz=5.2.3=0
-- yaml=0.1.7=0
 - zeromq=4.2.1=1
 - zlib=1.2.11=0
 - intel-openmp=2018.0.0=h8158457_8
