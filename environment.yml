@@ -1,7 +1,6 @@
 name: lab
 channels:
 - pytorch
-- soumith
 - conda-forge
 - defaults
 dependencies:
