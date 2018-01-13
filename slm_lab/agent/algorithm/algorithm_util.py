@@ -75,7 +75,7 @@ def act_with_boltzmann(body, state, net, tau):
     torch_state = Variable(torch.from_numpy(state).float())
     out = net.wrap_eval(torch_state)
     out_with_temp = torch.div(out, tau)
-    probs = F.softmax(out_with_temp).data.numpy()
+    probs = F.softmax(Variable(out_with_temp)).data.numpy()
     action = np.random.choice(list(range(body.action_dim)), p=probs)
     logger.debug('prob: {}, action: {}'.format(probs, action))
     return action
@@ -96,7 +96,7 @@ def multi_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
         tau: {t}, out: {out},
         out select: {out[start_idx: end_idx]},
         out with temp: {out_with_temp}''')
-        probs = F.softmax(out_with_temp).data.numpy()
+        probs = F.softmax(Variable(out_with_temp)).data.numpy()
         action = np.random.choice(list(range(body.action_dim)), p=probs)
         logger.debug(f'''
         body: {body.aeb}, net idx: {start_idx}-{end_idx}
@@ -118,7 +118,7 @@ def multi_head_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
     logger.debug(f'taus: {tau}, outs: {outs}, out_with_temp: {out_with_temp}')
     flat_nonan_action_a = []
     for body, output in zip(flat_nonan_body_a, out_with_temp):
-        probs = F.softmax(output).data.numpy()[0]
+        probs = F.softmax(Variable(output)).data.numpy()[0]
         action = np.random.choice(list(range(body.action_dim)), p=probs)
         logger.debug(f'''
         body: {body.aeb}, output: {output},
