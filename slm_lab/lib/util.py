@@ -17,7 +17,7 @@ import yaml
 
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
-PARALLEL_PROCESS_NUM = mp.cpu_count()
+CPU_NUM = mp.cpu_count()
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 RE_INDENT = re.compile('(^\n)|(?!\n)\s{2,}|(\n\s+)$')
 SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
@@ -378,7 +378,7 @@ def parallelize_fn(fn, args):
         # you can never be too safe in multiprocessing gc
         import gc
         gc.collect()
-    pool = mp.Pool(PARALLEL_PROCESS_NUM,
+    pool = mp.Pool(CPU_NUM,
                    initializer=pool_init, maxtasksperchild=1)
     results = pool.map(fn, args)
     pool.close()
