@@ -88,8 +88,8 @@ dependencies:
 - xz=5.2.3=0
 - zeromq=4.2.1=1
 - zlib=1.2.11=0
-- pytorch=0.3.0=py36_cuda0.0_cudnn0.0h57b1bc9_4
-- torchvision=0.2.0=py36hf5eb7ec_1
+- pytorch=0.3.0
+- torchvision=0.2.0
 - pip:
   - alabaster==0.7.10
   - atari-py==0.1.1
