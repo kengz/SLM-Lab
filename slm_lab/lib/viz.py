@@ -29,7 +29,8 @@ def plot(*args, **kwargs):
 
 
 def save_image(figure, filepath=None):
-    if os.environ.get('PY_ENV') == 'test':
+    # TODO tmp, switch back to == 'test' later when we have free plot
+    if os.environ.get('PY_ENV') != 'production':
         return
     if filepath is None:
         filepath = f"{PLOT_FILEDIR}/{_.get(figure, 'layout.title')}.png"

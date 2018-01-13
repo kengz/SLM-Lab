@@ -11,7 +11,7 @@ sudo add-apt-repository -y ppa:webupd8team/atom
 sudo apt-get update
 sudo apt-get install -y cmake gcc-4.9 g++-4.9 git
 sudo apt-get install -y libhdf5-dev libopenblas-dev
-sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig
+sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential
 
 echo "--- Installing Atom and Hydrogen for interactive computing ---"
 if which atom >/dev/null; then
@@ -72,8 +72,8 @@ if conda env list | grep "^lab " >/dev/null; then
   echo "conda env lab is already installed"
 else
   conda config --add channels conda-forge
-  conda config --add channels soumith
-  conda create -n lab python=3.6 ipykernel -c conda-forge -c soumith -y
+  conda config --add channels pytorch
+  conda create -n lab python=3.6 ipykernel -c conda-forge -c pytorch -y
   source activate lab
   python -m ipykernel install --user --name lab
 fi
@@ -84,7 +84,6 @@ fi
 # conda env export > environment.yml
 echo "--- Updating Conda environment ---"
 conda env update -f environment.yml
-conda install -c soumith cuda80 # for CUDA8 on linux
 
 source ~/.bashrc
 echo "--- Lab setup complete ---"

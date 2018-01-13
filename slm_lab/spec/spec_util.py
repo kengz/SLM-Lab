@@ -74,8 +74,8 @@ def check(spec):
     '''Check a single spec for validity'''
     try:
         spec_name = spec.get('name')
-        assert spec.keys() == SPEC_FORMAT.keys(
-        ), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
+        assert set(spec.keys()) >= set(SPEC_FORMAT.keys(
+        )), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
         for agent_spec in spec['agent']:
             check_comp_spec(agent_spec, SPEC_FORMAT['agent'][0])
         for env_spec in spec['env']:

@@ -83,14 +83,8 @@ class BrainExt:
         return observable_dim
 
 
-def extend_unity_brain():
-    '''Extend Unity BrainParameters class at runtime to add BrainExt methods'''
-    ext_fn_list = util.get_fn_list(BrainExt)
-    for fn in ext_fn_list:
-        setattr(BrainParameters, fn, getattr(BrainExt, fn))
-
-
-extend_unity_brain()
+# Extend Unity BrainParameters class at runtime to add BrainExt methods
+util.monkey_patch(BrainParameters, BrainExt)
 
 
 class OpenAIEnv:
