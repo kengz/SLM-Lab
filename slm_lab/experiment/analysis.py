@@ -36,12 +36,13 @@ def get_session_data(session):
             data_name: data_h_v[aeb] for data_name, data_h_v in data_h_v_dict.items()}
         # remove any incomplete session timesteps from tail (due to multienv termination)
         complete_done_h = np.trim_zeros(data_h_dict['done'], 'b')
+        data_len = len(complete_done_h)
         reset_idx = np.isnan(complete_done_h)
         nonreset_idx = ~reset_idx
         data_h_dict['t'] = np.ones(reset_idx.shape)
         data_h_dict['epi'] = reset_idx.astype(int).cumsum()
         mdp_df = pd.DataFrame({
-            data_name: data_h_dict[data_name][nonreset_idx]
+            data_name: data_h_dict[data_name][:data_len][nonreset_idx]
             for data_name in ['t', 'epi'] + data_names})
         aeb_df = mdp_df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
         aeb_df.reset_index(drop=False, inplace=True)
