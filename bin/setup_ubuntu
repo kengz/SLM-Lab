@@ -83,8 +83,9 @@ fi
 # conda env remove -n lab -y
 # conda env export > environment.yml
 echo "--- Updating Conda environment ---"
+conda install gxx_linux-64 gcc_linux-64 swig # for smac on linux
+conda install -c soumith cuda80 # for CUDA8 on linux gpu
 conda env update -f environment.yml
-conda install -c soumith cuda80 # for CUDA8 on linux
 
 source ~/.bashrc
 echo "--- Lab setup complete ---"
