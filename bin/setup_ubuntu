@@ -83,7 +83,6 @@ fi
 # conda env remove -n lab -y
 # conda env export > environment.yml
 echo "--- Updating Conda environment ---"
-conda install gxx_linux-64 gcc_linux-64 swig # for smac on linux
 conda env update -f environment.yml
 
 source ~/.bashrc

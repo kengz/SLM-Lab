@@ -64,7 +64,6 @@ jobs:
               python -m ipykernel install --user --name lab
             fi
             source activate lab
-            conda install gxx_linux-64 gcc_linux-64 swig
             conda env update -f environment.yml
 
             if pip list | grep "^unityagents " >/dev/null; then
