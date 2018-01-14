@@ -12,8 +12,15 @@ import pydash as _
 
 class ReinforceDiscrete(Algorithm):
     '''
-    TODO
+    Implementation of REINFORCE (Williams, 1992) with baseline for discrete actions http://www-anw.cs.umass.edu/~barto/courses/cs687/williams92simple.pdf
     Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
+    Algorithm:
+        1. At each timestep in an episode
+            - Calculate the advantage of that timestep
+            - Multiply the advantage by the negative of log probability of the action taken
+        2. Sum all the values above.
+        3. Calculate the gradient of this value with respect to all of the parameters of the network
+        4. Update the network parameters using the gradient
     '''
 
     def __init__(self, agent):
@@ -55,12 +62,11 @@ class ReinforceDiscrete(Algorithm):
         return batch
 
     def train(self):
-        # logger.debug(f'Train? {self.to_train}')
         if self.to_train == 1:
-            # Only care about the rewards
+            # We only care about the rewards from the batch
             rewards = self.sample()['rewards']
-            logger.debug(f'Length first epi: {len(rewards[0])}')
             advantage = self.calculate_advantage(rewards)
+            logger.debug(f'Length first epi: {len(rewards[0])}')
             logger.debug(f'Len log probs: {len(self.saved_log_probs)}')
             logger.debug(f'Len advantage: {advantage.size(0)}')
             if len(self.saved_log_probs) != advantage.size(0):
