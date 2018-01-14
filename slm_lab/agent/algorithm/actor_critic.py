@@ -12,8 +12,15 @@ import pydash as _
 
 class ACDiscrete(ReinforceDiscrete):
     '''
-    TODO
-    Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
+    Implementation of a simple actor-critic algorithm.
+    Algorithm:
+        1. Collect k examples
+            - Train the critic network using these examples
+            - Calculate the advantage of each example using the critic
+            - Multiply the advantage by the negative of log probability of the action taken
+        2. Sum all the values above.
+        3. Calculate the gradient of this value with respect to all of the parameters of the actor network
+        4. Update the actor network parameters using the gradient
     '''
 
     def post_body_init(self):
