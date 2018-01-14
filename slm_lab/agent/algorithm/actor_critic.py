@@ -21,6 +21,7 @@ class ACDiscrete(ReinforceDiscrete):
         2. Sum all the values above.
         3. Calculate the gradient of this value with respect to all of the parameters of the actor network
         4. Update the actor network parameters using the gradient
+    Separate networks with no shared parameters are used to approximate the actor and critic
     '''
 
     def post_body_init(self):
@@ -97,7 +98,8 @@ class ACDiscrete(ReinforceDiscrete):
 
     def calculate_advantage(self, batch):
         state_vals = self.critic.wrap_eval(batch['states']).squeeze_()
-        next_state_vals = self.critic.wrap_eval(batch['next_states']).squeeze_()
+        next_state_vals = self.critic.wrap_eval(
+            batch['next_states']).squeeze_()
         advantage = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), next_state_vals) - state_vals
         advantage.squeeze_()
@@ -129,3 +131,34 @@ class ACDiscrete(ReinforceDiscrete):
         self.saved_log_probs = []
         logger.debug(f'Policy loss: {loss}')
         return loss
+
+
+class ACDiscreteSimple(ACDiscrete):
+    '''
+    Implementation of a simple actor-critic algorithm.
+    Similar to ACDiscrete, but uses a different approach to calculating the advantage which follows
+    https://github.com/pytorch/examples/blob/master/reinforcement_learning/actor_critic.py
+    '''
+
+    def train_critic(self, batch):
+        loss = 0
+        rewards = []
+        raw_rewards = batch['rewards']
+        for r in raw_rewards[::-1]:
+            R = r + self.gamma * R
+            rewards.insert(0, R)
+        rewards = torch.Tensor(rewards)
+        rewards = (rewards - rewards.mean()) / \
+            (rewards.std() + np.finfo(np.float32).eps)
+        self.current_rewards = rewards
+        for _i in range(self.training_iters_per_batch):
+            y = Variable(rewards)
+            loss = self.critic.training_step(batch['states'], y).data[0]
+            logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
+        return loss
+
+    def calculate_advantage(self, batch):
+        critic_estimate = self.critic.wrap_eval(batch['states']).squeeze_()
+        advantage = self.current_rewards - critic_estimate
+        logger.debug(f'Advantage: {advantage.size()}')
+        return advantage
