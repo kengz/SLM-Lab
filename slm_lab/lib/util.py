@@ -5,6 +5,7 @@ import collections
 import colorlover as cl
 import json
 import math
+import multiprocessing as mp
 import numpy as np
 import os
 import pandas as pd
@@ -16,6 +17,7 @@ import yaml
 
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
+CPU_NUM = mp.cpu_count()
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 RE_INDENT = re.compile('(^\n)|(?!\n)\s{2,}|(\n\s+)$')
 SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
@@ -88,20 +90,22 @@ def dedent(string):
     return RE_INDENT.sub('', string)
 
 
-def flatten_dict(d, parent_key='', sep='.'):
+def flatten_dict(obj, delim='.'):
     '''Missing pydash method to flatten dict'''
-    items = []
-    for k, v in d.items():
-        if parent_key:
-            new_key = parent_key + sep + k
+    nobj = {}
+    for key, val in obj.items():
+        if _.is_dict(val) and not _.is_empty(val):
+            strip = flatten_dict(val, delim)
+            for k, v in strip.items():
+                nobj[key + delim + k] = v
+        elif _.is_list(val) and not _.is_empty(val) and _.is_dict(val[0]):
+            for idx, v in enumerate(val):
+                nobj[key + delim + str(idx)] = v
+                if _.is_object(v):
+                    nobj = flatten_dict(nobj, delim)
         else:
-            new_key = k
-
-        if isinstance(v, collections.MutableMapping):
-            items.extend(flatten_dict(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
+            nobj[key] = val
+    return nobj
 
 
 def filter_nonan(arr):
@@ -179,14 +183,14 @@ def get_file_ext(data_path):
     return os.path.splitext(data_path)[-1]
 
 
-def get_fn_list(Cls):
+def get_fn_list(a_cls):
     '''
     Get the callable, non-private functions of a class
     @returns {[*str]} A list of strings of fn names
     '''
     fn_list = _.filter_(
-        dir(Cls),
-        lambda fn: not fn.endswith('__') and callable(getattr(Cls, fn)))
+        dir(a_cls),
+        lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
     return fn_list
 
 
@@ -347,6 +351,13 @@ def is_sub_dict(sub_dict, super_dict):
     return True
 
 
+def monkey_patch(base_cls, extend_cls):
+    '''Monkey patch a base class with methods from extend_cls'''
+    ext_fn_list = get_fn_list(extend_cls)
+    for fn in ext_fn_list:
+        setattr(base_cls, fn, getattr(extend_cls, fn))
+
+
 def ndenumerate_nonan(arr):
     '''Generic ndenumerate for np.ndenumerate with only not gen_isnan values'''
     return (idx_v for idx_v in np.ndenumerate(arr) if not gen_isnan(idx_v[1]))
@@ -355,6 +366,24 @@ def ndenumerate_nonan(arr):
 def nonan_all(v):
     '''Generic np.all that also returns false if array is all np.nan'''
     return bool(np.all(v) and ~np.all(np.isnan(v)))
+
+
+def parallelize_fn(fn, args):
+    '''
+    Parallelize a method fn, args and return results with order preserved per args.
+    fn should take only a single arg.
+    @returns {list} results Order preserved output from fn.
+    '''
+    def pool_init():
+        # you can never be too safe in multiprocessing gc
+        import gc
+        gc.collect()
+    pool = mp.Pool(CPU_NUM,
+                   initializer=pool_init, maxtasksperchild=1)
+    results = pool.map(fn, args)
+    pool.close()
+    pool.join()
+    return results
 
 
 def read(data_path, **kwargs):

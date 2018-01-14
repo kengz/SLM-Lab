@@ -1,112 +1,157 @@
 name: lab
 channels:
-- soumith
+- pytorch
 - conda-forge
 - defaults
 dependencies:
 - apipkg=1.4=py36_0
-- autopep8=1.3.2=py36_0
-- backports=1.0=py36_1
-- backports.functools_lru_cache=1.4=py36_1
+- asn1crypto=0.22.0=py36_0
+- attrs=17.4.0=py_0
+- autopep8=1.3.3=py_0
 - blas=1.1=openblas
-- ca-certificates=2017.7.27.1=0
-- certifi=2017.7.27.1=py36_0
-- cffi=1.10.0=py36_0
-- cloudpickle=0.4.0=py36_0
+- ca-certificates=2017.11.5=0
+- certifi=2017.11.5=py36_0
+- cffi=1.11.2=py36_0
+- chardet=3.0.4=py36_0
 - colorlog=3.1.0=py36_0
-- coverage=4.4.1=py36_0
-- cycler=0.10.0=py36_0
+- coverage=4.4.2=py36_0
+- cryptography=2.1.4=py36_0
+- cython=0.27.3=py36_0
 - decorator=4.1.2=py36_0
-- docopt=0.6.2=py36_0
 - et_xmlfile=1.0.1=py36_0
 - execnet=1.5.0=py_0
-- freetype=2.7=1
-- ipykernel=4.6.1=py36_0
-- ipython=6.2.1=py36_0
+- flaky=3.4.0=py_0
+- freetype=2.8.1=0
+- hdf5=1.10.1=1
+- idna=2.6=py36_1
+- ipykernel=4.7.0=py36_0
+- ipython=6.2.1=py36_1
 - ipython_genutils=0.2.0=py36_0
-- isort=4.2.15=py36_0
 - jdcal=1.3=py36_0
 - jedi=0.10.2=py36_0
-- jpeg=9b=1
-- jsonschema=2.6.0=py36_0
-- jupyter_client=5.1.0=py36_0
-- jupyter_core=4.3.0=py36_0
+- jpeg=9b=2
+- jupyter_client=5.2.1=py36_0
+- jupyter_core=4.4.0=py_0
 - libffi=3.2.1=3
-- libpng=1.6.28=0
-- libsodium=1.0.10=0
-- libtiff=4.0.6=7
-- matplotlib=2.1.0=py36_0
-- nbformat=4.4.0=py36_0
+- libpng=1.6.34=0
+- libsodium=1.0.15=1
+- libtiff=4.0.9=0
 - ncurses=5.9=10
+- numpy=1.14.0=py36_blas_openblas_200
 - olefile=0.44=py36_0
+- openblas=0.2.20=6
 - openpyxl=2.5.0b1=py36_0
-- openssl=1.0.2l=0
-- pandas=0.21.0=py36_0
-- pexpect=4.2.1=py36_0
+- openssl=1.0.2n=0
+- pandas=0.22.0=py36_0
+- pexpect=4.3.1=py36_0
 - pickleshare=0.7.4=py36_0
-- pillow=4.3.0=py36_0
-- pip=9.0.1=py36_0
+- pillow=5.0.0=py36_0
+- pip=9.0.1=py36_1
+- plotly=2.2.3=py36_0
+- pluggy=0.6.0=py_0
 - prompt_toolkit=1.0.15=py36_0
 - ptyprocess=0.5.2=py36_0
-- py=1.4.34=py36_0
+- py=1.5.2=py_0
 - pycodestyle=2.3.1=py36_0
 - pycparser=2.18=py36_0
+- pydash=4.2.1=py_0
 - pygments=2.2.0=py36_0
-- pyparsing=2.2.0=py36_0
-- pytest=3.2.3=py36_0
+- pyopenssl=17.4.0=py36_0
+- pysocks=1.6.7=py36_0
+- pytest=3.3.2=py36_0
 - pytest-cov=2.5.1=py36_0
 - pytest-forked=0.2=py36_0
-- pytest-xdist=1.20.1=py_0
-- python=3.6.2=0
+- pytest-timeout=1.2.1=py_0
+- pytest-xdist=1.22.0=py_0
+- python=3.6.4=0
 - python-dateutil=2.6.1=py36_0
-- pytz=2017.2=py36_0
+- pytz=2017.3=py_2
 - pyyaml=3.12=py36_1
-- pyzmq
-- readline=6.2=0
-- regex=2017.09.23=py36_0
-- setuptools=36.3.0=py36_0
+- pyzmq=16.0.2=py36_3
+- readline=7.0=0
+- regex=2017.12.12=py36_0
+- requests=2.18.4=py36_1
+- scipy=1.0.0=py36_blas_openblas_201
+- setuptools=38.4.0=py36_0
 - simplegeneric=0.8.1=py36_0
 - six=1.11.0=py36_1
-- sqlite=3.13.0=1
-- statsmodels=0.8.0=py36_0
-- tk=8.5.19=2
-- tornado=4.5.2=py36_0
+- sqlite=3.20.1=2
+- swig=3.0.12
+- tk=8.6.7=0
+- tornado=4.5.3=py36_0
 - traitlets=4.3.2=py36_0
 - ujson=1.35=py36_0
+- urllib3=1.22=py36_0
 - wcwidth=0.1.7=py36_0
-- wheel
-- xlrd=1.1.0
+- wheel=0.30.0=py36_2
+- xlrd=1.1.0=py_2
 - xz=5.2.3=0
-- yaml=0.1.6=0
 - zeromq=4.2.1=1
-- zlib=1.2.8=3
-- mkl=2017.0.3=0
-- numpy=1.13.1=py36_0
-- plotly=2.0.11=py36_0
-- requests=2.14.2=py36_0
-- scipy=0.19.1=np113py36_0
-- pytorch=0.2.0
-- torchvision=0.1.9
+- zlib=1.2.11=0
+- pytorch=0.3.0
+- torchvision=0.2.0
 - pip:
-  - backports.functools-lru-cache==1.4
+  - alabaster==0.7.10
+  - atari-py==0.1.1
+  - babel==2.5.1
   - bleach==1.5.0
   - box2d-kengz==2.3.3
   - colorlover==0.2.1
+  - configspace==0.4.3
+  - cycler==0.10.0
+  - docopt==0.6.2
+  - docutils==0.14
+  - entrypoints==0.2.3
   - et-xmlfile==1.0.1
-  - gym[all]==0.9.4
-  - flaky==3.4.0
+  - future==0.16.0
+  - gym==0.9.4
   - html5lib==0.9999999
+  - imageio==2.2.0
+  - imagesize==0.7.1
   - ipython-genutils==0.2.0
+  - ipywidgets==7.1.0
+  - jinja2==2.10
+  - joblib==0.11
+  - jsonschema==2.6.0
   - jupyter==1.0.0
-  - jupyter-client==5.1.0
+  - jupyter-client==5.2.1
   - jupyter-console==5.2.0
-  - jupyter-core==4.3.0
-  - markdown==2.6.9
+  - jupyter-core==4.4.0
+  - keras==2.1.2
+  - markdown==2.6.11
+  - markupsafe==1.0
+  - matplotlib==2.1.1
+  - mistune==0.8.3
+  - mock==2.0.0
+  - mujoco-py==0.5.7
+  - nbconvert==5.3.1
+  - nbformat==4.4.0
+  - notebook==5.2.2
+  - pachi-py==0.0.21
+  - pandocfilters==1.4.2
+  - pbr==3.1.1
   - prompt-toolkit==1.0.15
-  - protobuf==3.4.0
-  - pydash==4.2.1
-  - pyramid-arima==0.6.2
+  - protobuf==3.5.1
+  - psutil==5.4.3
+  - pyglet==1.3.0
+  - pynisher==0.4.2
+  - pyopengl==3.1.0
+  - pyparsing==2.2.0
+  - pyrfr==0.7.3
   - qtconsole==4.3.1
-  - tensorflow==1.3.0
-  # - torch==0.2.0
-  - werkzeug==0.12.2
+  - scikit-learn==0.19.1
+  - smac==0.8.0
+  - snowballstemmer==1.2.1
+  - sphinx==1.6.6
+  - sphinx-rtd-theme==0.2.4
+  - sphinxcontrib-websupport==1.0.1
+  - tensorflow==1.5.0rc0
+  - tensorflow-tensorboard==0.1.8
+  - terminado==0.8.1
+  - testpath==0.3.1
+  - theano==1.0.1
+  - torch==0.3.0.post4
+  - typing==3.6.2
+  - unityagents==0.2.0
+  - werkzeug==0.14.1
+  - widgetsnbextension==3.1.0

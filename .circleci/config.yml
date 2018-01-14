@@ -23,7 +23,7 @@ jobs:
       - run:
           name: Install apt-get packages for gym
           command: |
-            sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig
+            sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential
 
       - run:
           name: Install NodeJS dependencies
@@ -58,8 +58,8 @@ jobs:
               echo "conda env lab is already installed"
             else
               conda config --add channels conda-forge
-              conda config --add channels soumith
-              conda create -n lab python=3.6 ipykernel -c conda-forge -c soumith -y
+              conda config --add channels pytorch
+              conda create -n lab python=3.6 ipykernel -c conda-forge -c pytorch -y
               source activate lab
               python -m ipykernel install --user --name lab
             fi
@@ -104,7 +104,7 @@ jobs:
       - run:
           name: Install apt-get packages for gym
           command: |
-            sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig
+            sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential
       - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:
           name: Run Python tests

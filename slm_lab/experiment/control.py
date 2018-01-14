@@ -4,7 +4,7 @@ Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Se
 '''
 from slm_lab.agent import AgentSpace
 from slm_lab.env import EnvSpace
-from slm_lab.experiment import analysis
+from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import info_space, AEBSpace
 from slm_lab.lib import logger, util, viz
 import numpy as np
@@ -24,8 +24,7 @@ class Session:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.df = None
-        self.fitness_df = None
+        self.data = None
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
@@ -61,9 +60,9 @@ class Session:
 
     def run(self):
         self.run_all_episodes()
-        self.df, self.fitness_df = analysis.analyze_session(self)
+        self.data = analysis.analyze_session(self)  # session fitness
         self.close()
-        return self.df, self.fitness_df
+        return self.data
 
 
 class Trial:
@@ -78,27 +77,23 @@ class Trial:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.session_df_dict = {}
-        self.session_fitness_df_dict = {}
-        self.df = None
-        self.fitness_df = None
-        self.session = None
+        self.session_data_dict = {}
+        self.data = None
 
-    def init_session(self):
-        self.session = Session(self.spec)
-        return self.session
+    def init_session_and_run(self, session_id):
+        return Session(self.spec).run()
 
     def close(self):
         logger.info('Trial done, closing.')
 
     def run(self):
-        for s in range(_.get(self.spec, 'meta.max_session')):
-            logger.debug(f'session {s}')
-            (self.session_df_dict[s], self.session_fitness_df_dict[s]
-             ) = self.init_session().run()
-        self.df, self.fitness_df = analysis.analyze_trial(self)
+        session_ids = list(range(self.spec['meta']['max_session']))
+        session_datas = util.parallelize_fn(
+            self.init_session_and_run, session_ids)
+        self.session_data_dict = dict(zip(session_ids, session_datas))
+        self.data = analysis.analyze_trial(self)
         self.close()
-        return self.df, self.fitness_df
+        return self.data
 
 
 class Experiment:
@@ -119,27 +114,24 @@ class Experiment:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
-        self.trial_df_dict = {}
-        self.trial_fitness_df_dict = {}
-        self.df = None
-        self.fitness_df = None
-        self.trial = None
+        self.trial_data_dict = {}
+        self.best_spec = None
+        self.data = None
+        # TODO generalize to take different search algo
+        SearchClass = getattr(search, 'SMACSearch')
+        self.search = SearchClass(self)
 
-    def init_trial(self):
-        self.trial = Trial(self.spec)
-        return self.trial
+    def init_trial_and_run(self, spec):
+        return Trial(spec).run()
 
     def close(self):
         logger.info('Experiment done, closing.')
 
     def run(self):
-        for t in range(_.get(self.spec, 'meta.max_trial')):
-            logger.debug(f'trial {t}')
-            (self.trial_df_dict[t], self.trial_fitness_df_dict[t]
-             ) = self.init_trial().run()
-        self.df, self.fitness_df = analysis.analyze_experiment(self)
+        self.best_spec, self.trial_data_dict = self.search.run()
+        self.data = analysis.analyze_experiment(self)
         self.close()
-        return self.df, self.fitness_df
+        return self.data
 
 
 class EvolutionGraph:

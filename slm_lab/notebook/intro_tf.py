@@ -91,7 +91,7 @@ W = tf.Variable(tf.zeros([784, 10]))
 b = tf.Variable(tf.zeros([10]))
 # y = tf.softmax(tf.matmul(x, W) + b)
 ylogits = tf.matmul(x, W) + b
-y = tf.nn.softmax(ylogits)
+y = tf.nn.softmax(ylogits, dim=0)
 
 y_ = tf.placeholder(tf.float32, [None, 10])
 cross_entropy = tf.reduce_mean(
