@@ -86,8 +86,6 @@ else
   conda create -n lab python=3.6 ipykernel -c conda-forge -c pytorch -y
   source activate lab
   python -m ipykernel install --user --name lab
-  # Install pytorch 0.3.0 manually
-  pip install http://download.pytorch.org/whl/torch-0.3.0.post4-cp36-cp36m-macosx_10_7_x86_64.whl
 fi
 
 # remove for reset:
@@ -96,10 +94,6 @@ fi
 # conda env export > environment.yml
 echo "--- Updating Conda environment ---"
 conda env update -f environment.yml
-source activate lab
-# Install pytorch 0.3.0 manually
-pip install http://download.pytorch.org/whl/torch-0.3.0.post4-cp36-cp36m-macosx_10_7_x86_64.whl
-source deactivate
 
 source ~/.bash_profile
 echo "--- Lab setup complete ---"
