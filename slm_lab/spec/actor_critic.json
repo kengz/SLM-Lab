@@ -3,7 +3,7 @@
     "agent": [{
       "name": "ActorCritic",
       "algorithm": {
-        "name": "ACDiscrete",
+        "name": "ACDiscreteSimple",
         "action_policy": "softmax",
         "gamma": 0.999,
         "training_frequency": 8,

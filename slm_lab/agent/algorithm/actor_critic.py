@@ -149,12 +149,16 @@ class ACDiscreteSimple(ACDiscrete):
             R = r + self.gamma * R
             rewards.insert(0, R)
         rewards = torch.Tensor(rewards)
-        rewards = (rewards - rewards.mean()) / \
-            (rewards.std() + np.finfo(np.float32).eps)
+        if rewards.size(0) == 1:
+            logger.info("Rewards of length one, no need to normalize")
+        else:
+            rewards = (rewards - rewards.mean()) / \
+                (rewards.std() + np.finfo(np.float32).eps)
         self.current_rewards = rewards
         for _i in range(self.training_iters_per_batch):
             y = Variable(rewards)
             loss = self.critic.training_step(batch['states'], y).data[0]
+            logger.debug(f'Normalized rewards: {y.data}')
             logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss
 
