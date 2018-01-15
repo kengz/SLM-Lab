@@ -4,7 +4,7 @@ Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Se
 '''
 from slm_lab.agent import AgentSpace
 from slm_lab.env import EnvSpace
-# from slm_lab.experiment import analysis, search
+from slm_lab.experiment import analysis, search
 from slm_lab.experiment import analysis
 from slm_lab.experiment.monitor import info_space, AEBSpace
 from slm_lab.lib import logger, util, viz
