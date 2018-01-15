@@ -1,11 +1,15 @@
 '''
 Functions used by more than one algorithm
 '''
+
+from copy import deepcopy
 from slm_lab.lib import logger, util
 from torch.autograd import Variable
 import numpy as np
 import torch
 import torch.nn.functional as F
+from torch.autograd import Variable
+from torch.distributions import Categorical
 
 
 def act_with_epsilon_greedy(body, state, net, epsilon):
@@ -127,6 +131,18 @@ def multi_head_act_with_boltzmann(flat_nonan_body_a, state_a, net, tau):
     return flat_nonan_action_a
 
 
+# From https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
+def act_with_softmax(agent, state, net):
+    torch_state = Variable(torch.from_numpy(state).float())
+    out = net(torch_state)
+    probs = F.softmax(out, dim=0)
+    m = Categorical(probs)
+    action = m.sample()
+    logger.debug(f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
+    agent.saved_log_probs.append(m.log_prob(action))
+    return action.data[0]
+
+
 def act_with_gaussian(body, state, net, stddev):
     # TODO implement act_with_gaussian
     pass
@@ -168,8 +184,10 @@ act_fns = {
     'boltzmann': act_with_boltzmann,
     'multi_boltzmann': multi_act_with_boltzmann,
     'multi_head_boltzmann': multi_head_act_with_boltzmann,
-    'gaussian': act_with_gaussian
+    'gaussian': act_with_gaussian,
+    'softmax': act_with_softmax
 }
+
 
 act_update_fns = {
     'linear_decay': update_linear_decay,

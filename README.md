@@ -59,6 +59,34 @@ To run an experiment:
 - after completion, check `data/`. You should see `session_graph.png` and `experiment_graph.png`, along with accompanying data.
 - to kill stuck processes, run `yarn kill`. To reset, run `yarn reset`. More commands below.
 
+### To run implemented algorithms
+
+- all algorithm hyperparams are stored in a spec file in `slm_lab/spec` organized by algorithm
+- modify any desired parameters in the spec you want to run
+- modify `run_slm.py` so that your spec will run
+    ```shell
+    spec = spec_util.get('SPECFILENAME.json', 'specname')
+    ```
+- run one of the two commands in the terminal
+    ```shell
+    yarn start
+    ```
+    ```shell
+    python run_slm.py
+    ```
+
+
+### Tips
+
+If you experience package errors, try the following from the root of the SLM-Lab folder
+
+```bash
+git pull
+bin/setup
+```
+
+This will update all of the packages to the latest required versions.
+
 ### High Level `yarn` commands
 
 | Function | `command` |
