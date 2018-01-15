@@ -115,5 +115,5 @@ class ReinforceDiscrete(Algorithm):
 
     def update(self):
         '''No update needed'''
-        # TODO: fix return value when no explore var
-        return 1
+        explore_var = np.nan
+        return explore_var
