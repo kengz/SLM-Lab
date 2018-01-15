@@ -29,6 +29,18 @@
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false
+    },
+    "search": {
+      "agent": [{
+        "memory": {
+          "max_size_categorical": [1000, 10000]
+        }
+      }],
+      "env": [{
+        "unity": {
+          "gridSize__categorical": [6, 9]
+        }
+      }]
     }
   },
   "base_case_openai": {
