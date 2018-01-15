@@ -71,6 +71,8 @@ class ACDiscrete(ReinforceDiscrete):
     def train(self):
         if self.to_train == 1:
             batch = self.sample()
+            if len(batch['states']) < self.training_frequency:
+                logger.debug(f'Small batch, {len(batch["states"])}')
             critic_loss = self.train_critic(batch)
             actor_loss = self.train_actor(batch)
             total_loss = critic_loss + abs(actor_loss)
