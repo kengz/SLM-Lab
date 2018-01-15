@@ -35,6 +35,8 @@ class Body:
     def __init__(self, aeb, agent, env):
         self.aeb = aeb
         self.a, self.e, self.b = aeb
+        self.flat_nonan_a_idx = None
+        self.flat_nonan_e_idx = None
         self.agent = agent
         self.env = env
         self.observable_dim = self.env.get_observable_dim(self.a)
@@ -72,6 +74,8 @@ class Agent:
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         self.flat_nonan_body_a = util.flatten_nonan(self.body_a)
+        for idx, body in enumerate(self.flat_nonan_body_a):
+            body.flat_nonan_a_idx = idx
         self.algorithm.post_body_init()
         logger.info(util.self_desc(self))
 

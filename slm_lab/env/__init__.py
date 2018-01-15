@@ -108,6 +108,8 @@ class OpenAIEnv:
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
+        for idx, body in enumerate(self.flat_nonan_body_e):
+            body.flat_nonan_e_idx = idx
         logger.info(util.self_desc(self))
 
     def is_discrete(self, a):
@@ -210,6 +212,8 @@ class UnityEnv:
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
+        for idx, body in enumerate(self.flat_nonan_body_e):
+            body.flat_nonan_e_idx = idx
         self.check_u_brain_to_agent()
         logger.info(util.self_desc(self))
 
