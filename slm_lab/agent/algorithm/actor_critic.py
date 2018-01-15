@@ -73,9 +73,9 @@ class ACDiscrete(ReinforceDiscrete):
             batch = self.sample()
             critic_loss = self.train_critic(batch)
             actor_loss = self.train_actor(batch)
-            total_loss = critic_loss + actor_loss
+            total_loss = critic_loss + abs(actor_loss)
             logger.debug("Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}".format(
-                critic_loss, actor_loss, total_loss
+                critic_loss, abs(actor_loss), total_loss
             ))
             return total_loss
         else:
@@ -144,6 +144,7 @@ class ACDiscreteSimple(ACDiscrete):
         loss = 0
         rewards = []
         raw_rewards = batch['rewards']
+        R = 0
         for r in raw_rewards[::-1]:
             R = r + self.gamma * R
             rewards.insert(0, R)
@@ -162,3 +163,11 @@ class ACDiscreteSimple(ACDiscrete):
         advantage = self.current_rewards - critic_estimate
         logger.debug(f'Advantage: {advantage.size()}')
         return advantage
+
+    def sample(self):
+        '''Samples a batch from memory'''
+        batches = [body.memory.sample()
+                   for body in self.agent.flat_nonan_body_a]
+        batch = util.concat_dict(batches)
+        util.to_torch_batch_ex_rewards(batch)
+        return batch
