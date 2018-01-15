@@ -61,7 +61,7 @@ class SMACSearch:
         var_spec = cfg.get_dictionary()
         trial_fitness_df = self.experiment.init_trial_and_run(spec)
         # trial fitness already avg over sessions and bodies
-        fitness_vec = trial_fitness_df.loc[0].to_dict()
+        fitness_vec = trial_fitness_df.iloc[0].to_dict()
         fitness = analysis.calc_fitness(trial_fitness_df)
         cost = -fitness
         logger.info(
