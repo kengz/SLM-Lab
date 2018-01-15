@@ -1,0 +1,90 @@
+{
+  "actor_critic_spec_template": {
+    "agent": [{
+      "name": "ActorCritic",
+      "algorithm": {
+        "name": "ACDiscreteSimple",
+        "action_policy": "softmax",
+        "gamma": 0.999,
+        "training_frequency": 8,
+        "training_iters_per_batch": 3
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
+        "optim_actor": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "optim_critic": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "clamp_grad": false,
+        "clamp_grad_val": 1.0
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 2,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": true
+    }
+  },
+  "actor_critic_cartpole": {
+    "agent": [{
+      "name": "ActorCritic",
+      "algorithm": {
+        "name": "ACDiscrete",
+        "action_policy": "softmax",
+        "gamma": 0.999,
+        "training_frequency": 64,
+        "training_iters_per_batch": 8
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
+        "optim_actor": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "optim_critic": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "clamp_grad": false,
+        "clamp_grad_val": 10.0
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 250,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": true
+    }
+  }
+}

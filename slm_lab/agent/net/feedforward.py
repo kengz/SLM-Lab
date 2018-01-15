@@ -1,3 +1,4 @@
+from slm_lab.lib import logger
 from slm_lab.agent.net import net_util
 from torch.autograd import Variable
 import torch
@@ -101,6 +102,16 @@ class MLPNet(nn.Module):
     def print_nets(self):
         '''Prints entire network'''
         print(self.model)
+
+    def get_grad_norms(self):
+        '''Returns a list of the norm of the gradients for all parameters'''
+        norms = []
+        for i, param in enumerate(self.params):
+            grad_norm = torch.norm(param.grad.data)
+            if grad_norm is None:
+                logger.info(f'Param with None grad: {param}, layer: {i}')
+            norms.append(grad_norm)
+        return norms
 
 
 class MultiMLPNet(nn.Module):
