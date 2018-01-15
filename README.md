@@ -1,5 +1,5 @@
 # SLM Lab [![CircleCI](https://circleci.com/gh/kengz/SLM-Lab.svg?style=shield)](https://circleci.com/gh/kengz/SLM-Lab) [![Maintainability](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/maintainability)](https://codeclimate.com/github/kengz/SLM-Lab/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/test_coverage)](https://codeclimate.com/github/kengz/SLM-Lab/test_coverage)
-_(Work In Progress)_ An experimentation framework for Reinforcement Learning using Unity, OpenAI Gym, and PyTorch.
+_(Work In Progress)_ An experimentation framework for Deep Reinforcement Learning using Unity, OpenAI Gym, PyTorch, Tensorflow.
 
 ## Installation
 
@@ -35,32 +35,60 @@ _(Work In Progress)_ An experimentation framework for Reinforcement Learning usi
 
 ### Quickstart
 
-Once you're all set up, run the demo of `DQN` in `CartPole-v0`:
+Once you're all set up, run the demo of `VanillaDQN` in `CartPole-v0`:
 
 - see `slm_lab/spec/demo.json` for example spec.
-- run the following on terminal, in the repo directory:
+- check `run_slm.py` to run `demo.json` experiment `dqn_cartpole`. Run a `Trial` (no param search).
+- launch terminal in the repo directory, run:
     ```shell
     source activate lab
     yarn start
     ```
-- check the output for data `slm_lab/data/dqn_cartpole/`
+- It should render and run. After completion, check the output for data `data/dqn_cartpole/`
+
+### Experiment
+
+>This is still under development; will be improved in the coming releases.
+
+To run an experiment:
+
+- set up your spec in `spec/`, e.g. the `agent, env, body, meta, search` info. There's a spec checker to verify it is valid.
+- set `meta.train_mode` to `False` to render env to debug; set to `True` to run faster without rendering.
+- specify the name of your spec in `run_slm.py`, and if you wish to run `Experiment` instead of `Trial`. Note, you need to specify `search` in spec to run `Experiment`.
+- run `yarn start`
+- after completion, check `data/`. You should see `session_graph.png` and `experiment_graph.png`, along with accompanying data.
+- to kill stuck processes, run `yarn kill`. To reset, run `yarn reset`. More commands below.
 
 ### High Level `yarn` commands
 
 | Function | `command` |
 | :------------- | :------------- |
-| install SLM-Env Unity env and Lab dependencies | `yarn install` |
 | start the Lab | `yarn start` |
-| update dependency file | `yarn export-env` |
-| update environment | `yarn update-env` |
-| run tests | `yarn test` |
 | reset lab - clear data/ and log/ | `yarn reset` |
 | clear cache | `yarn clear` |
-| kill stuck Unity ports/processes | `yarn kill` |
+| kill stuck processes | `yarn kill` |
+| update dependency file | `yarn export-env` |
+| update environment | `yarn update-env` |
+| install SLM-Env Unity env and Lab dependencies | `yarn install` |
+| run tests | `yarn test` |
 
-## Notebook
+## Features
 
-The Lab uses interactive programming and lit workflow:
+This lab is for general deep reinforcement learning research, built with proper software engineering:
+
+- reusable components for fast experimentation
+- established baseline algorithms (in progress)
+- plugs in to OpenAI gym, Unity ml-agents environments
+- generalized multi-agent, multi-environment setup
+- auto hyperparameter search within experiment
+- standardized fitness vector to compare results
+- standardized benchmarking across algorithms and environments (coming next)
+- useful session and experiment graphs and data format
+- more experiments coming soon, e.g. multitask architecture, mutual information, mixed model-value-based learning, correspondence principle
+
+## Development
+
+The Lab uses interactive programming workflow:
 
 1.  Install [Atom text editor](https://atom.io/)
 2.  Install [Hydrogen for Atom](https://atom.io/packages/hydrogen) and [these other Atom packages optionally](https://gist.github.com/kengz/70c20a0cb238ba1fbb29cdfe402c6470#file-packages-json-L3)
@@ -72,11 +100,8 @@ The Lab uses interactive programming and lit workflow:
 5.  See `slm_lab/notebook/intro_unity.py` to see example of Unity environment usage
 6.  Start working from `slm_lab/notebook/`
 
-## Experiment
 
-_To be set up_
-
-## Unity Environment
+### Unity Environment
 
 The prebuilt Unity environments are released and versioned on [npmjs.com](https://www.npmjs.com/), under names `slm-env-{env_name}`, e.g. `slm-env-3dball`, `slm-env-gridworld`. To use, just install them via `yarn`: e.g. `yarn add slm-env-3dball`.
 
@@ -85,7 +110,7 @@ Check what env_name is available on the git branches of [SLM-Env](https://github
 For building and releasing Unity environments, refer to [README of SLM-Env](https://github.com/kengz/SLM-Env.git).
 
 
-## Agents-Environments-Bodies design
+### Agents-Environments-Bodies design
 
 Proper semantics yield better understanding; below lays out the Lab's generalized structure and relations of agents, bodies and environments.
 
@@ -132,7 +157,7 @@ In AEB space, We have the projections:
 
 In a general experiment with multiple bodies, with single or multiple agents and environments, each body instance can be marked with the 3D coordinate `(a,e,b)` in `AEB` space. Each body is also associated with the body-specific data: observables, actions, rewards, done flags. We can call these the data space, i.e. observable space, action space, reward space, etc.
 
-When controlling a session of experiment, execute the agent and environment logic as usual, but the singletons for AgentSpace and EnvSpace respectively. Internally, they shall produce the usual singleton data across all bodies at each point `(a,e,b)`. When passing the data around, simply flatten the data on the corresponding axis and spread the data. E.g. when passing new states from EnvSpace to AgentSpace, group `state(a,e,b)` for each `a` value and pass state(e,b)_a to the right agent `a`.
+When controlling a session of experiment, execute the agent and environment logic as usual, but the singletons for AgentSpace and EnvSpace respectively. Internally, they shall produce the usual singleton data across all bodies at each point `(a,e,b)`. When passing the data around, simply flatten the data on the corresponding axis and spread the data. E.g. when passing new states from EnvSpace to AgentSpace, group `state(a,e,b)` for each `a` value and pass `state(e,b)_a` to the right agent `a`.
 
 Hence, the experiment session loop generalizes directly from:
 ```
@@ -165,3 +190,7 @@ for t in range(self.env_space.max_timestep):
     if bool(done_space):
         break
 ```
+
+## Contributing
+
+If you're interested in using the lab, please reach out to the authors.
