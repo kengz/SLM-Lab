@@ -4,20 +4,11 @@ from slm_lab.spec import spec_util
 
 
 def main():
+    # TODO streamline to grunt from external in the next release
     # logger.set_level('DEBUG')
-    # spec = spec_util.get('dqn.json', 'dqn_cartpole')
-    # spec = spec_util.get('dqn.json', 'dqn_cartpole_cartpole')
-    # spec = spec_util.get('dqn.json', 'dqn_cartpole_multitask')
-    # spec = spec_util.get('dqn.json', 'dqn_cartpole_cartpole_cartpole')
-    # spec = spec_util.get('dqn.json', 'dqn_acrobot_cartpole')
-    # spec = spec_util.get('dqn.json', 'dqn_2dball_cartpole')
-    # spec = spec_util.get('dqn.json', 'dqn_cartpole_gridworld')
-    # spec = spec_util.get('reinforce.json', 'reinforce_spec_template')
-    # spec = spec_util.get('reinforce.json', 'reinforce_cartpole')
-    # spec = spec_util.get('actor_critic.json', 'actor_critic_spec_template')
-    spec = spec_util.get('actor_critic.json', 'actor_critic_cartpole')
-    # spec = spec_util.get('dqn.json', 'dqn_2dball_cartpole')
+    spec = spec_util.get('demo.json', 'dqn_cartpole')
     Trial(spec).run()
+    # spec = spec_util.get('dqn.json', 'dqn_cartpole')
     # Experiment(spec).run()
 
 

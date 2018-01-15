@@ -3,7 +3,7 @@ from slm_lab.experiment.control import Trial, Session
 import pytest
 
 
-@pytest.mark.skip(reason='TODO broken by parallelization')
+@pytest.mark.skip(reason='TODO broken by pytorch parallelization')
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('base.json', 'base_case'),
     ('base.json', 'base_case_openai'),
