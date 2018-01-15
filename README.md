@@ -62,8 +62,8 @@ To run an experiment:
 ### To run implemented algorithms
 
 - all algorithm hyperparams are stored in a spec file in `slm_lab/spec` organized by algorithm
-- modify any desired parameters in the spec you want to run
-- modify `run_slm.py` so that your spec will run
+- modify parameters in the relevant spec
+- modify `run_slm.py` to select your spec
     ```shell
     spec = spec_util.get('SPECFILENAME.json', 'specname')
     ```
@@ -71,10 +71,10 @@ To run an experiment:
     ```shell
     yarn start
     ```
+    or
     ```shell
     python run_slm.py
     ```
-
 
 ### Tips
 
