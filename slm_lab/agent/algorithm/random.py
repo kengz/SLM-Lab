@@ -13,7 +13,8 @@ class Random(Algorithm):
 
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
-        pass
+        self.flat_nonan_explore_var_a = [
+            np.nan] * len(self.agent.flat_nonan_body_a)
 
     def body_act_discrete(self, body, state):
         '''Random discrete action'''
@@ -30,5 +31,4 @@ class Random(Algorithm):
         return loss
 
     def update(self):
-        explore_var = np.nan
-        return explore_var
+        return self.flat_nonan_explore_var_a
