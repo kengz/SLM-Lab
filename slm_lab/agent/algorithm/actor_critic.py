@@ -28,7 +28,7 @@ class ACDiscrete(ReinforceDiscrete):
         '''Initializes the part of algorithm needing a body to exist first.'''
         self.init_nets()
         self.init_algo_params()
-        self.net.print_nets()  # Print the network architecture
+        self.actor.print_nets()  # Print the network architecture
         logger.info(util.self_desc(self))
 
     def init_nets(self):
@@ -65,6 +65,8 @@ class ACDiscrete(ReinforceDiscrete):
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.to_train = 0
+        self.flat_nonan_explore_var_a = [
+            np.nan] * len(self.agent.flat_nonan_body_a)
 
     def body_act_discrete(self, body, state):
         return self.action_policy(self, state, self.actor)

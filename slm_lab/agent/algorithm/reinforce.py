@@ -56,6 +56,8 @@ class ReinforceDiscrete(Algorithm):
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.to_train = 0
+        self.flat_nonan_explore_var_a = [
+            np.nan] * len(self.agent.flat_nonan_body_a)
 
     def body_act_discrete(self, body, state):
         return self.action_policy(self, state, self.net)
@@ -122,5 +124,4 @@ class ReinforceDiscrete(Algorithm):
 
     def update(self):
         '''No update needed'''
-        explore_var = np.nan
-        return explore_var
+        return self.flat_nonan_explore_var_a
