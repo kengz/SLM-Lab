@@ -132,10 +132,11 @@ class VanillaDQN(Algorithm):
             return np.nan
 
     def body_act_discrete(self, body, state):
-        ''' Selects and returns a discrete using the action policy'''
+        ''' Selects and returns a discrete action for body using the action policy'''
         return self.action_policy(body, state, self.net, self.flat_nonan_explore_var_a[body.flat_nonan_a_idx])
 
     def update_explore_var(self):
+        '''Updates the explore variables'''
         space_clock = util.s_get(self, 'aeb_space.clock')
         flat_nonan_explore_var_a = self.action_policy_update(self, space_clock)
         explore_var_a = self.flat_nonan_to_data_a(
@@ -143,7 +144,7 @@ class VanillaDQN(Algorithm):
         return explore_var_a
 
     def update(self):
-        '''Updates the explore variables'''
+        '''Update the agent after training'''
         return self.update_explore_var()
 
 
@@ -169,9 +170,6 @@ class DQNBase(VanillaDQN):
     state_dim: dimension of the state space
     action_dim: dimensions of the action space
     '''
-
-    def __init__(self, agent):
-        super(DQNBase, self).__init__(agent)
 
     def init_nets(self):
         '''Initialize networks'''
@@ -202,17 +200,14 @@ class DQNBase(VanillaDQN):
         self.polyak_weight = 0.0
 
     def compute_q_target_values(self, batch):
-        '''Computes the target Q values for a batch of experiences'''
+        '''Computes the target Q values for a batch of experiences. Note that the net references may differe based on algorithm.'''
         q_sts = self.net.wrap_eval(batch['states'])
         # Use act_select network to select actions in next state
-        # TODO parametrize usage of eval or target_net
-        # Depending on the algorithm this is either the current net or target net
         q_next_st_acts = self.online_net.wrap_eval(batch['next_states'])
         _val, q_next_acts = torch.max(q_next_st_acts, dim=1)
         logger.debug(f'Q next action: {q_next_acts.size()}')
         # Select q_next_st_maxs based on action selected in q_next_acts
         # Evaluate the action selection using the eval net
-        # Depending on the algorithm this is either the current net or target net
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         logger.debug(f'Q next_states: {q_next_sts.size()}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
@@ -291,9 +286,8 @@ class DoubleDQN(DQN):
 class MultitaskDQN(DQN):
     '''Simplest Multi-task DQN implementation. States and action dimensions are concatenated, and a single shared network is reponsible for processing concatenated states, and generating one action per environment from a single output layer.'''
 
-    def post_body_init(self):
-        super(MultitaskDQN, self).post_body_init()
-        '''Re-initialize nets with multi-task dimensions'''
+    def init_nets(self):
+        '''Initialize nets with multi-task dimensions, and set net params'''
         self.state_dims = [
             body.state_dim for body in self.agent.flat_nonan_body_a]
         self.action_dims = [
@@ -315,7 +309,9 @@ class MultitaskDQN(DQN):
         )
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        logger.info(util.self_desc(self))
+        util.set_attr(self, _.pick(net_spec, [
+            'batch_size', 'update_type', 'update_frequency', 'polyak_weight',
+        ]))
 
     def sample(self):
         # NOTE the purpose of multi-body is to parallelize and get more batch_sizes
@@ -409,9 +405,9 @@ class MultitaskDQN(DQN):
 class MultiHeadDQN(MultitaskDQN):
     '''Multi-task DQN with separate state and action processors per environment'''
 
-    def post_body_init(self):
-        '''Initialize nets and algorithm with multi-task dimensions'''
-        # NOTE Separate init to MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
+    def init_nets(self):
+        '''Initialize nets with multi-task dimensions, and set net params'''
+        # NOTE: Separate init from MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
         net_spec = self.agent.spec['net']
         if len(net_spec['hid_layers']) > 0:
             state_head_out_d = int(net_spec['hid_layers'][0] / 4)
@@ -441,13 +437,9 @@ class MultiHeadDQN(MultitaskDQN):
         )
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        self.batch_size = net_spec['batch_size']
-        self.update_type = net_spec['update_type']
-        self.update_frequency = net_spec['update_frequency']
-        self.polyak_weight = net_spec['polyak_weight']
-        # Initialize other algorithm parameters
-        self.init_non_net_algo_params()
-        logger.info(util.self_desc(self))
+        util.set_attr(self, _.pick(net_spec, [
+            'batch_size', 'update_type', 'update_frequency', 'polyak_weight',
+        ]))
 
     def sample(self):
         '''Samples one batch per environment'''
@@ -536,8 +528,8 @@ class MultiHeadDQN(MultitaskDQN):
                     if batch_losses is None:
                         batch_losses = losses
                     else:
-                        batch_losses = [sum(x)
-                                        for x in zip(batch_losses, losses)]
+                        batch_losses = [
+                            sum(x) for x in zip(batch_losses, losses)]
                 batch_loss /= self.training_iters_per_batch
                 batch_losses = [
                     float(x) / self.training_iters_per_batch for x in batch_losses]
@@ -545,8 +537,8 @@ class MultiHeadDQN(MultitaskDQN):
                 if total_losses is None:
                     total_losses = batch_losses
                 else:
-                    total_losses = [sum(x)
-                                    for x in zip(total_losses, batch_losses)]
+                    total_losses = [
+                        sum(x) for x in zip(total_losses, batch_losses)]
             total_loss /= self.training_epoch
             total_losses = [
                 float(x) / self.training_epoch for x in total_losses]

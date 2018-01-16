@@ -127,7 +127,7 @@
       }]
     }
   },
-  "dqn_cartpole_multitask": {
+  "multitask_dqn_cartpole": {
     "agent": [{
       "name": "MultitaskDQN",
       "algorithm": {
@@ -178,7 +178,7 @@
       "train_mode": true
     }
   },
-  "dqn_cartpole_cartpole": {
+  "multihead_dqn_cartpole": {
     "agent": [{
       "name": "MultiHeadDQN",
       "algorithm": {
@@ -229,7 +229,7 @@
       "train_mode": true
     }
   },
-  "dqn_cartpole_cartpole_cartpole": {
+  "multihead_dqn_cartpole_x3": {
     "agent": [{
       "name": "MultiHeadDQN",
       "algorithm": {
