@@ -15,9 +15,10 @@ def lab_api(fn):
     '''
     @wraps(fn)
     def check_api(*args, **kwargs):
-        res = fn(*args, **kwargs)
-        logger.debug('API method')
-        return res
+        # TODO name-based data check for api methods
+        output = fn(*args, **kwargs)
+        logger.debug(f'API method: {fb.__name__}, output: {output}')
+        return output
     return check_api
 
 
@@ -39,9 +40,9 @@ def timeit(fn):
     @wraps(fn)
     def time_fn(*args, **kwargs):
         start = time.time()
-        res = fn(*args, **kwargs)
+        output = fn(*args, **kwargs)
         end = time.time()
         logger.debug(
             f'Timed: {fn.__name__} {round((end - start) * 1000, 4)}ms')
-        return res
+        return output
     return time_fn
