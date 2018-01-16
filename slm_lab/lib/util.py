@@ -69,6 +69,11 @@ def cast_list(val):
         return [val]
 
 
+def compact_dict(d):
+    '''Return dict without None or np.nan values'''
+    return {k: v for k, v in d.items() if not gen_isnan(v)}
+
+
 def concat_dict(d_list):
     '''Concatenate all the dicts by their array values'''
     cat_dict = {}
@@ -636,5 +641,5 @@ def to_torch_nested_batch(batch):
       Except rewards which remain as a nested list'''
     float_data_names = ['states', 'actions', 'dones', 'next_states']
     for k in float_data_names:
-            batch[k] = [Variable(torch.from_numpy(x).float()) for x in batch[k]]
+        batch[k] = [Variable(torch.from_numpy(x).float()) for x in batch[k]]
     return batch

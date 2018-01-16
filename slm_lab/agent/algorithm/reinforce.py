@@ -36,14 +36,15 @@ class ReinforceDiscrete(Algorithm):
         state_dim = body.state_dim
         action_dim = body.action_dim
         net_spec = self.agent.spec['net']
-        self.net = getattr(net, net_spec['type'])(
-            state_dim, net_spec['hid_layers'], action_dim,
+        net_kwargs = util.compact_dict(dict(
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-        )
+        ))
+        self.net = getattr(net, net_spec['type'])(
+            state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
 
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
