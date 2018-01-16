@@ -17,14 +17,13 @@ class VanillaDQN(Algorithm):
     '''
 
     def __init__(self, agent):
-        super(VanillaDQN, self).__init__(agent)
         '''
         After initialization VanillaDQN has an attribute self.agent which contains a reference to the entire Agent acting in the environment.
         Agent components:
             - algorithm (with a net: neural network function approximator, and a policy: how to act in the environment). One algorithm per agent, shared across all bodies of the agent
             - memory (one per body)
         '''
-        logger.info(f'Torch random seed: {torch.initial_seed()}')
+        super(VanillaDQN, self).__init__(agent)
 
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
