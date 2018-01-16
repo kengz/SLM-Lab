@@ -55,7 +55,8 @@ class VanillaDQN(Algorithm):
         # explore var start, end, and anneal_epi control the trade off between exploration and exploitaton
         self.explore_var_start = algorithm_spec['explore_var_start']
         self.explore_var_end = algorithm_spec['explore_var_end']
-        self.explore_var = self.explore_var_start
+        self.flat_nonan_explore_var_a = [
+            self.explore_var_start] * len(self.agent.flat_nonan_body_a)
         self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
         self.gamma = algorithm_spec['gamma']  # the discount rate
         # self.training_min_timestep: how long to wait before starting training
@@ -131,13 +132,18 @@ class VanillaDQN(Algorithm):
 
     def body_act_discrete(self, body, state):
         ''' Selects and returns a discrete using the action policy'''
-        return self.action_policy(body, state, self.net, self.explore_var)
+        return self.action_policy(body, state, self.net, self.flat_nonan_explore_var_a[body.flat_nonan_a_idx])
+
+    def update_explore_var(self):
+        space_clock = util.s_get(self, 'aeb_space.clock')
+        flat_nonan_explore_var_a = self.action_policy_update(self, space_clock)
+        explore_var_a = self.flat_nonan_to_data_a(
+            'explore_var', flat_nonan_explore_var_a)
+        return explore_var_a
 
     def update(self):
         '''Updates the explore variables'''
-        space_clock = util.s_get(self, 'aeb_space.clock')
-        self.action_policy_update(self, space_clock)
-        return self.explore_var
+        return self.update_explore_var()
 
 
 class DQNBase(VanillaDQN):
@@ -206,7 +212,8 @@ class DQNBase(VanillaDQN):
         # explore_var is epsilon, tau or etc.
         self.explore_var_start = algorithm_spec['explore_var_start']
         self.explore_var_end = algorithm_spec['explore_var_end']
-        self.explore_var = self.explore_var_start
+        self.flat_nonan_explore_var_a = [
+            self.explore_var_start] * len(self.agent.flat_nonan_body_a)
         self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
         self.gamma = algorithm_spec['gamma']
         # These parameter control how often and how much to train
@@ -257,7 +264,10 @@ class DQNBase(VanillaDQN):
 
     def update_explore_var(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
-        self.action_policy_update(self, space_clock)
+        flat_nonan_explore_var_a = self.action_policy_update(self, space_clock)
+        explore_var_a = self.flat_nonan_to_data_a(
+            'explore_var', flat_nonan_explore_var_a)
+        return explore_var_a
 
     def update_nets(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
@@ -282,9 +292,8 @@ class DQNBase(VanillaDQN):
 
     def update(self):
         '''Updates self.target_net and the explore variables'''
-        self.update_explore_var()
         self.update_nets()
-        return self.explore_var
+        return self.update_explore_var()
 
 
 class DQN(DQNBase):
@@ -320,8 +329,8 @@ class DoubleDQN(DQNBase):
         self.polyak_weight = net_spec['polyak_weight']
         logger.info(util.self_desc(self))
 
-    def update(self):
-        super(DoubleDQN, self).update()
+    def update_nets(self):
+        res = super(DoubleDQN, self).update_nets()
         space_clock = util.s_get(self, 'aeb_space.clock')
         t = space_clock.get('t')
         if self.update_type == 'replace':
@@ -331,7 +340,6 @@ class DoubleDQN(DQNBase):
         elif self.update_type == 'polyak':
             self.online_net = self.net
             self.eval_net = self.target_net
-        return self.explore_var
 
 
 class MultitaskDQN(DQN):
@@ -365,7 +373,6 @@ class MultitaskDQN(DQN):
         )
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        self.explore_var = [self.explore_var_start] * len(self.agent.flat_nonan_body_a)
         logger.info(util.self_desc(self))
 
     def sample(self):
@@ -452,14 +459,9 @@ class MultitaskDQN(DQN):
     def act(self, state_a):
         '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
         flat_nonan_action_a = self.action_policy(
-            self.agent.flat_nonan_body_a, state_a, self.net, self.explore_var)
-        return super(MultitaskDQN, self).flat_nonan_to_action_a(flat_nonan_action_a)
-
-    def update_explore_var(self):
-        self.action_policy_update(self, self.agent.flat_nonan_body_a)
-
-    def update(self):
-        return super(MultitaskDQN, self).update()[0]
+            self.agent.flat_nonan_body_a, state_a, self.net, self.flat_nonan_explore_var_a)
+        action_a = self.flat_nonan_to_data_a('action', flat_nonan_action_a)
+        return action_a
 
 
 class MultiHeadDQN(MultitaskDQN):
@@ -479,8 +481,10 @@ class MultiHeadDQN(MultitaskDQN):
             [body.action_dim] for body in self.agent.flat_nonan_body_a]
         self.total_state_dim = sum([s[0] for s in self.state_dims])
         self.total_action_dim = sum([a[0] for a in self.action_dims])
-        logger.debug(f'State dims: {self.state_dims}, total: {self.total_state_dim}')
-        logger.debug(f'Action dims: {self.action_dims}, total: {self.total_action_dim}')
+        logger.debug(
+            f'State dims: {self.state_dims}, total: {self.total_state_dim}')
+        logger.debug(
+            f'Action dims: {self.action_dims}, total: {self.total_action_dim}')
         self.net = getattr(net, net_spec['type'])(
             self.state_dims, net_spec['hid_layers'], self.action_dims,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -502,7 +506,6 @@ class MultiHeadDQN(MultitaskDQN):
         self.polyak_weight = net_spec['polyak_weight']
         # Initialize other algorithm parameters
         self.init_non_net_algo_params()
-        self.explore_var = [self.explore_var_start] * len(self.agent.flat_nonan_body_a)
         logger.info(util.self_desc(self))
 
     def sample(self):
@@ -595,7 +598,8 @@ class MultiHeadDQN(MultitaskDQN):
                         batch_losses = [sum(x)
                                         for x in zip(batch_losses, losses)]
                 batch_loss /= self.training_iters_per_batch
-                batch_losses = [float(x) / self.training_iters_per_batch for x in batch_losses]
+                batch_losses = [
+                    float(x) / self.training_iters_per_batch for x in batch_losses]
                 total_loss += batch_loss
                 if total_losses is None:
                     total_losses = batch_losses
@@ -603,7 +607,8 @@ class MultiHeadDQN(MultitaskDQN):
                     total_losses = [sum(x)
                                     for x in zip(total_losses, batch_losses)]
             total_loss /= self.training_epoch
-            total_losses = [float(x) / self.training_epoch for x in total_losses]
+            total_losses = [
+                float(x) / self.training_epoch for x in total_losses]
             if t % 25 == 0:
                 logger.info(f'total_loss {total_loss}')
                 logger.info(f'total losses {total_losses}')

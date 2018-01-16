@@ -98,13 +98,12 @@ class Agent:
                 action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
         # TODO finer loss and explore_var per body
         loss = self.algorithm.train()
-        explore_var = self.algorithm.update()
-        data_names = ['loss', 'explore_var']
-        loss_a, explore_var_a = self.agent_space.aeb_space.init_data_s(
+        explore_var_a = self.algorithm.update()
+        data_names = ['loss']
+        loss_a, = self.agent_space.aeb_space.init_data_s(
             data_names, a=self.a)
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             loss_a[(e, b)] = loss
-            explore_var_a[(e, b)] = explore_var
         return loss_a, explore_var_a
 
     def close(self):
