@@ -30,7 +30,7 @@ class VanillaDQN(Algorithm):
             - Boolean var for if the action space is discrete
         '''
         self.init_nets()
-        self.init_non_net_algo_params()
+        self.init_algo_params()
         self.net.print_nets()  # Print the network architecture
         logger.info(util.self_desc(self))
 
@@ -51,7 +51,7 @@ class VanillaDQN(Algorithm):
             'batch_size',
         ]))
 
-    def init_non_net_algo_params(self):
+    def init_algo_params(self):
         '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]

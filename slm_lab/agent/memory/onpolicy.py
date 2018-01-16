@@ -32,7 +32,7 @@ class OnPolicyReplay(Memory):
         super(OnPolicyReplay, self).__init__(body)
         self.state_dim = self.body.state_dim
         self.action_dim = self.body.action_dim
-        self.num_epis = self.body.agent.spec['algorithm']['num_epis_to_collect']
+        self.num_epis_to_collect = self.body.agent.spec['algorithm']['num_epis_to_collect']
         # Don't want total experiences reset when memory is
         self.total_experiences = 0
         self.reset_memory()
@@ -98,7 +98,7 @@ class OnPolicyReplay(Memory):
                                     'dones': [],
                                     'priorities': []}
             # If agent has collected the desired number of episodes, it is ready to train
-            if len(self.states) == self.num_epis:
+            if len(self.states) == self.num_epis_to_collect:
                 self.body.agent.algorithm.to_train = 1
         # Track memory size and num experiences
         self.true_size += 1

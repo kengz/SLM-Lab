@@ -23,12 +23,15 @@ class ReinforceDiscrete(Algorithm):
         4. Update the network parameters using the gradient
     '''
 
-    def __init__(self, agent):
-        super(ReinforceDiscrete, self).__init__(agent)
-        self.agent = agent
-
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
+        self.init_nets()
+        self.init_algo_params()
+        self.net.print_nets()  # Print the network architecture
+        logger.info(util.self_desc(self))
+
+    def init_nets(self):
+        '''Initialize the neural network used to learn the Q function from the spec'''
         body = self.agent.flat_nonan_body_a[0]  # singleton algo
         state_dim = body.state_dim
         action_dim = body.action_dim
@@ -41,11 +44,15 @@ class ReinforceDiscrete(Algorithm):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         )
-        print(self.net)
+
+    def init_algo_params(self):
+        '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
-        self.num_epis = algorithm_spec['num_epis_to_collect']
-        self.gamma = algorithm_spec['gamma']
+        util.set_attr(self, _.pick(algorithm_spec, [
+            'gamma',
+            'num_epis_to_collect',
+        ]))
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.to_train = 0

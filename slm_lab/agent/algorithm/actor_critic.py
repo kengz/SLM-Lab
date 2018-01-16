@@ -26,6 +26,13 @@ class ACDiscrete(ReinforceDiscrete):
 
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
+        self.init_nets()
+        self.init_algo_params()
+        self.net.print_nets()  # Print the network architecture
+        logger.info(util.self_desc(self))
+
+    def init_nets(self):
+        '''Initialize the neural network used to learn the Q function from the spec'''
         body = self.agent.flat_nonan_body_a[0]  # singleton algo
         state_dim = body.state_dim
         action_dim = body.action_dim
@@ -38,7 +45,6 @@ class ACDiscrete(ReinforceDiscrete):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         )
-        print(f'Actor: {self.actor}')
         self.critic = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], 1,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -47,12 +53,15 @@ class ACDiscrete(ReinforceDiscrete):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         )
-        print(f'Critic: {self.critic}')
+
+    def init_algo_params(self):
+        '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
-        self.training_frequency = algorithm_spec['training_frequency']
-        self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
-        self.gamma = algorithm_spec['gamma']
+        util.set_attr(self, _.pick(algorithm_spec, [
+            'gamma',
+            'training_frequency', 'training_iters_per_batch',
+        ]))
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.to_train = 0
