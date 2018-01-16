@@ -21,6 +21,7 @@ Agent components:
 from slm_lab.agent import algorithm
 from slm_lab.agent import memory
 from slm_lab.lib import logger, util
+from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as _
 
@@ -71,6 +72,7 @@ class Agent:
         AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
         self.algorithm = AlgoClass(self)
 
+    @lab_api
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         self.flat_nonan_body_a = util.flatten_nonan(self.body_a)
@@ -79,16 +81,19 @@ class Agent:
         self.algorithm.post_body_init()
         logger.info(util.self_desc(self))
 
+    @lab_api
     def reset(self, state_a):
         '''Do agent reset per session, such as memory pointer'''
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.reset_last_state(state_a[(e, b)])
 
+    @lab_api
     def act(self, state_a):
         '''Standard act method from algorithm.'''
         action_a = self.algorithm.act(state_a)
         return action_a
 
+    @lab_api
     def update(self, action_a, reward_a, state_a, done_a):
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
@@ -106,6 +111,7 @@ class Agent:
             loss_a[(e, b)] = loss
         return loss_a, explore_var_a
 
+    @lab_api
     def close(self):
         '''Close agent at the end of a session, e.g. save model'''
         # TODO save model
@@ -128,6 +134,7 @@ class AgentSpace:
         self.agents = [
             Agent(agent_spec, self, a) for a, agent_spec in enumerate(self.agent_spec)]
 
+    @lab_api
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         for agent in self.agents:
@@ -137,6 +144,7 @@ class AgentSpace:
     def get(self, a):
         return self.agents[a]
 
+    @lab_api
     def reset(self, state_space):
         logger.debug('AgentSpace.reset')
         _action_v, _loss_v, _explore_var_v = self.aeb_space.init_data_v(
@@ -147,6 +155,7 @@ class AgentSpace:
         _action_space, _loss_space, _explore_var_space = self.aeb_space.add(
             AGENT_DATA_NAMES, [_action_v, _loss_v, _explore_var_v])
 
+    @lab_api
     def act(self, state_space):
         data_names = ['action']
         action_v, = self.aeb_space.init_data_v(data_names)
@@ -158,8 +167,8 @@ class AgentSpace:
         action_space, = self.aeb_space.add(data_names, [action_v])
         return action_space
 
+    @lab_api
     def update(self, action_space, reward_space, state_space, done_space):
-        # TODO ensure submethods return np.nan for loss or explore_var instead of None
         data_names = ['loss', 'explore_var']
         loss_v, explore_var_v = self.aeb_space.init_data_v(data_names)
         for agent in self.agents:
@@ -176,6 +185,7 @@ class AgentSpace:
             data_names, [loss_v, explore_var_v])
         return loss_space
 
+    @lab_api
     def close(self):
         logger.info('AgentSpace.close')
         for agent in self.agents:
