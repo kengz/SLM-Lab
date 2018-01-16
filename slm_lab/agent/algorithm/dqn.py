@@ -4,6 +4,7 @@ from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
+from slm_lab.lib.decorator import lab_api, timeit
 from torch.autograd import Variable
 import numpy as np
 import pydash as _
@@ -23,6 +24,7 @@ class VanillaDQN(Algorithm):
         '''
         super(VanillaDQN, self).__init__(agent)
 
+    @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
             - Memory (holding experiences obtained by acting in the environment)
@@ -104,6 +106,7 @@ class VanillaDQN(Algorithm):
         util.to_torch_batch(batch)
         return batch
 
+    @lab_api
     def train(self):
         '''Completes one training step for the agent if it is time to train.
            i.e. the environment timestep is greater than the minimum training
@@ -134,6 +137,7 @@ class VanillaDQN(Algorithm):
             logger.debug('NOT training')
             return np.nan
 
+    @lab_api
     def body_act_discrete(self, body, state):
         ''' Selects and returns a discrete action for body using the action policy'''
         return self.action_policy(body, state, self.net, self.flat_nonan_explore_var_a[body.flat_nonan_a_idx])
@@ -146,6 +150,7 @@ class VanillaDQN(Algorithm):
             'explore_var', flat_nonan_explore_var_a)
         return explore_var_a
 
+    @lab_api
     def update(self):
         '''Update the agent after training'''
         return self.update_explore_var()
@@ -250,6 +255,7 @@ class DQNBase(VanillaDQN):
                 'Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
             sys.exit()
 
+    @lab_api
     def update(self):
         '''Updates self.target_net and the explore variables'''
         self.update_nets()
@@ -498,6 +504,7 @@ class MultiHeadDQN(MultitaskDQN):
             logger.debug(f'Batch {b}, Q targets: {q_targets_b.size()}')
         return q_targets
 
+    @lab_api
     def train(self):
         '''Completes one training step for the agent if it is time to train.
            i.e. the environment timestep is greater than the minimum training

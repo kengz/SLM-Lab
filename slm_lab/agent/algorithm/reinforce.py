@@ -4,6 +4,7 @@ from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
+from slm_lab.lib.decorator import lab_api, timeit
 from torch.autograd import Variable
 import numpy as np
 import torch
@@ -23,6 +24,7 @@ class ReinforceDiscrete(Algorithm):
         4. Update the network parameters using the gradient
     '''
 
+    @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         self.init_nets()
@@ -60,6 +62,7 @@ class ReinforceDiscrete(Algorithm):
         self.flat_nonan_explore_var_a = [
             np.nan] * len(self.agent.flat_nonan_body_a)
 
+    @lab_api
     def body_act_discrete(self, body, state):
         return self.action_policy(self, state, self.net)
 
@@ -71,6 +74,7 @@ class ReinforceDiscrete(Algorithm):
         batch = util.to_torch_nested_batch(batch)
         return batch
 
+    @lab_api
     def train(self):
         if self.to_train == 1:
             # We only care about the rewards from the batch
@@ -123,6 +127,7 @@ class ReinforceDiscrete(Algorithm):
         advantage = torch.cat(advantage)
         return advantage
 
+    @lab_api
     def update(self):
         '''No update needed'''
         return self.flat_nonan_explore_var_a

@@ -4,6 +4,7 @@ from slm_lab.agent.algorithm.algorithm_util import act_fns
 from slm_lab.agent.algorithm.reinforce import ReinforceDiscrete
 from slm_lab.agent.net import net_util
 from slm_lab.lib import util, logger
+from slm_lab.lib.decorator import lab_api, timeit
 from torch.autograd import Variable
 import numpy as np
 import torch
@@ -24,6 +25,7 @@ class ACDiscrete(ReinforceDiscrete):
     Separate networks with no shared parameters are used to approximate the actor and critic
     '''
 
+    @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         self.init_nets()
@@ -70,6 +72,7 @@ class ACDiscrete(ReinforceDiscrete):
         self.flat_nonan_explore_var_a = [
             np.nan] * len(self.agent.flat_nonan_body_a)
 
+    @lab_api
     def body_act_discrete(self, body, state):
         return self.action_policy(self, state, self.actor)
 
@@ -81,6 +84,7 @@ class ACDiscrete(ReinforceDiscrete):
         util.to_torch_batch(batch)
         return batch
 
+    @lab_api
     def train(self):
         if self.to_train == 1:
             batch = self.sample()
