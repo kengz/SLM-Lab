@@ -12,9 +12,7 @@ import torch
 
 
 class VanillaDQN(Algorithm):
-    '''
-    Implementation of a simple DQN algorithm.
-    '''
+    '''Implementation of a simple DQN algorithm.'''
 
     def __init__(self, agent):
         '''
@@ -30,9 +28,15 @@ class VanillaDQN(Algorithm):
             - Memory (holding experiences obtained by acting in the environment)
             - State and action dimentions for an environment
             - Boolean var for if the action space is discrete
-            '''
-        body = self.agent.flat_nonan_body_a[0]  # singleton algo
-        # Initialize the neural network used to learn the Q function from the spec
+        '''
+        self.init_nets()
+        self.init_non_net_algo_params()
+        self.net.print_nets()  # Print the network architecture
+        logger.info(util.self_desc(self))
+
+    def init_nets(self):
+        '''Initialize the neural network used to learn the Q function from the spec'''
+        body = self.agent.flat_nonan_body_a[0]  # single-body algo
         state_dim = body.state_dim  # dimension of the environment state, e.g. 4
         action_dim = body.action_dim  # dimension of the environment actions, e.g. 2
         net_spec = self.agent.spec['net']
@@ -42,30 +46,28 @@ class VanillaDQN(Algorithm):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        # Prints the network architecture to stdout
-        self.net.print_nets()
-        # Initialize the other algorithm parameters
-        # self.batch_size: how many examples to learn from each training iteration
-        self.batch_size = net_spec['batch_size']
+        util.set_attr(self, _.pick(net_spec, [
+            # how many examples to learn per training iteration
+            'batch_size',
+        ]))
+
+    def init_non_net_algo_params(self):
+        '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
         self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
-        # explore_var is epsilon or tau depening on the action policy
-        # explore var start, end, and anneal_epi control the trade off between exploration and exploitaton
-        self.explore_var_start = algorithm_spec['explore_var_start']
-        self.explore_var_end = algorithm_spec['explore_var_end']
+        util.set_attr(self, _.pick(algorithm_spec, [
+            # explore_var is epsilon, tau or etc. depending on the action policy
+            # these control the trade off between exploration and exploitaton
+            'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
+            'gamma',  # the discount factor
+            'training_min_timestep',  # how long before starting training
+            'training_frequency',  # how often to train (once a few timesteps)
+            'training_epoch',  # how many batches to train each time
+            'training_iters_per_batch',  # how many times to train each batch
+        ]))
         self.flat_nonan_explore_var_a = [
             self.explore_var_start] * len(self.agent.flat_nonan_body_a)
-        self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
-        self.gamma = algorithm_spec['gamma']  # the discount rate
-        # self.training_min_timestep: how long to wait before starting training
-        self.training_min_timestep = algorithm_spec['training_min_timestep']
-        # self.training_frequency: how often to train
-        self.training_frequency = algorithm_spec['training_frequency']
-        # self.training_epoch: how many batches to train each time
-        self.training_epoch = algorithm_spec['training_epoch']
-        # self.training_iters_per_batch: how many times to train each batch
-        self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
@@ -171,14 +173,9 @@ class DQNBase(VanillaDQN):
     def __init__(self, agent):
         super(DQNBase, self).__init__(agent)
 
-    def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
-        self.init_nets()
-        self.init_non_net_algo_params()
-
     def init_nets(self):
-        body = self.agent.flat_nonan_body_a[0]  # singleton algo
-        # Initialize networks
+        '''Initialize networks'''
+        body = self.agent.flat_nonan_body_a[0]  # single-body algo
         state_dim = body.state_dim
         action_dim = body.action_dim
         net_spec = self.agent.spec['net']
@@ -188,7 +185,6 @@ class DQNBase(VanillaDQN):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        self.net.print_nets()
         self.target_net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -197,29 +193,13 @@ class DQNBase(VanillaDQN):
         )
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        self.batch_size = net_spec['batch_size']
+        util.set_attr(self, _.pick(net_spec, [
+            'batch_size',
+        ]))
         # Default network update params for base
         self.update_type = 'replace'
         self.update_frequency = 1
         self.polyak_weight = 0.0
-
-    def init_non_net_algo_params(self):
-        # Initialize other algorithm parameters
-        algorithm_spec = self.agent.spec['algorithm']
-        self.action_policy = act_fns[algorithm_spec['action_policy']]
-        self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
-        # explore_var is epsilon, tau or etc.
-        self.explore_var_start = algorithm_spec['explore_var_start']
-        self.explore_var_end = algorithm_spec['explore_var_end']
-        self.flat_nonan_explore_var_a = [
-            self.explore_var_start] * len(self.agent.flat_nonan_body_a)
-        self.explore_anneal_epi = algorithm_spec['explore_anneal_epi']
-        self.gamma = algorithm_spec['gamma']
-        # These parameter control how often and how much to train
-        self.training_min_timestep = algorithm_spec['training_min_timestep']
-        self.training_frequency = algorithm_spec['training_frequency']
-        self.training_epoch = algorithm_spec['training_epoch']
-        self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
@@ -252,22 +232,6 @@ class DQNBase(VanillaDQN):
         logger.debug(f'Q targets: {q_targets.size()}')
         return q_targets
 
-    def sample(self):
-        return super(DQNBase, self).sample()
-
-    def train(self):
-        return super(DQNBase, self).train()
-
-    def body_act_discrete(self, body, state):
-        return super(DQNBase, self).body_act_discrete(body, state)
-
-    def update_explore_var(self):
-        space_clock = util.s_get(self, 'aeb_space.clock')
-        flat_nonan_explore_var_a = self.action_policy_update(self, space_clock)
-        explore_var_a = self.flat_nonan_to_data_a(
-            'explore_var', flat_nonan_explore_var_a)
-        return explore_var_a
-
     def update_nets(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
         t = space_clock.get('t')
@@ -292,41 +256,24 @@ class DQNBase(VanillaDQN):
     def update(self):
         '''Updates self.target_net and the explore variables'''
         self.update_nets()
-        return self.update_explore_var()
+        return super(DQNBase, self).update()
 
 
 class DQN(DQNBase):
-    def __init__(self, agent):
-        super(DQN, self).__init__(agent)
-
-    def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
-        super(DQN, self).post_body_init()
+    def init_nets(self):
+        super(DQN, self).init_nets()
         # Network update params
         net_spec = self.agent.spec['net']
-        self.update_type = net_spec['update_type']
-        self.update_frequency = net_spec['update_frequency']
-        self.polyak_weight = net_spec['polyak_weight']
-        logger.debug(
-            f'Network update: type: {self.update_type}, frequency: {self.update_frequency}, weight: {self.polyak_weight}')
-        logger.info(util.self_desc(self))
+        util.set_attr(self, _.pick(net_spec, [
+            'update_type', 'update_frequency', 'polyak_weight',
+        ]))
 
 
-class DoubleDQN(DQNBase):
-    def __init__(self, agent):
-        super(DoubleDQN, self).__init__(agent)
-
-    def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
-        super(DoubleDQN, self).post_body_init()
+class DoubleDQN(DQN):
+    def init_nets(self):
+        super(DoubleDQN).init_nets()
         self.online_net = self.net
         self.eval_net = self.target_net
-        # Network update params
-        net_spec = self.agent.spec['net']
-        self.update_type = net_spec['update_type']
-        self.update_frequency = net_spec['update_frequency']
-        self.polyak_weight = net_spec['polyak_weight']
-        logger.info(util.self_desc(self))
 
     def update_nets(self):
         res = super(DoubleDQN, self).update_nets()
@@ -344,9 +291,6 @@ class DoubleDQN(DQNBase):
 class MultitaskDQN(DQN):
     '''Simplest Multi-task DQN implementation. States and action dimensions are concatenated, and a single shared network is reponsible for processing concatenated states, and generating one action per environment from a single output layer.'''
 
-    def __init__(self, agent):
-        super(MultitaskDQN, self).__init__(agent)
-
     def post_body_init(self):
         super(MultitaskDQN, self).post_body_init()
         '''Re-initialize nets with multi-task dimensions'''
@@ -363,7 +307,6 @@ class MultitaskDQN(DQN):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        self.net.print_nets()
         self.target_net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -490,7 +433,6 @@ class MultiHeadDQN(MultitaskDQN):
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
         )
-        self.net.print_nets()
         self.target_net = getattr(net, net_spec['type'])(
             self.state_dims, net_spec['hid_layers'], self.action_dims,
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
