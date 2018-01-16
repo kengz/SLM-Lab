@@ -4,7 +4,7 @@ from slm_lab.agent.algorithm.algorithm_util import act_fns
 from slm_lab.agent.algorithm.reinforce import ReinforceDiscrete
 from slm_lab.agent.net import net_util
 from slm_lab.lib import util, logger
-from slm_lab.lib.decorator import lab_api, timeit
+from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import numpy as np
 import torch

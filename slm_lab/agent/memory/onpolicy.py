@@ -1,6 +1,7 @@
 from collections import Iterable
 from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import logger, util
+from slm_lab.lib.decorator import lab_api
 import numpy as np
 
 
@@ -35,9 +36,10 @@ class OnPolicyReplay(Memory):
         self.num_epis_to_collect = self.body.agent.spec['algorithm']['num_epis_to_collect']
         # Don't want total experiences reset when memory is
         self.total_experiences = 0
-        self.reset_memory()
+        self.reset()
 
-    def reset_memory(self):
+    @lab_api
+    def reset(self):
         '''Resets the memory. Also used to initialize memory vars'''
         self.states = []
         self.actions = []
@@ -54,6 +56,7 @@ class OnPolicyReplay(Memory):
         self.most_recent = [None, None, None, None, None, None]
         self.true_size = 0  # Size of the current memory
 
+    @lab_api
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
         if not np.isnan(reward):
@@ -130,7 +133,7 @@ class OnPolicyReplay(Memory):
         batch['next_states'] = self.next_states
         batch['dones'] = self.dones
         batch['priorities'] = self.priorities
-        self.reset_memory()
+        self.reset()
         return batch
 
 
@@ -142,6 +145,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
 
     In contrast, OnPolicyReplay stores entire episodes and stores them in a nested structure. OnPolicyBatchReplay stores experiences in a flat structure.
     '''
+
     def __init__(self, body):
         self.body = body
         self.last_state = None
@@ -150,7 +154,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
         self.training_frequency = self.body.agent.spec['algorithm']['training_frequency']
         # Don't want total experiences reset when memory is
         self.total_experiences = 0
-        self.reset_memory()
+        self.reset()
 
     def add_experience(self,
                        state,
