@@ -112,14 +112,14 @@ class ReinforceDiscrete(Algorithm):
         logger.debug(f'Raw rewards: {raw_rewards}')
         for epi_rewards in raw_rewards:
             rewards = []
-            R = 0
+            big_r = 0
             for r in epi_rewards[::-1]:
-                R = r + self.gamma * R
-                rewards.insert(0, R)
+                big_r = r + self.gamma * big_r
+                rewards.insert(0, big_r)
             rewards = torch.Tensor(rewards)
             logger.debug(f'Rewards: {rewards}')
-            rewards = (rewards - rewards.mean()) / \
-                (rewards.std() + np.finfo(np.float32).eps)
+            rewards = (rewards - rewards.mean()) / (
+                rewards.std() + np.finfo(np.float32).eps)
             logger.debug(f'Normalized rewards: {rewards}')
             advantage.append(rewards)
         advantage = torch.cat(advantage)

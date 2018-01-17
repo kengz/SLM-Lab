@@ -517,43 +517,21 @@ class MultiHeadDQN(MultitaskDQN):
         t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (t > self.training_min_timestep and t % self.training_frequency == 0):
             logger.debug(f'Training at t: {t}')
-            total_loss = 0.0
-            total_losses = None
+            nanflat_loss_a = np.zeros(self.agent.body_num)
             for _b in range(self.training_epoch):
+                batch_losses = np.zeros(self.agent.body_num)
                 batch = self.sample()
-                batch_loss = 0.0
-                batch_losses = None
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
-                    y = []
-                    for q in q_targets:
-                        y.append(Variable(q))
-                    loss, losses = self.net.training_step(batch['states'], y)
-                    logger.debug(f'loss {loss}')
+                    y = [Variable(q) for q in q_targets]
+                    losses = self.net.training_step(batch['states'], y)
                     logger.debug(f'losses {losses}')
-                    batch_loss += loss
-                    if batch_losses is None:
-                        batch_losses = losses
-                    else:
-                        batch_losses = [
-                            sum(x) for x in zip(batch_losses, losses)]
-                batch_loss /= self.training_iters_per_batch
-                batch_losses = [
-                    float(x) / self.training_iters_per_batch for x in batch_losses]
-                total_loss += batch_loss
-                if total_losses is None:
-                    total_losses = batch_losses
-                else:
-                    total_losses = [
-                        sum(x) for x in zip(total_losses, batch_losses)]
-            total_loss /= self.training_epoch
-            total_losses = [
-                float(x) / self.training_epoch for x in total_losses]
-            if t % 25 == 0:
-                logger.info(f'total_loss {total_loss}')
-                logger.info(f'total losses {total_losses}')
-            # TODO: Return other losses as well.
-            return total_loss
+                    batch_losses += losses
+                batch_losses /= self.training_iters_per_batch
+                nanflat_loss_a += batch_losses
+            nanflat_loss_a /= self.training_epoch
+            loss_a = self.nanflat_to_data_a('loss', nanflat_loss_a)
+            return loss_a
         else:
             logger.debug('NOT training')
             return np.nan

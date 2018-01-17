@@ -161,10 +161,10 @@ class ACDiscreteSimple(ACDiscrete):
         loss = 0
         rewards = []
         raw_rewards = batch['rewards']
-        R = 0
+        big_r = 0
         for r in raw_rewards[::-1]:
-            R = r + self.gamma * R
-            rewards.insert(0, R)
+            big_r = r + self.gamma * big_r
+            rewards.insert(0, big_r)
         rewards = torch.Tensor(rewards)
         if rewards.size(0) == 1:
             logger.info("Rewards of length one, no need to normalize")

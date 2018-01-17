@@ -67,7 +67,8 @@ class MLPNet(nn.Module):
         loss = self.loss_fn(out, y)
         loss.backward()
         if self.clamp_grad:
-            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.clamp_grad_val)
+            torch.nn.utils.clip_grad_norm(
+                self.model.parameters(), self.clamp_grad_val)
         self.optim.step()
         return loss
 
@@ -164,12 +165,15 @@ class MultiMLPNet(nn.Module):
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.state_heads_layers = []
-        self.state_heads_models = self.make_state_heads(self.in_dim, hid_layers_activation)
+        self.state_heads_models = self.make_state_heads(
+            self.in_dim, hid_layers_activation)
         self.shared_layers = []
-        self.body = self.make_shared_body(self.state_out_concat, hid_dim, hid_layers_activation)
+        self.body = self.make_shared_body(
+            self.state_out_concat, hid_dim, hid_layers_activation)
         self.action_heads_layers = []
         in_D = hid_dim[-1] if len(hid_dim) > 0 else self.state_out_concat
-        self.action_heads_models = self.make_action_heads(in_D, self.out_dim, hid_layers_activation)
+        self.action_heads_models = self.make_action_heads(
+            in_D, self.out_dim, hid_layers_activation)
         self.init_params()
         # Init other net variables
         self.params = []
@@ -196,7 +200,8 @@ class MultiMLPNet(nn.Module):
                     in_D = head[i - 1]
                     out_D = head[i]
                     layers += [nn.Linear(in_D, out_D)]
-                    layers += [net_util.get_activation_fn(hid_layers_activation)]
+                    layers += [net_util.get_activation_fn(
+                        hid_layers_activation)]
             self.state_out_concat += head[-1]
             self.state_heads_layers.append(layers)
             state_heads_models.append(nn.Sequential(*layers))
@@ -209,7 +214,8 @@ class MultiMLPNet(nn.Module):
             in_D = in_dim if i == 0 else dims[i - 1]
             out_D = dims[i]
             self.shared_layers += [nn.Linear(in_D, out_D)]
-            self.shared_layers += [net_util.get_activation_fn(hid_layers_activation)]
+            self.shared_layers += [
+                net_util.get_activation_fn(hid_layers_activation)]
         return nn.Sequential(*self.shared_layers)
 
     def make_action_heads(self, in_dim, act_heads, hid_layers_activation):
@@ -225,7 +231,8 @@ class MultiMLPNet(nn.Module):
                 layers += [nn.Linear(in_D, out_D)]
                 # No activation function in the last layer
                 if i < len(head) - 1:
-                    layers += [net_util.get_activation_fn(hid_layers_activation)]
+                    layers += [net_util.get_activation_fn(
+                        hid_layers_activation)]
             self.action_heads_layers.append(layers)
             act_heads_models.append(nn.Sequential(*layers))
         return act_heads_models
@@ -270,7 +277,8 @@ class MultiMLPNet(nn.Module):
         if self.clamp_grad:
             torch.nn.utils.clip_grad_norm(self.params, self.clamp_grad_val)
         self.optim.step()
-        return total_loss.data[0], [l.data[0] for l in losses]
+        nanflat_loss_a = [loss.data[0] for loss in losses]
+        return nanflat_loss_a
 
     def wrap_eval(self, x):
         '''
