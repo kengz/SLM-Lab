@@ -4,6 +4,7 @@ from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
+from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import numpy as np
 import torch
@@ -23,49 +24,60 @@ class ReinforceDiscrete(Algorithm):
         4. Update the network parameters using the gradient
     '''
 
-    def __init__(self, agent):
-        super(ReinforceDiscrete, self).__init__(agent)
-        self.agent = agent
-
+    @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
-        body = self.agent.flat_nonan_body_a[0]  # singleton algo
+        self.init_nets()
+        self.init_algo_params()
+        self.net.print_nets()  # Print the network architecture
+        logger.info(util.self_desc(self))
+
+    def init_nets(self):
+        '''Initialize the neural network used to learn the Q function from the spec'''
+        body = self.agent.nanflat_body_a[0]  # singleton algo
         state_dim = body.state_dim
         action_dim = body.action_dim
         net_spec = self.agent.spec['net']
-        self.net = getattr(net, net_spec['type'])(
-            state_dim, net_spec['hid_layers'], action_dim,
+        net_kwargs = util.compact_dict(dict(
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-        )
-        print(self.net)
+        ))
+        self.net = getattr(net, net_spec['type'])(
+            state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
+
+    def init_algo_params(self):
+        '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
-        self.num_epis = algorithm_spec['num_epis_to_collect']
-        self.gamma = algorithm_spec['gamma']
+        util.set_attr(self, _.pick(algorithm_spec, [
+            'gamma',
+            'num_epis_to_collect',
+        ]))
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.to_train = 0
 
+    @lab_api
     def body_act_discrete(self, body, state):
         return self.action_policy(self, state, self.net)
 
     def sample(self):
         '''Samples a batch from memory'''
         batches = [body.memory.sample()
-                   for body in self.agent.flat_nonan_body_a]
+                   for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         batch = util.to_torch_nested_batch(batch)
         return batch
 
+    @lab_api
     def train(self):
         if self.to_train == 1:
             # We only care about the rewards from the batch
             rewards = self.sample()['rewards']
-            advantage = self.calculate_advantage(rewards)
+            advantage = self.calc_advantage(rewards)
             logger.debug(f'Length first epi: {len(rewards[0])}')
             logger.debug(f'Len log probs: {len(self.saved_log_probs)}')
             logger.debug(f'Len advantage: {advantage.size(0)}')
@@ -93,26 +105,27 @@ class ReinforceDiscrete(Algorithm):
             logger.debug(f'Policy loss: {loss}')
             return loss
         else:
-            return None
+            return np.nan
 
-    def calculate_advantage(self, raw_rewards):
+    def calc_advantage(self, raw_rewards):
         advantage = []
         logger.debug(f'Raw rewards: {raw_rewards}')
         for epi_rewards in raw_rewards:
             rewards = []
-            R = 0
+            big_r = 0
             for r in epi_rewards[::-1]:
-                R = r + self.gamma * R
-                rewards.insert(0, R)
+                big_r = r + self.gamma * big_r
+                rewards.insert(0, big_r)
             rewards = torch.Tensor(rewards)
             logger.debug(f'Rewards: {rewards}')
-            rewards = (rewards - rewards.mean()) / \
-                (rewards.std() + np.finfo(np.float32).eps)
+            rewards = (rewards - rewards.mean()) / (
+                rewards.std() + np.finfo(np.float32).eps)
             logger.debug(f'Normalized rewards: {rewards}')
             advantage.append(rewards)
         advantage = torch.cat(advantage)
         return advantage
 
+    @lab_api
     def update(self):
         '''No update needed'''
         explore_var = np.nan

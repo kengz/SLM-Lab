@@ -31,6 +31,15 @@ def test_cast_list(test_list, test_str):
     assert _.is_list(util.cast_list(test_str))
 
 
+@pytest.mark.parametrize('d,res_d', [
+    ({'a': 0, 'b': 1}, {'a': 0, 'b': 1}),
+    ({'a': None, 'b': 1}, {'b': 1}),
+    ({'a': np.nan, 'b': 1}, {'b': 1}),
+])
+def test_compact_dict(d, res_d):
+    assert util.compact_dict(d) == res_d
+
+
 @pytest.mark.parametrize('arr,arr_len', [
     ([0, 1, 2], 3),
     ([0, 1, 2, None], 3),
@@ -100,10 +109,10 @@ def test_filter_nonan(arr):
     ([[0, np.nan], [1, 2]], [0, 1, 2]),
     ([[[0], [np.nan]], [[1], [2]]], [0, 1, 2]),
 ])
-def test_flatten_nonan(arr, res):
+def test_nanflatten(arr, res):
     arr = np.array(arr)
     res = np.array(res)
-    assert np.array_equal(util.flatten_nonan(arr), res)
+    assert np.array_equal(util.nanflatten(arr), res)
 
 
 @pytest.mark.parametrize('v,isnan', [

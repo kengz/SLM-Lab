@@ -4,6 +4,7 @@ from slm_lab.agent.algorithm.algorithm_util import act_fns
 from slm_lab.agent.algorithm.reinforce import ReinforceDiscrete
 from slm_lab.agent.net import net_util
 from slm_lab.lib import util, logger
+from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import numpy as np
 import torch
@@ -24,50 +25,64 @@ class ACDiscrete(ReinforceDiscrete):
     Separate networks with no shared parameters are used to approximate the actor and critic
     '''
 
+    @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
-        body = self.agent.flat_nonan_body_a[0]  # singleton algo
+        self.init_nets()
+        self.init_algo_params()
+        self.actor.print_nets()  # Print the network architecture
+        logger.info(util.self_desc(self))
+
+    def init_nets(self):
+        '''Initialize the neural network used to learn the Q function from the spec'''
+        body = self.agent.nanflat_body_a[0]  # singleton algo
         state_dim = body.state_dim
         action_dim = body.action_dim
         net_spec = self.agent.spec['net']
-        self.actor = getattr(net, net_spec['type'])(
-            state_dim, net_spec['hid_layers'], action_dim,
+        actor_kwargs = util.compact_dict(dict(
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim_actor'),
             loss_param=_.get(net_spec, 'loss'),  # Note: Not used for PG algos
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-        )
-        print(f'Actor: {self.actor}')
-        self.critic = getattr(net, net_spec['type'])(
-            state_dim, net_spec['hid_layers'], 1,
+        ))
+        self.actor = getattr(net, net_spec['type'])(
+            state_dim, net_spec['hid_layers'], action_dim, **actor_kwargs)
+        critic_kwargs = util.compact_dict(dict(
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim_critic'),
             loss_param=_.get(net_spec, 'loss'),  # Note: Not used for PG algos
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-        )
-        print(f'Critic: {self.critic}')
+        ))
+        self.critic = getattr(net, net_spec['type'])(
+            state_dim, net_spec['hid_layers'], 1, **critic_kwargs)
+
+    def init_algo_params(self):
+        '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
-        self.training_frequency = algorithm_spec['training_frequency']
-        self.training_iters_per_batch = algorithm_spec['training_iters_per_batch']
-        self.gamma = algorithm_spec['gamma']
+        util.set_attr(self, _.pick(algorithm_spec, [
+            'gamma',
+            'training_frequency', 'training_iters_per_batch',
+        ]))
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.to_train = 0
 
+    @lab_api
     def body_act_discrete(self, body, state):
         return self.action_policy(self, state, self.actor)
 
     def sample(self):
         '''Samples a batch from memory'''
         batches = [body.memory.sample()
-                   for body in self.agent.flat_nonan_body_a]
+                   for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         util.to_torch_batch(batch)
         return batch
 
+    @lab_api
     def train(self):
         if self.to_train == 1:
             batch = self.sample()
@@ -81,7 +96,7 @@ class ACDiscrete(ReinforceDiscrete):
             ))
             return total_loss
         else:
-            return None
+            return np.nan
 
     def train_critic(self, batch):
         loss = 0
@@ -98,7 +113,7 @@ class ACDiscrete(ReinforceDiscrete):
             logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss
 
-    def calculate_advantage(self, batch):
+    def calc_advantage(self, batch):
         state_vals = self.critic.wrap_eval(batch['states']).squeeze_()
         next_state_vals = self.critic.wrap_eval(
             batch['next_states']).squeeze_()
@@ -109,7 +124,7 @@ class ACDiscrete(ReinforceDiscrete):
         return advantage
 
     def train_actor(self, batch):
-        advantage = self.calculate_advantage(batch)
+        advantage = self.calc_advantage(batch)
         if len(self.saved_log_probs) != advantage.size(0):
             # Caused by first reward of episode being nan
             del self.saved_log_probs[0]
@@ -146,10 +161,10 @@ class ACDiscreteSimple(ACDiscrete):
         loss = 0
         rewards = []
         raw_rewards = batch['rewards']
-        R = 0
+        big_r = 0
         for r in raw_rewards[::-1]:
-            R = r + self.gamma * R
-            rewards.insert(0, R)
+            big_r = r + self.gamma * big_r
+            rewards.insert(0, big_r)
         rewards = torch.Tensor(rewards)
         if rewards.size(0) == 1:
             logger.info("Rewards of length one, no need to normalize")
@@ -164,7 +179,7 @@ class ACDiscreteSimple(ACDiscrete):
             logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss
 
-    def calculate_advantage(self, batch):
+    def calc_advantage(self, batch):
         critic_estimate = self.critic.wrap_eval(batch['states']).squeeze_()
         advantage = self.current_rewards - critic_estimate
         logger.debug(f'Advantage: {advantage.size()}')
@@ -173,7 +188,7 @@ class ACDiscreteSimple(ACDiscrete):
     def sample(self):
         '''Samples a batch from memory'''
         batches = [body.memory.sample()
-                   for body in self.agent.flat_nonan_body_a]
+                   for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         util.to_torch_batch_ex_rewards(batch)
         return batch

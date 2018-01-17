@@ -5,12 +5,12 @@ Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Se
 from slm_lab.agent import AgentSpace
 from slm_lab.env import EnvSpace
 from slm_lab.experiment import analysis, search
-from slm_lab.experiment import analysis
 from slm_lab.experiment.monitor import info_space, AEBSpace
 from slm_lab.lib import logger, util, viz
 import numpy as np
 import pandas as pd
 import pydash as _
+import torch
 
 
 class Session:
@@ -25,6 +25,8 @@ class Session:
     def __init__(self, spec):
         self.spec = spec
         self.coor, self.index = info_space.index_lab_comp(self)
+        # TODO option to set rand_seed
+        self.torch_rand_seed = torch.initial_seed()
         self.data = None
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)

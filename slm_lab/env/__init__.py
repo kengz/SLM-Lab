@@ -5,6 +5,7 @@ Provides the rich experience for agent embodiment, reflects the curriculum and a
 To be designed by human and evolution module, based on the curriculum and fitness metrics.
 '''
 from slm_lab.lib import logger, util
+from slm_lab.lib.decorator import lab_api
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
 from unityagents.environment import logger as unity_logger
@@ -95,7 +96,8 @@ class OpenAIEnv:
         self.env_space = env_space
         self.e = e
         self.body_e = None
-        self.flat_nonan_body_e = None  # flatten_nonan version of bodies
+        self.nanflat_body_e = None  # nanflatten version of bodies
+        self.body_num = None
 
         self.u_env = gym.make(self.name)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get(
@@ -105,9 +107,13 @@ class OpenAIEnv:
         self.clock = Clock(self.clock_speed)
         self.done = False
 
+    @lab_api
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
+        self.nanflat_body_e = util.nanflatten(self.body_e)
+        for idx, body in enumerate(self.nanflat_body_e):
+            body.nanflat_e_idx = idx
+        self.body_num = len(self.nanflat_body_e)
         logger.info(util.self_desc(self))
 
     def is_discrete(self, a):
@@ -134,6 +140,7 @@ class OpenAIEnv:
             state_dim = self.u_env.observation_space.shape
         return {'state': state_dim}
 
+    @lab_api
     def reset(self):
         self.done = False
         _reward_e, state_e, _done_e = self.env_space.aeb_space.init_data_s(
@@ -148,6 +155,7 @@ class OpenAIEnv:
         assert non_nan_cnt == 1, 'OpenAI Gym supports only single body'
         return _reward_e, state_e, _done_e
 
+    @lab_api
     def step(self, action_e):
         assert len(action_e) == 1, 'OpenAI Gym supports only single body'
         # TODO implement clock_speed: step only if self.clock.to_step()
@@ -167,6 +175,7 @@ class OpenAIEnv:
                      self.clock.get('t') > self.max_timestep)
         return reward_e, state_e, done_e
 
+    @lab_api
     def close(self):
         self.u_env.close()
 
@@ -185,7 +194,9 @@ class UnityEnv:
         self.env_space = env_space
         self.e = e
         self.body_e = None
-        self.flat_nonan_body_e = None  # flatten_nonan version of bodies
+        self.nanflat_body_e = None  # nanflatten version of bodies
+        self.body_num = None
+
         worker_id = int(f'{os.getpid()}{self.e+int(_.unique_id())}'[-4:])
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name), worker_id=worker_id)
@@ -207,9 +218,13 @@ class UnityEnv:
         body_num = util.count_nonan(self.body_e[a])
         assert u_agent_num == body_num, f'There must be a Unity agent for each body; a:{a}, e:{self.e}, agent_num: {u_agent_num} != body_num: {body_num}.'
 
+    @lab_api
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
+        self.nanflat_body_e = util.nanflatten(self.body_e)
+        for idx, body in enumerate(self.nanflat_body_e):
+            body.nanflat_e_idx = idx
+        self.body_num = len(self.nanflat_body_e)
         self.check_u_brain_to_agent()
         logger.info(util.self_desc(self))
 
@@ -240,6 +255,7 @@ class UnityEnv:
         env_info_a = env_info_dict[name_a]
         return env_info_a
 
+    @lab_api
     def reset(self):
         self.done = False
         env_info_dict = self.u_env.reset(
@@ -252,11 +268,12 @@ class UnityEnv:
             state_e[(a, b)] = env_info_a.states[b]
         return _reward_e, state_e, _done_e
 
+    @lab_api
     def step(self, action_e):
         # TODO implement clock_speed: step only if self.clock.to_step()
         if self.done:
             return self.reset()
-        action_e = util.flatten_nonan(action_e)
+        action_e = util.nanflatten(action_e)
         env_info_dict = self.u_env.step(action_e)
         reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(
             ENV_DATA_NAMES, e=self.e)
@@ -269,6 +286,7 @@ class UnityEnv:
                      self.clock.get('t') > self.max_timestep)
         return reward_e, state_e, done_e
 
+    @lab_api
     def close(self):
         self.u_env.close()
 
@@ -293,6 +311,7 @@ class EnvSpace:
                 env = UnityEnv(env_spec, self, e)
             self.envs.append(env)
 
+    @lab_api
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
         for env in self.envs:
@@ -308,6 +327,7 @@ class EnvSpace:
         clock = fastest_env.clock
         return clock
 
+    @lab_api
     def reset(self):
         _reward_v, state_v, _done_v = self.aeb_space.init_data_v(
             ENV_DATA_NAMES)
@@ -319,6 +339,7 @@ class EnvSpace:
         logger.debug(f'EnvSpace.reset. state_space: {state_space}')
         return _reward_space, state_space, _done_space
 
+    @lab_api
     def step(self, action_space):
         reward_v, state_v, done_v = self.aeb_space.init_data_v(
             ENV_DATA_NAMES)
@@ -333,6 +354,7 @@ class EnvSpace:
             ENV_DATA_NAMES, [reward_v, state_v, done_v])
         return reward_space, state_space, done_space
 
+    @lab_api
     def close(self):
         logger.info('EnvSpace.close')
         for env in self.envs:

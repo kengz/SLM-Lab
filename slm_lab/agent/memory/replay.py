@@ -1,5 +1,6 @@
 from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import util
+from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as _
 
@@ -35,7 +36,11 @@ class Replay(Memory):
         self.max_size = self.body.agent.spec['memory']['max_size']
         self.state_dim = self.body.state_dim
         self.action_dim = self.body.action_dim
+        self.batch_idxs = None
+        self.total_experiences = 0  # to know total size even with forgetting
+        self.reset()
 
+    def reset(self):
         self.states = np.zeros((self.max_size, self.state_dim))
         self.actions = np.zeros((self.max_size, self.action_dim))
         self.rewards = np.zeros((self.max_size, 1))
@@ -45,9 +50,8 @@ class Replay(Memory):
 
         self.true_size = 0
         self.head = -1  # Index of most recent experience
-        self.batch_idxs = None
-        self.total_experiences = 0
 
+    @lab_api
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
         if not np.isnan(reward):
@@ -75,6 +79,7 @@ class Replay(Memory):
             self.true_size += 1
         self.total_experiences += 1
 
+    @lab_api
     def sample(self, batch_size, latest=False):
         '''
         Returns a batch of batch_size samples.
