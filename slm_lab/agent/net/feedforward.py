@@ -29,7 +29,7 @@ class MLPNet(nn.Module):
         loss_param: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
         @example:
-        net = MLPNet(1000, [512, 256, 128], 10, hid_layers_activation='relu', optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'}, clamp_grad=True, clamp_grad_val2.0)
+        net = MLPNet(1000, [512, 256, 128], 10, hid_layers_activation='relu', optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'}, clamp_grad=True, clamp_grad_val=2.0)
         '''
         super(MLPNet, self).__init__()
         # Create net and initialize params
@@ -92,7 +92,7 @@ class MLPNet(nn.Module):
         '''
         Gathers parameters that should be trained into a list returns: copy of a list of fixed params
         '''
-        return [param.clone() for param in self.parameters()]
+        return [param.clone() for param in self.params]
 
     def gather_fixed_params(self):
         '''
@@ -115,9 +115,92 @@ class MLPNet(nn.Module):
         return norms
 
 
+class MLPHeterogenousHeads(MLPNet):
+    '''
+    Class for generating arbitrary sized feedforward neural network, with a heterogenous set of output heads that may correspond to different values. For example, the mean or std deviation of a continous policy, the state-value estimate, or the logits of a categorical action distribution
+    '''
+
+    def __init__(self,
+                 in_dim,
+                 hid_dim,
+                 out_dim,
+                 hid_layers_activation=None,
+                 optim_param=None,
+                 loss_param=None,
+                 clamp_grad=False,
+                 clamp_grad_val=1.0):
+        '''
+        in_dim: dimension of the inputs
+        hid_dim: list containing dimensions of the hidden layers
+        out_dim: list containing the dimensions of the ouputs
+        optim_param: parameters for initializing the optimizer
+        hid_layers_activation: activation function for the hidden layers
+        loss_param: measure of error between model predictions and correct outputs
+        clamp_grad: whether to clamp the gradient
+        @example:
+        net = MLPHeterogenousHeads(1000, [512, 256, 128], [1, 1], hid_layers_activation='relu', optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'}, clamp_grad=True, clamp_grad_val=2.0)
+        '''
+        nn.Module.__init__(self)
+        # Create net and initialize params
+        self.in_dim = in_dim
+        self.out_dim = out_dim
+        self.layers = []
+        # Init network body
+        for i, layer in enumerate(hid_dim):
+            in_D = in_dim if i == 0 else hid_dim[i - 1]
+            out_D = hid_dim[i]
+            self.layers += [nn.Linear(in_D, out_D)]
+            self.layers += [net_util.get_activation_fn(hid_layers_activation)]
+        in_D = hid_dim[-1] if len(hid_dim) > 0 else in_dim
+        self.body = nn.Sequential(*self.layers)
+        # Init network output heads
+        self.out_layers = []
+        for i, dim in enumerate(out_dim):
+            self.out_layers += [nn.Linear(in_D, dim)]
+        self.layers += [self.out_layers]
+        self.init_params()
+        # Init other net variables
+        self.params = list(self.body.parameters())
+        for layer in self.out_layers:
+            self.params.extend(list(layer.parameters()))
+        self.optim = net_util.get_optim_multinet(self.params, optim_param)
+        self.loss_fn = net_util.get_loss_fn(self, loss_param)
+        self.clamp_grad = clamp_grad
+        self.clamp_grad_val = clamp_grad_val
+
+    def forward(self, x):
+        '''The feedforward step'''
+        x = self.body(x)
+        outs = []
+        for layer in self.out_layers:
+            outs.append(layer(x))
+        return outs
+
+    def training_step(self, x, y):
+        '''
+        Takes a single training step: one forward and one backwards pass
+        '''
+        print("Error: Shouldn't be called on a net with heterogenous heads")
+        sys.exit()
+        return np.nan
+
+    def wrap_eval(self, x):
+        '''
+        Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
+        '''
+        self.eval()
+        return [o.data for o in self(x)]
+
+    def print_nets(self):
+        '''Prints entire network'''
+        print(self.body)
+        for layer in self.out_layers:
+            print(layer)
+
+
 class MultiMLPNet(nn.Module):
     '''
-    Class for generating arbitrary sized feedforward neural network
+    Class for generating arbitrary sized feedforward neural network with multiple state and action heads, and a single shared body.
     '''
 
     def __init__(self,
