@@ -75,6 +75,7 @@ class Reinforce(Algorithm):
         util.set_attr(self, _.pick(algorithm_spec, [
             'gamma',
             'num_epis_to_collect',
+            'add_entropy'
         ]))
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
@@ -106,15 +107,22 @@ class Reinforce(Algorithm):
             advantage = self.calc_advantage(rewards)
             logger.debug(f'Length first epi: {len(rewards[0])}')
             logger.debug(f'Len log probs: {len(self.saved_log_probs)}')
+            # Check log probs, advantage, and entropy all have the same size
+            # Occassionally they do not, this is caused by first reward of an episode being nan
             if len(self.saved_log_probs) != advantage.size(0):
-                # Caused by first reward of episode being nan
                 del self.saved_log_probs[0]
                 logger.debug('Deleting first log prob in epi')
+            if len(self.entropy) != advantage.size(0):
+                del self.entropy[0]
+                logger.debug('Deleting first entropy in epi')
             assert len(self.saved_log_probs) == advantage.size(0)
             policy_loss = []
-            for log_prob, a in zip(self.saved_log_probs, advantage):
-                logger.debug(f'log prob: {log_prob.data[0]}, advantage: {a}')
-                policy_loss.append(-log_prob * a)
+            for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
+                logger.debug(f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
+                if self.add_entropy:
+                    policy_loss.append(-log_prob * a - 0.1 * e)
+                else:
+                    policy_loss.append(-log_prob * a)
             self.net.optim.zero_grad()
             policy_loss = torch.cat(policy_loss).sum()
             loss = policy_loss.data[0]
@@ -127,6 +135,7 @@ class Reinforce(Algorithm):
             self.net.optim.step()
             self.to_train = 0
             self.saved_log_probs = []
+            self.entropy = []
             logger.debug(f'Policy loss: {loss}')
             return loss
         else:

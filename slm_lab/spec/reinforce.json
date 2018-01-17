@@ -6,7 +6,8 @@
         "name": "Reinforce",
         "action_policy": "default",
         "gamma": 0.99,
-        "num_epis_to_collect": 1
+        "num_epis_to_collect": 1,
+        "add_entropy": true,
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -43,7 +44,8 @@
         "name": "Reinforce",
         "action_policy": "default",
         "gamma": 0.99,
-        "num_epis_to_collect": 1
+        "num_epis_to_collect": 1,
+        "add_entropy": true,
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -82,7 +84,8 @@
         "name": "Reinforce",
         "action_policy": "default",
         "gamma": 0.99,
-        "num_epis_to_collect": 1
+        "num_epis_to_collect": 1,
+        "add_entropy": true,
       },
       "memory": {
         "name": "OnPolicyReplay"
