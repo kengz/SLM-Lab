@@ -18,13 +18,11 @@ class Algorithm(ABC):
         '''Initializes the part of algorithm needing a body to exist first.'''
         raise NotImplementedError
 
-    @abstractmethod
     def body_act_discrete(self, body, state):
         '''Implement atomic discrete action, or throw NotImplementedError. E.g. fetch action from net given body info.'''
         raise NotImplementedError
         return action
 
-    @abstractmethod
     def body_act_continuous(self, body, state):
         '''Implement atomic continuous action, or throw NotImplementedError. E.g. fetch action from net given body info.'''
         raise NotImplementedError

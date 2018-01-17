@@ -69,8 +69,6 @@ class ACDiscrete(ReinforceDiscrete):
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.to_train = 0
-        self.flat_nonan_explore_var_a = [
-            np.nan] * len(self.agent.flat_nonan_body_a)
 
     @lab_api
     def body_act_discrete(self, body, state):
@@ -98,7 +96,7 @@ class ACDiscrete(ReinforceDiscrete):
             ))
             return total_loss
         else:
-            return None
+            return np.nan
 
     def train_critic(self, batch):
         loss = 0
@@ -115,7 +113,7 @@ class ACDiscrete(ReinforceDiscrete):
             logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss
 
-    def calculate_advantage(self, batch):
+    def calc_advantage(self, batch):
         state_vals = self.critic.wrap_eval(batch['states']).squeeze_()
         next_state_vals = self.critic.wrap_eval(
             batch['next_states']).squeeze_()
@@ -126,7 +124,7 @@ class ACDiscrete(ReinforceDiscrete):
         return advantage
 
     def train_actor(self, batch):
-        advantage = self.calculate_advantage(batch)
+        advantage = self.calc_advantage(batch)
         if len(self.saved_log_probs) != advantage.size(0):
             # Caused by first reward of episode being nan
             del self.saved_log_probs[0]
@@ -181,7 +179,7 @@ class ACDiscreteSimple(ACDiscrete):
             logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss
 
-    def calculate_advantage(self, batch):
+    def calc_advantage(self, batch):
         critic_estimate = self.critic.wrap_eval(batch['states']).squeeze_()
         advantage = self.current_rewards - critic_estimate
         logger.debug(f'Advantage: {advantage.size()}')

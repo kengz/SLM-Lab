@@ -97,6 +97,7 @@ class OpenAIEnv:
         self.e = e
         self.body_e = None
         self.flat_nonan_body_e = None  # flatten_nonan version of bodies
+        self.body_num = None
 
         self.u_env = gym.make(self.name)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get(
@@ -112,6 +113,7 @@ class OpenAIEnv:
         self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
         for idx, body in enumerate(self.flat_nonan_body_e):
             body.flat_nonan_e_idx = idx
+        self.body_num = len(self.flat_nonan_body_e)
         logger.info(util.self_desc(self))
 
     def is_discrete(self, a):
@@ -193,6 +195,8 @@ class UnityEnv:
         self.e = e
         self.body_e = None
         self.flat_nonan_body_e = None  # flatten_nonan version of bodies
+        self.body_num = None
+
         worker_id = int(f'{os.getpid()}{self.e+int(_.unique_id())}'[-4:])
         self.u_env = UnityEnvironment(
             file_name=util.get_env_path(self.name), worker_id=worker_id)
@@ -220,6 +224,7 @@ class UnityEnv:
         self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
         for idx, body in enumerate(self.flat_nonan_body_e):
             body.flat_nonan_e_idx = idx
+        self.body_num = len(self.flat_nonan_body_e)
         self.check_u_brain_to_agent()
         logger.info(util.self_desc(self))
 

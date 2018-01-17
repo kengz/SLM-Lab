@@ -72,7 +72,7 @@ class VanillaDQN(Algorithm):
             'training_iters_per_batch',  # how many times to train each batch
         ]))
         self.flat_nonan_explore_var_a = [
-            self.explore_var_start] * len(self.agent.flat_nonan_body_a)
+            self.explore_var_start] * self.agent.body_num
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''

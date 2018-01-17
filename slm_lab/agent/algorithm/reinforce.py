@@ -59,8 +59,6 @@ class ReinforceDiscrete(Algorithm):
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.to_train = 0
-        self.flat_nonan_explore_var_a = [
-            np.nan] * len(self.agent.flat_nonan_body_a)
 
     @lab_api
     def body_act_discrete(self, body, state):
@@ -79,7 +77,7 @@ class ReinforceDiscrete(Algorithm):
         if self.to_train == 1:
             # We only care about the rewards from the batch
             rewards = self.sample()['rewards']
-            advantage = self.calculate_advantage(rewards)
+            advantage = self.calc_advantage(rewards)
             logger.debug(f'Length first epi: {len(rewards[0])}')
             logger.debug(f'Len log probs: {len(self.saved_log_probs)}')
             logger.debug(f'Len advantage: {advantage.size(0)}')
@@ -107,9 +105,9 @@ class ReinforceDiscrete(Algorithm):
             logger.debug(f'Policy loss: {loss}')
             return loss
         else:
-            return None
+            return np.nan
 
-    def calculate_advantage(self, raw_rewards):
+    def calc_advantage(self, raw_rewards):
         advantage = []
         logger.debug(f'Raw rewards: {raw_rewards}')
         for epi_rewards in raw_rewards:
@@ -130,4 +128,5 @@ class ReinforceDiscrete(Algorithm):
     @lab_api
     def update(self):
         '''No update needed'''
-        return self.flat_nonan_explore_var_a
+        explore_var = np.nan
+        return explore_var

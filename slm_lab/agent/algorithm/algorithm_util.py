@@ -119,7 +119,8 @@ def multi_head_act_with_boltzmann(flat_nonan_body_a, state_a, net, flat_nonan_ta
             Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
     outs = net.wrap_eval(torch_states)
     out_with_temp = [torch.div(x, t) for x, t in zip(outs, flat_nonan_tau_a)]
-    logger.debug(f'taus: {flat_nonan_tau_a}, outs: {outs}, out_with_temp: {out_with_temp}')
+    logger.debug(
+        f'taus: {flat_nonan_tau_a}, outs: {outs}, out_with_temp: {out_with_temp}')
     flat_nonan_action_a = []
     for body, output in zip(flat_nonan_body_a, out_with_temp):
         probs = F.softmax(Variable(output), dim=1).data.numpy()[0]
@@ -153,23 +154,25 @@ def update_linear_decay(cls, space_clock):
     epi = space_clock.get('epi')
     rise = cls.explore_var_end - cls.explore_var_start
     slope = rise / float(cls.explore_anneal_epi)
-    flat_nonan_explore_var_a = max(
+    explore_var = max(
         slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
-    cls.flat_nonan_explore_var_a = [flat_nonan_explore_var_a] * len(cls.flat_nonan_explore_var_a)
-    logger.debug(f'flat_nonan_explore_var_a: {cls.flat_nonan_explore_var_a[0]}')
+    cls.flat_nonan_explore_var_a = [explore_var] * cls.agent.body_num
+    logger.debug(
+        f'flat_nonan_explore_var_a: {cls.flat_nonan_explore_var_a[0]}')
     return cls.flat_nonan_explore_var_a
 
 
 def update_multi_linear_decay(cls, _space_clock):
-    flat_nonan_explore_var = []
-    for body, e in zip(cls.agent.flat_nonan_body_a, cls.flat_nonan_explore_var_a):
+    flat_nonan_explore_var_a = []
+    for body in cls.agent.flat_nonan_body_a:
         # use body-clock instead of space clock
         epi = body.env.clock.get('epi')
         rise = cls.explore_var_end - cls.explore_var_start
         slope = rise / float(cls.explore_anneal_epi)
-        e = max(slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
-        flat_nonan_explore_var.append(e)
-    cls.flat_nonan_explore_var_a = flat_nonan_explore_var
+        explore_var = max(
+            slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
+        flat_nonan_explore_var_a.append(explore_var)
+    cls.flat_nonan_explore_var_a = flat_nonan_explore_var_a
     logger.debug(f'flat_nonan_explore_var_a: {cls.flat_nonan_explore_var_a}')
     return cls.flat_nonan_explore_var_a
 

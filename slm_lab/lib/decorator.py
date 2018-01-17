@@ -17,7 +17,7 @@ def lab_api(fn):
     def check_api(*args, **kwargs):
         # TODO name-based data check for api methods
         output = fn(*args, **kwargs)
-        logger.debug(f'API method: {fb.__name__}, output: {output}')
+        logger.debug(f'API method: {fn.__name__}, output: {output}')
         return output
     return check_api
 

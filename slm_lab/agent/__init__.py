@@ -68,6 +68,7 @@ class Agent:
         self.a = a
         self.body_a = None
         self.flat_nonan_body_a = None  # flatten_nonan version of bodies
+        self.body_num = None
 
         AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
         self.algorithm = AlgoClass(self)
@@ -78,6 +79,7 @@ class Agent:
         self.flat_nonan_body_a = util.flatten_nonan(self.body_a)
         for idx, body in enumerate(self.flat_nonan_body_a):
             body.flat_nonan_a_idx = idx
+        self.body_num = len(self.flat_nonan_body_a)
         self.algorithm.post_body_init()
         logger.info(util.self_desc(self))
 
@@ -101,14 +103,10 @@ class Agent:
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.update(
                 action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
-        # TODO finer loss and explore_var per body
-        loss = self.algorithm.train()
+        loss_a = self.algorithm.train()
+        loss_a = util.guard_data_a(self, loss_a, 'loss')
         explore_var_a = self.algorithm.update()
-        data_names = ['loss']
-        loss_a, = self.agent_space.aeb_space.init_data_s(
-            data_names, a=self.a)
-        for (e, b), body in util.ndenumerate_nonan(self.body_a):
-            loss_a[(e, b)] = loss
+        explore_var_a = util.guard_data_a(self, explore_var_a, 'explore_var')
         return loss_a, explore_var_a
 
     @lab_api
