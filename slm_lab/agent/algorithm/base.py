@@ -45,12 +45,12 @@ class Algorithm(ABC):
             action_a[(e, b)] = self.body_act(body, state)
         return action_a
 
-    def flat_nonan_to_data_a(self, data_name, flat_nonan_data_a):
-        '''Reshape flat_nonan_data_a, e.g. action_a, from a single pass back into the API-conforming data_a'''
+    def nanflat_to_data_a(self, data_name, nanflat_data_a):
+        '''Reshape nanflat_data_a, e.g. action_a, from a single pass back into the API-conforming data_a'''
         data_names = [data_name]
         data_a, = self.agent.agent_space.aeb_space.init_data_s(
             data_names, a=self.agent.a)
-        for body, data in zip(self.agent.flat_nonan_body_a, flat_nonan_data_a):
+        for body, data in zip(self.agent.nanflat_body_a, nanflat_data_a):
             e, b = body.e, body.b
             data_a[(e, b)] = data
         return data_a

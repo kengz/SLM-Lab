@@ -26,13 +26,13 @@ def act_with_epsilon_greedy(body, state, net, epsilon):
     return action
 
 
-def multi_act_with_epsilon_greedy(flat_nonan_body_a, state_a, net, flat_nonan_epsilon_a):
-    '''Multi-body flat_nonan_action_a on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
-    flat_nonan_state_a = util.flatten_nonan(state_a)
-    cat_state_a = np.concatenate(flat_nonan_state_a)
-    flat_nonan_action_a = []
+def multi_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_epsilon_a):
+    '''Multi-body nanflat_action_a on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
+    nanflat_state_a = util.nanflatten(state_a)
+    cat_state_a = np.concatenate(nanflat_state_a)
+    nanflat_action_a = []
     start_idx = 0
-    for body, e in zip(flat_nonan_body_a, flat_nonan_epsilon_a):
+    for body, e in zip(nanflat_body_a, nanflat_epsilon_a):
         logger.debug(f'body: {body.aeb}, epsilon: {e}')
         end_idx = start_idx + body.action_dim
         if e > np.random.rand():
@@ -44,25 +44,25 @@ def multi_act_with_epsilon_greedy(flat_nonan_body_a, state_a, net, flat_nonan_ep
             torch_state = Variable(torch.from_numpy(cat_state_a).float())
             out = net.wrap_eval(torch_state)
             action = int(torch.max(out[start_idx: end_idx], dim=0)[1][0])
-        flat_nonan_action_a.append(action)
+        nanflat_action_a.append(action)
         start_idx = end_idx
         logger.debug(f'''
         body: {body.aeb}, net idx: {start_idx}-{end_idx}
         action: {action}''')
-    return flat_nonan_action_a
+    return nanflat_action_a
 
 
-def multi_head_act_with_epsilon_greedy(flat_nonan_body_a, state_a, net, flat_nonan_epsilon_a):
-    '''Multi-headed body flat_nonan_action_a on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
-    flat_nonan_state_a = util.flatten_nonan(state_a)
-    flat_nonan_action_a = []
+def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_epsilon_a):
+    '''Multi-headed body nanflat_action_a on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
+    nanflat_state_a = util.nanflatten(state_a)
+    nanflat_action_a = []
     torch_states = []
-    for state in flat_nonan_state_a:
+    for state in nanflat_state_a:
         state = state.astype('float')
         torch_states.append(
             Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
     outs = net.wrap_eval(torch_states)
-    for body, e, output in zip(flat_nonan_body_a, flat_nonan_epsilon_a, outs):
+    for body, e, output in zip(nanflat_body_a, nanflat_epsilon_a, outs):
         logger.debug(f'body: {body.aeb}, epsilon: {e}')
         if e > np.random.rand():
             logger.debug(f'Random action')
@@ -70,9 +70,9 @@ def multi_head_act_with_epsilon_greedy(flat_nonan_body_a, state_a, net, flat_non
         else:
             logger.debug(f'Greedy action')
             action = torch.max(output, dim=1)[1][0]
-        flat_nonan_action_a.append(action)
+        nanflat_action_a.append(action)
         logger.debug(f'epsilon: {e}, outputs: {output}, action: {action}')
-    return flat_nonan_action_a
+    return nanflat_action_a
 
 
 def act_with_boltzmann(body, state, net, tau):
@@ -85,15 +85,15 @@ def act_with_boltzmann(body, state, net, tau):
     return action
 
 
-def multi_act_with_boltzmann(flat_nonan_body_a, state_a, net, flat_nonan_tau_a):
-    flat_nonan_state_a = util.flatten_nonan(state_a)
-    cat_state_a = np.concatenate(flat_nonan_state_a).astype(float)
+def multi_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
+    nanflat_state_a = util.nanflatten(state_a)
+    cat_state_a = np.concatenate(nanflat_state_a).astype(float)
     torch_state = Variable(torch.from_numpy(cat_state_a).float())
     out = net.wrap_eval(torch_state)
-    flat_nonan_action_a = []
+    nanflat_action_a = []
     start_idx = 0
-    logger.debug(f'taus: {flat_nonan_tau_a}')
-    for body, tau in zip(flat_nonan_body_a, flat_nonan_tau_a):
+    logger.debug(f'taus: {nanflat_tau_a}')
+    for body, tau in zip(nanflat_body_a, nanflat_tau_a):
         end_idx = start_idx + body.action_dim
         out_with_temp = torch.div(out[start_idx: end_idx], tau)
         logger.debug(f'''
@@ -105,31 +105,31 @@ def multi_act_with_boltzmann(flat_nonan_body_a, state_a, net, flat_nonan_tau_a):
         logger.debug(f'''
         body: {body.aeb}, net idx: {start_idx}-{end_idx}
         probs: {probs}, action: {action}''')
-        flat_nonan_action_a.append(action)
+        nanflat_action_a.append(action)
         start_idx = end_idx
-    return flat_nonan_action_a
+    return nanflat_action_a
 
 
-def multi_head_act_with_boltzmann(flat_nonan_body_a, state_a, net, flat_nonan_tau_a):
-    flat_nonan_state_a = util.flatten_nonan(state_a)
+def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
+    nanflat_state_a = util.nanflatten(state_a)
     torch_states = []
-    for state in flat_nonan_state_a:
+    for state in nanflat_state_a:
         state = state.astype('float')
         torch_states.append(
             Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
     outs = net.wrap_eval(torch_states)
-    out_with_temp = [torch.div(x, t) for x, t in zip(outs, flat_nonan_tau_a)]
+    out_with_temp = [torch.div(x, t) for x, t in zip(outs, nanflat_tau_a)]
     logger.debug(
-        f'taus: {flat_nonan_tau_a}, outs: {outs}, out_with_temp: {out_with_temp}')
-    flat_nonan_action_a = []
-    for body, output in zip(flat_nonan_body_a, out_with_temp):
+        f'taus: {nanflat_tau_a}, outs: {outs}, out_with_temp: {out_with_temp}')
+    nanflat_action_a = []
+    for body, output in zip(nanflat_body_a, out_with_temp):
         probs = F.softmax(Variable(output), dim=1).data.numpy()[0]
         action = np.random.choice(list(range(body.action_dim)), p=probs)
         logger.debug(f'''
         body: {body.aeb}, output: {output},
         probs: {probs}, action: {action}''')
-        flat_nonan_action_a.append(action)
-    return flat_nonan_action_a
+        nanflat_action_a.append(action)
+    return nanflat_action_a
 
 
 # From https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
@@ -156,25 +156,25 @@ def update_linear_decay(cls, space_clock):
     slope = rise / float(cls.explore_anneal_epi)
     explore_var = max(
         slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
-    cls.flat_nonan_explore_var_a = [explore_var] * cls.agent.body_num
+    cls.nanflat_explore_var_a = [explore_var] * cls.agent.body_num
     logger.debug(
-        f'flat_nonan_explore_var_a: {cls.flat_nonan_explore_var_a[0]}')
-    return cls.flat_nonan_explore_var_a
+        f'nanflat_explore_var_a: {cls.nanflat_explore_var_a[0]}')
+    return cls.nanflat_explore_var_a
 
 
 def update_multi_linear_decay(cls, _space_clock):
-    flat_nonan_explore_var_a = []
-    for body in cls.agent.flat_nonan_body_a:
+    nanflat_explore_var_a = []
+    for body in cls.agent.nanflat_body_a:
         # use body-clock instead of space clock
         epi = body.env.clock.get('epi')
         rise = cls.explore_var_end - cls.explore_var_start
         slope = rise / float(cls.explore_anneal_epi)
         explore_var = max(
             slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
-        flat_nonan_explore_var_a.append(explore_var)
-    cls.flat_nonan_explore_var_a = flat_nonan_explore_var_a
-    logger.debug(f'flat_nonan_explore_var_a: {cls.flat_nonan_explore_var_a}')
-    return cls.flat_nonan_explore_var_a
+        nanflat_explore_var_a.append(explore_var)
+    cls.nanflat_explore_var_a = nanflat_explore_var_a
+    logger.debug(f'nanflat_explore_var_a: {cls.nanflat_explore_var_a}')
+    return cls.nanflat_explore_var_a
 
 
 def update_gaussian(body, state, net, stddev):

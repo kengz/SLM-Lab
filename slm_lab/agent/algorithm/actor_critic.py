@@ -35,7 +35,7 @@ class ACDiscrete(ReinforceDiscrete):
 
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
-        body = self.agent.flat_nonan_body_a[0]  # singleton algo
+        body = self.agent.nanflat_body_a[0]  # singleton algo
         state_dim = body.state_dim
         action_dim = body.action_dim
         net_spec = self.agent.spec['net']
@@ -77,7 +77,7 @@ class ACDiscrete(ReinforceDiscrete):
     def sample(self):
         '''Samples a batch from memory'''
         batches = [body.memory.sample()
-                   for body in self.agent.flat_nonan_body_a]
+                   for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         util.to_torch_batch(batch)
         return batch
@@ -188,7 +188,7 @@ class ACDiscreteSimple(ACDiscrete):
     def sample(self):
         '''Samples a batch from memory'''
         batches = [body.memory.sample()
-                   for body in self.agent.flat_nonan_body_a]
+                   for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         util.to_torch_batch_ex_rewards(batch)
         return batch

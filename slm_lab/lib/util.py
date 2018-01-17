@@ -125,8 +125,8 @@ def filter_nonan(arr):
         return np.array(mixed_type, dtype=arr.dtype)
 
 
-def flatten_nonan(arr):
-    '''Flatten and filter to np array with no nan'''
+def nanflatten(arr):
+    '''Flatten np array while ignoring nan, like np.nansum etc.'''
     flat_arr = arr.reshape(-1)
     return filter_nonan(flat_arr)
 

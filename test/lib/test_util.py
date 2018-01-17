@@ -109,10 +109,10 @@ def test_filter_nonan(arr):
     ([[0, np.nan], [1, 2]], [0, 1, 2]),
     ([[[0], [np.nan]], [[1], [2]]], [0, 1, 2]),
 ])
-def test_flatten_nonan(arr, res):
+def test_nanflatten(arr, res):
     arr = np.array(arr)
     res = np.array(res)
-    assert np.array_equal(util.flatten_nonan(arr), res)
+    assert np.array_equal(util.nanflatten(arr), res)
 
 
 @pytest.mark.parametrize('v,isnan', [

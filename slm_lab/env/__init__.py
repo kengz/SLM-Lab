@@ -96,7 +96,7 @@ class OpenAIEnv:
         self.env_space = env_space
         self.e = e
         self.body_e = None
-        self.flat_nonan_body_e = None  # flatten_nonan version of bodies
+        self.nanflat_body_e = None  # nanflatten version of bodies
         self.body_num = None
 
         self.u_env = gym.make(self.name)
@@ -110,10 +110,10 @@ class OpenAIEnv:
     @lab_api
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
-        for idx, body in enumerate(self.flat_nonan_body_e):
-            body.flat_nonan_e_idx = idx
-        self.body_num = len(self.flat_nonan_body_e)
+        self.nanflat_body_e = util.nanflatten(self.body_e)
+        for idx, body in enumerate(self.nanflat_body_e):
+            body.nanflat_e_idx = idx
+        self.body_num = len(self.nanflat_body_e)
         logger.info(util.self_desc(self))
 
     def is_discrete(self, a):
@@ -194,7 +194,7 @@ class UnityEnv:
         self.env_space = env_space
         self.e = e
         self.body_e = None
-        self.flat_nonan_body_e = None  # flatten_nonan version of bodies
+        self.nanflat_body_e = None  # nanflatten version of bodies
         self.body_num = None
 
         worker_id = int(f'{os.getpid()}{self.e+int(_.unique_id())}'[-4:])
@@ -221,10 +221,10 @@ class UnityEnv:
     @lab_api
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        self.flat_nonan_body_e = util.flatten_nonan(self.body_e)
-        for idx, body in enumerate(self.flat_nonan_body_e):
-            body.flat_nonan_e_idx = idx
-        self.body_num = len(self.flat_nonan_body_e)
+        self.nanflat_body_e = util.nanflatten(self.body_e)
+        for idx, body in enumerate(self.nanflat_body_e):
+            body.nanflat_e_idx = idx
+        self.body_num = len(self.nanflat_body_e)
         self.check_u_brain_to_agent()
         logger.info(util.self_desc(self))
 
@@ -273,7 +273,7 @@ class UnityEnv:
         # TODO implement clock_speed: step only if self.clock.to_step()
         if self.done:
             return self.reset()
-        action_e = util.flatten_nonan(action_e)
+        action_e = util.nanflatten(action_e)
         env_info_dict = self.u_env.step(action_e)
         reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(
             ENV_DATA_NAMES, e=self.e)

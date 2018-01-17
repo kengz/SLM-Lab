@@ -38,7 +38,7 @@ class VanillaDQN(Algorithm):
 
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
-        body = self.agent.flat_nonan_body_a[0]  # single-body algo
+        body = self.agent.nanflat_body_a[0]  # single-body algo
         state_dim = body.state_dim  # dimension of the environment state, e.g. 4
         action_dim = body.action_dim  # dimension of the environment actions, e.g. 2
         net_spec = self.agent.spec['net']
@@ -71,7 +71,7 @@ class VanillaDQN(Algorithm):
             'training_epoch',  # how many batches to train each time
             'training_iters_per_batch',  # how many times to train each batch
         ]))
-        self.flat_nonan_explore_var_a = [
+        self.nanflat_explore_var_a = [
             self.explore_var_start] * self.agent.body_num
 
     def compute_q_target_values(self, batch):
@@ -101,7 +101,7 @@ class VanillaDQN(Algorithm):
     def sample(self):
         '''Samples a batch from memory of size self.batch_size'''
         batches = [body.memory.sample(self.batch_size)
-                   for body in self.agent.flat_nonan_body_a]
+                   for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         util.to_torch_batch(batch)
         return batch
@@ -140,14 +140,14 @@ class VanillaDQN(Algorithm):
     @lab_api
     def body_act_discrete(self, body, state):
         ''' Selects and returns a discrete action for body using the action policy'''
-        return self.action_policy(body, state, self.net, self.flat_nonan_explore_var_a[body.flat_nonan_a_idx])
+        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx])
 
     def update_explore_var(self):
         '''Updates the explore variables'''
         space_clock = util.s_get(self, 'aeb_space.clock')
-        flat_nonan_explore_var_a = self.action_policy_update(self, space_clock)
-        explore_var_a = self.flat_nonan_to_data_a(
-            'explore_var', flat_nonan_explore_var_a)
+        nanflat_explore_var_a = self.action_policy_update(self, space_clock)
+        explore_var_a = self.nanflat_to_data_a(
+            'explore_var', nanflat_explore_var_a)
         return explore_var_a
 
     @lab_api
@@ -181,7 +181,7 @@ class DQNBase(VanillaDQN):
 
     def init_nets(self):
         '''Initialize networks'''
-        body = self.agent.flat_nonan_body_a[0]  # single-body algo
+        body = self.agent.nanflat_body_a[0]  # single-body algo
         state_dim = body.state_dim
         action_dim = body.action_dim
         net_spec = self.agent.spec['net']
@@ -297,9 +297,9 @@ class MultitaskDQN(DQN):
     def init_nets(self):
         '''Initialize nets with multi-task dimensions, and set net params'''
         self.state_dims = [
-            body.state_dim for body in self.agent.flat_nonan_body_a]
+            body.state_dim for body in self.agent.nanflat_body_a]
         self.action_dims = [
-            body.action_dim for body in self.agent.flat_nonan_body_a]
+            body.action_dim for body in self.agent.nanflat_body_a]
         self.total_state_dim = sum(self.state_dims)
         self.total_action_dim = sum(self.action_dims)
         net_spec = self.agent.spec['net']
@@ -323,7 +323,7 @@ class MultitaskDQN(DQN):
     def sample(self):
         # NOTE the purpose of multi-body is to parallelize and get more batch_sizes
         batches = [body.memory.sample(self.batch_size)
-                   for body in self.agent.flat_nonan_body_a]
+                   for body in self.agent.nanflat_body_a]
         # Package data into pytorch variables
         for batch_b in batches:
             util.to_torch_batch(batch_b)
@@ -348,7 +348,7 @@ class MultitaskDQN(DQN):
         logger.debug(f'Q next st act vals: {q_next_st_acts}')
         start_idx = 0
         q_next_acts = []
-        for body in self.agent.flat_nonan_body_a:
+        for body in self.agent.nanflat_body_a:
             end_idx = start_idx + body.action_dim
             _val, q_next_act_b = torch.max(
                 q_next_st_acts[:, start_idx:end_idx], dim=1)
@@ -403,9 +403,9 @@ class MultitaskDQN(DQN):
 
     def act(self, state_a):
         '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
-        flat_nonan_action_a = self.action_policy(
-            self.agent.flat_nonan_body_a, state_a, self.net, self.flat_nonan_explore_var_a)
-        action_a = self.flat_nonan_to_data_a('action', flat_nonan_action_a)
+        nanflat_action_a = self.action_policy(
+            self.agent.nanflat_body_a, state_a, self.net, self.nanflat_explore_var_a)
+        action_a = self.nanflat_to_data_a('action', nanflat_action_a)
         return action_a
 
 
@@ -421,9 +421,9 @@ class MultiHeadDQN(MultitaskDQN):
         else:
             state_head_out_d = 16
         self.state_dims = [
-            [body.state_dim, state_head_out_d] for body in self.agent.flat_nonan_body_a]
+            [body.state_dim, state_head_out_d] for body in self.agent.nanflat_body_a]
         self.action_dims = [
-            [body.action_dim] for body in self.agent.flat_nonan_body_a]
+            [body.action_dim] for body in self.agent.nanflat_body_a]
         self.total_state_dim = sum([s[0] for s in self.state_dims])
         self.total_action_dim = sum([a[0] for a in self.action_dims])
         logger.debug(
@@ -450,7 +450,7 @@ class MultiHeadDQN(MultitaskDQN):
     def sample(self):
         '''Samples one batch per environment'''
         batches = [body.memory.sample(self.batch_size)
-                   for body in self.agent.flat_nonan_body_a]
+                   for body in self.agent.nanflat_body_a]
         # Package data into pytorch variables
         for batch_b in batches:
             util.to_torch_batch(batch_b)
