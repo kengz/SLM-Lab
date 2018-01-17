@@ -116,6 +116,7 @@ class Reinforce(Algorithm):
                 del self.entropy[0]
                 logger.debug('Deleting first entropy in epi')
             assert len(self.saved_log_probs) == advantage.size(0)
+            assert len(self.entropy) == advantage.size(0)
             policy_loss = []
             for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
                 logger.debug(f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
