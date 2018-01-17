@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
-from torch.distributions import Categorical
+from torch.distributions import Categorical, Normal
 
 
 def act_with_epsilon_greedy(body, state, net, epsilon):
@@ -132,7 +132,7 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
     return nanflat_action_a
 
 
-# From https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
+# Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
 def act_with_softmax(agent, state, net):
     torch_state = Variable(torch.from_numpy(state).float())
     out = net(torch_state)
@@ -142,12 +142,35 @@ def act_with_softmax(agent, state, net):
     logger.debug(
         f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
     agent.saved_log_probs.append(m.log_prob(action))
+    # Calculate entropy of the distribution
+    H = - torch.sum(torch.mul(probs, torch.log(probs)))
+    agent.entropy.append(H)
     return action.data[0]
 
 
-def act_with_gaussian(body, state, net, stddev):
-    # TODO implement act_with_gaussian
-    pass
+# Denny Britz has a very helpful implementation of an Actor Critic algorithm. This function is adapted from his approach. I highly recommend looking at his full implementation available here https://github.com/dennybritz/reinforcement-learning/blob/master/PolicyGradient/Continuous%20MountainCar%20Actor%20Critic%20Solution.ipynb
+def act_with_gaussian(agent, state, net, body):
+    '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
+    torch_state = Variable(torch.from_numpy(state).float())
+    [mu, sigma] = net(torch_state)
+    sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0
+    m = Normal(mu, sigma)
+    action = m.sample()
+    # TODO: fix action hack - extract from env
+    action = torch.clamp(action, -1.0, 1.0)
+    logger.debug(
+        f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
+    agent.saved_log_probs.append(m.log_prob(action))
+    # Calculate entropy of the distribution
+    H = 0.5 * torch.log(2.0 * np.pi * np.e * sigma * sigma)
+    agent.entropy.append(H)
+    return action.data
+
+
+def act_with_multivariate_gaussian(body, state, net, stddev):
+    '''Assumes net outputs two tensors which contain the mean and std dev of a multivariate normal distribution'''
+    raise NotImplementedError
+    return np.nan
 
 
 def update_linear_decay(cls, space_clock):
@@ -177,11 +200,6 @@ def update_multi_linear_decay(cls, _space_clock):
     return cls.nanflat_explore_var_a
 
 
-def update_gaussian(body, state, net, stddev):
-    # TODO implement act_with_gaussian
-    pass
-
-
 act_fns = {
     'epsilon_greedy': act_with_epsilon_greedy,
     'multi_epsilon_greedy': multi_act_with_epsilon_greedy,
@@ -197,5 +215,4 @@ act_fns = {
 act_update_fns = {
     'linear_decay': update_linear_decay,
     'multi_linear_decay': update_multi_linear_decay,
-    'gaussian': update_gaussian
 }

@@ -11,14 +11,14 @@ import torch
 import pydash as _
 
 
-class ReinforceDiscrete(Algorithm):
+class Reinforce(Algorithm):
     '''
-    Implementation of REINFORCE (Williams, 1992) with baseline for discrete actions http://www-anw.cs.umass.edu/~barto/courses/cs687/williams92simple.pdf
+    Implementation of REINFORCE (Williams, 1992) with baseline for discrete or continuous actions http://www-anw.cs.umass.edu/~barto/courses/cs687/williams92simple.pdf
     Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
     Algorithm:
         1. At each timestep in an episode
             - Calculate the advantage of that timestep
-            - Multiply the advantage by the negative of log probability of the action taken
+            - Multiply the advantage by the negative of the log probability of the action taken
         2. Sum all the values above.
         3. Calculate the gradient of this value with respect to all of the parameters of the network
         4. Update the network parameters using the gradient
@@ -37,6 +37,7 @@ class ReinforceDiscrete(Algorithm):
         body = self.agent.nanflat_body_a[0]  # singleton algo
         state_dim = body.state_dim
         action_dim = body.action_dim
+        self.is_discrete = body.is_discrete
         net_spec = self.agent.spec['net']
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -45,24 +46,48 @@ class ReinforceDiscrete(Algorithm):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         ))
-        self.net = getattr(net, net_spec['type'])(
-            state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
+        # Below we automatically select an appropriate net for a discrete or continuous action space if the setting is of the form 'MLPdefault'. Otherwise the correct type of network is assumed to be specified in the spec.
+        # Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
+        # Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
+        if net_spec['type'] == 'MLPdefault':
+            if self.is_discrete:
+                self.net = getattr(net, 'MLPNet')(
+                    state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
+            else:
+                self.net = getattr(net, 'MLPHeterogenousHeads')(
+                    state_dim, net_spec['hid_layers'], [action_dim, action_dim], **net_kwargs)
+        else:
+            self.net = getattr(net, net_spec['type'])(
+                state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
 
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
-        self.action_policy = act_fns[algorithm_spec['action_policy']]
+        # Automatically selects appropriate discrete or continuous action policy if setting is default
+        action_fn = algorithm_spec['action_policy']
+        if action_fn == 'default':
+            if self.is_discrete:
+                self.action_policy = act_fns['softmax']
+            else:
+                self.action_policy = act_fns['gaussian']
+        else:
+            self.action_policy = act_fns[action_fn]
         util.set_attr(self, _.pick(algorithm_spec, [
             'gamma',
             'num_epis_to_collect',
         ]))
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
+        self.entropy = []
         self.to_train = 0
 
     @lab_api
     def body_act_discrete(self, body, state):
         return self.action_policy(self, state, self.net)
+
+    @lab_api
+    def body_act_continuous(self, body, state):
+        return self.action_policy(self, state, self.net, body)
 
     def sample(self):
         '''Samples a batch from memory'''
@@ -75,12 +100,12 @@ class ReinforceDiscrete(Algorithm):
     @lab_api
     def train(self):
         if self.to_train == 1:
+            logger.debug(f'Training...')
             # We only care about the rewards from the batch
             rewards = self.sample()['rewards']
             advantage = self.calc_advantage(rewards)
             logger.debug(f'Length first epi: {len(rewards[0])}')
             logger.debug(f'Len log probs: {len(self.saved_log_probs)}')
-            logger.debug(f'Len advantage: {advantage.size(0)}')
             if len(self.saved_log_probs) != advantage.size(0):
                 # Caused by first reward of episode being nan
                 del self.saved_log_probs[0]
