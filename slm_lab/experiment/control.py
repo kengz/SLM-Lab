@@ -4,15 +4,21 @@ Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Se
 '''
 from slm_lab.agent import AgentSpace
 from slm_lab.env import EnvSpace
-from slm_lab.experiment import analysis, search
-from slm_lab.experiment.monitor import info_space, AEBSpace
+from slm_lab.experiment import analysis
+from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import logger, util, viz
 import numpy as np
 import pandas as pd
 import pydash as _
+import ray
 import torch
 
+ray.register_custom_serializer(InfoSpace, use_pickle=True)
+ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
+ray.register_custom_serializer(pd.Series, use_pickle=True)
 
+
+@ray.remote
 class Session:
     '''
     The base unit of instantiated RL system.
@@ -22,9 +28,10 @@ class Session:
     then return the session data.
     '''
 
-    def __init__(self, spec):
+    def __init__(self, spec, info_space=InfoSpace()):
         self.spec = spec
-        self.coor, self.index = info_space.index_lab_comp(self)
+        self.info_space = info_space
+        self.coor, self.index = self.info_space.get_coor_idx(self)
         # TODO option to set rand_seed
         self.torch_rand_seed = torch.initial_seed()
         self.data = None
@@ -68,6 +75,7 @@ class Session:
         return self.data
 
 
+@ray.remote
 class Trial:
     '''
     The base unit of an experiment.
@@ -77,23 +85,29 @@ class Trial:
     then return the trial data.
     '''
 
-    def __init__(self, spec):
+    def __init__(self, spec, info_space):
+        # TODO restore defaulting when done
+        # def __init__(self, spec, info_space=InfoSpace()):
         self.spec = spec
-        self.coor, self.index = info_space.index_lab_comp(self)
+        self.info_space = info_space
+        self.coor, self.index = self.info_space.get_coor_idx(self)
         self.session_data_dict = {}
         self.data = None
 
-    def init_session_and_run(self, session_id):
-        return Session(self.spec).run()
+    def init_session_and_run(self):
+        self.info_space.tick('session')
+        session = Session.remote(self.spec, self.info_space)
+        return session.run.remote()
 
     def close(self):
         logger.info('Trial done, closing.')
 
     def run(self):
-        session_ids = list(range(self.spec['meta']['max_session']))
-        session_datas = util.parallelize_fn(
-            self.init_session_and_run, session_ids)
-        self.session_data_dict = dict(zip(session_ids, session_datas))
+        ray_session_ids = [
+            self.init_session_and_run() for s in range(self.spec['meta']['max_session'])]
+        session_datas = ray.get(ray_session_ids)
+        self.session_data_dict = {
+            data.index[0]: data for data in session_datas}
         self.data = analysis.analyze_trial(self)
         self.close()
         return self.data
@@ -114,9 +128,10 @@ class Experiment:
     '''
     # TODO metaspec to specify specs to run, can be sourced from evolution suggestion
 
-    def __init__(self, spec):
+    def __init__(self, spec, info_space=InfoSpace()):
         self.spec = spec
-        self.coor, self.index = info_space.index_lab_comp(self)
+        self.info_space = info_space
+        self.coor, self.index = self.info_space.get_coor_idx(self)
         self.trial_data_dict = {}
         self.best_spec = None
         self.data = None
@@ -125,7 +140,8 @@ class Experiment:
         self.search = SearchClass(self)
 
     def init_trial_and_run(self, spec):
-        return Trial(spec).run()
+        self.info_space.tick('trial')
+        return Trial(spec, self.info_space).run()
 
     def close(self):
         logger.info('Experiment done, closing.')

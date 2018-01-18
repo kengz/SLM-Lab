@@ -227,7 +227,7 @@ class AEBSpace:
         return end_session
 
 
-# TODO put AEBSpace into InfoSpace, propagate method usage, shove into DB
+# TODO put AEBSpace into InfoSpace, careful with pickle in ray. propagate method usage, shove into DB
 class InfoSpace:
     def __init__(self, last_coor=None):
         '''
@@ -247,11 +247,15 @@ class InfoSpace:
             coor[post_axis] = None
         return coor
 
-    def advance_coor(self, axis):
+    def tick(self, axis):
         '''
         Advance the coor to the next point in axis (control unit class).
         If the axis value has been reset, update to 0, else increment. For all axes lower than the specified axis, reset to None.
         Note this will not skip coor in space, even though the covered space may not be rectangular.
+        @example
+
+        info_space.tick('session')
+        session = Session(spec, info_space)
         '''
         assert axis in self.coor
         new_coor = self.coor.copy()
@@ -264,19 +268,21 @@ class InfoSpace:
         self.coor = new_coor
         return self.coor
 
-    def index_lab_comp(self, lab_comp):
+    def get_coor_idx(self, lab_comp):
         '''
-        Update info space coor when initializing lab component, and return its coor and index.
+        Get info space coor when initializing lab component, and return its coor and index.
         Does not apply to AEB entities.
         @returns {tuple, int} data_coor, index
         @example
 
         class Session:
             def __init__(self, spec):
-                self.coor, self.index = info_space.index_lab_comp(self)
+                self.coor, self.index = info_space.get_coor_idx(self)
+
+        info_space.tick('session')
+        session = Session(spec, info_space)
         '''
         axis = util.get_class_name(lab_comp, lower=True)
-        self.advance_coor(axis)
         coor = self.coor.copy()
         index = coor[axis]
         return coor, index
@@ -302,7 +308,3 @@ class Monitor:
         # TODO hook monitor to agent, env, then per update, auto fetches all that is in background
         # TODO call update in session, trial, experiment loops to collect data visible there too, for unit_data
         return
-
-
-# TODO create like monitor, for experiment level
-info_space = InfoSpace()
