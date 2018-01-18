@@ -34,7 +34,6 @@ class ActorCritic(Reinforce):
         self.init_algo_params()
         self.actor.print_nets()  # Print the network architecture
         logger.info(util.self_desc(self))
-        sys.exit()
 
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
@@ -77,13 +76,13 @@ class ActorCritic(Reinforce):
         else:
             self.is_shared_architecture = True
             # TODO fix for MLPshared - single heterogenous head
-            logger.info(f'Net type {net_type} not supported yet. Please use MLPseparate')
+            logger.warn(f'Net type {net_type} not supported yet. Please use MLPseparate')
             sys.exit()
 
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
-        # Automatically selects appropriate discrete or continuous action policy if setting is default
+        # Automatically selects appropriate discrete or continuous action policy under default setting
         action_fn = algorithm_spec['action_policy']
         if action_fn == 'default':
             if self.is_discrete:
@@ -92,6 +91,7 @@ class ActorCritic(Reinforce):
                 self.action_policy = act_fns['gaussian']
         else:
             self.action_policy = act_fns[action_fn]
+        # Set other training parameters
         util.set_attr(self, _.pick(algorithm_spec, [
             'gamma',
             'training_frequency', 'training_iters_per_batch',
@@ -101,7 +101,17 @@ class ActorCritic(Reinforce):
             self.get_target = self.gae_1_target
         else:
             self.get_target = self.gae_0_target
-        # To save on a forward pass keep the log probs from each action
+        # Flag if memory is episodic or discrete.
+        # This affects how the target and advantage functions are calculated
+        memory = self.agent.nanflat_body_a[0].memory.__class__.__name__
+        if memory.find('OnPolicyReplay') != -1:
+            self.is_episodic = True
+        elif memory.find('OnPolicyBatchReplay') != -1:
+            self.is_episodic = False
+        else:
+            logger.warn(f'Error: Memory {memory} not recognised')
+            sys.exit()
+        # To save on a forward pass keep the log probs and entropy from each action
         self.saved_log_probs = []
         self.entropy = []
         self.to_train = 0
@@ -119,7 +129,10 @@ class ActorCritic(Reinforce):
         batches = [body.memory.sample()
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
-        util.to_torch_batch(batch)
+        if self.is_episodic:
+            util.to_torch_nested_batch(batch)
+        else:
+            util.to_torch_batch(batch)
         return batch
 
     @lab_api
@@ -174,7 +187,7 @@ class ActorCritic(Reinforce):
 
     def gae_1_target(self, batch):
         # TODO explain gae_1_target
-        # TODO add memory guard
+        assert self.is_episodic is True
         rewards = []
         # TODO fix for multiple episodes
         epi_rewards = batch['rewards']
