@@ -103,7 +103,7 @@
       }
     }],
     "env": [{
-      "name": "Cartpole-v0",
+      "name": "CartPole-v0",
       "max_timestep": null
     }],
     "body": {

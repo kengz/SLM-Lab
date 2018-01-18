@@ -1,7 +1,7 @@
 from slm_lab.agent import memory
 from slm_lab.agent import net
 from slm_lab.agent.algorithm.algorithm_util import act_fns
-from slm_lab.agent.algorithm.reinforce import ReinforceDiscrete
+from slm_lab.agent.algorithm.reinforce import Reinforce
 from slm_lab.agent.net import net_util
 from slm_lab.lib import util, logger
 from slm_lab.lib.decorator import lab_api
@@ -11,9 +11,10 @@ import torch
 import pydash as _
 
 
-class ACDiscrete(ReinforceDiscrete):
+class ActorCritic(Reinforce):
     '''
     Implementation of a simple actor-critic algorithm.
+    TODO - finish comments
     Algorithm:
         1. Collect k examples
             - Train the critic network using these examples
@@ -38,6 +39,8 @@ class ACDiscrete(ReinforceDiscrete):
         body = self.agent.nanflat_body_a[0]  # singleton algo
         state_dim = body.state_dim
         action_dim = body.action_dim
+        # TODO: create separate net specs
+        # TODO: automate actor switch between continuous and discrete
         net_spec = self.agent.spec['net']
         actor_kwargs = util.compact_dict(dict(
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -61,21 +64,33 @@ class ACDiscrete(ReinforceDiscrete):
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
+        # TODO: fix for auto continuous and discrete adjustment
         self.action_policy = act_fns[algorithm_spec['action_policy']]
         util.set_attr(self, _.pick(algorithm_spec, [
             'gamma',
             'training_frequency', 'training_iters_per_batch',
+            'add_entropy', 'advantage_fn'
         ]))
+        if self.advantage_fn == "gae_1":
+            self.get_target = self.gae_1_target
+        else:
+            self.get_target = self.gae_0_target
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
+        self.entropy = []
         self.to_train = 0
 
     @lab_api
     def body_act_discrete(self, body, state):
         return self.action_policy(self, state, self.actor)
 
+    @lab_api
+    def body_act_continuous(self, body, state):
+        return self.action_policy(self, state, self.net, body)
+
     def sample(self):
         '''Samples a batch from memory'''
+        # TODO: Change sampling type depending on memory
         batches = [body.memory.sample()
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
@@ -101,39 +116,59 @@ class ACDiscrete(ReinforceDiscrete):
     def train_critic(self, batch):
         loss = 0
         for _i in range(self.training_iters_per_batch):
-            state_vals = self.critic.wrap_eval(batch['states'])
-            next_state_vals = self.critic.wrap_eval(batch['next_states'])
-            next_state_vals.squeeze_()
-            # Add reward and discount
-            next_state_vals = batch['rewards'].data + self.gamma * \
-                torch.mul((1 - batch['dones'].data), next_state_vals)
-            next_state_vals.unsqueeze_(1)
-            y = Variable(next_state_vals)
+            target = self.get_target(batch)
+            y = Variable(target)
             loss = self.critic.training_step(batch['states'], y).data[0]
             logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss
 
     def calc_advantage(self, batch):
+        target = self.get_target(batch)
         state_vals = self.critic.wrap_eval(batch['states']).squeeze_()
-        next_state_vals = self.critic.wrap_eval(
-            batch['next_states']).squeeze_()
-        advantage = batch['rewards'].data + self.gamma * \
-            torch.mul((1 - batch['dones'].data), next_state_vals) - state_vals
+        advantage = target - state_vals
         advantage.squeeze_()
         logger.debug(f'Advantage: {advantage.size()}')
         return advantage
 
+    def gae_0_target(self, batch):
+        next_state_vals = self.critic.wrap_eval(
+            batch['next_states']).squeeze_()
+        target = batch['rewards'].data + self.gamma * \
+            torch.mul((1 - batch['dones'].data), next_state_vals)
+        logger.debug(f'Target: {target.size()}')
+        return target
+
+    def gae_1_target(self, batch):
+        rewards = []
+        epi_rewards = batch['rewards']
+        big_r = 0
+        for i in xrange(epi_rewards.size(0), 0, -1):
+            r = epi_rewards[i]
+            big_r = r + self.gamma * big_r
+            rewards.insert(0, big_r)
+        rewards = torch.Tensor(rewards)
+        logger.debug(f'Target: {target.size()}')
+        return target
+
     def train_actor(self, batch):
         advantage = self.calc_advantage(batch)
+        # Check log probs, advantage, and entropy all have the same size
+        # Occassionally they do not, this is caused by first reward of an episode being nan
         if len(self.saved_log_probs) != advantage.size(0):
-            # Caused by first reward of episode being nan
             del self.saved_log_probs[0]
             logger.debug('Deleting first log prob in epi')
+        if len(self.entropy) != advantage.size(0):
+            del self.entropy[0]
+            logger.debug('Deleting first entropy in epi')
         assert len(self.saved_log_probs) == advantage.size(0)
+        assert len(self.entropy) == advantage.size(0)
         policy_loss = []
-        for log_prob, a in zip(self.saved_log_probs, advantage):
-            logger.debug(f'log prob: {log_prob.data[0]}, advantage: {a}')
-            policy_loss.append(-log_prob * a)
+        for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
+            logger.debug(f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
+            if self.add_entropy:
+                policy_loss.append(-log_prob * a - 0.1 * e)
+            else:
+                policy_loss.append(-log_prob * a)
         self.actor.optim.zero_grad()
         policy_loss = torch.cat(policy_loss).sum()
         loss = policy_loss.data[0]
@@ -146,49 +181,6 @@ class ACDiscrete(ReinforceDiscrete):
         self.actor.optim.step()
         self.to_train = 0
         self.saved_log_probs = []
+        self.entropy = []
         logger.debug(f'Policy loss: {loss}')
         return loss
-
-
-class ACDiscreteSimple(ACDiscrete):
-    '''
-    Implementation of a simple actor-critic algorithm.
-    Similar to ACDiscrete, but uses a different approach to calculating the advantage which follows
-    https://github.com/pytorch/examples/blob/master/reinforcement_learning/actor_critic.py
-    '''
-
-    def train_critic(self, batch):
-        loss = 0
-        rewards = []
-        raw_rewards = batch['rewards']
-        big_r = 0
-        for r in raw_rewards[::-1]:
-            big_r = r + self.gamma * big_r
-            rewards.insert(0, big_r)
-        rewards = torch.Tensor(rewards)
-        if rewards.size(0) == 1:
-            logger.info("Rewards of length one, no need to normalize")
-        else:
-            rewards = (rewards - rewards.mean()) / \
-                (rewards.std() + np.finfo(np.float32).eps)
-        self.current_rewards = rewards
-        for _i in range(self.training_iters_per_batch):
-            y = Variable(rewards)
-            loss = self.critic.training_step(batch['states'], y).data[0]
-            logger.debug(f'Normalized rewards: {y.data}')
-            logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
-        return loss
-
-    def calc_advantage(self, batch):
-        critic_estimate = self.critic.wrap_eval(batch['states']).squeeze_()
-        advantage = self.current_rewards - critic_estimate
-        logger.debug(f'Advantage: {advantage.size()}')
-        return advantage
-
-    def sample(self):
-        '''Samples a batch from memory'''
-        batches = [body.memory.sample()
-                   for body in self.agent.nanflat_body_a]
-        batch = util.concat_dict(batches)
-        util.to_torch_batch_ex_rewards(batch)
-        return batch
