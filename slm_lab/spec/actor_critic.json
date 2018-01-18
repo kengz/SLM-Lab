@@ -4,7 +4,7 @@
       "name": "ActorCritic",
       "algorithm": {
         "name": "ActorCritic",
-        "action_policy": "softmax",
+        "action_policy": "default",
         "gamma": 0.999,
         "training_frequency": 8,
         "training_iters_per_batch": 3,
@@ -15,7 +15,7 @@
         "name": "OnPolicyBatchReplay"
       },
       "net": {
-        "type": "MLPNet",
+        "type": "MLPseparate",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "optim_actor": {
@@ -31,7 +31,7 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "Pendulum-v0",
       "max_timestep": null
     }],
     "body": {
