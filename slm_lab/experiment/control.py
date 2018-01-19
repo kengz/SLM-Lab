@@ -26,7 +26,7 @@ class Session:
         self.spec = spec
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
-        # TODO option to set rand_seed
+        # TODO option to set rand_seed. also set np random seed
         self.torch_rand_seed = torch.initial_seed()
         self.data = None
         self.aeb_space = AEBSpace(self.spec)
@@ -95,6 +95,7 @@ class Trial:
         logger.info('Trial done, closing.')
 
     def run(self):
+        # TODO parallelize differently on search vs single mode
         session_datas = [
             self.init_session_and_run() for _s in range(self.spec['meta']['max_session'])]
         self.session_data_dict = {

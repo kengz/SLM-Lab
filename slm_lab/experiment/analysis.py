@@ -238,6 +238,7 @@ def analyze_experiment(experiment):
         experiment_df.columns.tolist(), cols))
     sorted_cols = config_cols + cols
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
+    logger.info(f'Experiment data:\n{experiment_df}')
     # TODO sort experiment_df
     experiment_fig = plot_experiment(experiment.spec, experiment_df)
     best_trial_index = experiment_df['fitness'].idxmax()

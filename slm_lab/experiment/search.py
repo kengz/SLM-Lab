@@ -17,43 +17,30 @@ class RaySearch:
         self.experiment = experiment
 
     def build_config_space(self):
-        '''Build ray config space from flattened spec.search for ray spec passed to run_experiments()'''
-        # space_types = {
-        #     'default': CategoricalHyperparameter,
-        #     'categorical': CategoricalHyperparameter,
-        #     'uniform_float': UniformFloatHyperparameter,
-        #     'uniform_integer': UniformIntegerHyperparameter,
-        #     'normal_float': NormalFloatHyperparameter,
-        #     'normal_integer': NormalIntegerHyperparameter,
-        # }
+        '''
+        Build ray config space from flattened spec.search for ray spec passed to run_experiments()
+        Specify a config space in spec using `"{key}__{space_type}": {v}`.
+        Where {space_type} is 'grid_search' of ray.tune, or any function name of np.random:
+        - choice: str, int, float, v = list of choices
+        - randint: int, v = [low, high)
+        - uniform: float, v = [low, high)
+        - normal: float v = [mean, stdev)
+
+        E.g. `"lr__uniform": [0.001, 0.1]`, and it will sample `lr` using np.random.uniform(0.001, 0.1)
+        If any key uses 'grid_search', it will be combined exhaustively in combination with other random sampling.
+        '''
+        config_space = {}
         for k, v in util.flatten_dict(self.experiment.spec['search']).items():
             if '__' in k:
                 key, space_type = k.split('__')
             else:
-                key, space_type = k, 'default'
-            # TODO yield smth like:
-            # config_space = {
-            # "config": {
-            #     "alpha": lambda spec: np.random.uniform(100),
-            #     "beta": lambda spec: spec.config.alpha * np.random.normal(),
-            #     "nn_layers": [
-            #         grid_search([16, 64, 256]),
-            #         grid_search([16, 64, 256]),
-            #     ],
-            # },
-            # "repeat": 10,
-            # }
-            # param_cls = SMACSearch.space_types[space_type]
-            # if space_type in ('default', 'categorical'):
-            #     ck = param_cls(key, v)
-            # else:
-            #     ck = param_cls(key, *v)
-            # cs.add_hyperparameter(ck)
-        config_space = {
-            "config": {
-                "lr": grid_search([0.2, 0.4]),
-            },
-        }
+                key, space_type = k, 'grid_search'
+
+            if space_type == 'grid_search':
+                config_space[key] = grid_search(v)
+            else:
+                np_fn = getattr(np.random, space_type)
+                config_space[key] = lambda spec: np_fn(*v)
         return config_space
 
     def spec_from_config(self, config):
@@ -74,6 +61,7 @@ class RaySearch:
         def run_trial(config, reporter):
             '''Trainable method to run a trial given ray config and reporter'''
             spec = self.spec_from_config(config)
+            # TODO tick info space here? ok might hve to resort toray trial data
             trial_fitness_df = self.experiment.init_trial_and_run(spec)
             fitness_vec = trial_fitness_df.iloc[0].to_dict()
             fitness = analysis.calc_fitness(trial_fitness_df)
@@ -97,14 +85,18 @@ class RaySearch:
         ray_trials = run_experiments({
             exp_name: {
                 'run': 'run_trial',
-                'resources': {'cpu': 2, 'gpu': 0},
+                # 'resources': {'cpu': 2, 'gpu': 0},
                 'stop': {'done': True},
-                **config_space,
+                'config': config_space,
+                'repeat': 3,
+                # no repeat cuz we rely on trial running multiple identical sessions
             }
         })
         logger.info('Ray.tune experiment.search.run() done.')
         # compose data format for experiment analysis
         trial_data_dict = {}
+        logger.info('ray_trials')
+        print(ray_trials)
         for ray_trial in ray_trials:
             exp_trial_data = ray_trial.last_result.info
             trial_index = exp_trial_data.pop('trial_index')
