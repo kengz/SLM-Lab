@@ -81,6 +81,7 @@ class ActorCritic(Reinforce):
 
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
+        body = self.agent.nanflat_body_a[0]
         algorithm_spec = self.agent.spec['algorithm']
         # Automatically selects appropriate discrete or continuous action policy under default setting
         action_fn = algorithm_spec['action_policy']
@@ -88,7 +89,11 @@ class ActorCritic(Reinforce):
             if self.is_discrete:
                 self.action_policy = act_fns['softmax']
             else:
-                self.action_policy = act_fns['gaussian']
+                if body.action_dim > 1:
+                    logger.warn(f'Action dim: {body.action_dim}. Continuous multidimensional action space not supported yet. Contact author')
+                    sys.exit()
+                else:
+                    self.action_policy = act_fns['gaussian']
         else:
             self.action_policy = act_fns[action_fn]
         # Set other training parameters
@@ -103,7 +108,7 @@ class ActorCritic(Reinforce):
             self.get_target = self.gae_0_target
         # Flag if memory is episodic or discrete.
         # This affects how the target and advantage functions are calculated
-        memory = self.agent.nanflat_body_a[0].memory.__class__.__name__
+        memory = body.memory.__class__.__name__
         if memory.find('OnPolicyReplay') != -1:
             self.is_episodic = True
         elif memory.find('OnPolicyBatchReplay') != -1:
