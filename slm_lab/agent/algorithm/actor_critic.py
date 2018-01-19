@@ -284,17 +284,3 @@ class ActorCritic(Reinforce):
         self.entropy = []
         logger.debug(f'Policy loss: {loss}')
         return loss
-
-    def check_sizes(self, advantage):
-        # Check log probs, advantage, and entropy all have the same size
-        # Occassionally they do not, this is caused by first reward of an episode being nan
-        # TODO Fix for multi-episode training. Won't know where to delete after the first episode.
-        if len(self.saved_log_probs) != advantage.size(0):
-            del self.saved_log_probs[0]
-            logger.debug('Deleting first log prob in epi')
-        if len(self.entropy) != advantage.size(0):
-            del self.entropy[0]
-            logger.debug('Deleting first entropy in epi')
-        assert len(self.saved_log_probs) == advantage.size(0)
-        assert len(self.entropy) == advantage.size(0)
-        return advantage

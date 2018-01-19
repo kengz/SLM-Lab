@@ -104,19 +104,10 @@ class Reinforce(Algorithm):
             logger.debug(f'Training...')
             # We only care about the rewards from the batch
             rewards = self.sample()['rewards']
-            advantage = self.calc_advantage(rewards)
             logger.debug(f'Length first epi: {len(rewards[0])}')
             logger.debug(f'Len log probs: {len(self.saved_log_probs)}')
-            # Check log probs, advantage, and entropy all have the same size
-            # Occassionally they do not, this is caused by first reward of an episode being nan
-            if len(self.saved_log_probs) != advantage.size(0):
-                del self.saved_log_probs[0]
-                logger.debug('Deleting first log prob in epi')
-            if len(self.entropy) != advantage.size(0):
-                del self.entropy[0]
-                logger.debug('Deleting first entropy in epi')
-            assert len(self.saved_log_probs) == advantage.size(0)
-            assert len(self.entropy) == advantage.size(0)
+            advantage = self.calc_advantage(rewards)
+            advantage = self.check_sizes(advantage)
             policy_loss = []
             for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
                 logger.debug(f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
@@ -141,6 +132,20 @@ class Reinforce(Algorithm):
             return loss
         else:
             return np.nan
+
+    def check_sizes(self, advantage):
+        # Check log probs, advantage, and entropy all have the same size
+        # Occassionally they do not, this is caused by first reward of an episode being nan
+        # TODO Fix for multi-episode training. Won't know where to delete after the first episode.
+        if len(self.saved_log_probs) != advantage.size(0):
+            del self.saved_log_probs[0]
+            logger.debug('Deleting first log prob in epi')
+        if len(self.entropy) != advantage.size(0):
+            del self.entropy[0]
+            logger.debug('Deleting first entropy in epi')
+        assert len(self.saved_log_probs) == advantage.size(0)
+        assert len(self.entropy) == advantage.size(0)
+        return advantage
 
     def calc_advantage(self, raw_rewards):
         advantage = []
