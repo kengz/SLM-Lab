@@ -87,7 +87,9 @@ class Trial:
 
     def init_session_and_run(self):
         self.info_space.tick('session')
-        return Session(self.spec, self.info_space).run()
+        session = Session(self.spec, self.info_space)
+        session_data = session.run()
+        return session_data
 
     def close(self):
         logger.info('Trial done, closing.')
@@ -129,7 +131,9 @@ class Experiment:
 
     def init_trial_and_run(self, spec):
         self.info_space.tick('trial')
-        return Trial(spec, self.info_space).run()
+        trial = Trial(spec, self.info_space)
+        trial_data = trial.run()
+        return trial_data
 
     def close(self):
         logger.info('Experiment done, closing.')
