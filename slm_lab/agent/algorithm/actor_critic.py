@@ -142,6 +142,10 @@ class ActorCritic(Reinforce):
         else:
             return self.train_separate()
 
+    def train_shared(self):
+        # TODO: implement train_shared
+        pass
+
     def train_separate(self):
         if self.to_train == 1:
             batch = self.sample()
@@ -186,19 +190,19 @@ class ActorCritic(Reinforce):
         return target
 
     def gae_1_target(self, batch):
-        # TODO explain gae_1_target
+        '''Calculates target = discounted sum of rewards from the current timestep to the end of an episode. Equivalent to GAE(1) or TD(infinity) with discounts. Returns a list containing targets per episode'''
         assert self.is_episodic is True
-        rewards = []
-        # TODO fix for multiple episodes
-        epi_rewards = batch['rewards']
-        big_r = 0
-        for i in xrange(epi_rewards.size(0), 0, -1):
-            r = epi_rewards[i]
-            big_r = r + self.gamma * big_r
-            rewards.insert(0, big_r)
-        rewards = torch.Tensor(rewards)
-        logger.debug(f'Target: {target.size()}')
-        return target
+        raw_rewards = batch['rewards']
+        epi_rewards = []
+        for epi_raw_rewards in raw_rewards:
+            rewards = []
+            big_r = 0
+            for r in epi_raw_rewards[::-1]:
+                big_r = r + self.gamma * big_r
+                rewards.insert(0, big_r)
+            rewards = torch.Tensor(rewards)
+            epi_rewards.append(rewards)
+        return epi_rewards
 
     def train_actor(self, batch):
         advantage = self.calc_advantage(batch)
@@ -235,7 +239,3 @@ class ActorCritic(Reinforce):
         self.entropy = []
         logger.debug(f'Policy loss: {loss}')
         return loss
-
-    def train_shared(self):
-        # TODO: implement train_shared
-        pass
