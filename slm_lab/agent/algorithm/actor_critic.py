@@ -195,8 +195,8 @@ class ActorCritic(Reinforce):
 
     def calc_advantage_episodic(self, batch):
         '''Calculates advantage when memory is batch based.
-           target and state_vals are lists containing Tensors per episode.
-           returns advantage as a single Tensor combined for all episodes'''
+           target and state_vals are lists containing tensors per episode.
+           returns advantage as a single tensor combined for all episodes'''
         target = self.get_target(batch)
         advantage = []
         states = batch['states']
@@ -210,14 +210,33 @@ class ActorCritic(Reinforce):
         return advantage
 
     def gae_0_target(self, batch):
-        # TODO explain gae_0_target
+        '''Calculates target = bootstrapped estimate of the state-action value = r_t + gamma * V(s_(t+1)). Equivalent to GAE(0) or TD(0) with discounts.
+        In the episodic case it returns a list containing targets per episode
+        In the batch case it returns a tensor containing the targets for the batch'''
+        if self.is_episodic:
+            return self.gae_0_target_episodic(batch)
+        else:
+            return self.gae_0_target_batch(batch)
+
+    def gae_0_target_batch(self, batch):
         next_state_vals = self.critic.wrap_eval(
             batch['next_states']).squeeze_()
         target = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), next_state_vals)
         logger.debug(f'Target: {target.size()}')
-        # TODO add option for episodic memory
         return target
+
+    def gae_0_target_episodic(self, batch):
+        next_states = batch['next_states']
+        rewards = batch['rewards']
+        dones = batch['dones']
+        targets = []
+        for ns, r, d in zip(next_states, rewards, dones):
+            nsv = self.critic.wrap_eval(ns).squeeze_()
+            target = r.data + self.gamma * torch.mul((1 - d.data), nsv)
+            logger.debug(f'Target: {target.size()}')
+            targets.append(target)
+        return targets
 
     def gae_1_target(self, batch):
         '''Calculates target = discounted sum of rewards from the current timestep to the end of an episode. Equivalent to GAE(1) or TD(infinity) with discounts. Returns a list containing targets per episode'''
