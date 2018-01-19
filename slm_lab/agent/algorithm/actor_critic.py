@@ -100,7 +100,7 @@ class ActorCritic(Reinforce):
         util.set_attr(self, _.pick(algorithm_spec, [
             'gamma',
             'training_frequency', 'training_iters_per_batch',
-            'add_entropy', 'advantage_fn'
+            'add_entropy', 'advantage_fn', 'num_epis_to_collect'
         ]))
         if self.advantage_fn == "gae_1":
             self.get_target = self.gae_1_target
@@ -154,8 +154,6 @@ class ActorCritic(Reinforce):
     def train_separate(self):
         if self.to_train == 1:
             batch = self.sample()
-            if len(batch['states']) < self.training_frequency:
-                logger.debug(f'Small batch, {len(batch["states"])}')
             critic_loss = self.train_critic(batch)
             actor_loss = self.train_actor(batch)
             total_loss = critic_loss + abs(actor_loss)
@@ -167,11 +165,36 @@ class ActorCritic(Reinforce):
             return np.nan
 
     def train_critic(self, batch):
+        if self.is_episodic:
+            return self.train_critic_episodic(batch)
+        else:
+            return self.train_critic_batch(batch)
+
+    def train_critic_batch(self, batch):
         loss = 0
         for _i in range(self.training_iters_per_batch):
             target = self.get_target(batch)
             y = Variable(target)
             loss = self.critic.training_step(batch['states'], y).data[0]
+            logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
+        return loss
+
+    def train_critic_episodic(self, batch):
+        loss = 0
+        for _i in range(self.training_iters_per_batch):
+            target = self.get_target(batch)
+            for t in target:
+                logger.debug(f'Target size: {t.size()}')
+            target = torch.cat(target)
+            logger.debug(f'Combined size: {target.size()}')
+            x = []
+            for state in batch['states']:
+                x.append(state)
+                logger.debug(f'states: {state.size()}')
+            x = torch.cat(x, dim=0)
+            logger.debug(f'Combined states: {x.size()}')
+            y = Variable(target)
+            loss = self.critic.training_step(x, y).data[0]
             logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss
 
@@ -237,10 +260,12 @@ class ActorCritic(Reinforce):
         dones = batch['dones']
         targets = []
         for ns, r, d in zip(next_states, rewards, dones):
+            r = torch.from_numpy(np.asarray(r))
             nsv = self.critic.wrap_eval(ns).squeeze_()
-            target = r.data + self.gamma * torch.mul((1 - d.data), nsv)
-            logger.debug(f'Target: {target.size()}')
+            target = r + self.gamma * torch.mul((1 - d.data), nsv)
             targets.append(target)
+            logger.debug(f'Next state vals: {nsv}, rewards: {r}, dones: {d}')
+            logger.debug(f'Target: {target.size()}')
         return targets
 
     def gae_1_target(self, batch):
