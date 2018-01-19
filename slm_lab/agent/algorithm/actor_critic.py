@@ -171,12 +171,42 @@ class ActorCritic(Reinforce):
         return loss
 
     def calc_advantage(self, batch):
+        ''' Calculates advantage = target - state_vals for each timestep
+            state_vals are the current estimate using the critic
+            Method for calculating target varies. It is either
+                1. The discounted sum of rewards from the current timestep to the end of an episode. Equivalent to GAE(1) or TD(infinity) with discounts
+                2. Bootstrapped estimate of the state-action value = r_t + gamma * V(s_(t+1)). Equivalent to GAE(0) or TD(0) with discounts.
+        '''
+        if self.is_episodic:
+            return self.calc_advantage_episodic(batch)
+        else:
+            return self.calc_advantage_batch(batch)
+
+    def calc_advantage_batch(self, batch):
+        '''Calculates advantage when memory is batch based.
+           target and state_vals are Tensors.
+           returns advantage as a single Tensor'''
         target = self.get_target(batch)
-        # TODO option for batch and episodic memory
         state_vals = self.critic.wrap_eval(batch['states']).squeeze_()
         advantage = target - state_vals
         advantage.squeeze_()
         logger.debug(f'Advantage: {advantage.size()}')
+        return advantage
+
+    def calc_advantage_episodic(self, batch):
+        '''Calculates advantage when memory is batch based.
+           target and state_vals are lists containing Tensors per episode.
+           returns advantage as a single Tensor combined for all episodes'''
+        target = self.get_target(batch)
+        advantage = []
+        states = batch['states']
+        for s, t in zip(states, target):
+            state_vals = self.critic.wrap_eval(batch['states']).squeeze_()
+            a = t - state_vals
+            a.squeeze_()
+            logger.debug(f'Advantage: {a.size()}')
+            advantage.append(a)
+        advantage = torch.cat(advantage)
         return advantage
 
     def gae_0_target(self, batch):
@@ -208,6 +238,7 @@ class ActorCritic(Reinforce):
         advantage = self.calc_advantage(batch)
         # Check log probs, advantage, and entropy all have the same size
         # Occassionally they do not, this is caused by first reward of an episode being nan
+        # TODO Fix for multi-episode training. Won't know where to delete after the first episode.
         if len(self.saved_log_probs) != advantage.size(0):
             del self.saved_log_probs[0]
             logger.debug('Deleting first log prob in epi')
