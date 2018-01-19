@@ -234,11 +234,16 @@ def analyze_experiment(experiment):
     '''
     experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
     cols = FITNESS_COLS + ['fitness']
-    sorted_cols = sorted(_.difference(
-        experiment_df.columns.tolist(), cols)) + cols
+    config_cols = sorted(_.difference(
+        experiment_df.columns.tolist(), cols))
+    sorted_cols = config_cols + cols
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
+    # TODO sort experiment_df
     experiment_fig = plot_experiment(experiment.spec, experiment_df)
-    save_experiment_data(experiment.best_spec, experiment_df, experiment_fig)
+    best_trial_index = experiment_df['fitness'].idxmax()
+    best_config = experiment_df.loc[best_trial_index][config_cols].to_dict()
+    best_spec = _.merge(experiment.spec, best_config)
+    save_experiment_data(best_spec, experiment_df, experiment_fig)
     return experiment_df
 
 

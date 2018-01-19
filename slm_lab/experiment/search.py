@@ -72,37 +72,41 @@ class RaySearch:
         ray.register_custom_serializer(pd.Series, use_pickle=True)
 
         def run_trial(config, reporter):
+            '''Trainable method to run a trial given ray config and reporter'''
             spec = self.spec_from_config(config)
-            logger.info('running trial')
-            logger.info(f'config is: {config}')
             trial_fitness_df = self.experiment.init_trial_and_run(spec)
-            # fitness for trial, already avg over sessions and bodies
             fitness_vec = trial_fitness_df.iloc[0].to_dict()
             fitness = analysis.calc_fitness(trial_fitness_df)
-            exp_trial_data = {
-                **config, **fitness_vec, 'fitness': fitness,
+            trial_index = trial_fitness_df.index[0]
+            trial_data = {
+                **config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
             }
             done = True
             # TODO timesteps = episode len or total_t from space_clock
-            reporter(timesteps_total=0, done=done, info=exp_trial_data)
+            # call reporter from inside trial/session loop
+            reporter(timesteps_total=-1, done=done, info=trial_data)
 
         register_trainable('run_trial', run_trial)
-        logger.info('running exp')
 
         # TODO use hyperband
         # TODO parallelize on trial sessions
         # TODO use ray API on normal experiment call to run trial
+        # TODO use advanced conditional config space via lambda func
         config_space = self.build_config_space()
-        res = run_experiments({
-            "my_experiment": {
-                "run": "run_trial",
-                "resources": {"cpu": 2, "gpu": 0},
-                "stop": {"done": True},
+        exp_name = self.experiment.spec['name']
+        ray_trials = run_experiments({
+            exp_name: {
+                'run': 'run_trial',
+                'resources': {'cpu': 2, 'gpu': 0},
+                'stop': {'done': True},
                 **config_space,
             }
         })
-        logger.info('res')
-        print(res)
-        # build trial_data_dict from trial
-        return res
-        # return best_spec, trial_data_dict
+        logger.info('Ray.tune experiment.search.run() done.')
+        # compose data format for experiment analysis
+        trial_data_dict = {}
+        for ray_trial in ray_trials:
+            exp_trial_data = ray_trial.last_result.info
+            trial_index = exp_trial_data.pop('trial_index')
+            trial_data_dict[trial_index] = exp_trial_data
+        return trial_data_dict

@@ -124,7 +124,6 @@ class Experiment:
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.trial_data_dict = {}
-        self.best_spec = None
         self.data = None
         SearchClass = getattr(search, 'RaySearch')
         self.search = SearchClass(self)
@@ -139,7 +138,7 @@ class Experiment:
         logger.info('Experiment done, closing.')
 
     def run(self):
-        self.best_spec, self.trial_data_dict = self.search.run()
+        self.trial_data_dict = self.search.run()
         self.data = analysis.analyze_experiment(self)
         self.close()
         return self.data
