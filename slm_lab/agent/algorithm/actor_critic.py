@@ -183,8 +183,6 @@ class ActorCritic(Reinforce):
         loss = 0
         for _i in range(self.training_iters_per_batch):
             target = self.get_target(batch)
-            for t in target:
-                logger.debug(f'Target size: {t.size()}')
             target = torch.cat(target)
             logger.debug(f'Combined size: {target.size()}')
             x = []
@@ -229,7 +227,7 @@ class ActorCritic(Reinforce):
         advantage = []
         states = batch['states']
         for s, t in zip(states, target):
-            state_vals = self.critic.wrap_eval(batch['states']).squeeze_()
+            state_vals = self.critic.wrap_eval(s).squeeze_()
             a = t - state_vals
             a.squeeze_()
             logger.debug(f'Advantage: {a.size()}')
@@ -264,7 +262,6 @@ class ActorCritic(Reinforce):
             nsv = self.critic.wrap_eval(ns).squeeze_()
             target = r + self.gamma * torch.mul((1 - d.data), nsv)
             targets.append(target)
-            logger.debug(f'Next state vals: {nsv}, rewards: {r}, dones: {d}')
             logger.debug(f'Target: {target.size()}')
         return targets
 
@@ -302,7 +299,7 @@ class ActorCritic(Reinforce):
             logger.info("Clipping actor gradient...")
             torch.nn.utils.clip_grad_norm(
                 self.actor.parameters(), self.actor.clamp_grad_val)
-        logger.debug(f'Gradient norms: {self.actor.get_grad_norms()}')
+        logger.debug(f'Actor gradient norms: {self.actor.get_grad_norms()}')
         self.actor.optim.step()
         self.to_train = 0
         self.saved_log_probs = []

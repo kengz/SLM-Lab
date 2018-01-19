@@ -5,14 +5,15 @@
       "algorithm": {
         "name": "ActorCritic",
         "action_policy": "default",
-        "gamma": 0.99,
+        "gamma": 0.999,
         "training_frequency": 8,
         "training_iters_per_batch": 3,
-        "add_entropy": true,
+        "num_epis_to_collect": 1,
+        "add_entropy": false,
         "advantage_fn": "gae_0"
       },
       "memory": {
-        "name": "OnPolicyBatchReplay"
+        "name": "OnPolicyBatchReplay",
       },
       "net": {
         "type": "MLPseparate",
