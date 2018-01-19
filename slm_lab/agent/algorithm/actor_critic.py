@@ -127,7 +127,7 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def body_act_continuous(self, body, state):
-        return self.action_policy(self, state, self.net, body)
+        return self.action_policy(self, state, self.actor, body)
 
     def sample(self):
         '''Samples a batch from memory'''
