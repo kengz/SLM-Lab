@@ -1,111 +1,108 @@
 from copy import deepcopy
+from ray.tune import register_trainable, grid_search, run_experiments
 from slm_lab.experiment import analysis
+from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
-from smac.configspace import ConfigurationSpace
-from ConfigSpace.hyperparameters import (
-    CategoricalHyperparameter,
-    UniformFloatHyperparameter,
-    UniformIntegerHyperparameter,
-    NormalFloatHyperparameter,
-    NormalIntegerHyperparameter,
-)
-from ConfigSpace.conditions import InCondition
-from smac.scenario.scenario import Scenario
-from smac.facade.smac_facade import SMAC
+from slm_lab.lib.decorator import lab_api
 import numpy as np
+import pandas as pd
 import pydash as _
+import ray
 
 
-class SMACSearch:
-    space_types = {
-        'default': CategoricalHyperparameter,
-        'categorical': CategoricalHyperparameter,
-        'uniform_float': UniformFloatHyperparameter,
-        'uniform_integer': UniformIntegerHyperparameter,
-        'normal_float': NormalFloatHyperparameter,
-        'normal_integer': NormalIntegerHyperparameter,
-    }
+class RaySearch:
+    '''Search module for Experiment - Ray.tune API integration with Lab'''
 
     def __init__(self, experiment):
         self.experiment = experiment
 
-    def build_cs(self):
-        '''Build SMAC config space from flattened spec.search. Use this to set on copy spec from cfg later.'''
-        cs = ConfigurationSpace()
+    def build_config_space(self):
+        '''Build ray config space from flattened spec.search for ray spec passed to run_experiments()'''
+        # space_types = {
+        #     'default': CategoricalHyperparameter,
+        #     'categorical': CategoricalHyperparameter,
+        #     'uniform_float': UniformFloatHyperparameter,
+        #     'uniform_integer': UniformIntegerHyperparameter,
+        #     'normal_float': NormalFloatHyperparameter,
+        #     'normal_integer': NormalIntegerHyperparameter,
+        # }
         for k, v in util.flatten_dict(self.experiment.spec['search']).items():
             if '__' in k:
                 key, space_type = k.split('__')
             else:
                 key, space_type = k, 'default'
-            param_cls = SMACSearch.space_types[space_type]
-            if space_type in ('default', 'categorical'):
-                ck = param_cls(key, v)
-            else:
-                ck = param_cls(key, *v)
-            cs.add_hyperparameter(ck)
-        return cs
+            # TODO yield smth like:
+            # config_space = {
+            # "config": {
+            #     "alpha": lambda spec: np.random.uniform(100),
+            #     "beta": lambda spec: spec.config.alpha * np.random.normal(),
+            #     "nn_layers": [
+            #         grid_search([16, 64, 256]),
+            #         grid_search([16, 64, 256]),
+            #     ],
+            # },
+            # "repeat": 10,
+            # }
+            # param_cls = SMACSearch.space_types[space_type]
+            # if space_type in ('default', 'categorical'):
+            #     ck = param_cls(key, v)
+            # else:
+            #     ck = param_cls(key, *v)
+            # cs.add_hyperparameter(ck)
+        config_space = {
+            "config": {
+                "lr": grid_search([0.2, 0.4]),
+            },
+        }
+        return config_space
 
-    def spec_from_cfg(self, cfg):
-        '''Helper to create spec from cfg'''
+    def spec_from_config(self, config):
+        '''Helper to create spec from config - variables in spec.'''
         spec = deepcopy(self.experiment.spec)
         spec.pop('search', None)
-        var_spec = cfg.get_dictionary()
-        for k, v in var_spec.items():
+        for k, v in config.items():
             _.set_(spec, k, v)
         return spec
 
-    def run_trial(self, cfg):
-        '''Wrapper for SMAC's tae_runner to run trial with a var_spec given by ConfigSpace'''
-        # TODO proper id from top level
-        spec = self.spec_from_cfg(cfg)
-        var_spec = cfg.get_dictionary()
-        trial_fitness_df = self.experiment.init_trial_and_run(spec)
-        # trial fitness already avg over sessions and bodies
-        fitness_vec = trial_fitness_df.iloc[0].to_dict()
-        fitness = analysis.calc_fitness(trial_fitness_df)
-        cost = -fitness
-        logger.info(
-            f'Optimized cost: {cost}, fitness: {fitness}\n{fitness_vec}')
-        exp_trial_data = {
-            **var_spec, **fitness_vec, 'fitness': fitness,
-        }
-        return cost, exp_trial_data
-
-    def get_trial_data_dict(self, smac):
-        '''
-        Recover the trial_id from smac history RunKeys,
-        and the var_spec, fitness_vec, fitness from RunValues
-        Format and return into trial_data_dict with index = trial_id and columns = [*var_spec, *fitness_vec, fitness]
-        '''
-        smac_hist = smac.get_runhistory()
-        trial_data_dict = {}
-        for trial_id, rv in enumerate(smac_hist.data.values()):
-            exp_trial_data = rv.additional_info
-            trial_data_dict[trial_id] = exp_trial_data
-        return trial_data_dict
-
+    @lab_api
     def run(self):
-        '''
-        Interface method for Experiment class to run trials.
-        Ensure trial is init properly with its trial_id.
-        Search module must return best_spec and trial_data_dict with format {trial_id: exp_trial_data},
-        where trial_data = {**var_spec, **fitness_vec, fitness}.
-        '''
-        cs = self.build_cs()
-        scenario = Scenario({
-            'run_obj': 'quality',  # or 'runtime' with 'cutoff_time'
-            'runcount-limit': self.experiment.spec['meta']['max_trial'],
-            'cs': cs,
-            'deterministic': True,  # fitness roughly so
-            'output_dir': 'smac3/',
-            'shared_model': True,  # parallel
-            'input_psmac_dirs': 'smac3-output*',
+        # serialize here as ray is not thread safe outside
+        ray.register_custom_serializer(InfoSpace, use_pickle=True)
+        ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
+        ray.register_custom_serializer(pd.Series, use_pickle=True)
+
+        def run_trial(config, reporter):
+            spec = self.spec_from_config(config)
+            logger.info('running trial')
+            logger.info(f'config is: {config}')
+            trial_fitness_df = self.experiment.init_trial_and_run(spec)
+            # fitness for trial, already avg over sessions and bodies
+            fitness_vec = trial_fitness_df.iloc[0].to_dict()
+            fitness = analysis.calc_fitness(trial_fitness_df)
+            exp_trial_data = {
+                **config, **fitness_vec, 'fitness': fitness,
+            }
+            done = True
+            # TODO timesteps = episode len or total_t from space_clock
+            reporter(timesteps_total=0, done=done, info=exp_trial_data)
+
+        register_trainable('run_trial', run_trial)
+        logger.info('running exp')
+
+        # TODO use hyperband
+        # TODO parallelize on trial sessions
+        # TODO use ray API on normal experiment call to run trial
+        config_space = self.build_config_space()
+        res = run_experiments({
+            "my_experiment": {
+                "run": "run_trial",
+                "resources": {"cpu": 2, "gpu": 0},
+                "stop": {"done": True},
+                **config_space,
+            }
         })
-        smac = SMAC(
-            scenario=scenario,
-            rng=np.random.RandomState(42),
-            tae_runner=self.run_trial)
-        best_cfg = smac.optimize()  # best var_spec
-        best_spec = self.spec_from_cfg(best_cfg)
-        trial_data_dict = self.get_trial_data_dict(smac)
-        return best_spec, trial_data_dict
+        logger.info('res')
+        print(res)
+        # build trial_data_dict from trial
+        return res
+        # return best_spec, trial_data_dict
