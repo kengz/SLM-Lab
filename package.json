@@ -7,7 +7,7 @@
     "start": "python run_slm.py",
     "reset": "rm -rf data/* log/* smac3*",
     "clear": "find . | grep -E '(__pycache__|.pyc|.pyo|.egg*|.cache|htmlcov|.coverage|dist)' | xargs rm -rf",
-    "kill": "pkill -f slm-env ipykernel run_slm.py &",
+    "kill": "ray stop &>2 && pkill -f slm-env ipykernel run_slm.py",
     "export-env": "conda env export > environment.yml",
     "update-env": "conda env update -f environment.yml",
     "test": "python setup.py test"

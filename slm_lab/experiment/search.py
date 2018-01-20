@@ -1,5 +1,6 @@
 from copy import deepcopy
 from ray.tune import register_trainable, grid_search, run_experiments
+from ray.tune.trial import Trial
 from slm_lab.experiment import analysis
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
@@ -15,6 +16,20 @@ class RaySearch:
 
     def __init__(self, experiment):
         self.experiment = experiment
+
+        '''
+        Since every call of RaySearch.lab_trial starts on ray.remote on a new thread, we have to carry the trial_index from config at ray.Trial init.
+        Then, in lab_trial, pop this trial_index, update a thread copy of info_space, and init lab trial.
+        '''
+        Trial._init = Trial.__init__
+
+        def hack_trial_init(*args, **kwargs):
+            self.experiment.info_space.tick('trial')
+            trial_index = self.experiment.info_space.get('trial')
+            kwargs['config'].update({'trial_index': trial_index})
+            return Trial._init(*args, **kwargs)
+
+        Trial.__init__ = hack_trial_init
 
     def build_config_space(self):
         '''
@@ -58,11 +73,14 @@ class RaySearch:
         ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
         ray.register_custom_serializer(pd.Series, use_pickle=True)
 
-        def run_trial(config, reporter):
+        def lab_trial(config, reporter):
             '''Trainable method to run a trial given ray config and reporter'''
+            trial_index = config.pop('trial_index')
             spec = self.spec_from_config(config)
-            # TODO tick info space here? ok might hve to resort toray trial data
-            trial_fitness_df = self.experiment.init_trial_and_run(spec)
+            info_space = deepcopy(self.experiment.info_space)
+            info_space.set('trial', trial_index)
+            trial_fitness_df = self.experiment.init_trial_and_run(
+                spec, info_space)
             fitness_vec = trial_fitness_df.iloc[0].to_dict()
             fitness = analysis.calc_fitness(trial_fitness_df)
             trial_index = trial_fitness_df.index[0]
@@ -74,7 +92,7 @@ class RaySearch:
             # call reporter from inside trial/session loop
             reporter(timesteps_total=-1, done=done, info=trial_data)
 
-        register_trainable('run_trial', run_trial)
+        register_trainable('lab_trial', lab_trial)
 
         # TODO use hyperband
         # TODO parallelize on trial sessions
@@ -84,11 +102,11 @@ class RaySearch:
         exp_name = self.experiment.spec['name']
         ray_trials = run_experiments({
             exp_name: {
-                'run': 'run_trial',
+                'run': 'lab_trial',
                 # 'resources': {'cpu': 2, 'gpu': 0},
                 'stop': {'done': True},
                 'config': config_space,
-                'repeat': 3,
+                'repeat': 2,
                 # no repeat cuz we rely on trial running multiple identical sessions
             }
         })
