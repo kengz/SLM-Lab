@@ -268,6 +268,13 @@ class InfoSpace:
         self.coor = new_coor
         return self.coor
 
+    def get(self, axis):
+        return self.coor[axis]
+
+    def set(self, axis, val):
+        self.coor[axis] = val
+        return self.coor[axis]
+
     def get_coor_idx(self, lab_comp):
         '''
         Get info space coor when initializing lab component, and return its coor and index.
