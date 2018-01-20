@@ -88,7 +88,7 @@ dependencies:
 - zlib=1.2.11=0
 - pytorch=0.3.0
 - torchvision=0.2.0
-- libgcc=4.8.5=hdbeacc1_10
+- libgcc=4.8.5
 - pip:
   - atari-py==0.1.1
   - bleach==1.5.0
