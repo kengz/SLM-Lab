@@ -129,9 +129,12 @@ class Experiment:
         SearchClass = getattr(search, 'RaySearch')
         self.search = SearchClass(self)
 
-    def init_trial_and_run(self, spec):
-        self.info_space.tick('trial')
-        trial = Trial(spec, self.info_space)
+    def init_trial_and_run(self, spec, info_space):
+        '''
+        Method to run trial with the properly updated info_space (trial_index) from experiment.RaySearch.lab_trial.
+        Do not tick info_space below, it is already updated when passed from lab_trial.
+        '''
+        trial = Trial(spec, info_space)
         trial_data = trial.run()
         return trial_data
 

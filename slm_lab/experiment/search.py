@@ -96,25 +96,21 @@ class RaySearch:
 
         # TODO use hyperband
         # TODO parallelize on trial sessions
-        # TODO use ray API on normal experiment call to run trial
         # TODO use advanced conditional config space via lambda func
         config_space = self.build_config_space()
-        exp_name = self.experiment.spec['name']
+        spec = self.experiment.spec
         ray_trials = run_experiments({
-            exp_name: {
+            spec['name']: {
                 'run': 'lab_trial',
                 # 'resources': {'cpu': 2, 'gpu': 0},
                 'stop': {'done': True},
                 'config': config_space,
-                'repeat': 2,
-                # no repeat cuz we rely on trial running multiple identical sessions
+                'repeat': spec['meta']['max_trial'],
             }
         })
         logger.info('Ray.tune experiment.search.run() done.')
         # compose data format for experiment analysis
         trial_data_dict = {}
-        logger.info('ray_trials')
-        print(ray_trials)
         for ray_trial in ray_trials:
             exp_trial_data = ray_trial.last_result.info
             trial_index = exp_trial_data.pop('trial_index')
