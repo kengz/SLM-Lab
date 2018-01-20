@@ -103,7 +103,7 @@ def calc_session_fitness_df(session, session_data):
     return session_fitness_df
 
 
-def save_session_data(session_spec, session_mdp_data, session_data, session_fitness_df, session_fig):
+def save_session_data(info_space, session_spec, session_mdp_data, session_data, session_fitness_df, session_fig):
     '''
     Save the session data: session_mdp_df, session_df, session_fitness_df, session_graph.
     session_data is saved as session_df; multi-indexed with (a,e,b), 3 extra levels
@@ -113,7 +113,7 @@ def save_session_data(session_spec, session_mdp_data, session_data, session_fitn
     Likewise for session_mdp_df
     '''
     spec_name = session_spec['name']
-    prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
+    prepath = f'data/{spec_name}_{info_space.experiment_ts}/{spec_name}_t{info_space.coor["trial"]}_s{info_space.coor["session"]}'
     logger.info(f'Saving session data to {prepath}_*')
     session_mdp_df = pd.concat(session_mdp_data, axis=1)
     session_df = pd.concat(session_data, axis=1)
@@ -131,8 +131,8 @@ def analyze_session(session):
     session_mdp_data, session_data = get_session_data(session)
     session_fitness_df = calc_session_fitness_df(session, session_data)
     session_fig = plot_session(session.spec, session_data)
-    save_session_data(session.spec, session_mdp_data,
-                      session_data, session_fitness_df, session_fig)
+    save_session_data(
+        session.info_space, session.spec, session_mdp_data, session_data, session_fitness_df, session_fig)
     return session_fitness_df
 
 
@@ -161,10 +161,10 @@ def calc_trial_fitness_df(trial):
     return trial_fitness_df
 
 
-def save_trial_data(trial_spec, trial_fitness_df):
+def save_trial_data(info_space, trial_spec, trial_fitness_df):
     '''Save the trial data: spec, trial_fitness_df.'''
     spec_name = trial_spec['name']
-    prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
+    prepath = f'data/{spec_name}_{info_space.experiment_ts}/{spec_name}_t{info_space.coor["trial"]}'
     logger.info(f'Saving trial data to {prepath}_*')
     util.write(trial_spec, f'{prepath}_spec.json')
     # TODO trial data is composed of saved session data files
@@ -177,7 +177,7 @@ def analyze_trial(trial):
     @returns {DataFrame} trial_fitness_df Single-row df of trial fitness vector (avg over aeb, sessions), indexed with trial index.
     '''
     trial_fitness_df = calc_trial_fitness_df(trial)
-    save_trial_data(trial.spec, trial_fitness_df)
+    save_trial_data(trial.info_space, trial.spec, trial_fitness_df)
     return trial_fitness_df
 
 
@@ -214,10 +214,10 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
-def save_experiment_data(best_spec, experiment_df, experiment_fig):
+def save_experiment_data(info_space, best_spec, experiment_df, experiment_fig):
     '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
     spec_name = best_spec['name']
-    prepath = f'data/{spec_name}/{spec_name}_{util.get_timestamp()}'
+    prepath = f'data/{spec_name}_{info_space.experiment_ts}/{spec_name}'
     logger.info(f'Saving experiment data to {prepath}_*')
     util.write(best_spec, f'{prepath}_best_spec.json')
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
@@ -244,7 +244,8 @@ def analyze_experiment(experiment):
     best_trial_index = experiment_df['fitness'].idxmax()
     best_config = experiment_df.loc[best_trial_index][config_cols].to_dict()
     best_spec = _.merge(experiment.spec, best_config)
-    save_experiment_data(best_spec, experiment_df, experiment_fig)
+    save_experiment_data(
+        experiment.info_space, best_spec, experiment_df, experiment_fig)
     return experiment_df
 
 

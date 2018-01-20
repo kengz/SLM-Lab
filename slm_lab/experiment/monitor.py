@@ -238,6 +238,8 @@ class InfoSpace:
         '''
         self.coor = last_coor or {k: None for k in COOR_AXES}
         self.covered_space = []
+        # used to id experiment sharing the same spec name
+        self.experiment_ts = util.get_ts()
 
     def reset_lower_axes(cls, coor, axis):
         '''Reset the axes lower than the given axis in coor'''
@@ -258,6 +260,8 @@ class InfoSpace:
         session = Session(spec, info_space)
         '''
         assert axis in self.coor
+        if axis == 'experiment':
+            self.experiment_ts = util.get_ts()
         new_coor = self.coor.copy()
         if new_coor[axis] is None:
             new_coor[axis] = 0
