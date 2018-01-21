@@ -38,7 +38,7 @@ _(Work In Progress)_ An experimentation framework for Deep Reinforcement Learnin
 Once you're all set up, run the demo of `VanillaDQN` in `CartPole-v0`:
 
 - see `slm_lab/spec/demo.json` for example spec.
-- check `run_slm.py` to run `demo.json` experiment `dqn_cartpole`. Run a `Trial` (no param search).
+- check `run_lab.py` to run `demo.json` experiment `dqn_cartpole`. Run a `Trial` (no param search).
 - launch terminal in the repo directory, run:
     ```shell
     source activate lab
@@ -54,16 +54,17 @@ To run an experiment:
 
 - set up your spec in `spec/`, e.g. the `agent, env, body, meta, search` info. There's a spec checker to verify it is valid.
 - set `meta.train_mode` to `False` to render env to debug; set to `True` to run faster without rendering.
-- specify the name of your spec in `run_slm.py`, and if you wish to run `Experiment` instead of `Trial`. Note, you need to specify `search` in spec to run `Experiment`.
+- specify the name of your spec in `run_lab.py`, and if you wish to run `Experiment` instead of `Trial`. Note, you need to specify `search` in spec to run `Experiment`.
 - run `yarn start`
 - after completion, check `data/`. You should see `session_graph.png` and `experiment_graph.png`, along with accompanying data.
 - to kill stuck processes, run `yarn kill`. To reset, run `yarn reset`. More commands below.
 
 ### To run implemented algorithms
 
+<!-- TODO update this -->
 - all algorithm hyperparams are stored in a spec file in `slm_lab/spec` organized by algorithm
 - modify parameters in the relevant spec
-- modify `run_slm.py` to select your spec
+- modify `run_lab.py` to select your spec
     ```shell
     spec = spec_util.get('SPECFILENAME.json', 'specname')
     ```
@@ -73,7 +74,7 @@ To run an experiment:
     ```
     or
     ```shell
-    python run_slm.py
+    python run_lab.py
     ```
 
 ### Tips

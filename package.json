@@ -4,10 +4,10 @@
   "description": "An experimental framework for Reinforcement Learning using Unity and PyTorch.",
   "main": "index.js",
   "scripts": {
-    "start": "python run_slm.py",
-    "reset": "rm -rf data/* log/* smac3*",
+    "start": "python run_lab.py",
+    "reset": "rm -rf data/* log/*",
     "clear": "find . | grep -E '(__pycache__|.pyc|.pyo|.egg*|.cache|htmlcov|.coverage|dist)' | xargs rm -rf",
-    "kill": "ray stop && pkill -f slm-env ipykernel run_slm.py",
+    "kill": "ray stop && pkill -f slm-env ipykernel run_lab.py",
     "export-env": "conda env export > environment.yml",
     "update-env": "conda env update -f environment.yml",
     "test": "python setup.py test"
