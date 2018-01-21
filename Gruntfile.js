@@ -18,17 +18,12 @@ module.exports = function(grunt) {
           src: ['**'],
           dest: dataDest,
         }],
-        pretend: false
       }
     },
     watch: {
       lab_data: {
         files: `${dataSrc}/**`,
         tasks: ['sync'],
-        options: {
-          debounceDelay: 20 * 60 * 1000,
-          interval: 60000,
-        },
       }
     },
   })
