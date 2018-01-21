@@ -33,12 +33,12 @@
     "search": {
       "agent": [{
         "memory": {
-          "max_size_categorical": [1000, 10000]
+          "max_size_choice": [1000, 10000]
         }
       }],
       "env": [{
         "unity": {
-          "gridSize__categorical": [6, 9]
+          "gridSize__grid_search": [6, 9]
         }
       }]
     }

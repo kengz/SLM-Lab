@@ -14,6 +14,8 @@ def main():
     spec = spec_util.get('actor_critic.json', 'actor_critic_pendulum')
     Trial(spec).run()
     # spec = spec_util.get('dqn.json', 'dqn_cartpole')
+    # spec = spec_util.get('reinforce.json', 'reinforce_cartpole')
+    # spec = spec_util.get('actor_critic.json', 'actor_critic_cartpole')
     # Experiment(spec).run()
 
 

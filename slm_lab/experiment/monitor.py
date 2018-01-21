@@ -19,7 +19,6 @@ DataSpace: a data space storing an AEB data projected to a-axis, and its dual pr
 Object reference (for agent to access env properties, vice versa):
 Agents - AgentSpace - AEBSpace - EnvSpace - Envs
 '''
-# TODO - plug to NoSQL graph db, using graphql notation, and data backup
 from copy import deepcopy
 from slm_lab.agent import AGENT_DATA_NAMES, Body
 from slm_lab.env import ENV_DATA_NAMES, Clock
@@ -61,7 +60,6 @@ class DataSpace:
             'state', 'action'] else np.float32
         self.data = None  # standard data in aeb_shape
         self.swap_data = None
-        # TODO shove history to DB
         self.data_history = []  # index = clock.total_t
 
     def __str__(self):
@@ -125,9 +123,8 @@ class DataSpace:
 
 class AEBSpace:
 
-    def __init__(self, spec):
-        # TODO shove
-        # self.info_space = info_space
+    def __init__(self, spec, info_space):
+        self.info_space = info_space
         self.spec = spec
         self.clock = None  # the finest common refinement as space clock
         self.agent_space = None
@@ -227,7 +224,7 @@ class AEBSpace:
         return end_session
 
 
-# TODO put AEBSpace into InfoSpace, propagate method usage, shove into DB
+# TODO put AEBSpace into InfoSpace, careful with pickle in ray. propagate method usage, shove into DB
 class InfoSpace:
     def __init__(self, last_coor=None):
         '''
@@ -238,6 +235,8 @@ class InfoSpace:
         '''
         self.coor = last_coor or {k: None for k in COOR_AXES}
         self.covered_space = []
+        # used to id experiment sharing the same spec name
+        self.experiment_ts = util.get_ts()
 
     def reset_lower_axes(cls, coor, axis):
         '''Reset the axes lower than the given axis in coor'''
@@ -247,13 +246,19 @@ class InfoSpace:
             coor[post_axis] = None
         return coor
 
-    def advance_coor(self, axis):
+    def tick(self, axis):
         '''
         Advance the coor to the next point in axis (control unit class).
         If the axis value has been reset, update to 0, else increment. For all axes lower than the specified axis, reset to None.
         Note this will not skip coor in space, even though the covered space may not be rectangular.
+        @example
+
+        info_space.tick('session')
+        session = Session(spec, info_space)
         '''
         assert axis in self.coor
+        if axis == 'experiment':
+            self.experiment_ts = util.get_ts()
         new_coor = self.coor.copy()
         if new_coor[axis] is None:
             new_coor[axis] = 0
@@ -264,19 +269,28 @@ class InfoSpace:
         self.coor = new_coor
         return self.coor
 
-    def index_lab_comp(self, lab_comp):
+    def get(self, axis):
+        return self.coor[axis]
+
+    def set(self, axis, val):
+        self.coor[axis] = val
+        return self.coor[axis]
+
+    def get_coor_idx(self, lab_comp):
         '''
-        Update info space coor when initializing lab component, and return its coor and index.
+        Get info space coor when initializing lab component, and return its coor and index.
         Does not apply to AEB entities.
         @returns {tuple, int} data_coor, index
         @example
 
         class Session:
             def __init__(self, spec):
-                self.coor, self.index = info_space.index_lab_comp(self)
+                self.coor, self.index = info_space.get_coor_idx(self)
+
+        info_space.tick('session')
+        session = Session(spec, info_space)
         '''
         axis = util.get_class_name(lab_comp, lower=True)
-        self.advance_coor(axis)
         coor = self.coor.copy()
         index = coor[axis]
         return coor, index
@@ -302,7 +316,3 @@ class Monitor:
         # TODO hook monitor to agent, env, then per update, auto fetches all that is in background
         # TODO call update in session, trial, experiment loops to collect data visible there too, for unit_data
         return
-
-
-# TODO create like monitor, for experiment level
-info_space = InfoSpace()

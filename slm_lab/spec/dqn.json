@@ -53,16 +53,16 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__uniform_integer": [10, 60],
-          "explore_var_end__uniform_float": [0.1, 1.0]
+          "explore_anneal_epi__randint": [10, 60],
+          "explore_var_end__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers_activation__categorical": ["relu", "sigmoid"]
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }],
       "env": [{
         "unity": {
-          "gridSize__categorical": [6, 9]
+          "gridSize__choice": [6, 9]
         }
       }]
     }
@@ -111,18 +111,18 @@
     "meta": {
       "max_episode": 200,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 50,
       "train_mode": true
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__uniform_integer": [10, 60],
-          "explore_var_start__uniform_float": [1.0, 5.0],
-          "explore_var_end__uniform_float": [0.1, 1.0]
+          "explore_anneal_epi__randint": [10, 60],
+          "explore_var_start__uniform": [1.0, 5.0],
+          "explore_var_end__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers_activation__categorical": ["relu", "sigmoid"]
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }
@@ -223,7 +223,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 30,
+      "max_episode": 20,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
