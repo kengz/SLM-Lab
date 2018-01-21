@@ -8,10 +8,10 @@ import pydash as _
 import pytest
 
 
-def test_calc_timestamp_diff():
+def test_calc_ts_diff():
     ts1 = '2017_10_17_084739'
     ts2 = '2017_10_17_084740'
-    ts_diff = util.calc_timestamp_diff(ts2, ts1)
+    ts_diff = util.calc_ts_diff(ts2, ts1)
     assert ts_diff == '0:00:01'
 
 
@@ -138,10 +138,10 @@ def test_get_fn_list():
     assert 'update' in fn_list
 
 
-def test_get_timestamp():
-    timestamp = util.get_timestamp()
-    assert _.is_string(timestamp)
-    assert util.RE_FILE_TS.match(timestamp)
+def test_get_ts():
+    ts = util.get_ts()
+    assert _.is_string(ts)
+    assert util.RE_FILE_TS.match(ts)
 
 
 def test_is_jupyter():

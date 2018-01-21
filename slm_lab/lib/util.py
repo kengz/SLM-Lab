@@ -15,9 +15,9 @@ import torch
 import ujson
 import yaml
 
+CPU_NUM = mp.cpu_count()
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
-CPU_NUM = mp.cpu_count()
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 RE_INDENT = re.compile('(^\n)|(?!\n)\s{2,}|(\n\s+)$')
 SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
@@ -35,17 +35,17 @@ class LabJsonEncoder(json.JSONEncoder):
             return str(obj)
 
 
-def calc_timestamp_diff(ts2, ts1):
+def calc_ts_diff(ts2, ts1):
     '''
-    Calculate the time from timestamps ts1 to ts2
-    @param {str} ts2 Later timestamp in the FILE_TS_FORMAT
-    @param {str} ts1 Earlier timestamp in the FILE_TS_FORMAT
+    Calculate the time from tss ts1 to ts2
+    @param {str} ts2 Later ts in the FILE_TS_FORMAT
+    @param {str} ts1 Earlier ts in the FILE_TS_FORMAT
     @returns {str} delta_t in %H:%M:%S format
     @example
 
     ts1 = '2017_10_17_084739'
     ts2 = '2017_10_17_084740'
-    ts_diff = util.calc_timestamp_diff(ts2, ts1)
+    ts_diff = util.calc_ts_diff(ts2, ts1)
     # => '0:00:01'
     '''
     delta_t = datetime.strptime(
@@ -199,20 +199,20 @@ def get_fn_list(a_cls):
     return fn_list
 
 
-def get_timestamp(pattern=FILE_TS_FORMAT):
+def get_ts(pattern=FILE_TS_FORMAT):
     '''
-    Get current timestamp, defaults to format used for filename
-    @param {str} pattern To format the timestamp
-    @returns {str} timestamp
+    Get current ts, defaults to format used for filename
+    @param {str} pattern To format the ts
+    @returns {str} ts
     @example
 
-    util.get_timestamp()
+    util.get_ts()
     # => '2017_10_17_084739'
     '''
-    timestamp_obj = datetime.now()
-    timestamp = timestamp_obj.strftime(pattern)
-    assert RE_FILE_TS.search(timestamp)
-    return timestamp
+    ts_obj = datetime.now()
+    ts = ts_obj.strftime(pattern)
+    assert RE_FILE_TS.search(ts)
+    return ts
 
 
 def guard_data_a(cls, data_a, data_name):
