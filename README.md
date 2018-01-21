@@ -29,7 +29,6 @@ _(Work In Progress)_ An experimentation framework for Deep Reinforcement Learnin
 4.  Setup the created config files:
     -   sign up for a free [Plotly account](https://plot.ly/) and get the API key to put in the config files below.
     -   `config/default.json`
-    -   `config/production.json` for production lab run when `PY_ENV=production`
 
 ## Usage
 
