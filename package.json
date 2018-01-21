@@ -18,6 +18,11 @@
   "private": false,
   "dependencies": {
     "config": "^1.28.0",
+    "grunt": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-sync": "^0.7.0",
+    "load-grunt-tasks": "^3.5.2",
+    "resolve-dir": "^1.0.1",
     "slm-env-2dball": "^2.0.0",
     "slm-env-3dball": "^2.0.0",
     "slm-env-gridworld": "^2.0.0",

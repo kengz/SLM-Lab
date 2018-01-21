@@ -46,7 +46,7 @@ echo "--- Installing npm modules for Lab interface ---"
 if [ -d ./node_modules ]; then
   echo "Npm modules are already installed"
 else
-  yarn install; yarn global add grunt-cli
+  yarn install
 fi
 
 echo "--- Installing Python for Lab backend ---"

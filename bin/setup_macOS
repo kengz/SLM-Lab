@@ -56,7 +56,7 @@ if [ -d ./node_modules ]; then
   echo "Npm modules are already installed"
 else
   # brew install yarn
-  yarn install; yarn global add grunt-cli
+  yarn install
 fi
 
 echo "--- Installing Python for Lab backend ---"
