@@ -30,7 +30,7 @@ class Session:
         # TODO option to set rand_seed. also set np random seed
         self.torch_rand_seed = torch.initial_seed()
         self.data = None
-        self.aeb_space = AEBSpace(self.spec)
+        self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
         logger.info(util.self_desc(self))

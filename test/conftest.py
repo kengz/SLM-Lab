@@ -4,7 +4,7 @@ from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.net.feedforward import MLPNet, MultiMLPNet
 from slm_lab.env import EnvSpace
 from slm_lab.experiment.control import Trial
-from slm_lab.experiment.monitor import AEBSpace
+from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 from torch.autograd import Variable
@@ -43,7 +43,7 @@ def test_session(test_spec):
 def test_aeb_space(test_spec):
     global aeb_space
     if aeb_space is None:
-        aeb_space = AEBSpace(test_spec)
+        aeb_space = AEBSpace(test_spec, InfoSpace())
         env_space = EnvSpace(test_spec, aeb_space)
         agent_space = AgentSpace(test_spec, aeb_space)
         aeb_space.init_body_space()

@@ -123,9 +123,8 @@ class DataSpace:
 
 class AEBSpace:
 
-    def __init__(self, spec):
-        # TODO shove
-        # self.info_space = info_space
+    def __init__(self, spec, info_space):
+        self.info_space = info_space
         self.spec = spec
         self.clock = None  # the finest common refinement as space clock
         self.agent_space = None
