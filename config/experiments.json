@@ -1,0 +1,5 @@
+{
+  "reinforce.json": {
+    "reinforce_cartpole": "train"
+  }
+}
