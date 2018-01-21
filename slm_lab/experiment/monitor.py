@@ -19,7 +19,6 @@ DataSpace: a data space storing an AEB data projected to a-axis, and its dual pr
 Object reference (for agent to access env properties, vice versa):
 Agents - AgentSpace - AEBSpace - EnvSpace - Envs
 '''
-# TODO - plug to NoSQL graph db, using graphql notation, and data backup
 from copy import deepcopy
 from slm_lab.agent import AGENT_DATA_NAMES, Body
 from slm_lab.env import ENV_DATA_NAMES, Clock
@@ -61,7 +60,6 @@ class DataSpace:
             'state', 'action'] else np.float32
         self.data = None  # standard data in aeb_shape
         self.swap_data = None
-        # TODO shove history to DB
         self.data_history = []  # index = clock.total_t
 
     def __str__(self):

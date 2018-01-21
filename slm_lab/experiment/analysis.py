@@ -46,7 +46,6 @@ def get_session_data(session):
             for data_name in ['t', 'epi'] + data_names})
         aeb_df = mdp_df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
         aeb_df.reset_index(drop=False, inplace=True)
-        # TODO save full data to db
         session_mdp_data[aeb], session_data[aeb] = mdp_df, aeb_df
     logger.debug(f'{session_data}')
     return session_mdp_data, session_data
@@ -103,6 +102,7 @@ def calc_session_fitness_df(session, session_data):
     return session_fitness_df
 
 
+# TODO persist each session's full data to DB from here
 def save_session_data(info_space, session_spec, session_mdp_data, session_data, session_fitness_df, session_fig):
     '''
     Save the session data: session_mdp_df, session_df, session_fitness_df, session_graph.
