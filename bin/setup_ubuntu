@@ -25,14 +25,6 @@ else
   apm install hydrogen
 fi
 
-echo "--- Installing noti for notification ---"
-if which noti >/dev/null; then
-  echo "Noti is already installed"
-else
-  curl -L https://github.com/variadico/noti/releases/download/v2.6.0/noti2.6.0.linux-amd64.tar.gz | tar -xz
-  sudo mv noti /usr/bin/
-fi
-
 echo "--- Installing NodeJS Lab interface ---"
 if which node >/dev/null; then
   echo "Nodejs is already installed"

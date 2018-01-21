@@ -105,6 +105,7 @@ This will update all of the packages to the latest required versions.
 | Function | `command` |
 | :------------- | :------------- |
 | start the Lab | `yarn start` |
+| watch and sync the Lab data | `yarn watch` |
 | reset lab - clear data/ and log/ | `yarn reset` |
 | clear cache | `yarn clear` |
 | kill stuck processes | `yarn kill` |

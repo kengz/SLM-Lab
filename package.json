@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "python run_lab.py",
+    "watch": "if pgrep grunt >/dev/null 2>&1; then echo 'Grunt file watch-sync already running'; else node_modules/grunt/bin/grunt; fi",
     "reset": "rm -rf data/* log/*",
     "clear": "find . | grep -E '(__pycache__|.pyc|.pyo|.egg*|.cache|htmlcov|.coverage|dist)' | xargs rm -rf",
     "kill": "ray stop && pkill -f slm-env ipykernel run_lab.py",
