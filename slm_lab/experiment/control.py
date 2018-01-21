@@ -2,6 +2,7 @@
 The control module
 Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Session
 '''
+from copy import deepcopy
 from slm_lab.agent import AgentSpace
 from slm_lab.env import EnvSpace
 from slm_lab.experiment import analysis, search
@@ -85,9 +86,8 @@ class Trial:
         self.session_data_dict = {}
         self.data = None
 
-    def init_session_and_run(self):
-        self.info_space.tick('session')
-        session = Session(self.spec, self.info_space)
+    def init_session_and_run(self, info_space):
+        session = Session(self.spec, info_space)
         session_data = session.run()
         return session_data
 
@@ -95,9 +95,12 @@ class Trial:
         logger.info('Trial done, closing.')
 
     def run(self):
-        # TODO parallelize differently on search vs single mode
-        session_datas = [
-            self.init_session_and_run() for _s in range(self.spec['meta']['max_session'])]
+        info_spaces = []
+        for _s in range(self.spec['meta']['max_session']):
+            self.info_space.tick('session')
+            info_spaces.append(deepcopy(self.info_space))
+        session_datas = util.parallelize_fn(
+            self.init_session_and_run, info_spaces)
         self.session_data_dict = {
             data.index[0]: data for data in session_datas}
         self.data = analysis.analyze_trial(self)

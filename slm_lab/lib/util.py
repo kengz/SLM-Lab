@@ -5,6 +5,7 @@ import collections
 import colorlover as cl
 import json
 import math
+import multiprocessing as mp
 import numpy as np
 import os
 import pandas as pd
@@ -14,6 +15,7 @@ import torch
 import ujson
 import yaml
 
+CPU_NUM = mp.cpu_count()
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
@@ -379,6 +381,24 @@ def ndenumerate_nonan(arr):
 def nonan_all(v):
     '''Generic np.all that also returns false if array is all np.nan'''
     return bool(np.all(v) and ~np.all(np.isnan(v)))
+
+
+def parallelize_fn(fn, args):
+    '''
+    Parallelize a method fn, args and return results with order preserved per args.
+    fn should take only a single arg.
+    @returns {list} results Order preserved output from fn.
+    '''
+    def pool_init():
+        # you can never be too safe in multiprocessing gc
+        import gc
+        gc.collect()
+    pool = mp.Pool(CPU_NUM,
+                   initializer=pool_init, maxtasksperchild=1)
+    results = pool.map(fn, args)
+    pool.close()
+    pool.join()
+    return results
 
 
 def read(data_path, **kwargs):
