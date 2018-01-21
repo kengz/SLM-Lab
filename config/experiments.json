@@ -1,0 +1,5 @@
+{
+  "demo.json": {
+    "dqn_cartpole": "train"
+  }
+}

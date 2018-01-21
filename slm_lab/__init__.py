@@ -5,7 +5,6 @@ os.environ['PY_ENV'] = os.environ.get('PY_ENV') or 'development'
 CONFIG_NAME_MAP = {
     'test': 'example_default',
     'development': 'default',
-    'production': 'production',
 }
 ROOT_DIR = os.getcwd()
 

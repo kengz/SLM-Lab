@@ -35,14 +35,6 @@ else
   apm install hydrogen
 fi
 
-echo "--- Installing noti for notification ---"
-if which noti >/dev/null; then
-  echo "Noti is already installed"
-else
-  curl -L https://github.com/variadico/noti/releases/download/v2.6.0/noti2.6.0.darwin-amd64.tar.gz | tar -xz
-  sudo mv noti /usr/local/bin/
-fi
-
 echo "--- Installing NodeJS Lab interface ---"
 if which node >/dev/null; then
   echo "NodeJS is already installed"
@@ -56,7 +48,7 @@ if [ -d ./node_modules ]; then
   echo "Npm modules are already installed"
 else
   # brew install yarn
-  yarn install; yarn global add grunt-cli
+  yarn install
 fi
 
 echo "--- Installing Python for Lab backend ---"

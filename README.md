@@ -28,8 +28,7 @@ _(Work In Progress)_ An experimentation framework for Deep Reinforcement Learnin
 
 4.  Setup the created config files:
     -   sign up for a free [Plotly account](https://plot.ly/) and get the API key to put in the config files below.
-    -   `config/default.json` for local development, used when `grunt` is ran without a production flag.
-    -   `config/production.json` for production lab run when `grunt -prod` is ran with the production flag `-prod`.
+    -   `config/default.json`
 
 ## Usage
 
@@ -38,7 +37,7 @@ _(Work In Progress)_ An experimentation framework for Deep Reinforcement Learnin
 Once you're all set up, run the demo of `VanillaDQN` in `CartPole-v0`:
 
 - see `slm_lab/spec/demo.json` for example spec.
-- check `run_slm.py` to run `demo.json` experiment `dqn_cartpole`. Run a `Trial` (no param search).
+- see `config/experiments.json` to schedule experiments.
 - launch terminal in the repo directory, run:
     ```shell
     source activate lab
@@ -53,32 +52,45 @@ Once you're all set up, run the demo of `VanillaDQN` in `CartPole-v0`:
 To run an experiment:
 
 - set up your spec in `spec/`, e.g. the `agent, env, body, meta, search` info. There's a spec checker to verify it is valid.
+- all algorithm hyperparams are stored in a spec file in `slm_lab/spec` organized by algorithm. Modify parameters in the relevant spec
 - set `meta.train_mode` to `False` to render env to debug; set to `True` to run faster without rendering.
-- specify the name of your spec in `run_slm.py`, and if you wish to run `Experiment` instead of `Trial`. Note, you need to specify `search` in spec to run `Experiment`.
+- specify the name of your spec in `run_lab.py`, and if you wish to run `Experiment` instead of `Trial`. Note, you need to specify `search` in spec to run `Experiment`.
+- schedule experiment in `config/experiments.json`. See more below.
 - run `yarn start`
 - after completion, check `data/`. You should see `session_graph.png` and `experiment_graph.png`, along with accompanying data.
 - to kill stuck processes, run `yarn kill`. To reset, run `yarn reset`. More commands below.
 
-### To run implemented algorithms
+### Scheduling Lab Experiments
 
-- all algorithm hyperparams are stored in a spec file in `slm_lab/spec` organized by algorithm
-- modify parameters in the relevant spec
-- modify `run_slm.py` to select your spec
-    ```shell
-    spec = spec_util.get('SPECFILENAME.json', 'specname')
-    ```
-- run one of the two commands in the terminal
-    ```shell
-    yarn start
-    ```
-    or
-    ```shell
-    python run_slm.py
-    ```
+Use `config/experiments.json` to specify what experiments to run in the Lab. The format is:
+```json
+{
+	"{spec_file}": {
+		"{spec_name}": "{run_mode}"
+	}
+}
+```
+
+E.g. the following will run 2 experiments with param search defined in the spec files.
+```json
+"dqn.json": {
+	"dqn_cartpole": "search"
+},
+"reinforce.json": {
+	"reinforce_cartpole": "search"
+}
+```
+
+The `run_mode`s are:
+- `search`: use `Ray.tune` to run experiment trials on specs over the defined search space.
+- `train`: run a trial from scratch (with training) using its default values.
+- `enjoy`: run a trial using a saved model (assuming model file exists).
+- `benchmark`: to test a new algorithm, run `search` over a predefined set of benchmark environments.
+- `dev`: development mode, with override of DEBUG flag, shorter episodes, train_mode.
 
 ### Tips
 
-If you experience package errors, try the following from the root of the SLM-Lab folder
+If you experience package errors, try the following from the root of the SLM-Lab directory (update repo and update dependencies):
 
 ```bash
 git pull
@@ -92,6 +104,7 @@ This will update all of the packages to the latest required versions.
 | Function | `command` |
 | :------------- | :------------- |
 | start the Lab | `yarn start` |
+| watch and sync the Lab data | `yarn watch` |
 | reset lab - clear data/ and log/ | `yarn reset` |
 | clear cache | `yarn clear` |
 | kill stuck processes | `yarn kill` |
