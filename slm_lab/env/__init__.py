@@ -355,7 +355,7 @@ class EnvSpace:
         reward_space, state_space, done_space = self.aeb_space.add(
             ENV_DATA_NAMES, [reward_v, state_v, done_v])
         self.total_reward_v += reward_v  # for debugging
-        logger.debug(f'\ntotal_reward_v: {self.total_reward_v})
+        logger.debug(f'\ntotal_reward_v: {self.total_reward_v}')
         logger.debug(
             f'\nreward_space: {reward_space}\nstate_space: {state_space}\ndone_space: {done_space}')
         return reward_space, state_space, done_space
