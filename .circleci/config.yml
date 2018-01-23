@@ -23,7 +23,7 @@ jobs:
       - run:
           name: Install apt-get packages for gym
           command: |
-            sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig libstdc++6 gcc-4.9 g++-4.9
+            sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
 
       - run:
           name: Install NodeJS dependencies
@@ -74,8 +74,6 @@ jobs:
               pip install .
               cd ~/SLM-Lab
             fi
-            gcc --version
-            python -c "import tensorflow; print('tensorflow version:'); print(tensorflow.__version__)"
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}
           paths:
