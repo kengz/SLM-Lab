@@ -214,6 +214,25 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
+def plot_experiment_from_file(experiment_df_filepath):
+    '''
+    Method to plot experiment from its experiment_df file
+    @example
+
+    from slm_lab.experiment import analysis
+
+    filepath = 'data/reinforce_cartpole_2018_01_22_190720/reinforce_cartpole_experiment_df.csv'
+    analysis.plot_experiment_from_file(filepath)
+    '''
+    spec_name = experiment_df_filepath.split(
+        '/').pop().replace('_experiment_df.csv', '')
+    experiment_spec = {'name': spec_name}
+    experiment_df = util.read(experiment_df_filepath)
+    experiment_fig = plot_experiment(experiment_spec, experiment_df)
+    viz.save_image(experiment_fig, experiment_df_filepath.replace(
+        '_experiment_df.csv', '_experiment_graph.png'))
+
+
 def save_experiment_data(info_space, best_spec, experiment_df, experiment_fig):
     '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
     spec_name = best_spec['name']
