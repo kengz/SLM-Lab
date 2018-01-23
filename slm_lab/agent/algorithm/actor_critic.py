@@ -15,17 +15,43 @@ import pydash as _
 
 class ActorCritic(Reinforce):
     '''
-    Implementation of a simple actor-critic algorithm.
-    TODO - finish comments
-    Algorithm:
-        1. Collect k examples
-            - Train the critic network using these examples
-            - Calculate the advantage of each example using the critic
-            - Multiply the advantage by the negative of log probability of the action taken
-        2. Sum all the values above.
-        3. Calculate the gradient of this value with respect to all of the parameters of the actor network
-        4. Update the actor network parameters using the gradient
-    Separate networks with no shared parameters are used to approximate the actor and critic
+    Implementation of single threaded Advantage Actor Critic
+    Original paper: "Asynchronous Methods for Deep Reinforcement Learning"
+    https://arxiv.org/abs/1602.01783
+    Algorithm specific training options:
+        - use_GAE:      option to use generalized advantage estimation introduced in
+                        "High-Dimensional Continuous Control Using Generalized Advantage Estimation"
+                        https://arxiv.org/abs/1506.02438. The default option is to use n-step returns
+                        as desribed in "Asynchronous Methods for Deep Reinforcement Learning"
+        - entropy:      option to add entropy to policy during training to encourage exploration as
+                        outlined in "Asynchronous Methods for Deep Reinforcement Learning"
+        - memory type:  batch (through OnPolicyBatchReplay memory class) or episodic through
+                        (OnPolicyReplay memory class)
+        - return steps: how many steps to use when calculating the advantage target
+        - param sharing: whether the actor and critic should share params (e.g. through 'MLPshared')
+                         or have separate params (e.g. through 'MLPseparate')
+                         If param sharing is used then there is also the option to control the weight
+                         given to the policy and value components of the loss function through
+                         'policy_loss_weight' and 'val_loss_weight'
+    Algorithm - separate actor and critic:
+        Repeat:
+            1. Collect k examples
+            2. Train the critic network using these examples
+            3. Calculate the advantage of each example using the critic
+            4. Multiply the advantage by the negative of log probability of the action taken, and sum all the values. This is the policy loss.
+            5. Calculate the gradient the parameters of the actor network with respect to the policy loss
+            6. Update the actor network parameters using the gradient
+    Algorithm - shared parameters:
+        Repeat:
+            1. Collect k examples
+            2. Calculate the target for each example for the critic
+            3. Compute current estimate of state-value for each example using the critic
+            4. Calculate the critic loss using a regression loss (e.g. square loss) between the target and estimate of the state-value for each example
+            5. Calculate the advantage of each example using the rewards and critic
+            6. Multiply the advantage by the negative of log probability of the action taken, and sum all the values. This is the policy loss.
+            7. Compute the total loss by summing the value and policy lossses
+            8. Calculate the gradient of the parameters of shared network with respect to the total loss
+            9. Update the shared network parameters using the gradient
     '''
 
     @lab_api
