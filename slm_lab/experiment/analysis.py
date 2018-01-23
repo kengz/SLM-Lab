@@ -241,7 +241,7 @@ def analyze_experiment(experiment):
     logger.info(f'Experiment data:\n{experiment_df}')
     # TODO sort experiment_df
     experiment_fig = plot_experiment(experiment.spec, experiment_df)
-    best_trial_index = experiment_df['fitness'].idxmax()
+    best_trial_index = experiment_df['fitness'].astype(float).idxmax()
     best_config = experiment_df.loc[best_trial_index][config_cols].to_dict()
     best_spec = _.merge(experiment.spec, best_config)
     save_experiment_data(
