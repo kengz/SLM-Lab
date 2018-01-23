@@ -191,6 +191,9 @@ def plot_experiment(experiment_spec, experiment_df):
 
     fig = viz.tools.make_subplots(
         rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True)
+    fitness_sr = experiment_df['fitness']
+    min_fitness = fitness_sr.values.min()
+    max_fitness = fitness_sr.values.max()
     for row_idx, y in enumerate(y_cols):
         for col_idx, x in enumerate(x_cols):
             x_sr = experiment_df[x]
@@ -201,6 +204,8 @@ def plot_experiment(experiment_spec, experiment_df):
                 showlegend=False, mode='markers',
                 marker={
                     'symbol': 'circle-open-dot', 'color': experiment_df['fitness'],
+                    # dump first quarter of colorscale that is too bright
+                    'cmin': min_fitness - 0.25 * (max_fitness - min_fitness), 'cmax': max_fitness,
                     'colorscale': 'YIGnBu', 'reversescale': True
                 },
             )
