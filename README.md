@@ -35,6 +35,24 @@ Once you're all set up, run the demo of `VanillaDQN` in `CartPole-v0`:
     ```
 - It should render and run. After completion, check the output for data `data/dqn_cartpole/`
 
+#### `screen` mode
+
+If you're running the lab on a remote ssh server, use a screen so you can exit:
+
+```shell
+# enter the screen with the name "lab"
+screen -S lab
+# run lab over ssh
+source activate lab
+yarn start
+# use Cmd+A+D to detach from screen, then Cmd+D to disconnect ssh
+
+# to resume screen next time
+screen -r lab
+# use Cmd+D to terminate screen when lab ends
+```
+
+
 ### Experiment
 
 >This is still under development; will be improved in the coming releases.
