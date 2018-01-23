@@ -6,6 +6,7 @@ from slm_lab.agent.net import net_util
 from slm_lab.lib import util, logger
 from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
+import torch.nn.functional as F
 import sys
 import numpy as np
 import torch
@@ -94,7 +95,7 @@ class ActorCritic(Reinforce):
             sys.exit()
 
     def print_nets(self):
-        if self.is_shared_architecture is True:
+        if self.is_shared_architecture:
             self.actorcritic.print_nets()
         else:
             self.actor.print_nets()
@@ -121,7 +122,9 @@ class ActorCritic(Reinforce):
         util.set_attr(self, _.pick(algorithm_spec, [
             'gamma',
             'training_frequency', 'training_iters_per_batch',
-            'add_entropy', 'advantage_fn', 'num_epis_to_collect'
+            'num_epis_to_collect',
+            'add_entropy', 'advantage_fn',
+            'policy_loss_weight', 'val_loss_weight'
         ]))
         if self.advantage_fn == "gae_1":
             self.get_target = self.gae_1_target
@@ -189,6 +192,7 @@ class ActorCritic(Reinforce):
             else:
                 self.actorcritic.train()
                 out = self.actorcritic(x)
+                # print(out)
             return out[-1]
         else:
             if evaluate:
@@ -207,8 +211,50 @@ class ActorCritic(Reinforce):
 
     def train_shared(self):
         '''Trains the network when the actor and critic share parameters'''
-        # TODO: implement train_shared
-        pass
+        if self.to_train == 1:
+            batch = self.sample()
+            '''Calculate policy loss (actor)'''
+            advantage = self.calc_advantage(batch)
+            advantage = self.check_sizes(advantage)
+            policy_loss = []
+            for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
+                logger.debug(
+                    f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
+                if self.add_entropy:
+                    policy_loss.append(-log_prob * a - 0.1 * e)
+                else:
+                    policy_loss.append(-log_prob * a)
+            policy_loss = torch.cat(policy_loss).sum()
+            '''Calculate state-value loss (critic)'''
+            target = self.get_target(batch)
+            states = batch['states']
+            if self.is_episodic:
+                target = torch.cat(target)
+                states = torch.cat(states)
+            y = Variable(target.unsqueeze_(dim=-1))
+            state_vals = self.get_critic_output(states, evaluate=False)
+            assert state_vals.data.size() == y.data.size()
+            val_loss = F.smooth_l1_loss(state_vals, y)
+            '''Combine losses and train'''
+            self.actorcritic.optim.zero_grad()
+            total_loss = self.policy_loss_weight * policy_loss + self.val_loss_weight * val_loss
+            loss = total_loss.data[0]
+            total_loss.backward()
+            if self.actorcritic.clamp_grad:
+                logger.info("Clipping actor gradient...")
+                torch.nn.utils.clip_grad_norm(
+                    self.actorcritic.parameters(), self.actorcritic.clamp_grad_val)
+            logger.debug(f'Combined AC gradient norms: {self.actorcritic.get_grad_norms()}')
+            self.actorcritic.optim.step()
+            self.to_train = 0
+            self.saved_log_probs = []
+            self.entropy = []
+            logger.debug("Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}".format(
+                val_loss.data[0], abs(policy_loss.data[0]), loss
+            ))
+            return loss
+        else:
+            return np.nan
 
     def train_separate(self):
         '''Trains the network when the actor and critic are separate networks'''

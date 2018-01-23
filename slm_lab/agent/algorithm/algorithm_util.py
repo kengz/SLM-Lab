@@ -136,6 +136,8 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
 def act_with_softmax(agent, state):
     torch_state = Variable(torch.from_numpy(state).float())
     out = agent.get_actor_output(torch_state, evaluate=False)
+    if type(out) is list:
+        out = out[0]
     probs = F.softmax(out, dim=0)
     m = Categorical(probs)
     action = m.sample()
