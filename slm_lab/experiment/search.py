@@ -56,7 +56,7 @@ class RaySearch:
             if space_type == 'grid_search':
                 config_space[key] = grid_search(v)
             elif space_type == 'choice':
-                random.choice(v)
+                config_space[key] = random.choice(v)
             else:
                 np_fn = getattr(np.random, space_type)
                 config_space[key] = lambda spec: np_fn(*v)
