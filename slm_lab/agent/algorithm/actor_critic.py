@@ -36,7 +36,7 @@ class ActorCritic(Reinforce):
         logger.info(util.self_desc(self))
 
     def init_nets(self):
-        '''Initialize the neural network used to learn the Q function from the spec'''
+        '''Initialize the neural networks used to learn the actor and critic from the spec'''
         body = self.agent.nanflat_body_a[0]  # singleton algo
         state_dim = body.state_dim
         action_dim = body.action_dim
@@ -57,27 +57,38 @@ class ActorCritic(Reinforce):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         ))
-        # Below we automatically select an appropriate net based on two different conditions
-        #   1. If the action space is discrete or continuous action
-        #           - Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
-        #           - Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
-        #   2. If the actor and critic should be separate or share weights
-        #           - If the networks share weights then the single network returns a tuple. The first element contains the output for the actor (policy). This will vary depending on the type of distribution (see point 1.). The second element contains the state-value estimated by the network.
+        '''
+         Below we automatically select an appropriate net based on two different conditions
+           1. If the action space is discrete or continuous action
+                   - Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
+                   - Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
+           2. If the actor and critic are separate or share weights
+                   - If the networks share weights then the single network returns a list.
+                        - Continuous action spaces: The return list contains 3 elements: The first element contains the mean output for the actor (policy), the second element the std dev of the policy, and the third element is the state-value estimated by the network.
+                        - Discrete action spaces: The return list contains 2 element. The first element is a tensor containing the logits for a categorical probability distribution over the actions. The second element contains the state-value estimated by the network.
+        '''
         if net_type == 'MLPseparate':
             self.is_shared_architecture = False
             if self.is_discrete:
                 self.actor = getattr(net, 'MLPNet')(
                     state_dim, net_spec['hid_layers'], action_dim, **actor_kwargs)
+                logger.info("Discrete action space, actor and critic are separate networks")
             else:
                 self.actor = getattr(net, 'MLPHeterogenousHeads')(
                     state_dim, net_spec['hid_layers'], [action_dim, action_dim], **actor_kwargs)
+                logger.info("Continuous action space, actor and critic are separate networks")
             self.critic = getattr(net, 'MLPNet')(
                 state_dim, net_spec['hid_layers'], 1, **critic_kwargs)
         else:
             self.is_shared_architecture = True
-            # TODO fix for MLPshared - single heterogenous head
-            logger.warn(f'Net type {net_type} not supported yet. Please use MLPseparate')
-            sys.exit()
+            if self.is_discrete:
+                self.actor = getattr(net, 'MLPHeterogenousHeads')(
+                    state_dim, net_spec['hid_layers'], [action_dim, 1], **actor_kwargs)
+                logger.info("Discrete action space, actor and critic combined into single network, sharing params")
+            else:
+                self.actor = getattr(net, 'MLPHeterogenousHeads')(
+                    state_dim, net_spec['hid_layers'], [action_dim, action_dim, 1], **actor_kwargs)
+                logger.info("Continuous action space, actor and critic combined into single network, sharing params")
 
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
@@ -123,10 +134,12 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def body_act_discrete(self, body, state):
+        '''Returns a discrete action'''
         return self.action_policy(self, state, self.actor)
 
     @lab_api
     def body_act_continuous(self, body, state):
+        '''Returns a continuous action'''
         return self.action_policy(self, state, self.actor, body)
 
     def sample(self):
@@ -140,18 +153,31 @@ class ActorCritic(Reinforce):
             util.to_torch_batch(batch)
         return batch
 
+    def get_actor_output(self, x):
+        '''Returns the output of the policy, regardless of the underlying network structure.
+           Output will either be the logits for a categorical probability distribution over discrete actions (discrete action space) or the mean and std dev of the action policy (continuous action space)
+        '''
+        pass
+
+    def get_critic_output(self, x):
+        '''Returns the estimated state-value, regardless of the underlying network structure'''
+        pass
+
     @lab_api
     def train(self):
+        '''Trains the algorithm'''
         if self.is_shared_architecture:
             return self.train_shared()
         else:
             return self.train_separate()
 
     def train_shared(self):
+        '''Trains the network when the actor and critic share parameters'''
         # TODO: implement train_shared
         pass
 
     def train_separate(self):
+        '''Trains the network when the actor and critic are separate networks'''
         if self.to_train == 1:
             batch = self.sample()
             critic_loss = self.train_critic(batch)
@@ -171,6 +197,7 @@ class ActorCritic(Reinforce):
             return self.train_critic_batch(batch)
 
     def train_critic_batch(self, batch):
+        '''Trains the critic using batches of data. Algorithm doesn't wait until episode has ended to train'''
         loss = 0
         for _i in range(self.training_iters_per_batch):
             target = self.get_target(batch)
@@ -180,6 +207,7 @@ class ActorCritic(Reinforce):
         return loss
 
     def train_critic_episodic(self, batch):
+        '''Trains the critic using entire episodes of data. Algorithm waits until episode has ended to train'''
         loss = 0
         for _i in range(self.training_iters_per_batch):
             target = self.get_target(batch)
