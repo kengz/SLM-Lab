@@ -75,6 +75,8 @@ dependencies:
 - simplegeneric=0.8.1=py36_0
 - six=1.11.0=py36_1
 - sqlite=3.20.1=2
+- tensorboard=0.4.0rc3=py36_2
+- tensorflow=1.4.0=py36_0
 - tk=8.6.7=0
 - tornado=4.5.3=py36_0
 - traitlets=4.3.2=py36_0
@@ -138,8 +140,6 @@ dependencies:
   - qtconsole==4.3.1
   - ray==0.3.0
   - redis==2.10.6
-  - tensorflow==1.5.0rc0
-  - tensorflow-tensorboard==0.1.8
   - terminado==0.8.1
   - testpath==0.3.1
   - theano==1.0.1
