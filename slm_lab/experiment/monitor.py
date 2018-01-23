@@ -212,8 +212,8 @@ class AEBSpace:
             clock = env.clock
             done = env.done or clock.get('t') > env.max_timestep
             if done:
-                logger.info(
-                    f'Done: env {env.e} epi {clock.get("epi")}, t {clock.get("t")}')
+                msg = f'Done: trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e} epi {clock.get("epi")}, t {clock.get("t")}'
+                logger.info(msg)
                 clock.tick('epi')
             else:
                 clock.tick('t')

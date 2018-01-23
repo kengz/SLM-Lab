@@ -65,15 +65,7 @@ jobs:
             fi
             source activate lab
             conda env update -f environment.yml
-
-            if pip list | grep "^unityagents " >/dev/null; then
-              echo "unityagents of ml-agents already present"
-            else
-              git clone https://github.com/Unity-Technologies/ml-agents.git ~/ml-agents/
-              cd ~/ml-agents/python && git pull
-              pip install .
-              cd ~/SLM-Lab
-            fi
+            pip uninstall enum34 -y  # old tf requirement breaking new py
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}
           paths:

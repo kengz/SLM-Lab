@@ -8,6 +8,7 @@ from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pandas as pd
 import pydash as _
+import random
 import ray
 
 
@@ -51,12 +52,13 @@ class RaySearch:
                 key, space_type = k.split('__')
             else:
                 key, space_type = k, 'grid_search'
-
             if space_type == 'grid_search':
                 config_space[key] = grid_search(v)
+            elif space_type == 'choice':
+                config_space[key] = lambda spec, v=v: random.choice(v)
             else:
                 np_fn = getattr(np.random, space_type)
-                config_space[key] = lambda spec: np_fn(*v)
+                config_space[key] = lambda spec, v=v: np_fn(*v)
         return config_space
 
     def spec_from_config(self, config):
