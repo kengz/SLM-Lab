@@ -16,17 +16,7 @@ _(Work In Progress)_ An experimentation framework for Deep Reinforcement Learnin
     source activate lab
     ```
 
-3.  Install the bleeding-edge Unity `ml-agents` dependency:
-    ```shell
-    source activate lab
-    cd ..
-    git clone https://github.com/Unity-Technologies/ml-agents.git
-    cd ml-agents/python
-    pip install .
-    cd ../SLM-Lab/
-    ```
-
-4.  Setup the created config files:
+3.  Setup the created config files:
     -   sign up for a free [Plotly account](https://plot.ly/) and get the API key to put in the config files below.
     -   `config/default.json`
 
@@ -155,7 +145,7 @@ For building and releasing Unity environments, refer to [README of SLM-Env](http
 
 Proper semantics yield better understanding; below lays out the Lab's generalized structure and relations of agents, bodies and environments.
 
-First, some semantics correction of Unity ml-agents is needed. Sine this environment module handles the interface with Untiy ml-agents, the correction will happen here.
+First, some semantics correction of Unity ml-agents is needed. Sine this environment module handles the interface with Unity ml-agents, the correction will happen here.
 
 The motivating problem:
 Originally, in a single instance of environment sits the Academy, which houses multiple Brains, which can each control multiple "Agents". The Brains can be controlled externally from Unity, e.g. via DQN implementation in PyTorch.
