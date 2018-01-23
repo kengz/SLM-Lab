@@ -25,6 +25,8 @@ class Session:
 
     def __init__(self, spec, info_space=InfoSpace()):
         self.spec = spec
+        if info_space.get('session') is None:
+            info_space.tick('session')
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         # TODO option to set rand_seed. also set np random seed
@@ -81,6 +83,8 @@ class Trial:
 
     def __init__(self, spec, info_space=InfoSpace()):
         self.spec = spec
+        if info_space.get('trial') is None:
+            info_space.tick('trial')
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.session_data_dict = {}
@@ -125,6 +129,8 @@ class Experiment:
 
     def __init__(self, spec, info_space=InfoSpace()):
         self.spec = spec
+        if info_space.get('experiment') is None:
+            info_space.tick('experiment')
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.trial_data_dict = {}

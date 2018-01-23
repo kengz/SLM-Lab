@@ -191,6 +191,9 @@ def plot_experiment(experiment_spec, experiment_df):
 
     fig = viz.tools.make_subplots(
         rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True)
+    fitness_sr = experiment_df['fitness']
+    min_fitness = fitness_sr.values.min()
+    max_fitness = fitness_sr.values.max()
     for row_idx, y in enumerate(y_cols):
         for col_idx, x in enumerate(x_cols):
             x_sr = experiment_df[x]
@@ -201,6 +204,8 @@ def plot_experiment(experiment_spec, experiment_df):
                 showlegend=False, mode='markers',
                 marker={
                     'symbol': 'circle-open-dot', 'color': experiment_df['fitness'],
+                    # dump first quarter of colorscale that is too bright
+                    'cmin': min_fitness - 0.25 * (max_fitness - min_fitness), 'cmax': max_fitness,
                     'colorscale': 'YIGnBu', 'reversescale': True
                 },
             )
@@ -212,6 +217,25 @@ def plot_experiment(experiment_spec, experiment_df):
         title=f'Experiment Graph: {experiment_spec["name"]}', width=len(x_cols) * 200, height=700)
     viz.plot(fig)
     return fig
+
+
+def plot_experiment_from_file(experiment_df_filepath):
+    '''
+    Method to plot experiment from its experiment_df file
+    @example
+
+    from slm_lab.experiment import analysis
+
+    filepath = 'data/reinforce_cartpole_2018_01_22_190720/reinforce_cartpole_experiment_df.csv'
+    analysis.plot_experiment_from_file(filepath)
+    '''
+    spec_name = experiment_df_filepath.split(
+        '/').pop().replace('_experiment_df.csv', '')
+    experiment_spec = {'name': spec_name}
+    experiment_df = util.read(experiment_df_filepath)
+    experiment_fig = plot_experiment(experiment_spec, experiment_df)
+    viz.save_image(experiment_fig, experiment_df_filepath.replace(
+        '_experiment_df.csv', '_experiment_graph.png'))
 
 
 def save_experiment_data(info_space, best_spec, experiment_df, experiment_fig):
@@ -241,7 +265,7 @@ def analyze_experiment(experiment):
     logger.info(f'Experiment data:\n{experiment_df}')
     # TODO sort experiment_df
     experiment_fig = plot_experiment(experiment.spec, experiment_df)
-    best_trial_index = experiment_df['fitness'].idxmax()
+    best_trial_index = experiment_df['fitness'].astype(float).idxmax()
     best_config = experiment_df.loc[best_trial_index][config_cols].to_dict()
     best_spec = _.merge(experiment.spec, best_config)
     save_experiment_data(

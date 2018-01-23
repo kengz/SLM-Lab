@@ -86,6 +86,7 @@ fi
 # conda env export > environment.yml
 echo "--- Updating Conda environment ---"
 conda env update -f environment.yml
+pip uninstall enum34 -y  # old tf requirement breaking new py
 
 source ~/.bash_profile
 echo "--- Lab setup complete ---"
