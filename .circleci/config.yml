@@ -65,6 +65,7 @@ jobs:
             fi
             source activate lab
             conda env update -f environment.yml
+            pip uninstall enum34  # old tf requirement breaking new py
 
             if pip list | grep "^unityagents " >/dev/null; then
               echo "unityagents of ml-agents already present"
