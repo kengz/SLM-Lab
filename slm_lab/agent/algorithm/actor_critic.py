@@ -79,7 +79,7 @@ class ActorCritic(Reinforce):
                 logger.info("Continuous action space, actor and critic are separate networks")
             self.critic = getattr(net, 'MLPNet')(
                 state_dim, net_spec['hid_layers'], 1, **critic_kwargs)
-        else:
+        elif net_type == 'MLPshared':
             self.is_shared_architecture = True
             if self.is_discrete:
                 self.actorcritic = getattr(net, 'MLPHeterogenousHeads')(
@@ -89,6 +89,9 @@ class ActorCritic(Reinforce):
                 self.actorcritic = getattr(net, 'MLPHeterogenousHeads')(
                     state_dim, net_spec['hid_layers'], [action_dim, action_dim, 1], **actor_kwargs)
                 logger.info("Continuous action space, actor and critic combined into single network, sharing params")
+        else:
+            logger.warn("Incorrect network type. Please use 'MLPshared' or MLPseparate'.")
+            sys.exit()
 
     def print_nets(self):
         if self.is_shared_architecture is True:
