@@ -6,17 +6,19 @@
         "name": "ActorCritic",
         "action_policy": "default",
         "gamma": 0.999,
-        "training_frequency": 8,
+        "training_frequency": 64,
         "training_iters_per_batch": 3,
         "num_epis_to_collect": 1,
         "add_entropy": false,
-        "advantage_fn": "gae_1"
+        "advantage_fn": "gae_1",
+        "policy_loss_weight": 1.0,
+        "val_loss_weight": 0.5
       },
       "memory": {
         "name": "OnPolicyReplay",
       },
       "net": {
-        "type": "MLPseparate",
+        "type": "MLPshared",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "optim_actor": {
