@@ -133,9 +133,9 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
 
 
 # Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
-def act_with_softmax(agent, state, net):
+def act_with_softmax(agent, state):
     torch_state = Variable(torch.from_numpy(state).float())
-    out = net(torch_state)
+    out = agent.get_actor_output(torch_state, evaluate=False)
     probs = F.softmax(out, dim=0)
     m = Categorical(probs)
     action = m.sample()
@@ -149,10 +149,10 @@ def act_with_softmax(agent, state, net):
 
 
 # Denny Britz has a very helpful implementation of an Actor Critic algorithm. This function is adapted from his approach. I highly recommend looking at his full implementation available here https://github.com/dennybritz/reinforcement-learning/blob/master/PolicyGradient/Continuous%20MountainCar%20Actor%20Critic%20Solution.ipynb
-def act_with_gaussian(agent, state, net, body):
+def act_with_gaussian(agent, state):
     '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
     torch_state = Variable(torch.from_numpy(state).float())
-    [mu, sigma] = net(torch_state)
+    [mu, sigma] = agent.get_actor_output(torch_state, evaluate=False)
     sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0
     m = Normal(mu, sigma)
     action = m.sample()

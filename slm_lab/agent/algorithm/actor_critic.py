@@ -32,7 +32,7 @@ class ActorCritic(Reinforce):
         '''Initializes the part of algorithm needing a body to exist first.'''
         self.init_nets()
         self.init_algo_params()
-        self.actor.print_nets()  # Print the network architecture
+        self.print_nets()  # Print the network architectures
         logger.info(util.self_desc(self))
 
     def init_nets(self):
@@ -82,13 +82,20 @@ class ActorCritic(Reinforce):
         else:
             self.is_shared_architecture = True
             if self.is_discrete:
-                self.actor = getattr(net, 'MLPHeterogenousHeads')(
+                self.actorcritic = getattr(net, 'MLPHeterogenousHeads')(
                     state_dim, net_spec['hid_layers'], [action_dim, 1], **actor_kwargs)
                 logger.info("Discrete action space, actor and critic combined into single network, sharing params")
             else:
-                self.actor = getattr(net, 'MLPHeterogenousHeads')(
+                self.actorcritic = getattr(net, 'MLPHeterogenousHeads')(
                     state_dim, net_spec['hid_layers'], [action_dim, action_dim, 1], **actor_kwargs)
                 logger.info("Continuous action space, actor and critic combined into single network, sharing params")
+
+    def print_nets(self):
+        if self.is_shared_architecture is True:
+            self.actorcritic.print_nets()
+        else:
+            self.actor.print_nets()
+            self.critic.print_nets()
 
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
@@ -135,12 +142,12 @@ class ActorCritic(Reinforce):
     @lab_api
     def body_act_discrete(self, body, state):
         '''Returns a discrete action'''
-        return self.action_policy(self, state, self.actor)
+        return self.action_policy(self, state)
 
     @lab_api
     def body_act_continuous(self, body, state):
         '''Returns a continuous action'''
-        return self.action_policy(self, state, self.actor, body)
+        return self.action_policy(self, state)
 
     def sample(self):
         '''Samples a batch from memory'''
@@ -153,15 +160,39 @@ class ActorCritic(Reinforce):
             util.to_torch_batch(batch)
         return batch
 
-    def get_actor_output(self, x):
-        '''Returns the output of the policy, regardless of the underlying network structure.
+    def get_actor_output(self, x, evaluate=True):
+        '''Returns the output of the policy, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.
            Output will either be the logits for a categorical probability distribution over discrete actions (discrete action space) or the mean and std dev of the action policy (continuous action space)
         '''
-        pass
+        if self.is_shared_architecture:
+            if evaluate:
+                out = self.actorcritic.wrap_eval(x)
+            else:
+                self.actorcritic.train()
+                out = self.actorcritic(x)
+            return out[:-1]
+        else:
+            if evaluate:
+                return self.actor.wrap_eval(x)
+            else:
+                self.actor.train()
+                return self.actor(x)
 
-    def get_critic_output(self, x):
-        '''Returns the estimated state-value, regardless of the underlying network structure'''
-        pass
+    def get_critic_output(self, x, evaluate=True):
+        '''Returns the estimated state-value, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.'''
+        if self.is_shared_architecture:
+            if evaluate:
+                out = self.actorcritic.wrap_eval(x)
+            else:
+                self.actorcritic.train()
+                out = self.actorcritic(x)
+            return out[-1]
+        else:
+            if evaluate:
+                return self.critic.wrap_eval(x)
+            else:
+                self.critic.train()
+                return self.critic(x)
 
     @lab_api
     def train(self):
@@ -241,7 +272,7 @@ class ActorCritic(Reinforce):
            target and state_vals are Tensors.
            returns advantage as a single Tensor'''
         target = self.get_target(batch)
-        state_vals = self.critic.wrap_eval(batch['states']).squeeze_()
+        state_vals = self.get_critic_output(batch['states']).squeeze_()
         advantage = target - state_vals
         advantage.squeeze_()
         logger.debug(f'Advantage: {advantage.size()}')
@@ -255,7 +286,7 @@ class ActorCritic(Reinforce):
         advantage = []
         states = batch['states']
         for s, t in zip(states, target):
-            state_vals = self.critic.wrap_eval(s).squeeze_()
+            state_vals = self.get_critic_output(s).squeeze_()
             a = t - state_vals
             a.squeeze_()
             logger.debug(f'Advantage: {a.size()}')
@@ -273,7 +304,7 @@ class ActorCritic(Reinforce):
             return self.gae_0_target_batch(batch)
 
     def gae_0_target_batch(self, batch):
-        next_state_vals = self.critic.wrap_eval(
+        next_state_vals = self.get_critic_output(
             batch['next_states']).squeeze_()
         target = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), next_state_vals)
@@ -287,7 +318,7 @@ class ActorCritic(Reinforce):
         targets = []
         for ns, r, d in zip(next_states, rewards, dones):
             r = torch.from_numpy(np.asarray(r))
-            nsv = self.critic.wrap_eval(ns).squeeze_()
+            nsv = self.get_critic_output(ns).squeeze_()
             target = r + self.gamma * torch.mul((1 - d.data), nsv)
             targets.append(target)
             logger.debug(f'Target: {target.size()}')
