@@ -6,7 +6,7 @@ from slm_lab.lib import logger
 def lab_api(fn):
     '''
     Function decorator to label and check Lab API methods
-    @examples
+    @example
 
     from slm_lab.lib.decorator import lab_api
     @lab_api
@@ -25,7 +25,7 @@ def lab_api(fn):
 def timeit(fn):
     '''
     Function decorator to measure execution time
-    @examples
+    @example
 
     from slm_lab.lib.decorator import timeit
     @timeit

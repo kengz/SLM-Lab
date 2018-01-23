@@ -14,7 +14,7 @@ def test_body():
 
 
 def test_data_space(test_spec):
-    aeb_space = AEBSpace(test_spec)
+    return
 
 
 def test_aeb_space(test_spec):

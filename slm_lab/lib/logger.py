@@ -6,7 +6,7 @@ import sys
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # mute tf warnings on optimized setup
 LOG_FILEPATH = util.smart_path(
-    f'log/{os.environ.get("PY_ENV")}_{util.get_timestamp()}_slm_lab.log')
+    f'log/{os.environ.get("PY_ENV")}_{util.get_ts()}_slm_lab.log')
 LOG_FORMAT = '[%(asctime)s %(levelname)s] %(message)s'
 LOG_LEVEL = logging.DEBUG if bool(os.environ.get('DEBUG')) else logging.INFO
 

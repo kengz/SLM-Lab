@@ -2,11 +2,11 @@
 The control module
 Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Session
 '''
+from copy import deepcopy
 from slm_lab.agent import AgentSpace
 from slm_lab.env import EnvSpace
-# from slm_lab.experiment import analysis, search
-from slm_lab.experiment import analysis
-from slm_lab.experiment.monitor import info_space, AEBSpace
+from slm_lab.experiment import analysis, search
+from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import logger, util, viz
 import numpy as np
 import pandas as pd
@@ -23,13 +23,14 @@ class Session:
     then return the session data.
     '''
 
-    def __init__(self, spec):
+    def __init__(self, spec, info_space=InfoSpace()):
         self.spec = spec
-        self.coor, self.index = info_space.index_lab_comp(self)
-        # TODO option to set rand_seed
+        self.info_space = info_space
+        self.coor, self.index = self.info_space.get_coor_idx(self)
+        # TODO option to set rand_seed. also set np random seed
         self.torch_rand_seed = torch.initial_seed()
         self.data = None
-        self.aeb_space = AEBSpace(self.spec)
+        self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space)
         logger.info(util.self_desc(self))
@@ -78,23 +79,30 @@ class Trial:
     then return the trial data.
     '''
 
-    def __init__(self, spec):
+    def __init__(self, spec, info_space=InfoSpace()):
         self.spec = spec
-        self.coor, self.index = info_space.index_lab_comp(self)
+        self.info_space = info_space
+        self.coor, self.index = self.info_space.get_coor_idx(self)
         self.session_data_dict = {}
         self.data = None
 
-    def init_session_and_run(self, session_id):
-        return Session(self.spec).run()
+    def init_session_and_run(self, info_space):
+        session = Session(self.spec, info_space)
+        session_data = session.run()
+        return session_data
 
     def close(self):
         logger.info('Trial done, closing.')
 
     def run(self):
-        session_ids = list(range(self.spec['meta']['max_session']))
+        info_spaces = []
+        for _s in range(self.spec['meta']['max_session']):
+            self.info_space.tick('session')
+            info_spaces.append(deepcopy(self.info_space))
         session_datas = util.parallelize_fn(
-            self.init_session_and_run, session_ids)
-        self.session_data_dict = dict(zip(session_ids, session_datas))
+            self.init_session_and_run, info_spaces)
+        self.session_data_dict = {
+            data.index[0]: data for data in session_datas}
         self.data = analysis.analyze_trial(self)
         self.close()
         return self.data
@@ -115,24 +123,29 @@ class Experiment:
     '''
     # TODO metaspec to specify specs to run, can be sourced from evolution suggestion
 
-    def __init__(self, spec):
+    def __init__(self, spec, info_space=InfoSpace()):
         self.spec = spec
-        self.coor, self.index = info_space.index_lab_comp(self)
+        self.info_space = info_space
+        self.coor, self.index = self.info_space.get_coor_idx(self)
         self.trial_data_dict = {}
-        self.best_spec = None
         self.data = None
-        # TODO generalize to take different search algo
-        SearchClass = getattr(search, 'SMACSearch')
+        SearchClass = getattr(search, 'RaySearch')
         self.search = SearchClass(self)
 
-    def init_trial_and_run(self, spec):
-        return Trial(spec).run()
+    def init_trial_and_run(self, spec, info_space):
+        '''
+        Method to run trial with the properly updated info_space (trial_index) from experiment.RaySearch.lab_trial.
+        Do not tick info_space below, it is already updated when passed from lab_trial.
+        '''
+        trial = Trial(spec, info_space)
+        trial_data = trial.run()
+        return trial_data
 
     def close(self):
         logger.info('Experiment done, closing.')
 
     def run(self):
-        self.best_spec, self.trial_data_dict = self.search.run()
+        self.trial_data_dict = self.search.run()
         self.data = analysis.analyze_experiment(self)
         self.close()
         return self.data
