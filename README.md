@@ -133,8 +133,7 @@ This lab is for general deep reinforcement learning research, built with proper 
         - Option to add entropy to encourage exploration
     - Actor-Critic
         - Batch or episodic training
-        - Advantage calculated using either GAE(gamma, 0) or GAE(gamma, 1)
-        - Note GAE(gamma, 1) should only be used in combination with episodic training
+        - Advantage calculated using n-step returns or generalized advantage estimation
         - Option to add entropy to encourage exploration
 - plugs in to OpenAI gym, Unity ml-agents environments
 - generalized multi-agent, multi-environment setup
