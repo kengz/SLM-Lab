@@ -113,14 +113,19 @@ def save_session_data(info_space, session_spec, session_mdp_data, session_data, 
     Likewise for session_mdp_df
     '''
     spec_name = session_spec['name']
-    prepath = f'data/{spec_name}_{info_space.experiment_ts}/{spec_name}_t{info_space.coor["trial"]}_s{info_space.coor["session"]}'
-    logger.info(f'Saving session data to {prepath}_*')
+    trial_index = info_space.coor['trial']
+    session_index = info_space.coor['session']
+    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    prename = '{spec_name}_t{trial_index}_s{session_index}'
+    logger.info(
+        f'Saving trial {trial_index} session {session_index} data to {predir}')
     session_mdp_df = pd.concat(session_mdp_data, axis=1)
     session_df = pd.concat(session_data, axis=1)
-    util.write(session_mdp_df, f'{prepath}_session_mdp_df.csv')
-    util.write(session_df, f'{prepath}_session_df.csv')
-    util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
-    viz.save_image(session_fig, f'{prepath}_session_graph.png')
+    util.write(session_mdp_df, f'{predir}/{prename}_session_mdp_df.csv')
+    util.write(session_df, f'{predir}/{prename}_session_df.csv')
+    util.write(session_fitness_df,
+               f'{predir}/{prename}_session_fitness_df.csv')
+    viz.save_image(session_fig, f'{predir}/{prename}_session_graph.png')
 
 
 def analyze_session(session):
@@ -164,11 +169,13 @@ def calc_trial_fitness_df(trial):
 def save_trial_data(info_space, trial_spec, trial_fitness_df):
     '''Save the trial data: spec, trial_fitness_df.'''
     spec_name = trial_spec['name']
-    prepath = f'data/{spec_name}_{info_space.experiment_ts}/{spec_name}_t{info_space.coor["trial"]}'
-    logger.info(f'Saving trial data to {prepath}_*')
-    util.write(trial_spec, f'{prepath}_spec.json')
+    trial_index = info_space.coor['trial']
+    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    prename = '{spec_name}_t{trial_index}'
+    logger.info(f'Saving trial {trial_index} data to {predir}')
+    util.write(trial_spec, f'{predir}/{prename}_spec.json')
     # TODO trial data is composed of saved session data files
-    util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
+    util.write(trial_fitness_df, f'{predir}/{prename}_trial_fitness_df.csv')
 
 
 def analyze_trial(trial):
@@ -241,17 +248,18 @@ def plot_experiment_from_file(experiment_df_filepath):
 def save_experiment_data(info_space, best_spec, experiment_df, experiment_fig):
     '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
     spec_name = best_spec['name']
-    prepath = f'data/{spec_name}_{info_space.experiment_ts}/{spec_name}'
-    logger.info(f'Saving experiment data to {prepath}_*')
-    util.write(best_spec, f'{prepath}_best_spec.json')
-    util.write(experiment_df, f'{prepath}_experiment_df.csv')
-    viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
+    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    prename = '{spec_name}'
+    logger.info(f'Saving experiment data to {predir}')
+    util.write(best_spec, f'{predir}/{prename}_best_spec.json')
+    util.write(experiment_df, f'{predir}/{prename}_experiment_df.csv')
+    viz.save_image(experiment_fig, f'{predir}/{prename}_experiment_graph.png')
 
 
 def analyze_experiment(experiment):
     '''
     Gather experiment trial_data_dict as experiment_df, plot.
-    Search module must return best_spec and experiment_data with format {trial_id: exp_trial_data},
+    Search module must return best_spec and experiment_data with format {trial_index: exp_trial_data},
     where trial_data = {**var_spec, **fitness_vec, fitness}.
     This is then made into experiment_df.
     @returns {DataFrame} experiment_df Of var_specs, fitness_vec, fitness for all trials.
