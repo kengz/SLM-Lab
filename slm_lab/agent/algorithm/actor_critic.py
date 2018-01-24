@@ -300,7 +300,6 @@ class ActorCritic(Reinforce):
             '''Calculate appropriate state value accounting for terminal states and number of time steps'''
             discounted_state_val_estimate = torch.mul(next_state_vals, next_state_gammas)
             discounted_state_val_estimate = torch.mul(discounted_state_val_estimate, 1 - d.data)
-            '''Only add bootstrapped estimate if number of steps less than episode length'''
             if nts < next_state_vals.size(0):
                 logger.debug(f'N step returns less than episode length, adding boostrap')
                 R += discounted_state_val_estimate
@@ -322,11 +321,6 @@ class ActorCritic(Reinforce):
         else:
             j = -nts
             next_state_gammas[:j] = 1.0
-        logger.debug(f'next_state_vals: {next_state_vals}')
-        logger.debug(f'rewards: {rewards}')
-        logger.debug(f'R: {R}')
-        logger.debug(f'curr_reward_step: {curr_reward_step}')
-        logger.debug(f'next_state_gammas: {next_state_gammas}')
         for i in range(nts, 0, -1):
             logger.debug(f'i: {i}, j: {j}')
             curr_reward_step[:j] = rewards[i:]
