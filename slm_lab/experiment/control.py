@@ -103,9 +103,14 @@ class Trial:
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
             info_spaces.append(deepcopy(self.info_space))
-        session_datas = util.parallelize_fn(
-            self.init_session_and_run, info_spaces)
-        self.session_data_dict = {
+        if self.spec['meta']['train_mode']:
+            session_datas = util.parallelize_fn(
+                self.init_session_and_run, info_spaces)
+        else:  # dont parallelize when debugging to allow render
+            session_datas = [
+                self.init_session_and_run(info_space) for info_space in info_spaces)
+            ]
+        self.session_data_dict= {
             data.index[0]: data for data in session_datas}
         self.data = analysis.analyze_trial(self)
         self.close()
