@@ -108,9 +108,9 @@ class Trial:
                 self.init_session_and_run, info_spaces)
         else:  # dont parallelize when debugging to allow render
             session_datas = [
-                self.init_session_and_run(info_space) for info_space in info_spaces)
+                self.init_session_and_run(info_space) for info_space in info_spaces
             ]
-        self.session_data_dict= {
+        self.session_data_dict = {
             data.index[0]: data for data in session_datas}
         self.data = analysis.analyze_trial(self)
         self.close()
