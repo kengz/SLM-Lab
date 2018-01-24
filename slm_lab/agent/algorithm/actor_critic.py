@@ -19,20 +19,22 @@ class ActorCritic(Reinforce):
     Original paper: "Asynchronous Methods for Deep Reinforcement Learning"
     https://arxiv.org/abs/1602.01783
     Algorithm specific training options:
-        - use_GAE:      option to use generalized advantage estimation introduced in
-                        "High-Dimensional Continuous Control Using Generalized Advantage Estimation"
+        - GAE:          @param: 'algorithm.use_GAE' option to use generalized advantage estimation introduced in
+                       "High-Dimensional Continuous Control Using Generalized Advantage Estimation"
                         https://arxiv.org/abs/1506.02438. The default option is to use n-step returns
                         as desribed in "Asynchronous Methods for Deep Reinforcement Learning"
-        - entropy:      option to add entropy to policy during training to encourage exploration as
-                        outlined in "Asynchronous Methods for Deep Reinforcement Learning"
-        - memory type:  batch (through OnPolicyBatchReplay memory class) or episodic through
-                        (OnPolicyReplay memory class)
-        - return steps: how many steps to use when calculating the advantage target
-        - param sharing: whether the actor and critic should share params (e.g. through 'MLPshared')
-                         or have separate params (e.g. through 'MLPseparate')
-                         If param sharing is used then there is also the option to control the weight
-                         given to the policy and value components of the loss function through
-                         'policy_loss_weight' and 'val_loss_weight'
+        - entropy:      @param: 'algorithm.add_entropy' option to add entropy to policy during training to
+                        encourage exploration as outlined in "Asynchronous Methods for Deep Reinforcement
+                        Learning"
+        - memory type:  @param: 'memory.name' batch (through OnPolicyBatchReplay memory class) or episodic
+                        through (OnPolicyReplay memory class)
+        - return steps: @param: 'algorithm.num_step_returns' how many steps to use when calculating the
+                        advantage target
+        - param sharing: @param: 'net.type' whether the actor and critic should share params (e.g. through
+                        'MLPshared') or have separate params (e.g. through 'MLPseparate')
+                        If param sharing is used then there is also the option to control the weight
+                        given to the policy and value components of the loss function through
+                        'policy_loss_weight' and 'val_loss_weight'
     Algorithm - separate actor and critic:
         Repeat:
             1. Collect k examples
