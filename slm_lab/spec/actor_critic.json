@@ -6,11 +6,12 @@
         "name": "ActorCritic",
         "action_policy": "default",
         "gamma": 0.999,
+        "num_step_returns": 20, 
         "training_frequency": 64,
         "training_iters_per_batch": 3,
         "num_epis_to_collect": 1,
         "add_entropy": false,
-        "advantage_fn": "gae_1",
+        "use_GAE": false,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 0.5
       },
