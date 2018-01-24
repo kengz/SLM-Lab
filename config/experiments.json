@@ -1,5 +1,5 @@
 {
-  "demo.json": {
-    "dqn_cartpole": "train"
+  "reinforce.json": {
+    "reinforce_cartpole": "search"
   }
 }
