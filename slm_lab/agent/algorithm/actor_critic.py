@@ -29,7 +29,8 @@ class ActorCritic(Reinforce):
         - memory type:  @param: 'memory.name' batch (through OnPolicyBatchReplay memory class) or episodic
                         through (OnPolicyReplay memory class)
         - return steps: @param: 'algorithm.num_step_returns' how many steps to use when calculating the
-                        advantage target
+                        advantage target. Note when GAE is used, the number of steps is projected to a value
+                        between 0 and 1. Mininum number of steps is 0, maximum is 50.
         - param sharing: @param: 'net.type' whether the actor and critic should share params (e.g. through
                         'MLPshared') or have separate params (e.g. through 'MLPseparate')
                         If param sharing is used then there is also the option to control the weight
@@ -359,6 +360,7 @@ class ActorCritic(Reinforce):
             'add_entropy', 'use_GAE',
             'policy_loss_weight', 'val_loss_weight'
         ]))
+        self.lamda = self.num_step_returns / 50.0
         '''Select appropriate function for calculating state-action-value estimate (target)'''
         self.get_target = self.get_nstep_target
         if self.use_GAE:
