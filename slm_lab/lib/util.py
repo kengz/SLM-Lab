@@ -644,3 +644,10 @@ def to_torch_nested_batch(batch):
     for k in float_data_names:
         batch[k] = [Variable(torch.from_numpy(x).float()) for x in batch[k]]
     return batch
+
+def to_torch_nested_batch_ex_rewards(batch):
+    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable.'''
+    float_data_names = ['states', 'actions', 'dones', 'next_states']
+    for k in float_data_names:
+        batch[k] = [Variable(torch.from_numpy(x).float()) for x in batch[k]]
+    return batch

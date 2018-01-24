@@ -95,7 +95,7 @@ class Reinforce(Algorithm):
         batches = [body.memory.sample()
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
-        batch = util.to_torch_nested_batch(batch)
+        batch = util.to_torch_nested_batch_ex_rewards(batch)
         return batch
 
     @lab_api
