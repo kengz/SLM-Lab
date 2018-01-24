@@ -129,6 +129,7 @@ class Experiment:
 
     def __init__(self, spec, info_space=InfoSpace()):
         self.spec = spec
+        spec['meta']['train_mode'] = True
         if info_space.get('experiment') is None:
             info_space.tick('experiment')
         self.info_space = info_space
