@@ -82,7 +82,7 @@
       "algorithm": {
         "name": "Reinforce",
         "action_policy": "default",
-        "gamma": 0.99,
+        "gamma": 0.95,
         "num_epis_to_collect": 1,
         "add_entropy": false,
       },
@@ -109,7 +109,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 200,
+      "max_episode": 400,
       "max_session": 4,
       "max_trial": 100,
       "train_mode": true

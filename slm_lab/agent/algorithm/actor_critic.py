@@ -109,7 +109,7 @@ class ActorCritic(Reinforce):
             y = Variable(target.unsqueeze_(dim=-1))
             state_vals = self.get_critic_output(states, evaluate=False)
             assert state_vals.data.size() == y.data.size()
-            val_loss = F.smooth_l1_loss(state_vals, y)
+            val_loss = F.mse_loss(state_vals, y)
             '''Combine losses and train'''
             self.actorcritic.optim.zero_grad()
             total_loss = self.policy_loss_weight * policy_loss + self.val_loss_weight * val_loss
@@ -171,19 +171,8 @@ class ActorCritic(Reinforce):
         return loss
 
     def get_policy_loss(self, batch):
-        '''Returns the policy loss for a batch of data'''
-        advantage = self.calc_advantage(batch)
-        advantage = self.check_sizes(advantage)
-        policy_loss = []
-        for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
-            logger.debug(
-                f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
-            if self.add_entropy:
-                policy_loss.append(-log_prob * a - 0.1 * e)
-            else:
-                policy_loss.append(-log_prob * a)
-        policy_loss = torch.cat(policy_loss).sum()
-        return policy_loss
+        '''Returns the policy loss for a batch of data.'''
+        return super(ActorCritic, self).get_policy_loss(batch)
 
     def train_critic_batch(self, batch):
         '''Trains the critic using batches of data. Algorithm doesn't wait until episode has ended to train'''
@@ -258,23 +247,49 @@ class ActorCritic(Reinforce):
         In the episodic case it returns a list containing targets per episode
         In the batch case it returns a tensor containing the targets for the batch'''
         if self.is_episodic:
-            return self.get_nstep_target_batch(self, batch)
+            return self.get_nstep_target_episodic(batch)
         else:
-            return self.get_nstep_target_episodic(self, batch)
+            return self.get_nstep_target_batch(batch)
 
     def get_gae_target(self, batch):
         '''Estimates the state-action value using generalized advantage estimation. Used as a target when training the critic and calculting the advantage.
         In the episodic case it returns a list containing targets per episode
         In the batch case it returns a tensor containing the targets for the batch'''
         if self.is_episodic:
-            return self.get_gae_target_batch(self, batch)
+            return self.get_gae_target_episodic(batch)
         else:
-            return self.get_gae_target_episodic(self, batch)
+            return self.get_gae_target_batch(batch)
 
     def get_nstep_target_batch(self, batch):
         '''Returns a tensor containing the estimate of the state-action values using n-step returns'''
-        # TODO implement get_target_batch
-        pass
+        nts = self.num_step_returns
+        next_state_vals = self.get_critic_output(batch['next_states'])
+        rewards = batch['rewards']
+        R = torch.zeros_like(next_state_vals)
+        curr_reward_step = torch.zeros_like(next_state_vals)
+        next_state_gammas = torch.zeros_like(next_state_vals)
+        assert nts < curr_reward_step.size(0)
+        next_state_gammas[:nts - 1] = 1.0
+        logger.debug(f'next_state_vals: {next_state_vals}')
+        logger.debug(f'rewards: {type(rewards)}')
+        logger.debug(f'dones: {batch["dones"]}')
+        logger.debug(f'R: {R}')
+        logger.debug(f'curr_reward_step: {curr_reward_step}')
+        logger.debug(f'next_state_gammas: {next_state_gammas}')
+        j = -nts + 1
+        for i in range(nts - 1, 0, -1):
+            curr_reward_step[:j] = rewards[i:]
+            next_state_gammas[:i] *= self.gamma
+            R = curr_reward_step + self.gamma * R
+            j = j - 1
+            logger.debug(f'curr_reward_step: {curr_reward_step}')
+            logger.debug(f'next_state_gammas: {next_state_gammas}')
+            logger.debug(f'R: {R}')
+        discounted_state_val_estimate = torch.mul(next_state_vals, next_state_gammas)
+        R += discounted_state_val_estimate
+        logger.debug(f'discounted_state_val_estimate: {discounted_state_val_estimate}')
+        logger.debug(f'R: {R}')
+        return R
 
     def get_nstep_target_episodic(self, batch):
         '''Returns a list of tensors containing the estimate of the state-action values per batch using n-step returns'''

@@ -84,11 +84,11 @@ class Reinforce(Algorithm):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        return self.action_policy(self, state, self.net)
+        return self.action_policy(self, state)
 
     @lab_api
     def body_act_continuous(self, body, state):
-        return self.action_policy(self, state, self.net, body)
+        return self.action_policy(self, state)
 
     def sample(self):
         '''Samples a batch from memory'''
@@ -106,17 +106,8 @@ class Reinforce(Algorithm):
             rewards = self.sample()['rewards']
             logger.debug(f'Length first epi: {len(rewards[0])}')
             logger.debug(f'Len log probs: {len(self.saved_log_probs)}')
-            advantage = self.calc_advantage(rewards)
-            advantage = self.check_sizes(advantage)
-            policy_loss = []
-            for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
-                logger.debug(f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
-                if self.add_entropy:
-                    policy_loss.append(-log_prob * a - 0.1 * e)
-                else:
-                    policy_loss.append(-log_prob * a)
             self.net.optim.zero_grad()
-            policy_loss = torch.cat(policy_loss).sum()
+            policy_loss = self.get_policy_loss(rewards)
             loss = policy_loss.data[0]
             policy_loss.backward()
             if self.net.clamp_grad:
@@ -132,6 +123,22 @@ class Reinforce(Algorithm):
             return loss
         else:
             return np.nan
+
+    def get_policy_loss(self, batch):
+        '''Returns the policy loss for a batch of data.
+        For REINFORCE just rewards are passed in as the batch'''
+        advantage = self.calc_advantage(batch)
+        advantage = self.check_sizes(advantage)
+        policy_loss = []
+        for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
+            logger.debug(
+                f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
+            if self.add_entropy:
+                policy_loss.append(-log_prob * a - 0.1 * e)
+            else:
+                policy_loss.append(-log_prob * a)
+        policy_loss = torch.cat(policy_loss).sum()
+        return policy_loss
 
     def check_sizes(self, advantage):
         # Check log probs, advantage, and entropy all have the same size
@@ -170,3 +177,14 @@ class Reinforce(Algorithm):
         '''No update needed'''
         explore_var = np.nan
         return explore_var
+
+    def get_actor_output(self, x, evaluate=True):
+        '''Returns the output of the policy, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.
+           Output will either be the logits for a categorical probability distribution over discrete actions (discrete action space) or the mean and std dev of the action policy (continuous action space)
+        '''
+        if evaluate:
+            out = self.net.wrap_eval(x)
+        else:
+            self.net.train()
+            out = self.net(x)
+        return out
