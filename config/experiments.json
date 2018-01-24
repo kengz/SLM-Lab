@@ -1,8 +1,5 @@
 {
-  "reinforce.json": {
-    "reinforce_cartpole": "search"
+  "actor_critic.json": {
+    "actor_critic_spec_template": "train",
   },
-  "dqn.json": {
-    "dqn_cartpole": "search"
-  }
 }

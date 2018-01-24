@@ -263,29 +263,18 @@ class ActorCritic(Reinforce):
     def get_nstep_target_batch(self, batch):
         '''Returns a tensor containing the estimate of the state-action values using n-step returns'''
         nts = self.num_step_returns
-        next_state_vals = self.get_critic_output(batch['next_states'])
-        rewards = batch['rewards']
-        R = torch.zeros_like(next_state_vals)
-        curr_reward_step = torch.zeros_like(next_state_vals)
-        next_state_gammas = torch.zeros_like(next_state_vals)
-        assert nts < curr_reward_step.size(0)
-        next_state_gammas[:nts - 1] = 1.0
-        logger.debug(f'next_state_vals: {next_state_vals}')
-        logger.debug(f'rewards: {type(rewards)}')
-        logger.debug(f'dones: {batch["dones"]}')
+        next_state_vals = self.get_critic_output(batch['next_states']).squeeze_(dim=1)
+        rewards = batch['rewards'].data
+        (R, next_state_gammas) = self.get_R_ex_state_val_estimate(next_state_vals, rewards)
+        '''Complete for 0th step and add state-value estimate'''
+        R = rewards + self.gamma * R
+        next_state_gammas *= self.gamma
         logger.debug(f'R: {R}')
-        logger.debug(f'curr_reward_step: {curr_reward_step}')
         logger.debug(f'next_state_gammas: {next_state_gammas}')
-        j = -nts + 1
-        for i in range(nts - 1, 0, -1):
-            curr_reward_step[:j] = rewards[i:]
-            next_state_gammas[:i] *= self.gamma
-            R = curr_reward_step + self.gamma * R
-            j = j - 1
-            logger.debug(f'curr_reward_step: {curr_reward_step}')
-            logger.debug(f'next_state_gammas: {next_state_gammas}')
-            logger.debug(f'R: {R}')
+        logger.debug(f'dones: {batch["dones"]}')
+        '''Calculate appropriate state value accounting for terminal states and number of time steps'''
         discounted_state_val_estimate = torch.mul(next_state_vals, next_state_gammas)
+        discounted_state_val_estimate = torch.mul(discounted_state_val_estimate, 1 - batch['dones'].data)
         R += discounted_state_val_estimate
         logger.debug(f'discounted_state_val_estimate: {discounted_state_val_estimate}')
         logger.debug(f'R: {R}')
@@ -293,8 +282,62 @@ class ActorCritic(Reinforce):
 
     def get_nstep_target_episodic(self, batch):
         '''Returns a list of tensors containing the estimate of the state-action values per batch using n-step returns'''
-        # TODO implement get_target_episodic
-        pass
+        nts = self.num_step_returns
+        targets = []
+        dones = batch['dones']
+        next_states = batch['next_states']
+        rewards = batch['rewards']
+        for d, ns, r in zip(dones, next_states, rewards):
+            next_state_vals = self.get_critic_output(ns).squeeze_(dim=1)
+            r = r.data
+            (R, next_state_gammas) = self.get_R_ex_state_val_estimate(next_state_vals, r)
+            '''Complete for 0th step and add state-value estimate'''
+            R = r + self.gamma * R
+            next_state_gammas *= self.gamma
+            logger.debug(f'R: {R}')
+            logger.debug(f'next_state_gammas: {next_state_gammas}')
+            logger.debug(f'dones: {d}')
+            '''Calculate appropriate state value accounting for terminal states and number of time steps'''
+            discounted_state_val_estimate = torch.mul(next_state_vals, next_state_gammas)
+            discounted_state_val_estimate = torch.mul(discounted_state_val_estimate, 1 - d.data)
+            '''Only add bootstrapped estimate if number of steps less than episode length'''
+            if nts < next_state_vals.size(0):
+                logger.debug(f'N step returns less than episode length, adding boostrap')
+                R += discounted_state_val_estimate
+            logger.debug(f'discounted_state_val_estimate: {discounted_state_val_estimate}')
+            logger.debug(f'R: {R}')
+            targets.append(R)
+        return targets
+
+    def get_R_ex_state_val_estimate(self, next_state_vals, rewards):
+        nts = self.num_step_returns
+        R = torch.zeros_like(next_state_vals)
+        curr_reward_step = torch.zeros_like(next_state_vals)
+        next_state_gammas = torch.zeros_like(next_state_vals)
+        if nts >= next_state_vals.size(0):
+            logger.debug(f'Num step returns {self.num_step_returns} greater than length batch {next_state_vals.size(0)}. Updating to batch length')
+            nts = next_state_vals.size(0) - 1
+        if nts == 0:
+            next_state_gammas.fill_(1.0)
+        else:
+            j = -nts
+            next_state_gammas[:j] = 1.0
+        logger.debug(f'next_state_vals: {next_state_vals}')
+        logger.debug(f'rewards: {rewards}')
+        logger.debug(f'R: {R}')
+        logger.debug(f'curr_reward_step: {curr_reward_step}')
+        logger.debug(f'next_state_gammas: {next_state_gammas}')
+        for i in range(nts, 0, -1):
+            logger.debug(f'i: {i}, j: {j}')
+            curr_reward_step[:j] = rewards[i:]
+            next_state_gammas[:j] *= self.gamma
+            R = curr_reward_step + self.gamma * R
+            next_state_gammas[j] = 1.0
+            j += 1
+            logger.debug(f'curr_reward_step: {curr_reward_step}')
+            logger.debug(f'next_state_gammas: {next_state_gammas}')
+            logger.debug(f'R: {R}')
+        return (R, next_state_gammas)
 
     def get_gae_target_batch(self, batch):
         '''Returns a tensor containing the estimate of the state-action values using generalized advantage estimation'''
