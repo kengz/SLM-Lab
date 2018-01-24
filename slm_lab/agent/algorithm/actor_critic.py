@@ -98,17 +98,7 @@ class ActorCritic(Reinforce):
         if self.to_train == 1:
             batch = self.sample()
             '''Calculate policy loss (actor)'''
-            advantage = self.calc_advantage(batch)
-            advantage = self.check_sizes(advantage)
-            policy_loss = []
-            for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
-                logger.debug(
-                    f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
-                if self.add_entropy:
-                    policy_loss.append(-log_prob * a - 0.1 * e)
-                else:
-                    policy_loss.append(-log_prob * a)
-            policy_loss = torch.cat(policy_loss).sum()
+            policy_loss = self.get_policy_loss(batch)
             '''Calculate state-value loss (critic)'''
             target = self.get_target(batch)
             states = batch['states']
@@ -163,18 +153,8 @@ class ActorCritic(Reinforce):
 
     def train_actor(self, batch):
         '''Trains the actor when the actor and critic are separate networks'''
-        advantage = self.calc_advantage(batch)
-        advantage = self.check_sizes(advantage)
-        policy_loss = []
-        for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
-            logger.debug(
-                f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
-            if self.add_entropy:
-                policy_loss.append(-log_prob * a - 0.1 * e)
-            else:
-                policy_loss.append(-log_prob * a)
         self.actor.optim.zero_grad()
-        policy_loss = torch.cat(policy_loss).sum()
+        policy_loss = self.get_policy_loss(batch)
         loss = policy_loss.data[0]
         policy_loss.backward()
         if self.actor.clamp_grad:
@@ -188,6 +168,21 @@ class ActorCritic(Reinforce):
         self.entropy = []
         logger.debug(f'Policy loss: {loss}')
         return loss
+
+    def get_policy_loss(self, batch):
+        '''Returns the policy loss for a batch of data'''
+        advantage = self.calc_advantage(batch)
+        advantage = self.check_sizes(advantage)
+        policy_loss = []
+        for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
+            logger.debug(
+                f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
+            if self.add_entropy:
+                policy_loss.append(-log_prob * a - 0.1 * e)
+            else:
+                policy_loss.append(-log_prob * a)
+        policy_loss = torch.cat(policy_loss).sum()
+        return policy_loss
 
     def train_critic_batch(self, batch):
         '''Trains the critic using batches of data. Algorithm doesn't wait until episode has ended to train'''
