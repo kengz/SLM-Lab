@@ -80,9 +80,28 @@ def plot_session(session_spec, session_data):
     fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
     fig.layout.update(_.pick(fig_1.layout, ['legend']))
     fig.layout.update(
-        title=f'Session Graph: {session_spec["name"]}', width=500, height=600)
+        title=f'session graph: {session_spec["name"]}', width=500, height=600)
     viz.plot(fig)
     return fig
+
+
+def plot_session_from_file(session_df_filepath):
+    '''
+    Method to plot session from its session_df file
+    @example
+
+    from slm_lab.experiment import analysis
+
+    filepath = 'data/reinforce_cartpole_2018_01_22_211751/reinforce_cartpole_t0_s0_session_df.csv'
+    analysis.plot_session_from_file(filepath)
+    '''
+    spec_name = '_'.join(session_df_filepath.split('/')[1].split('_')[:-4])
+    session_spec = {'name': spec_name}
+    session_df = util.read(session_df_filepath, header=[0, 1, 2, 3])
+    session_data = util.session_df_to_data(session_df)
+    session_fig = plot_session(session_spec, session_data)
+    viz.save_image(session_fig, session_df_filepath.replace(
+        '_session_df.csv', '_session_graph.png'))
 
 
 def calc_session_fitness_df(session, session_data):
@@ -221,7 +240,7 @@ def plot_experiment(experiment_spec, experiment_df):
                 title='<br>'.join(_.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
         fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
     fig.layout.update(
-        title=f'Experiment Graph: {experiment_spec["name"]}', width=len(x_cols) * 200, height=700)
+        title=f'experiment graph: {experiment_spec["name"]}', width=len(x_cols) * 200, height=700)
     viz.plot(fig)
     return fig
 
@@ -236,8 +255,7 @@ def plot_experiment_from_file(experiment_df_filepath):
     filepath = 'data/reinforce_cartpole_2018_01_22_190720/reinforce_cartpole_experiment_df.csv'
     analysis.plot_experiment_from_file(filepath)
     '''
-    spec_name = experiment_df_filepath.split(
-        '/').pop().replace('_experiment_df.csv', '')
+    spec_name = '_'.join(experiment_df_filepath.split('/')[1].split('_')[:-4])
     experiment_spec = {'name': spec_name}
     experiment_df = util.read(experiment_df_filepath)
     experiment_fig = plot_experiment(experiment_spec, experiment_df)
