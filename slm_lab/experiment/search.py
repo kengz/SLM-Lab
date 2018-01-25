@@ -22,7 +22,8 @@ class RaySearch:
         Since every call of RaySearch.lab_trial starts on ray.remote on a new thread, we have to carry the trial_index from config at ray.Trial init.
         Then, in lab_trial, pop this trial_index, update a thread copy of info_space, and init lab trial.
         '''
-        Trial._init = Trial.__init__
+        if not hasattr(Trial, '_init'):
+            Trial._init = Trial.__init__
 
         def hack_trial_init(*args, **kwargs):
             self.experiment.info_space.tick('trial')
