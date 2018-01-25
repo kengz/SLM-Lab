@@ -612,7 +612,7 @@ def write_as_df(data, data_path):
         writer.save()
         writer.close()
     else:  # .csv
-        df.to_csv(data_path, index=False)
+        df.to_csv(data_path)
     return data_path
 
 
