@@ -13,7 +13,7 @@
         "add_entropy": false,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
-        "val_loss_weight": 0.2
+        "val_loss_weight": 0.4
       },
       "memory": {
         "name": "OnPolicyReplay",
