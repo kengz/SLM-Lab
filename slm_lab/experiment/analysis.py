@@ -85,25 +85,6 @@ def plot_session(session_spec, session_data):
     return fig
 
 
-def plot_session_from_file(session_df_filepath):
-    '''
-    Method to plot session from its session_df file
-    @example
-
-    from slm_lab.experiment import analysis
-
-    filepath = 'data/reinforce_cartpole_2018_01_22_211751/reinforce_cartpole_t0_s0_session_df.csv'
-    analysis.plot_session_from_file(filepath)
-    '''
-    spec_name = '_'.join(session_df_filepath.split('/')[1].split('_')[:-4])
-    session_spec = {'name': spec_name}
-    session_df = util.read(session_df_filepath, header=[0, 1, 2, 3])
-    session_data = util.session_df_to_data(session_df)
-    session_fig = plot_session(session_spec, session_data)
-    viz.save_image(session_fig, session_df_filepath.replace(
-        '_session_df.csv', '_session_graph.png'))
-
-
 def calc_session_fitness_df(session, session_data):
     '''Calculate the session fitness df'''
     session_fitness_data = {}
@@ -144,7 +125,8 @@ def save_session_data(info_space, session_spec, session_mdp_data, session_data, 
     util.write(session_df, f'{predir}/{prename}_session_df.csv')
     util.write(session_fitness_df,
                f'{predir}/{prename}_session_fitness_df.csv')
-    viz.save_image(session_fig, f'{predir}/{prename}_session_graph.png')
+    # TODO replaced by plot_best_sessions until Feb 2018
+    # viz.save_image(session_fig, f'{predir}/{prename}_session_graph.png')
 
 
 def analyze_session(session):
@@ -245,6 +227,62 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
+def save_experiment_data(info_space, best_spec, experiment_df, experiment_fig):
+    '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
+    spec_name = best_spec['name']
+    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    prename = f'{spec_name}'
+    logger.info(f'Saving experiment data to {predir}')
+    util.write(best_spec, f'{predir}/{prename}_best_spec.json')
+    util.write(experiment_df, f'{predir}/{prename}_experiment_df.csv')
+    viz.save_image(experiment_fig, f'{predir}/{prename}_experiment_graph.png')
+    plot_best_sessions(experiment_df, predir, prename)
+
+
+def analyze_experiment(experiment):
+    '''
+    Gather experiment trial_data_dict as experiment_df, plot.
+    Search module must return best_spec and experiment_data with format {trial_index: exp_trial_data},
+    where trial_data = {**var_spec, **fitness_vec, fitness}.
+    This is then made into experiment_df.
+    @returns {DataFrame} experiment_df Of var_specs, fitness_vec, fitness for all trials.
+    '''
+    experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
+    cols = FITNESS_COLS + ['fitness']
+    config_cols = sorted(_.difference(
+        experiment_df.columns.tolist(), cols))
+    sorted_cols = config_cols + cols
+    experiment_df = experiment_df.reindex(sorted_cols, axis=1)
+    experiment_df.sort_values(
+        by=['strength', 'fitness'], ascending=False, inplace=True)
+    logger.info(f'Experiment data:\n{experiment_df}')
+    experiment_fig = plot_experiment(experiment.spec, experiment_df)
+    best_config = experiment_df.iloc[0][config_cols].to_dict()
+    best_spec = _.merge(experiment.spec, best_config)
+    save_experiment_data(
+        experiment.info_space, best_spec, experiment_df, experiment_fig)
+    return experiment_df
+
+
+def plot_session_from_file(session_df_filepath):
+    '''
+    Method to plot session from its session_df file
+    @example
+
+    from slm_lab.experiment import analysis
+
+    filepath = 'data/reinforce_cartpole_2018_01_22_211751/reinforce_cartpole_t0_s0_session_df.csv'
+    analysis.plot_session_from_file(filepath)
+    '''
+    spec_name = '_'.join(session_df_filepath.split('/')[1].split('_')[:-4])
+    session_spec = {'name': spec_name}
+    session_df = util.read(session_df_filepath, header=[0, 1, 2, 3])
+    session_data = util.session_df_to_data(session_df)
+    session_fig = plot_session(session_spec, session_data)
+    viz.save_image(session_fig, session_df_filepath.replace(
+        '_session_df.csv', '_session_graph.png'))
+
+
 def plot_experiment_from_file(experiment_df_filepath):
     '''
     Method to plot experiment from its experiment_df file
@@ -263,40 +301,15 @@ def plot_experiment_from_file(experiment_df_filepath):
         '_experiment_df.csv', '_experiment_graph.png'))
 
 
-def save_experiment_data(info_space, best_spec, experiment_df, experiment_fig):
-    '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
-    spec_name = best_spec['name']
-    predir = f'data/{spec_name}_{info_space.experiment_ts}'
-    prename = f'{spec_name}'
-    logger.info(f'Saving experiment data to {predir}')
-    util.write(best_spec, f'{predir}/{prename}_best_spec.json')
-    util.write(experiment_df, f'{predir}/{prename}_experiment_df.csv')
-    viz.save_image(experiment_fig, f'{predir}/{prename}_experiment_graph.png')
-
-
-def analyze_experiment(experiment):
+def plot_best_sessions(experiment_df, predir, prename):
     '''
-    Gather experiment trial_data_dict as experiment_df, plot.
-    Search module must return best_spec and experiment_data with format {trial_index: exp_trial_data},
-    where trial_data = {**var_spec, **fitness_vec, fitness}.
-    This is then made into experiment_df.
-    @returns {DataFrame} experiment_df Of var_specs, fitness_vec, fitness for all trials.
+    Plot the session graphs from the best trials.
+    TODO retire and plot all when Plotly allows unlimited plotting in Feb 2018
     '''
-    experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
-    cols = FITNESS_COLS + ['fitness']
-    config_cols = sorted(_.difference(
-        experiment_df.columns.tolist(), cols))
-    sorted_cols = config_cols + cols
-    experiment_df = experiment_df.reindex(sorted_cols, axis=1)
-    logger.info(f'Experiment data:\n{experiment_df}')
-    # TODO sort experiment_df
-    experiment_fig = plot_experiment(experiment.spec, experiment_df)
-    best_trial_index = experiment_df['fitness'].astype(float).idxmax()
-    best_config = experiment_df.loc[best_trial_index][config_cols].to_dict()
-    best_spec = _.merge(experiment.spec, best_config)
-    save_experiment_data(
-        experiment.info_space, best_spec, experiment_df, experiment_fig)
-    return experiment_df
+    for trial_index in experiment_df.index[:5]:
+        session_prename = f'{prename}_t{trial_index}_s{0}'
+        session_df_filepath = f'{predir}/{session_prename}_session_df.csv'
+        plot_session_from_file(session_df_filepath)
 
 
 '''
