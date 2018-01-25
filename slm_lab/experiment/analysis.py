@@ -330,7 +330,7 @@ def calc_strength(aeb_df, rand_epi_reward, std_epi_reward):
     This allows for standard comparison between agents on the same problem using an intuitive measurement of strength. With proper scaling by a difficulty factor, we can compare across problems of different difficulties.
     '''
     # use lower clip 0 for noise in reward to dip slighty below rand
-    return max(0, (aeb_df['reward'] - rand_epi_reward)) / (std_epi_reward - rand_epi_reward)
+    return (aeb_df['reward'] - rand_epi_reward).clip(0) / (std_epi_reward - rand_epi_reward)
 
 
 def calc_interp_strength(aeb_df):
