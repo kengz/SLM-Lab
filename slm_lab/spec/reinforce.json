@@ -69,7 +69,7 @@
     "meta": {
       "max_episode": 600,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 50,
       "train_mode": true
     },
     "search": {
