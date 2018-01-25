@@ -253,8 +253,9 @@ def analyze_experiment(experiment):
         experiment_df.columns.tolist(), cols))
     sorted_cols = config_cols + cols
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
+    # TODO sort primarily with fitness once tested more
     experiment_df.sort_values(
-        by=['strength', 'fitness'], ascending=False, inplace=True)
+        by=['fitness', 'strength'], ascending=False, inplace=True)
     logger.info(f'Experiment data:\n{experiment_df}')
     experiment_fig = plot_experiment(experiment.spec, experiment_df)
     best_config = experiment_df.iloc[0][config_cols].to_dict()
