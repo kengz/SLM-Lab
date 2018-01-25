@@ -329,13 +329,22 @@ def calc_strength(aeb_df, rand_epi_reward, std_epi_reward):
     - scale of strength is always standard at 1 and its multiplies, regardless of the scale of actual rewards. Strength stays invariant even as reward gets rescaled.
     This allows for standard comparison between agents on the same problem using an intuitive measurement of strength. With proper scaling by a difficulty factor, we can compare across problems of different difficulties.
     '''
-    return (aeb_df['reward'] - rand_epi_reward) / (std_epi_reward - rand_epi_reward)
+    # use lower clip 0 for noise in reward to dip slighty below rand
+    return max(0, (aeb_df['reward'] - rand_epi_reward)) / (std_epi_reward - rand_epi_reward)
+
+
+def calc_interp_strength(aeb_df):
+    '''
+    Interpolate linearly by strength to account for failure to solve.
+    Since min strength is 0, do a lower clip 0 for strength_ma.
+    '''
+    interp_strength = min(1, max(0, aeb_df['strength_ma'].max()))
+    return interp_strength
 
 
 def calc_stable_idx(aeb_df):
     '''Calculate the index (epi) when strength first becomes stable (using moving mean and working backward)'''
-    # interpolate linearly by strength to account for failure to solve
-    interp_strength = min(1, aeb_df['strength_ma'].max())
+    interp_strength = calc_interp_strength(aeb_df)
     std_strength_ra_idx = (aeb_df['strength_ma'] == interp_strength).idxmax()
     # index when it first achieved stable std_strength
     stable_idx = std_strength_ra_idx - (MA_WINDOW - 1)
@@ -347,11 +356,9 @@ def calc_std_strength_timestep(aeb_df):
     Calculate the timestep needed to achieve stable (within window) std_strength.
     For agent failing to achieve std_strength 1, use linear interpolation.
     '''
-    # interpolate linearly by strength to account for failure to solve
-    interp_strength = min(1, aeb_df['strength_ma'].max())
+    interp_strength = calc_interp_strength(aeb_df)
     stable_idx = calc_stable_idx(aeb_df)
-    std_strength_timestep = aeb_df.loc[
-        stable_idx, 'total_t'] / interp_strength
+    std_strength_timestep = aeb_df.loc[stable_idx, 'total_t'] / interp_strength
     return std_strength_timestep
 
 
