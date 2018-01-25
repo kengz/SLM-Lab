@@ -30,7 +30,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 20,
+      "max_episode": 5,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true

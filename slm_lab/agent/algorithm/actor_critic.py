@@ -30,7 +30,7 @@ class ActorCritic(Reinforce):
                         through (OnPolicyReplay memory class)
         - return steps: @param: 'algorithm.num_step_returns' how many steps to use when calculating the
                         advantage target. Note when GAE is used, the number of steps is projected to a value
-                        between 0 and 1. Mininum number of steps is 0, maximum is 50.
+                        between 0 and 1. Mininum number of steps is 0, maximum is 100.
         - param sharing: @param: 'net.type' whether the actor and critic should share params (e.g. through
                         'MLPshared') or have separate params (e.g. through 'MLPseparate')
                         If param sharing is used then there is also the option to control the weight
@@ -101,7 +101,7 @@ class ActorCritic(Reinforce):
             '''Calculate policy loss (actor)'''
             policy_loss = self.get_policy_loss(batch)
             '''Calculate state-value loss (critic)'''
-            target = self.get_target(batch)
+            target = self.get_target(batch, critic_specific=True)
             states = batch['states']
             if self.is_episodic:
                 target = torch.cat(target)
@@ -178,7 +178,7 @@ class ActorCritic(Reinforce):
         '''Trains the critic using batches of data. Algorithm doesn't wait until episode has ended to train'''
         loss = 0
         for _i in range(self.training_iters_per_batch):
-            target = self.get_target(batch)
+            target = self.get_target(batch, critic_specific=True)
             y = Variable(target)
             loss = self.critic.training_step(batch['states'], y).data[0]
             logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
@@ -188,7 +188,7 @@ class ActorCritic(Reinforce):
         '''Trains the critic using entire episodes of data. Algorithm waits until episode has ended to train'''
         loss = 0
         for _i in range(self.training_iters_per_batch):
-            target = self.get_target(batch)
+            target = self.get_target(batch, critic_specific=True)
             target = torch.cat(target)
             logger.debug(f'Combined size: {target.size()}')
             x = []
@@ -242,8 +242,8 @@ class ActorCritic(Reinforce):
         advantage = torch.cat(advantage)
         return advantage
 
-    def get_nstep_target(self, batch):
-        '''Estimates state-action value with n-step returns. Used as a target when training the critic and calculting the advantage.
+    def get_nstep_target(self, batch, critic_specific=False):
+        '''Estimates state-action value with n-step returns. Used as a target when training the critic and calculting the advantage. No critic specific target value for this method of calculating the advantage.
         In the episodic case it returns a list containing targets per episode
         In the batch case it returns a tensor containing the targets for the batch'''
         if self.is_episodic:
@@ -251,14 +251,14 @@ class ActorCritic(Reinforce):
         else:
             return self.get_nstep_target_batch(batch)
 
-    def get_gae_target(self, batch):
+    def get_gae_target(self, batch, critic_specific=False):
         '''Estimates the state-action value using generalized advantage estimation. Used as a target when training the critic and calculting the advantage.
         In the episodic case it returns a list containing targets per episode
         In the batch case it returns a tensor containing the targets for the batch'''
         if self.is_episodic:
-            return self.get_gae_target_episodic(batch)
+            return self.get_gae_target_episodic(batch, critic_specific=critic_specific)
         else:
-            return self.get_gae_target_batch(batch)
+            return self.get_gae_target_batch(batch, critic_specific=critic_specific)
 
     def get_nstep_target_batch(self, batch):
         '''Returns a tensor containing the estimate of the state-action values using n-step returns'''
@@ -333,15 +333,78 @@ class ActorCritic(Reinforce):
             logger.debug(f'R: {R}')
         return (R, next_state_gammas)
 
-    def get_gae_target_batch(self, batch):
+    def get_gae_target_batch(self, batch, critic_specific):
         '''Returns a tensor containing the estimate of the state-action values using generalized advantage estimation'''
-        # TODO implement get_gae_target_episodic
-        pass
+        rewards = batch['rewards'].data
+        if critic_specific:
+            logger.debug(f'Using critic specific target')
+            '''Target is the discounted sum of returns for training the critic'''
+            target = self.get_gae_critic_target(rewards)
+        else:
+            logger.debug(f'Using actor specific target')
+            '''Target is the Generalized advantage estimate + current state-value estimate'''
+            states = batch['states']
+            next_states = batch['next_states']
+            dones = batch['dones']
+            target = self.get_gae_actor_target(rewards, states, next_states, dones)
+        return target
 
-    def get_gae_target_episodic(self, batch):
+    def get_gae_target_episodic(self, batch, critic_specific):
         '''Returns a list of tensors containing the estimate of the state-action values per batch using generalized advantage estimation'''
-        # TODO implement get_gae_target_episodic
-        pass
+        rewards = batch['rewards']
+        targets = []
+        if critic_specific:
+            logger.debug(f'Using critic specific target')
+            '''Target is the discounted sum of returns for training the critic'''
+            for r in rewards:
+                t = self.get_gae_critic_target(r.data)
+                targets.append(t)
+        else:
+            logger.debug(f'Using actor specific target')
+            '''Target is the Generalized advantage estimate + current state-value estimate'''
+            states = batch['states']
+            next_states = batch['next_states']
+            dones = batch['dones']
+            for r, s, ns, d in zip(rewards, states, next_states, dones):
+                t = self.get_gae_actor_target(r.data, s, ns, d)
+                targets.append(t)
+        return targets
+
+    def get_gae_critic_target(self, rewards):
+        '''Target is the discounted sum of returns for training the critic'''
+        target = []
+        big_r = 0
+        for i in range(rewards.size(0) - 1, -1, -1):
+            big_r = rewards[i] + self.gamma * big_r
+            target.insert(0, big_r)
+        target = torch.Tensor(target)
+        logger.debug(f'Target: {target}')
+        return target
+
+    def get_gae_actor_target(self, rewards, states, next_states, dones):
+        '''Target is the Generalized advantage estimate + current state-value estimate'''
+        '''First calculate the 1 step bootstrapped estimate of the advantage. Also described as the TD residual of V with discount self.gamma (Sutton & Barto, 1998)'''
+        next_state_vals = self.get_critic_output(next_states).squeeze_(dim=1)
+        next_state_vals = torch.mul(next_state_vals, 1 - dones.data)
+        state_vals = self.get_critic_output(states).squeeze_(dim=1)
+        deltas = rewards + self.gamma * next_state_vals - state_vals
+        logger.debug(f'State_vals: {state_vals}')
+        logger.debug(f'Next state_vals: {next_state_vals}')
+        logger.debug(f'Dones: {dones}')
+        logger.debug(f'Deltas: {deltas}')
+        logger.debug(f'Lamda: {self.lamda}, gamma: {self.gamma}')
+        '''Then calculate GAE, the exponentially weighted average of the TD residuals'''
+        advantage = []
+        gae = 0
+        for i in range(deltas.size(0) - 1, -1, -1):
+            gae = deltas[i] + self.gamma * self.lamda * gae
+            advantage.insert(0, gae)
+        advantage = torch.Tensor(advantage)
+        '''Add state_vals so that calc_advantage() api is preserved'''
+        target = advantage + state_vals
+        logger.debug(f'Advantage: {advantage}')
+        logger.debug(f'Target: {target}')
+        return target
 
     def init_nets(self):
         '''Initialize the neural networks used to learn the actor and critic from the spec'''
@@ -412,7 +475,7 @@ class ActorCritic(Reinforce):
             'add_entropy', 'use_GAE',
             'policy_loss_weight', 'val_loss_weight'
         ]))
-        self.lamda = self.num_step_returns / 50.0
+        self.lamda = self.num_step_returns / 100.0
         '''Select appropriate function for calculating state-action-value estimate (target)'''
         self.get_target = self.get_nstep_target
         if self.use_GAE:
