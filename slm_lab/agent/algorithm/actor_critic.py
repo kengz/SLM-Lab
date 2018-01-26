@@ -480,7 +480,7 @@ class ActorCritic(Reinforce):
             'gamma', 'lamda', 'num_step_returns',
             'training_frequency', 'training_iters_per_batch',
             'num_epis_to_collect',
-            'add_entropy', 'use_GAE',
+            'add_entropy', 'entropy_weight', 'use_GAE',
             'policy_loss_weight', 'val_loss_weight'
         ]))
         '''Select appropriate function for calculating state-action-value estimate (target)'''
