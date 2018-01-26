@@ -159,7 +159,7 @@ def act_with_gaussian(agent, state):
     m = Normal(mu, sigma)
     action = m.sample()
     # TODO: fix action hack - extract from env. Ask Keng
-    action = torch.clamp(action, -1.0, 1.0)
+    action = torch.clamp(action, -2.0, 2.0)
     logger.debug(
         f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
     agent.saved_log_probs.append(m.log_prob(action))
