@@ -383,6 +383,26 @@ def nonan_all(v):
     return bool(np.all(v) and ~np.all(np.isnan(v)))
 
 
+def override_dev_spec(spec):
+    spec['meta'] = {
+        'max_episode': 20,
+        'max_session': 1,
+        'max_trial': 2,
+        'train_mode': False,
+    }
+    return spec
+
+
+def override_test_spec(spec):
+    spec['meta'] = {
+        'max_episode': 20,
+        'max_session': 1,
+        'max_trial': 2,
+        'train_mode': True,
+    }
+    return spec
+
+
 def parallelize_fn(fn, args):
     '''
     Parallelize a method fn, args and return results with order preserved per args.

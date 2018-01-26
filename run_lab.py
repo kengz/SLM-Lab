@@ -23,12 +23,9 @@ def run_by_mode(spec_file, spec_name, run_mode):
         # TODO need to spread benchmark over spec on Experiment
         pass
     elif run_mode == 'dev':
-        os.environ['PY_ENV'] = 'test'
+        os.environ['PY_ENV'] = 'test'  # to not save in viz
         logger.set_level('DEBUG')
-        spec['meta']['train_mode'] = False
-        spec['meta']['max_episode'] = 20
-        spec['meta']['max_session'] = 1
-        spec['meta']['max_trial'] = 2
+        spec = util.override_dev_spec(spec)
         Trial(spec).run()
     else:
         logger.warn(
