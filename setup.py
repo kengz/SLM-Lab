@@ -5,6 +5,7 @@ from setuptools.command.test import test as TestCommand
 
 test_args = [
     '-n 2',
+    '--verbose',
     '--no-flaky-report',
     '--timeout=60',
     '--cov-report=html',

@@ -80,7 +80,7 @@ def plot_session(session_spec, session_data):
     fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
     fig.layout.update(_.pick(fig_1.layout, ['legend']))
     fig.layout.update(
-        title=f'Session Graph: {session_spec["name"]}', width=500, height=600)
+        title=f'session graph: {session_spec["name"]}', width=500, height=600)
     viz.plot(fig)
     return fig
 
@@ -113,14 +113,20 @@ def save_session_data(info_space, session_spec, session_mdp_data, session_data, 
     Likewise for session_mdp_df
     '''
     spec_name = session_spec['name']
-    prepath = f'data/{spec_name}_{info_space.experiment_ts}/{spec_name}_t{info_space.coor["trial"]}_s{info_space.coor["session"]}'
-    logger.info(f'Saving session data to {prepath}_*')
+    trial_index = info_space.coor['trial']
+    session_index = info_space.coor['session']
+    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    prename = f'{spec_name}_t{trial_index}_s{session_index}'
+    logger.info(
+        f'Saving trial {trial_index} session {session_index} data to {predir}')
     session_mdp_df = pd.concat(session_mdp_data, axis=1)
     session_df = pd.concat(session_data, axis=1)
-    util.write(session_mdp_df, f'{prepath}_session_mdp_df.csv')
-    util.write(session_df, f'{prepath}_session_df.csv')
-    util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
-    viz.save_image(session_fig, f'{prepath}_session_graph.png')
+    util.write(session_mdp_df, f'{predir}/{prename}_session_mdp_df.csv')
+    util.write(session_df, f'{predir}/{prename}_session_df.csv')
+    util.write(session_fitness_df,
+               f'{predir}/{prename}_session_fitness_df.csv')
+    # TODO replaced by plot_best_sessions until Feb 2018
+    # viz.save_image(session_fig, f'{predir}/{prename}_session_graph.png')
 
 
 def analyze_session(session):
@@ -164,11 +170,13 @@ def calc_trial_fitness_df(trial):
 def save_trial_data(info_space, trial_spec, trial_fitness_df):
     '''Save the trial data: spec, trial_fitness_df.'''
     spec_name = trial_spec['name']
-    prepath = f'data/{spec_name}_{info_space.experiment_ts}/{spec_name}_t{info_space.coor["trial"]}'
-    logger.info(f'Saving trial data to {prepath}_*')
-    util.write(trial_spec, f'{prepath}_spec.json')
+    trial_index = info_space.coor['trial']
+    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    prename = f'{spec_name}_t{trial_index}'
+    logger.info(f'Saving trial {trial_index} data to {predir}')
+    util.write(trial_spec, f'{predir}/{prename}_spec.json')
     # TODO trial data is composed of saved session data files
-    util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
+    util.write(trial_fitness_df, f'{predir}/{prename}_trial_fitness_df.csv')
 
 
 def analyze_trial(trial):
@@ -214,9 +222,64 @@ def plot_experiment(experiment_spec, experiment_df):
                 title='<br>'.join(_.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
         fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
     fig.layout.update(
-        title=f'Experiment Graph: {experiment_spec["name"]}', width=len(x_cols) * 200, height=700)
+        title=f'experiment graph: {experiment_spec["name"]}', width=len(x_cols) * 200, height=700)
     viz.plot(fig)
     return fig
+
+
+def save_experiment_data(info_space, best_spec, experiment_df, experiment_fig):
+    '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
+    spec_name = best_spec['name']
+    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    prename = f'{spec_name}'
+    logger.info(f'Saving experiment data to {predir}')
+    util.write(best_spec, f'{predir}/{prename}_best_spec.json')
+    util.write(experiment_df, f'{predir}/{prename}_experiment_df.csv')
+    viz.save_image(experiment_fig, f'{predir}/{prename}_experiment_graph.png')
+    plot_best_sessions(experiment_df, predir, prename)
+
+
+def analyze_experiment(experiment):
+    '''
+    Gather experiment trial_data_dict as experiment_df, plot.
+    Search module must return best_spec and experiment_data with format {trial_index: exp_trial_data},
+    where trial_data = {**var_spec, **fitness_vec, fitness}.
+    This is then made into experiment_df.
+    @returns {DataFrame} experiment_df Of var_specs, fitness_vec, fitness for all trials.
+    '''
+    experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
+    cols = FITNESS_COLS + ['fitness']
+    config_cols = sorted(_.difference(
+        experiment_df.columns.tolist(), cols))
+    sorted_cols = config_cols + cols
+    experiment_df = experiment_df.reindex(sorted_cols, axis=1)
+    experiment_df.sort_values(by=['fitness'], ascending=False, inplace=True)
+    logger.info(f'Experiment data:\n{experiment_df}')
+    experiment_fig = plot_experiment(experiment.spec, experiment_df)
+    best_config = experiment_df.iloc[0][config_cols].to_dict()
+    best_spec = _.merge(experiment.spec, best_config)
+    save_experiment_data(
+        experiment.info_space, best_spec, experiment_df, experiment_fig)
+    return experiment_df
+
+
+def plot_session_from_file(session_df_filepath):
+    '''
+    Method to plot session from its session_df file
+    @example
+
+    from slm_lab.experiment import analysis
+
+    filepath = 'data/reinforce_cartpole_2018_01_22_211751/reinforce_cartpole_t0_s0_session_df.csv'
+    analysis.plot_session_from_file(filepath)
+    '''
+    spec_name = '_'.join(session_df_filepath.split('/')[1].split('_')[:-4])
+    session_spec = {'name': spec_name}
+    session_df = util.read(session_df_filepath, header=[0, 1, 2, 3])
+    session_data = util.session_df_to_data(session_df)
+    session_fig = plot_session(session_spec, session_data)
+    viz.save_image(session_fig, session_df_filepath.replace(
+        '_session_df.csv', '_session_graph.png'))
 
 
 def plot_experiment_from_file(experiment_df_filepath):
@@ -229,8 +292,7 @@ def plot_experiment_from_file(experiment_df_filepath):
     filepath = 'data/reinforce_cartpole_2018_01_22_190720/reinforce_cartpole_experiment_df.csv'
     analysis.plot_experiment_from_file(filepath)
     '''
-    spec_name = experiment_df_filepath.split(
-        '/').pop().replace('_experiment_df.csv', '')
+    spec_name = '_'.join(experiment_df_filepath.split('/')[1].split('_')[:-4])
     experiment_spec = {'name': spec_name}
     experiment_df = util.read(experiment_df_filepath)
     experiment_fig = plot_experiment(experiment_spec, experiment_df)
@@ -238,39 +300,15 @@ def plot_experiment_from_file(experiment_df_filepath):
         '_experiment_df.csv', '_experiment_graph.png'))
 
 
-def save_experiment_data(info_space, best_spec, experiment_df, experiment_fig):
-    '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
-    spec_name = best_spec['name']
-    prepath = f'data/{spec_name}_{info_space.experiment_ts}/{spec_name}'
-    logger.info(f'Saving experiment data to {prepath}_*')
-    util.write(best_spec, f'{prepath}_best_spec.json')
-    util.write(experiment_df, f'{prepath}_experiment_df.csv')
-    viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
-
-
-def analyze_experiment(experiment):
+def plot_best_sessions(experiment_df, predir, prename):
     '''
-    Gather experiment trial_data_dict as experiment_df, plot.
-    Search module must return best_spec and experiment_data with format {trial_id: exp_trial_data},
-    where trial_data = {**var_spec, **fitness_vec, fitness}.
-    This is then made into experiment_df.
-    @returns {DataFrame} experiment_df Of var_specs, fitness_vec, fitness for all trials.
+    Plot the session graphs from the best trials.
+    TODO retire and plot all when Plotly allows unlimited plotting in Feb 2018
     '''
-    experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
-    cols = FITNESS_COLS + ['fitness']
-    config_cols = sorted(_.difference(
-        experiment_df.columns.tolist(), cols))
-    sorted_cols = config_cols + cols
-    experiment_df = experiment_df.reindex(sorted_cols, axis=1)
-    logger.info(f'Experiment data:\n{experiment_df}')
-    # TODO sort experiment_df
-    experiment_fig = plot_experiment(experiment.spec, experiment_df)
-    best_trial_index = experiment_df['fitness'].astype(float).idxmax()
-    best_config = experiment_df.loc[best_trial_index][config_cols].to_dict()
-    best_spec = _.merge(experiment.spec, best_config)
-    save_experiment_data(
-        experiment.info_space, best_spec, experiment_df, experiment_fig)
-    return experiment_df
+    for trial_index in experiment_df.index[:5]:
+        session_prename = f'{prename}_t{trial_index}_s{0}'
+        session_df_filepath = f'{predir}/{session_prename}_session_df.csv'
+        plot_session_from_file(session_df_filepath)
 
 
 '''
@@ -289,29 +327,35 @@ def calc_strength(aeb_df, rand_epi_reward, std_epi_reward):
     - scale of strength is always standard at 1 and its multiplies, regardless of the scale of actual rewards. Strength stays invariant even as reward gets rescaled.
     This allows for standard comparison between agents on the same problem using an intuitive measurement of strength. With proper scaling by a difficulty factor, we can compare across problems of different difficulties.
     '''
-    return (aeb_df['reward'] - rand_epi_reward) / (std_epi_reward - rand_epi_reward)
+    # use lower clip 0 for noise in reward to dip slighty below rand
+    return (aeb_df['reward'] - rand_epi_reward).clip(0) / (std_epi_reward - rand_epi_reward)
 
 
 def calc_stable_idx(aeb_df):
     '''Calculate the index (epi) when strength first becomes stable (using moving mean and working backward)'''
-    # interpolate linearly by strength to account for failure to solve
-    interp_strength = min(1, aeb_df['strength_ma'].max())
-    std_strength_ra_idx = (aeb_df['strength_ma'] == interp_strength).idxmax()
-    # index when it first achieved stable std_strength
-    stable_idx = std_strength_ra_idx - (MA_WINDOW - 1)
+    std_strength = 1
+    above_std_strength_sr = (aeb_df['strength_ma'] >= std_strength)
+    if above_std_strength_sr.any():
+        # if it achieved stable (ma) std_strength at some point, the index when
+        std_strength_ra_idx = above_std_strength_sr.idxmax()
+        stable_idx = std_strength_ra_idx - (MA_WINDOW - 1)
+    else:
+        stable_idx = np.nan
     return stable_idx
 
 
 def calc_std_strength_timestep(aeb_df):
     '''
     Calculate the timestep needed to achieve stable (within window) std_strength.
-    For agent failing to achieve std_strength 1, use linear interpolation.
+    For agent failing to achieve std_strength 1, it is meaningless to measure speed or give false interpolation, so set as inf (never).
     '''
-    # interpolate linearly by strength to account for failure to solve
-    interp_strength = min(1, aeb_df['strength_ma'].max())
+    std_strength = 1
     stable_idx = calc_stable_idx(aeb_df)
-    std_strength_timestep = aeb_df.loc[
-        stable_idx, 'total_t'] / interp_strength
+    if np.isnan(stable_idx):
+        std_strength_timestep = np.inf
+    else:
+        std_strength_timestep = aeb_df.loc[
+            stable_idx, 'total_t'] / std_strength
     return std_strength_timestep
 
 
@@ -325,6 +369,7 @@ def calc_speed(aeb_df, std_timestep):
     - speed of learning agent always tends toward positive regardless of the shape of rewards curve
     - scale of speed is always standard at 1 and its multiplies, regardless of absolute timestep.
     This allows an intuitive measurement of learning speed and the standard comparison between agents on the same problem. Absolute timestep also measures the bits of new information given to the agent, which is a more grounded metric. With proper scaling of timescale (or bits scale), we can compare across problems of different difficulties.
+    For agent failing to achieve std_strength 1, it is meaningless to measure speed or give false interpolation, so speed is 0.
     '''
     agent_timestep = calc_std_strength_timestep(aeb_df)
     speed = std_timestep / agent_timestep
@@ -350,10 +395,14 @@ def calc_stability(aeb_df):
     - if strength is monotonically increasing (with 5% noise), then it is stable
     - sharp gain in strength is considered stable
     - works even for partial solution (not attaining std_strength), due to how stable_idx is calculated
+    When an agent fails to achieve std_strength, it is meaningless to measure stability or give false interpolation, so stability is 0.
     '''
     stable_idx = calc_stable_idx(aeb_df)
-    stable_df = aeb_df.loc[stable_idx:, 'strength_mono_inc']
-    stability = stable_df.sum() / len(stable_df)
+    if np.isnan(stable_idx):
+        stability = 0
+    else:
+        stable_df = aeb_df.loc[stable_idx:, 'strength_mono_inc']
+        stability = stable_df.sum() / len(stable_df)
     return stability
 
 

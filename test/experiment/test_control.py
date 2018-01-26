@@ -1,10 +1,10 @@
 from slm_lab.experiment.control import Session, Trial, Experiment
+from slm_lab.lib import util
 from slm_lab.spec import spec_util
 import pandas as pd
 import pytest
 
 
-@pytest.mark.skip(reason='TODO broken by pytorch in session parallelization')
 def test_session(test_spec):
     session = Session(test_spec)
     session_data = session.run()
@@ -23,8 +23,7 @@ def test_trial(test_spec):
 @pytest.mark.skip(reason='TODO broken by pytorch in session parallelization')
 def test_trial_demo():
     spec = spec_util.get('reinforce.json', 'reinforce_cartpole')
-    spec['meta']['train_mode'] = True
-    spec['meta']['max_episode'] = 20
+    util.override_test_spec(spec)
     Trial(spec).run()
 
 

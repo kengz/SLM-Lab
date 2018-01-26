@@ -41,10 +41,22 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 150,
+      "max_episode": 200,
       "max_session": 1,
-      "max_trial": 1,
+      "max_trial": 8,
       "train_mode": false
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999]
+        },
+        "net": {
+          "optim": {
+            "lr__uniform": [0.001, 0.1]
+          }
+        }
+      }]
     }
   }
 }

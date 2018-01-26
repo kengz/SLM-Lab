@@ -6,6 +6,7 @@ Then run `yarn start` or `python run_lab.py`
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+import os
 
 
 def run_by_mode(spec_file, spec_name, run_mode):
@@ -22,9 +23,9 @@ def run_by_mode(spec_file, spec_name, run_mode):
         # TODO need to spread benchmark over spec on Experiment
         pass
     elif run_mode == 'dev':
+        os.environ['PY_ENV'] = 'test'  # to not save in viz
         logger.set_level('DEBUG')
-        spec['meta']['train_mode'] = True
-        spec['meta']['max_episode'] = 2
+        spec = util.override_dev_spec(spec)
         Trial(spec).run()
     else:
         logger.warn(

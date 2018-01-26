@@ -1,6 +1,5 @@
 from copy import deepcopy
 from ray.tune import register_trainable, grid_search, run_experiments
-from ray.tune.trial import Trial
 from slm_lab.experiment import analysis
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
@@ -17,20 +16,6 @@ class RaySearch:
 
     def __init__(self, experiment):
         self.experiment = experiment
-
-        '''
-        Since every call of RaySearch.lab_trial starts on ray.remote on a new thread, we have to carry the trial_index from config at ray.Trial init.
-        Then, in lab_trial, pop this trial_index, update a thread copy of info_space, and init lab trial.
-        '''
-        Trial._init = Trial.__init__
-
-        def hack_trial_init(*args, **kwargs):
-            self.experiment.info_space.tick('trial')
-            trial_index = self.experiment.info_space.get('trial')
-            kwargs['config'].update({'trial_index': trial_index})
-            return Trial._init(*args, **kwargs)
-
-        Trial.__init__ = hack_trial_init
 
     def build_config_space(self):
         '''
@@ -59,6 +44,9 @@ class RaySearch:
             else:
                 np_fn = getattr(np.random, space_type)
                 config_space[key] = lambda spec, v=v: np_fn(*v)
+        # RaySearch.lab_trial on ray.remote is not thread-safe, we have to carry the trial_index from config, created at the top level on the same thread, ticking once a trial (one samping).
+        config_space['trial_index'] = lambda spec: self.experiment.info_space.tick(
+            'trial')['trial']
         return config_space
 
     def spec_from_config(self, config):
@@ -71,6 +59,7 @@ class RaySearch:
 
     @lab_api
     def run(self):
+        ray.init()
         # serialize here as ray is not thread safe outside
         ray.register_custom_serializer(InfoSpace, use_pickle=True)
         ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
@@ -105,7 +94,6 @@ class RaySearch:
         ray_trials = run_experiments({
             spec['name']: {
                 'run': 'lab_trial',
-                # 'resources': {'cpu': 2, 'gpu': 0},
                 'stop': {'done': True},
                 'config': config_space,
                 'repeat': spec['meta']['max_trial'],

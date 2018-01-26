@@ -7,7 +7,7 @@
         "action_policy": "default",
         "gamma": 0.99,
         "num_epis_to_collect": 1,
-        "add_entropy": false,
+        "add_entropy": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -44,7 +44,7 @@
         "action_policy": "default",
         "gamma": 0.99,
         "num_epis_to_collect": 1,
-        "add_entropy": true,
+        "add_entropy": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -84,7 +84,7 @@
         "action_policy": "default",
         "gamma": 0.95,
         "num_epis_to_collect": 1,
-        "add_entropy": false,
+        "add_entropy": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -109,9 +109,9 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 400,
+      "max_episode": 1000,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 50,
       "train_mode": true
     },
     "search": {
@@ -120,7 +120,7 @@
           "gamma__uniform": [0.9, 0.9999]
         },
         "net": {
-          "hid_layers__choice": [[16], [32], [64], [16, 8]],
+          "hid_layers__choice": [[16], [32], [64]],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
           "optim": {
             "lr__uniform": [0.001, 0.1]
