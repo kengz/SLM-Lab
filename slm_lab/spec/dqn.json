@@ -37,8 +37,8 @@
       }
     }],
     "env": [{
-      "name": "gridworld",
-      "max_timestep": 50
+      "name": "CartPole-v0",
+      "max_timestep": null
     }],
     "body": {
       "product": "outer",
@@ -46,8 +46,8 @@
     },
     "meta": {
       "max_episode": 3,
-      "max_session": 3,
-      "max_trial": 3,
+      "max_session": 1,
+      "max_trial": 1,
       "train_mode": true
     },
     "search": {

@@ -6,11 +6,13 @@
         "name": "ActorCritic",
         "action_policy": "default",
         "gamma": 0.99,
-        "num_step_returns": 100,
+        "lamda": 1.0,
+        "num_step_returns": 10,
         "training_frequency": 32,
         "training_iters_per_batch": 8,
         "num_epis_to_collect": 1,
-        "add_entropy": false,
+        "add_entropy": true,
+        "entropy_weight": 0.01,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
@@ -22,6 +24,7 @@
         "type": "MLPshared",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
+        "use_same_optim": false,
         "optim_actor": {
           "name": "Adam",
           "lr": 0.01
@@ -43,86 +46,29 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 100,
-      "max_session": 4,
+      "max_episode": 10,
+      "max_session": 1,
       "max_trial": 1,
       "train_mode": true
     }
   },
-  "actor_critic_cartpole": {
-    "agent": [{
-      "name": "ActorCritic",
-      "algorithm": {
-        "name": "ActorCritic",
-        "action_policy": "default",
-        "gamma": 0.999,
-        "training_frequency": 32,
-        "training_iters_per_batch": 3,
-        "num_epis_to_collect": 1,
-        "add_entropy": false,
-        "advantage_fn": "gae_1"
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {
-        "type": "MLPseparate",
-        "hid_layers": [64],
-        "hid_layers_activation": "relu",
-        "optim_actor": {
-          "name": "Adam",
-          "lr": 0.01
-        },
-        "optim_critic": {
-          "name": "Adam",
-          "lr": 0.01
-        },
-        "clamp_grad": false,
-        "clamp_grad_val": 1.0
-      }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
-      "max_timestep": null
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "max_episode": 200,
-      "max_session": 4,
-      "max_trial": 20,
-      "train_mode": true
-    },
-    "search": {
-      "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.9, 0.9999]
-        },
-        "net": {
-          "optim_actor": {
-            "lr__uniform": [0.001, 0.1]
-          },
-          "optim_critic": {
-            "lr__uniform": [0.001, 0.1]
-          }
-        }
-      }]
-    }
-  },
-  "actor_critic_pendulum": {
+  "actor_critic_cartpole_coarse_search": {
     "agent": [{
       "name": "ActorCritic",
       "algorithm": {
         "name": "ActorCritic",
         "action_policy": "default",
         "gamma": 0.99,
+        "lamda": 1.0,
+        "num_step_returns": 100,
         "training_frequency": 32,
-        "training_iters_per_batch": 3,
+        "training_iters_per_batch": 8,
         "num_epis_to_collect": 1,
         "add_entropy": true,
-        "advantage_fn": "gae_1"
+        "entropy_weight": 0.01,
+        "use_GAE": true,
+        "policy_loss_weight": 1.0,
+        "val_loss_weight": 1.0
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -131,6 +77,217 @@
         "type": "MLPseparate",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
+        "use_same_optim": true,
+        "optim_actor": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "optim_critic": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "clamp_grad": false,
+        "clamp_grad_val": 1.0
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 300,
+      "max_session": 5,
+      "max_trial": 100,
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999],
+          "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 8, 10],
+          "add_entropy__choice": [true, false],
+        },
+        "net": {
+          "type__choice": ["MLPshared", "MLPseparate"],
+          "hid_layers__choice": [[16], [32], [64]],
+          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "optim_actor": {
+            "lr__uniform": [0.001, 0.1]
+          }
+        }
+      }]
+    }
+  },
+  "actor_critic_gridworld_coarse_search": {
+    "agent": [{
+      "name": "ActorCritic",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "lamda": 1.0,
+        "num_step_returns": 100,
+        "training_frequency": 32,
+        "training_iters_per_batch": 8,
+        "num_epis_to_collect": 1,
+        "add_entropy": false,
+        "entropy_weight": 0.01,
+        "use_GAE": true,
+        "policy_loss_weight": 1.0,
+        "val_loss_weight": 1.0
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPshared",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
+        "use_same_optim": true,
+        "optim_actor": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "optim_critic": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "clamp_grad": false,
+        "clamp_grad_val": 1.0
+      }
+    }],
+    "env": [{
+      "name": "gridworld",
+      "max_timestep": 50
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 300,
+      "max_session": 5,
+      "max_trial": 100,
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999],
+          "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 8, 10],
+          "add_entropy__choice": [true, false],
+        },
+        "net": {
+          "type__choice": ["MLPshared", "MLPseparate"],
+          "hid_layers__choice": [[64], [128], [64, 32], [128, 64]],
+          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "optim_actor": {
+            "lr__uniform": [0.001, 0.1]
+          }
+        }
+      }]
+    }
+  },
+  "actor_critic_2dball_coarse_search": {
+    "agent": [{
+      "name": "ActorCritic",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "lamda": 1.0,
+        "num_step_returns": 100,
+        "training_frequency": 32,
+        "training_iters_per_batch": 8,
+        "num_epis_to_collect": 1,
+        "add_entropy": false,
+        "entropy_weight": 0.01,
+        "use_GAE": true,
+        "policy_loss_weight": 1.0,
+        "val_loss_weight": 1.0
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPshared",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
+        "use_same_optim": true,
+        "optim_actor": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "optim_critic": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "clamp_grad": false,
+        "clamp_grad_val": 1.0
+      }
+    }],
+    "env": [{
+      "name": "2dBall",
+      "max_timestep": 200
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 300,
+      "max_session": 5,
+      "max_trial": 100,
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999],
+          "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 8, 10],
+          "add_entropy__choice": [true, false],
+        },
+        "net": {
+          "type__choice": ["MLPshared", "MLPseparate"],
+          "hid_layers__choice": [[64], [128], [64, 32], [128, 64]],
+          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "optim_actor": {
+            "lr__uniform": [0.001, 0.1]
+          }
+        }
+      }]
+    }
+  },
+  "actor_critic_pendulum_coarse_search": {
+    "agent": [{
+      "name": "ActorCritic",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "lamda": 1.0,
+        "num_step_returns": 100,
+        "training_frequency": 32,
+        "training_iters_per_batch": 8,
+        "num_epis_to_collect": 1,
+        "add_entropy": false,
+        "entropy_weight": 0.01,
+        "use_GAE": true,
+        "policy_loss_weight": 1.0,
+        "val_loss_weight": 1.0
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPshared",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
+        "use_same_optim": true,
         "optim_actor": {
           "name": "Adam",
           "lr": 0.01
@@ -152,10 +309,167 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 100,
+      "max_episode": 300,
+      "max_session": 5,
+      "max_trial": 100,
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999],
+          "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 8, 10],
+          "add_entropy__choice": [true, false],
+        },
+        "net": {
+          "type__choice": ["MLPshared", "MLPseparate"],
+          "hid_layers__choice": [[64], [128], [256], [64, 32], [128, 64]],
+          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "optim_actor": {
+            "lr__uniform": [0.001, 0.1]
+          }
+        }
+      }]
+    }
+  },
+  "actor_critic_lunarlander_coarse_search": {
+    "agent": [{
+      "name": "ActorCritic",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "lamda": 1.0,
+        "num_step_returns": 100,
+        "training_frequency": 32,
+        "training_iters_per_batch": 8,
+        "num_epis_to_collect": 1,
+        "add_entropy": false,
+        "entropy_weight": 0.01,
+        "use_GAE": true,
+        "policy_loss_weight": 1.0,
+        "val_loss_weight": 1.0
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPshared",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
+        "use_same_optim": true,
+        "optim_actor": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "optim_critic": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "clamp_grad": false,
+        "clamp_grad_val": 1.0
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "max_timestep": null
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 300,
+      "max_session": 5,
+      "max_trial": 100,
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999],
+          "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 8, 10],
+          "add_entropy__choice": [true, false],
+        },
+        "net": {
+          "type__choice": ["MLPshared", "MLPseparate"],
+          "hid_layers__choice": [[128], [256], [512], [128, 64], [256, 128]],
+          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "optim_actor": {
+            "lr__uniform": [0.001, 0.1]
+          }
+        }
+      }]
+    }
+  },
+  "actor_critic_3dball_coarse_search": {
+    "agent": [{
+      "name": "ActorCritic",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "lamda": 1.0,
+        "num_step_returns": 100,
+        "training_frequency": 32,
+        "training_iters_per_batch": 8,
+        "num_epis_to_collect": 1,
+        "add_entropy": false,
+        "entropy_weight": 0.01,
+        "use_GAE": true,
+        "policy_loss_weight": 1.0,
+        "val_loss_weight": 1.0
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPshared",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
+        "use_same_optim": true,
+        "optim_actor": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "optim_critic": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "clamp_grad": false,
+        "clamp_grad_val": 1.0
+      }
+    }],
+    "env": [{
+      "name": "3dBall",
+      "max_timestep": 500
+    }],
+    "body": {
+      "product": "outer",
+      "num": 12
+    },
+    "meta": {
+      "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
-      "train_mode": true
+      "train_mode": false
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999],
+          "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 8, 10],
+          "add_entropy__choice": [true, false],
+        },
+        "net": {
+          "type__choice": ["MLPshared", "MLPseparate"],
+          "hid_layers__choice": [[64], [128], [64, 32], [128, 64]],
+          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "optim_actor": {
+            "lr__uniform": [0.001, 0.1]
+          }
+        }
+      }]
     }
   }
 }
