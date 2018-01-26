@@ -1,5 +1,6 @@
-from slm_lab.spec import spec_util
 from slm_lab.experiment.control import Trial, Session
+from slm_lab.lib import logger, util
+from slm_lab.spec import spec_util
 import pytest
 
 
@@ -14,8 +15,7 @@ import pytest
 ])
 def test_base(spec_file, spec_name):
     spec = spec_util.get(spec_file, spec_name)
-    spec['meta']['train_mode'] = True
-    spec['meta']['max_episode'] = 20
+    spec = util.override_test_spec(spec)
     trial = Trial(spec)
     trial_data = trial.run()
 
@@ -29,7 +29,6 @@ def test_base(spec_file, spec_name):
 ])
 def test_algo(spec_file, spec_name):
     spec = spec_util.get(spec_file, spec_name)
-    spec['meta']['train_mode'] = True
-    spec['meta']['max_episode'] = 20
+    spec = util.override_test_spec(spec)
     trial = Trial(spec)
     trial_data = trial.run()
