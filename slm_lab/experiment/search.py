@@ -59,6 +59,7 @@ class RaySearch:
 
     @lab_api
     def run(self):
+        ray.init()
         # serialize here as ray is not thread safe outside
         ray.register_custom_serializer(InfoSpace, use_pickle=True)
         ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
