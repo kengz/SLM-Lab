@@ -65,7 +65,6 @@ jobs:
             fi
             source activate lab
             conda env update -f environment.yml
-            pip uninstall enum34 -y  # old tf requirement breaking new py
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}
           paths:
