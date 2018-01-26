@@ -1,5 +1,5 @@
 {
-  "actor_critic.json": {
-    "actor_critic_spec_template": "train",
-  },
+  "demo.json": {
+    "dqn_cartpole": "trial"
+  }
 }
