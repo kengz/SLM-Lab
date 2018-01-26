@@ -345,7 +345,7 @@ def calc_interp_strength(aeb_df):
 def calc_stable_idx(aeb_df):
     '''Calculate the index (epi) when strength first becomes stable (using moving mean and working backward)'''
     interp_strength = calc_interp_strength(aeb_df)
-    std_strength_ra_idx = (aeb_df['strength_ma'] == interp_strength).idxmax()
+    std_strength_ra_idx = (aeb_df['strength_ma'] <= interp_strength).idxmax()
     # index when it first achieved stable std_strength
     stable_idx = std_strength_ra_idx - (MA_WINDOW - 1)
     return stable_idx
