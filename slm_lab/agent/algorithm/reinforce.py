@@ -75,7 +75,8 @@ class Reinforce(Algorithm):
         util.set_attr(self, _.pick(algorithm_spec, [
             'gamma',
             'num_epis_to_collect',
-            'add_entropy'
+            'add_entropy',
+            'entropy_weight'
         ]))
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
@@ -134,7 +135,7 @@ class Reinforce(Algorithm):
             logger.debug(
                 f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
             if self.add_entropy:
-                policy_loss.append(-log_prob * a - 0.1 * e)
+                policy_loss.append(-log_prob * a - self.entropy_weight * e)
             else:
                 policy_loss.append(-log_prob * a)
         policy_loss = torch.cat(policy_loss).sum()
