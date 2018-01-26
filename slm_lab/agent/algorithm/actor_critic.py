@@ -28,9 +28,12 @@ class ActorCritic(Reinforce):
                         Learning"
         - memory type:  @param: 'memory.name' batch (through OnPolicyBatchReplay memory class) or episodic
                         through (OnPolicyReplay memory class)
-        - return steps: @param: 'algorithm.num_step_returns' how many steps to use when calculating the
-                        advantage target. Note when GAE is used, the number of steps is projected to a value
-                        between 0 and 1. Mininum number of steps is 0, maximum is 100.
+        - return steps: @param: 'algorithm.num_step_returns' how many forward step returns to use when
+                        calculating the advantage target. Min = 0. Applied for standard advantage estimation.
+                        Not used for GAE.
+        - lamda:        @param: 'algorithm.lamda' controls the bias variance tradeoff when using GAE.
+                        Floating point value between 0 and 1. Lower values correspond to more bias,
+                        less variance. Higher values to more variance, less bias.
         - param sharing: @param: 'net.type' whether the actor and critic should share params (e.g. through
                         'MLPshared') or have separate params (e.g. through 'MLPseparate')
                         If param sharing is used then there is also the option to control the weight
@@ -421,13 +424,18 @@ class ActorCritic(Reinforce):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         ))
-        critic_kwargs = util.compact_dict(dict(
-            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-            optim_param=_.get(net_spec, 'optim_critic'),
-            loss_param=_.get(net_spec, 'loss'),
-            clamp_grad=_.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-        ))
+        if self.agent.spec['net']['use_same_optim']:
+            logger.info('Using same optimizer for actor and critic')
+            critic_kwargs = actor_kwargs
+        else:
+            logger.info('Using different optimizer for actor and critic')
+            critic_kwargs = util.compact_dict(dict(
+                hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
+                optim_param=_.get(net_spec, 'optim_critic'),
+                loss_param=_.get(net_spec, 'loss'),
+                clamp_grad=_.get(net_spec, 'clamp_grad'),
+                clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+            ))
         '''
          Below we automatically select an appropriate net based on two different conditions
            1. If the action space is discrete or continuous action
@@ -469,13 +477,12 @@ class ActorCritic(Reinforce):
         algorithm_spec = self.agent.spec['algorithm']
         self.set_action_fn()
         util.set_attr(self, _.pick(algorithm_spec, [
-            'gamma', 'num_step_returns',
+            'gamma', 'lamda', 'num_step_returns',
             'training_frequency', 'training_iters_per_batch',
             'num_epis_to_collect',
             'add_entropy', 'use_GAE',
             'policy_loss_weight', 'val_loss_weight'
         ]))
-        self.lamda = self.num_step_returns / 100.0
         '''Select appropriate function for calculating state-action-value estimate (target)'''
         self.get_target = self.get_nstep_target
         if self.use_GAE:
