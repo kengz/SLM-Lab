@@ -1,14 +1,19 @@
-# SLM Lab [![CircleCI](https://circleci.com/gh/kengz/SLM-Lab.svg?style=shield)](https://circleci.com/gh/kengz/SLM-Lab) [![Maintainability](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/maintainability)](https://codeclimate.com/github/kengz/SLM-Lab/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/test_coverage)](https://codeclimate.com/github/kengz/SLM-Lab/test_coverage)
-_(Work In Progress)_ An experimentation framework for Deep Reinforcement Learning using Unity, OpenAI Gym, PyTorch, Tensorflow.
+# SLM Lab
+[![CircleCI](https://circleci.com/gh/kengz/SLM-Lab.svg?style=shield)](https://circleci.com/gh/kengz/SLM-Lab) [![Maintainability](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/maintainability)](https://codeclimate.com/github/kengz/SLM-Lab/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/test_coverage)](https://codeclimate.com/github/kengz/SLM-Lab/test_coverage)
+A research framework for Deep Reinforcement Learning using Unity, OpenAI Gym, PyTorch, Tensorflow.
+
+**[Gitbook Documentation](https://kengz.gitbooks.io/slm-lab/content/)**
+
+>Doc will migrate to Gitbook entirely soon, except for some crucial commands below.
 
 ## Installation
 
-1.  Clone the Lab repo:
+1. Clone the [SLM-Lab repo](https://github.com/kengz/SLM-Lab):
     ```shell
     git clone https://github.com/kengz/SLM-Lab.git
     ```
 
-2.  Install Lab dependencies (or inspect `bin/*` before running):
+2. Install dependencies (or inspect `bin/setup_*` first):
     ```shell
     cd SLM-Lab/
     bin/setup
@@ -16,24 +21,23 @@ _(Work In Progress)_ An experimentation framework for Deep Reinforcement Learnin
     source activate lab
     ```
 
-3.  Setup the created config files:
-    -   sign up for a free [Plotly account](https://plot.ly/) and get the API key to put in the config files below.
-    -   `config/default.json`
+### Setup
 
-## Usage
+A config file `config/default.json` will be created.
 
-### Quickstart
+```json
+{
+  "data_sync_dir": "~/Dropbox/SLM-Lab/data",
+  "plotly": {
+    "username": "get from https://plot.ly/settings/api",
+    "api_key": "generate from https://plot.ly/settings/api"
+  }
+}
+```
 
-Once you're all set up, run the demo of `VanillaDQN` in `CartPole-v0`:
+- update `"data_sync_dir"` if you run lab on remote and want to sync data for easy access; it will copy `data/` there.
+- for plots, sign up for a free [Plotly account](https://plot.ly/) and update `"plotly"`.
 
-- see `slm_lab/spec/demo.json` for example spec.
-- see `config/experiments.json` to schedule experiments.
-- launch terminal in the repo directory, run:
-    ```shell
-    source activate lab
-    yarn start
-    ```
-- It should render and run. After completion, check the output for data `data/dqn_cartpole/`
 
 #### `screen` mode
 
@@ -51,7 +55,6 @@ yarn start
 screen -r lab
 # use Cmd+D to terminate screen when lab ends
 ```
-
 
 ### Experiment
 
@@ -97,13 +100,6 @@ The `run_mode`s are:
 - `dev`: development mode, with override of DEBUG flag, shorter episodes, train_mode.
 
 ### Tips
-
-If you experience package errors, try the following from the root of the SLM-Lab directory (update repo and update dependencies):
-
-```bash
-git pull
-bin/setup
-```
 
 This will update all of the packages to the latest required versions.
 
