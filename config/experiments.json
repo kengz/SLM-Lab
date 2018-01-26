@@ -1,5 +1,5 @@
 {
-  "reinforce.json": {
-    "reinforce_spec_template": "train"
+  "dqn.json": {
+    "dqn_spec_template": "train"
   }
 }
