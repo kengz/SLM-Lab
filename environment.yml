@@ -45,7 +45,10 @@ dependencies:
 - pip:
   - cloudpickle==0.5.2
   - colorlover==0.2.1
-  - gym[all]
+  - gym==0.9.4
+  - gym[atari]
+  - gym[box2d]
+  - gym[classic_control]
   - opencv-python==3.4.0.12
   - psutil==5.4.3
   - pyopengl==3.1.0
