@@ -24,7 +24,7 @@ def run_by_mode(spec_file, spec_name, run_mode):
     elif run_mode == 'dev':
         logger.set_level('DEBUG')
         spec['meta']['train_mode'] = True
-        spec['meta']['max_episode'] = 20
+        spec['meta']['max_episode'] = 2
         Trial(spec).run()
     else:
         logger.warn(

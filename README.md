@@ -126,7 +126,15 @@ This will update all of the packages to the latest required versions.
 This lab is for general deep reinforcement learning research, built with proper software engineering:
 
 - reusable components for fast experimentation
-- established baseline algorithms (in progress)
+- established baseline algorithms (in progress). Currently implemented are
+    - DQN
+    - Double DQN
+    - REINFORCE
+        - Option to add entropy to encourage exploration
+    - Actor-Critic
+        - Batch or episodic training
+        - Advantage calculated using n-step returns or generalized advantage estimation
+        - Option to add entropy to encourage exploration
 - plugs in to OpenAI gym, Unity ml-agents environments
 - generalized multi-agent, multi-environment setup
 - auto hyperparameter search within experiment
