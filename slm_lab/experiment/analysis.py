@@ -333,32 +333,31 @@ def calc_strength(aeb_df, rand_epi_reward, std_epi_reward):
     return (aeb_df['reward'] - rand_epi_reward).clip(0) / (std_epi_reward - rand_epi_reward)
 
 
-def calc_interp_strength(aeb_df):
-    '''
-    Interpolate linearly by strength to account for failure to solve.
-    Since min strength is 0, do a lower clip 0 for strength_ma.
-    '''
-    interp_strength = min(1, max(0, aeb_df['strength_ma'].max()))
-    return interp_strength
-
-
 def calc_stable_idx(aeb_df):
     '''Calculate the index (epi) when strength first becomes stable (using moving mean and working backward)'''
-    interp_strength = calc_interp_strength(aeb_df)
-    std_strength_ra_idx = (aeb_df['strength_ma'] <= interp_strength).idxmax()
-    # index when it first achieved stable std_strength
-    stable_idx = std_strength_ra_idx - (MA_WINDOW - 1)
+    std_strength = 1
+    above_std_strength_sr = (aeb_df['strength_ma'] >= std_strength)
+    if above_std_strength_sr.any():
+        # if it achieved stable (ma) std_strength at some point, the index when
+        std_strength_ra_idx = above_std_strength_sr.idxmax()
+        stable_idx = std_strength_ra_idx - (MA_WINDOW - 1)
+    else:
+        stable_idx = np.nan
     return stable_idx
 
 
 def calc_std_strength_timestep(aeb_df):
     '''
     Calculate the timestep needed to achieve stable (within window) std_strength.
-    For agent failing to achieve std_strength 1, use linear interpolation.
+    For agent failing to achieve std_strength 1, it is meaningless to measure speed or give false interpolation, so set as inf (never).
     '''
-    interp_strength = calc_interp_strength(aeb_df)
+    std_strength = 1
     stable_idx = calc_stable_idx(aeb_df)
-    std_strength_timestep = aeb_df.loc[stable_idx, 'total_t'] / interp_strength
+    if np.isnan(stable_idx):
+        std_strength_timestep = np.inf
+    else:
+        std_strength_timestep = aeb_df.loc[
+            stable_idx, 'total_t'] / std_strength
     return std_strength_timestep
 
 
@@ -372,6 +371,7 @@ def calc_speed(aeb_df, std_timestep):
     - speed of learning agent always tends toward positive regardless of the shape of rewards curve
     - scale of speed is always standard at 1 and its multiplies, regardless of absolute timestep.
     This allows an intuitive measurement of learning speed and the standard comparison between agents on the same problem. Absolute timestep also measures the bits of new information given to the agent, which is a more grounded metric. With proper scaling of timescale (or bits scale), we can compare across problems of different difficulties.
+    For agent failing to achieve std_strength 1, it is meaningless to measure speed or give false interpolation, so speed is 0.
     '''
     agent_timestep = calc_std_strength_timestep(aeb_df)
     speed = std_timestep / agent_timestep
@@ -397,10 +397,14 @@ def calc_stability(aeb_df):
     - if strength is monotonically increasing (with 5% noise), then it is stable
     - sharp gain in strength is considered stable
     - works even for partial solution (not attaining std_strength), due to how stable_idx is calculated
+    When an agent fails to achieve std_strength, it is meaningless to measure stability or give false interpolation, so stability is 0.
     '''
     stable_idx = calc_stable_idx(aeb_df)
-    stable_df = aeb_df.loc[stable_idx:, 'strength_mono_inc']
-    stability = stable_df.sum() / len(stable_df)
+    if np.isnan(stable_idx):
+        stability = 0
+    else:
+        stable_df = aeb_df.loc[stable_idx:, 'strength_mono_inc']
+        stability = stable_df.sum() / len(stable_df)
     return stability
 
 
