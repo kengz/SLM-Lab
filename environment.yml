@@ -34,7 +34,6 @@ dependencies:
 - setuptools=38.4.0=py36_0
 - six=1.11.0=py36_1
 - tensorboard=0.4.0rc3=py36_2
-- tensorflow=1.4.0=py36_0
 - ujson=1.35=py36_0
 - urllib3=1.22=py36_0
 - wheel=0.30.0=py36_2
@@ -54,6 +53,7 @@ dependencies:
   - pyopengl==3.1.0
   - ray==0.3.0
   - redis==2.10.6
+  - tensorflow==1.5.0
   - theano==1.0.1
   - torch==0.3.0.post4
   - unityagents==0.2.0
