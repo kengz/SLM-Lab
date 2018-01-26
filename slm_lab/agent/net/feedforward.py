@@ -100,10 +100,6 @@ class MLPNet(nn.Module):
         '''
         return None
 
-    def print_nets(self):
-        '''Prints entire network'''
-        print(self.model)
-
     def get_grad_norms(self):
         '''Returns a list of the norm of the gradients for all parameters'''
         norms = []
@@ -191,11 +187,12 @@ class MLPHeterogenousHeads(MLPNet):
         self.eval()
         return [o.data for o in self(x)]
 
-    def print_nets(self):
-        '''Prints entire network'''
-        print(self.body)
+    def __str__(self):
+        '''Overriding so that print() will print the whole network'''
+        s = self.body.__str__()
         for layer in self.out_layers:
-            print(layer)
+            s += '\n' + layer.__str__()
+        return s
 
 
 class MultiMLPNet(nn.Module):
@@ -395,10 +392,12 @@ class MultiMLPNet(nn.Module):
         '''
         return None
 
-    def print_nets(self):
-        '''Prints the combined network'''
+    def __str__(self):
+        '''Overriding so that print() will print the whole network'''
+        s = ""
         for net in self.state_heads_models:
-            print(net)
-        print(self.body)
+            s += net.__str__() + '\n'
+        s += self.body.__str__()
         for net in self.action_heads_models:
-            print(net)
+            s += '\n' + net.__str__()
+        return s

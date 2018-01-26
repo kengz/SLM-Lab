@@ -65,7 +65,6 @@ class ActorCritic(Reinforce):
         '''Initializes the part of algorithm needing a body to exist first.'''
         self.init_nets()
         self.init_algo_params()
-        self.print_nets()  # Print the network architectures
         logger.info(util.self_desc(self))
 
     @lab_api
@@ -525,10 +524,10 @@ class ActorCritic(Reinforce):
     def print_nets(self):
         '''Prints networks to stdout'''
         if self.is_shared_architecture:
-            self.actorcritic.print_nets()
+            print(self.actorcritic)
         else:
-            self.actor.print_nets()
-            self.critic.print_nets()
+            print(self.actor)
+            print(self.critic)
 
     def get_actor_output(self, x, evaluate=True):
         '''Returns the output of the policy, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.

@@ -1,5 +1,5 @@
 {
-  "demo.json": {
-    "dqn_cartpole": "trial"
+  "dqn.json": {
+    "dqn_spec_template": "train"
   }
 }
