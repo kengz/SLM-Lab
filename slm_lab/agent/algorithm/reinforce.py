@@ -29,7 +29,6 @@ class Reinforce(Algorithm):
         '''Initializes the part of algorithm needing a body to exist first.'''
         self.init_nets()
         self.init_algo_params()
-        self.net.print_nets()  # Print the network architecture
         logger.info(util.self_desc(self))
 
     def init_nets(self):

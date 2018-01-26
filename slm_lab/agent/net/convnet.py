@@ -176,7 +176,6 @@ class ConvNet(nn.Module):
         '''
         return None
 
-    def print_nets(self):
-        '''Prints entire network'''
-        print(self.conv_model)
-        print(self.dense_model)
+    def __str__(self):
+        '''Overriding so that print() will print the whole network'''
+        return self.conv_model.__str__() + '\n' + self.dense_model.__str__()
