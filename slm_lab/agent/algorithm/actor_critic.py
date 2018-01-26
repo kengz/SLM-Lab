@@ -480,7 +480,8 @@ class ActorCritic(Reinforce):
             'training_frequency', 'training_iters_per_batch',
             'num_epis_to_collect',
             'add_entropy', 'entropy_weight', 'use_GAE',
-            'policy_loss_weight', 'val_loss_weight'
+            'policy_loss_weight', 'val_loss_weight',
+            'continuous_action_clip'
         ]))
         '''Select appropriate function for calculating state-action-value estimate (target)'''
         self.get_target = self.get_nstep_target

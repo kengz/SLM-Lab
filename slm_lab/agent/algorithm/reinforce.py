@@ -76,7 +76,8 @@ class Reinforce(Algorithm):
             'gamma',
             'num_epis_to_collect',
             'add_entropy',
-            'entropy_weight'
+            'entropy_weight',
+            'continuous_action_clip'
         ]))
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []

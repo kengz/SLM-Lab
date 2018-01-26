@@ -125,9 +125,9 @@ This lab is for general deep reinforcement learning research, built with proper 
 - established baseline algorithms (in progress). Currently implemented are
     - DQN
     - Double DQN
-    - REINFORCE
+    - REINFORCE with baseline
         - Option to add entropy to encourage exploration
-    - Actor-Critic
+    - Advantage Actor-Critic (A2C)
         - Batch or episodic training
         - Advantage calculated using n-step returns or generalized advantage estimation
         - Option to add entropy to encourage exploration

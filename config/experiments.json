@@ -1,5 +1,5 @@
 {
-  "demo.json": {
-    "dqn_cartpole": "trial"
+  "reinforce.json": {
+    "reinforce_spec_template": "train"
   }
 }
