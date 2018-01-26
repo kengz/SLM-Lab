@@ -1,7 +1,7 @@
 from slm_lab.agent import AgentSpace
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
-from slm_lab.agent.net.feedforward import MLPNet, MultiMLPNet
+from slm_lab.agent.net.feedforward import MLPNet, MultiMLPNet, MLPHeterogenousHeads
 from slm_lab.env import EnvSpace
 # from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
@@ -140,6 +140,66 @@ def test_multiline_str():
         {
             'in_dim': 10, 'hid_dim': [],
             'out_dim':5, 'hid_layers_activation': 'tanh',
+        },
+        None,
+        2
+    ), (
+        MLPHeterogenousHeads,
+        {
+            'in_dim': 10, 'hid_dim': [5, 3],
+            'out_dim':[2],
+            'hid_layers_activation': 'tanh',
+        },
+        None,
+        2
+    ), (
+        MLPHeterogenousHeads,
+        {
+            'in_dim': 10, 'hid_dim': [5, 3],
+            'out_dim':[2, 1],
+            'hid_layers_activation': 'tanh',
+        },
+        None,
+        2
+    ), (
+        MLPHeterogenousHeads,
+        {
+            'in_dim': 10, 'hid_dim': [5, 3],
+            'out_dim':[2, 5, 1],
+            'hid_layers_activation': 'tanh',
+        },
+        None,
+        2
+    ), (
+        MLPHeterogenousHeads,
+        {
+            'in_dim': 10, 'hid_dim': [10, 50, 5],
+            'out_dim':[2, 5, 1],
+            'hid_layers_activation': 'tanh',
+        },
+        None,
+        2
+    ), (
+        MLPHeterogenousHeads,
+        {
+            'in_dim': 10, 'hid_dim': [],
+            'out_dim':[5], 'hid_layers_activation': 'tanh',
+        },
+        None,
+        2
+    ), (
+        MLPHeterogenousHeads,
+        {
+            'in_dim': 10, 'hid_dim': [],
+            'out_dim':[5, 2], 'hid_layers_activation': 'tanh',
+        },
+        None,
+        2
+    ), (
+        MLPHeterogenousHeads,
+        {
+            'in_dim': 10, 'hid_dim': [],
+            'out_dim':[5, 2, 1], 'hid_layers_activation': 'tanh',
         },
         None,
         2
