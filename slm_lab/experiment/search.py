@@ -106,4 +106,6 @@ class RaySearch:
             exp_trial_data = ray_trial.last_result.info
             trial_index = exp_trial_data.pop('trial_index')
             trial_data_dict[trial_index] = exp_trial_data
+
+        ray.disconnect()
         return trial_data_dict
