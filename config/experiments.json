@@ -1,9 +1,5 @@
 {
-  "actor_critic.json": {
-    "actor_critic_cartpole_coarse_search": "search",
-    "actor_critic_gridworld_coarse_search": "search",
-    "actor_critic_2dball_coarse_search": "search",
-    "actor_critic_pendulum_coarse_search": "search",
-    "actor_critic_lunarlander_coarse_search": "search"
+  "demo.json": {
+    "dqn_cartpole": "trial"
   }
 }
