@@ -19,7 +19,7 @@ def test_trial(test_spec):
     assert isinstance(trial_data, pd.DataFrame)
 
 
-# @pytest.mark.skip(reason='TODO broken by pytorch in session parallelization')
+@pytest.mark.skip(reason='TODO broken by pytorch in session parallelization')
 def test_trial_demo():
     spec = spec_util.get('reinforce.json', 'reinforce_cartpole')
     util.override_test_spec(spec)
