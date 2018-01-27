@@ -19,11 +19,15 @@ def test_trial(test_spec):
     assert isinstance(trial_data, pd.DataFrame)
 
 
-@pytest.mark.skip(reason='TODO broken by pytorch in session parallelization')
 def test_trial_demo():
     spec = spec_util.get('reinforce.json', 'reinforce_cartpole')
     util.override_test_spec(spec)
     Trial(spec).run()
+
+
+def test_pytest_cov_hack():
+    # hack for pytest https://circleci.com/gh/kengz/SLM-Lab/997
+    assert True
 
 
 @pytest.mark.skip(reason='TODO tmp search removal')

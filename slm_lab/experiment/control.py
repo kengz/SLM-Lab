@@ -9,7 +9,6 @@ from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import logger, util, viz
 import numpy as np
-import os
 import pandas as pd
 import pydash as _
 import torch
@@ -104,7 +103,7 @@ class Trial:
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
             info_spaces.append(deepcopy(self.info_space))
-        if self.spec['meta']['train_mode'] or os.environ['PY_ENV'] != 'test':
+        if self.spec['meta']['train_mode']:
             session_datas = util.parallelize_fn(
                 self.init_session_and_run, info_spaces)
         else:  # dont parallelize when debugging to allow render
