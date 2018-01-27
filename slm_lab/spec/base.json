@@ -125,6 +125,34 @@
       "train_mode": true
     }
   },
+  "base_on_policy_batch_memory": {
+    "agent": [{
+      "name": "BaseOnPolicyMemory",
+      "algorithm": {
+        "name": "Random",
+        "training_frequency": 4
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay",
+        "max_size": 5
+      },
+      "net": {}
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": 10
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_episode": 1,
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": true
+    }
+  },
   "multi_body": {
     "agent": [{
       "name": "BaseDemo",
