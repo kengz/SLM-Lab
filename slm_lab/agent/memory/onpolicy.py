@@ -228,9 +228,9 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
         '''
         batch = {}
         batch['states'] = self.add_history(self.states)
-        batch['actions'] = self.add_history(self.actions)
+        batch['actions'] = self.actions
         batch['rewards'] = self.rewards
-        batch['next_states'] = self.next_states
+        batch['next_states'] = self.add_history(self.next_states)
         batch['dones'] = self.dones
         batch['priorities'] = self.priorities
         self.reset()
