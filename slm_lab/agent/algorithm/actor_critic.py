@@ -7,7 +7,6 @@ from slm_lab.lib import util, logger
 from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import torch.nn.functional as F
-import sys
 import numpy as np
 import torch
 import pydash as _
@@ -469,7 +468,7 @@ class ActorCritic(Reinforce):
                 logger.info("Continuous action space, actor and critic combined into single network, sharing params")
         else:
             logger.warn("Incorrect network type. Please use 'MLPshared' or MLPseparate'.")
-            sys.exit()
+            raise NotImplementedError
 
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
@@ -480,7 +479,8 @@ class ActorCritic(Reinforce):
             'training_frequency', 'training_iters_per_batch',
             'num_epis_to_collect',
             'add_entropy', 'entropy_weight', 'use_GAE',
-            'policy_loss_weight', 'val_loss_weight'
+            'policy_loss_weight', 'val_loss_weight',
+            'continuous_action_clip'
         ]))
         '''Select appropriate function for calculating state-action-value estimate (target)'''
         self.get_target = self.get_nstep_target
@@ -503,7 +503,7 @@ class ActorCritic(Reinforce):
             else:
                 if body.action_dim > 1:
                     logger.warn(f'Action dim: {body.action_dim}. Continuous multidimensional action space not supported yet. Contact author')
-                    sys.exit()
+                    raise NotImplementedError
                 else:
                     self.action_policy = act_fns['gaussian']
         else:
@@ -519,7 +519,7 @@ class ActorCritic(Reinforce):
             self.is_episodic = False
         else:
             logger.warn(f'Error: Memory {memory} not recognized')
-            sys.exit()
+            raise NotImplementedError
 
     def print_nets(self):
         '''Prints networks to stdout'''

@@ -8,7 +8,8 @@
         "gamma": 0.99,
         "num_epis_to_collect": 1,
         "add_entropy": true,
-        "entropy_weight": 0.01
+        "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -23,7 +24,7 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "Pendulum-v0",
       "max_timestep": null
     }],
     "body": {
@@ -46,7 +47,8 @@
         "gamma": 0.99,
         "num_epis_to_collect": 1,
         "add_entropy": true,
-        "entropy_weight": 0.01
+        "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -87,7 +89,8 @@
         "gamma": 0.95,
         "num_epis_to_collect": 1,
         "add_entropy": false,
-        "entropy_weight": 0.01
+        "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0
       },
       "memory": {
         "name": "OnPolicyReplay"
