@@ -1,6 +1,7 @@
 from slm_lab.experiment.control import Trial, Session
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+import pandas as pd
 import pytest
 
 
@@ -18,6 +19,7 @@ def test_base(spec_file, spec_name):
     spec = util.override_test_spec(spec)
     trial = Trial(spec)
     trial_data = trial.run()
+    assert isinstance(trial_data, pd.DataFrame)
 
 
 @pytest.mark.skip(reason='TODO broken by pytest cov https://circleci.com/gh/kengz/SLM-Lab/997')
@@ -32,3 +34,4 @@ def test_algo(spec_file, spec_name):
     spec = util.override_test_spec(spec)
     trial = Trial(spec)
     trial_data = trial.run()
+    assert isinstance(trial_data, pd.DataFrame)
