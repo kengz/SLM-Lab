@@ -501,14 +501,14 @@ def test_data_gen(request):
     (
         2,
         [
-            [np.asarray([1, 1, 1, 1]), 1, 1, 1, 1],
-            [np.asarray([2, 2, 2, 2]), 1, 2, 2, 2],
-            [np.asarray([3, 3, 3, 3]), 1, 3, 3, 3],
-            [np.asarray([4, 4, 4, 4]), 1, 4, 4, 4],
-            [np.asarray([5, 5, 5, 5]), 1, 5, 5, 5],
-            [np.asarray([6, 6, 6, 6]), 1, 6, 6, 6],
-            [np.asarray([7, 7, 7, 7]), 1, 7, 7, 7],
-            [np.asarray([8, 8, 8, 8]), 1, 8, 8, 8],
+            [np.asarray([1, 1, 1, 1]), 1, 1, np.asarray([2, 2, 2, 2]), 1],
+            [np.asarray([2, 2, 2, 2]), 1, 2, np.asarray([3, 3, 3, 3]), 2],
+            [np.asarray([3, 3, 3, 3]), 1, 3, np.asarray([4, 4, 4, 4]), 3],
+            [np.asarray([4, 4, 4, 4]), 1, 4, np.asarray([5, 5, 5, 5]), 4],
+            [np.asarray([5, 5, 5, 5]), 1, 5, np.asarray([6, 6, 6, 6]), 5],
+            [np.asarray([6, 6, 6, 6]), 1, 6, np.asarray([7, 7, 7, 7]), 6],
+            [np.asarray([7, 7, 7, 7]), 1, 7, np.asarray([8, 8, 8, 8]), 7],
+            [np.asarray([8, 8, 8, 8]), 1, 8, np.asarray([9, 9, 9, 9]), 8],
         ]
     ),
 ])

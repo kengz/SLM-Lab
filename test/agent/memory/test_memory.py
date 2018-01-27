@@ -35,7 +35,9 @@ class TestMemory:
         assert memory.head == 0
         # Handle states and actions with multiple dimensions
         assert np.array_equal(memory.states[memory.head], exp[0])
-        assert np.array_equal(memory.actions[memory.head], exp[1])
+        # assert np.array_equal(memory.actions[memory.head], exp[1])
+        # assert memory.actions[memory.head] == exp[1]
+        assert memory.actions[memory.head][exp[1]] == exp[1]
         assert memory.rewards[memory.head] == exp[2]
         assert np.array_equal(memory.next_states[memory.head], exp[3])
         assert memory.dones[memory.head] == exp[4]
@@ -78,12 +80,12 @@ class TestMemory:
         for e in experiences:
             memory.add_experience(*e)
         _batch = memory.sample(batch_size)
-        old_idx = deepcopy(memory.current_batch_indices).tolist()
+        old_idx = deepcopy(memory.batch_idxs).tolist()
         for i in range(5):
             _batch = memory.sample(batch_size)
-            new_idx = memory.current_batch_indices.tolist()
+            new_idx = memory.batch_idxs.tolist()
             assert old_idx != new_idx
-            old_idx = deepcopy(memory.current_batch_indices).tolist()
+            old_idx = deepcopy(memory.batch_idxs).tolist()
 
     def test_reset(self, test_memory):
         '''Tests memory reset.
