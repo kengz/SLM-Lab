@@ -26,7 +26,7 @@ env = None
 def test_spec():
     global spec
     spec = spec_util.get('base.json', 'base_case')
-    spec['meta']['train_mode'] = True
+    spec = util.override_test_spec(spec)
     return spec
 
 

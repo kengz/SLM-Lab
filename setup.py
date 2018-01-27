@@ -4,7 +4,8 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
 test_args = [
-    '-n 2',
+    '-n 0',
+    '--capture=no',
     '--verbose',
     '--no-flaky-report',
     '--timeout=60',
@@ -19,7 +20,8 @@ test_args = [
     '--cov=slm_lab/lib',
     '--cov=slm_lab/spec',
     '--cov=slm_lab/teacher',
-    'test'
+    '--ignore=test/agent/net',
+    'test',
 ]
 
 
