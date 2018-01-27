@@ -49,6 +49,7 @@ class Body:
 
         MemoryClass = getattr(memory, _.get(self.agent.spec, 'memory.name'))
         self.memory = MemoryClass(self)
+        self.state_buffer = []
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
@@ -72,6 +73,7 @@ class Agent:
 
         AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
         self.algorithm = AlgoClass(self)
+        self.len_state_buffer = spec['memory']['len_state_buffer'] if 'len_state_buffer' in spec['memory'] else 0
 
     @lab_api
     def post_body_init(self):
@@ -103,6 +105,10 @@ class Agent:
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.update(
                 action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
+            if self.len_state_buffer > 0:
+                if len(body.state_buffer) == self.len_state_buffer:
+                    del body.state_buffer[0]
+                body.state_buffer.append(state_a[(e, b)])
         loss_a = self.algorithm.train()
         loss_a = util.guard_data_a(self, loss_a, 'loss')
         explore_var_a = self.algorithm.update()

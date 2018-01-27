@@ -85,11 +85,11 @@ class Reinforce(Algorithm):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        return self.action_policy(self, state)
+        return self.action_policy(self, state, body, self.agent)
 
     @lab_api
     def body_act_continuous(self, body, state):
-        return self.action_policy(self, state)
+        return self.action_policy(self, state, body, self.agent)
 
     def sample(self):
         '''Samples a batch from memory'''
