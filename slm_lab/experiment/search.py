@@ -82,6 +82,7 @@ class RaySearch:
             done = True
             # TODO timesteps = episode len or total_t from space_clock
             # call reporter from inside trial/session loop
+            # TODO put reporter into info space so it can be called to update. easy.
             reporter(timesteps_total=-1, done=done, info=trial_data)
 
         register_trainable('lab_trial', lab_trial)

@@ -21,8 +21,9 @@ jobs:
           - v1-dependencies-{{ checksum "environment.yml" }}
 
       - run:
-          name: Install apt-get packages for gym
+          name: Install apt-get packages for lab
           command: |
+            sudo apt-get update
             sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
 
       - run:
@@ -93,8 +94,9 @@ jobs:
           - v1-dependencies-{{ checksum "environment.yml" }}
 
       - run:
-          name: Install apt-get packages for gym
+          name: Install apt-get packages for lab
           command: |
+            sudo apt-get update
             sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
       - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
       - run:

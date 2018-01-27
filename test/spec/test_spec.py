@@ -1,10 +1,10 @@
 from slm_lab.experiment.control import Trial, Session
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+import pandas as pd
 import pytest
 
 
-@pytest.mark.skip(reason='TODO broken by pytorch in session parallelization')
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('base.json', 'base_case'),
     ('base.json', 'base_case_openai'),
@@ -18,9 +18,10 @@ def test_base(spec_file, spec_name):
     spec = util.override_test_spec(spec)
     trial = Trial(spec)
     trial_data = trial.run()
+    assert isinstance(trial_data, pd.DataFrame)
 
 
-@pytest.mark.skip(reason='TODO broken by pytorch in session parallelization')
+@pytest.mark.skip(reason='TODO broken by pytorch in CI https://circleci.com/gh/kengz/SLM-Lab/997')
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('dqn.json', 'dqn_spec_template'),
     ('dqn.json', 'dqn_test_case'),
@@ -32,3 +33,4 @@ def test_algo(spec_file, spec_name):
     spec = util.override_test_spec(spec)
     trial = Trial(spec)
     trial_data = trial.run()
+    assert isinstance(trial_data, pd.DataFrame)
