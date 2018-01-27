@@ -513,7 +513,7 @@ def test_data_gen(request):
 ])
 def test_memory(request):
     memspec = spec_util.get('base.json', 'base_memory')
-    memspec['meta']['train_mode'] = True
+    memspec = util.override_test_spec(memspec)
     aeb_mem_space = AEBSpace(memspec, InfoSpace())
     env_space = EnvSpace(memspec, aeb_mem_space)
     agent_space = AgentSpace(memspec, aeb_mem_space)
@@ -542,7 +542,7 @@ def test_memory(request):
 ])
 def test_on_policy_episodic_memory(request):
     memspec = spec_util.get('base.json', 'base_on_policy_memory')
-    memspec['meta']['train_mode'] = True
+    memspec = util.override_test_spec(memspec)
     aeb_mem_space = AEBSpace(memspec, InfoSpace())
     env_space = EnvSpace(memspec, aeb_mem_space)
     agent_space = AgentSpace(memspec, aeb_mem_space)
@@ -571,7 +571,7 @@ def test_on_policy_episodic_memory(request):
 ])
 def test_on_policy_batch_memory(request):
     memspec = spec_util.get('base.json', 'base_on_policy_batch_memory')
-    memspec['meta']['train_mode'] = True
+    memspec = util.override_test_spec(memspec)
     aeb_mem_space = AEBSpace(memspec, InfoSpace())
     env_space = EnvSpace(memspec, aeb_mem_space)
     agent_space = AgentSpace(memspec, aeb_mem_space)
