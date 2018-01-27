@@ -13,6 +13,7 @@
         "num_epis_to_collect": 1,
         "add_entropy": true,
         "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
@@ -66,6 +67,7 @@
         "num_epis_to_collect": 1,
         "add_entropy": true,
         "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
@@ -136,6 +138,7 @@
         "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
@@ -206,6 +209,7 @@
         "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
@@ -276,6 +280,7 @@
         "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
@@ -346,6 +351,7 @@
         "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
@@ -416,6 +422,7 @@
         "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
