@@ -1,4 +1,4 @@
-from slm_lab.agent import AgentSpace
+from slm_lab.agent import AgentSpace, Body
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.net.recurrent import RecurrentNet
@@ -9,6 +9,7 @@ from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 from torch.autograd import Variable
+import numpy as np
 import pandas as pd
 import pytest
 import torch
@@ -19,6 +20,7 @@ import torch.optim as optim
 
 spec = None
 aeb_space = None
+aeb_mem_space = None
 agent = None
 env = None
 
@@ -495,33 +497,33 @@ def test_data_gen(request):
     return request.param
 
 
-@pytest.fixture(scope="session", params=[
-    ((5, 1, 1),
-     2,
-     [[1, 1, 1, 2, 0], [2, 2, 2, 3, 0], [3, 3, 3, 4, 0], [4, 4, 4, 5, 0],
-      [5, 5, 5, 6, 0], [6, 6, 6, 7, 0], [7, 7, 7, 8, 0], [8, 8, 8, 9, 0],
-      [9, 9, 9, 10, 0], [10, 10, 10, 11, 0], [11, 11, 11, 0, 1]]),
-    ((8, 3, 2),
-     3,
-     [[[1, 1, 1], [1, 1], 1, [2, 2, 2], 0],
-      [[2, 2, 2], [2, 2], 2, [3, 3, 3], 0],
-      [[3, 3, 3], [3, 3], 3, [4, 4, 4], 0],
-      [[4, 4, 4], [4, 4], 4, [5, 5, 5], 0],
-      [[5, 5, 5], [5, 5], 5, [6, 6, 6], 0],
-      [[6, 6, 6], [6, 6], 6, [7, 7, 7], 0],
-      [[7, 7, 7], [7, 7], 7, [8, 8, 8], 0],
-      [[8, 8, 8], [8, 8], 8, [9, 9, 9], 0],
-      [[9, 9, 9], [9, 9], 9, [10, 10, 10], 0],
-      [[10, 10, 10], [10, 10], 10, [11, 11, 11], 0],
-      [[11, 11, 11], [11, 11], 11, [0, 0, 0], 1]])])
-def test_memory(request, test_agent):
-    max_size, state_dim, action_dim = request.param[0]
-    batch_size = request.param[1]
-    experiences = request.param[2]
-    body = test_agent.bodies[0]
-    body.max_size = max_size
-    body.state_dim = state_dim
-    body.action_dim = action_dim
-    memory = Replay(test_agent)
-    memory.post_body_init()
-    return [memory, batch_size, experiences]
+@pytest.fixture(scope='session', params=[
+    (
+        2,
+        [
+            [np.asarray([1, 1, 1, 1]), 1, 1, 1, 1],
+            [np.asarray([2, 2, 2, 2]), 1, 2, 2, 2],
+            [np.asarray([3, 3, 3, 3]), 1, 3, 3, 3],
+            [np.asarray([4, 4, 4, 4]), 1, 4, 4, 4],
+            [np.asarray([5, 5, 5, 5]), 1, 5, 5, 5],
+            [np.asarray([6, 6, 6, 6]), 1, 6, 6, 6],
+            [np.asarray([7, 7, 7, 7]), 1, 7, 7, 7],
+            [np.asarray([8, 8, 8, 8]), 1, 8, 8, 8],
+        ]
+    ),
+])
+def test_memory(request):
+    global memspec
+    memspec = spec_util.get('base.json', 'base_memory')
+    memspec['meta']['train_mode'] = True
+    global aeb_mem_space
+    if aeb_mem_space is None:
+        aeb_mem_space = AEBSpace(memspec, InfoSpace())
+        env_space = EnvSpace(memspec, aeb_mem_space)
+        agent_space = AgentSpace(memspec, aeb_mem_space)
+        aeb_mem_space.init_body_space()
+        aeb_mem_space.post_body_init()
+    agent = agent_space.agents[0]
+    body = agent.nanflat_body_a[0]
+    res = (body.memory, ) + request.param
+    return res
