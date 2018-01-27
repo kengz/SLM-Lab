@@ -40,7 +40,7 @@ dependencies:
 - xlrd=1.1.0=py_2
 - pytorch=0.3.0
 - torchvision=0.2.0
-- libgcc=4.8.5
+- libgcc
 - pip:
   - cloudpickle==0.5.2
   - colorlover==0.2.1
