@@ -19,7 +19,8 @@ test_args = [
     '--cov=slm_lab/lib',
     '--cov=slm_lab/spec',
     '--cov=slm_lab/teacher',
-    'test'
+    '--ignore=test/agent/net',
+    'test',
 ]
 
 
