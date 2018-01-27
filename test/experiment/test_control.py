@@ -12,7 +12,6 @@ def test_session(test_spec):
     assert isinstance(session_data, pd.DataFrame)
 
 
-@pytest.mark.skip(reason='TODO broken by pytest cov https://circleci.com/gh/kengz/SLM-Lab/997')
 def test_trial(test_spec):
     trial = Trial(test_spec)
     trial_data = trial.run()
@@ -20,10 +19,10 @@ def test_trial(test_spec):
     assert isinstance(trial_data, pd.DataFrame)
 
 
-@pytest.mark.skip(reason='TODO broken by pytest cov https://circleci.com/gh/kengz/SLM-Lab/997')
+@pytest.mark.skip(reason='TODO broken by pytorch in CI https://circleci.com/gh/kengz/SLM-Lab/997')
 def test_trial_demo():
     spec = spec_util.get('reinforce.json', 'reinforce_cartpole')
-    util.override_test_spec(spec)
+    spec = util.override_test_spec(spec)
     trial_data = Trial(spec).run()
     assert isinstance(trial_data, pd.DataFrame)
 
