@@ -25,7 +25,14 @@ class TestNet:
         return dummy_input
 
     def init_dummy_output(self, net):
-        if net.__class__.__name__.find('MultiMLPNet') != -1:
+        if net.__class__.__name__.find('RecurrentNet') != -1:
+            if len(net.out_dim) == 1:
+                dummy_output = Variable(torch.ones(2, net.out_dim[0]))
+            else:
+                dummy_output = []
+                for outdim in net.out_dim:
+                    dummy_output.append(Variable(torch.zeros((2, outdim))))
+        elif net.__class__.__name__.find('MultiMLPNet') != -1:
             dummy_output = []
             for outdim in net.out_dim:
                 dummy_output.append(Variable(torch.zeros((2, outdim[-1]))))
@@ -47,6 +54,10 @@ class TestNet:
         net = test_nets[0]
         # Skipping test for 'MLPHeterogenousHeads' because there is no training step function
         if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
+            assert True is True
+            return
+        # Skipping test for 'RecurrentNet' with multiple output heads because training step not applicable
+        if net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1:
             assert True is True
             return
         flag = True
@@ -80,6 +91,10 @@ class TestNet:
         if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
             assert True is True
             return
+        # Skipping test for 'RecurrentNet' with multiple output heads because training step not applicable
+        if net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1:
+            assert True is True
+            return
         flag = True
         before_params = net.gather_fixed_params()
         dummy_input = self.init_dummy_input(net)
@@ -103,6 +118,10 @@ class TestNet:
         net = test_nets[0]
         # Skipping test for 'MLPHeterogenousHeads' because there is no training step function
         if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
+            assert True is True
+            return
+        # Skipping test for 'RecurrentNet' with multiple output heads because training step not applicable
+        if net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1:
             assert True is True
             return
         x = self.init_dummy_input(net)
@@ -146,7 +165,8 @@ class TestNet:
         out = net(dummy_input)
         flag = True
         if net.__class__.__name__.find('MultiMLPNet') != -1 or \
-           net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
+           net.__class__.__name__.find('MLPHeterogenousHeads') != -1 or \
+           (net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1):
             zero_test = sum([torch.sum(torch.abs(x.data)) for x in out])
             nan_test = np.isnan(sum([torch.sum(x.data) for x in out]))
         else:

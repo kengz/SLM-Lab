@@ -36,7 +36,7 @@ class RecurrentNet(nn.Module):
         sequence_length: length of the history of being passed to the net
         state_processing_layers: dimensions of the layers for state processing. Each state in the sequence is passed through these layers before being passed to recurrent net as an input.
         hid_dim: dimension of the recurrent component hidden state
-        out_dim: dimension of the ouputs
+        out_dim: dimension of the output for one output, otherwise a list containing the dimensions of the ouputs for a multi-headed network
         optim_param: parameters for initializing the optimizer
         loss_param: measure of error between model
         predictions and correct outputs
@@ -62,6 +62,9 @@ class RecurrentNet(nn.Module):
         self.in_dim = in_dim
         self.sequence_length = sequence_length
         self.hid_dim = hid_dim
+        # Handle multiple types of out_dim (single and multi-headed)
+        if type(out_dim) is int:
+            out_dim = [out_dim]
         self.out_dim = out_dim
         self.num_rnn_layers = num_rnn_layers
         self.state_processing_layers = []
@@ -72,12 +75,17 @@ class RecurrentNet(nn.Module):
                           hidden_size=self.hid_dim,
                           num_layers=self.num_rnn_layers,
                           batch_first=True)
-        self.fc_out = nn.Linear(self.hid_dim, self.out_dim)
+        # Init network output heads
+        self.out_layers = []
+        for dim in out_dim:
+            self.out_layers += [nn.Linear(self.hid_dim, dim)]
+        self.layers = [self.state_processing_layers] + [self.rnn] + [self.out_layers]
         self.num_hid_layers = None
         self.init_params()
         # Init other net variables
-        self.params = list(self.state_proc_model.parameters()) + \
-            list(self.rnn.parameters()) + list(self.fc_out.parameters())
+        self.params = list(self.state_proc_model.parameters()) + list(self.rnn.parameters())
+        for layer in self.out_layers:
+            self.params.extend(list(layer.parameters()))
         self.optim = net_util.get_optim_multinet(self.params, optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
@@ -108,20 +116,26 @@ class RecurrentNet(nn.Module):
         batch_size = x.size(0)
         x = x.view(-1, self.in_dim)
         x = self.state_proc_model(x)
+        '''Restack to batch_size x sequence_length x rnn_input_dim'''
         x = x.view(-1, self.sequence_length, self.rnn_input_dim)
         hid_0 = self.init_hidden(batch_size)
         _, final_hid = self.rnn(x, hid_0)
         final_hid.squeeze_(dim=0)
-        x = self.fc_out(final_hid)
-        return x
+        '''If only one head, return tensor, otherwise return list of outputs'''
+        outs = []
+        for layer in self.out_layers:
+            out = layer(final_hid)
+            outs.append(out)
+        if len(outs) == 1:
+            return outs[0]
+        else:
+            return outs
 
     def training_step(self, x, y):
         '''
         Takes a single training step: one forward and one backwards pass
         '''
-        self.state_proc_model.train()
-        self.rnn.train()
-        self.fc_out.train()
+        self.set_train_eval(train=False)
         self.optim.zero_grad()
         out = self(x)
         loss = self.loss_fn(out, y)
@@ -140,18 +154,24 @@ class RecurrentNet(nn.Module):
         '''
         Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
         '''
-        self.state_proc_model.eval()
-        self.rnn.eval()
-        self.fc_out.eval()
+        self.set_train_eval(train=False)
         return self(x).data
+
+    def set_train_eval(self, train=True):
+        '''Helper function to set model in training or evaluation mode'''
+        nets = [self.state_proc_model] + [self.rnn] + self.out_layers
+        for net in nets:
+            if train:
+                net.train()
+            else:
+                net.eval()
 
     def init_params(self):
         '''
         Initializes all of the model's parameters using xavier uniform initialization.
         Biases are all set to 0.01
         '''
-        layers = self.state_processing_layers + [self.fc_out]
-        net_util.init_layers(layers, 'Linear')
+        net_util.init_layers(self.layers, 'Linear')
 
     def gather_trainable_params(self):
         '''
@@ -167,5 +187,8 @@ class RecurrentNet(nn.Module):
 
     def __str__(self):
         '''Overriding so that print() will print the whole network'''
-        return self.state_proc_model.__str__() + \
-            '\n' + self.rnn.__str__() + '\n' + self.fc_out.__str__()
+        s = self.state_proc_model.__str__() + \
+            '\n' + self.rnn.__str__()
+        for layer in self.out_layers:
+            s += '\n' + layer.__str__()
+        return s

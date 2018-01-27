@@ -483,6 +483,34 @@ def test_multiline_str():
         },
         None,
         2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 6,
+            'sequence_length': 16,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 100,
+            'out_dim': [20, 10],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 6,
+            'sequence_length': 16,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 100,
+            'out_dim': [20, 10, 1],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
     ),
 ])
 def test_nets(request):
