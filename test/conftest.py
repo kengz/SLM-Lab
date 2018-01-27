@@ -20,7 +20,6 @@ import torch.optim as optim
 
 spec = None
 aeb_space = None
-aeb_mem_space = None
 agent = None
 env = None
 
@@ -513,16 +512,42 @@ def test_data_gen(request):
     ),
 ])
 def test_memory(request):
-    global memspec
     memspec = spec_util.get('base.json', 'base_memory')
     memspec['meta']['train_mode'] = True
-    global aeb_mem_space
-    if aeb_mem_space is None:
-        aeb_mem_space = AEBSpace(memspec, InfoSpace())
-        env_space = EnvSpace(memspec, aeb_mem_space)
-        agent_space = AgentSpace(memspec, aeb_mem_space)
-        aeb_mem_space.init_body_space()
-        aeb_mem_space.post_body_init()
+    aeb_mem_space = AEBSpace(memspec, InfoSpace())
+    env_space = EnvSpace(memspec, aeb_mem_space)
+    agent_space = AgentSpace(memspec, aeb_mem_space)
+    aeb_mem_space.init_body_space()
+    aeb_mem_space.post_body_init()
+    agent = agent_space.agents[0]
+    body = agent.nanflat_body_a[0]
+    res = (body.memory, ) + request.param
+    return res
+
+
+@pytest.fixture(scope='session', params=[
+    (
+        2,
+        [
+            [np.asarray([1, 1, 1, 1]), 1, 1, np.asarray([2, 2, 2, 2]), 0],
+            [np.asarray([2, 2, 2, 2]), 1, 2, np.asarray([3, 3, 3, 3]), 0],
+            [np.asarray([3, 3, 3, 3]), 1, 3, np.asarray([4, 4, 4, 4]), 0],
+            [np.asarray([4, 4, 4, 4]), 1, 4, np.asarray([5, 5, 5, 5]), 0],
+            [np.asarray([5, 5, 5, 5]), 1, 5, np.asarray([6, 6, 6, 6]), 0],
+            [np.asarray([6, 6, 6, 6]), 1, 6, np.asarray([7, 7, 7, 7]), 0],
+            [np.asarray([7, 7, 7, 7]), 1, 7, np.asarray([8, 8, 8, 8]), 0],
+            [np.asarray([8, 8, 8, 8]), 1, 8, np.asarray([9, 9, 9, 9]), 1],
+        ]
+    ),
+])
+def test_on_policy_episodic_memory(request):
+    memspec = spec_util.get('base.json', 'base_on_policy_memory')
+    memspec['meta']['train_mode'] = True
+    aeb_mem_space = AEBSpace(memspec, InfoSpace())
+    env_space = EnvSpace(memspec, aeb_mem_space)
+    agent_space = AgentSpace(memspec, aeb_mem_space)
+    aeb_mem_space.init_body_space()
+    aeb_mem_space.post_body_init()
     agent = agent_space.agents[0]
     body = agent.nanflat_body_a[0]
     res = (body.memory, ) + request.param

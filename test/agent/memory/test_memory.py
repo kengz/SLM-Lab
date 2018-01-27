@@ -35,8 +35,6 @@ class TestMemory:
         assert memory.head == 0
         # Handle states and actions with multiple dimensions
         assert np.array_equal(memory.states[memory.head], exp[0])
-        # assert np.array_equal(memory.actions[memory.head], exp[1])
-        # assert memory.actions[memory.head] == exp[1]
         assert memory.actions[memory.head][exp[1]] == exp[1]
         assert memory.rewards[memory.head] == exp[2]
         assert np.array_equal(memory.next_states[memory.head], exp[3])
@@ -118,3 +116,91 @@ class TestMemory:
         '''Samples from memory, and updates all priorities from 1 to 2. Checks that correct experiences are updated'''
         # TODO implement test_update_priorities
         assert None is None
+
+
+class TestOnPolicyMemory:
+    '''
+    Class for unit testing OnPolicyReplay memory
+    Note: each test examples from test_memory consists of
+          a tuple containing three elements:
+          (memory, batch_size, experiences)
+    '''
+    def test_memory_init(self, test_on_policy_episodic_memory):
+        memory = test_on_policy_episodic_memory[0]
+        assert memory.true_size == 0
+        assert memory.total_experiences == 0
+
+    def test_add_experience(self, test_on_policy_episodic_memory):
+        '''Adds an experience to the memory.
+        Checks that memory size = 1, and checks that the experience values are equal to the experience added'''
+        memory = test_on_policy_episodic_memory[0]
+        memory.reset()
+        experiences = test_on_policy_episodic_memory[2]
+        exp = experiences[0]
+        memory.add_experience(*exp)
+        assert memory.true_size == 1
+        assert len(memory.states) == 0
+        # Handle states and actions with multiple dimensions
+        assert np.array_equal(memory.current_episode['states'][-1], exp[0])
+        assert memory.current_episode['rewards'][-1] == exp[1]
+        assert memory.current_episode['actions'][-1] == exp[2]
+        assert np.array_equal(memory.current_episode['next_states'][-1], exp[3])
+        assert memory.current_episode['dones'][-1] == exp[4]
+        assert memory.current_episode['priorities'][-1] == 1
+
+    def test_multiple_epis_samples(self, test_on_policy_episodic_memory):
+        '''Tests that a sample of batch size is returned with the correct number of episodes'''
+        memory = test_on_policy_episodic_memory[0]
+        memory.reset()
+        batch_size = test_on_policy_episodic_memory[1]
+        experiences = test_on_policy_episodic_memory[2]
+        size = len(experiences)
+        for i in range(3):
+            for e in experiences:
+                memory.add_experience(*e)
+        batch = memory.sample()
+        assert len(batch['states']) == 3
+        assert len(batch['rewards']) == 3
+        assert len(batch['next_states']) == 3
+        assert len(batch['actions']) == 3
+        assert len(batch['dones']) == 3
+        assert len(batch['priorities']) == 3
+        assert len(batch['states'][0]) == size
+        assert len(batch['states'][1]) == size
+        assert len(batch['states'][2]) == size
+        assert len(memory.states) == 0
+
+        '''Tests that a sample of batch size is returned with the correct dimensions'''
+        memory = test_on_policy_episodic_memory[0]
+        memory.reset()
+        batch_size = test_on_policy_episodic_memory[1]
+        experiences = test_on_policy_episodic_memory[2]
+        size = len(experiences)
+        for e in experiences:
+            memory.add_experience(*e)
+        batch = memory.sample()
+        assert len(batch['states'][0]) == size
+        assert len(batch['rewards'][0]) == size
+        assert len(batch['next_states'][0]) == size
+        assert len(batch['actions'][0]) == size
+        assert len(batch['dones'][0]) == size
+        assert len(batch['priorities'][0]) == size
+        assert len(memory.states) == 0
+
+    def test_reset(self, test_on_policy_episodic_memory):
+        '''Tests memory reset.
+        Adds 2 experiences, then resets the memory and checks if all appropriate values have been zeroed'''
+        memory = test_on_policy_episodic_memory[0]
+        memory.reset()
+        experiences = test_on_policy_episodic_memory[2]
+        for i in range(2):
+            e = experiences[i]
+            memory.add_experience(*e)
+        memory.reset()
+        assert memory.true_size == 0
+        assert np.sum(memory.states) == 0
+        assert np.sum(memory.actions) == 0
+        assert np.sum(memory.rewards) == 0
+        assert np.sum(memory.next_states) == 0
+        assert np.sum(memory.dones) == 0
+        assert np.sum(memory.priorities) == 0
