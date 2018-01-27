@@ -11,7 +11,10 @@ class ConvNet(nn.Module):
     Class for generating arbitrary sized convolutional neural network,
     with optional batch normalization
 
-    Assumed that a single input example is organized into a 3D tensor
+    Assumes that a single input example is organized into a 3D tensor.
+    The entire model consists of two parts:
+         1. self.conv_model
+         2. self.dense_model
     '''
 
     def __init__(self,

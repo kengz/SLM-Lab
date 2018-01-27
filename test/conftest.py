@@ -1,6 +1,7 @@
 from slm_lab.agent import AgentSpace
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
+from slm_lab.agent.net.recurrent import RecurrentNet
 from slm_lab.agent.net.feedforward import MLPNet, MultiMLPNet, MLPHeterogenousHeads
 from slm_lab.env import EnvSpace
 # from slm_lab.experiment.control import Trial
@@ -377,6 +378,104 @@ def test_multiline_str():
             'in_dim': [[5, 10], [8, 16, 24]],
             'hid_dim': [32, 64],
             'out_dim': [[9, 6, 3], [2]],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 4,
+            'sequence_length': 8,
+            'state_processing_layers': [64],
+            'hid_dim': 50,
+            'out_dim': 10,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 4,
+            'sequence_length': 8,
+            'state_processing_layers': [],
+            'hid_dim': 50,
+            'out_dim': 10,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 4,
+            'sequence_length': 8,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 50,
+            'out_dim': 10,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 4,
+            'sequence_length': 8,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 100,
+            'out_dim': 10,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 6,
+            'sequence_length': 8,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 100,
+            'out_dim': 10,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 6,
+            'sequence_length': 16,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 100,
+            'out_dim': 10,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 6,
+            'sequence_length': 16,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 100,
+            'out_dim': 20,
             'hid_layers_activation': 'tanh',
             'optim_param':{'name': 'Adam'},
             'loss_param': {'name': 'mse_loss'},
