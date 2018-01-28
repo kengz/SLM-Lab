@@ -21,15 +21,18 @@ class RaySearch:
         '''
         Build ray config space from flattened spec.search for ray spec passed to run_experiments()
         Specify a config space in spec using `"{key}__{space_type}": {v}`.
-        Where {space_type} is 'grid_search' of ray.tune, or any function name of np.random.
-        - grid_search: str, int, float. v = list of choices
-        - choice: str, int, float. v = list of choices
-        - randint: int. v = [low, high)
-        - uniform: float. v = [low, high)
-        - normal: float. v = [mean, stdev)
+        Where `{space_type}` is `grid_search` of `ray.tune`, or any function name of `np.random`:
+        - `grid_search`: str/int/float. v = list of choices
+        - `choice`: str/int/float. v = list of choices
+        - `randint`: int. v = [low, high)
+        - `uniform`: float. v = [low, high)
+        - `normal`: float. v = [mean, stdev)
 
-        E.g. `"lr__uniform": [0.001, 0.1]`, and it will sample `lr` using np.random.uniform(0.001, 0.1)
-        If any key uses 'grid_search', it will be combined exhaustively in combination with other random sampling.
+        For example:
+        - `"explore_anneal_epi__randint": [10, 60],` will sample integers uniformly from 10 to 60 for `explore_anneal_epi`,
+        - `"lr__uniform": [0.001, 0.1]`, and it will sample `lr` using `np.random.uniform(0.001, 0.1)`
+
+        If any key uses `grid_search`, it will be combined exhaustively in combination with other random sampling.
         '''
         config_space = {}
         for k, v in util.flatten_dict(self.experiment.spec['search']).items():
