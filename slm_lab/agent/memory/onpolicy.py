@@ -210,7 +210,7 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
     '''
     def __init__(self, body):
         super(OnPolicyNStepBatchReplay, self).__init__(body)
-        self.length_history = self.body.agent.spec['algorithm']['length_history']
+        self.length_history = self.body.agent.spec['memory']['length_history']
 
     def sample(self):
         '''

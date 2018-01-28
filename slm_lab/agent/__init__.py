@@ -73,7 +73,7 @@ class Agent:
 
         AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
         self.algorithm = AlgoClass(self)
-        self.len_state_buffer = spec['memory']['len_state_buffer'] if 'len_state_buffer' in spec['memory'] else 0
+        self.len_state_buffer = spec['memory']['length_history'] if 'length_history' in spec['memory'] else 0
 
     @lab_api
     def post_body_init(self):
