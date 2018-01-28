@@ -1,4 +1,5 @@
 from slm_lab.agent.net import net_util
+from slm_lab.lib import logger
 from torch.autograd import Variable
 from torch.nn import Module
 import torch
@@ -141,12 +142,9 @@ class RecurrentNet(nn.Module):
         loss = self.loss_fn(out, y)
         loss.backward()
         if self.clamp_grad:
+            logger.info(f'Clipping gradient...')
             torch.nn.utils.clip_grad_norm(
-                self.state_proc_model.parameters(), self.clamp_grad_val)
-            torch.nn.utils.clip_grad_norm(
-                self.rnn.parameters(), self.clamp_grad_val)
-            torch.nn.utils.clip_grad_norm(
-                self.fc_out.parameters(), self.clamp_grad_val)
+                self.params, self.clamp_grad_val)
         self.optim.step()
         return loss
 
@@ -184,6 +182,16 @@ class RecurrentNet(nn.Module):
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
         return None
+
+    def get_grad_norms(self):
+        '''Returns a list of the norm of the gradients for all parameters'''
+        norms = []
+        for i, param in enumerate(self.params):
+            grad_norm = torch.norm(param.grad.data)
+            if grad_norm is None:
+                logger.info(f'Param with None grad: {param}, layer: {i}')
+            norms.append(grad_norm)
+        return norms
 
     def __str__(self):
         '''Overriding so that print() will print the whole network'''

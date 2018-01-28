@@ -234,7 +234,7 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
         batch['dones'] = self.dones
         batch['priorities'] = self.priorities
         self.reset()
-        logger.info(f'Batch: {batch}')
+        # logger.info(f'Batch: {batch}')
         return batch
 
     def add_history(self, data):
@@ -242,7 +242,7 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
         data_with_history = []
         pad_data = copy.deepcopy(data)
         PAD = np.zeros_like(data[0])
-        for i in range(self.length_history):
+        for i in range(self.length_history - 1):
             pad_data.insert(0, PAD)
         for i in range(len(data)):
             if i == len(data) - 1:

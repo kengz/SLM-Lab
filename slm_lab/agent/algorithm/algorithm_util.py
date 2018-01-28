@@ -150,12 +150,8 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
 
 # Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
 def act_with_softmax(algo, state, body, agent):
-    # logger.info(f'state buffer: {body.state_buffer}')
-    # logger.info(f'state: {state}')
     recurrent = agent.len_state_buffer > 0
     torch_state = create_torch_state(state, body.state_buffer, recurrent, agent.len_state_buffer)
-    # logger.info(f'torch state: {torch_state}')
-    torch_state = Variable(torch.from_numpy(state).float())
     out = algo.get_actor_output(torch_state, evaluate=False)
     if type(out) is list:
         out = out[0]

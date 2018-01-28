@@ -9,9 +9,9 @@
         "lamda": 1.0,
         "num_step_returns": 10,
         "training_frequency": 32,
-        "training_iters_per_batch": 8,
+        "training_iters_per_batch": 4,
         "num_epis_to_collect": 1,
-        "add_entropy": true,
+        "add_entropy": false,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
         "use_GAE": true,
@@ -19,11 +19,14 @@
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyNStepBatchReplay",
+        "length_history": 8
       },
       "net": {
-        "type": "MLPshared",
+        "type": "Recurrentseparate",
         "hid_layers": [64],
+        "state_processing_layers": [64],
+        "hid_dim": 64,
         "hid_layers_activation": "relu",
         "use_same_optim": false,
         "optim_actor": {
@@ -34,7 +37,7 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "clamp_grad": false,
+        "clamp_grad": true,
         "clamp_grad_val": 1.0
       }
     }],
@@ -47,7 +50,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 10,
+      "max_episode": 100,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
