@@ -115,7 +115,7 @@ def save_session_data(info_space, session_spec, session_mdp_data, session_data, 
     spec_name = session_spec['name']
     trial_index = info_space.coor['trial']
     session_index = info_space.coor['session']
-    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    predir = get_predir(spec_name, info_space)
     prename = f'{spec_name}_t{trial_index}_s{session_index}'
     logger.info(
         f'Saving trial {trial_index} session {session_index} data to {predir}')
@@ -171,7 +171,7 @@ def save_trial_data(info_space, trial_spec, trial_fitness_df):
     '''Save the trial data: spec, trial_fitness_df.'''
     spec_name = trial_spec['name']
     trial_index = info_space.coor['trial']
-    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    predir = get_predir(spec_name, info_space)
     prename = f'{spec_name}_t{trial_index}'
     logger.info(f'Saving trial {trial_index} data to {predir}')
     util.write(trial_spec, f'{predir}/{prename}_spec.json')
@@ -230,7 +230,7 @@ def plot_experiment(experiment_spec, experiment_df):
 def save_experiment_data(info_space, best_spec, experiment_df, experiment_fig):
     '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
     spec_name = best_spec['name']
-    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    predir = get_predir(spec_name, info_space)
     prename = f'{spec_name}'
     logger.info(f'Saving experiment data to {predir}')
     util.write(best_spec, f'{predir}/{prename}_best_spec.json')
@@ -262,6 +262,10 @@ def analyze_experiment(experiment):
         experiment.info_space, best_spec, experiment_df, experiment_fig)
     return experiment_df
 
+
+def get_predir(spec_name, info_space):
+    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    return predir
 
 def plot_session_from_file(session_df_filepath):
     '''
