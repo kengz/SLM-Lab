@@ -290,6 +290,15 @@ def trial_data_dict_from_file(predir):
 
 
 def analyze_experiment_from_file(predir):
+    '''
+    Method to analyze experiment from file.
+    Read trial_data from files, constructs an experiment, then run analyze_experiment
+    @example
+
+    from slm_lab.experiment import analysis
+    predir = 'data/reinforce_cartpole_2018_01_22_211751'
+    analysis.analyze_experiment_from_file(predir)
+    '''
     from slm_lab.experiment.control import Experiment
     from slm_lab.experiment.monitor import InfoSpace
     trial_data_dict = trial_data_dict_from_file(predir)
@@ -331,23 +340,6 @@ def plot_best_sessions(experiment_df, predir, prename):
         session_prename = f'{prename}_t{trial_index}_s{0}'
         session_df_filepath = f'{predir}/{session_prename}_session_df.csv'
         plot_session_from_file(session_df_filepath)
-
-
-def plot_experiment_from_file(experiment_df_filepath):
-    '''
-    Method to plot experiment from its experiment_df file
-    @example
-
-    from slm_lab.experiment import analysis
-    filepath = 'data/reinforce_cartpole_2018_01_22_190720/reinforce_cartpole_experiment_df.csv'
-    analysis.plot_experiment_from_file(filepath)
-    '''
-    spec_name = spec_name_from_filepath(experiment_df_filepath)
-    experiment_spec = {'name': spec_name}
-    experiment_df = util.read(experiment_df_filepath)
-    experiment_fig = plot_experiment(experiment_spec, experiment_df)
-    viz.save_image(experiment_fig, experiment_df_filepath.replace(
-        '_experiment_df.csv', '_experiment_graph.png'))
 
 
 '''
