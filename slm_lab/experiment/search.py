@@ -108,7 +108,6 @@ class RaySearch:
                 }
             })
             logger.info('Ray.tune experiment.search.run() done.')
-            print(ray_trials)
             # compose data format for experiment analysis
             trial_data_dict = {}
             for ray_trial in ray_trials:
