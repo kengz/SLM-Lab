@@ -269,13 +269,47 @@ def save_spec(spec, info_space, unit='experiment'):
     util.write(spec, f'{prepath}_spec.json')
 
 
+def spec_name_from_filepath(filepath):
+    '''Get space_name from data filepath: split folder name and remove tail timestamp'''
+    spec_name = '_'.join(filepath.split('/')[1].split('_')[:-4])
+    return spec_name
+
+
+def trial_data_dict_from_file(predir):
+    '''Build experiment.trial_data_dict from file'''
+    trial_data_dict = {}
+    for filename in os.listdir(predir):
+        if filename.endswith('_trial_data.json'):
+            filepath = f'{predir}/{filename}'
+            trial_fitness_df = util.read(filepath)
+            spec_name = spec_name_from_filepath(filepath)
+            tn = filename.replace(f'{spec_name}_', '').split('_')[0]
+            trial_index = int(tn.replace('t', ''))
+            trial_data_dict[trial_index] = trial_fitness_df
+    return trial_data_dict
+
+
+def analyze_experiment_from_file(predir):
+    from slm_lab.experiment.control import Experiment
+    from slm_lab.experiment.monitor import InfoSpace
+    trial_data_dict = trial_data_dict_from_file(predir)
+    # create experiment with needed data to call analyze_experiment()
+    spec_name = spec_name_from_filepath(predir)
+    spec = {'name': spec_name}
+    experiment_ts = predir.split('/')[1].replace(f'{spec_name}_', '')
+    info_space = InfoSpace()
+    info_space.experiment_ts = experiment_ts
+    experiment = Experiment(spec, info_space)
+    experiment.trial_data_dict = trial_data_dict
+    return analyze_experiment(experiment)
+
+
 def plot_session_from_file(session_df_filepath):
     '''
     Method to plot session from its session_df file
     @example
 
     from slm_lab.experiment import analysis
-
     filepath = 'data/reinforce_cartpole_2018_01_22_211751/reinforce_cartpole_t0_s0_session_df.csv'
     analysis.plot_session_from_file(filepath)
     '''
@@ -288,24 +322,6 @@ def plot_session_from_file(session_df_filepath):
         '_session_df.csv', '_session_graph.png'))
 
 
-def plot_experiment_from_file(experiment_df_filepath):
-    '''
-    Method to plot experiment from its experiment_df file
-    @example
-
-    from slm_lab.experiment import analysis
-
-    filepath = 'data/reinforce_cartpole_2018_01_22_190720/reinforce_cartpole_experiment_df.csv'
-    analysis.plot_experiment_from_file(filepath)
-    '''
-    spec_name = '_'.join(experiment_df_filepath.split('/')[1].split('_')[:-4])
-    experiment_spec = {'name': spec_name}
-    experiment_df = util.read(experiment_df_filepath)
-    experiment_fig = plot_experiment(experiment_spec, experiment_df)
-    viz.save_image(experiment_fig, experiment_df_filepath.replace(
-        '_experiment_df.csv', '_experiment_graph.png'))
-
-
 def plot_best_sessions(experiment_df, predir, prename):
     '''
     Plot the session graphs from the best trials.
@@ -315,6 +331,23 @@ def plot_best_sessions(experiment_df, predir, prename):
         session_prename = f'{prename}_t{trial_index}_s{0}'
         session_df_filepath = f'{predir}/{session_prename}_session_df.csv'
         plot_session_from_file(session_df_filepath)
+
+
+def plot_experiment_from_file(experiment_df_filepath):
+    '''
+    Method to plot experiment from its experiment_df file
+    @example
+
+    from slm_lab.experiment import analysis
+    filepath = 'data/reinforce_cartpole_2018_01_22_190720/reinforce_cartpole_experiment_df.csv'
+    analysis.plot_experiment_from_file(filepath)
+    '''
+    spec_name = spec_name_from_filepath(experiment_df_filepath)
+    experiment_spec = {'name': spec_name}
+    experiment_df = util.read(experiment_df_filepath)
+    experiment_fig = plot_experiment(experiment_spec, experiment_df)
+    viz.save_image(experiment_fig, experiment_df_filepath.replace(
+        '_experiment_df.csv', '_experiment_graph.png'))
 
 
 '''
