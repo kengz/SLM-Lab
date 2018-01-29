@@ -281,11 +281,9 @@ def trial_data_dict_from_file(predir):
     for filename in os.listdir(predir):
         if filename.endswith('_trial_data.json'):
             filepath = f'{predir}/{filename}'
-            trial_fitness_df = util.read(filepath)
-            spec_name = spec_name_from_filepath(filepath)
-            tn = filename.replace(f'{spec_name}_', '').split('_')[0]
-            trial_index = int(tn.replace('t', ''))
-            trial_data_dict[trial_index] = trial_fitness_df
+            exp_trial_data = util.read(filepath)
+            trial_index = exp_trial_data.pop('trial_index')
+            trial_data_dict[trial_index] = exp_trial_data
     return trial_data_dict
 
 
