@@ -641,7 +641,7 @@ def write_as_plain(data, data_path):
     open_file = open(data_path, 'w')
     ext = get_file_ext(data_path)
     if ext == '.json':
-        json.dump(data, open_file, indent=2)
+        json.dump(data, open_file, indent=2, cls=LabJsonEncoder)
     elif ext == '.yml':
         yaml.dump(data, open_file)
     else:
