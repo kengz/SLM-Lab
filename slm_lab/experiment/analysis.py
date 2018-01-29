@@ -7,6 +7,7 @@ from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.lib import logger, util, viz
 import colorlover as cl
 import numpy as np
+import os
 import pandas as pd
 import pydash as _
 
@@ -51,6 +52,48 @@ def get_session_data(session):
     return session_mdp_data, session_data
 
 
+def calc_session_fitness_df(session, session_data):
+    '''Calculate the session fitness df'''
+    session_fitness_data = {}
+    for aeb in session_data:
+        aeb_df = session_data[aeb]
+        body = session.aeb_space.body_space.data[aeb]
+        aeb_fitness_sr = calc_aeb_fitness_sr(aeb_df, body.env.name)
+        aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[session.index])
+        session_fitness_data[aeb] = aeb_fitness_df
+    # form multiindex df, then take mean across all bodies
+    session_fitness_df = pd.concat(session_fitness_data, axis=1)
+    mean_fitness_df = session_fitness_df.mean(axis=1, level=3)
+    session_fitness = calc_fitness(mean_fitness_df)
+    logger.info(f'Session mean fitness: {session_fitness}\n{mean_fitness_df}')
+    return session_fitness_df
+
+
+def calc_trial_fitness_df(trial):
+    '''
+    Calculate the trial fitness df by aggregating from the collected session_data_dict (session_fitness_df's).
+    Adds a consistency dimension to fitness vector.
+    '''
+    trial_fitness_data = {}
+    all_session_fitness_df = pd.concat(
+        list(trial.session_data_dict.values()))
+    for aeb in util.get_df_aeb_list(all_session_fitness_df):
+        aeb_df = all_session_fitness_df.loc[:, aeb]
+        aeb_fitness_sr = aeb_df.mean()
+        consistency = calc_consistency(aeb_df.values)
+        aeb_fitness_sr = aeb_fitness_sr.append(
+            pd.Series({'consistency': consistency}))
+        aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[trial.index])
+        trial_fitness_data[aeb] = aeb_fitness_df
+    # form multiindex df, then take mean across all bodies
+    trial_fitness_df = pd.concat(trial_fitness_data, axis=1)
+    mean_fitness_df = trial_fitness_df.mean(axis=1, level=3)
+    trial_fitness_df = mean_fitness_df
+    trial_fitness = calc_fitness(mean_fitness_df)
+    logger.info(f'Trial mean fitness: {trial_fitness}\n{mean_fitness_df}')
+    return trial_fitness_df
+
+
 def plot_session(session_spec, session_data):
     '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
     aeb_count = len(session_data)
@@ -83,101 +126,6 @@ def plot_session(session_spec, session_data):
         title=f'session graph: {session_spec["name"]}', width=500, height=600)
     viz.plot(fig)
     return fig
-
-
-def calc_session_fitness_df(session, session_data):
-    '''Calculate the session fitness df'''
-    session_fitness_data = {}
-    for aeb in session_data:
-        aeb_df = session_data[aeb]
-        body = session.aeb_space.body_space.data[aeb]
-        aeb_fitness_sr = calc_aeb_fitness_sr(aeb_df, body.env.name)
-        aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[session.index])
-        session_fitness_data[aeb] = aeb_fitness_df
-    # form multiindex df, then take mean across all bodies
-    session_fitness_df = pd.concat(session_fitness_data, axis=1)
-    mean_fitness_df = session_fitness_df.mean(axis=1, level=3)
-    session_fitness = calc_fitness(mean_fitness_df)
-    logger.info(f'Session mean fitness: {session_fitness}\n{mean_fitness_df}')
-    return session_fitness_df
-
-
-# TODO persist each session's full data to DB from here
-def save_session_data(info_space, session_spec, session_mdp_data, session_data, session_fitness_df, session_fig):
-    '''
-    Save the session data: session_mdp_df, session_df, session_fitness_df, session_graph.
-    session_data is saved as session_df; multi-indexed with (a,e,b), 3 extra levels
-    to read, use:
-    session_df = util.read(filepath, header=[0, 1, 2, 3])
-    session_data = util.session_df_to_data(session_df)
-    Likewise for session_mdp_df
-    '''
-    prepath = get_prepath(spec, info_space, unit='session')
-    session_mdp_df = pd.concat(session_mdp_data, axis=1)
-    session_df = pd.concat(session_data, axis=1)
-    logger.info(f'Saving session data to {prepath}')
-    util.write(session_mdp_df, f'{prepath}_session_mdp_df.csv')
-    util.write(session_df, f'{prepath}_session_df.csv')
-    util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
-    # TODO replaced by plot_best_sessions until Feb 2018
-    # viz.save_image(session_fig, f'{prepath}_session_graph.png')
-
-
-def analyze_session(session):
-    '''
-    Gather session data, plot, and return fitness df for high level agg.
-    @returns {DataFrame} session_fitness_df Single-row df of session fitness vector (avg over aeb), indexed with session index.
-    '''
-    session_mdp_data, session_data = get_session_data(session)
-    session_fitness_df = calc_session_fitness_df(session, session_data)
-    session_fig = plot_session(session.spec, session_data)
-    save_session_data(
-        session.info_space, session.spec, session_mdp_data, session_data, session_fitness_df, session_fig)
-    return session_fitness_df
-
-
-def calc_trial_fitness_df(trial):
-    '''
-    Calculate the trial fitness df by aggregating from the collected session_data_dict (session_fitness_df's).
-    Adds a consistency dimension to fitness vector.
-    '''
-    trial_fitness_data = {}
-    all_session_fitness_df = pd.concat(
-        list(trial.session_data_dict.values()))
-    for aeb in util.get_df_aeb_list(all_session_fitness_df):
-        aeb_df = all_session_fitness_df.loc[:, aeb]
-        aeb_fitness_sr = aeb_df.mean()
-        consistency = calc_consistency(aeb_df.values)
-        aeb_fitness_sr = aeb_fitness_sr.append(
-            pd.Series({'consistency': consistency}))
-        aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[trial.index])
-        trial_fitness_data[aeb] = aeb_fitness_df
-    # form multiindex df, then take mean across all bodies
-    trial_fitness_df = pd.concat(trial_fitness_data, axis=1)
-    mean_fitness_df = trial_fitness_df.mean(axis=1, level=3)
-    trial_fitness_df = mean_fitness_df
-    trial_fitness = calc_fitness(mean_fitness_df)
-    logger.info(f'Trial mean fitness: {trial_fitness}\n{mean_fitness_df}')
-    return trial_fitness_df
-
-
-def save_trial_data(info_space, trial_spec, trial_fitness_df):
-    '''Save the trial data: spec, trial_fitness_df.'''
-    prepath = get_prepath(spec, info_space, unit='trial')
-    logger.info(f'Saving trial data to {prepath}')
-    util.write(trial_spec, f'{prepath}_spec.json')
-    # TODO trial data is composed of saved session data files
-    util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
-
-
-def analyze_trial(trial):
-    '''
-    Gather trial data, plot, and return trial df for high level agg.
-    @returns {DataFrame} trial_fitness_df Single-row df of trial fitness vector (avg over aeb, sessions), indexed with trial index.
-    '''
-    trial_fitness_df = calc_trial_fitness_df(trial)
-    save_trial_data(trial.info_space, trial.spec, trial_fitness_df)
-    return trial_fitness_df
 
 
 def plot_experiment(experiment_spec, experiment_df):
@@ -218,14 +166,65 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
-def save_experiment_data(info_space, best_spec, experiment_df, experiment_fig):
+# TODO persist each session's full data to DB from here
+def save_session_data(info_space, spec, session_mdp_data, session_data, session_fitness_df, session_fig):
+    '''
+    Save the session data: session_mdp_df, session_df, session_fitness_df, session_graph.
+    session_data is saved as session_df; multi-indexed with (a,e,b), 3 extra levels
+    to read, use:
+    session_df = util.read(filepath, header=[0, 1, 2, 3])
+    session_data = util.session_df_to_data(session_df)
+    Likewise for session_mdp_df
+    '''
+    session_mdp_df = pd.concat(session_mdp_data, axis=1)
+    session_df = pd.concat(session_data, axis=1)
+    prepath = get_prepath(info_space, spec, unit='session')
+    logger.info(f'Saving session data to {prepath}')
+    util.write(session_mdp_df, f'{prepath}_session_mdp_df.csv')
+    util.write(session_df, f'{prepath}_session_df.csv')
+    util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
+    # TODO replaced by plot_best_sessions until Feb 2018
+    # viz.save_image(session_fig, f'{prepath}_session_graph.png')
+
+
+def save_trial_data(info_space, spec, trial_fitness_df):
+    '''Save the trial data: spec, trial_fitness_df.'''
+    prepath = get_prepath(info_space, spec, unit='trial')
+    logger.info(f'Saving trial data to {prepath}')
+    util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
+
+
+def save_experiment_data(info_space, spec, experiment_df, experiment_fig):
     '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
-    prepath = get_prepath(spec, info_space, unit='experiment')
+    prepath = get_prepath(info_space, spec, unit='experiment')
     logger.info(f'Saving experiment data to {prepath}')
-    util.write(best_spec, f'{prepath}_best_spec.json')
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
-    plot_best_sessions(experiment_df, predir, prename)
+    # tmp hack
+    # plot_best_sessions(experiment_df, predir, prename)
+
+
+def analyze_session(session):
+    '''
+    Gather session data, plot, and return fitness df for high level agg.
+    @returns {DataFrame} session_fitness_df Single-row df of session fitness vector (avg over aeb), indexed with session index.
+    '''
+    session_mdp_data, session_data = get_session_data(session)
+    session_fitness_df = calc_session_fitness_df(session, session_data)
+    session_fig = plot_session(session.spec, session_data)
+    save_session_data(
+        session.info_space, session.spec, session_mdp_data, session_data, session_fitness_df, session_fig)
+    return session_fitness_df
+
+
+def analyze_trial(trial):
+    '''
+    Gather trial data, plot, and return trial df for high level agg.
+    @returns {DataFrame} trial_fitness_df Single-row df of trial fitness vector (avg over aeb, sessions), indexed with trial index.
+    '''
+    trial_fitness_df = calc_trial_fitness_df(trial)
+    save_trial_data(trial.info_space, trial.spec, trial_fitness_df)
+    return trial_fitness_df
 
 
 def analyze_experiment(experiment):
@@ -245,14 +244,12 @@ def analyze_experiment(experiment):
     experiment_df.sort_values(by=['fitness'], ascending=False, inplace=True)
     logger.info(f'Experiment data:\n{experiment_df}')
     experiment_fig = plot_experiment(experiment.spec, experiment_df)
-    best_config = experiment_df.iloc[0][config_cols].to_dict()
-    best_spec = _.merge(experiment.spec, best_config)
     save_experiment_data(
-        experiment.info_space, best_spec, experiment_df, experiment_fig)
+        experiment.info_space, experiment.spec, experiment_df, experiment_fig)
     return experiment_df
 
 
-def get_prepath(spec, info_space, unit='experiment'):
+def get_prepath(info_space, spec, unit='experiment'):
     spec_name = spec['name']
     predir = f'data/{spec_name}_{info_space.experiment_ts}'
     prename = f'{spec_name}'
@@ -266,6 +263,12 @@ def get_prepath(spec, info_space, unit='experiment'):
     return prepath
 
 
+def save_spec(spec, info_space, unit='experiment'):
+    '''Save spec to proper path. Called at Experiment or Trial init.'''
+    prepath = get_prepath(info_space, spec, unit)
+    util.write(spec, f'{prepath}_spec.json')
+
+
 def plot_session_from_file(session_df_filepath):
     '''
     Method to plot session from its session_df file
@@ -276,7 +279,7 @@ def plot_session_from_file(session_df_filepath):
     filepath = 'data/reinforce_cartpole_2018_01_22_211751/reinforce_cartpole_t0_s0_session_df.csv'
     analysis.plot_session_from_file(filepath)
     '''
-    spec_name = '_'.join(session_df_filepath.split('/')[1].split('_')[:-4])
+    spec_name = spec_name_from_filepath(session_df_filepath)
     session_spec = {'name': spec_name}
     session_df = util.read(session_df_filepath, header=[0, 1, 2, 3])
     session_data = util.session_df_to_data(session_df)
