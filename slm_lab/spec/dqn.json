@@ -33,7 +33,10 @@
         "batch_size": 16,
         "update_type": "replace",
         "update_frequency": 1.0,
-        "polyak_weight": 0
+        "polyak_weight": 0,
+        "decay_lr": false,
+        "start_decay_lr_timestep": 1200,
+        "decay_lr_timestep": 400,
       }
     }],
     "env": [{
@@ -98,7 +101,10 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32
+        "batch_size": 32,
+        "decay_lr": true,
+        "start_decay_lr_timestep": 1400,
+        "decay_lr_timestep": 400,
       }
     }],
     "env": [{

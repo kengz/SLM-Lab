@@ -1,6 +1,6 @@
 from copy import deepcopy
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns
+from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, update_learning_rate_util
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
@@ -58,17 +58,22 @@ class VanillaDQN(Algorithm):
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
+        net_spec = self.agent.spec['net']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
         self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
         util.set_attr(self, _.pick(algorithm_spec, [
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
+            'decay_lr', 'decay_lr_timestep', 'start_decay_lr_timestep',
             'gamma',  # the discount factor
             'training_min_timestep',  # how long before starting training
             'training_frequency',  # how often to train (once a few timesteps)
             'training_epoch',  # how many batches to train each time
             'training_iters_per_batch',  # how many times to train each batch
+        ]))
+        util.set_attr(self, _.pick(net_spec, [
+            'decay_lr', 'decay_lr_timestep', 'start_decay_lr_timestep',
         ]))
         self.nanflat_explore_var_a = [
             self.explore_var_start] * self.agent.body_num
@@ -149,9 +154,13 @@ class VanillaDQN(Algorithm):
             'explore_var', nanflat_explore_var_a)
         return explore_var_a
 
+    def update_learning_rate(self):
+        update_learning_rate_util(self, [self.net])
+
     @lab_api
     def update(self):
         '''Update the agent after training'''
+        self.update_learning_rate()
         return self.update_explore_var()
 
 
