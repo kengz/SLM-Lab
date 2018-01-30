@@ -201,7 +201,7 @@ def save_experiment_data(info_space, spec, experiment_df, experiment_fig):
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
     # tmp hack
-    # plot_best_sessions(experiment_df, predir, prename)
+    plot_best_sessions(experiment_df, prepath)
 
 
 def analyze_session(session):
@@ -297,15 +297,17 @@ def analyze_experiment_from_file(predir):
     predir = 'data/reinforce_cartpole_2018_01_22_211751'
     analysis.analyze_experiment_from_file(predir)
     '''
+    logger.info('Analyzing experiment from file')
     from slm_lab.experiment.control import Experiment
     from slm_lab.experiment.monitor import InfoSpace
     trial_data_dict = trial_data_dict_from_file(predir)
     # create experiment with needed data to call analyze_experiment()
     spec_name = spec_name_from_filepath(predir)
-    spec = {'name': spec_name}
+    spec = util.read(os.path.join(predir, f'{spec_name}_spec.json'))
     experiment_ts = predir.split('/')[1].replace(f'{spec_name}_', '')
     info_space = InfoSpace()
     info_space.experiment_ts = experiment_ts
+    info_space.set('experiment', 0)
     experiment = Experiment(spec, info_space)
     experiment.trial_data_dict = trial_data_dict
     return analyze_experiment(experiment)
@@ -329,14 +331,13 @@ def plot_session_from_file(session_df_filepath):
         '_session_df.csv', '_session_graph.png'))
 
 
-def plot_best_sessions(experiment_df, predir, prename):
+def plot_best_sessions(experiment_df, prepath):
     '''
     Plot the session graphs from the best trials.
     TODO retire and plot all when Plotly allows unlimited plotting in Feb 2018
     '''
     for trial_index in experiment_df.index[:5]:
-        session_prename = f'{prename}_t{trial_index}_s{0}'
-        session_df_filepath = f'{predir}/{session_prename}_session_df.csv'
+        session_df_filepath = f'{prepath}_t{trial_index}_s{0}_session_df.csv'
         plot_session_from_file(session_df_filepath)
 
 
