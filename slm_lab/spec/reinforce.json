@@ -23,8 +23,8 @@
           "lr": 0.02
         },
         "decay_lr": true,
-        "start_decay_lr_timestep": 2000,
-        "decay_lr_timestep": 1000,
+        "decay_lr_min_timestep": 2000,
+        "decay_lr_frequency": 1000,
       }
     }],
     "env": [{
@@ -68,8 +68,8 @@
           "lr": 0.02
         },
         "decay_lr": false,
-        "start_decay_lr_timestep": 2000,
-        "decay_lr_timestep": 1000,
+        "decay_lr_min_timestep": 2000,
+        "decay_lr_frequency": 1000,
       }
     }],
     "env": [{
@@ -113,8 +113,8 @@
           "lr": 0.01
         },
         "decay_lr": false,
-        "start_decay_lr_timestep": 2000,
-        "decay_lr_timestep": 1000,
+        "decay_lr_min_timestep": 2000,
+        "decay_lr_frequency": 1000,
       }
     }],
     "env": [{
@@ -140,7 +140,7 @@
           "hid_layers__choice": [[16], [32], [64]],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
           "optim": {
-            "lr__uniform": [0.001, 0.1]
+            "lr__uniform": [0.001, 0.2]
           }
         }
       }]

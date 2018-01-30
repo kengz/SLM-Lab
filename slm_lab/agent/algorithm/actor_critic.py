@@ -484,7 +484,7 @@ class ActorCritic(Reinforce):
             'continuous_action_clip'
         ]))
         util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_timestep', 'start_decay_lr_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
         ]))
         '''Select appropriate function for calculating state-action-value estimate (target)'''
         self.get_target = self.get_nstep_target

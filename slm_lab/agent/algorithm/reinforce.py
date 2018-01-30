@@ -80,7 +80,7 @@ class Reinforce(Algorithm):
             'continuous_action_clip'
         ]))
         util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_timestep', 'start_decay_lr_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
         ]))
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []

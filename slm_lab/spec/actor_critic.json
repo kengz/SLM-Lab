@@ -37,8 +37,8 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": true,
-        "start_decay_lr_timestep": 2000,
-        "decay_lr_timestep": 1000,
+        "decay_lr_min_timestep": 2000,
+        "decay_lr_frequency": 1000,
       }
     }],
     "env": [{
@@ -94,8 +94,8 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": false,
-        "start_decay_lr_timestep": 2000,
-        "decay_lr_timestep": 1000,
+        "decay_lr_min_timestep": 2000,
+        "decay_lr_frequency": 1000,
       }
     }],
     "env": [{
@@ -168,8 +168,8 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": false,
-        "start_decay_lr_timestep": 2000,
-        "decay_lr_timestep": 1000,
+        "decay_lr_min_timestep": 2000,
+        "decay_lr_frequency": 1000,
       }
     }],
     "env": [{
@@ -242,8 +242,8 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": false,
-        "start_decay_lr_timestep": 2000,
-        "decay_lr_timestep": 1000,
+        "decay_lr_min_timestep": 2000,
+        "decay_lr_frequency": 1000,
       }
     }],
     "env": [{
@@ -316,8 +316,8 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": false,
-        "start_decay_lr_timestep": 2000,
-        "decay_lr_timestep": 1000,
+        "decay_lr_min_timestep": 2000,
+        "decay_lr_frequency": 1000,
       }
     }],
     "env": [{
@@ -390,8 +390,8 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": false,
-        "start_decay_lr_timestep": 2000,
-        "decay_lr_timestep": 1000,
+        "decay_lr_min_timestep": 2000,
+        "decay_lr_frequency": 1000,
       }
     }],
     "env": [{

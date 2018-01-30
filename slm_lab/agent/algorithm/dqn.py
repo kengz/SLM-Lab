@@ -72,7 +72,7 @@ class VanillaDQN(Algorithm):
             'training_iters_per_batch',  # how many times to train each batch
         ]))
         util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_timestep', 'start_decay_lr_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
         ]))
         self.nanflat_explore_var_a = [
             self.explore_var_start] * self.agent.body_num
