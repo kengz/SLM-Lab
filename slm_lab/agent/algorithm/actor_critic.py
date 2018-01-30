@@ -1,6 +1,6 @@
 from slm_lab.agent import memory
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns, update_learning_rate_util
+from slm_lab.agent.algorithm.algorithm_util import act_fns, decay_learning_rate
 from slm_lab.agent.algorithm.reinforce import Reinforce
 from slm_lab.agent.net import net_util
 from slm_lab.lib import util, logger
@@ -569,6 +569,6 @@ class ActorCritic(Reinforce):
 
     def update_learning_rate(self):
         if self.is_shared_architecture:
-            update_learning_rate_util(self, [self.actorcritic])
+            decay_learning_rate(self, [self.actorcritic])
         else:
-            update_learning_rate_util(self, [self.actor, self.critic])
+            decay_learning_rate(self, [self.actor, self.critic])

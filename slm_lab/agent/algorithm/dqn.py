@@ -1,6 +1,6 @@
 from copy import deepcopy
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, update_learning_rate_util
+from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
@@ -154,7 +154,7 @@ class VanillaDQN(Algorithm):
         return explore_var_a
 
     def update_learning_rate(self):
-        update_learning_rate_util(self, [self.net])
+        decay_learning_rate(self, [self.net])
 
     @lab_api
     def update(self):

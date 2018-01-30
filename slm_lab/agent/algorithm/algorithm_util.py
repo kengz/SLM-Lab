@@ -201,7 +201,11 @@ def update_multi_linear_decay(cls, _space_clock):
     return cls.nanflat_explore_var_a
 
 
-def update_learning_rate_util(algo, nets):
+def decay_learning_rate(algo, nets):
+    '''
+    Decay learning rate for each net by the decay method update_lr() defined in them.
+    In the future, might add more flexible lr adjustment, like boosting and decaying on need.
+    '''
     space_clock = util.s_get(algo, 'aeb_space.clock')
     t = space_clock.get('total_t')
     if algo.decay_lr and t > algo.start_decay_lr_timestep:
