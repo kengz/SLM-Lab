@@ -65,7 +65,6 @@ class VanillaDQN(Algorithm):
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
-            'decay_lr', 'decay_lr_timestep', 'start_decay_lr_timestep',
             'gamma',  # the discount factor
             'training_min_timestep',  # how long before starting training
             'training_frequency',  # how often to train (once a few timesteps)
