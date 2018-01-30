@@ -329,7 +329,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 300,
+      "max_episode": 1000,
       "max_session": 4,
       "max_trial": 100,
       "train_mode": true
@@ -403,7 +403,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 300,
+      "max_episode": 1000,
       "max_session": 4,
       "max_trial": 100,
       "train_mode": true
