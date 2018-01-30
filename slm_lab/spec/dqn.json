@@ -78,14 +78,14 @@
         "explore_var_start": 1.5,
         "explore_var_end": 0.3,
         "explore_anneal_epi": 10,
-        "training_min_timestep": 0,
+        "training_min_timestep": 10,
         "training_frequency": 1,
         "training_epoch": 5,
         "training_iters_per_batch": 3
       },
       "memory": {
         "name": "Replay",
-        "max_size": 1000
+        "max_size": 10000
       },
       "net": {
         "type": "MLPNet",
@@ -95,7 +95,8 @@
         "update_frequency": 1.0,
         "polyak_weight": 0.9,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 32
       }
@@ -109,9 +110,9 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 200,
-      "max_session": 4,
-      "max_trial": 50,
+      "max_episode": 100,
+      "max_session": 1,
+      "max_trial": 1,
       "train_mode": true
     },
     "search": {
@@ -156,7 +157,8 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 32
       }
@@ -207,7 +209,8 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 32
       }
@@ -258,7 +261,8 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 32
       }
@@ -312,7 +316,8 @@
         "polyak_weight": 0.9,
         "update_frequency": 1.0,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 32
       }
@@ -360,7 +365,8 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 32
       }
@@ -411,7 +417,8 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 32
       }
@@ -462,7 +469,8 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 16
       }
@@ -510,7 +518,8 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 32
       }
@@ -561,7 +570,8 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 32
       }
@@ -609,7 +619,8 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 32
       }
@@ -660,7 +671,8 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 32
       }
@@ -711,7 +723,8 @@
         "polyak_weight": 0,
         "update_frequency": 1.0,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "batch_size": 32
       }
@@ -761,7 +774,8 @@
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
         "loss": {
           "name": "mse_loss"
