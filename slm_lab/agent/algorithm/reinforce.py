@@ -1,6 +1,6 @@
 from slm_lab.agent import memory
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns
+from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, update_learning_rate_util
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
@@ -62,6 +62,7 @@ class Reinforce(Algorithm):
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
+        net_spec = self.agent.spec['net']
         # Automatically selects appropriate discrete or continuous action policy if setting is default
         action_fn = algorithm_spec['action_policy']
         if action_fn == 'default':
@@ -77,6 +78,9 @@ class Reinforce(Algorithm):
             'add_entropy',
             'entropy_weight',
             'continuous_action_clip'
+        ]))
+        util.set_attr(self, _.pick(net_spec, [
+            'decay_lr', 'decay_lr_timestep', 'start_decay_lr_timestep',
         ]))
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
@@ -173,9 +177,13 @@ class Reinforce(Algorithm):
         advantage = torch.cat(advantage)
         return advantage
 
+    def update_learning_rate(self):
+        update_learning_rate_util(self, [self.net])
+
     @lab_api
     def update(self):
-        '''No update needed'''
+        self.update_learning_rate()
+        '''No update needed to explore var'''
         explore_var = np.nan
         return explore_var
 

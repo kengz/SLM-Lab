@@ -1,6 +1,6 @@
 from slm_lab.agent import memory
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns
+from slm_lab.agent.algorithm.algorithm_util import act_fns, update_learning_rate_util
 from slm_lab.agent.algorithm.reinforce import Reinforce
 from slm_lab.agent.net import net_util
 from slm_lab.lib import util, logger
@@ -494,6 +494,7 @@ class ActorCritic(Reinforce):
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
+        net_spec = self.agent.spec['net']
         self.set_action_fn()
         util.set_attr(self, _.pick(algorithm_spec, [
             'gamma', 'lamda', 'num_step_returns',
@@ -502,6 +503,9 @@ class ActorCritic(Reinforce):
             'add_entropy', 'entropy_weight', 'use_GAE',
             'policy_loss_weight', 'val_loss_weight',
             'continuous_action_clip'
+        ]))
+        util.set_attr(self, _.pick(net_spec, [
+            'decay_lr', 'decay_lr_timestep', 'start_decay_lr_timestep',
         ]))
         '''Select appropriate function for calculating state-action-value estimate (target)'''
         self.get_target = self.get_nstep_target
@@ -583,3 +587,9 @@ class ActorCritic(Reinforce):
             else:
                 self.critic.train()
                 return self.critic(x)
+
+    def update_learning_rate(self):
+        if self.is_shared_architecture:
+            update_learning_rate_util(self, [self.actorcritic])
+        else:
+            update_learning_rate_util(self, [self.actor, self.critic])

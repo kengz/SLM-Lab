@@ -5,6 +5,7 @@ from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+import os
 import pandas as pd
 import pydash as _
 import random
@@ -21,15 +22,18 @@ class RaySearch:
         '''
         Build ray config space from flattened spec.search for ray spec passed to run_experiments()
         Specify a config space in spec using `"{key}__{space_type}": {v}`.
-        Where {space_type} is 'grid_search' of ray.tune, or any function name of np.random.
-        - grid_search: str, int, float. v = list of choices
-        - choice: str, int, float. v = list of choices
-        - randint: int. v = [low, high)
-        - uniform: float. v = [low, high)
-        - normal: float. v = [mean, stdev)
+        Where `{space_type}` is `grid_search` of `ray.tune`, or any function name of `np.random`:
+        - `grid_search`: str/int/float. v = list of choices
+        - `choice`: str/int/float. v = list of choices
+        - `randint`: int. v = [low, high)
+        - `uniform`: float. v = [low, high)
+        - `normal`: float. v = [mean, stdev)
 
-        E.g. `"lr__uniform": [0.001, 0.1]`, and it will sample `lr` using np.random.uniform(0.001, 0.1)
-        If any key uses 'grid_search', it will be combined exhaustively in combination with other random sampling.
+        For example:
+        - `"explore_anneal_epi__randint": [10, 60],` will sample integers uniformly from 10 to 60 for `explore_anneal_epi`,
+        - `"lr__uniform": [0.001, 0.1]`, and it will sample `lr` using `np.random.uniform(0.001, 0.1)`
+
+        If any key uses `grid_search`, it will be combined exhaustively in combination with other random sampling.
         '''
         config_space = {}
         for k, v in util.flatten_dict(self.experiment.spec['search']).items():
@@ -79,6 +83,8 @@ class RaySearch:
             trial_data = {
                 **config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
             }
+            prepath = analysis.get_prepath(info_space, spec, unit='trial')
+            util.write(trial_data, f'{prepath}_trial_data.json')
             done = True
             # TODO timesteps = episode len or total_t from space_clock
             # call reporter from inside trial/session loop
@@ -88,25 +94,33 @@ class RaySearch:
         register_trainable('lab_trial', lab_trial)
 
         # TODO use hyperband
-        # TODO parallelize on trial sessions
         # TODO use advanced conditional config space via lambda func
         config_space = self.build_config_space()
         spec = self.experiment.spec
-        ray_trials = run_experiments({
-            spec['name']: {
-                'run': 'lab_trial',
-                'stop': {'done': True},
-                'config': config_space,
-                'repeat': spec['meta']['max_trial'],
-            }
-        })
-        logger.info('Ray.tune experiment.search.run() done.')
-        # compose data format for experiment analysis
-        trial_data_dict = {}
-        for ray_trial in ray_trials:
-            exp_trial_data = ray_trial.last_result.info
-            trial_index = exp_trial_data.pop('trial_index')
-            trial_data_dict[trial_index] = exp_trial_data
+        try:
+            ray_trials = run_experiments({
+                spec['name']: {
+                    'run': 'lab_trial',
+                    'stop': {'done': True},
+                    # 'resource': {'cpu': 4, 'gpu': 0},
+                    'config': config_space,
+                    'repeat': spec['meta']['max_trial'],
+                }
+            })
+            logger.info('Ray.tune experiment.search.run() done.')
+            # compose data format for experiment analysis
+            trial_data_dict = {}
+            for ray_trial in ray_trials:
+                exp_trial_data = ray_trial.last_result.info
+                trial_index = exp_trial_data.pop('trial_index')
+                trial_data_dict[trial_index] = exp_trial_data
+        except Exception as e:
+            logger.exception(
+                'Some Ray trials failed, finish experiment analysis from files.')
+            prepath = analysis.get_prepath(
+                self.experiment.info_space, self.experiment.spec, unit='experiment')
+            predir = os.path.dirname(prepath)
+            trial_data_dict = analysis.trial_data_dict_from_file(predir)
 
         ray.disconnect()
         return trial_data_dict

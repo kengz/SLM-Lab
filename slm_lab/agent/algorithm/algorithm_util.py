@@ -218,6 +218,15 @@ def update_multi_linear_decay(cls, _space_clock):
     return cls.nanflat_explore_var_a
 
 
+def update_learning_rate_util(algo, nets):
+    space_clock = util.s_get(algo, 'aeb_space.clock')
+    t = space_clock.get('total_t')
+    if algo.decay_lr and t > algo.start_decay_lr_timestep:
+        if t % algo.decay_lr_timestep == 0:
+            for net in nets:
+                net.update_lr()
+
+
 act_fns = {
     'epsilon_greedy': act_with_epsilon_greedy,
     'multi_epsilon_greedy': multi_act_with_epsilon_greedy,

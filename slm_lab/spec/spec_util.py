@@ -23,7 +23,7 @@ SPEC_FORMAT = {
         "name": str,
         "algorithm": dict,
         "memory": dict,
-        "net": dict
+        "net": dict,
     }],
     "env": [{
         "name": str,
@@ -31,15 +31,15 @@ SPEC_FORMAT = {
     }],
     "body": {
         "product": ["outer", "inner", "custom"],
-        "num": (int, list)
+        "num": (int, list),
     },
     "meta": {
         "max_episode": (type(None), int),
         "max_session": int,
         "max_trial": (type(None), int),
-        "train_mode": bool
+        "train_mode": bool,
     },
-    "name": str
+    "name": str,
 }
 
 
