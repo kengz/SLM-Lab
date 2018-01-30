@@ -69,7 +69,8 @@ class ConvNet(nn.Module):
         # Init other net variables
         self.params = list(self.conv_model.parameters()) + \
             list(self.dense_model.parameters())
-        self.optim = net_util.get_optim_multinet(self.params, optim_param)
+        self.optim_param = self.optim_param
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
@@ -179,3 +180,10 @@ class ConvNet(nn.Module):
     def __str__(self):
         '''Overriding so that print() will print the whole network'''
         return self.conv_model.__str__() + '\n' + self.dense_model.__str__()
+
+    def update_lr(self):
+        assert 'lr' in self.optim_param
+        old_lr = self.optim_param['lr']
+        self.optim_param['lr'] = old_lr * 0.9
+        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)

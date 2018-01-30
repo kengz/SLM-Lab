@@ -47,7 +47,8 @@ class MLPNet(nn.Module):
         self.init_params()
         # Init other net variables
         self.params = list(self.model.parameters())
-        self.optim = net_util.get_optim(self, optim_param)
+        self.optim_param = optim_param
+        self.optim = net_util.get_optim(self, self.optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
@@ -110,6 +111,13 @@ class MLPNet(nn.Module):
             norms.append(grad_norm)
         return norms
 
+    def update_lr(self):
+        assert 'lr' in self.optim_param
+        old_lr = self.optim_param['lr']
+        self.optim_param['lr'] = old_lr * 0.9
+        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
+        self.optim = net_util.get_optim(self, self.optim_param)
+
 
 class MLPHeterogenousHeads(MLPNet):
     '''
@@ -159,7 +167,8 @@ class MLPHeterogenousHeads(MLPNet):
         self.params = list(self.body.parameters())
         for layer in self.out_layers:
             self.params.extend(list(layer.parameters()))
-        self.optim = net_util.get_optim_multinet(self.params, optim_param)
+        self.optim_param = optim_param
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
@@ -193,6 +202,13 @@ class MLPHeterogenousHeads(MLPNet):
         for layer in self.out_layers:
             s += '\n' + layer.__str__()
         return s
+
+    def update_lr(self):
+        assert 'lr' in self.optim_param
+        old_lr = self.optim_param['lr']
+        self.optim_param['lr'] = old_lr * 0.9
+        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
 
 
 class MultiMLPNet(nn.Module):
@@ -262,7 +278,8 @@ class MultiMLPNet(nn.Module):
         self.params.extend(list(self.body.parameters()))
         for model in self.action_heads_models:
             self.params.extend(list(model.parameters()))
-        self.optim = net_util.get_optim_multinet(self.params, optim_param)
+        self.optim_param = optim_param
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
@@ -401,3 +418,10 @@ class MultiMLPNet(nn.Module):
         for net in self.action_heads_models:
             s += '\n' + net.__str__()
         return s
+
+    def update_lr(self):
+        assert 'lr' in self.optim_param
+        old_lr = self.optim_param['lr']
+        self.optim_param['lr'] = old_lr * 0.9
+        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)

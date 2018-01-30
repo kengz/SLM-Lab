@@ -11,7 +11,7 @@
         "training_frequency": 32,
         "training_iters_per_batch": 8,
         "num_epis_to_collect": 1,
-        "add_entropy": true,
+        "add_entropy": false,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
         "use_GAE": true,
@@ -22,7 +22,7 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPshared",
+        "type": "MLPseparate",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "use_same_optim": false,
@@ -35,7 +35,10 @@
           "lr": 0.01
         },
         "clamp_grad": false,
-        "clamp_grad_val": 1.0
+        "clamp_grad_val": 1.0,
+        "decay_lr": true,
+        "start_decay_lr_timestep": 2000,
+        "decay_lr_timestep": 1000,
       }
     }],
     "env": [{
@@ -47,7 +50,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 10,
+      "max_episode": 300,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
@@ -89,7 +92,10 @@
           "lr": 0.01
         },
         "clamp_grad": false,
-        "clamp_grad_val": 1.0
+        "clamp_grad_val": 1.0,
+        "decay_lr": false,
+        "start_decay_lr_timestep": 2000,
+        "decay_lr_timestep": 1000,
       }
     }],
     "env": [{
@@ -160,7 +166,10 @@
           "lr": 0.01
         },
         "clamp_grad": false,
-        "clamp_grad_val": 1.0
+        "clamp_grad_val": 1.0,
+        "decay_lr": false,
+        "start_decay_lr_timestep": 2000,
+        "decay_lr_timestep": 1000,
       }
     }],
     "env": [{
@@ -231,7 +240,10 @@
           "lr": 0.01
         },
         "clamp_grad": false,
-        "clamp_grad_val": 1.0
+        "clamp_grad_val": 1.0,
+        "decay_lr": false,
+        "start_decay_lr_timestep": 2000,
+        "decay_lr_timestep": 1000,
       }
     }],
     "env": [{
@@ -302,7 +314,10 @@
           "lr": 0.01
         },
         "clamp_grad": false,
-        "clamp_grad_val": 1.0
+        "clamp_grad_val": 1.0,
+        "decay_lr": false,
+        "start_decay_lr_timestep": 2000,
+        "decay_lr_timestep": 1000,
       }
     }],
     "env": [{
@@ -373,7 +388,10 @@
           "lr": 0.01
         },
         "clamp_grad": false,
-        "clamp_grad_val": 1.0
+        "clamp_grad_val": 1.0,
+        "decay_lr": false,
+        "start_decay_lr_timestep": 2000,
+        "decay_lr_timestep": 1000,
       }
     }],
     "env": [{
