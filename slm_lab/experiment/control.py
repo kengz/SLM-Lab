@@ -89,7 +89,7 @@ class Trial:
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.session_data_dict = {}
         self.data = None
-        analysis.save_spec(spec, info_space, unit='trial')
+        analysis.save_spec(info_space, spec, unit='trial')
 
     def init_session_and_run(self, info_space):
         session = Session(self.spec, info_space)
@@ -144,7 +144,7 @@ class Experiment:
         self.data = None
         SearchClass = getattr(search, 'RaySearch')
         self.search = SearchClass(self)
-        analysis.save_spec(spec, info_space, unit='experiment')
+        analysis.save_spec(info_space, spec, unit='experiment')
 
     def init_trial_and_run(self, spec, info_space):
         '''

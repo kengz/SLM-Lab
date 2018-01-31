@@ -268,7 +268,7 @@ def get_prepath(info_space, spec, unit='experiment'):
     return prepath
 
 
-def save_spec(spec, info_space, unit='experiment'):
+def save_spec(info_space, spec, unit='experiment'):
     '''Save spec to proper path. Called at Experiment or Trial init.'''
     prepath = get_prepath(info_space, spec, unit)
     util.write(spec, f'{prepath}_spec.json')
