@@ -184,7 +184,8 @@ def save_session_data(info_space, spec, session_mdp_data, session_data, session_
     util.write(session_df, f'{prepath}_session_df.csv')
     util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
     # TODO replaced by plot_best_sessions until Feb 2018
-    # viz.save_image(session_fig, f'{prepath}_session_graph.png')
+    if os.environ.get('run_mode') == 'train':
+        viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
 
 def save_trial_data(info_space, spec, trial_fitness_df):
@@ -200,8 +201,9 @@ def save_experiment_data(info_space, spec, experiment_df, experiment_fig):
     logger.info(f'Saving experiment data to {prepath}')
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
-    # tmp hack
-    plot_best_sessions(experiment_df, prepath)
+    # TODO tmp hack
+    if os.environ.get('run_mode') == 'search':
+        plot_best_sessions(experiment_df, prepath)
 
 
 def analyze_session(session):
@@ -332,10 +334,8 @@ def plot_session_from_file(session_df_filepath):
 
 
 def plot_best_sessions(experiment_df, prepath):
-    '''
-    Plot the session graphs from the best trials.
-    TODO retire and plot all when Plotly allows unlimited plotting in Feb 2018
-    '''
+    '''Plot the session graphs from the best trials.'''
+    # TODO remove when plotly can save all
     for trial_index in experiment_df.index[:5]:
         session_df_filepath = f'{prepath}_t{trial_index}_s{0}_session_df.csv'
         plot_session_from_file(session_df_filepath)
