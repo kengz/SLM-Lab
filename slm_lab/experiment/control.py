@@ -38,6 +38,7 @@ class Session:
         logger.info(util.self_desc(self))
         self.aeb_space.init_body_space()
         self.aeb_space.post_body_init()
+        logger.info(f'Initialized session {self.index}')
 
     def close(self):
         '''
@@ -89,7 +90,8 @@ class Trial:
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.session_data_dict = {}
         self.data = None
-        analysis.save_spec(spec, info_space, unit='trial')
+        analysis.save_spec(info_space, spec, unit='trial')
+        logger.info(f'Initialize trial {self.index}')
 
     def init_session_and_run(self, info_space):
         session = Session(self.spec, info_space)
@@ -144,7 +146,8 @@ class Experiment:
         self.data = None
         SearchClass = getattr(search, 'RaySearch')
         self.search = SearchClass(self)
-        analysis.save_spec(spec, info_space, unit='experiment')
+        analysis.save_spec(info_space, spec, unit='experiment')
+        logger.info(f'Initialize experiment {self.index}')
 
     def init_trial_and_run(self, spec, info_space):
         '''

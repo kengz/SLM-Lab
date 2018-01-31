@@ -1,6 +1,6 @@
 from slm_lab.agent import memory
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, update_learning_rate_util
+from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
@@ -80,7 +80,7 @@ class Reinforce(Algorithm):
             'continuous_action_clip'
         ]))
         util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_timestep', 'start_decay_lr_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
         ]))
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
@@ -178,7 +178,7 @@ class Reinforce(Algorithm):
         return advantage
 
     def update_learning_rate(self):
-        update_learning_rate_util(self, [self.net])
+        decay_learning_rate(self, [self.net])
 
     @lab_api
     def update(self):

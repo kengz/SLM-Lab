@@ -5,7 +5,7 @@ A research framework for Deep Reinforcement Learning using Unity, OpenAI Gym, Py
 
 Read on for tutorials, research and results.
 
-**[Gitbook Documentation](https://kengz.gitbooks.io/slm-lab/content/)**
+**[Github Repo](https://github.com/kengz/SLM-Lab) | [Lab Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log Book](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
 
 ### Features
 
@@ -111,7 +111,7 @@ Run the demo to quickly see the lab in action (and to test your installation). I
 
 Now the lab is ready for usage.
 
-**Read on: [Gitbook Documentation](https://kengz.gitbooks.io/slm-lab/content/)**
+**Read on: [Github Repo](https://github.com/kengz/SLM-Lab) | [Lab Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log Book](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
 
 ## Contributing
 
