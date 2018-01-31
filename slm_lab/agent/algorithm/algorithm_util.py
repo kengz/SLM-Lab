@@ -133,9 +133,9 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
 
 
 # Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
-def act_with_softmax(agent, state):
+def act_with_softmax(algo, state):
     torch_state = Variable(torch.from_numpy(state).float())
-    out = agent.get_actor_output(torch_state, evaluate=False)
+    out = algo.get_actor_output(torch_state, evaluate=False)
     if type(out) is list:
         out = out[0]
     probs = F.softmax(out, dim=0)
@@ -143,28 +143,28 @@ def act_with_softmax(agent, state):
     action = m.sample()
     logger.debug(
         f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
-    agent.saved_log_probs.append(m.log_prob(action))
+    algo.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = - torch.sum(torch.mul(probs, torch.log(probs)))
-    agent.entropy.append(H)
+    algo.entropy.append(H)
     return action.data[0]
 
 
 # Denny Britz has a very helpful implementation of an Actor Critic algorithm. This function is adapted from his approach. I highly recommend looking at his full implementation available here https://github.com/dennybritz/reinforcement-learning/blob/master/PolicyGradient/Continuous%20MountainCar%20Actor%20Critic%20Solution.ipynb
-def act_with_gaussian(agent, state):
+def act_with_gaussian(algo, state):
     '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
     torch_state = Variable(torch.from_numpy(state).float())
-    [mu, sigma] = agent.get_actor_output(torch_state, evaluate=False)
+    [mu, sigma] = algo.get_actor_output(torch_state, evaluate=False)
     sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0
     m = Normal(mu, sigma)
     action = m.sample()
-    action = torch.clamp(action, -agent.continuous_action_clip, agent.continuous_action_clip)
+    action = torch.clamp(action, -algo.continuous_action_clip, algo.continuous_action_clip)
     logger.debug(
         f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
-    agent.saved_log_probs.append(m.log_prob(action))
+    algo.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = 0.5 * torch.log(2.0 * np.pi * np.e * sigma * sigma)
-    agent.entropy.append(H)
+    algo.entropy.append(H)
     return action.data
 
 
