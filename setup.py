@@ -9,6 +9,7 @@ test_args = [
     '--verbose',
     '--no-flaky-report',
     '--timeout=60',
+    '--no_cov',
     '--cov-report=html',
     '--cov-report=term',
     '--cov-report=xml',
