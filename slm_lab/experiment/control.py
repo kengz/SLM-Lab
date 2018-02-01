@@ -8,7 +8,9 @@ from slm_lab.env import EnvSpace
 from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import logger, util, viz
+import importlib
 import numpy as np
+import os
 import pandas as pd
 import pydash as _
 import torch
@@ -27,6 +29,9 @@ class Session:
         self.spec = spec
         if info_space.get('session') is None:
             info_space.tick('session')
+        if logger.to_init(info_space, spec):
+            os.environ['prepath'] = analysis.get_prepath(info_space, spec)
+            importlib.reload(logger)
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         # TODO option to set rand_seed. also set np random seed
@@ -86,12 +91,15 @@ class Trial:
         self.spec = spec
         if info_space.get('trial') is None:
             info_space.tick('trial')
+        if logger.to_init(info_space, spec):
+            os.environ['prepath'] = analysis.get_prepath(info_space, spec)
+            importlib.reload(logger)
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.session_data_dict = {}
         self.data = None
         analysis.save_spec(info_space, spec, unit='trial')
-        logger.info(f'Initialize trial {self.index}')
+        logger.info(f'Initialized trial {self.index}')
 
     def init_session_and_run(self, info_space):
         session = Session(self.spec, info_space)
@@ -140,6 +148,9 @@ class Experiment:
         spec['meta']['train_mode'] = True
         if info_space.get('experiment') is None:
             info_space.tick('experiment')
+        if logger.to_init(info_space, spec):
+            os.environ['prepath'] = analysis.get_prepath(info_space, spec)
+            importlib.reload(logger)
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.trial_data_dict = {}
@@ -147,7 +158,7 @@ class Experiment:
         SearchClass = getattr(search, 'RaySearch')
         self.search = SearchClass(self)
         analysis.save_spec(info_space, spec, unit='experiment')
-        logger.info(f'Initialize experiment {self.index}')
+        logger.info(f'Initialized experiment {self.index}')
 
     def init_trial_and_run(self, spec, info_space):
         '''

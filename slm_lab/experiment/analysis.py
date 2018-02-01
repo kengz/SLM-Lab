@@ -94,7 +94,7 @@ def calc_trial_fitness_df(trial):
     return trial_fitness_df
 
 
-def plot_session(session_spec, session_data):
+def plot_session(info_space, session_spec, session_data):
     '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
     aeb_count = len(session_data)
     if aeb_count <= 8:
@@ -123,7 +123,7 @@ def plot_session(session_spec, session_data):
     fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
     fig.layout.update(_.pick(fig_1.layout, ['legend']))
     fig.layout.update(
-        title=f'session graph: {session_spec["name"]}', width=500, height=600)
+        title=f'session graph: {session_spec["name"]} t{info_space.get("trial")} s{info_space.get("session")}', width=500, height=600)
     viz.plot(fig)
     return fig
 
@@ -214,7 +214,7 @@ def analyze_session(session):
     logger.info('Analyzing session')
     session_mdp_data, session_data = get_session_data(session)
     session_fitness_df = calc_session_fitness_df(session, session_data)
-    session_fig = plot_session(session.spec, session_data)
+    session_fig = plot_session(session.info_space, session.spec, session_data)
     save_session_data(
         session.info_space, session.spec, session_mdp_data, session_data, session_fitness_df, session_fig)
     return session_fitness_df
@@ -258,8 +258,8 @@ def get_prepath(info_space, spec, unit='experiment'):
     spec_name = spec['name']
     predir = f'data/{spec_name}_{info_space.experiment_ts}'
     prename = f'{spec_name}'
-    trial_index = info_space.coor['trial']
-    session_index = info_space.coor['session']
+    trial_index = info_space.get('trial')
+    session_index = info_space.get('session')
     if unit == 'trial':
         prename += f'_t{trial_index}'
     elif unit == 'session':
@@ -327,11 +327,17 @@ def plot_session_from_file(session_df_filepath):
     filepath = 'data/reinforce_cartpole_2018_01_22_211751/reinforce_cartpole_t0_s0_session_df.csv'
     analysis.plot_session_from_file(filepath)
     '''
+    from slm_lab.experiment.monitor import InfoSpace
     spec_name = spec_name_from_filepath(session_df_filepath)
     session_spec = {'name': spec_name}
     session_df = util.read(session_df_filepath, header=[0, 1, 2, 3])
     session_data = util.session_df_to_data(session_df)
-    session_fig = plot_session(session_spec, session_data)
+    tn, sn = session_df_filepath.replace('_session_df.csv', '').split('_')[-2:]
+    info_space = InfoSpace()
+    info_space.set('experiment', 0)
+    info_space.set('trial', int(tn[1:]))
+    info_space.set('session', int(sn[1:]))
+    session_fig = plot_session(info_space, session_spec, session_data)
     viz.save_image(session_fig, session_df_filepath.replace(
         '_session_df.csv', '_session_graph.png'))
 
