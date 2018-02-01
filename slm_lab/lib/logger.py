@@ -2,13 +2,52 @@ from slm_lab.lib import util
 import colorlog
 import logging
 import os
+import pandas as pd
 import sys
+import warnings
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # mute tf warnings on optimized setup
-LOG_FILEPATH = util.smart_path(
-    f'log/{util.get_ts()}_slm_lab.log')
+# extra debugging level deeper than the default debug
+DEBUG2 = 9
+DEBUG3 = 8
+logging.addLevelName(DEBUG2, 'DEBUG2')
+logging.addLevelName(DEBUG3, 'DEBUG3')
+setattr(logging, 'DEBUG2', DEBUG2)
+setattr(logging, 'DEBUG3', DEBUG3)
+
 LOG_FORMAT = '[%(asctime)s %(levelname)s] %(message)s'
-LOG_LEVEL = logging.DEBUG if bool(os.environ.get('DEBUG')) else logging.INFO
+color_formatter = colorlog.ColoredFormatter(
+    '%(log_color)s[%(asctime)s %(levelname)s]%(reset)s %(message)s')
+sh = logging.StreamHandler(sys.stdout)
+sh.setFormatter(color_formatter)
+lab_logger = logging.getLogger()
+lab_logger.setLevel(logging.INFO)
+lab_logger.addHandler(sh)
+lab_logger.propagate = False
+
+
+# this will trigger from Experiment init on reload(logger)
+if os.environ.get('prepath') is not None:
+    # mute the competing loggers
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    warnings.filterwarnings(
+        'ignore', category=pd.io.pytables.PerformanceWarning)
+
+    logging.getLogger('gym').setLevel(logging.WARN)
+    logging.getLogger('requests').setLevel(logging.WARN)
+    logging.getLogger('unityagents').setLevel(logging.WARN)
+
+    log_filepath = os.environ['prepath'] + '.log'
+    os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
+    # create file handler
+    formatter = logging.Formatter(LOG_FORMAT)
+    fh = logging.FileHandler(log_filepath)
+    fh.setFormatter(formatter)
+    # remove old handlers to prevent repeated logging
+    for handler in lab_logger.handlers[:]:
+        lab_logger.removeHandler(handler)
+    # add stream and file handler
+    lab_logger.addHandler(sh)
+    lab_logger.addHandler(fh)
 
 
 class DedentFormatter(logging.Formatter):
@@ -19,18 +58,13 @@ class DedentFormatter(logging.Formatter):
         return super(DedentFormatter, self).format(record)
 
 
-os.makedirs(os.path.dirname(LOG_FILEPATH), exist_ok=True)
-color_formatter = colorlog.ColoredFormatter(
-    '%(log_color)s[%(asctime)s %(levelname)s]%(reset)s %(message)s')
-fh = logging.FileHandler(LOG_FILEPATH)
-sh = logging.StreamHandler(sys.stdout)
-sh.setFormatter(color_formatter)
-
-lab_logger = logging.getLogger('slm')
-lab_logger.setLevel(LOG_LEVEL)
-lab_logger.addHandler(fh)
-lab_logger.addHandler(sh)
-lab_logger.propagate = False
+def to_init(info_space, spec):
+    '''
+    Whether the lab's logger had been initialized:
+    - prepath present in env
+    - importlib.reload(logger) had been called
+    '''
+    return os.environ.get('prepath') is None
 
 
 def set_level(lvl):
@@ -43,6 +77,14 @@ def critical(msg, *args, **kwargs):
 
 def debug(msg, *args, **kwargs):
     return lab_logger.debug(msg, *args, **kwargs)
+
+
+def debug2(msg, *args, **kwargs):
+    return lab_logger.log(DEBUG2, msg, *args, **kwargs)
+
+
+def debug3(msg, *args, **kwargs):
+    return lab_logger.log(DEBUG3, msg, *args, **kwargs)
 
 
 def error(msg, *args, **kwargs):

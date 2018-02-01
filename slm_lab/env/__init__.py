@@ -8,7 +8,6 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from unityagents import UnityEnvironment
 from unityagents.brain import BrainParameters
-from unityagents.environment import logger as unity_logger
 import gym
 import logging
 import numpy as np
@@ -16,10 +15,6 @@ import os
 import pydash as _
 
 ENV_DATA_NAMES = ['reward', 'state', 'done']
-
-logging.getLogger('gym').setLevel(logging.WARN)
-logging.getLogger('requests').setLevel(logging.WARN)
-logging.getLogger('unityagents').setLevel(logging.WARN)
 
 
 class Clock:
