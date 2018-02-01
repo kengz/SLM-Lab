@@ -30,6 +30,7 @@ The implemented baseline algorithms (besides research) are:
     - Option to add entropy to encourage exploration
 - Actor-Critic
     - Batch or episodic training
+    - Shared or separate actor and critic params
     - Advantage calculated using n-step returns or generalized advantage estimation
     - Option to add entropy to encourage exploration
 
