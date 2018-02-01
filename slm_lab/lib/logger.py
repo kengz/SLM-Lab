@@ -34,7 +34,7 @@ if os.environ.get('prepath') is not None:
     logging.getLogger('requests').setLevel(logging.WARN)
     logging.getLogger('unityagents').setLevel(logging.WARN)
 
-    log_filepath = os.environ['prepath'].replace('data/', 'log/') + '.log'
+    log_filepath = os.environ['prepath'] + '.log'
     os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
     # create file handler
     formatter = logging.Formatter(LOG_FORMAT)
