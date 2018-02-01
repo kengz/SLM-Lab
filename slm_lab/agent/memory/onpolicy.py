@@ -36,6 +36,9 @@ class OnPolicyReplay(Memory):
         self.num_epis_to_collect = self.body.agent.spec['algorithm']['num_epis_to_collect']
         # Don't want total experiences reset when memory is
         self.total_experiences = 0
+        self.last_nan_idxs = None
+        self.nan_idxs = None
+        self.memory_warn_flag = True
         self.reset()
 
     @lab_api
@@ -55,13 +58,18 @@ class OnPolicyReplay(Memory):
                                 'priorities': []}
         self.most_recent = [None, None, None, None, None, None]
         self.true_size = 0  # Size of the current memory
+        self.last_nan_idxs = self.nan_idxs
+        self.nan_idxs = []
+        self.memory_warn_flag = True
 
     @lab_api
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
         if not np.isnan(reward):
             self.add_experience(self.last_state, action, reward, state, done)
+            self.nan_idxs.append(0)
         else:
+            self.nan_idxs.append(1)
             logger.debug(f'Nan reward')
         self.last_state = state
 
@@ -105,8 +113,9 @@ class OnPolicyReplay(Memory):
                 self.body.agent.algorithm.to_train = 1
         # Track memory size and num experiences
         self.true_size += 1
-        if self.true_size > 1000:
-            logger.warn("Memory size exceeded {}".format(true_size))
+        if self.true_size > 1000 and self.memory_warn_flag:
+            logger.warn("Large memory size: {}".format(self.true_size))
+            self.memory_warn_flag = False
         self.total_experiences += 1
 
     def get_most_recent_experience(self):
@@ -179,8 +188,9 @@ class OnPolicyBatchReplay(OnPolicyReplay):
         self.most_recent[5] = priority
         # Track memory size and num experiences
         self.true_size += 1
-        if self.true_size > 1000:
-            logger.warn("Memory size exceeded {}".format(true_size))
+        if self.true_size > 1000 and self.memory_warn_flag:
+            logger.warn("Large memory size: {}".format(self.true_size))
+            self.memory_warn_flag = False
         self.total_experiences += 1
         # Decide if agent is to train
         if done or (len(self.states)) == self.training_frequency:
