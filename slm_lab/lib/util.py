@@ -14,6 +14,7 @@ import regex as re
 import torch
 import ujson
 import yaml
+import pprint
 
 CPU_NUM = mp.cpu_count()
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
@@ -661,14 +662,22 @@ def to_torch_batch(batch):
 def to_torch_nested_batch(batch):
     '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable.'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
-    for k in float_data_names:
-        batch[k] = [Variable(torch.from_numpy(x).float()) for x in batch[k]]
-    return batch
+    return to_torch_nested_batch_helper(batch, float_data_names)
 
 
 def to_torch_nested_batch_ex_rewards(batch):
-    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable.'''
+    '''Mutate a nested batch (dict of lists) to make its values (excluding rewards) from numpy into PyTorch Variable.'''
     float_data_names = ['states', 'actions', 'dones', 'next_states']
+    return to_torch_nested_batch_helper(batch, float_data_names)
+
+
+def to_torch_nested_batch_helper(batch, float_data_names):
+    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable. Excludes keys not included in float_data_names'''
     for k in float_data_names:
-        batch[k] = [Variable(torch.from_numpy(x).float()) for x in batch[k]]
+        k_b = []
+        for x in batch[k]:
+            nx = np.asarray(x)
+            tx = Variable(torch.from_numpy(nx).float())
+            k_b.append(tx)
+        batch[k] = k_b
     return batch
