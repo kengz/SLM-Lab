@@ -21,7 +21,7 @@ def generic_algo_test(spec, algo_name):
     maxr = rewards.max()
     '''Delete test data folder and trial'''
     shutil.rmtree(path)
-    # del trial, spec
+    del trial
     return maxr
 
 
