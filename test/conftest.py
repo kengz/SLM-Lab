@@ -426,8 +426,3 @@ def test_memory(request, test_agent):
     memory = Replay(test_agent)
     memory.post_body_init()
     return [memory, batch_size, experiences]
-
-
-@pytest.fixture(scope="class", params=['unit_test_dqn'])
-def test_algorithms(request):
-    return request.param
