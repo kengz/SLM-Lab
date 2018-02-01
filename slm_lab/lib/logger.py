@@ -2,7 +2,9 @@ from slm_lab.lib import util
 import colorlog
 import logging
 import os
+import pandas as pd
 import sys
+import warnings
 
 # extra debugging level deeper than the default debug
 DEBUG2 = 9
@@ -27,6 +29,9 @@ lab_logger.propagate = False
 if os.environ.get('prepath') is not None:
     # mute the competing loggers
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    warnings.filterwarnings(
+        'ignore', category=pd.io.pytables.PerformanceWarning)
+
     logging.getLogger('gym').setLevel(logging.WARN)
     logging.getLogger('requests').setLevel(logging.WARN)
     logging.getLogger('unityagents').setLevel(logging.WARN)
