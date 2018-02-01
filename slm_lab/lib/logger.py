@@ -4,32 +4,29 @@ import logging
 import os
 import sys
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # mute tf warnings on optimized setup
+# extra debugging level deeper than the default debug
+DEBUG2 = 9
+DEBUG3 = 8
+logging.addLevelName(DEBUG2, 'DEBUG2')
+logging.addLevelName(DEBUG3, 'DEBUG3')
+setattr(logging, 'DEBUG2', DEBUG2)
+setattr(logging, 'DEBUG3', DEBUG3)
+
 LOG_FORMAT = '[%(asctime)s %(levelname)s] %(message)s'
-LOG_LEVEL = logging.DEBUG if bool(os.environ.get('DEBUG')) else logging.INFO
-
-
-class DedentFormatter(logging.Formatter):
-    '''The formatter to dedent broken python multiline string'''
-
-    def format(self, record):
-        record.msg = util.dedent(record.msg)
-        return super(DedentFormatter, self).format(record)
-
-
 color_formatter = colorlog.ColoredFormatter(
     '%(log_color)s[%(asctime)s %(levelname)s]%(reset)s %(message)s')
 sh = logging.StreamHandler(sys.stdout)
 sh.setFormatter(color_formatter)
 lab_logger = logging.getLogger()
-lab_logger.setLevel(LOG_LEVEL)
+lab_logger.setLevel(logging.INFO)
 lab_logger.addHandler(sh)
 lab_logger.propagate = False
 
 
+# this will trigger from Experiment init on reload(logger)
 if os.environ.get('prepath') is not None:
-    # this will trigger from Experiment init on reload(logger)
     # mute the competing loggers
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     logging.getLogger('gym').setLevel(logging.WARN)
     logging.getLogger('requests').setLevel(logging.WARN)
     logging.getLogger('unityagents').setLevel(logging.WARN)
@@ -46,6 +43,14 @@ if os.environ.get('prepath') is not None:
     # add stream and file handler
     lab_logger.addHandler(sh)
     lab_logger.addHandler(fh)
+
+
+class DedentFormatter(logging.Formatter):
+    '''The formatter to dedent broken python multiline string'''
+
+    def format(self, record):
+        record.msg = util.dedent(record.msg)
+        return super(DedentFormatter, self).format(record)
 
 
 def to_init(info_space, spec):
@@ -67,6 +72,14 @@ def critical(msg, *args, **kwargs):
 
 def debug(msg, *args, **kwargs):
     return lab_logger.debug(msg, *args, **kwargs)
+
+
+def debug2(msg, *args, **kwargs):
+    return lab_logger.log(DEBUG2, msg, *args, **kwargs)
+
+
+def debug3(msg, *args, **kwargs):
+    return lab_logger.log(DEBUG3, msg, *args, **kwargs)
 
 
 def error(msg, *args, **kwargs):
