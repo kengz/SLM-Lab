@@ -386,7 +386,6 @@ def nonan_all(v):
 
 def override_dev_spec(spec):
     spec['meta'] = {
-        'max_episode': 20,
         'max_session': 1,
         'max_trial': 2,
         'train_mode': False,
@@ -396,7 +395,6 @@ def override_dev_spec(spec):
 
 def override_test_spec(spec):
     spec['meta'] = {
-        'max_episode': 20,
         'max_session': 1,
         'max_trial': 2,
         'train_mode': True,

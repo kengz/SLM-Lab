@@ -34,14 +34,14 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null
+      "max_timestep": null,
+      "max_episode": 200
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 200,
       "max_session": 1,
       "max_trial": 8,
       "train_mode": false

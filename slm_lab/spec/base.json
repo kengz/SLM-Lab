@@ -14,6 +14,7 @@
     "env": [{
       "name": "gridworld",
       "max_timestep": 20,
+      "max_episode": 3,
       "unity": {
         "gridSize": 6,
         "numObstacles": 2,
@@ -25,7 +26,6 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false
@@ -57,14 +57,14 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false
@@ -84,14 +84,14 @@
     }],
     "env": [{
       "name": "3dball",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }],
     "body": {
       "product": "outer",
       "num": 12
     },
     "meta": {
-      "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false
@@ -121,14 +121,14 @@
     }],
     "env": [{
       "name": "tennis",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }],
     "body": {
       "product": "outer",
       "num": 6
     },
     "meta": {
-      "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false
@@ -148,17 +148,18 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }, {
       "name": "3dball",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }],
     "body": {
       "product": "outer",
       "num": [1, 12]
     },
     "meta": {
-      "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false
@@ -188,17 +189,18 @@
     }],
     "env": [{
       "name": "tennis",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }, {
       "name": "tennis",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }],
     "body": {
       "product": "outer",
       "num": [1, 6]
     },
     "meta": {
-      "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false
@@ -228,17 +230,18 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }, {
       "name": "3dball",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }],
     "body": {
       "product": "outer",
       "num": 2
     },
     "meta": {
-      "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false
@@ -268,17 +271,18 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }, {
       "name": "3dball",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }],
     "body": {
       "product": "inner",
       "num": 2
     },
     "meta": {
-      "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false
@@ -298,10 +302,12 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }, {
       "name": "3dball",
-      "max_timestep": 20
+      "max_timestep": 20,
+      "max_episode": 3
     }],
     "body": {
       "product": "custom",
@@ -322,7 +328,6 @@
       ]
     },
     "meta": {
-      "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false

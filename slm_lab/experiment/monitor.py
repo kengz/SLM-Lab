@@ -219,8 +219,7 @@ class AEBSpace:
                 clock.tick('epi')
             else:
                 clock.tick('t')
-            env_end_session = clock.get('epi') > _.get(
-                self.spec, 'meta.max_episode')
+            env_end_session = clock.get('epi') > env.max_episode
             body_end_sessions.append(env_end_session)
         end_session = all(body_end_sessions)
         return end_session

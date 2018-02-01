@@ -28,13 +28,13 @@ SPEC_FORMAT = {
     "env": [{
         "name": str,
         "max_timestep": (type(None), int),
+        "max_episode": (type(None), int),
     }],
     "body": {
         "product": ["outer", "inner", "custom"],
         "num": (int, list),
     },
     "meta": {
-        "max_episode": (type(None), int),
         "max_session": int,
         "max_trial": (type(None), int),
         "train_mode": bool,

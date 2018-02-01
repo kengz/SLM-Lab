@@ -38,19 +38,19 @@
         "clamp_grad_val": 1.0,
         "decay_lr": true,
         "decay_lr_min_timestep": 2000,
-        "decay_lr_frequency": 1000,
+        "decay_lr_frequency": 1000
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null
+      "max_timestep": null,
+      "max_episode": 300
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 300,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
@@ -95,19 +95,19 @@
         "clamp_grad_val": 1.0,
         "decay_lr": false,
         "decay_lr_min_timestep": 2000,
-        "decay_lr_frequency": 1000,
+        "decay_lr_frequency": 1000
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null
+      "max_timestep": null,
+      "max_episode": 300
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 300,
       "max_session": 4,
       "max_trial": 100,
       "train_mode": true
@@ -117,11 +117,15 @@
         "algorithm": {
           "gamma__uniform": [0.9, 0.9999],
           "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 8, 10],
-          "add_entropy__choice": [true, false],
+          "add_entropy__choice": [true, false]
         },
         "net": {
           "type__choice": ["MLPshared", "MLPseparate"],
-          "hid_layers__choice": [[16], [32], [64]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
           "optim_actor": {
             "lr__uniform": [0.001, 0.2]
@@ -169,19 +173,19 @@
         "clamp_grad_val": 1.0,
         "decay_lr": false,
         "decay_lr_min_timestep": 2000,
-        "decay_lr_frequency": 1000,
+        "decay_lr_frequency": 1000
       }
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 50
+      "max_timestep": 50,
+      "max_episode": 300
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 300,
       "max_session": 4,
       "max_trial": 100,
       "train_mode": true
@@ -191,11 +195,16 @@
         "algorithm": {
           "gamma__uniform": [0.9, 0.9999],
           "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 8, 10],
-          "add_entropy__choice": [true, false],
+          "add_entropy__choice": [true, false]
         },
         "net": {
           "type__choice": ["MLPshared", "MLPseparate"],
-          "hid_layers__choice": [[64], [128], [64, 32], [128, 64]],
+          "hid_layers__choice": [
+            [64],
+            [128],
+            [64, 32],
+            [128, 64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
           "optim_actor": {
             "lr__uniform": [0.001, 0.2]
@@ -243,19 +252,19 @@
         "clamp_grad_val": 1.0,
         "decay_lr": false,
         "decay_lr_min_timestep": 2000,
-        "decay_lr_frequency": 1000,
+        "decay_lr_frequency": 1000
       }
     }],
     "env": [{
-      "name": "2dBall",
-      "max_timestep": 200
+      "name": "2dball",
+      "max_timestep": 200,
+      "max_episode": 300
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 300,
       "max_session": 4,
       "max_trial": 100,
       "train_mode": true
@@ -265,11 +274,15 @@
         "algorithm": {
           "gamma__uniform": [0.9, 0.9999],
           "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 8, 10],
-          "add_entropy__choice": [true, false],
+          "add_entropy__choice": [true, false]
         },
         "net": {
           "type__choice": ["MLPshared", "MLPseparate"],
-          "hid_layers__choice": [[16], [32], [64]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
           "optim_actor": {
             "lr__uniform": [0.001, 0.2]
@@ -317,19 +330,19 @@
         "clamp_grad_val": 1.0,
         "decay_lr": false,
         "decay_lr_min_timestep": 2000,
-        "decay_lr_frequency": 1000,
+        "decay_lr_frequency": 1000
       }
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "max_timestep": null
+      "max_timestep": null,
+      "max_episode": 1000
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 1000,
       "max_session": 4,
       "max_trial": 100,
       "train_mode": true
@@ -339,11 +352,17 @@
         "algorithm": {
           "gamma__uniform": [0.9, 0.9999],
           "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 8, 10],
-          "add_entropy__choice": [true, false],
+          "add_entropy__choice": [true, false]
         },
         "net": {
           "type__choice": ["MLPshared", "MLPseparate"],
-          "hid_layers__choice": [[64], [128], [256], [64, 32], [128, 64]],
+          "hid_layers__choice": [
+            [64],
+            [128],
+            [256],
+            [64, 32],
+            [128, 64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
           "optim_actor": {
             "lr__uniform": [0.001, 0.2]
@@ -391,19 +410,19 @@
         "clamp_grad_val": 1.0,
         "decay_lr": false,
         "decay_lr_min_timestep": 2000,
-        "decay_lr_frequency": 1000,
+        "decay_lr_frequency": 1000
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null
+      "max_timestep": null,
+      "max_episode": 1000
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 1000,
       "max_session": 4,
       "max_trial": 100,
       "train_mode": true
@@ -413,11 +432,17 @@
         "algorithm": {
           "gamma__uniform": [0.9, 0.9999],
           "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 8, 10],
-          "add_entropy__choice": [true, false],
+          "add_entropy__choice": [true, false]
         },
         "net": {
           "type__choice": ["MLPshared", "MLPseparate"],
-          "hid_layers__choice": [[128], [256], [512], [128, 64], [256, 128]],
+          "hid_layers__choice": [
+            [128],
+            [256],
+            [512],
+            [128, 64],
+            [256, 128]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
           "optim_actor": {
             "lr__uniform": [0.001, 0.2]
@@ -466,15 +491,15 @@
       }
     }],
     "env": [{
-      "name": "3dBall",
-      "max_timestep": 500
+      "name": "3dball",
+      "max_timestep": 500,
+      "max_episode": 300
     }],
     "body": {
       "product": "outer",
       "num": 12
     },
     "meta": {
-      "max_episode": 3,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false
@@ -484,11 +509,16 @@
         "algorithm": {
           "gamma__uniform": [0.9, 0.9999],
           "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 8, 10],
-          "add_entropy__choice": [true, false],
+          "add_entropy__choice": [true, false]
         },
         "net": {
           "type__choice": ["MLPshared", "MLPseparate"],
-          "hid_layers__choice": [[64], [128], [64, 32], [128, 64]],
+          "hid_layers__choice": [
+            [64],
+            [128],
+            [64, 32],
+            [128, 64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
           "optim_actor": {
             "lr__uniform": [0.001, 0.2]

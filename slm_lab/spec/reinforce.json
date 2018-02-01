@@ -24,19 +24,19 @@
         },
         "decay_lr": true,
         "decay_lr_min_timestep": 2000,
-        "decay_lr_frequency": 1000,
+        "decay_lr_frequency": 1000
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null
+      "max_timestep": null,
+      "max_episode": 300
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 300,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
@@ -69,19 +69,19 @@
         },
         "decay_lr": false,
         "decay_lr_min_timestep": 2000,
-        "decay_lr_frequency": 1000,
+        "decay_lr_frequency": 1000
       }
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "max_timestep": null
+      "max_timestep": null,
+      "max_episode": 100
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 100,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
@@ -114,19 +114,19 @@
         },
         "decay_lr": false,
         "decay_lr_min_timestep": 2000,
-        "decay_lr_frequency": 1000,
+        "decay_lr_frequency": 1000
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null
+      "max_timestep": null,
+      "max_episode": 1000
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 1000,
       "max_session": 4,
       "max_trial": 50,
       "train_mode": true
