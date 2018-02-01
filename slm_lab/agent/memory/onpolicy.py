@@ -70,7 +70,7 @@ class OnPolicyReplay(Memory):
             self.nan_idxs.append(0)
         else:
             self.nan_idxs.append(1)
-            logger.debug(f'Nan reward')
+            logger.debug2(f'Nan reward')
         self.last_state = state
 
     def add_experience(self,

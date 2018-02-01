@@ -82,23 +82,23 @@ class VanillaDQN(Algorithm):
         # Calculate the Q values of the current and next states
         q_sts = self.net.wrap_eval(batch['states'])
         q_next_st = self.net.wrap_eval(batch['next_states'])
-        logger.debug(f'Q next states: {q_next_st.size()}')
+        logger.debug2(f'Q next states: {q_next_st.size()}')
         # Get the max for each next state
         q_next_st_max, _ = torch.max(q_next_st, dim=1)
         # Expand the dims so that q_next_st_max can be broadcast
         q_next_st_max.unsqueeze_(1)
-        logger.debug(f'Q next_states max {q_next_st_max.size()}')
+        logger.debug2(f'Q next_states max {q_next_st_max.size()}')
         # Compute q_targets using reward and estimated best Q value from the next state if there is one
         # Make future reward 0 if the current state is done
         q_targets_max = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), q_next_st_max)
-        logger.debug(f'Q targets max: {q_targets_max.size()}')
+        logger.debug2(f'Q targets max: {q_targets_max.size()}')
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_sts
         # So that the loss for these actions is 0
         q_targets = torch.mul(q_targets_max, batch['actions'].data) + \
             torch.mul(q_sts, (1 - batch['actions'].data))
-        logger.debug(f'Q targets: {q_targets.size()}')
+        logger.debug2(f'Q targets: {q_targets.size()}')
         return q_targets
 
     def sample(self):
@@ -121,7 +121,7 @@ class VanillaDQN(Algorithm):
         '''
         t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (t > self.training_min_timestep and t % self.training_frequency == 0):
-            logger.debug(f'Training at t: {t}')
+            logger.debug3(f'Training at t: {t}')
             total_loss = 0.0
             for _b in range(self.training_epoch):
                 batch = self.sample()
@@ -137,7 +137,7 @@ class VanillaDQN(Algorithm):
             logger.debug(f'total_loss {total_loss}')
             return total_loss
         else:
-            logger.debug('NOT training')
+            logger.debug3('NOT training')
             return np.nan
 
     @lab_api
@@ -219,26 +219,26 @@ class DQNBase(VanillaDQN):
         # Use act_select network to select actions in next state
         q_next_st_acts = self.online_net.wrap_eval(batch['next_states'])
         _val, q_next_acts = torch.max(q_next_st_acts, dim=1)
-        logger.debug(f'Q next action: {q_next_acts.size()}')
+        logger.debug2(f'Q next action: {q_next_acts.size()}')
         # Select q_next_st_maxs based on action selected in q_next_acts
         # Evaluate the action selection using the eval net
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
-        logger.debug(f'Q next_states: {q_next_sts.size()}')
+        logger.debug2(f'Q next_states: {q_next_sts.size()}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
         q_next_st_maxs = q_next_sts[idx, q_next_acts]
         q_next_st_maxs.unsqueeze_(1)
-        logger.debug(f'Q next_states max {q_next_st_maxs.size()}')
+        logger.debug2(f'Q next_states max {q_next_st_maxs.size()}')
         # Compute final q_target using reward and estimated best Q value from the next state if there is one
         # Make future reward 0 if the current state is done
         q_targets_max = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), q_next_st_maxs)
-        logger.debug(f'Q targets max: {q_targets_max.size()}')
+        logger.debug2(f'Q targets max: {q_targets_max.size()}')
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_sts
         # So that the loss for these actions is 0
         q_targets = torch.mul(q_targets_max, batch['actions'].data) + \
             torch.mul(q_sts, (1 - batch['actions'].data))
-        logger.debug(f'Q targets: {q_targets.size()}')
+        logger.debug2(f'Q targets: {q_targets.size()}')
         return q_targets
 
     def update_nets(self):
@@ -348,11 +348,11 @@ class MultitaskDQN(DQN):
     def compute_q_target_values(self, batch):
         batches = batch['batches']
         q_sts = self.net.wrap_eval(batch['states'])
-        logger.debug(f'Q sts: {q_sts}')
+        logger.debug3(f'Q sts: {q_sts}')
         # TODO parametrize usage of eval or target_net
         q_next_st_acts = self.online_net.wrap_eval(
             batch['next_states'])
-        logger.debug(f'Q next st act vals: {q_next_st_acts}')
+        logger.debug3(f'Q next st act vals: {q_next_st_acts}')
         start_idx = 0
         q_next_acts = []
         for body in self.agent.nanflat_body_a:
@@ -361,23 +361,23 @@ class MultitaskDQN(DQN):
                 q_next_st_acts[:, start_idx:end_idx], dim=1)
             # Shift action so that they have the right indices in combined layer
             q_next_act_b += start_idx
-            logger.debug(
+            logger.debug2(
                 f'Q next action for body {body.aeb}: {q_next_act_b.size()}')
-            logger.debug(f'Q next action for body {body.aeb}: {q_next_act_b}')
+            logger.debug3(f'Q next action for body {body.aeb}: {q_next_act_b}')
             q_next_acts.append(q_next_act_b)
             start_idx = end_idx
 
         # Select q_next_st_maxs based on action selected in q_next_acts
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
-        logger.debug(f'Q next_states: {q_next_sts.size()}')
-        logger.debug(f'Q next_states: {q_next_sts}')
+        logger.debug2(f'Q next_states: {q_next_sts.size()}')
+        logger.debug3(f'Q next_states: {q_next_sts}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
         q_next_st_maxs = []
         for q_next_act_b in q_next_acts:
             q_next_st_max_b = q_next_sts[idx, q_next_act_b]
             q_next_st_max_b.unsqueeze_(1)
-            logger.debug(f'Q next_states max {q_next_st_max_b.size()}')
-            logger.debug(f'Q next_states max {q_next_st_max_b}')
+            logger.debug2(f'Q next_states max {q_next_st_max_b.size()}')
+            logger.debug3(f'Q next_states max {q_next_st_max_b}')
             q_next_st_maxs.append(q_next_st_max_b)
 
         # Compute final q_target using reward and estimated best Q value from the next state if there is one. Make future reward 0 if the current state is done. Do it individually first, then combine. Each individual target should automatically expand to the dimension of the relevant action space
@@ -390,22 +390,22 @@ class MultitaskDQN(DQN):
                     q_targets_max_b,
                     (q_targets_max_b.shape[0], self.action_dims[b])))
             q_targets_maxs.append(q_targets_max_b)
-            logger.debug(f'Q targets max: {q_targets_max_b.size()}')
+            logger.debug2(f'Q targets max: {q_targets_max_b.size()}')
         q_targets_maxs = torch.cat(q_targets_maxs, dim=1)
-        logger.debug(f'Q targets maxes: {q_targets_maxs.size()}')
-        logger.debug(f'Q targets maxes: {q_targets_maxs}')
+        logger.debug2(f'Q targets maxes: {q_targets_maxs.size()}')
+        logger.debug3(f'Q targets maxes: {q_targets_maxs}')
         # Also concat actions - each batch should have only two non zero dimensions
         actions = [batch_b['actions'] for batch_b in batches]
         combined_actions = torch.cat(actions, dim=1)
-        logger.debug(f'combined_actions: {combined_actions.size()}')
-        logger.debug(f'combined_actions: {combined_actions}')
+        logger.debug2(f'combined_actions: {combined_actions.size()}')
+        logger.debug3(f'combined_actions: {combined_actions}')
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_sts
         # So that the loss for these actions is 0
         q_targets = torch.mul(q_targets_maxs, combined_actions.data) + \
             torch.mul(q_sts, (1 - combined_actions.data))
-        logger.debug(f'Q targets: {q_targets.size()}')
-        logger.debug(f'Q targets: {q_targets}')
+        logger.debug2(f'Q targets: {q_targets.size()}')
+        logger.debug3(f'Q targets: {q_targets}')
         return q_targets
 
     def act(self, state_a):
@@ -472,25 +472,25 @@ class MultiHeadDQN(MultitaskDQN):
         batches = batch['batches']
         # NOTE: q_sts, q_next_st_acts and q_next_sts are lists
         q_sts = self.net.wrap_eval(batch['states'])
-        logger.debug(f'Q sts: {q_sts}')
+        logger.debug3(f'Q sts: {q_sts}')
         q_next_st_acts = self.online_net.wrap_eval(
             batch['next_states'])
-        logger.debug(f'Q next st act vals: {q_next_st_acts}')
+        logger.debug3(f'Q next st act vals: {q_next_st_acts}')
         q_next_acts = []
         for i, q in enumerate(q_next_st_acts):
             _val, q_next_act_b = torch.max(q, dim=1)
-            logger.debug(f'Q next action for body {i}: {q_next_act_b}')
+            logger.debug3(f'Q next action for body {i}: {q_next_act_b}')
             q_next_acts.append(q_next_act_b)
         # Select q_next_st_maxs based on action selected in q_next_acts
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
-        logger.debug(f'Q next_states: {q_next_sts}')
+        logger.debug3(f'Q next_states: {q_next_sts}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
         q_next_st_maxs = []
         for q_next_st_val_b, q_next_act_b in zip(q_next_sts, q_next_acts):
             q_next_st_max_b = q_next_st_val_b[idx, q_next_act_b]
             q_next_st_max_b.unsqueeze_(1)
-            logger.debug(f'Q next_states max {q_next_st_max_b.size()}')
-            logger.debug(f'Q next_states max {q_next_st_max_b}')
+            logger.debug2(f'Q next_states max {q_next_st_max_b.size()}')
+            logger.debug3(f'Q next_states max {q_next_st_max_b}')
             q_next_st_maxs.append(q_next_st_max_b)
         # Compute q_targets per environment using reward and estimated best Q value from the next state if there is one
         # Make future reward 0 if the current state is done
@@ -499,7 +499,7 @@ class MultiHeadDQN(MultitaskDQN):
             q_targets_max_b = batch_b['rewards'].data + self.gamma * \
                 torch.mul((1 - batch_b['dones'].data), q_next_st_maxs[b])
             q_targets_maxs.append(q_targets_max_b)
-            logger.debug(f'Batch {b}, Q targets max: {q_targets_max_b.size()}')
+            logger.debug2(f'Batch {b}, Q targets max: {q_targets_max_b.size()}')
         # As in the standard DQN we only want to train the network for the action selected
         # For all other actions we set the q_target = q_sts
         # So that the loss for these actions is 0
@@ -508,7 +508,7 @@ class MultiHeadDQN(MultitaskDQN):
             q_targets_b = torch.mul(q_targets_maxs[b], batch_b['actions'].data) + \
                 torch.mul(q_sts[b], (1 - batch_b['actions'].data))
             q_targets.append(q_targets_b)
-            logger.debug(f'Batch {b}, Q targets: {q_targets_b.size()}')
+            logger.debug2(f'Batch {b}, Q targets: {q_targets_b.size()}')
         return q_targets
 
     @lab_api
@@ -523,7 +523,7 @@ class MultiHeadDQN(MultitaskDQN):
         '''
         t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (t > self.training_min_timestep and t % self.training_frequency == 0):
-            logger.debug(f'Training at t: {t}')
+            logger.debug3(f'Training at t: {t}')
             nanflat_loss_a = np.zeros(self.agent.body_num)
             for _b in range(self.training_epoch):
                 batch_losses = np.zeros(self.agent.body_num)
@@ -540,7 +540,7 @@ class MultiHeadDQN(MultitaskDQN):
             loss_a = self.nanflat_to_data_a('loss', nanflat_loss_a)
             return loss_a
         else:
-            logger.debug('NOT training')
+            logger.debug3('NOT training')
             return np.nan
 
     def update_nets(self):
