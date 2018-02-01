@@ -150,6 +150,7 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
 
 # Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
 def act_with_softmax(algo, state, body, agent):
+    '''Assumes actor network outputs one variable; the logits of a categorical probability distribution over the actions'''
     recurrent = agent.len_state_buffer > 0
     torch_state = create_torch_state(state, body.state_buffer, recurrent, agent.len_state_buffer)
     out = algo.get_actor_output(torch_state, evaluate=False)
@@ -218,11 +219,15 @@ def update_multi_linear_decay(cls, _space_clock):
     return cls.nanflat_explore_var_a
 
 
-def update_learning_rate_util(algo, nets):
+def decay_learning_rate(algo, nets):
+    '''
+    Decay learning rate for each net by the decay method update_lr() defined in them.
+    In the future, might add more flexible lr adjustment, like boosting and decaying on need.
+    '''
     space_clock = util.s_get(algo, 'aeb_space.clock')
     t = space_clock.get('total_t')
-    if algo.decay_lr and t > algo.start_decay_lr_timestep:
-        if t % algo.decay_lr_timestep == 0:
+    if algo.decay_lr and t > algo.decay_lr_min_timestep:
+        if t % algo.decay_lr_frequency == 0:
             for net in nets:
                 net.update_lr()
 

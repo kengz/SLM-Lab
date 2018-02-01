@@ -11,6 +11,8 @@ import os
 
 def run_by_mode(spec_file, spec_name, run_mode):
     spec = spec_util.get(spec_file, spec_name)
+    # TODO remove when analysis can save all plotly plots
+    os.environ['run_mode'] = run_mode
     if run_mode == 'search':
         Experiment(spec).run()
     elif run_mode == 'train':

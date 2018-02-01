@@ -1,6 +1,6 @@
 from slm_lab.agent import memory
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, update_learning_rate_util
+from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
@@ -80,7 +80,7 @@ class Reinforce(Algorithm):
             'continuous_action_clip'
         ]))
         util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_timestep', 'start_decay_lr_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
         ]))
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
@@ -148,13 +148,19 @@ class Reinforce(Algorithm):
     def check_sizes(self, advantage):
         # Check log probs, advantage, and entropy all have the same size
         # Occassionally they do not, this is caused by first reward of an episode being nan
-        # TODO Fix for multi-episode training. Won't know where to delete after the first episode.
-        if len(self.saved_log_probs) != advantage.size(0):
-            del self.saved_log_probs[0]
-            logger.debug('Deleting first log prob in epi')
-        if len(self.entropy) != advantage.size(0):
-            del self.entropy[0]
-            logger.debug('Deleting first entropy in epi')
+        body = self.agent.nanflat_body_a[0]
+        nan_idxs = body.memory.last_nan_idxs
+        num_nans = sum(nan_idxs)
+        assert len(nan_idxs) == len(self.saved_log_probs)
+        assert len(nan_idxs) == len(self.entropy)
+        assert len(nan_idxs) - num_nans == advantage.size(0)
+        logger.debug(f'{num_nans} nans encountered when gathering data')
+        if num_nans != 0:
+            idxs = [x for x in range(len(nan_idxs)) if nan_idxs[x] == 1]
+            logger.debug(f'Nan indexes: {idxs}')
+            for idx in idxs[::-1]:
+                del self.saved_log_probs[idx]
+                del self.entropy[idx]
         assert len(self.saved_log_probs) == advantage.size(0)
         assert len(self.entropy) == advantage.size(0)
         return advantage
@@ -178,7 +184,7 @@ class Reinforce(Algorithm):
         return advantage
 
     def update_learning_rate(self):
-        update_learning_rate_util(self, [self.net])
+        decay_learning_rate(self, [self.net])
 
     @lab_api
     def update(self):
