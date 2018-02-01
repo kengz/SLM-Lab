@@ -23,28 +23,53 @@ def generic_algo_test(spec, algo_name):
     shutil.rmtree(path)
     del trial, spec
     return maxr
+#
+#
+# @flaky(max_runs=3)
+# def test_dqn():
+#     algo_name = 'unit_test_dqn'
+#     spec = spec_util.get('test.json', 'unit_test_dqn')
+#     assert generic_algo_test(spec, algo_name) > 100
+#
+#
+# @flaky(max_runs=3)
+# def test_vanilla_dqn():
+#     algo_name = 'unit_test_vanilla_dqn'
+#     spec = spec_util.get('test.json', 'unit_test_dqn')
+#     spec['name'] = algo_name
+#     spec['agent'][0]['algorithm']['name'] = "VanillaDQN"
+#     assert generic_algo_test(spec, algo_name) > 100
+#
+#
+# @flaky(max_runs=3)
+# def test_double_dqn():
+#     algo_name = 'unit_test_double_dqn'
+#     spec = spec_util.get('test.json', 'unit_test_dqn')
+#     spec['name'] = algo_name
+#     spec['agent'][0]['algorithm']['name'] = "DoubleDQN"
+#     assert generic_algo_test(spec, algo_name) > 100
 
 
 @flaky(max_runs=3)
-def test_dqn():
-    algo_name = 'unit_test_dqn'
-    spec = spec_util.get('test.json', 'unit_test_dqn')
+def test_reinforce():
+    algo_name = 'unit_test_reinforce'
+    spec = spec_util.get('test.json', 'unit_test_reinforce')
     assert generic_algo_test(spec, algo_name) > 100
 
 
 @flaky(max_runs=3)
-def test_vanilla_dqn():
-    algo_name = 'unit_test_vanilla_dqn'
-    spec = spec_util.get('test.json', 'unit_test_dqn')
+def unit_test_reinforce_with_entropy():
+    algo_name = 'unit_test_reinforce_with_entropy'
+    spec = spec_util.get('test.json', 'unit_test_reinforce')
     spec['name'] = algo_name
-    spec['agent'][0]['algorithm']['name'] = "VanillaDQN"
+    spec['agent'][0]['algorithm']['add_entropy'] = True
     assert generic_algo_test(spec, algo_name) > 100
 
 
 @flaky(max_runs=3)
-def test_double_dqn():
-    algo_name = 'unit_test_double_dqn'
-    spec = spec_util.get('test.json', 'unit_test_dqn')
+def test_reinforce_multi_epi():
+    algo_name = 'unit_test_reinforce_multi_epi'
+    spec = spec_util.get('test.json', 'unit_test_reinforce')
     spec['name'] = algo_name
-    spec['agent'][0]['algorithm']['name'] = "DoubleDQN"
+    spec['agent'][0]['algorithm']['num_epis_to_collect'] = 3
     assert generic_algo_test(spec, algo_name) > 100
