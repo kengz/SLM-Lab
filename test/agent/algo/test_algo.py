@@ -50,26 +50,78 @@ def generic_algo_test(spec, algo_name):
 #     assert generic_algo_test(spec, algo_name) > 100
 
 
+# @flaky(max_runs=3)
+# def test_reinforce():
+#     algo_name = 'unit_test_reinforce'
+#     spec = spec_util.get('test.json', 'unit_test_reinforce')
+#     assert generic_algo_test(spec, algo_name) > 100
+#
+#
+# @flaky(max_runs=3)
+# def test_reinforce_with_entropy():
+#     algo_name = 'unit_test_reinforce_with_entropy'
+#     spec = spec_util.get('test.json', 'unit_test_reinforce')
+#     spec['name'] = algo_name
+#     spec['agent'][0]['algorithm']['add_entropy'] = True
+#     assert generic_algo_test(spec, algo_name) > 100
+#
+#
+# @flaky(max_runs=3)
+# def test_reinforce_multi_epi():
+#     algo_name = 'unit_test_reinforce_multi_epi'
+#     spec = spec_util.get('test.json', 'unit_test_reinforce')
+#     spec['name'] = algo_name
+#     spec['agent'][0]['algorithm']['num_epis_to_collect'] = 3
+#     assert generic_algo_test(spec, algo_name) > 100
+
+
 @flaky(max_runs=3)
-def test_reinforce():
-    algo_name = 'unit_test_reinforce'
-    spec = spec_util.get('test.json', 'unit_test_reinforce')
+def test_actor_critic():
+    algo_name = 'unit_test_actor_critic'
+    spec = spec_util.get('test.json', 'unit_test_actor_critic')
     assert generic_algo_test(spec, algo_name) > 100
 
 
 @flaky(max_runs=3)
-def unit_test_reinforce_with_entropy():
-    algo_name = 'unit_test_reinforce_with_entropy'
-    spec = spec_util.get('test.json', 'unit_test_reinforce')
+def test_actor_critic_entropy():
+    algo_name = 'unit_test_actor_critic_entropy'
+    spec = spec_util.get('test.json', 'unit_test_actor_critic')
     spec['name'] = algo_name
     spec['agent'][0]['algorithm']['add_entropy'] = True
     assert generic_algo_test(spec, algo_name) > 100
 
 
 @flaky(max_runs=3)
-def test_reinforce_multi_epi():
-    algo_name = 'unit_test_reinforce_multi_epi'
-    spec = spec_util.get('test.json', 'unit_test_reinforce')
+def test_actor_critic_noGAE():
+    algo_name = 'unit_test_actor_critic_noGAE'
+    spec = spec_util.get('test.json', 'unit_test_actor_critic')
+    spec['name'] = algo_name
+    spec['agent'][0]['algorithm']['add_GAE'] = False
+    assert generic_algo_test(spec, algo_name) > 100
+
+
+@flaky(max_runs=3)
+def test_actor_critic_shared():
+    algo_name = 'unit_test_actor_critic_shared'
+    spec = spec_util.get('test.json', 'unit_test_actor_critic')
+    spec['name'] = algo_name
+    spec['agent'][0]['net']['type'] = "MLPshared"
+    assert generic_algo_test(spec, algo_name) > 100
+
+
+@flaky(max_runs=3)
+def test_actor_critic_multi_epi():
+    algo_name = 'unit_test_actor_critic_multi_epi'
+    spec = spec_util.get('test.json', 'unit_test_actor_critic')
     spec['name'] = algo_name
     spec['agent'][0]['algorithm']['num_epis_to_collect'] = 3
+    assert generic_algo_test(spec, algo_name) > 100
+
+
+@flaky(max_runs=3)
+def test_actor_critic_batch():
+    algo_name = 'unit_test_actor_critic_batch'
+    spec = spec_util.get('test.json', 'unit_test_actor_critic')
+    spec['name'] = algo_name
+    spec['agent'][0]['memory']['name'] = "OnPolicyBatchReplay"
     assert generic_algo_test(spec, algo_name) > 100
