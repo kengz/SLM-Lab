@@ -154,10 +154,10 @@ class Reinforce(Algorithm):
         assert len(nan_idxs) == len(self.saved_log_probs)
         assert len(nan_idxs) == len(self.entropy)
         assert len(nan_idxs) - num_nans == advantage.size(0)
-        logger.info(f'{num_nans} nans encountered when gathering data')
+        logger.debug(f'{num_nans} nans encountered when gathering data')
         if num_nans != 0:
             idxs = [x for x in range(len(nan_idxs)) if nan_idxs[x] == 1]
-            logger.info(f'Nan indexes: {idxs}')
+            logger.debug(f'Nan indexes: {idxs}')
             for idx in idxs[::-1]:
                 del self.saved_log_probs[idx]
                 del self.entropy[idx]
