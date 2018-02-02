@@ -78,13 +78,9 @@
       },
       "clamp_grad": false,
       "clamp_grad_val": 1.0,
-      "batch_size": 32,
       "decay_lr": true,
       "decay_lr_min_timestep": 1400,
-      "decay_lr_frequency": 400,
-      "update_type": "replace",
-      "update_frequency": 1,
-      "polyak_weight": 0.9
+      "decay_lr_frequency": 400
     }
   },
   "VanillaDQN": {
