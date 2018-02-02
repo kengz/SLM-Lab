@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "python run_lab.py",
+    "debug": "LOG_LEVEL=DEBUG python run_lab.py",
+    "debug2": "LOG_LEVEL=DEBUG2 python run_lab.py",
+    "debug3": "LOG_LEVEL=DEBUG3 python run_lab.py",
     "watch": "if pgrep grunt >/dev/null 2>&1; then echo 'Grunt file watch-sync already running'; else node_modules/grunt/bin/grunt; fi",
     "reset": "rm -rf data/*",
     "clear": "find . | grep -E '(__pycache__|.pyc|.pyo|.egg*|.cache|htmlcov|.coverage|dist)' | xargs rm -rf",
