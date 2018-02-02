@@ -163,6 +163,8 @@ class OnPolicyBatchReplay(OnPolicyReplay):
         self.training_frequency = self.body.agent.spec['algorithm']['training_frequency']
         # Don't want total experiences reset when memory is
         self.total_experiences = 0
+        self.last_nan_idxs = None
+        self.nan_idxs = None
         self.reset()
 
     def add_experience(self,
