@@ -18,7 +18,7 @@ DATA_AGG_FNS = {
     'explore_var': 'mean',
 }
 FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
-FITNESS_STD = util.read('slm_lab/experiment/fitness_std.json')
+FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
 MA_WINDOW = 100
 
 
