@@ -6,6 +6,7 @@ from flaky import flaky
 import pytest
 import os
 import shutil
+# TODO Fix pytest seg faults on Ubuntu
 
 
 def generic_algo_test(spec, algo_name):
