@@ -25,14 +25,14 @@ def generic_algo_test(spec, algo_name):
     return maxr
 
 
-@flaky(max_runs=3)
+# @flaky(max_runs=3)
 def test_dqn():
     algo_name = 'unit_test_dqn'
     spec = spec_util.get('test.json', 'unit_test_dqn')
     assert generic_algo_test(spec, algo_name) > 100
 
 
-@flaky(max_runs=3)
+# @flaky(max_runs=3)
 def test_vanilla_dqn():
     algo_name = 'unit_test_vanilla_dqn'
     spec = spec_util.get('test.json', 'unit_test_dqn')
@@ -42,7 +42,7 @@ def test_vanilla_dqn():
     assert generic_algo_test(spec, algo_name) > 100
 
 
-@flaky(max_runs=3)
+# @flaky(max_runs=3)
 def test_double_dqn():
     algo_name = 'unit_test_double_dqn'
     spec = spec_util.get('test.json', 'unit_test_dqn')
@@ -51,14 +51,14 @@ def test_double_dqn():
     assert generic_algo_test(spec, algo_name) > 100
 
 
-@flaky(max_runs=3)
+# @flaky(max_runs=3)
 def test_reinforce():
     algo_name = 'unit_test_reinforce'
     spec = spec_util.get('test.json', 'unit_test_reinforce')
     assert generic_algo_test(spec, algo_name) > 100
 
 
-@flaky(max_runs=3)
+# @flaky(max_runs=3)
 def test_reinforce_with_entropy():
     algo_name = 'unit_test_reinforce_with_entropy'
     spec = spec_util.get('test.json', 'unit_test_reinforce')
@@ -67,7 +67,7 @@ def test_reinforce_with_entropy():
     assert generic_algo_test(spec, algo_name) > 100
 
 
-@flaky(max_runs=3)
+# @flaky(max_runs=3)
 def test_reinforce_multi_epi():
     algo_name = 'unit_test_reinforce_multi_epi'
     spec = spec_util.get('test.json', 'unit_test_reinforce')
@@ -76,14 +76,14 @@ def test_reinforce_multi_epi():
     assert generic_algo_test(spec, algo_name) > 100
 
 
-@flaky(max_runs=3)
+# @flaky(max_runs=3)
 def test_actor_critic():
     algo_name = 'unit_test_actor_critic'
     spec = spec_util.get('test.json', 'unit_test_actor_critic')
     assert generic_algo_test(spec, algo_name) > 100
 
 
-@flaky(max_runs=3)
+# @flaky(max_runs=3)
 def test_actor_critic_entropy():
     algo_name = 'unit_test_actor_critic_entropy'
     spec = spec_util.get('test.json', 'unit_test_actor_critic')
@@ -92,7 +92,7 @@ def test_actor_critic_entropy():
     assert generic_algo_test(spec, algo_name) > 100
 
 
-@flaky(max_runs=3)
+# @flaky(max_runs=3)
 def test_actor_critic_noGAE():
     algo_name = 'unit_test_actor_critic_noGAE'
     spec = spec_util.get('test.json', 'unit_test_actor_critic')
@@ -101,7 +101,7 @@ def test_actor_critic_noGAE():
     assert generic_algo_test(spec, algo_name) > 100
 
 
-@flaky(max_runs=3)
+# @flaky(max_runs=3)
 def test_actor_critic_shared():
     algo_name = 'unit_test_actor_critic_shared'
     spec = spec_util.get('test.json', 'unit_test_actor_critic')
@@ -110,7 +110,7 @@ def test_actor_critic_shared():
     assert generic_algo_test(spec, algo_name) > 100
 
 
-@flaky(max_runs=3)
+# @flaky(max_runs=3)
 def test_actor_critic_multi_epi():
     algo_name = 'unit_test_actor_critic_multi_epi'
     spec = spec_util.get('test.json', 'unit_test_actor_critic')
@@ -119,7 +119,7 @@ def test_actor_critic_multi_epi():
     assert generic_algo_test(spec, algo_name) > 100
 
 
-@flaky(max_runs=3)
+# @flaky(max_runs=3)
 def test_actor_critic_batch():
     algo_name = 'unit_test_actor_critic_batch'
     spec = spec_util.get('test.json', 'unit_test_actor_critic')
