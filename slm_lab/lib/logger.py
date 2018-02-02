@@ -25,7 +25,7 @@ lab_logger.propagate = False
 
 
 # this will trigger from Experiment init on reload(logger)
-if os.environ.get('prepath') is not None:
+if os.environ.get('PREPATH') is not None:
     # mute the competing loggers
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     warnings.filterwarnings(
@@ -35,7 +35,7 @@ if os.environ.get('prepath') is not None:
     logging.getLogger('requests').setLevel(logging.WARN)
     logging.getLogger('unityagents').setLevel(logging.WARN)
 
-    log_filepath = os.environ['prepath'] + '.log'
+    log_filepath = os.environ['PREPATH'] + '.log'
     os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
     # create file handler
     formatter = logging.Formatter(LOG_FORMAT)
@@ -48,8 +48,8 @@ if os.environ.get('prepath') is not None:
     lab_logger.addHandler(sh)
     lab_logger.addHandler(fh)
 
-if os.environ.get('log_level'):
-    lab_logger.setLevel(os.environ['log_level'])
+if os.environ.get('LOG_LEVEL'):
+    lab_logger.setLevel(os.environ['LOG_LEVEL'])
 else:
     lab_logger.setLevel('INFO')
 
@@ -73,7 +73,7 @@ def to_init(info_space, spec):
 
 def set_level(lvl):
     lab_logger.setLevel(lvl)
-    os.environ['log_level'] = lvl
+    os.environ['LOG_LEVEL'] = lvl
 
 
 def critical(msg, *args, **kwargs):

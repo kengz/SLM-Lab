@@ -30,7 +30,7 @@ class Session:
         if info_space.get('session') is None:
             info_space.tick('session')
         if logger.to_init(info_space, spec):
-            os.environ['prepath'] = analysis.get_prepath(info_space, spec)
+            os.environ['PREPATH'] = analysis.get_prepath(info_space, spec)
             importlib.reload(logger)
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
@@ -92,7 +92,7 @@ class Trial:
         if info_space.get('trial') is None:
             info_space.tick('trial')
         if logger.to_init(info_space, spec):
-            os.environ['prepath'] = analysis.get_prepath(info_space, spec)
+            os.environ['PREPATH'] = analysis.get_prepath(info_space, spec)
             importlib.reload(logger)
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
@@ -149,7 +149,7 @@ class Experiment:
         if info_space.get('experiment') is None:
             info_space.tick('experiment')
         if logger.to_init(info_space, spec):
-            os.environ['prepath'] = analysis.get_prepath(info_space, spec)
+            os.environ['PREPATH'] = analysis.get_prepath(info_space, spec)
             importlib.reload(logger)
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
