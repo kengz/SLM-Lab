@@ -123,15 +123,14 @@ class RecurrentNet(nn.Module):
         hid_0 = self.init_hidden(batch_size)
         _, final_hid = self.rnn(x, hid_0)
         final_hid.squeeze_(dim=0)
-        # logger.info(f'All hidden outputs: {_.data}')
-        # logger.info(f'Final hidden output: {final_hid.data}')
         '''If only one head, return tensor, otherwise return list of outputs'''
         outs = []
         for layer in self.out_layers:
             out = layer(final_hid)
             outs.append(out)
-        # logger.info(f'Network input: {x.data}')
-        # logger.info(f'Network output: {outs}')
+        logger.debug3(f'Network input: {x.size()}')
+        logger.debug3(f'Network input: {x.data}')
+        logger.debug3(f'Network output: {outs}')
         if len(outs) == 1:
             return outs[0]
         else:
