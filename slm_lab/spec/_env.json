@@ -1,1 +1,157 @@
-{}
+{
+  "2dball": {
+    "name": "2dball",
+    "max_timestep": 200,
+    "max_episode": 1000
+  },
+  "3dball": {
+    "name": "3dball",
+    "max_timestep": 200,
+    "max_episode": 1000
+  },
+  "gridworld_easy": {
+    "name": "gridworld",
+    "max_timestep": 50,
+    "max_episode": 1000,
+    "unity": {
+      "gridSize": 6,
+      "numObstacles": 2,
+      "numGoals": 1
+    }
+  },
+  "gridworld_medium": {
+    "name": "gridworld",
+    "max_timestep": 100,
+    "max_episode": 1000,
+    "unity": {
+      "gridSize": 10,
+      "numObstacles": 3,
+      "numGoals": 1
+    }
+  },
+  "gridworld_hard": {
+    "name": "gridworld",
+    "max_timestep": 500,
+    "max_episode": 10000,
+    "unity": {
+      "gridSize": 20,
+      "numObstacles": 10,
+      "numGoals": 1
+    }
+  },
+  "reacher-discrete": {
+    "name": "reacher-discrete",
+    "max_timestep": 200,
+    "max_episode": 1000
+  },
+  "tennis": {
+    "name": "tennis",
+    "max_timestep": 200,
+    "max_episode": 1000
+  },
+  "CartPole-v0": {
+    "name": "CartPole-v0",
+    "max_timestep": null,
+    "max_episode": 1000
+  },
+  "CartPole-v1": {
+    "name": "CartPole-v1",
+    "max_timestep": null,
+    "max_episode": 1000
+  },
+  "Acrobot-v1": {
+    "name": "Acrobot-v1",
+    "max_timestep": null,
+    "max_episode": 1000
+  },
+  "MountainCar-v0": {
+    "name": "MountainCar-v0",
+    "max_timestep": null,
+    "max_episode": 1000
+  },
+  "MountainCarContinuous-v0": {
+    "name": "MountainCarContinuous-v0",
+    "max_timestep": null,
+    "max_episode": 1000
+  },
+  "Pendulum-v0": {
+    "name": "Pendulum-v0",
+    "max_timestep": null,
+    "max_episode": 1000
+  },
+  "LunarLander-v2": {
+    "name": "LunarLander-v2",
+    "max_timestep": null,
+    "max_episode": 1000
+  },
+  "LunarLanderContinuous-v2": {
+    "name": "LunarLanderContinuous-v2",
+    "max_timestep": null,
+    "max_episode": 1000
+  },
+  "BipedalWalker-v2": {
+    "name": "BipedalWalker-v2",
+    "max_timestep": null,
+    "max_episode": 10000
+  },
+  "BipedalWalkerHardcore-v2": {
+    "name": "BipedalWalkerHardcore-v2",
+    "max_timestep": null,
+    "max_episode": 10000
+  },
+  "CarRacing-v0": {
+    "name": "CarRacing-v0",
+    "max_timestep": null,
+    "max_episode": 10000
+  },
+  "AirRaid-v0": {
+    "name": "AirRaid-v0",
+    "max_timestep": null,
+    "max_episode": 10000
+  },
+  "Alien-v0": {
+    "name": "Alien-v0",
+    "max_timestep": null,
+    "max_episode": 10000
+  },
+  "Assault-v0": {
+    "name": "Assault-v0",
+    "max_timestep": null,
+    "max_episode": 10000
+  },
+  "Breakout-v0": {
+    "name": "Breakout-v0",
+    "max_timestep": null,
+    "max_episode": 10000
+  },
+  "MsPacman-v0": {
+    "name": "MsPacman-v0",
+    "max_timestep": null,
+    "max_episode": 10000
+  },
+  "Pong-v0": {
+    "name": "Pong-v0",
+    "max_timestep": null,
+    "max_episode": 10000
+  },
+  "Qbert-v0": {
+    "name": "Qbert-v0",
+    "max_timestep": null,
+    "max_episode": 10000
+  },
+  "SpaceInvader-v0": {
+    "name": "SpaceInvader-v0",
+    "max_timestep": null,
+    "max_episode": 10000
+  },
+  "FlappyBird-v0": {
+    "name": "FlappyBird-v0",
+    "max_timestep": null,
+    "max_episode": 1000
+  },
+  "Snake-v0": {
+    "name": "Snake-v0",
+    "max_timestep": null,
+    "max_episode": 1000
+  }
+}
