@@ -38,6 +38,7 @@ def test_vanilla_dqn():
     spec = spec_util.get('test.json', 'unit_test_dqn')
     spec['name'] = algo_name
     spec['agent'][0]['algorithm']['name'] = "VanillaDQN"
+    spec['meta']['max_episode'] = 25
     assert generic_algo_test(spec, algo_name) > 100
 
 
