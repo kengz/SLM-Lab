@@ -118,7 +118,7 @@ class ActorCritic(Reinforce):
                 logger.info("Clipping actorcritic gradient...")
                 torch.nn.utils.clip_grad_norm(
                     self.actorcritic.params, self.actorcritic.clamp_grad_val)
-            logger.debug(f'Combined AC gradient norms: {self.actorcritic.get_grad_norms()}')
+            logger.debug2(f'Combined AC gradient norms: {self.actorcritic.get_grad_norms()}')
             self.actorcritic.optim.step()
             self.to_train = 0
             self.saved_log_probs = []
@@ -161,7 +161,7 @@ class ActorCritic(Reinforce):
             logger.info("Clipping actor gradient...")
             torch.nn.utils.clip_grad_norm(
                 self.actor.params, self.actor.clamp_grad_val)
-        logger.debug(f'Actor gradient norms: {self.actor.get_grad_norms()}')
+        logger.debug2(f'Actor gradient norms: {self.actor.get_grad_norms()}')
         self.actor.optim.step()
         self.to_train = 0
         self.saved_log_probs = []
@@ -180,7 +180,7 @@ class ActorCritic(Reinforce):
             target = self.get_target(batch, critic_specific=True)
             y = Variable(target)
             loss = self.critic.training_step(batch['states'], y).data[0]
-            logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
+            logger.debug2(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss
 
     def train_critic_episodic(self, batch):
@@ -189,16 +189,16 @@ class ActorCritic(Reinforce):
         for _i in range(self.training_iters_per_batch):
             target = self.get_target(batch, critic_specific=True)
             target = torch.cat(target)
-            logger.debug(f'Combined size: {target.size()}')
+            logger.debug2(f'Combined size: {target.size()}')
             x = []
             for state in batch['states']:
                 x.append(state)
-                logger.debug(f'states: {state.size()}')
+                logger.debug2(f'states: {state.size()}')
             x = torch.cat(x, dim=0)
-            logger.debug(f'Combined states: {x.size()}')
+            logger.debug2(f'Combined states: {x.size()}')
             y = Variable(target)
             loss = self.critic.training_step(x, y).data[0]
-            logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
+            logger.debug2(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss
 
     def calc_advantage(self, batch):
@@ -222,7 +222,7 @@ class ActorCritic(Reinforce):
         state_vals = self.get_critic_output(batch['states']).squeeze_()
         advantage = target - state_vals
         advantage.squeeze_()
-        logger.debug(f'Advantage: {advantage.size()}')
+        logger.debug2(f'Advantage: {advantage.size()}')
         return advantage
 
     def calc_advantage_episodic(self, batch):
@@ -236,7 +236,7 @@ class ActorCritic(Reinforce):
             state_vals = self.get_critic_output(s).squeeze_()
             a = t - state_vals
             a.squeeze_()
-            logger.debug(f'Advantage: {a.size()}')
+            logger.debug2(f'Advantage: {a.size()}')
             advantage.append(a)
         advantage = torch.cat(advantage)
         return advantage
@@ -268,15 +268,15 @@ class ActorCritic(Reinforce):
         '''Complete for 0th step and add state-value estimate'''
         R = rewards + self.gamma * R
         next_state_gammas *= self.gamma
-        logger.debug(f'R: {R}')
-        logger.debug(f'next_state_gammas: {next_state_gammas}')
-        logger.debug(f'dones: {batch["dones"]}')
+        logger.debug3(f'R: {R}')
+        logger.debug3(f'next_state_gammas: {next_state_gammas}')
+        logger.debug3(f'dones: {batch["dones"]}')
         '''Calculate appropriate state value accounting for terminal states and number of time steps'''
         discounted_state_val_estimate = torch.mul(next_state_vals, next_state_gammas)
         discounted_state_val_estimate = torch.mul(discounted_state_val_estimate, 1 - batch['dones'].data)
         R += discounted_state_val_estimate
-        logger.debug(f'discounted_state_val_estimate: {discounted_state_val_estimate}')
-        logger.debug(f'R: {R}')
+        logger.debug3(f'discounted_state_val_estimate: {discounted_state_val_estimate}')
+        logger.debug3(f'R: {R}')
         return R
 
     def get_nstep_target_episodic(self, batch):
@@ -293,17 +293,17 @@ class ActorCritic(Reinforce):
             '''Complete for 0th step and add state-value estimate'''
             R = r + self.gamma * R
             next_state_gammas *= self.gamma
-            logger.debug(f'R: {R}')
-            logger.debug(f'next_state_gammas: {next_state_gammas}')
-            logger.debug(f'dones: {d}')
+            logger.debug3(f'R: {R}')
+            logger.debug3(f'next_state_gammas: {next_state_gammas}')
+            logger.debug3(f'dones: {d}')
             '''Calculate appropriate state value accounting for terminal states and number of time steps'''
             discounted_state_val_estimate = torch.mul(next_state_vals, next_state_gammas)
             discounted_state_val_estimate = torch.mul(discounted_state_val_estimate, 1 - d.data)
             if nts < next_state_vals.size(0):
-                logger.debug(f'N step returns less than episode length, adding boostrap')
+                logger.debug2(f'N step returns less than episode length, adding boostrap')
                 R += discounted_state_val_estimate
-            logger.debug(f'discounted_state_val_estimate: {discounted_state_val_estimate}')
-            logger.debug(f'R: {R}')
+            logger.debug3(f'discounted_state_val_estimate: {discounted_state_val_estimate}')
+            logger.debug3(f'R: {R}')
             targets.append(R)
         return targets
 
@@ -313,7 +313,7 @@ class ActorCritic(Reinforce):
         curr_reward_step = torch.zeros_like(next_state_vals)
         next_state_gammas = torch.zeros_like(next_state_vals)
         if nts >= next_state_vals.size(0):
-            logger.debug(f'Num step returns {self.num_step_returns} greater than length batch {next_state_vals.size(0)}. Updating to batch length')
+            logger.debug2(f'Num step returns {self.num_step_returns} greater than length batch {next_state_vals.size(0)}. Updating to batch length')
             nts = next_state_vals.size(0) - 1
         if nts == 0:
             next_state_gammas.fill_(1.0)
@@ -327,20 +327,20 @@ class ActorCritic(Reinforce):
             R = curr_reward_step + self.gamma * R
             next_state_gammas[j] = 1.0
             j += 1
-            logger.debug(f'curr_reward_step: {curr_reward_step}')
-            logger.debug(f'next_state_gammas: {next_state_gammas}')
-            logger.debug(f'R: {R}')
+            logger.debug3(f'curr_reward_step: {curr_reward_step}')
+            logger.debug3(f'next_state_gammas: {next_state_gammas}')
+            logger.debug3(f'R: {R}')
         return (R, next_state_gammas)
 
     def get_gae_target_batch(self, batch, critic_specific):
         '''Returns a tensor containing the estimate of the state-action values using generalized advantage estimation'''
         rewards = batch['rewards'].data
         if critic_specific:
-            logger.debug(f'Using critic specific target')
+            logger.debug2(f'Using critic specific target')
             '''Target is the discounted sum of returns for training the critic'''
             target = self.get_gae_critic_target(rewards)
         else:
-            logger.debug(f'Using actor specific target')
+            logger.debug2(f'Using actor specific target')
             '''Target is the Generalized advantage estimate + current state-value estimate'''
             states = batch['states']
             next_states = batch['next_states']
@@ -353,13 +353,13 @@ class ActorCritic(Reinforce):
         rewards = batch['rewards']
         targets = []
         if critic_specific:
-            logger.debug(f'Using critic specific target')
+            logger.debug2(f'Using critic specific target')
             '''Target is the discounted sum of returns for training the critic'''
             for r in rewards:
                 t = self.get_gae_critic_target(r.data)
                 targets.append(t)
         else:
-            logger.debug(f'Using actor specific target')
+            logger.debug2(f'Using actor specific target')
             '''Target is the Generalized advantage estimate + current state-value estimate'''
             states = batch['states']
             next_states = batch['next_states']
@@ -377,7 +377,7 @@ class ActorCritic(Reinforce):
             big_r = rewards[i] + self.gamma * big_r
             target.insert(0, big_r)
         target = torch.Tensor(target)
-        logger.debug(f'Target: {target}')
+        logger.debug3(f'Target: {target}')
         return target
 
     def get_gae_actor_target(self, rewards, states, next_states, dones):
@@ -387,11 +387,11 @@ class ActorCritic(Reinforce):
         next_state_vals = torch.mul(next_state_vals, 1 - dones.data)
         state_vals = self.get_critic_output(states).squeeze_(dim=1)
         deltas = rewards + self.gamma * next_state_vals - state_vals
-        logger.debug(f'State_vals: {state_vals}')
-        logger.debug(f'Next state_vals: {next_state_vals}')
-        logger.debug(f'Dones: {dones}')
-        logger.debug(f'Deltas: {deltas}')
-        logger.debug(f'Lamda: {self.lamda}, gamma: {self.gamma}')
+        logger.debug3(f'State_vals: {state_vals}')
+        logger.debug3(f'Next state_vals: {next_state_vals}')
+        logger.debug3(f'Dones: {dones}')
+        logger.debug3(f'Deltas: {deltas}')
+        logger.debug3(f'Lamda: {self.lamda}, gamma: {self.gamma}')
         '''Then calculate GAE, the exponentially weighted average of the TD residuals'''
         advantage = []
         gae = 0
@@ -401,8 +401,8 @@ class ActorCritic(Reinforce):
         advantage = torch.Tensor(advantage)
         '''Add state_vals so that calc_advantage() api is preserved'''
         target = advantage + state_vals
-        logger.debug(f'Advantage: {advantage}')
-        logger.debug(f'Target: {target}')
+        logger.debug3(f'Advantage: {advantage}')
+        logger.debug3(f'Target: {target}')
         return target
 
     def init_nets(self):

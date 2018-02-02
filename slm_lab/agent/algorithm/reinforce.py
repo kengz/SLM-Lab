@@ -106,11 +106,11 @@ class Reinforce(Algorithm):
     @lab_api
     def train(self):
         if self.to_train == 1:
-            logger.debug(f'Training...')
+            logger.debug2(f'Training...')
             # We only care about the rewards from the batch
             rewards = self.sample()['rewards']
-            logger.debug(f'Length first epi: {len(rewards[0])}')
-            logger.debug(f'Len log probs: {len(self.saved_log_probs)}')
+            logger.debug3(f'Length first epi: {len(rewards[0])}')
+            logger.debug3(f'Len log probs: {len(self.saved_log_probs)}')
             self.net.optim.zero_grad()
             policy_loss = self.get_policy_loss(rewards)
             loss = policy_loss.data[0]
@@ -119,7 +119,7 @@ class Reinforce(Algorithm):
                 logger.info("Clipping gradient...")
                 torch.nn.utils.clip_grad_norm(
                     self.net.parameters(), self.net.clamp_grad_val)
-            logger.debug(f'Gradient norms: {self.net.get_grad_norms()}')
+            logger.debug2(f'Gradient norms: {self.net.get_grad_norms()}')
             self.net.optim.step()
             self.to_train = 0
             self.saved_log_probs = []
@@ -136,7 +136,7 @@ class Reinforce(Algorithm):
         advantage = self.check_sizes(advantage)
         policy_loss = []
         for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
-            logger.debug(
+            logger.debug3(
                 f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
             if self.add_entropy:
                 policy_loss.append(-log_prob * a - self.entropy_weight * e)
@@ -154,10 +154,10 @@ class Reinforce(Algorithm):
         assert len(nan_idxs) == len(self.saved_log_probs)
         assert len(nan_idxs) == len(self.entropy)
         assert len(nan_idxs) - num_nans == advantage.size(0)
-        logger.debug(f'{num_nans} nans encountered when gathering data')
+        logger.debug2(f'{num_nans} nans encountered when gathering data')
         if num_nans != 0:
             idxs = [x for x in range(len(nan_idxs)) if nan_idxs[x] == 1]
-            logger.debug(f'Nan indexes: {idxs}')
+            logger.debug3(f'Nan indexes: {idxs}')
             for idx in idxs[::-1]:
                 del self.saved_log_probs[idx]
                 del self.entropy[idx]
@@ -167,7 +167,7 @@ class Reinforce(Algorithm):
 
     def calc_advantage(self, raw_rewards):
         advantage = []
-        logger.debug(f'Raw rewards: {raw_rewards}')
+        logger.debug3(f'Raw rewards: {raw_rewards}')
         for epi_rewards in raw_rewards:
             rewards = []
             big_r = 0
@@ -175,10 +175,10 @@ class Reinforce(Algorithm):
                 big_r = r + self.gamma * big_r
                 rewards.insert(0, big_r)
             rewards = torch.Tensor(rewards)
-            logger.debug(f'Rewards: {rewards}')
+            logger.debug3(f'Rewards: {rewards}')
             rewards = (rewards - rewards.mean()) / (
                 rewards.std() + np.finfo(np.float32).eps)
-            logger.debug(f'Normalized rewards: {rewards}')
+            logger.debug3(f'Normalized rewards: {rewards}')
             advantage.append(rewards)
         advantage = torch.cat(advantage)
         return advantage
