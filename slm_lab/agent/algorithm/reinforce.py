@@ -117,7 +117,7 @@ class Reinforce(Algorithm):
             loss = policy_loss.data[0]
             policy_loss.backward()
             if self.net.clamp_grad:
-                logger.info("Clipping gradient...")
+                logger.debug("Clipping gradient...")
                 torch.nn.utils.clip_grad_norm(
                     self.net.parameters(), self.net.clamp_grad_val)
             logger.debug2(f'Gradient norms: {self.net.get_grad_norms()}')
