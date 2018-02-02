@@ -134,12 +134,11 @@ class ActorCritic(Reinforce):
         '''Trains the network when the actor and critic are separate networks'''
         if self.to_train == 1:
             batch = self.sample()
-            logger.debug2(f'Batch states size: {batch["states"].size()}')
             logger.debug3(f'Batch states: {batch["states"]}')
             critic_loss = self.train_critic(batch)
             actor_loss = self.train_actor(batch)
             total_loss = critic_loss + abs(actor_loss)
-            logger.info("Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}".format(
+            logger.debug("Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}".format(
                 critic_loss, abs(actor_loss), total_loss
             ))
             return total_loss
@@ -547,7 +546,7 @@ class ActorCritic(Reinforce):
         '''Flags if memory is episodic or discrete. This affects how the target and advantage functions are calculated'''
         body = self.agent.nanflat_body_a[0]
         memory = body.memory.__class__.__name__
-        if memory.find('OnPolicyReplay') != -1:
+        if (memory.find('OnPolicyReplay') != -1) or (memory.find('OnPolicyNStepReplay') != -1):
             self.is_episodic = True
         elif (memory.find('OnPolicyBatchReplay') != -1) or (memory.find('OnPolicyNStepBatchReplay') != -1):
             self.is_episodic = False
