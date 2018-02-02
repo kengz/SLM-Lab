@@ -1,47 +1,4 @@
 {
-  "reinforce_spec_template": {
-    "agent": [{
-      "name": "Reinforce",
-      "algorithm": {
-        "name": "Reinforce",
-        "action_policy": "default",
-        "gamma": 0.99,
-        "num_epis_to_collect": 1,
-        "add_entropy": true,
-        "entropy_weight": 0.01,
-        "continuous_action_clip": 2.0
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {
-        "type": "MLPdefault",
-        "hid_layers": [64],
-        "hid_layers_activation": "relu",
-        "optim": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "decay_lr": true,
-        "decay_lr_min_timestep": 2000,
-        "decay_lr_frequency": 1000
-      }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 300
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "max_session": 1,
-      "max_trial": 1,
-      "train_mode": true
-    }
-  },
   "reinforce_pendulum": {
     "agent": [{
       "name": "Reinforce",
@@ -120,15 +77,15 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 20
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 4,
-      "max_trial": 50,
+      "max_session": 1,
+      "max_trial": 5,
       "train_mode": true
     },
     "search": {
