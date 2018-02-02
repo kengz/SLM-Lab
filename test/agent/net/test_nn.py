@@ -11,9 +11,11 @@ class TestNet:
     '''
     Base class for unit testing neural network training
     '''
+
     def init_dummy_input(self, net):
         if net.__class__.__name__.find('RecurrentNet') != -1:
-            dummy_input = Variable(torch.ones(2, net.sequence_length, net.in_dim))
+            dummy_input = Variable(torch.ones(
+                2, net.sequence_length, net.in_dim))
         elif type(net.in_dim) is int:
             dummy_input = Variable(torch.ones(2, net.in_dim))
         elif net.__class__.__name__.find('MultiMLPNet') != -1:
@@ -149,6 +151,14 @@ class TestNet:
         #       (includes it)
         assert loss is None
 
+    def check_multi_output(self, net):
+        if net.__class__.__name__.find('MultiMLPNet') != -1 or \
+           net.__class__.__name__.find('MLPHeterogenousHeads') != -1 or \
+           (net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1):
+            return True
+        else:
+            return False
+
     def test_output(self, test_nets):
         ''' Checks that the output of the net is not zero or nan '''
         net = test_nets[0]
@@ -156,9 +166,7 @@ class TestNet:
         dummy_output = self.init_dummy_output(net)
         out = net(dummy_input)
         flag = True
-        if net.__class__.__name__.find('MultiMLPNet') != -1 or \
-           net.__class__.__name__.find('MLPHeterogenousHeads') != -1 or \
-           (net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1):
+        if check_multi_output(net):
             zero_test = sum([torch.sum(torch.abs(x.data)) for x in out])
             nan_test = np.isnan(sum([torch.sum(x.data) for x in out]))
         else:
