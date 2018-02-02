@@ -142,7 +142,7 @@ class RecurrentNet(nn.Module):
         loss = self.loss_fn(out, y)
         loss.backward()
         if self.clamp_grad:
-            logger.info(f'Clipping gradient...')
+            logger.debug(f'Clipping gradient...')
             torch.nn.utils.clip_grad_norm(
                 self.params, self.clamp_grad_val)
         self.optim.step()

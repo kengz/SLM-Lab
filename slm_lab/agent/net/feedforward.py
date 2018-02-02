@@ -68,6 +68,7 @@ class MLPNet(nn.Module):
         loss = self.loss_fn(out, y)
         loss.backward()
         if self.clamp_grad:
+            torch.debug(f'Clipping gradient...')
             torch.nn.utils.clip_grad_norm(
                 self.model.parameters(), self.clamp_grad_val)
         self.optim.step()

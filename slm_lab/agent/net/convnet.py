@@ -1,4 +1,5 @@
 from slm_lab.agent.net import net_util
+from slm_lab.lib import logger
 from torch.autograd import Variable
 from torch.nn import Module
 import torch
@@ -143,6 +144,7 @@ class ConvNet(nn.Module):
         loss = self.loss_fn(out, y)
         loss.backward()
         if self.clamp_grad:
+            logger.debug(f'Clipping gradient...')
             torch.nn.utils.clip_grad_norm(
                 self.conv_model.parameters(), self.clamp_grad_val)
             torch.nn.utils.clip_grad_norm(

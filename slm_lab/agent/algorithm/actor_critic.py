@@ -115,7 +115,7 @@ class ActorCritic(Reinforce):
             loss = total_loss.data[0]
             total_loss.backward()
             if self.actorcritic.clamp_grad:
-                logger.info("Clipping actorcritic gradient...")
+                logger.debug("Clipping actorcritic gradient...")
                 torch.nn.utils.clip_grad_norm(
                     self.actorcritic.params, self.actorcritic.clamp_grad_val)
             logger.debug2(f'Combined AC gradient norms: {self.actorcritic.get_grad_norms()}')
@@ -160,7 +160,7 @@ class ActorCritic(Reinforce):
         loss = policy_loss.data[0]
         policy_loss.backward()
         if self.actor.clamp_grad:
-            logger.info("Clipping actor gradient...")
+            logger.debug("Clipping actor gradient...")
             torch.nn.utils.clip_grad_norm(
                 self.actor.params, self.actor.clamp_grad_val)
         logger.debug2(f'Actor gradient norms: {self.actor.get_grad_norms()}')
