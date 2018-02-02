@@ -67,10 +67,10 @@ class VanillaDQN(Algorithm):
             # these control the trade off between exploration and exploitaton
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
             'gamma',  # the discount factor
-            'training_min_timestep',  # how long before starting training
-            'training_frequency',  # how often to train (once a few timesteps)
             'training_epoch',  # how many batches to train each time
+            'training_frequency',  # how often to train (once a few timesteps)
             'training_iters_per_batch',  # how many times to train each batch
+            'training_min_timestep',  # how long before starting training
         ]))
         self.nanflat_explore_var_a = [
             self.explore_var_start] * self.agent.body_num

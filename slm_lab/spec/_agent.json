@@ -84,19 +84,19 @@
     }
   },
   "VanillaDQN": {
-    "name": "DQN",
+    "name": "VanillaDQN",
     "algorithm": {
-      "name": "DQN",
+      "name": "VanillaDQN",
       "action_policy": "boltzmann",
       "action_policy_update": "linear_decay",
       "explore_var_start": 1.5,
       "explore_var_end": 0.3,
       "explore_anneal_epi": 10,
       "gamma": 0.999,
-      "training_min_timestep": 10,
-      "training_frequency": 1,
       "training_epoch": 5,
-      "training_iters_per_batch": 3
+      "training_frequency": 1,
+      "training_iters_per_batch": 3,
+      "training_min_timestep": 10
     },
     "memory": {
       "name": "Replay",
@@ -131,10 +131,10 @@
       "explore_var_end": 0.3,
       "explore_anneal_epi": 10,
       "gamma": 0.999,
-      "training_min_timestep": 10,
-      "training_frequency": 1,
       "training_epoch": 5,
-      "training_iters_per_batch": 3
+      "training_frequency": 1,
+      "training_iters_per_batch": 3,
+      "training_min_timestep": 10
     },
     "memory": {
       "name": "Replay",
@@ -172,10 +172,10 @@
       "explore_var_end": 0.3,
       "explore_anneal_epi": 10,
       "gamma": 0.999,
-      "training_frequency": 1,
-      "training_min_timestep": 10,
       "training_epoch": 5,
-      "training_iters_per_batch": 3
+      "training_frequency": 1,
+      "training_iters_per_batch": 3,
+      "training_min_timestep": 10
     },
     "memory": {
       "name": "Replay",
@@ -213,10 +213,10 @@
       "explore_var_end": 0.3,
       "explore_anneal_epi": 15,
       "gamma": 0.999,
-      "training_frequency": 1,
-      "training_min_timestep": 10,
       "training_epoch": 5,
-      "training_iters_per_batch": 3
+      "training_frequency": 1,
+      "training_iters_per_batch": 3,
+      "training_min_timestep": 10
     },
     "memory": {
       "name": "Replay",
@@ -254,10 +254,10 @@
       "explore_var_end": 0.3,
       "explore_anneal_epi": 15,
       "gamma": 0.999,
-      "training_min_timestep": 10,
-      "training_frequency": 1,
       "training_epoch": 5,
-      "training_iters_per_batch": 3
+      "training_frequency": 1,
+      "training_iters_per_batch": 3,
+      "training_min_timestep": 10
     },
     "memory": {
       "name": "Replay",
