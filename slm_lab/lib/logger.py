@@ -20,7 +20,6 @@ color_formatter = colorlog.ColoredFormatter(
 sh = logging.StreamHandler(sys.stdout)
 sh.setFormatter(color_formatter)
 lab_logger = logging.getLogger()
-lab_logger.setLevel(logging.INFO)
 lab_logger.addHandler(sh)
 lab_logger.propagate = False
 
@@ -49,6 +48,9 @@ if os.environ.get('prepath') is not None:
     lab_logger.addHandler(sh)
     lab_logger.addHandler(fh)
 
+if os.environ.get('log_level'):
+    lab_logger.setLevel(os.environ['log_level'])
+
 
 class DedentFormatter(logging.Formatter):
     '''The formatter to dedent broken python multiline string'''
@@ -69,6 +71,7 @@ def to_init(info_space, spec):
 
 def set_level(lvl):
     lab_logger.setLevel(lvl)
+    os.environ['log_level'] = lvl
 
 
 def critical(msg, *args, **kwargs):
