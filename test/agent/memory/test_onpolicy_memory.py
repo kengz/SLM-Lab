@@ -5,6 +5,28 @@ import numpy as np
 import pytest
 
 
+def memory_init_util(memory):
+    assert memory.true_size == 0
+    assert memory.total_experiences == 0
+    return True
+
+
+def memory_reset_util(memory, experiences):
+    memory.reset()
+    for i in range(2):
+        e = experiences[i]
+        memory.add_experience(*e)
+    memory.reset()
+    assert memory.true_size == 0
+    assert np.sum(memory.states) == 0
+    assert np.sum(memory.actions) == 0
+    assert np.sum(memory.rewards) == 0
+    assert np.sum(memory.next_states) == 0
+    assert np.sum(memory.dones) == 0
+    assert np.sum(memory.priorities) == 0
+    return True
+
+
 class TestOnPolicyBatchMemory:
     '''
     Class for unit testing OnPolicyBatchReplay memory
@@ -14,8 +36,7 @@ class TestOnPolicyBatchMemory:
     '''
     def test_memory_init(self, test_on_policy_batch_memory):
         memory = test_on_policy_batch_memory[0]
-        assert memory.true_size == 0
-        assert memory.total_experiences == 0
+        assert memory_init_util(memory)
 
     def test_add_experience(self, test_on_policy_batch_memory):
         '''Adds an experience to the memory.
@@ -73,19 +94,8 @@ class TestOnPolicyBatchMemory:
         '''Tests memory reset.
         Adds 2 experiences, then resets the memory and checks if all appropriate values have been zeroed'''
         memory = test_on_policy_batch_memory[0]
-        memory.reset()
         experiences = test_on_policy_batch_memory[2]
-        for i in range(2):
-            e = experiences[i]
-            memory.add_experience(*e)
-        memory.reset()
-        assert memory.true_size == 0
-        assert np.sum(memory.states) == 0
-        assert np.sum(memory.actions) == 0
-        assert np.sum(memory.rewards) == 0
-        assert np.sum(memory.next_states) == 0
-        assert np.sum(memory.dones) == 0
-        assert np.sum(memory.priorities) == 0
+        assert memory_reset_util(memory, experiences)
 
 
 class TestOnPolicyMemory:
@@ -97,8 +107,7 @@ class TestOnPolicyMemory:
     '''
     def test_memory_init(self, test_on_policy_episodic_memory):
         memory = test_on_policy_episodic_memory[0]
-        assert memory.true_size == 0
-        assert memory.total_experiences == 0
+        assert test_memory_init_util(memory)
 
     def test_add_experience(self, test_on_policy_episodic_memory):
         '''Adds an experience to the memory.
@@ -175,16 +184,5 @@ class TestOnPolicyMemory:
         '''Tests memory reset.
         Adds 2 experiences, then resets the memory and checks if all appropriate values have been zeroed'''
         memory = test_on_policy_episodic_memory[0]
-        memory.reset()
         experiences = test_on_policy_episodic_memory[2]
-        for i in range(2):
-            e = experiences[i]
-            memory.add_experience(*e)
-        memory.reset()
-        assert memory.true_size == 0
-        assert np.sum(memory.states) == 0
-        assert np.sum(memory.actions) == 0
-        assert np.sum(memory.rewards) == 0
-        assert np.sum(memory.next_states) == 0
-        assert np.sum(memory.dones) == 0
-        assert np.sum(memory.priorities) == 0
+        assert memory_reset_util(memory, experiences)
