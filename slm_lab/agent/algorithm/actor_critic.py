@@ -476,12 +476,15 @@ class ActorCritic(Reinforce):
         net_spec = self.agent.spec['net']
         self.set_action_fn()
         util.set_attr(self, _.pick(algorithm_spec, [
-            'gamma', 'lamda', 'num_step_returns',
-            'training_frequency', 'training_iters_per_batch',
+            'gamma',
             'num_epis_to_collect',
-            'add_entropy', 'entropy_weight', 'use_GAE',
+            'add_entropy', 'entropy_weight',
+            'continuous_action_clip',
+            'lamda', 'num_step_returns',
+            'training_frequency', 'training_iters_per_batch',
+            'use_GAE',
             'policy_loss_weight', 'val_loss_weight',
-            'continuous_action_clip'
+
         ]))
         util.set_attr(self, _.pick(net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',

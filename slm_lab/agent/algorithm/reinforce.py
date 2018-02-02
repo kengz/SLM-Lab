@@ -75,8 +75,7 @@ class Reinforce(Algorithm):
         util.set_attr(self, _.pick(algorithm_spec, [
             'gamma',
             'num_epis_to_collect',
-            'add_entropy',
-            'entropy_weight',
+            'add_entropy', 'entropy_weight',
             'continuous_action_clip'
         ]))
         util.set_attr(self, _.pick(net_spec, [
