@@ -68,11 +68,11 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        return self.action_policy(self, state, body, self.agent)
+        return self.action_policy(self, state, body)
 
     @lab_api
     def body_act_continuous(self, body, state):
-        return self.action_policy(self, state, body, self.agent)
+        return self.action_policy(self, state, body)
 
     def sample(self):
         '''Samples a batch from memory'''
@@ -134,6 +134,8 @@ class ActorCritic(Reinforce):
         '''Trains the network when the actor and critic are separate networks'''
         if self.to_train == 1:
             batch = self.sample()
+            logger.debug2(f'Batch states size: {batch["states"].size()}')
+            logger.debug3(f'Batch states: {batch["states"]}')
             critic_loss = self.train_critic(batch)
             actor_loss = self.train_actor(batch)
             total_loss = critic_loss + abs(actor_loss)

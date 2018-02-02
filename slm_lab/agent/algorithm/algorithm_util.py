@@ -15,7 +15,7 @@ from torch.distributions import Categorical, Normal
 def create_torch_state(state, state_buffer, recurrent=False, length=0):
     if recurrent:
         '''Create sequence of inputs for recurrent net'''
-        # logger.info(f'length of state buffer: {length}')
+        logger.debug3(f'length of state buffer: {length}')
         if len(state_buffer) < length:
             PAD = np.zeros_like(state)
             while len(state_buffer) < length:
@@ -25,6 +25,7 @@ def create_torch_state(state, state_buffer, recurrent=False, length=0):
         torch_state.unsqueeze_(dim=0)
     else:
         torch_state = Variable(torch.from_numpy(state).float())
+    logger.debug2(f'State size: {torch_size.size()}')
     return torch_state
 
 
@@ -149,10 +150,10 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
 
 
 # Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
-def act_with_softmax(algo, state, body, agent):
+def act_with_softmax(algo, state, body):
     '''Assumes actor network outputs one variable; the logits of a categorical probability distribution over the actions'''
-    recurrent = agent.len_state_buffer > 0
-    torch_state = create_torch_state(state, body.state_buffer, recurrent, agent.len_state_buffer)
+    recurrent = algo.agent.len_state_buffer > 0
+    torch_state = create_torch_state(state, body.state_buffer, recurrent, algo.agent.len_state_buffer)
     out = algo.get_actor_output(torch_state, evaluate=False)
     if type(out) is list:
         out = out[0]
@@ -169,7 +170,7 @@ def act_with_softmax(algo, state, body, agent):
 
 
 # Denny Britz has a very helpful implementation of an Actor Critic algorithm. This function is adapted from his approach. I highly recommend looking at his full implementation available here https://github.com/dennybritz/reinforcement-learning/blob/master/PolicyGradient/Continuous%20MountainCar%20Actor%20Critic%20Solution.ipynb
-def act_with_gaussian(algo, state, body, agent):
+def act_with_gaussian(algo, state, body):
     '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
     torch_state = Variable(torch.from_numpy(state).float())
     [mu, sigma] = algo.get_actor_output(torch_state, evaluate=False)
@@ -186,7 +187,7 @@ def act_with_gaussian(algo, state, body, agent):
     return action.data
 
 
-def act_with_multivariate_gaussian(agent, state, body):
+def act_with_multivariate_gaussian(algo, state, body):
     '''Assumes net outputs two tensors which contain the mean and std dev of a multivariate normal distribution'''
     raise NotImplementedError
     return np.nan
