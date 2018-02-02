@@ -28,6 +28,10 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
+      "resource": {
+        "cpu": 4,
+        "gpu": 0
+      },
       "train_mode": false
     },
     "search": {

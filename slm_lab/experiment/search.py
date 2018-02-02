@@ -98,15 +98,18 @@ class RaySearch:
         config_space = self.build_config_space()
         spec = self.experiment.spec
         try:
-            ray_trials = run_experiments({
+            ray_experiment = {
                 spec['name']: {
                     'run': 'lab_trial',
                     'stop': {'done': True},
-                    # 'resource': {'cpu': 4, 'gpu': 0},
                     'config': config_space,
                     'repeat': spec['meta']['max_trial'],
                 }
-            })
+            }
+            if 'resource' in spec['meta']:
+                ray_experiment[spec['name']].update(
+                    {'resource': spec['meta']['resource']})
+            ray_trials = run_experiments(ray_experiment)
             logger.info('Ray.tune experiment.search.run() done.')
             # compose data format for experiment analysis
             trial_data_dict = {}
