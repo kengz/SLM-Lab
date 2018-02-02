@@ -68,6 +68,16 @@ def load_params(net, flattened):
     return net
 
 
+def init_gru_layer(gru):
+    '''Initializes a GRU layer in with xavier_uniform initialization and 0 biases'''
+    for layer_p in layer._all_weights:
+        for p in layer_p:
+            if 'weight' in p:
+                torch.nn.init.xavier_uniform(layer.__getattr__(p))
+            elif 'bias' in p:
+                torch.nn.init.constant(layer.__getattr__(p), 0.0)
+
+
 def init_layers(layers, layer_type):
     '''
     Initializes all of the layers of type 'Linear', 'Conv', or GRU, using xavier uniform initialization for the weights and 0.01 for the biases, 0.0 for the biases of the GRU.
@@ -81,12 +91,7 @@ def init_layers(layers, layer_type):
                 torch.nn.init.uniform(layer.weight.data)
                 torch.nn.init.constant(layer.bias.data, biasinit)
             elif layer_type == 'GRU':
-                for layer_p in layer._all_weights:
-                    for p in layer_p:
-                        if 'weight' in p:
-                            torch.nn.init.xavier_uniform(layer.__getattr__(p))
-                        elif 'bias' in p:
-                            torch.nn.init.constant(layer.__getattr__(p), 0.0)
+                init_gru_layer(layer)
             else:
                 torch.nn.init.xavier_uniform(layer.weight.data)
                 torch.nn.init.constant(layer.bias.data, biasinit)

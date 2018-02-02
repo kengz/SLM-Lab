@@ -46,11 +46,8 @@ class TestNet:
 
     @flaky(max_runs=10)
     def test_trainable(self, test_nets):
-        '''
-        Checks that trainable parameters actually change during training
-        net: instance of torch.nn.Module or a derived class
-        returns: true if all trainable params change, false otherwise
-        '''
+        '''Checks that trainable parameters actually change during training.
+        returns: true if all trainable params change, false otherwise'''
         net = test_nets[0]
         # Skipping test for 'MLPHeterogenousHeads' because there is no training step function
         if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
