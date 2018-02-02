@@ -41,7 +41,7 @@
         "clamp_grad_val": 25.0,
         "decay_lr": true,
         "decay_lr_min_timestep": 1000,
-        "decay_lr_frequency": 500,
+        "decay_lr_frequency": 600,
       }
     }],
     "env": [{
@@ -53,7 +53,7 @@
       "num": 1
     },
     "meta": {
-      "max_episode": 150,
+      "max_episode": 200,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true

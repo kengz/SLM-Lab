@@ -158,7 +158,12 @@ class RecurrentNet(nn.Module):
         Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
         '''
         self.set_train_eval(train=False)
-        return self(x).data
+        outs = self(x)
+        if type(outs) is list:
+            outs = [o.data for o in outs]
+        else:
+            outs = outs.data
+        return outs
 
     def set_train_eval(self, train=True):
         '''Helper function to set model in training or evaluation mode'''
