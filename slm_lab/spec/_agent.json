@@ -79,8 +79,8 @@
       "clamp_grad": false,
       "clamp_grad_val": 1.0,
       "decay_lr": true,
-      "decay_lr_min_timestep": 1400,
-      "decay_lr_frequency": 400
+      "decay_lr_frequency": 400,
+      "decay_lr_min_timestep": 1400
     }
   },
   "VanillaDQN": {
@@ -117,8 +117,8 @@
       "clamp_grad_val": 1.0,
       "batch_size": 32,
       "decay_lr": true,
-      "decay_lr_min_timestep": 1400,
-      "decay_lr_frequency": 400
+      "decay_lr_frequency": 400,
+      "decay_lr_min_timestep": 1400
     }
   },
   "DQN": {
@@ -155,8 +155,8 @@
       "clamp_grad_val": 1.0,
       "batch_size": 32,
       "decay_lr": true,
-      "decay_lr_min_timestep": 1400,
       "decay_lr_frequency": 400,
+      "decay_lr_min_timestep": 1400,
       "update_type": "replace",
       "update_frequency": 1,
       "polyak_weight": 0.9
@@ -196,8 +196,8 @@
       "clamp_grad_val": 1.0,
       "batch_size": 32,
       "decay_lr": true,
-      "decay_lr_min_timestep": 1400,
       "decay_lr_frequency": 400,
+      "decay_lr_min_timestep": 1400,
       "update_type": "replace",
       "update_frequency": 1,
       "polyak_weight": 0.9
@@ -213,8 +213,8 @@
       "explore_var_end": 0.3,
       "explore_anneal_epi": 15,
       "gamma": 0.999,
-      "training_min_timestep": 10,
       "training_frequency": 1,
+      "training_min_timestep": 10,
       "training_epoch": 5,
       "training_iters_per_batch": 3
     },
@@ -237,8 +237,8 @@
       "clamp_grad_val": 1.0,
       "batch_size": 32,
       "decay_lr": true,
-      "decay_lr_min_timestep": 1400,
       "decay_lr_frequency": 400,
+      "decay_lr_min_timestep": 1400,
       "update_type": "replace",
       "update_frequency": 1,
       "polyak_weight": 0.9
@@ -278,8 +278,8 @@
       "clamp_grad_val": 1.0,
       "batch_size": 32,
       "decay_lr": true,
-      "decay_lr_min_timestep": 1400,
       "decay_lr_frequency": 400,
+      "decay_lr_min_timestep": 1400,
       "update_type": "replace",
       "update_frequency": 1,
       "polyak_weight": 0.9
