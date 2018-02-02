@@ -16,6 +16,7 @@ class Reinforce(Algorithm):
     Implementation of REINFORCE (Williams, 1992) with baseline for discrete or continuous actions http://www-anw.cs.umass.edu/~barto/courses/cs687/williams92simple.pdf
     Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
     Algorithm:
+        0. Collect n episodes of data
         1. At each timestep in an episode
             - Calculate the advantage of that timestep
             - Multiply the advantage by the negative of the log probability of the action taken
