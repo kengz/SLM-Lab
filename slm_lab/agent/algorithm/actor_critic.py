@@ -139,7 +139,7 @@ class ActorCritic(Reinforce):
             critic_loss = self.train_critic(batch)
             actor_loss = self.train_actor(batch)
             total_loss = critic_loss + abs(actor_loss)
-            logger.debug("Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}".format(
+            logger.info("Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}".format(
                 critic_loss, abs(actor_loss), total_loss
             ))
             return total_loss
@@ -163,7 +163,7 @@ class ActorCritic(Reinforce):
             logger.debug("Clipping actor gradient...")
             torch.nn.utils.clip_grad_norm(
                 self.actor.params, self.actor.clamp_grad_val)
-        logger.debug2(f'Actor gradient norms: {self.actor.get_grad_norms()}')
+        logger.debug(f'Actor gradient norms: {self.actor.get_grad_norms()}')
         self.actor.optim.step()
         self.to_train = 0
         self.saved_log_probs = []
@@ -182,7 +182,7 @@ class ActorCritic(Reinforce):
             target = self.get_target(batch, critic_specific=True)
             y = Variable(target)
             loss = self.critic.training_step(batch['states'], y).data[0]
-            logger.debug2(f'Critic grad norms: {self.critic.get_grad_norms()}')
+            logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss
 
     def train_critic_episodic(self, batch):
@@ -450,6 +450,7 @@ class ActorCritic(Reinforce):
         '''
         if net_type == 'MLPseparate':
             self.is_shared_architecture = False
+            self.is_recurrent = False
             if self.is_discrete:
                 self.actor = getattr(net, 'MLPNet')(
                     state_dim, net_spec['hid_layers'], action_dim, **actor_kwargs)
@@ -462,6 +463,7 @@ class ActorCritic(Reinforce):
                 state_dim, net_spec['hid_layers'], 1, **critic_kwargs)
         elif net_type == 'MLPshared':
             self.is_shared_architecture = True
+            self.is_recurrent = False
             if self.is_discrete:
                 self.actorcritic = getattr(net, 'MLPHeterogenousHeads')(
                     state_dim, net_spec['hid_layers'], [action_dim, 1], **actor_kwargs)
@@ -472,6 +474,7 @@ class ActorCritic(Reinforce):
                 logger.info("Feedforward net, continuous action space, actor and critic combined into single network, sharing params")
         elif net_type == 'Recurrentseparate':
             self.is_shared_architecture = False
+            self.is_recurrent = True
             if self.is_discrete:
                 self.actor = getattr(net, 'RecurrentNet')(
                     state_dim, mem_spec['length_history'], net_spec['state_processing_layers'], net_spec['hid_dim'], action_dim, **actor_kwargs)
@@ -484,6 +487,7 @@ class ActorCritic(Reinforce):
                 state_dim, mem_spec['length_history'], net_spec['state_processing_layers'], net_spec['hid_dim'], 1, **critic_kwargs)
         elif net_type == 'Recurrentshared':
             self.is_shared_architecture = True
+            self.is_recurrent = True
             if self.is_discrete:
                 self.actorcritic = getattr(net, 'RecurrentNet')(
                     state_dim, mem_spec['length_history'], net_spec['state_processing_layers'], net_spec['hid_dim'], [action_dim, 1], **actor_kwargs)

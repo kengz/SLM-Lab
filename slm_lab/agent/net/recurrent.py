@@ -87,7 +87,8 @@ class RecurrentNet(nn.Module):
         self.params = list(self.state_proc_model.parameters()) + list(self.rnn.parameters())
         for layer in self.out_layers:
             self.params.extend(list(layer.parameters()))
-        self.optim = net_util.get_optim_multinet(self.params, optim_param)
+        self.optim_param = optim_param
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
@@ -122,11 +123,15 @@ class RecurrentNet(nn.Module):
         hid_0 = self.init_hidden(batch_size)
         _, final_hid = self.rnn(x, hid_0)
         final_hid.squeeze_(dim=0)
+        # logger.info(f'All hidden outputs: {_.data}')
+        # logger.info(f'Final hidden output: {final_hid.data}')
         '''If only one head, return tensor, otherwise return list of outputs'''
         outs = []
         for layer in self.out_layers:
             out = layer(final_hid)
             outs.append(out)
+        # logger.info(f'Network input: {x.data}')
+        # logger.info(f'Network output: {outs}')
         if len(outs) == 1:
             return outs[0]
         else:
@@ -170,6 +175,7 @@ class RecurrentNet(nn.Module):
         Biases are all set to 0.01
         '''
         net_util.init_layers(self.layers, 'Linear')
+        net_util.init_layers(self.layers, 'GRU')
 
     def gather_trainable_params(self):
         '''
@@ -200,3 +206,10 @@ class RecurrentNet(nn.Module):
         for layer in self.out_layers:
             s += '\n' + layer.__str__()
         return s
+
+    def update_lr(self):
+        assert 'lr' in self.optim_param
+        old_lr = self.optim_param['lr']
+        self.optim_param['lr'] = old_lr * 0.9
+        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)

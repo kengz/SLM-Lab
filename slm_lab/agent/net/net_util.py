@@ -70,8 +70,8 @@ def load_params(net, flattened):
 
 def init_layers(layers, layer_type):
     '''
-    Initializes all of the layers of type 'Linear' or 'Conv' using xavier uniform initialization for the weights and 0.01 for the biases
-    Initializes all layers of type 'BatchNorm' using univform initialization for the weights and the same as above for the biases
+    Initializes all of the layers of type 'Linear', 'Conv', or GRU, using xavier uniform initialization for the weights and 0.01 for the biases, 0.0 for the biases of the GRU.
+    Initializes all layers of type 'BatchNorm' using uniform initialization for the weights and the same as above for the biases
     '''
     biasinit = 0.01
     for layer in layers:
@@ -79,6 +79,14 @@ def init_layers(layers, layer_type):
         if classname.find(layer_type) != -1:
             if layer_type == 'BatchNorm':
                 torch.nn.init.uniform(layer.weight.data)
+                torch.nn.init.constant(layer.bias.data, biasinit)
+            elif layer_type == 'GRU':
+                for layer_p in layer._all_weights:
+                    for p in layer_p:
+                        if 'weight' in p:
+                            torch.nn.init.xavier_uniform(layer.__getattr__(p))
+                        elif 'bias' in p:
+                            torch.nn.init.constant(layer.__getattr__(p), 0.0)
             else:
                 torch.nn.init.xavier_uniform(layer.weight.data)
-            layer.bias.data.fill_(biasinit)
+                torch.nn.init.constant(layer.bias.data, biasinit)

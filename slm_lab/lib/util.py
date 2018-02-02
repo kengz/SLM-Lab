@@ -396,7 +396,7 @@ def override_dev_spec(spec):
 
 def override_test_spec(spec):
     spec['meta'] = {
-        'max_episode': 20,
+        'max_episode': 2,
         'max_session': 1,
         'max_trial': 2,
         'train_mode': True,
@@ -655,7 +655,9 @@ def to_torch_batch(batch):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch Variable'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
     for k in float_data_names:
+        # print(f'Original {k}: {batch[k]}')
         batch[k] = Variable(torch.from_numpy(batch[k]).float())
+        # print(f'Torch {k}: {batch[k]}')
     return batch
 
 
@@ -675,12 +677,9 @@ def to_torch_nested_batch_helper(batch, float_data_names):
     '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable. Excludes keys not included in float_data_names'''
     for k in float_data_names:
         k_b = []
-        logger.debug3(f'Converting batch to torch...')
-        logger.debug3(f'Original {k}: {batch[k]}')
         for x in batch[k]:
             nx = np.asarray(x)
             tx = Variable(torch.from_numpy(nx).float())
             k_b.append(tx)
         batch[k] = k_b
-        logger.debug3(f'Torch {k}: {batch[k]}')
     return batch

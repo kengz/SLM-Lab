@@ -73,6 +73,9 @@ class OnPolicyReplay(Memory):
             self.nan_idxs.append(1)
             logger.debug2(f'Nan reward')
         self.last_state = state
+        '''Clear bodies state buffer for recurent nets'''
+        if done:
+            self.body.state_buffer = []
 
     def add_experience(self,
                        state,
@@ -246,7 +249,6 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
         batch['dones'] = self.dones
         batch['priorities'] = self.priorities
         self.reset()
-        logger.debug3(f'Batch: {batch}')
         return batch
 
     def add_history(self, data):
