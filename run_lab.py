@@ -26,7 +26,6 @@ def run_by_mode(spec_file, spec_name, run_mode):
         pass
     elif run_mode == 'dev':
         os.environ['PY_ENV'] = 'test'  # to not save in viz
-        logger.set_level('DEBUG')
         spec = util.override_dev_spec(spec)
         Trial(spec).run()
     else:

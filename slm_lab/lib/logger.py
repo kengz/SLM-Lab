@@ -50,6 +50,8 @@ if os.environ.get('prepath') is not None:
 
 if os.environ.get('log_level'):
     lab_logger.setLevel(os.environ['log_level'])
+else:
+    lab_logger.setLevel('INFO')
 
 
 class DedentFormatter(logging.Formatter):
