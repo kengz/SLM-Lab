@@ -675,9 +675,12 @@ def to_torch_nested_batch_helper(batch, float_data_names):
     '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable. Excludes keys not included in float_data_names'''
     for k in float_data_names:
         k_b = []
+        logger.debug3(f'Converting batch to torch...')
+        logger.debug3(f'Original {k}: {batch[k]}')
         for x in batch[k]:
             nx = np.asarray(x)
             tx = Variable(torch.from_numpy(nx).float())
             k_b.append(tx)
         batch[k] = k_b
+        logger.debug3(f'Torch {k}: {batch[k]}')
     return batch

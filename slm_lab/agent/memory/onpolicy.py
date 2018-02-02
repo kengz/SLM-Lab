@@ -244,7 +244,7 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
         batch['dones'] = self.dones
         batch['priorities'] = self.priorities
         self.reset()
-        # logger.info(f'Batch: {batch}')
+        logger.debug3(f'Batch: {batch}')
         return batch
 
     def add_history(self, data):
