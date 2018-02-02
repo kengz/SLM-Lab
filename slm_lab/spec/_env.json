@@ -9,33 +9,18 @@
     "max_timestep": 200,
     "max_episode": 1000
   },
-  "gridworld_easy": {
+  "gridworld": {
     "name": "gridworld",
-    "max_timestep": 50,
-    "max_episode": 1000,
-    "unity": {
-      "gridSize": 6,
-      "numObstacles": 2,
-      "numGoals": 1
-    }
+    "max_timestep": 100,
+    "max_episode": 1000
   },
-  "gridworld_medium": {
+  "gridworld_hard": {
     "name": "gridworld",
     "max_timestep": 100,
     "max_episode": 1000,
     "unity": {
       "gridSize": 10,
       "numObstacles": 3,
-      "numGoals": 1
-    }
-  },
-  "gridworld_hard": {
-    "name": "gridworld",
-    "max_timestep": 500,
-    "max_episode": 10000,
-    "unity": {
-      "gridSize": 20,
-      "numObstacles": 10,
       "numGoals": 1
     }
   },
