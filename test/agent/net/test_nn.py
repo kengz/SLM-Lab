@@ -44,17 +44,22 @@ class TestNet:
             dummy_output = Variable(torch.zeros((2, net.out_dim)))
         return dummy_output
 
+    def check_net_type(self, net):
+        # Skipping test for 'MLPHeterogenousHeads' because there is no training step function
+        if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
+            return True
+        # Skipping test for 'RecurrentNet' with multiple output heads because training step not applicable
+        elif net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1:
+            return True
+        else:
+            return False
+
     @flaky(max_runs=10)
     def test_trainable(self, test_nets):
         '''Checks that trainable parameters actually change during training.
         returns: true if all trainable params change, false otherwise'''
         net = test_nets[0]
-        # Skipping test for 'MLPHeterogenousHeads' because there is no training step function
-        if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
-            assert True is True
-            return
-        # Skipping test for 'RecurrentNet' with multiple output heads because training step not applicable
-        if net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1:
+        if check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
             return
         flag = True
@@ -84,12 +89,7 @@ class TestNet:
         returns: true if all fixed params don't change, false otherwise
         '''
         net = test_nets[0]
-        # Skipping test for 'MLPHeterogenousHeads' because there is no training step function
-        if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
-            assert True is True
-            return
-        # Skipping test for 'RecurrentNet' with multiple output heads because training step not applicable
-        if net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1:
+        if check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
             return
         flag = True
@@ -113,12 +113,7 @@ class TestNet:
     def test_gradient_size(self, test_nets):
         ''' Checks for exploding and vanishing gradients '''
         net = test_nets[0]
-        # Skipping test for 'MLPHeterogenousHeads' because there is no training step function
-        if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
-            assert True is True
-            return
-        # Skipping test for 'RecurrentNet' with multiple output heads because training step not applicable
-        if net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1:
+        if check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
             return
         x = self.init_dummy_input(net)
