@@ -53,6 +53,7 @@ class VanillaDQN(Algorithm):
         util.set_attr(self, _.pick(net_spec, [
             # how many examples to learn per training iteration
             'batch_size',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
         ]))
 
     def init_algo_params(self):
@@ -70,9 +71,6 @@ class VanillaDQN(Algorithm):
             'training_frequency',  # how often to train (once a few timesteps)
             'training_epoch',  # how many batches to train each time
             'training_iters_per_batch',  # how many times to train each batch
-        ]))
-        util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
         ]))
         self.nanflat_explore_var_a = [
             self.explore_var_start] * self.agent.body_num
@@ -207,6 +205,7 @@ class DQNBase(VanillaDQN):
         self.eval_net = self.target_net
         util.set_attr(self, _.pick(net_spec, [
             'batch_size',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
         ]))
         # Default network update params for base
         self.update_type = 'replace'
@@ -324,7 +323,9 @@ class MultitaskDQN(DQN):
         self.online_net = self.target_net
         self.eval_net = self.target_net
         util.set_attr(self, _.pick(net_spec, [
-            'batch_size', 'update_type', 'update_frequency', 'polyak_weight',
+            'batch_size',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'update_type', 'update_frequency', 'polyak_weight',
         ]))
 
     def sample(self):
@@ -451,7 +452,9 @@ class MultiHeadDQN(MultitaskDQN):
         self.online_net = self.target_net
         self.eval_net = self.target_net
         util.set_attr(self, _.pick(net_spec, [
-            'batch_size', 'update_type', 'update_frequency', 'polyak_weight',
+            'batch_size',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'update_type', 'update_frequency', 'polyak_weight',
         ]))
 
     def sample(self):
@@ -499,7 +502,8 @@ class MultiHeadDQN(MultitaskDQN):
             q_targets_max_b = batch_b['rewards'].data + self.gamma * \
                 torch.mul((1 - batch_b['dones'].data), q_next_st_maxs[b])
             q_targets_maxs.append(q_targets_max_b)
-            logger.debug2(f'Batch {b}, Q targets max: {q_targets_max_b.size()}')
+            logger.debug2(
+                f'Batch {b}, Q targets max: {q_targets_max_b.size()}')
         # As in the standard DQN we only want to train the network for the action selected
         # For all other actions we set the q_target = q_sts
         # So that the loss for these actions is 0
