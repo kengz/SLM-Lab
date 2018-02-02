@@ -488,17 +488,11 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
             f'Run more than {MA_WINDOW} episodes to compute proper fitness')
         return no_fitness_sr
     std = FITNESS_STD.get(env_name)
-    aeb_df['total_t'] = aeb_df['t'].cumsum()
     if std is None:
+        std = FITNESS_STD.get('template')
         logger.warn(
-            f'The fitness standard for env {env_name} is not built yet. Contact author. Using an ad-hoc self-standard for now.')
-        std_timestep = min(
-            aeb_df['reward'].idxmax() + MA_WINDOW, len(aeb_df) - 1)
-        std = {
-            'rand_epi_reward': aeb_df['reward'].min(),
-            'std_epi_reward': aeb_df['reward'].max(),
-            'std_timestep': aeb_df.iloc[std_timestep]['total_t'],
-        }
+            f'The fitness standard for env {env_name} is not built yet. Contact author. Using a template standard for now.')
+    aeb_df['total_t'] = aeb_df['t'].cumsum()
     aeb_df['strength'] = calc_strength(
         aeb_df, std['rand_epi_reward'], std['std_epi_reward'])
     aeb_df['strength_ma'] = aeb_df['strength'].rolling(MA_WINDOW).mean()
