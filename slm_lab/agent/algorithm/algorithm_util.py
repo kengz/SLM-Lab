@@ -180,7 +180,8 @@ def act_with_softmax(algo, state, body):
 # Denny Britz has a very helpful implementation of an Actor Critic algorithm. This function is adapted from his approach. I highly recommend looking at his full implementation available here https://github.com/dennybritz/reinforcement-learning/blob/master/PolicyGradient/Continuous%20MountainCar%20Actor%20Critic%20Solution.ipynb
 def act_with_gaussian(algo, state, body):
     '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
-    torch_state = Variable(torch.from_numpy(state).float())
+    recurrent = algo.agent.len_state_buffer > 0
+    torch_state = create_torch_state(state, body.state_buffer, recurrent, algo.agent.len_state_buffer)
     [mu, sigma] = algo.get_actor_output(torch_state, evaluate=False)
     sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0
     m = Normal(mu, sigma)
