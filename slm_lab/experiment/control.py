@@ -34,7 +34,8 @@ class Session:
     then return the session data.
     '''
 
-    def __init__(self, spec, info_space=InfoSpace()):
+    def __init__(self, spec, info_space=None):
+        info_space = info_space or InfoSpace()
         init_thread_vars(info_space, spec, unit='session')
         self.spec = spec
         self.info_space = info_space
@@ -92,7 +93,8 @@ class Trial:
     then return the trial data.
     '''
 
-    def __init__(self, spec, info_space=InfoSpace()):
+    def __init__(self, spec, info_space=None):
+        info_space = info_space or InfoSpace()
         init_thread_vars(info_space, spec, unit='trial')
         self.spec = spec
         self.info_space = info_space
@@ -144,7 +146,8 @@ class Experiment:
     '''
     # TODO metaspec to specify specs to run, can be sourced from evolution suggestion
 
-    def __init__(self, spec, info_space=InfoSpace()):
+    def __init__(self, spec, info_space=None):
+        info_space = info_space or InfoSpace()
         init_thread_vars(info_space, spec, unit='experiment')
         self.spec = spec
         spec['meta']['train_mode'] = True
