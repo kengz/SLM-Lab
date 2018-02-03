@@ -15,11 +15,8 @@
   "env": {
     "discrete": [
       "CartPole-v0",
-      "2dball",
       "Acrobot-v1",
-      "MountainCar-v0",
-      "LunarLander-v2",
-      "gridworld"
+      "MountainCar-v0"
     ],
     "continuous": [
       "CartPole-v1",

@@ -1,5 +1,8 @@
 {
-  "demo.json": {
-    "dqn_cartpole": "train"
+  "reinforce.json": {
+    "reinforce_benchmark": "benchmark"
+  },
+  "actor_critic.json": {
+    "actor_critic_benchmark": "benchmark"
   }
 }
