@@ -53,7 +53,7 @@
       "entropy_weight": 0.01,
       "continuous_action_clip": 2.0,
       "lamda": 1.0,
-      "num_step_returns": 10,
+      "num_step_returns": 100,
       "training_frequency": 32,
       "training_iters_per_batch": 8,
       "use_GAE": true,
@@ -70,17 +70,17 @@
       "use_same_optim": false,
       "optim_actor": {
         "name": "Adam",
-        "lr": 0.01
+        "lr": 0.02
       },
       "optim_critic": {
         "name": "Adam",
-        "lr": 0.01
+        "lr": 0.02
       },
       "clamp_grad": false,
       "clamp_grad_val": 1.0,
       "decay_lr": true,
-      "decay_lr_frequency": 400,
-      "decay_lr_min_timestep": 1400
+      "decay_lr_frequency": 1000,
+      "decay_lr_min_timestep": 2000
     }
   },
   "VanillaDQN": {
