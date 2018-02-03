@@ -10,6 +10,7 @@ Interchange agent and env for the reversed benchmark.
 '''
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+import os
 import pydash as _
 
 AGENT_TEMPLATES = util.read(f'{spec_util.SPEC_DIR}/_agent.json')
@@ -32,6 +33,14 @@ def generate_specs(spec, const='agent'):
     else:
         const_name = _.get(spec, 'env.0.name')
         variant = 'agent'
+
+    filepath = f'{spec_util.SPEC_DIR}/benchmark_{const_name}.json'
+    if os.path.exists(filepath):
+        logger.info(
+            f'Benchmark for {const_name} exists at {filepath} already, not overwriting.')
+        benchmark_specs = util.read(filepath)
+        return benchmark_specs
+
     logger.info(f'Generating benchmark for {const_name}')
     benchmark_variants = []
     benchmark_specs = {}
@@ -44,7 +53,7 @@ def generate_specs(spec, const='agent'):
         benchmark_spec[variant] = [vary_spec]
         spec_name = f'{const_name}_{vary_name}'
         benchmark_specs[spec_name] = benchmark_spec
-    filepath = f'{spec_util.SPEC_DIR}/benchmark_{const_name}.json'
+
     util.write(benchmark_specs, filepath)
     logger.info(
         f'Benchmark for {const_name} written to {filepath}.')
