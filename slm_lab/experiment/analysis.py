@@ -96,7 +96,7 @@ def calc_trial_fitness_df(trial):
     return trial_fitness_df
 
 
-def plot_session(info_space, session_spec, session_data):
+def plot_session(session_spec, info_space, session_data):
     '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
     aeb_count = len(session_data)
     if aeb_count <= 8:
@@ -169,7 +169,7 @@ def plot_experiment(experiment_spec, experiment_df):
 
 
 # TODO persist each session's full data to DB from here
-def save_session_data(info_space, spec, session_mdp_data, session_data, session_fitness_df, session_fig):
+def save_session_data(spec, info_space, session_mdp_data, session_data, session_fitness_df, session_fig):
     '''
     Save the session data: session_mdp_df, session_df, session_fitness_df, session_graph.
     session_data is saved as session_df; multi-indexed with (a,e,b), 3 extra levels
@@ -178,7 +178,7 @@ def save_session_data(info_space, spec, session_mdp_data, session_data, session_
     session_data = util.session_df_to_data(session_df)
     Likewise for session_mdp_df
     '''
-    prepath = get_prepath(info_space, spec, unit='session')
+    prepath = get_prepath(spec, info_space, unit='session')
     logger.info(f'Saving session data to {prepath}')
     if session_mdp_data is not None:  # not from retro analysis
         session_mdp_df = pd.concat(session_mdp_data, axis=1)
@@ -191,16 +191,16 @@ def save_session_data(info_space, spec, session_mdp_data, session_data, session_
         viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
 
-def save_trial_data(info_space, spec, trial_fitness_df):
+def save_trial_data(spec, info_space, trial_fitness_df):
     '''Save the trial data: spec, trial_fitness_df.'''
-    prepath = get_prepath(info_space, spec, unit='trial')
+    prepath = get_prepath(spec, info_space, unit='trial')
     logger.info(f'Saving trial data to {prepath}')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
 
 
-def save_experiment_data(info_space, spec, experiment_df, experiment_fig):
+def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
     '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
-    prepath = get_prepath(info_space, spec, unit='experiment')
+    prepath = get_prepath(spec, info_space, unit='experiment')
     logger.info(f'Saving experiment data to {prepath}')
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
@@ -220,9 +220,9 @@ def analyze_session(session, session_data=None):
     else:  # from retro analysis
         session_mdp_data = None
     session_fitness_df = calc_session_fitness_df(session, session_data)
-    session_fig = plot_session(session.info_space, session.spec, session_data)
+    session_fig = plot_session(session.spec, session.info_space, session_data)
     save_session_data(
-        session.info_space, session.spec, session_mdp_data, session_data, session_fitness_df, session_fig)
+        session.spec, session.info_space, session_mdp_data, session_data, session_fitness_df, session_fig)
     return session_fitness_df
 
 
@@ -233,7 +233,7 @@ def analyze_trial(trial):
     '''
     logger.info('Analyzing trial')
     trial_fitness_df = calc_trial_fitness_df(trial)
-    save_trial_data(trial.info_space, trial.spec, trial_fitness_df)
+    save_trial_data(trial.spec, trial.info_space, trial_fitness_df)
     return trial_fitness_df
 
 
@@ -256,11 +256,11 @@ def analyze_experiment(experiment):
     logger.info(f'Experiment data:\n{experiment_df}')
     experiment_fig = plot_experiment(experiment.spec, experiment_df)
     save_experiment_data(
-        experiment.info_space, experiment.spec, experiment_df, experiment_fig)
+        experiment.spec, experiment.info_space, experiment_df, experiment_fig)
     return experiment_df
 
 
-def get_prepath(info_space, spec, unit='experiment'):
+def get_prepath(spec, info_space, unit='experiment'):
     spec_name = spec['name']
     predir = f'data/{spec_name}_{info_space.experiment_ts}'
     prename = f'{spec_name}'
@@ -274,9 +274,9 @@ def get_prepath(info_space, spec, unit='experiment'):
     return prepath
 
 
-def save_spec(info_space, spec, unit='experiment'):
+def save_spec(spec, info_space, unit='experiment'):
     '''Save spec to proper path. Called at Experiment or Trial init.'''
-    prepath = get_prepath(info_space, spec, unit)
+    prepath = get_prepath(spec, info_space, unit)
     util.write(spec, f'{prepath}_spec.json')
 
 
@@ -340,7 +340,7 @@ def mock_info_space_spec(predir, trial_index=None, session_index=None):
     if session_index is not None:
         info_space.set('session', session_index)
     spec = util.read(filepath)
-    return info_space, spec
+    return spec, info_space
 
 
 def retro_analyze_sessions(predir):
@@ -352,7 +352,7 @@ def retro_analyze_sessions(predir):
             tn, sn = filename.replace('_session_df.csv', '').split('_')[-2:]
             trial_index, session_index = int(tn[1:]), int(sn[1:])
             # mock session
-            info_space, spec = mock_info_space_spec(
+            spec, info_space = mock_info_space_spec(
                 predir, trial_index, session_index)
             session = Session(spec, info_space)
             session_data = session_data_from_file(
@@ -369,7 +369,7 @@ def retro_analyze_trials(predir):
             tn = filename.replace('_trial_data.json', '').split('_')[-1]
             trial_index = int(tn[1:])
             # mock trial
-            info_space, spec = mock_info_space_spec(predir, trial_index)
+            spec, info_space = mock_info_space_spec(predir, trial_index)
             trial = Trial(spec, info_space)
             session_data_dict = session_data_dict_from_file(
                 predir, trial_index)
@@ -382,7 +382,7 @@ def retro_analyze_experiment(predir):
     logger.info('Retro-analyzing experiment from file')
     from slm_lab.experiment.control import Experiment
     # mock experiment
-    info_space, spec = mock_info_space_spec(predir)
+    spec, info_space = mock_info_space_spec(predir)
     experiment = Experiment(spec, info_space)
     trial_data_dict = trial_data_dict_from_file(predir)
     experiment.trial_data_dict = trial_data_dict
@@ -427,7 +427,7 @@ def plot_session_from_file(session_df_filepath):
     info_space.set('experiment', 0)
     info_space.set('trial', int(tn[1:]))
     info_space.set('session', int(sn[1:]))
-    session_fig = plot_session(info_space, session_spec, session_data)
+    session_fig = plot_session(session_spec, info_space, session_data)
     viz.save_image(session_fig, session_df_filepath.replace(
         '_session_df.csv', '_session_graph.png'))
 
