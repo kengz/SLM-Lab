@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 
 
+@flaky
 class TestMemory:
     '''
     Base class for unit testing replay memory
@@ -68,6 +69,7 @@ class TestMemory:
         assert batch['dones'].shape == (batch_size, 1)
         assert batch['priorities'].shape == (batch_size, 1)
 
+    @flaky(max_runs=10)
     def test_sample_changes(self, test_memory):
         '''Tests if memory.current_batch_indices changes from sample to sample'''
         memory = test_memory[0]
