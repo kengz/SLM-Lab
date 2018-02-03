@@ -294,6 +294,7 @@ def trial_data_dict_from_file(predir):
 
 def mock_info_space_spec(predir):
     '''Helper for retro analysis to build mock info_space and spec'''
+    from slm_lab.experiment.monitor import InfoSpace
     spec_name = spec_name_from_filepath(predir)
     experiment_ts = predir.split('/')[1].replace(f'{spec_name}_', '')
     info_space = InfoSpace()
@@ -302,19 +303,34 @@ def mock_info_space_spec(predir):
     return info_space, spec
 
 
-def analyze_experiment_from_file(predir):
+def retro_analyze(predir):
+    retro_analyze_session(predir)
+    restro_analyze_trial(predir)
+    retro_analyze_experiment(predir)
+    return
+
+
+def retro_analyze_session(predir):
+    return
+
+
+def restro_analyze_trial(predir):
+    from slm_lab.experiment.control import Experiment
+    return
+
+
+def retro_analyze_experiment(predir):
     '''
-    Method to analyze experiment from file.
+    Method to analyze experiment from file after it ran.
     Read trial_data from files, constructs an experiment, then run analyze_experiment
     @example
 
     from slm_lab.experiment import analysis
     predir = 'data/reinforce_cartpole_2018_01_22_211751'
-    analysis.analyze_experiment_from_file(predir)
+    analysis.retro_analyze_experiment(predir)
     '''
-    logger.info('Analyzing experiment from file')
+    logger.info('Retro-analyzing experiment from file')
     from slm_lab.experiment.control import Experiment
-    from slm_lab.experiment.monitor import InfoSpace
     trial_data_dict = trial_data_dict_from_file(predir)
     # create experiment with needed data to call analyze_experiment()
     info_space, spec = mock_info_space_spec(predir)
