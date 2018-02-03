@@ -49,9 +49,10 @@ def generate_specs(spec, const='agent'):
             benchmark_variants.extend(BENCHMARK[variant][dist_cont])
     for vary_name in benchmark_variants:
         vary_spec = ENV_TEMPLATES[vary_name]
-        benchmark_spec = spec.copy()
-        benchmark_spec[variant] = [vary_spec]
         spec_name = f'{const_name}_{vary_name}'
+        benchmark_spec = spec.copy()
+        benchmark_spec['name'] = spec_name
+        benchmark_spec[variant] = [vary_spec]
         benchmark_specs[spec_name] = benchmark_spec
 
     util.write(benchmark_specs, filepath)
