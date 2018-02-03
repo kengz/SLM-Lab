@@ -11,8 +11,12 @@ class TestNet:
     '''
     Base class for unit testing neural network training
     '''
+
     def init_dummy_input(self, net):
-        if type(net.in_dim) is int:
+        if net.__class__.__name__.find('RecurrentNet') != -1:
+            dummy_input = Variable(torch.ones(
+                2, net.sequence_length, net.in_dim))
+        elif type(net.in_dim) is int:
             dummy_input = Variable(torch.ones(2, net.in_dim))
         elif net.__class__.__name__.find('MultiMLPNet') != -1:
             dummy_input = []
@@ -23,7 +27,14 @@ class TestNet:
         return dummy_input
 
     def init_dummy_output(self, net):
-        if net.__class__.__name__.find('MultiMLPNet') != -1:
+        if net.__class__.__name__.find('RecurrentNet') != -1:
+            if len(net.out_dim) == 1:
+                dummy_output = Variable(torch.ones(2, net.out_dim[0]))
+            else:
+                dummy_output = []
+                for outdim in net.out_dim:
+                    dummy_output.append(Variable(torch.zeros((2, outdim))))
+        elif net.__class__.__name__.find('MultiMLPNet') != -1:
             dummy_output = []
             for outdim in net.out_dim:
                 dummy_output.append(Variable(torch.zeros((2, outdim[-1]))))
@@ -35,16 +46,22 @@ class TestNet:
             dummy_output = Variable(torch.zeros((2, net.out_dim)))
         return dummy_output
 
-    @flaky(max_runs=10)
-    def test_trainable(self, test_nets):
-        '''
-        Checks that trainable parameters actually change during training
-        net: instance of torch.nn.Module or a derived class
-        returns: true if all trainable params change, false otherwise
-        '''
-        net = test_nets[0]
+    def check_net_type(self, net):
         # Skipping test for 'MLPHeterogenousHeads' because there is no training step function
         if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
+            return True
+        # Skipping test for 'RecurrentNet' with multiple output heads because training step not applicable
+        elif net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1:
+            return True
+        else:
+            return False
+
+    @flaky(max_runs=10)
+    def test_trainable(self, test_nets):
+        '''Checks that trainable parameters actually change during training.
+        returns: true if all trainable params change, false otherwise'''
+        net = test_nets[0]
+        if check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
             return
         flag = True
@@ -74,8 +91,7 @@ class TestNet:
         returns: true if all fixed params don't change, false otherwise
         '''
         net = test_nets[0]
-        # Skipping test for 'MLPHeterogenousHeads' because there is no training step function
-        if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
+        if check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
             return
         flag = True
@@ -99,8 +115,7 @@ class TestNet:
     def test_gradient_size(self, test_nets):
         ''' Checks for exploding and vanishing gradients '''
         net = test_nets[0]
-        # Skipping test for 'MLPHeterogenousHeads' because there is no training step function
-        if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
+        if check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
             return
         x = self.init_dummy_input(net)
@@ -136,6 +151,14 @@ class TestNet:
         #       (includes it)
         assert loss is None
 
+    def check_multi_output(self, net):
+        if net.__class__.__name__.find('MultiMLPNet') != -1 or \
+           net.__class__.__name__.find('MLPHeterogenousHeads') != -1 or \
+           (net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1):
+            return True
+        else:
+            return False
+
     def test_output(self, test_nets):
         ''' Checks that the output of the net is not zero or nan '''
         net = test_nets[0]
@@ -143,8 +166,7 @@ class TestNet:
         dummy_output = self.init_dummy_output(net)
         out = net(dummy_input)
         flag = True
-        if net.__class__.__name__.find('MultiMLPNet') != -1 or \
-           net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
+        if check_multi_output(net):
             zero_test = sum([torch.sum(torch.abs(x.data)) for x in out])
             nan_test = np.isnan(sum([torch.sum(x.data) for x in out]))
         else:

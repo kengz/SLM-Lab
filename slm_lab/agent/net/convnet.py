@@ -1,4 +1,5 @@
 from slm_lab.agent.net import net_util
+from slm_lab.lib import logger
 from torch.autograd import Variable
 from torch.nn import Module
 import torch
@@ -11,7 +12,10 @@ class ConvNet(nn.Module):
     Class for generating arbitrary sized convolutional neural network,
     with optional batch normalization
 
-    Assumed that a single input example is organized into a 3D tensor
+    Assumes that a single input example is organized into a 3D tensor.
+    The entire model consists of two parts:
+         1. self.conv_model
+         2. self.dense_model
     '''
 
     def __init__(self,
@@ -140,6 +144,7 @@ class ConvNet(nn.Module):
         loss = self.loss_fn(out, y)
         loss.backward()
         if self.clamp_grad:
+            logger.debug(f'Clipping gradient...')
             torch.nn.utils.clip_grad_norm(
                 self.conv_model.parameters(), self.clamp_grad_val)
             torch.nn.utils.clip_grad_norm(

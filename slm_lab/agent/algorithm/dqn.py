@@ -280,7 +280,7 @@ class DQN(DQNBase):
 
 class DoubleDQN(DQN):
     def init_nets(self):
-        super(DoubleDQN).init_nets()
+        super(DoubleDQN, self).init_nets()
         self.online_net = self.net
         self.eval_net = self.target_net
 

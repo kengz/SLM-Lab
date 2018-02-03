@@ -1,6 +1,7 @@
-from slm_lab.agent import AgentSpace
+from slm_lab.agent import AgentSpace, Body
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
+from slm_lab.agent.net.recurrent import RecurrentNet
 from slm_lab.agent.net.feedforward import MLPNet, MultiMLPNet, MLPHeterogenousHeads
 from slm_lab.env import EnvSpace
 # from slm_lab.experiment.control import Trial
@@ -8,6 +9,7 @@ from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 from torch.autograd import Variable
+import numpy as np
 import pandas as pd
 import pytest
 import torch
@@ -383,6 +385,132 @@ def test_multiline_str():
         },
         None,
         2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 4,
+            'sequence_length': 8,
+            'state_processing_layers': [64],
+            'hid_dim': 50,
+            'out_dim': 10,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 4,
+            'sequence_length': 8,
+            'state_processing_layers': [],
+            'hid_dim': 50,
+            'out_dim': 10,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 4,
+            'sequence_length': 8,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 50,
+            'out_dim': 10,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 4,
+            'sequence_length': 8,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 100,
+            'out_dim': 10,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 6,
+            'sequence_length': 8,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 100,
+            'out_dim': 10,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 6,
+            'sequence_length': 16,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 100,
+            'out_dim': 10,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 6,
+            'sequence_length': 16,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 100,
+            'out_dim': 20,
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 6,
+            'sequence_length': 16,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 100,
+            'out_dim': [20, 10],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
+    ), (
+        RecurrentNet,
+        {
+            'in_dim': 6,
+            'sequence_length': 16,
+            'state_processing_layers': [64, 32],
+            'hid_dim': 100,
+            'out_dim': [20, 10, 1],
+            'hid_layers_activation': 'tanh',
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+        },
+        None,
+        2
     ),
 ])
 def test_nets(request):
@@ -396,33 +524,88 @@ def test_data_gen(request):
     return request.param
 
 
-@pytest.fixture(scope="session", params=[
-    ((5, 1, 1),
-     2,
-     [[1, 1, 1, 2, 0], [2, 2, 2, 3, 0], [3, 3, 3, 4, 0], [4, 4, 4, 5, 0],
-      [5, 5, 5, 6, 0], [6, 6, 6, 7, 0], [7, 7, 7, 8, 0], [8, 8, 8, 9, 0],
-      [9, 9, 9, 10, 0], [10, 10, 10, 11, 0], [11, 11, 11, 0, 1]]),
-    ((8, 3, 2),
-     3,
-     [[[1, 1, 1], [1, 1], 1, [2, 2, 2], 0],
-      [[2, 2, 2], [2, 2], 2, [3, 3, 3], 0],
-      [[3, 3, 3], [3, 3], 3, [4, 4, 4], 0],
-      [[4, 4, 4], [4, 4], 4, [5, 5, 5], 0],
-      [[5, 5, 5], [5, 5], 5, [6, 6, 6], 0],
-      [[6, 6, 6], [6, 6], 6, [7, 7, 7], 0],
-      [[7, 7, 7], [7, 7], 7, [8, 8, 8], 0],
-      [[8, 8, 8], [8, 8], 8, [9, 9, 9], 0],
-      [[9, 9, 9], [9, 9], 9, [10, 10, 10], 0],
-      [[10, 10, 10], [10, 10], 10, [11, 11, 11], 0],
-      [[11, 11, 11], [11, 11], 11, [0, 0, 0], 1]])])
-def test_memory(request, test_agent):
-    max_size, state_dim, action_dim = request.param[0]
-    batch_size = request.param[1]
-    experiences = request.param[2]
-    body = test_agent.bodies[0]
-    body.max_size = max_size
-    body.state_dim = state_dim
-    body.action_dim = action_dim
-    memory = Replay(test_agent)
-    memory.post_body_init()
-    return [memory, batch_size, experiences]
+@pytest.fixture(scope='session', params=[
+    (
+        2,
+        [
+            [np.asarray([1, 1, 1, 1]), 1, 1, np.asarray([2, 2, 2, 2]), 1],
+            [np.asarray([2, 2, 2, 2]), 1, 2, np.asarray([3, 3, 3, 3]), 2],
+            [np.asarray([3, 3, 3, 3]), 1, 3, np.asarray([4, 4, 4, 4]), 3],
+            [np.asarray([4, 4, 4, 4]), 1, 4, np.asarray([5, 5, 5, 5]), 4],
+            [np.asarray([5, 5, 5, 5]), 1, 5, np.asarray([6, 6, 6, 6]), 5],
+            [np.asarray([6, 6, 6, 6]), 1, 6, np.asarray([7, 7, 7, 7]), 6],
+            [np.asarray([7, 7, 7, 7]), 1, 7, np.asarray([8, 8, 8, 8]), 7],
+            [np.asarray([8, 8, 8, 8]), 1, 8, np.asarray([9, 9, 9, 9]), 8],
+        ]
+    ),
+])
+def test_memory(request):
+    memspec = spec_util.get('base.json', 'base_memory')
+    memspec = util.override_test_spec(memspec)
+    aeb_mem_space = AEBSpace(memspec, InfoSpace())
+    env_space = EnvSpace(memspec, aeb_mem_space)
+    agent_space = AgentSpace(memspec, aeb_mem_space)
+    aeb_mem_space.init_body_space()
+    aeb_mem_space.post_body_init()
+    agent = agent_space.agents[0]
+    body = agent.nanflat_body_a[0]
+    res = (body.memory, ) + request.param
+    return res
+
+
+@pytest.fixture(scope='session', params=[
+    (
+        2,
+        [
+            [np.asarray([1, 1, 1, 1]), 1, 1, np.asarray([2, 2, 2, 2]), 0],
+            [np.asarray([2, 2, 2, 2]), 1, 2, np.asarray([3, 3, 3, 3]), 0],
+            [np.asarray([3, 3, 3, 3]), 1, 3, np.asarray([4, 4, 4, 4]), 0],
+            [np.asarray([4, 4, 4, 4]), 1, 4, np.asarray([5, 5, 5, 5]), 0],
+            [np.asarray([5, 5, 5, 5]), 1, 5, np.asarray([6, 6, 6, 6]), 0],
+            [np.asarray([6, 6, 6, 6]), 1, 6, np.asarray([7, 7, 7, 7]), 0],
+            [np.asarray([7, 7, 7, 7]), 1, 7, np.asarray([8, 8, 8, 8]), 0],
+            [np.asarray([8, 8, 8, 8]), 1, 8, np.asarray([9, 9, 9, 9]), 1],
+        ]
+    ),
+])
+def test_on_policy_episodic_memory(request):
+    memspec = spec_util.get('base.json', 'base_on_policy_memory')
+    memspec = util.override_test_spec(memspec)
+    aeb_mem_space = AEBSpace(memspec, InfoSpace())
+    env_space = EnvSpace(memspec, aeb_mem_space)
+    agent_space = AgentSpace(memspec, aeb_mem_space)
+    aeb_mem_space.init_body_space()
+    aeb_mem_space.post_body_init()
+    agent = agent_space.agents[0]
+    body = agent.nanflat_body_a[0]
+    res = (body.memory, ) + request.param
+    return res
+
+
+@pytest.fixture(scope='session', params=[
+    (
+        4,
+        [
+            [np.asarray([1, 1, 1, 1]), 1, 1, np.asarray([2, 2, 2, 2]), 0],
+            [np.asarray([2, 2, 2, 2]), 1, 2, np.asarray([3, 3, 3, 3]), 0],
+            [np.asarray([3, 3, 3, 3]), 1, 3, np.asarray([4, 4, 4, 4]), 0],
+            [np.asarray([4, 4, 4, 4]), 1, 4, np.asarray([5, 5, 5, 5]), 0],
+            [np.asarray([5, 5, 5, 5]), 1, 5, np.asarray([6, 6, 6, 6]), 0],
+            [np.asarray([6, 6, 6, 6]), 1, 6, np.asarray([7, 7, 7, 7]), 0],
+            [np.asarray([7, 7, 7, 7]), 1, 7, np.asarray([8, 8, 8, 8]), 0],
+            [np.asarray([8, 8, 8, 8]), 1, 8, np.asarray([9, 9, 9, 9]), 1],
+        ]
+    ),
+])
+def test_on_policy_batch_memory(request):
+    memspec = spec_util.get('base.json', 'base_on_policy_batch_memory')
+    memspec = util.override_test_spec(memspec)
+    aeb_mem_space = AEBSpace(memspec, InfoSpace())
+    env_space = EnvSpace(memspec, aeb_mem_space)
+    agent_space = AgentSpace(memspec, aeb_mem_space)
+    aeb_mem_space.init_body_space()
+    aeb_mem_space.post_body_init()
+    agent = agent_space.agents[0]
+    body = agent.nanflat_body_a[0]
+    res = (body.memory, ) + request.param
+    return res

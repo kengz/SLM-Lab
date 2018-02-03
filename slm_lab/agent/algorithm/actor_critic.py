@@ -68,13 +68,11 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        '''Returns a discrete action'''
-        return self.action_policy(self, state)
+        return self.action_policy(self, state, body)
 
     @lab_api
     def body_act_continuous(self, body, state):
-        '''Returns a continuous action'''
-        return self.action_policy(self, state)
+        return self.action_policy(self, state, body)
 
     def sample(self):
         '''Samples a batch from memory'''
@@ -117,9 +115,9 @@ class ActorCritic(Reinforce):
             loss = total_loss.data[0]
             total_loss.backward()
             if self.actorcritic.clamp_grad:
-                logger.info("Clipping actor gradient...")
+                logger.debug("Clipping actorcritic gradient...")
                 torch.nn.utils.clip_grad_norm(
-                    self.actorcritic.parameters(), self.actorcritic.clamp_grad_val)
+                    self.actorcritic.params, self.actorcritic.clamp_grad_val)
             logger.debug2(f'Combined AC gradient norms: {self.actorcritic.get_grad_norms()}')
             self.actorcritic.optim.step()
             self.to_train = 0
@@ -136,6 +134,7 @@ class ActorCritic(Reinforce):
         '''Trains the network when the actor and critic are separate networks'''
         if self.to_train == 1:
             batch = self.sample()
+            logger.debug3(f'Batch states: {batch["states"]}')
             critic_loss = self.train_critic(batch)
             actor_loss = self.train_actor(batch)
             total_loss = critic_loss + abs(actor_loss)
@@ -160,10 +159,10 @@ class ActorCritic(Reinforce):
         loss = policy_loss.data[0]
         policy_loss.backward()
         if self.actor.clamp_grad:
-            logger.info("Clipping actor gradient...")
+            logger.debug("Clipping actor gradient...")
             torch.nn.utils.clip_grad_norm(
-                self.actor.parameters(), self.actor.clamp_grad_val)
-        logger.debug2(f'Actor gradient norms: {self.actor.get_grad_norms()}')
+                self.actor.params, self.actor.clamp_grad_val)
+        logger.debug(f'Actor gradient norms: {self.actor.get_grad_norms()}')
         self.actor.optim.step()
         self.to_train = 0
         self.saved_log_probs = []
@@ -182,7 +181,7 @@ class ActorCritic(Reinforce):
             target = self.get_target(batch, critic_specific=True)
             y = Variable(target)
             loss = self.critic.training_step(batch['states'], y).data[0]
-            logger.debug2(f'Critic grad norms: {self.critic.get_grad_norms()}')
+            logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss
 
     def train_critic_episodic(self, batch):
@@ -414,6 +413,7 @@ class ActorCritic(Reinforce):
         action_dim = body.action_dim
         self.is_discrete = body.is_discrete
         net_spec = self.agent.spec['net']
+        mem_spec = self.agent.spec['memory']
         net_type = self.agent.spec['net']['type']
         actor_kwargs = util.compact_dict(dict(
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -443,31 +443,60 @@ class ActorCritic(Reinforce):
                    - If the networks share weights then the single network returns a list.
                         - Continuous action spaces: The return list contains 3 elements: The first element contains the mean output for the actor (policy), the second element the std dev of the policy, and the third element is the state-value estimated by the network.
                         - Discrete action spaces: The return list contains 2 element. The first element is a tensor containing the logits for a categorical probability distribution over the actions. The second element contains the state-value estimated by the network.
+           3. If the network type is feedforward or recurrent
+                    - Feedforward networks take a single state as input and require an OnPolicyReplay or OnPolicyBatchReplay memory
+                    - Recurrent networks take n states as input and require an OnPolicyNStepReplay or OnPolicyNStepBatchReplay memory
         '''
         if net_type == 'MLPseparate':
             self.is_shared_architecture = False
+            self.is_recurrent = False
             if self.is_discrete:
                 self.actor = getattr(net, 'MLPNet')(
                     state_dim, net_spec['hid_layers'], action_dim, **actor_kwargs)
-                logger.info("Discrete action space, actor and critic are separate networks")
+                logger.info("Feedforward net, discrete action space, actor and critic are separate networks")
             else:
                 self.actor = getattr(net, 'MLPHeterogenousHeads')(
                     state_dim, net_spec['hid_layers'], [action_dim, action_dim], **actor_kwargs)
-                logger.info("Continuous action space, actor and critic are separate networks")
+                logger.info("Feedforward net, continuous action space, actor and critic are separate networks")
             self.critic = getattr(net, 'MLPNet')(
                 state_dim, net_spec['hid_layers'], 1, **critic_kwargs)
         elif net_type == 'MLPshared':
             self.is_shared_architecture = True
+            self.is_recurrent = False
             if self.is_discrete:
                 self.actorcritic = getattr(net, 'MLPHeterogenousHeads')(
                     state_dim, net_spec['hid_layers'], [action_dim, 1], **actor_kwargs)
-                logger.info("Discrete action space, actor and critic combined into single network, sharing params")
+                logger.info("Feedforward net, discrete action space, actor and critic combined into single network, sharing params")
             else:
                 self.actorcritic = getattr(net, 'MLPHeterogenousHeads')(
                     state_dim, net_spec['hid_layers'], [action_dim, action_dim, 1], **actor_kwargs)
-                logger.info("Continuous action space, actor and critic combined into single network, sharing params")
+                logger.info("Feedforward net, continuous action space, actor and critic combined into single network, sharing params")
+        elif net_type == 'Recurrentseparate':
+            self.is_shared_architecture = False
+            self.is_recurrent = True
+            if self.is_discrete:
+                self.actor = getattr(net, 'RecurrentNet')(
+                    state_dim, mem_spec['length_history'], net_spec['state_processing_layers'], net_spec['hid_dim'], action_dim, **actor_kwargs)
+                logger.info("Recurrent net, discrete action space, actor and critic are separate networks")
+            else:
+                self.actor = getattr(net, 'RecurrentNet')(
+                    state_dim, mem_spec['length_history'], net_spec['state_processing_layers'], net_spec['hid_dim'], [action_dim, action_dim], **actor_kwargs)
+                logger.info("Recurrent net, continuous action space, actor and critic are separate networks")
+            self.critic = getattr(net, 'RecurrentNet')(
+                state_dim, mem_spec['length_history'], net_spec['state_processing_layers'], net_spec['hid_dim'], 1, **critic_kwargs)
+        elif net_type == 'Recurrentshared':
+            self.is_shared_architecture = True
+            self.is_recurrent = True
+            if self.is_discrete:
+                self.actorcritic = getattr(net, 'RecurrentNet')(
+                    state_dim, mem_spec['length_history'], net_spec['state_processing_layers'], net_spec['hid_dim'], [action_dim, 1], **actor_kwargs)
+                logger.info("Recurrent net, discrete action space, actor and critic combined into single network, sharing params")
+            else:
+                self.actorcritic = getattr(net, 'RecurrentNet')(
+                    state_dim, mem_spec['length_history'], net_spec['state_processing_layers'], net_spec['hid_dim'], [action_dim, action_dim, 1], **actor_kwargs)
+                logger.info("Recurrent net, continuous action space, actor and critic combined into single network, sharing params")
         else:
-            logger.warn("Incorrect network type. Please use 'MLPshared' or MLPseparate'.")
+            logger.warn("Incorrect network type. Please use 'MLPshared', MLPseparate', Recurrentshared, or Recurrentseparate.")
             raise NotImplementedError
 
     def init_algo_params(self):
@@ -520,9 +549,9 @@ class ActorCritic(Reinforce):
         '''Flags if memory is episodic or discrete. This affects how the target and advantage functions are calculated'''
         body = self.agent.nanflat_body_a[0]
         memory = body.memory.__class__.__name__
-        if memory.find('OnPolicyReplay') != -1:
+        if (memory.find('OnPolicyReplay') != -1) or (memory.find('OnPolicyNStepReplay') != -1):
             self.is_episodic = True
-        elif memory.find('OnPolicyBatchReplay') != -1:
+        elif (memory.find('OnPolicyBatchReplay') != -1) or (memory.find('OnPolicyNStepBatchReplay') != -1):
             self.is_episodic = False
         else:
             logger.warn(f'Error: Memory {memory} not recognized')

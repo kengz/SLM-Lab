@@ -16,6 +16,7 @@ class Reinforce(Algorithm):
     Implementation of REINFORCE (Williams, 1992) with baseline for discrete or continuous actions http://www-anw.cs.umass.edu/~barto/courses/cs687/williams92simple.pdf
     Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
     Algorithm:
+        0. Collect n episodes of data
         1. At each timestep in an episode
             - Calculate the advantage of that timestep
             - Multiply the advantage by the negative of the log probability of the action taken
@@ -88,11 +89,11 @@ class Reinforce(Algorithm):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        return self.action_policy(self, state)
+        return self.action_policy(self, state, body)
 
     @lab_api
     def body_act_continuous(self, body, state):
-        return self.action_policy(self, state)
+        return self.action_policy(self, state, body)
 
     def sample(self):
         '''Samples a batch from memory'''
@@ -115,7 +116,7 @@ class Reinforce(Algorithm):
             loss = policy_loss.data[0]
             policy_loss.backward()
             if self.net.clamp_grad:
-                logger.info("Clipping gradient...")
+                logger.debug("Clipping gradient...")
                 torch.nn.utils.clip_grad_norm(
                     self.net.parameters(), self.net.clamp_grad_val)
             logger.debug2(f'Gradient norms: {self.net.get_grad_norms()}')

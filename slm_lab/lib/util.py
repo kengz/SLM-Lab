@@ -385,6 +385,7 @@ def nonan_all(v):
 
 
 def override_dev_spec(spec):
+    spec['env'][0]['max_episode'] = 20
     spec['meta'] = {
         'max_session': 1,
         'max_trial': 2,
@@ -394,6 +395,7 @@ def override_dev_spec(spec):
 
 
 def override_test_spec(spec):
+    spec['env'][0]['max_episode'] = 2
     spec['meta'] = {
         'max_session': 1,
         'max_trial': 2,
@@ -653,7 +655,9 @@ def to_torch_batch(batch):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch Variable'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
     for k in float_data_names:
+        # print(f'Original {k}: {batch[k]}')
         batch[k] = Variable(torch.from_numpy(batch[k]).float())
+        # print(f'Torch {k}: {batch[k]}')
     return batch
 
 
