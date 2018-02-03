@@ -1,4 +1,9 @@
 {
+  "template": {
+    "rand_epi_reward": 0,
+    "std_epi_reward": 1,
+    "std_timestep": 1
+  },
   "CartPole-v0": {
     "rand_epi_reward": 20,
     "std_epi_reward": 200,

@@ -28,13 +28,13 @@ SPEC_FORMAT = {
     "env": [{
         "name": str,
         "max_timestep": (type(None), int),
+        "max_episode": (type(None), int),
     }],
     "body": {
         "product": ["outer", "inner", "custom"],
         "num": (int, list),
     },
     "meta": {
-        "max_episode": (type(None), int),
         "max_session": int,
         "max_trial": (type(None), int),
         "train_mode": bool,
@@ -91,7 +91,8 @@ def check(spec):
 
 def check_all():
     '''Check all spec files, all specs.'''
-    spec_files = _.filter_(os.listdir(SPEC_DIR), lambda f: f.endswith('.json'))
+    spec_files = _.filter_(
+        os.listdir(SPEC_DIR), lambda f: f.endswith('.json') and not f.startswith('_'))
     for spec_file in spec_files:
         spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
         for spec_name, spec in spec_dict.items():

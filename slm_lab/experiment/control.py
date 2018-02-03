@@ -16,6 +16,15 @@ import pydash as _
 import torch
 
 
+def init_thread_vars(info_space, spec, unit):
+    '''Initialize thread variables from lab units that do not get carried over properly from master'''
+    if info_space.get(unit) is None:
+        info_space.tick(unit)
+    if logger.to_init(info_space, spec):
+        os.environ['PREPATH'] = analysis.get_prepath(info_space, spec)
+        importlib.reload(logger)
+
+
 class Session:
     '''
     The base unit of instantiated RL system.
@@ -26,12 +35,8 @@ class Session:
     '''
 
     def __init__(self, spec, info_space=InfoSpace()):
+        init_thread_vars(info_space, spec, unit='session')
         self.spec = spec
-        if info_space.get('session') is None:
-            info_space.tick('session')
-        if logger.to_init(info_space, spec):
-            os.environ['prepath'] = analysis.get_prepath(info_space, spec)
-            importlib.reload(logger)
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         # TODO option to set rand_seed. also set np random seed
@@ -88,12 +93,8 @@ class Trial:
     '''
 
     def __init__(self, spec, info_space=InfoSpace()):
+        init_thread_vars(info_space, spec, unit='trial')
         self.spec = spec
-        if info_space.get('trial') is None:
-            info_space.tick('trial')
-        if logger.to_init(info_space, spec):
-            os.environ['prepath'] = analysis.get_prepath(info_space, spec)
-            importlib.reload(logger)
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.session_data_dict = {}
@@ -144,13 +145,9 @@ class Experiment:
     # TODO metaspec to specify specs to run, can be sourced from evolution suggestion
 
     def __init__(self, spec, info_space=InfoSpace()):
+        init_thread_vars(info_space, spec, unit='experiment')
         self.spec = spec
         spec['meta']['train_mode'] = True
-        if info_space.get('experiment') is None:
-            info_space.tick('experiment')
-        if logger.to_init(info_space, spec):
-            os.environ['prepath'] = analysis.get_prepath(info_space, spec)
-            importlib.reload(logger)
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.trial_data_dict = {}

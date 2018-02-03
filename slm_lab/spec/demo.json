@@ -1,19 +1,19 @@
 {
   "dqn_cartpole": {
     "agent": [{
-      "name": "VanillaDQN",
+      "name": "DQN",
       "algorithm": {
-        "name": "VanillaDQN",
+        "name": "DQN",
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
+        "explore_var_start": 1.5,
+        "explore_var_end": 0.3,
+        "explore_anneal_epi": 10,
         "gamma": 0.999,
-        "explore_var_start": 5.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 15,
-        "training_min_timestep": 0,
-        "training_frequency": 1,
         "training_epoch": 5,
-        "training_iters_per_batch": 3
+        "training_frequency": 1,
+        "training_iters_per_batch": 3,
+        "training_min_timestep": 10
       },
       "memory": {
         "name": "Replay",
@@ -23,25 +23,26 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "update_type": "replace",
-        "update_frequency": 1.0,
-        "polyak_weight": 0.9,
         "optim": {
-          "name": "Adam"
+          "name": "Adam",
+          "lr": 0.02
         },
-        "batch_size": 32
+        "batch_size": 32,
+        "decay_lr": true,
+        "decay_lr_frequency": 400,
+        "decay_lr_min_timestep": 1400
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null
+      "max_timestep": null,
+      "max_episode": 200
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 200,
       "max_session": 1,
       "max_trial": 8,
       "train_mode": false

@@ -10,10 +10,10 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 10,
         "gamma": 0.999,
-        "training_min_timestep": 10,
-        "training_frequency": 1,
         "training_epoch": 5,
-        "training_iters_per_batch": 3
+        "training_frequency": 1,
+        "training_iters_per_batch": 3,
+        "training_min_timestep": 10
       },
       "memory": {
         "name": "Replay",
@@ -22,33 +22,30 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "relu",
+        "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
           "lr": 0.02
         },
-        "loss": {
-          "name": "mse_loss"
-        },
-        "batch_size": 16,
-        "update_type": "replace",
-        "update_frequency": 1.0,
-        "polyak_weight": 0,
-        "decay_lr": false,
-        "decay_lr_min_timestep": 1200,
+        "batch_size": 32,
+        "decay_lr": true,
         "decay_lr_frequency": 400,
+        "decay_lr_min_timestep": 1400,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_weight": 0.9
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null
+      "max_timestep": null,
+      "max_episode": 12
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 12,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
@@ -60,7 +57,7 @@
       "algorithm": {
         "name": "Reinforce",
         "action_policy": "default",
-        "gamma": 0.99,
+        "gamma": 0.95,
         "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
@@ -75,23 +72,25 @@
         "hid_layers_activation": "relu",
         "optim": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.01
         },
-        "decay_lr": true,
-        "decay_lr_min_timestep": 2000,
+        "clamp_grad": false,
+        "clamp_grad_val": 1.0,
+        "decay_lr": false,
         "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 2000
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null
+      "max_timestep": null,
+      "max_episode": 75
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 75,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
@@ -104,14 +103,14 @@
         "name": "ActorCritic",
         "action_policy": "default",
         "gamma": 0.99,
-        "lamda": 1.0,
-        "num_step_returns": 100,
-        "training_frequency": 32,
-        "training_iters_per_batch": 8,
         "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
+        "lamda": 1.0,
+        "num_step_returns": 100,
+        "training_frequency": 32,
+        "training_iters_per_batch": 8,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
@@ -135,20 +134,20 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": true,
-        "decay_lr_min_timestep": 2000,
         "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 2000
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null
+      "max_timestep": null,
+      "max_episode": 150
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_episode": 150,
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true

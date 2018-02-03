@@ -212,13 +212,14 @@ class AEBSpace:
             clock = env.clock
             done = env.done or clock.get('t') > env.max_timestep
             if done:
+                done_space.data[:, env.e, :] = 1.
+                done_space.swap_data[env.e, :, :] = 1.
                 msg = f'Done: trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e} epi {clock.get("epi")}, t {clock.get("t")}'
                 logger.info(msg)
                 clock.tick('epi')
             else:
                 clock.tick('t')
-            env_end_session = clock.get('epi') > _.get(
-                self.spec, 'meta.max_episode')
+            env_end_session = clock.get('epi') > env.max_episode
             body_end_sessions.append(env_end_session)
         end_session = all(body_end_sessions)
         return end_session

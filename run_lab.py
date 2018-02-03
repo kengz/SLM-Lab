@@ -5,8 +5,15 @@ Then run `yarn start` or `python run_lab.py`
 '''
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import logger, util
-from slm_lab.spec import spec_util
+from slm_lab.spec import spec_util, benchmarker
 import os
+
+
+def run_benchmark(spec, const):
+    benchmark_specs = benchmarker.generate_specs(spec, const)
+    logger.info('Running benchmark')
+    for _spec_name, benchmark_spec in benchmark_specs.items():
+        Experiment(benchmark_spec).run()
 
 
 def run_by_mode(spec_file, spec_name, run_mode):
@@ -21,12 +28,13 @@ def run_by_mode(spec_file, spec_name, run_mode):
         # TODO turn on save/load model mode
         # Session(spec).run()
         pass
+    elif run_mode == 'generate_benchmark':
+        benchmarker.generate_specs(spec, const='agent')
     elif run_mode == 'benchmark':
-        # TODO need to spread benchmark over spec on Experiment
-        pass
+        # TODO allow changing const to env
+        run_benchmark(spec, const='agent')
     elif run_mode == 'dev':
         os.environ['PY_ENV'] = 'test'  # to not save in viz
-        logger.set_level('DEBUG')
         spec = util.override_dev_spec(spec)
         Trial(spec).run()
     else:

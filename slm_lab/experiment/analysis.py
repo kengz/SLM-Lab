@@ -18,7 +18,7 @@ DATA_AGG_FNS = {
     'explore_var': 'mean',
 }
 FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
-FITNESS_STD = util.read('slm_lab/experiment/fitness_std.json')
+FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
 MA_WINDOW = 100
 
 
@@ -78,9 +78,9 @@ def calc_trial_fitness_df(trial):
     all_session_fitness_df = pd.concat(
         list(trial.session_data_dict.values()))
     for aeb in util.get_df_aeb_list(all_session_fitness_df):
-        aeb_df = all_session_fitness_df.loc[:, aeb]
-        aeb_fitness_sr = aeb_df.mean()
-        consistency = calc_consistency(aeb_df.values)
+        aeb_fitness_df = all_session_fitness_df.loc[:, aeb]
+        aeb_fitness_sr = aeb_fitness_df.mean()
+        consistency = calc_consistency(aeb_fitness_df)
         aeb_fitness_sr = aeb_fitness_sr.append(
             pd.Series({'consistency': consistency}))
         aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[trial.index])
@@ -446,16 +446,18 @@ def calc_stability(aeb_df):
     return stability
 
 
-def calc_consistency(fitness_vecs):
+def calc_consistency(aeb_fitness_df):
     '''
     Calculate the consistency of trial by the fitness_vectors of its sessions:
     consistency = ratio of non-outlier vectors
     Properties:
     - outliers are calculated using MAD modified z-score
-    - if all the fitness vectors are zero, consistency = 0
+    - if all the fitness vectors are zero or all strength are zero, consistency = 0
     - works for all sorts of session fitness vectors, with the standard scale
+    When an agent fails to achieve std_strength, it is meaningless to measure consistency or give false interpolation, so consistency is 0.
     '''
-    if ~np.any(fitness_vecs):
+    fitness_vecs = aeb_fitness_df.values
+    if ~np.any(fitness_vecs) or ~np.any(aeb_fitness_df['strength']):
         # no consistency if vectors all 0
         consistency = 0
     else:
@@ -487,11 +489,11 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
         logger.warn(
             f'Run more than {MA_WINDOW} episodes to compute proper fitness')
         return no_fitness_sr
-    if env_name not in FITNESS_STD:
-        logger.warn(
-            f'The fitness standard for env {env_name} is not built yet. Contact author.')
-        return no_fitness_sr
     std = FITNESS_STD.get(env_name)
+    if std is None:
+        std = FITNESS_STD.get('template')
+        logger.warn(
+            f'The fitness standard for env {env_name} is not built yet. Contact author. Using a template standard for now.')
     aeb_df['total_t'] = aeb_df['t'].cumsum()
     aeb_df['strength'] = calc_strength(
         aeb_df, std['rand_epi_reward'], std['std_epi_reward'])

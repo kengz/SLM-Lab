@@ -1,0 +1,31 @@
+{
+  "agent": {
+    "discrete": [
+      "Reinforce",
+      "ActorCritic",
+      "VanillaDQN",
+      "DQN",
+      "DoubleDQN"
+    ],
+    "continuous": [
+      "Reinforce",
+      "ActorCritic"
+    ]
+  },
+  "env": {
+    "discrete": [
+      "CartPole-v0",
+      "2dball",
+      "Acrobot-v1",
+      "MountainCar-v0",
+      "LunarLander-v2",
+      "gridworld"
+    ],
+    "continuous": [
+      "CartPole-v1",
+      "Pendulum-v0",
+      "MountainCarContinuous-v0",
+      "LunarLanderContinuous-v2"
+    ]
+  }
+}
