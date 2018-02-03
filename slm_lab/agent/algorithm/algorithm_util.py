@@ -12,6 +12,28 @@ from torch.autograd import Variable
 from torch.distributions import Categorical, Normal
 
 
+def create_torch_state(state, state_buffer, recurrent=False, length=0):
+    if recurrent:
+        '''Create sequence of inputs for recurrent net'''
+        logger.debug3(f'length of state buffer: {length}')
+        if len(state_buffer) < length:
+            PAD = np.zeros_like(state)
+            while len(state_buffer) < length:
+                state_buffer.insert(0, PAD)
+        state_buffer = np.asarray(state_buffer)
+        '''Hack to fix buffer not storing the very first state in an epi'''
+        if np.sum(state_buffer) == 0:
+            state_buffer[-1] = state
+        torch_state = Variable(torch.from_numpy(state_buffer).float())
+        torch_state.unsqueeze_(dim=0)
+    else:
+        torch_state = Variable(torch.from_numpy(state).float())
+    logger.debug2(f'State size: {torch_state.size()}')
+    logger.debug3(f'Original state: {state}')
+    logger.debug3(f'State: {torch_state}')
+    return torch_state
+
+
 def act_with_epsilon_greedy(body, state, net, epsilon):
     '''
     Single body action with probability epsilon to select a random action,
@@ -133,16 +155,20 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
 
 
 # Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
-def act_with_softmax(algo, state):
-    '''Assumes actor network outputs one variables; the logits of a categorical probability distribution over the actions'''
-    torch_state = Variable(torch.from_numpy(state).float())
+def act_with_softmax(algo, state, body):
+    '''Assumes actor network outputs one variable; the logits of a categorical probability distribution over the actions'''
+    recurrent = algo.agent.len_state_buffer > 0
+    torch_state = create_torch_state(state, body.state_buffer, recurrent, algo.agent.len_state_buffer)
     out = algo.get_actor_output(torch_state, evaluate=False)
     if type(out) is list:
         out = out[0]
+    out.squeeze_(dim=0)
     probs = F.softmax(out, dim=0)
     m = Categorical(probs)
     action = m.sample()
-    logger.debug2(
+    logger.debug2(f'Network output: {out.data}')
+    logger.debug2(f'Probability of actions: {probs.data}')
+    logger.debug(
         f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
     algo.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
@@ -152,9 +178,10 @@ def act_with_softmax(algo, state):
 
 
 # Denny Britz has a very helpful implementation of an Actor Critic algorithm. This function is adapted from his approach. I highly recommend looking at his full implementation available here https://github.com/dennybritz/reinforcement-learning/blob/master/PolicyGradient/Continuous%20MountainCar%20Actor%20Critic%20Solution.ipynb
-def act_with_gaussian(algo, state):
-    '''Assumes actor network outputs two variables; the mean and std dev of a normal distribution'''
-    torch_state = Variable(torch.from_numpy(state).float())
+def act_with_gaussian(algo, state, body):
+    '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
+    recurrent = algo.agent.len_state_buffer > 0
+    torch_state = create_torch_state(state, body.state_buffer, recurrent, algo.agent.len_state_buffer)
     [mu, sigma] = algo.get_actor_output(torch_state, evaluate=False)
     sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0
     m = Normal(mu, sigma)
@@ -169,7 +196,7 @@ def act_with_gaussian(algo, state):
     return action.data
 
 
-def act_with_multivariate_gaussian(body, state, net, stddev):
+def act_with_multivariate_gaussian(algo, state, body):
     '''Assumes net outputs two tensors which contain the mean and std dev of a multivariate normal distribution'''
     raise NotImplementedError
     return np.nan

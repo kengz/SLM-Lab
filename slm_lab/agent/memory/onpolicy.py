@@ -3,6 +3,7 @@ from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+import copy
 
 
 class OnPolicyReplay(Memory):
@@ -72,6 +73,9 @@ class OnPolicyReplay(Memory):
             self.nan_idxs.append(1)
             logger.debug2(f'Nan reward')
         self.last_state = state
+        '''Clear bodies state buffer for recurent nets'''
+        if done:
+            self.body.state_buffer = []
 
     def add_experience(self,
                        state,
@@ -146,6 +150,62 @@ class OnPolicyReplay(Memory):
         return batch
 
 
+class OnPolicyNStepReplay(OnPolicyReplay):
+    '''
+    Same as OnPolicyReplay Memory but returns the last `length_history` states and actions for input to a recurrent network.
+    Experiences with less than `length_history` previous examples are padded with a 0 valued state and action vector.
+    '''
+    def __init__(self, body):
+        super(OnPolicyNStepReplay, self).__init__(body)
+        self.length_history = self.body.agent.spec['memory']['length_history']
+
+    def sample(self):
+        '''
+        Returns all the examples from memory in a single batch
+        Batch is stored as a dict.
+        Keys are the names of the different elements of an experience. Values are nested lists of the corresponding sampled elements. Elements are nested into episodes
+        states and next_states have are further nested into sequences containing the previous `length_history` - 1 relevant states
+        e.g.
+            batch = {'states'      : [[[0,...,s0],[0,..,s0,s1],...,[s(k-lh),...,s(k-1),sk]],
+                                      [[0,...,s0],[0,..,s0,s1],...,[s(k-lh),...,s(k-1),sk]],
+                                      ...,]
+                     'actions'     : [[a_epi1],[a_epi2],...],
+                     'rewards'     : [[r_epi1],[r_epi2],...],
+                     'next_states' : [[[0,...,ns0],[0,..,ns0,ns1],...,[ns(k-lh),...,ns(k-1),nsk]],
+                                      [[0,...,ns0],[0,..,ns0,ns1],...,[ns(k-lh),...,ns(k-1),nsk]],
+                                      ...,]
+                     'dones'       : [[d_epi1],[d_epi2],...],
+                     'priorities'  : [[p_epi1],[p_epi2],...]}
+        '''
+        batch = {}
+        batch['states'] = self.add_history(self.states)
+        batch['actions'] = self.actions
+        batch['rewards'] = self.rewards
+        batch['next_states'] = self.add_history(self.next_states)
+        batch['dones'] = self.dones
+        batch['priorities'] = self.priorities
+        self.reset()
+        return batch
+
+    def add_history(self, data):
+        '''Adds previous self.length_history steps to data'''
+        '''Adds previous self.length_history steps to data'''
+        all_epi_data_with_history = []
+        for epi in data:
+            data_with_history = []
+            pad_data = copy.deepcopy(epi)
+            PAD = np.zeros_like(epi[0])
+            for i in range(self.length_history - 1):
+                pad_data.insert(0, PAD)
+            for i in range(len(epi)):
+                if i == len(epi) - 1:
+                    data_with_history.append(pad_data[i:])
+                else:
+                    data_with_history.append(pad_data[i:i + self.length_history])
+            all_epi_data_with_history.append(data_with_history)
+        return all_epi_data_with_history
+
+
 class OnPolicyBatchReplay(OnPolicyReplay):
     '''
     Same as OnPolicyReplay Memory with the following difference.
@@ -202,7 +262,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
         '''
         Returns all the examples from memory in a single batch
         Batch is stored as a dict.
-        Keys are the names of the different elements of an experience. Values are an array of the corresponding sampled elements
+        Keys are the names of the different elements of an experience. Values are a list of the corresponding sampled elements
         e.g.
             batch = {'states'      : states,
                      'actions'     : actions,
@@ -212,3 +272,51 @@ class OnPolicyBatchReplay(OnPolicyReplay):
                      'priorities'  : priorities}
         '''
         return super(OnPolicyBatchReplay, self).sample()
+
+
+class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
+    '''
+    Same as OnPolicyBatchReplay Memory but returns the last `length_history` states and actions for input to a recurrent network.
+    Experiences with less than `length_history` previous examples are padded with a 0 valued state and action vector.
+    '''
+    def __init__(self, body):
+        super(OnPolicyNStepBatchReplay, self).__init__(body)
+        self.length_history = self.body.agent.spec['memory']['length_history']
+
+    def sample(self):
+        '''
+        Returns all the examples from memory in a single batch
+        Batch is stored as a dict.
+        Keys are the names of the different elements of an experience. Values are a list of the corresponding sampled elements.
+        States and actions are lists of lists where each sublist corresponds to the kth - length_history (lh) to kth state or action.
+        e.g.
+            batch = {'states'      : [[0,...,s0],[0,..,s0,s1],...,[s(k-lh),...,s(k-1),sk]],
+                     'actions'     : actions,
+                     'rewards'     : rewards,
+                     'next_states' : [[0,...,ns0],[0,..,ns0,ns1],...,[ns(k-lh),...,ns(k-1),nsk]],
+                     'dones'       : dones,
+                     'priorities'  : priorities}
+        '''
+        batch = {}
+        batch['states'] = self.add_history(self.states)
+        batch['actions'] = self.actions
+        batch['rewards'] = self.rewards
+        batch['next_states'] = self.add_history(self.next_states)
+        batch['dones'] = self.dones
+        batch['priorities'] = self.priorities
+        self.reset()
+        return batch
+
+    def add_history(self, data):
+        '''Adds previous self.length_history steps to data'''
+        data_with_history = []
+        pad_data = copy.deepcopy(data)
+        PAD = np.zeros_like(data[0])
+        for i in range(self.length_history - 1):
+            pad_data.insert(0, PAD)
+        for i in range(len(data)):
+            if i == len(data) - 1:
+                data_with_history.append(pad_data[i:])
+            else:
+                data_with_history.append(pad_data[i:i + self.length_history])
+        return data_with_history
