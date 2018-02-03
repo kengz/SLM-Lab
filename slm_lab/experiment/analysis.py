@@ -280,6 +280,19 @@ def spec_name_from_filepath(filepath):
     return spec_name
 
 
+def session_data_dict_from_file(predir, trial_index):
+    '''Build trial.session_data_dict from file'''
+    session_data_dict = {}
+    for filename in os.listdir(predir):
+        if f'_t{trial_index}_' in filename and filename.endswith('_session_fitness_df.csv'):
+            filepath = f'{predir}/{filename}'
+            fitness_df = util.read(
+                filepath, header=[0, 1, 2, 3], index_col=0, dtype=float)
+            session_index = fitness_df.index[0]
+            session_data_dict[session_index] = fitness_df
+    return session_data_dict
+
+
 def trial_data_dict_from_file(predir):
     '''Build experiment.trial_data_dict from file'''
     trial_data_dict = {}
@@ -292,20 +305,27 @@ def trial_data_dict_from_file(predir):
     return trial_data_dict
 
 
-def mock_info_space_spec(predir):
+def mock_info_space_spec(predir, trial_index=None):
     '''Helper for retro analysis to build mock info_space and spec'''
     from slm_lab.experiment.monitor import InfoSpace
     spec_name = spec_name_from_filepath(predir)
     experiment_ts = predir.split('/')[1].replace(f'{spec_name}_', '')
     info_space = InfoSpace()
     info_space.experiment_ts = experiment_ts
+    info_space.set('experiment', 0)
     spec_name = spec_name_from_filepath(predir)
+    if trial_index is None:
+        filepath = f'{predir}/{spec_name}_spec.json'
+    else:
+        info_space.set('trial', trial_index)
+        filepath = f'{predir}/{spec_name}_t{trial_index}_spec.json'
+    spec = util.read(filepath)
     return info_space, spec
 
 
 def retro_analyze(predir):
     retro_analyze_session(predir)
-    restro_analyze_trial(predir)
+    retro_analyze_trials(predir)
     retro_analyze_experiment(predir)
     return
 
@@ -314,9 +334,20 @@ def retro_analyze_session(predir):
     return
 
 
-def restro_analyze_trial(predir):
-    from slm_lab.experiment.control import Experiment
-    return
+def retro_analyze_trials(predir):
+    from slm_lab.experiment.control import Trial
+    for filename in os.listdir(predir):
+        if filename.endswith('_trial_data.json'):
+            filepath = f'{predir}/{filename}'
+            exp_trial_data = util.read(filepath)
+            trial_index = exp_trial_data.pop('trial_index')
+            # mock trial
+            info_space, spec = mock_info_space_spec(predir, trial_index)
+            trial = Trial(spec, info_space)
+            session_data_dict = session_data_dict_from_file(
+                predir, trial_index)
+            trial.session_data_dict = session_data_dict
+            analyze_trial(trial)
 
 
 def retro_analyze_experiment(predir):
@@ -331,11 +362,10 @@ def retro_analyze_experiment(predir):
     '''
     logger.info('Retro-analyzing experiment from file')
     from slm_lab.experiment.control import Experiment
-    trial_data_dict = trial_data_dict_from_file(predir)
-    # create experiment with needed data to call analyze_experiment()
+    # mock experiment
     info_space, spec = mock_info_space_spec(predir)
-    info_space.set('experiment', 0)
     experiment = Experiment(spec, info_space)
+    trial_data_dict = trial_data_dict_from_file(predir)
     experiment.trial_data_dict = trial_data_dict
     return analyze_experiment(experiment)
 
@@ -352,7 +382,8 @@ def plot_session_from_file(session_df_filepath):
     from slm_lab.experiment.monitor import InfoSpace
     spec_name = spec_name_from_filepath(session_df_filepath)
     session_spec = {'name': spec_name}
-    session_df = util.read(session_df_filepath, header=[0, 1, 2, 3])
+    session_df = util.read(
+        session_df_filepath, header=[0, 1, 2, 3], index_col=0, dtype=float)
     session_data = util.session_df_to_data(session_df)
     tn, sn = session_df_filepath.replace('_session_df.csv', '').split('_')[-2:]
     info_space = InfoSpace()
