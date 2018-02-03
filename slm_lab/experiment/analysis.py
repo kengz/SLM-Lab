@@ -205,8 +205,7 @@ def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
     # TODO tmp hack
-    if os.environ.get('run_mode') == 'search':
-        plot_best_sessions(experiment_df, prepath)
+    plot_best_sessions(experiment_df, prepath)
 
 
 def analyze_session(session, session_data=None):
