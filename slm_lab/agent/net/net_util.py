@@ -70,12 +70,12 @@ def load_params(net, flattened):
 
 def init_gru_layer(gru):
     '''Initializes a GRU layer in with xavier_uniform initialization and 0 biases'''
-    for layer_p in layer._all_weights:
+    for layer_p in gru._all_weights:
         for p in layer_p:
             if 'weight' in p:
-                torch.nn.init.xavier_uniform(layer.__getattr__(p))
+                torch.nn.init.xavier_uniform(gru.__getattr__(p))
             elif 'bias' in p:
-                torch.nn.init.constant(layer.__getattr__(p), 0.0)
+                torch.nn.init.constant(gru.__getattr__(p), 0.0)
 
 
 def init_layers(layers, layer_type):
