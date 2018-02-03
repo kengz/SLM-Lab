@@ -358,6 +358,7 @@ def retro_analyze_sessions(predir):
             session_data = session_data_from_file(
                 predir, trial_index, session_index)
             analyze_session(session, session_data)
+            # write trial_data.json too
 
 
 def retro_analyze_trials(predir):
@@ -366,6 +367,7 @@ def retro_analyze_trials(predir):
     from slm_lab.experiment.control import Trial
     for filename in os.listdir(predir):
         if filename.endswith('_trial_data.json'):
+            filepath = f'{predir}/{filename}'
             tn = filename.replace('_trial_data.json', '').split('_')[-1]
             trial_index = int(tn[1:])
             # mock trial
@@ -374,7 +376,15 @@ def retro_analyze_trials(predir):
             session_data_dict = session_data_dict_from_file(
                 predir, trial_index)
             trial.session_data_dict = session_data_dict
-            analyze_trial(trial)
+            trial_fitness_df = analyze_trial(trial)
+            # write trial_data that was written from ray search
+            fitness_vec = trial_fitness_df.iloc[0].to_dict()
+            fitness = calc_fitness(trial_fitness_df)
+            trial_data = util.read(filepath)
+            trial_data.update({
+                **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
+            })
+            util.write(trial_data, filepath)
 
 
 def retro_analyze_experiment(predir):
