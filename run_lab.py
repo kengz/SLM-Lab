@@ -12,8 +12,8 @@ import os
 def run_benchmark(spec, const):
     benchmark_specs = benchmarker.generate_specs(spec, const)
     logger.info('Running benchmark')
-    for _spec_name, spec in benchmark_specs.items():
-        Experiment(spec).run()
+    for _spec_name, benchmark_spec in benchmark_specs.items():
+        Experiment(benchmark_spec).run()
 
 
 def run_by_mode(spec_file, spec_name, run_mode):
@@ -28,6 +28,8 @@ def run_by_mode(spec_file, spec_name, run_mode):
         # TODO turn on save/load model mode
         # Session(spec).run()
         pass
+    elif run_mode == 'generate_benchmark':
+        benchmarker.generate_specs(spec, const='agent')
     elif run_mode == 'benchmark':
         # TODO allow changing const to env
         run_benchmark(spec, const='agent')
