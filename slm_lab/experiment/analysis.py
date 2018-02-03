@@ -400,6 +400,7 @@ def retro_analyze(predir):
     predir = 'data/reinforce_cartpole_2018_01_22_211751'
     analysis.retro_analyze(predir)
     '''
+    os.environ['PREPATH'] = f'{predir}/retro_analyze'  # to prevent overwriting log file
     logger.info(f'Retro-analyzing {predir}')
     retro_analyze_sessions(predir)
     retro_analyze_trials(predir)
