@@ -83,7 +83,7 @@ class RaySearch:
             trial_data = {
                 **config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
             }
-            prepath = analysis.get_prepath(info_space, spec, unit='trial')
+            prepath = analysis.get_prepath(spec, info_space, unit='trial')
             util.write(trial_data, f'{prepath}_trial_data.json')
             done = True
             # TODO timesteps = episode len or total_t from space_clock
@@ -121,7 +121,7 @@ class RaySearch:
             logger.exception(
                 'Some Ray trials failed, finish experiment analysis from files.')
             prepath = analysis.get_prepath(
-                self.experiment.info_space, self.experiment.spec, unit='experiment')
+                self.experiment.spec, self.experiment.info_space, unit='experiment')
             predir = os.path.dirname(prepath)
             trial_data_dict = analysis.trial_data_dict_from_file(predir)
 

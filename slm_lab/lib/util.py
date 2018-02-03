@@ -126,6 +126,13 @@ def filter_nonan(arr):
         return np.array(mixed_type, dtype=arr.dtype)
 
 
+def fix_multiindex_dtype(df):
+    '''Restore aeb multiindex dtype from string to int, when read from file'''
+    df.columns = pd.MultiIndex.from_tuples(
+        [(int(x[0]), int(x[1]), int(x[2]), x[3]) for x in df.columns])
+    return df
+
+
 def nanflatten(arr):
     '''Flatten np array while ignoring nan, like np.nansum etc.'''
     flat_arr = arr.reshape(-1)
@@ -538,6 +545,7 @@ def session_df_to_data(session_df):
     session_data = util.session_df_to_data(session_df)
     '''
     session_data = {}
+    fix_multiindex_dtype(session_df)
     aeb_list = get_df_aeb_list(session_df)
     for aeb in aeb_list:
         aeb_df = session_df.loc[:, aeb]
