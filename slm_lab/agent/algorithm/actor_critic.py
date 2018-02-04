@@ -18,10 +18,10 @@ class ActorCritic(Reinforce):
     Original paper: "Asynchronous Methods for Deep Reinforcement Learning"
     https://arxiv.org/abs/1602.01783
     Algorithm specific training options:
-        - GAE:          @param: 'algorithm.use_GAE' option to use generalized advantage estimation introduced in
-                       "High-Dimensional Continuous Control Using Generalized Advantage Estimation"
-                        https://arxiv.org/abs/1506.02438. The default option is to use n-step returns
-                        as desribed in "Asynchronous Methods for Deep Reinforcement Learning"
+        - GAE:          @param: 'algorithm.use_GAE' option to use generalized advantage estimation
+                        introduced in "High-Dimensional Continuous Control Using Generalized Advantage
+                        Estimation https://arxiv.org/abs/1506.02438. The default option is to use n-step
+                        returns as desribed in "Asynchronous Methods for Deep Reinforcement Learning"
         - entropy:      @param: 'algorithm.add_entropy' option to add entropy to policy during training to
                         encourage exploration as outlined in "Asynchronous Methods for Deep Reinforcement
                         Learning"
