@@ -16,12 +16,12 @@ import pydash as _
 import torch
 
 
-def init_thread_vars(info_space, spec, unit):
+def init_thread_vars(spec, info_space, unit):
     '''Initialize thread variables from lab units that do not get carried over properly from master'''
     if info_space.get(unit) is None:
         info_space.tick(unit)
-    if logger.to_init(info_space, spec):
-        os.environ['PREPATH'] = analysis.get_prepath(info_space, spec)
+    if logger.to_init(spec, info_space):
+        os.environ['PREPATH'] = analysis.get_prepath(spec, info_space)
         importlib.reload(logger)
 
 
@@ -34,8 +34,9 @@ class Session:
     then return the session data.
     '''
 
-    def __init__(self, spec, info_space=InfoSpace()):
-        init_thread_vars(info_space, spec, unit='session')
+    def __init__(self, spec, info_space=None):
+        info_space = info_space or InfoSpace()
+        init_thread_vars(spec, info_space, unit='session')
         self.spec = spec
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
@@ -92,14 +93,15 @@ class Trial:
     then return the trial data.
     '''
 
-    def __init__(self, spec, info_space=InfoSpace()):
-        init_thread_vars(info_space, spec, unit='trial')
+    def __init__(self, spec, info_space=None):
+        info_space = info_space or InfoSpace()
+        init_thread_vars(spec, info_space, unit='trial')
         self.spec = spec
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.session_data_dict = {}
         self.data = None
-        analysis.save_spec(info_space, spec, unit='trial')
+        analysis.save_spec(spec, info_space, unit='trial')
         logger.info(f'Initialized trial {self.index}')
 
     def init_session_and_run(self, info_space):
@@ -144,8 +146,9 @@ class Experiment:
     '''
     # TODO metaspec to specify specs to run, can be sourced from evolution suggestion
 
-    def __init__(self, spec, info_space=InfoSpace()):
-        init_thread_vars(info_space, spec, unit='experiment')
+    def __init__(self, spec, info_space=None):
+        info_space = info_space or InfoSpace()
+        init_thread_vars(spec, info_space, unit='experiment')
         self.spec = spec
         spec['meta']['train_mode'] = True
         self.info_space = info_space
@@ -154,7 +157,7 @@ class Experiment:
         self.data = None
         SearchClass = getattr(search, 'RaySearch')
         self.search = SearchClass(self)
-        analysis.save_spec(info_space, spec, unit='experiment')
+        analysis.save_spec(spec, info_space, unit='experiment')
         logger.info(f'Initialized experiment {self.index}')
 
     def init_trial_and_run(self, spec, info_space):

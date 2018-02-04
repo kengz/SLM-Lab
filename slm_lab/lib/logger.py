@@ -57,7 +57,7 @@ class DedentFormatter(logging.Formatter):
         return super(DedentFormatter, self).format(record)
 
 
-def to_init(info_space, spec):
+def to_init(spec, info_space):
     '''
     Whether the lab's logger had been initialized:
     - prepath present in env

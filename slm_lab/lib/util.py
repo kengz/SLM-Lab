@@ -96,6 +96,14 @@ def dedent(string):
     return RE_INDENT.sub('', string)
 
 
+def downcast_float32(df):
+    '''Downcast any float64 col to float32 to allow safer pandas comparison'''
+    for col in df.columns:
+        if df[col].dtype == 'float':
+            df[col] = df[col].astype('float32')
+    return df
+
+
 def flatten_dict(obj, delim='.'):
     '''Missing pydash method to flatten dict'''
     nobj = {}
@@ -124,6 +132,13 @@ def filter_nonan(arr):
             if not gen_isnan(v):
                 mixed_type.append(v)
         return np.array(mixed_type, dtype=arr.dtype)
+
+
+def fix_multiindex_dtype(df):
+    '''Restore aeb multiindex dtype from string to int, when read from file'''
+    df.columns = pd.MultiIndex.from_tuples(
+        [(int(x[0]), int(x[1]), int(x[2]), x[3]) for x in df.columns])
+    return df
 
 
 def nanflatten(arr):
@@ -538,6 +553,7 @@ def session_df_to_data(session_df):
     session_data = util.session_df_to_data(session_df)
     '''
     session_data = {}
+    fix_multiindex_dtype(session_df)
     aeb_list = get_df_aeb_list(session_df)
     for aeb in aeb_list:
         aeb_df = session_df.loc[:, aeb]
