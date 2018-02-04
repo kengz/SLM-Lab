@@ -73,7 +73,7 @@ class ConvNet(nn.Module):
         # Init other net variables
         self.params = list(self.conv_model.parameters()) + \
             list(self.dense_model.parameters())
-        self.optim_param = self.optim_param
+        self.optim_param = optim_param
         self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
