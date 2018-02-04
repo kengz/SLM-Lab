@@ -59,16 +59,18 @@ class TestNet:
 
     @pytest.mark.first
     def test_params_not_zero(self, test_nets):
-        ''' Checks that the parameters of the net are not zero '''
+        ''' Checks that the parameters of the net are not zero except for GRU biases which should be zero.'''
         net = test_nets[0]
         print(net)
         flag = True
         for i, param in enumerate(net.params):
-            if net.__class__.__name__.find('Recurrent') != -1:
-                # Skip testing biases for recurrent nets since they should be zero
-                if net.named_params[i][0].find('bias') != -1:
-                    continue
-            if torch.sum(torch.abs(param.data)) < SMALL_NUM:
+            # If net is recurrent check that biases of the recurrent layer are zero
+            if net.__class__.__name__.find('Recurrent') != -1 and net.named_params[i][0].find('bias_') != -1:
+                print(net.named_params[i][0])
+                if torch.sum(torch.abs(param.data)) != 0:
+                    print("FAIL: layer {}".format(i))
+                    flag = False
+            elif torch.sum(torch.abs(param.data)) < SMALL_NUM:
                 print("FAIL: layer {}".format(i))
                 flag = False
         if flag:
