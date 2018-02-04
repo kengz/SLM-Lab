@@ -152,7 +152,7 @@ class OnPolicyReplay(Memory):
 
 class OnPolicyNStepReplay(OnPolicyReplay):
     '''
-    Same as OnPolicyReplay Memory but returns the last `length_history` states and actions for input to a recurrent network.
+    Same as OnPolicyReplay Memory but returns the last `length_history` states and next_states for input to a recurrent network.
     Experiences with less than `length_history` previous examples are padded with a 0 valued state and action vector.
     '''
     def __init__(self, body):
@@ -276,7 +276,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
 
 class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
     '''
-    Same as OnPolicyBatchReplay Memory but returns the last `length_history` states and actions for input to a recurrent network.
+    Same as OnPolicyBatchReplay Memory but returns the last `length_history` states and next_states for input to a recurrent network.
     Experiences with less than `length_history` previous examples are padded with a 0 valued state and action vector.
     '''
     def __init__(self, body):
