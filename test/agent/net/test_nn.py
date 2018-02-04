@@ -1,3 +1,4 @@
+import pytest
 from flaky import flaky
 from torch.autograd import Variable
 import numpy as np
@@ -29,7 +30,7 @@ class TestNet:
     def init_dummy_output(self, net):
         if net.__class__.__name__.find('RecurrentNet') != -1:
             if len(net.out_dim) == 1:
-                dummy_output = Variable(torch.ones(2, net.out_dim[0]))
+                dummy_output = Variable(torch.zeros(2, net.out_dim[0]))
             else:
                 dummy_output = []
                 for outdim in net.out_dim:
@@ -56,12 +57,32 @@ class TestNet:
         else:
             return False
 
+    @pytest.mark.first
+    def test_params_not_zero(self, test_nets):
+        ''' Checks that the parameters of the net are not zero except for GRU biases which should be zero.'''
+        net = test_nets[0]
+        print(net)
+        flag = True
+        for i, param in enumerate(net.params):
+            # If net is recurrent check that biases of the recurrent layer are zero
+            if net.__class__.__name__.find('Recurrent') != -1 and net.named_params[i][0].find('bias_') != -1:
+                print(net.named_params[i][0])
+                if torch.sum(torch.abs(param.data)) != 0:
+                    print("FAIL: layer {}".format(i))
+                    flag = False
+            elif torch.sum(torch.abs(param.data)) < SMALL_NUM:
+                print("FAIL: layer {}".format(i))
+                flag = False
+        if flag:
+            print("PASS")
+        assert flag is True
+
     @flaky(max_runs=10)
     def test_trainable(self, test_nets):
         '''Checks that trainable parameters actually change during training.
         returns: true if all trainable params change, false otherwise'''
         net = test_nets[0]
-        if check_net_type(net):  # Checks if test needs to be skipped for a particular net
+        if self.check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
             return
         flag = True
@@ -91,7 +112,7 @@ class TestNet:
         returns: true if all fixed params don't change, false otherwise
         '''
         net = test_nets[0]
-        if check_net_type(net):  # Checks if test needs to be skipped for a particular net
+        if self.check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
             return
         flag = True
@@ -115,7 +136,7 @@ class TestNet:
     def test_gradient_size(self, test_nets):
         ''' Checks for exploding and vanishing gradients '''
         net = test_nets[0]
-        if check_net_type(net):  # Checks if test needs to be skipped for a particular net
+        if self.check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
             return
         x = self.init_dummy_input(net)
@@ -166,7 +187,7 @@ class TestNet:
         dummy_output = self.init_dummy_output(net)
         out = net(dummy_input)
         flag = True
-        if check_multi_output(net):
+        if self.check_multi_output(net):
             zero_test = sum([torch.sum(torch.abs(x.data)) for x in out])
             nan_test = np.isnan(sum([torch.sum(x.data) for x in out]))
         else:
@@ -180,19 +201,6 @@ class TestNet:
             print("FAIL")
             print(out)
             flag = False
-        if flag:
-            print("PASS")
-        assert flag is True
-
-    def test_params_not_zero(self, test_nets):
-        ''' Checks that the parameters of the net are not zero '''
-        net = test_nets[0]
-        print(net)
-        flag = True
-        for i, param in enumerate(net.params):
-            if torch.sum(torch.abs(param.data)) < SMALL_NUM:
-                print("FAIL: layer {}".format(i))
-                flag = False
         if flag:
             print("PASS")
         assert flag is True
