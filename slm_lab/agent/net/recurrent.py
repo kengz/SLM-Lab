@@ -22,10 +22,9 @@ class RecurrentNet(nn.Module):
 
     def __init__(self,
                  in_dim,
-                 sequence_length,
-                 state_processing_layers,
                  hid_dim,
                  out_dim,
+                 sequence_length,
                  hid_layers_activation=None,
                  optim_param=None,
                  loss_param=None,
@@ -35,8 +34,7 @@ class RecurrentNet(nn.Module):
         '''
         in_dim: dimension of the states
         sequence_length: length of the history of being passed to the net
-        state_processing_layers: dimensions of the layers for state processing. Each state in the sequence is passed through these layers before being passed to recurrent net as an input.
-        hid_dim: dimension of the recurrent component hidden state
+        hid_dim: list containing dimensions of the hidden layers. The last element of the list is should be the dimension of the hidden state for the recurrent layer. The other elements in the list are the dimensions of the MLP (if desired) which is to transform the state space.
         out_dim: dimension of the output for one output, otherwise a list containing the dimensions of the ouputs for a multi-headed network
         optim_param: parameters for initializing the optimizer
         loss_param: measure of error between model
@@ -49,10 +47,9 @@ class RecurrentNet(nn.Module):
         @example:
         net = RecurrentNet(
                 4,
-                8,
-                [64],
-                50,
+                [32, 64],
                 10,
+                8,
                 hid_layers_activation='relu',
                 optim_param={'name': 'Adam'},
                 loss_param={'name': 'mse_loss'},
@@ -62,7 +59,7 @@ class RecurrentNet(nn.Module):
         # Create net and initialize params
         self.in_dim = in_dim
         self.sequence_length = sequence_length
-        self.hid_dim = hid_dim
+        self.hid_dim = hid_dim[-1]
         # Handle multiple types of out_dim (single and multi-headed)
         if type(out_dim) is int:
             out_dim = [out_dim]
@@ -70,15 +67,15 @@ class RecurrentNet(nn.Module):
         self.num_rnn_layers = num_rnn_layers
         self.state_processing_layers = []
         self.state_proc_model = self.build_state_proc_layers(
-            state_processing_layers, hid_layers_activation)
-        self.rnn_input_dim = state_processing_layers[-1] if len(state_processing_layers) > 0 else self.in_dim
+            hid_dim[:-1], hid_layers_activation)
+        self.rnn_input_dim = hid_dim[-2] if len(hid_dim) > 1 else self.in_dim
         self.rnn = nn.GRU(input_size=self.rnn_input_dim,
                           hidden_size=self.hid_dim,
                           num_layers=self.num_rnn_layers,
                           batch_first=True)
         # Init network output heads
         self.out_layers = []
-        for dim in out_dim:
+        for dim in self.out_dim:
             self.out_layers += [nn.Linear(self.hid_dim, dim)]
         self.layers = [self.state_processing_layers] + [self.rnn] + [self.out_layers]
         self.num_hid_layers = None
@@ -87,6 +84,10 @@ class RecurrentNet(nn.Module):
         self.params = list(self.state_proc_model.parameters()) + list(self.rnn.parameters())
         for layer in self.out_layers:
             self.params.extend(list(layer.parameters()))
+        # Store named parameters for unit testing
+        self.named_params = list(self.state_proc_model.named_parameters()) + list(self.rnn.named_parameters())
+        for layer in self.out_layers:
+            self.named_params.extend(list(layer.named_parameters()))
         self.optim_param = optim_param
         self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
@@ -176,7 +177,7 @@ class RecurrentNet(nn.Module):
     def init_params(self):
         '''
         Initializes all of the model's parameters using xavier uniform initialization.
-        Biases are all set to 0.01
+        Biases are all set to 0.01, except for the GRU's biases which are set to 0.
         '''
         net_util.init_layers(self.layers, 'Linear')
         net_util.init_layers(self.layers, 'GRU')
