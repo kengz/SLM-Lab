@@ -95,21 +95,21 @@
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyNStepReplay",
+        "name": "OnPolicyNStepBatchReplay",
         "length_history": 4
       },
       "net": {
-        "type": "Recurrentshared",
-        "hid_layers": [32],
+        "type": "Recurrentseparate",
+        "hid_layers": [16],
         "hid_layers_activation": "relu",
         "use_same_optim": false,
         "optim_actor": {
           "name": "Adam",
-          "lr": 0.008
+          "lr": 0.01
         },
         "optim_critic": {
           "name": "Adam",
-          "lr": 0.008
+          "lr": 0.01
         },
         "clamp_grad": false,
         "clamp_grad_val": 25.0,
@@ -121,7 +121,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 300
+      "max_episode": 150
     }],
     "body": {
       "product": "outer",
