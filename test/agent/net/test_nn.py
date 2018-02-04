@@ -29,7 +29,7 @@ class TestNet:
     def init_dummy_output(self, net):
         if net.__class__.__name__.find('RecurrentNet') != -1:
             if len(net.out_dim) == 1:
-                dummy_output = Variable(torch.ones(2, net.out_dim[0]))
+                dummy_output = Variable(torch.zeros(2, net.out_dim[0]))
             else:
                 dummy_output = []
                 for outdim in net.out_dim:
@@ -61,7 +61,7 @@ class TestNet:
         '''Checks that trainable parameters actually change during training.
         returns: true if all trainable params change, false otherwise'''
         net = test_nets[0]
-        if check_net_type(net):  # Checks if test needs to be skipped for a particular net
+        if self.check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
             return
         flag = True
@@ -91,7 +91,7 @@ class TestNet:
         returns: true if all fixed params don't change, false otherwise
         '''
         net = test_nets[0]
-        if check_net_type(net):  # Checks if test needs to be skipped for a particular net
+        if self.check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
             return
         flag = True
@@ -115,7 +115,7 @@ class TestNet:
     def test_gradient_size(self, test_nets):
         ''' Checks for exploding and vanishing gradients '''
         net = test_nets[0]
-        if check_net_type(net):  # Checks if test needs to be skipped for a particular net
+        if self.check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
             return
         x = self.init_dummy_input(net)
@@ -166,7 +166,7 @@ class TestNet:
         dummy_output = self.init_dummy_output(net)
         out = net(dummy_input)
         flag = True
-        if check_multi_output(net):
+        if self.check_multi_output(net):
             zero_test = sum([torch.sum(torch.abs(x.data)) for x in out])
             nan_test = np.isnan(sum([torch.sum(x.data) for x in out]))
         else:
