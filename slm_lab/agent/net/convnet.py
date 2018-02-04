@@ -38,18 +38,15 @@ class ConvNet(nn.Module):
 
             2. flat_hid: list of dense layers following the convolutional layers
         out_dim: dimension of the ouputs
-        optim_param: parameters for initializing the optimizer
-        loss_param: measure of error between model
-        predictions and correct outputs
         hid_layers_activation: activation function for the hidden layers
-        out_activation_param: activation function for the last layer
+        optim_param: parameters for initializing the optimizer
+        loss_param: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
         batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
         @example:
         net = ConvNet(
                 (3, 32, 32),
-                ([[3, 36, (5, 5), 1, 0, (2, 2)],[36, 128, (5, 5), 1, 0, (2, 2)]],
-                [100]),
+                ([[3, 36, (5, 5), 1, 0, (2, 2)],[36, 128, (5, 5), 1, 0, (2, 2)]],[100]),
                 10,
                 hid_layers_activation='relu',
                 optim_param={'name': 'Adam'},

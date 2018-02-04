@@ -33,14 +33,12 @@ class RecurrentNet(nn.Module):
                  num_rnn_layers=1):
         '''
         in_dim: dimension of the states
-        sequence_length: length of the history of being passed to the net
         hid_dim: list containing dimensions of the hidden layers. The last element of the list is should be the dimension of the hidden state for the recurrent layer. The other elements in the list are the dimensions of the MLP (if desired) which is to transform the state space.
         out_dim: dimension of the output for one output, otherwise a list containing the dimensions of the ouputs for a multi-headed network
-        optim_param: parameters for initializing the optimizer
-        loss_param: measure of error between model
-        predictions and correct outputs
+        sequence_length: length of the history of being passed to the net
         hid_layers_activation: activation function for the hidden layers
-        out_activation_param: activation function for the last layer
+        optim_param: parameters for initializing the optimizer
+        loss_param: measure of error between model predictions and correct output
         clamp_grad: whether to clamp the gradient
         clamp_grad_val: what value to clamp the gradient at
         num_rnn_layers: number of recurrent layers
