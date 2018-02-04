@@ -32,14 +32,18 @@ def save_image(figure, filepath=None):
     if os.environ.get('PY_ENV') == 'test':
         return
     if filepath is None:
-        filepath = f"{PLOT_FILEDIR}/{_.get(figure, 'layout.title')}.png"
-
-    plotly.tools.set_credentials_file(
-        username=_.get(config, 'plotly.username'),
-        api_key=_.get(config, 'plotly.api_key'))
-    plotly.tools.set_config_file(
-        world_readable=True, sharing='public')
-    return plotly.plotly.image.save_as(figure, filepath)
+        filepath = f'{PLOT_FILEDIR}/{_.get(figure, "layout.title")}.png'
+    try:
+        plotly.tools.set_credentials_file(
+            username=_.get(config, 'plotly.username'),
+            api_key=_.get(config, 'plotly.api_key'))
+        plotly.tools.set_config_file(
+            world_readable=True, sharing='public')
+        return plotly.plotly.image.save_as(figure, filepath)
+    except Exception:
+        logger.error(
+            'Plotly server unreachable, but you can save the plots later via retro-analysis.')
+        return None
 
 
 def stack_cumsum(df, y_col):

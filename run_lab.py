@@ -12,8 +12,10 @@ import os
 def run_benchmark(spec, const):
     benchmark_specs = benchmarker.generate_specs(spec, const)
     logger.info('Running benchmark')
-    for _spec_name, benchmark_spec in benchmark_specs.items():
-        Experiment(benchmark_spec).run()
+    for spec_name, benchmark_spec in benchmark_specs.items():
+        # run only if not already exist; benchmark mode only
+        if not any(spec_name in filename for filename in os.listdir('data')):
+            Experiment(benchmark_spec).run()
 
 
 def run_by_mode(spec_file, spec_name, run_mode):
