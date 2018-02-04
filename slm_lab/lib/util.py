@@ -96,6 +96,14 @@ def dedent(string):
     return RE_INDENT.sub('', string)
 
 
+def downcast_float32(df):
+    '''Downcast any float64 col to float32 to allow safer pandas comparison'''
+    for col in df.columns:
+        if df[col].dtype == 'float':
+            df[col] = df[col].astype('float32')
+    return df
+
+
 def flatten_dict(obj, delim='.'):
     '''Missing pydash method to flatten dict'''
     nobj = {}

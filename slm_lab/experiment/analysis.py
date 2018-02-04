@@ -57,6 +57,7 @@ def calc_session_fitness_df(session, session_data):
     session_fitness_data = {}
     for aeb in session_data:
         aeb_df = session_data[aeb]
+        util.downcast_float32(aeb_df)
         body = session.aeb_space.body_space.data[aeb]
         aeb_fitness_sr = calc_aeb_fitness_sr(aeb_df, body.env.name)
         aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[session.index])
@@ -357,7 +358,6 @@ def retro_analyze_sessions(predir):
             session_data = session_data_from_file(
                 predir, trial_index, session_index)
             analyze_session(session, session_data)
-            # write trial_data.json too
 
 
 def retro_analyze_trials(predir):
@@ -467,12 +467,12 @@ def calc_strength(aeb_df, rand_epi_reward, std_epi_reward):
     This allows for standard comparison between agents on the same problem using an intuitive measurement of strength. With proper scaling by a difficulty factor, we can compare across problems of different difficulties.
     '''
     # use lower clip 0 for noise in reward to dip slighty below rand
-    return (aeb_df['reward'] - rand_epi_reward).clip(0) / (std_epi_reward - rand_epi_reward)
+    return (aeb_df['reward'] - rand_epi_reward).clip(0.) / (std_epi_reward - rand_epi_reward)
 
 
 def calc_stable_idx(aeb_df):
     '''Calculate the index (epi) when strength first becomes stable (using moving mean and working backward)'''
-    std_strength = 1
+    std_strength = 1.
     above_std_strength_sr = (aeb_df['strength_ma'] >= std_strength)
     if above_std_strength_sr.any():
         # if it achieved stable (ma) std_strength at some point, the index when
@@ -488,7 +488,7 @@ def calc_std_strength_timestep(aeb_df):
     Calculate the timestep needed to achieve stable (within window) std_strength.
     For agent failing to achieve std_strength 1, it is meaningless to measure speed or give false interpolation, so set as inf (never).
     '''
-    std_strength = 1
+    std_strength = 1.
     stable_idx = calc_stable_idx(aeb_df)
     if np.isnan(stable_idx):
         std_strength_timestep = np.inf
@@ -538,7 +538,7 @@ def calc_stability(aeb_df):
     '''
     stable_idx = calc_stable_idx(aeb_df)
     if np.isnan(stable_idx):
-        stability = 0
+        stability = 0.
     else:
         stable_df = aeb_df.loc[stable_idx:, 'strength_mono_inc']
         stability = stable_df.sum() / len(stable_df)
@@ -558,7 +558,7 @@ def calc_consistency(aeb_fitness_df):
     fitness_vecs = aeb_fitness_df.values
     if ~np.any(fitness_vecs) or ~np.any(aeb_fitness_df['strength']):
         # no consistency if vectors all 0
-        consistency = 0
+        consistency = 0.
     else:
         is_outlier_arr = util.is_outlier(fitness_vecs)
         consistency = (~is_outlier_arr).sum() / len(is_outlier_arr)
@@ -583,7 +583,7 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
     '''Top level method to calculate fitness vector for AEB level data (strength, speed, stability)'''
     logger.info('Dev feature: fitness computation')
     no_fitness_sr = pd.Series({
-        'strength': 0, 'speed': 0, 'stability': 0})
+        'strength': 0., 'speed': 0., 'stability': 0.})
     if len(aeb_df) < MA_WINDOW:
         logger.warn(
             f'Run more than {MA_WINDOW} episodes to compute proper fitness')
