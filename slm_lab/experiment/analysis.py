@@ -19,6 +19,7 @@ DATA_AGG_FNS = {
 }
 FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
 FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
+STABLE_WINDOW = 0.05
 MA_WINDOW = 100
 
 
@@ -516,8 +517,8 @@ def calc_speed(aeb_df, std_timestep):
 
 
 def is_noisy_mono_inc(sr):
-    '''Check if sr is monotonically increasing, within noise = 5% * std_strength = 0.05 * 1'''
-    zero_noise = -0.05
+    '''Check if sr is monotonically increasing, (given STABLE_WINDOW = 5%) within noise = 5% * std_strength = 0.05 * 1'''
+    zero_noise = -STABLE_WINDOW
     mono_inc_sr = np.diff(sr) >= zero_noise
     # restore sr to same length
     mono_inc_sr = np.insert(mono_inc_sr, 0, np.nan)
@@ -527,7 +528,7 @@ def is_noisy_mono_inc(sr):
 def calc_stability(aeb_df):
     '''
     Calculate the stability at maintaining std_strength and higher:
-    stability = ratio of times strength is monotonically increasing with 5% allowance for noise since becoming stable.
+    stability = ratio of times strength is monotonically increasing with (STABLE_WINDOW) 5% allowance for noise since becoming stable.
     Propeties:
     - considers once strength becomes stable (note, stable does not imply stability = 1)
     - allows for drop in strength of 5% of std_strength, which is invariant to the scale of rewards
@@ -559,6 +560,11 @@ def calc_consistency(aeb_fitness_df):
     if ~np.any(fitness_vecs) or ~np.any(aeb_fitness_df['strength']):
         # no consistency if vectors all 0
         consistency = 0.
+    elif len(fitness_vecs) == 2:
+        # if only has 2 vectors, check norm_diff
+        diff_norm = np.linalg.norm(
+            np.diff(fitness_vecs, axis=0)) / np.linalg.norm(np.ones(len(fitness_vecs[0])))
+        consistency = diff_norm <= STABLE_WINDOW
     else:
         is_outlier_arr = util.is_outlier(fitness_vecs)
         consistency = (~is_outlier_arr).sum() / len(is_outlier_arr)
