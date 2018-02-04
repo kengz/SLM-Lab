@@ -159,8 +159,8 @@ class Reinforce(Algorithm):
         return policy_loss
 
     def check_sizes(self, advantage):
-        # Check log probs, advantage, and entropy all have the same size
-        # Occassionally they do not, this is caused by first reward of an episode being nan
+        '''Checks that log probs, advantage, and entropy all have the same size
+           Occassionally they do not, this is caused by first reward of an episode being nan. If they are not the same size, the function removes the elements of the log probs and entropy that correspond to nan rewards.'''
         body = self.agent.nanflat_body_a[0]
         nan_idxs = body.memory.last_nan_idxs
         num_nans = sum(nan_idxs)
@@ -179,6 +179,7 @@ class Reinforce(Algorithm):
         return advantage
 
     def calc_advantage(self, raw_rewards):
+        '''Returns the advantage for each action'''
         advantage = []
         logger.debug3(f'Raw rewards: {raw_rewards}')
         for epi_rewards in raw_rewards:

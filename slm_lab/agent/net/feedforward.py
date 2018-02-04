@@ -24,12 +24,20 @@ class MLPNet(nn.Module):
         in_dim: dimension of the inputs
         hid_dim: list containing dimensions of the hidden layers
         out_dim: dimension of the ouputs
-        optim_param: parameters for initializing the optimizer
         hid_layers_activation: activation function for the hidden layers
+        optim_param: parameters for initializing the optimizer
         loss_param: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
         @example:
-        net = MLPNet(1000, [512, 256, 128], 10, hid_layers_activation='relu', optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'}, clamp_grad=True, clamp_grad_val=2.0)
+        net = MLPNet(
+                1000,
+                [512, 256, 128],
+                10,
+                hid_layers_activation='relu',
+                optim_param={'name': 'Adam'},
+                loss_param={'name': 'mse_loss'},
+                clamp_grad=True,
+                clamp_grad_val=2.0)
         '''
         super(MLPNet, self).__init__()
         # Create net and initialize params
@@ -138,12 +146,20 @@ class MLPHeterogenousHeads(MLPNet):
         in_dim: dimension of the inputs
         hid_dim: list containing dimensions of the hidden layers
         out_dim: list containing the dimensions of the ouputs
-        optim_param: parameters for initializing the optimizer
         hid_layers_activation: activation function for the hidden layers
+        optim_param: parameters for initializing the optimizer
         loss_param: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
         @example:
-        net = MLPHeterogenousHeads(1000, [512, 256, 128], [1, 1], hid_layers_activation='relu', optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'}, clamp_grad=True, clamp_grad_val=2.0)
+        net = MLPHeterogenousHeads(
+                1000,
+                [512, 256, 128],
+                [1, 1],
+                hid_layers_activation='relu',
+                optim_param={'name': 'Adam'},
+                loss_param={'name': 'mse_loss'},
+                clamp_grad=True,
+                clamp_grad_val=2.0)
         '''
         nn.Module.__init__(self)
         # Create net and initialize params
@@ -250,12 +266,20 @@ class MultiMLPNet(nn.Module):
         in_dim: list of lists containing dimensions of the state processing heads
         hid_dim: list containing dimensions of the hidden layers
         out_dim: list of lists containing dimensions of the ouputs
-        optim_param: parameters for initializing the optimizer
         hid_layers_activation: activation function for the hidden layers
+        optim_param: parameters for initializing the optimizer
         loss_param: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
         @example:
-        net = MLPNet([[800, 200], [400, 200]], [100, 50, 25], [[10], [15]], hid_layers_activation='relu', optim_param={'name': 'Adam'}, loss_param={'name': 'mse_loss'}, clamp_grad=True, clamp_grad_val2.0)
+        net = MLPNet(
+            [[800, 200],[400, 200]],
+             [100, 50, 25],
+             [[10], [15]],
+             hid_layers_activation='relu',
+             optim_param={'name': 'Adam'},
+             loss_param={'name': 'mse_loss'},
+             clamp_grad=True,
+             clamp_grad_val2.0)
         '''
         super(MultiMLPNet, self).__init__()
         # Create net and initialize params

@@ -13,7 +13,23 @@ import torch
 
 
 class VanillaDQN(Algorithm):
-    '''Implementation of a simple DQN algorithm.'''
+    '''Implementation of a simple DQN algorithm.
+    Algorithm:
+        1. Collect some examples by acting in the environment and store them in a replay memory
+        2. Every K steps sample N examples from replay memory
+        3. For each example calculate the target (bootstrapped estimate of the discounted value of the state and action taken), y, using a neural network to approximate the Q function. s' is the next state following the action actually taken.
+                y_t = r_t + gamma * argmax_a Q(s_t', a)
+        4. For each example calculate the current estimate of the discounted value of the state and action taken
+                x_t = Q(s_t, a_t)
+        5. Calculate L(x, y) where L is a regression loss (eg. mse)
+        6. Calculate the gradient of L with respect to all the parameters in the network and update the network parameters using the gradient
+        7. Repeat steps 3 - 6 M times
+        8. Repeat steps 2 - 7 Z times
+        9. Repeat steps 1 - 8
+
+    For more information on Q-Learning see Sergey Levine's lectures 6 and 7 from CS294-112 Fall 2017
+    https://www.youtube.com/playlist?list=PLkFD6_40KJIznC9CDbVTjAF2oyt8_VAe3
+    '''
 
     def __init__(self, agent):
         '''
@@ -164,16 +180,17 @@ class VanillaDQN(Algorithm):
 class DQNBase(VanillaDQN):
     '''
     Implementation of the base DQN algorithm.
-    This is more general than the VanillaDQN since it allows
+    The algorithm follows the same general approach as VanillaDQN but is more general since it allows
     for two different networks (through self.net and self.target_net).
-    If desired, self.target_net can be updated more slowly
-    to stabilize learning. It also allows for different nets to be used to
-    select the action in the next state and to evaluate the value of that
-    action through self.online_net and self.eval_net
+
+    self.net is used to act, and is the network trained.
+    self.target_net is used to estimate the maximum value of the Q-function in the next state when calculating the target (see VanillaDQN comments).
+    self.target_net is updated periodically to either match self.net (self.update_type = "replace") or to be a weighted average of self.net and the previous self.target_net (self.update_type = "polyak")
+    If desired, self.target_net can be updated slowly, and this can help to stabilize learning.
+
+    It also allows for different nets to be used to select the action in the next state and to evaluate the value of that action through self.online_net and self.eval_net. This can help reduce the tendency of DQN's to overestimate the value of the Q-function. Following this approach leads to the DoubleDQN algorithm.
+
     Setting all nets to self.net reduces to the VanillaDQN case.
-    See Sergey Levine's lecture xxx for more details
-    TODO add link
-          more detailed comments
 
     net: instance of an slm_lab/agent/net
     memory: instance of an slm_lab/agent/memory
