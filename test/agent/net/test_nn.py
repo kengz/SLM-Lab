@@ -1,3 +1,4 @@
+import pytest
 from flaky import flaky
 from torch.autograd import Variable
 import numpy as np
@@ -55,6 +56,24 @@ class TestNet:
             return True
         else:
             return False
+
+    @pytest.mark.first
+    def test_params_not_zero(self, test_nets):
+        ''' Checks that the parameters of the net are not zero '''
+        net = test_nets[0]
+        print(net)
+        flag = True
+        for i, param in enumerate(net.params):
+            if net.__class__.__name__.find('Recurrent') != -1:
+                # Skip testing biases for recurrent nets since they should be zero
+                if net.named_params[i][0].find('bias') != -1:
+                    continue
+            if torch.sum(torch.abs(param.data)) < SMALL_NUM:
+                print("FAIL: layer {}".format(i))
+                flag = False
+        if flag:
+            print("PASS")
+        assert flag is True
 
     @flaky(max_runs=10)
     def test_trainable(self, test_nets):
@@ -180,19 +199,6 @@ class TestNet:
             print("FAIL")
             print(out)
             flag = False
-        if flag:
-            print("PASS")
-        assert flag is True
-
-    def test_params_not_zero(self, test_nets):
-        ''' Checks that the parameters of the net are not zero '''
-        net = test_nets[0]
-        print(net)
-        flag = True
-        for i, param in enumerate(net.params):
-            if torch.sum(torch.abs(param.data)) < SMALL_NUM:
-                print("FAIL: layer {}".format(i))
-                flag = False
         if flag:
             print("PASS")
         assert flag is True
