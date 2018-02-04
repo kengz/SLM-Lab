@@ -39,6 +39,7 @@ class Reinforce(Algorithm):
         action_dim = body.action_dim
         self.is_discrete = body.is_discrete
         net_spec = self.agent.spec['net']
+        mem_spec = self.agent.spec['memory']
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
@@ -56,9 +57,21 @@ class Reinforce(Algorithm):
             else:
                 self.net = getattr(net, 'MLPHeterogenousHeads')(
                     state_dim, net_spec['hid_layers'], [action_dim, action_dim], **net_kwargs)
+        # If net is recurrent we need to include the length of the sequence to be passed to the recurrent part
+        elif net_spec['type'] == 'RecurrentNet':
+            if self.is_discrete:
+                self.net = getattr(net, net_spec['type'])(
+                    state_dim, net_spec['hid_layers'], action_dim, mem_spec['length_history'], **net_kwargs)
+            else:
+                self.net = getattr(net, net_spec['type'])(
+                    state_dim, net_spec['hid_layers'], [action_dim, action_dim], mem_spec['length_history'], **net_kwargs)
         else:
-            self.net = getattr(net, net_spec['type'])(
-                state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
+            if self.is_discrete:
+                self.net = getattr(net, net_spec['type'])(
+                    state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
+            else:
+                self.net = getattr(net, net_spec['type'])(
+                    state_dim, net_spec['hid_layers'], [action_dim, action_dim], **net_kwargs)
 
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''

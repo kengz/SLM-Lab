@@ -85,6 +85,19 @@ def test_reinforce_multi_epi():
 
 @pytest.mark.skip(reason="Crashes on CI")
 @flaky(max_runs=3)
+def test_reinforce_recurrent():
+    algo_name = 'unit_test_reinforce_recurrent'
+    spec = spec_util.get('test.json', 'unit_test_reinforce')
+    spec['name'] = algo_name
+    spec['agent'][0]['memory']['name'] = "OnPolicyNStepReplay"
+    spec['agent'][0]['memory']['length_history'] = 4
+    spec['agent'][0]['net']['type'] = "RecurrentNet"
+    spec['agent'][0]['net']['hid_layers'] = [16]
+    assert generic_algo_test(spec, algo_name) > 100
+
+
+@pytest.mark.skip(reason="Crashes on CI")
+@flaky(max_runs=3)
 def test_actor_critic():
     algo_name = 'unit_test_actor_critic'
     spec = spec_util.get('test.json', 'unit_test_actor_critic')
