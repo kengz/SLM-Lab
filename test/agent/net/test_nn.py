@@ -28,31 +28,27 @@ class TestNet:
         return dummy_input
 
     def init_dummy_output(self, net):
-        if net.__class__.__name__.find('RecurrentNet') != -1:
-            if len(net.out_dim) == 1:
-                dummy_output = Variable(torch.zeros(2, net.out_dim[0]))
-            else:
-                dummy_output = []
-                for outdim in net.out_dim:
-                    dummy_output.append(Variable(torch.zeros((2, outdim))))
+        if type(net.out_dim) is int:
+            dummy_output = Variable(torch.zeros((2, net.out_dim)))
         elif net.__class__.__name__.find('MultiMLPNet') != -1:
             dummy_output = []
             for outdim in net.out_dim:
                 dummy_output.append(Variable(torch.zeros((2, outdim[-1]))))
-        elif net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
+        elif net.__class__.__name__.find('MLPHeterogenousHeads') != -1 or len(net.out_dim) > 1:
             dummy_output = []
             for outdim in net.out_dim:
+                print(type(outdim), outdim)
                 dummy_output.append(Variable(torch.zeros((2, outdim))))
         else:
-            dummy_output = Variable(torch.zeros((2, net.out_dim)))
+            dummy_output = Variable(torch.zeros(2, net.out_dim[0]))
         return dummy_output
 
     def check_net_type(self, net):
         # Skipping test for 'MLPHeterogenousHeads' because there is no training step function
         if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
             return True
-        # Skipping test for 'RecurrentNet' with multiple output heads because training step not applicable
-        elif net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1:
+        # Skipping test for 'RecurrentNet' and 'ConvNet' with multiple output heads because training step not applicable
+        elif (net.__class__.__name__.find('RecurrentNet') != -1) or (net.__class__.__name__.find('ConvNet') != -1) and len(net.out_dim) > 1:
             return True
         else:
             return False
@@ -175,7 +171,7 @@ class TestNet:
     def check_multi_output(self, net):
         if net.__class__.__name__.find('MultiMLPNet') != -1 or \
            net.__class__.__name__.find('MLPHeterogenousHeads') != -1 or \
-           (net.__class__.__name__.find('RecurrentNet') != -1 and len(net.out_dim) > 1):
+           (((net.__class__.__name__.find('RecurrentNet') != -1) or (net.__class__.__name__.find('ConvNet') != -1)) and len(net.out_dim) > 1):
             return True
         else:
             return False
