@@ -139,7 +139,7 @@ class RecurrentNet(nn.Module):
         '''
         Takes a single training step: one forward and one backwards pass
         '''
-        self.set_train_eval(train=False)
+        self.set_train_eval(train=True)
         self.optim.zero_grad()
         out = self(x)
         loss = self.loss_fn(out, y)
