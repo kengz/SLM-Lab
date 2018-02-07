@@ -17,7 +17,7 @@ class RecurrentNet(nn.Module):
     The entire model consists of three parts:
          1. self.state_proc_model
          2. self.rnn
-         3. self.fc_out
+         3. self.out_layers
     '''
 
     def __init__(self,
