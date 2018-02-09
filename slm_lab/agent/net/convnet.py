@@ -57,7 +57,10 @@ class ConvNet(nn.Module):
         '''
         super(ConvNet, self).__init__()
         # Create net and initialize params
-        self.in_dim = in_dim
+        # We need to transpose the dimensions for pytorch.
+        # OpenAI gym provides images as W x H x C, pyTorch expects C x W x H
+        self.in_dim = list(in_dim[:-1])
+        self.in_dim.insert(0, in_dim[-1])
         # Handle multiple types of out_dim (single and multi-headed)
         if type(out_dim) is int:
             out_dim = [out_dim]
@@ -105,10 +108,10 @@ class ConvNet(nn.Module):
             self.conv_layers += [nn.Conv2d(
                 conv_hid[i][0],
                 conv_hid[i][1],
-                conv_hid[i][2],
+                tuple(conv_hid[i][2]),
                 stride=conv_hid[i][3],
                 padding=conv_hid[i][4],
-                dilation=conv_hid[i][5])]
+                dilation=tuple(conv_hid[i][5]))]
             self.conv_layers += [
                 net_util.get_activation_fn(hid_layers_activation)]
             # Don't include batch norm in the first layer
@@ -135,6 +138,12 @@ class ConvNet(nn.Module):
 
     def forward(self, x):
         '''The feedforward step'''
+        if x.dim() == 3:
+            x = x.permute(2, 0, 1).clone()
+            x.unsqueeze_(dim=0)
+        elif x.dim() == 4:
+            x = x.permute(0, 3, 1, 2)
+            logger.info(f'x: {x.size()}')
         x = self.conv_model(x)
         x = x.view(-1, self.flat_dim)
         x = self.dense_model(x)
@@ -208,6 +217,16 @@ class ConvNet(nn.Module):
         Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
         '''
         return None
+
+    def get_grad_norms(self):
+        '''Returns a list of the norm of the gradients for all parameters'''
+        norms = []
+        for i, param in enumerate(self.params):
+            grad_norm = torch.norm(param.grad.data)
+            if grad_norm is None:
+                logger.info(f'Param with None grad: {param}, layer: {i}')
+            norms.append(grad_norm)
+        return norms
 
     def __str__(self):
         '''Overriding so that print() will print the whole network'''
