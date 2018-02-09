@@ -443,8 +443,8 @@ class ActorCritic(Reinforce):
                    - If the networks share weights then the single network returns a list.
                         - Continuous action spaces: The return list contains 3 elements: The first element contains the mean output for the actor (policy), the second element the std dev of the policy, and the third element is the state-value estimated by the network.
                         - Discrete action spaces: The return list contains 2 element. The first element is a tensor containing the logits for a categorical probability distribution over the actions. The second element contains the state-value estimated by the network.
-           3. If the network type is feedforward or recurrent
-                    - Feedforward networks take a single state as input and require an OnPolicyReplay or OnPolicyBatchReplay memory
+           3. If the network type is feedforward, convolutional, or recurrent
+                    - Feedforward and convolutional networks take a single state as input and require an OnPolicyReplay or OnPolicyBatchReplay memory
                     - Recurrent networks take n states as input and require an OnPolicyNStepReplay or OnPolicyNStepBatchReplay memory
         '''
         if net_type == 'MLPseparate':
@@ -471,6 +471,30 @@ class ActorCritic(Reinforce):
                 self.actorcritic = getattr(net, 'MLPHeterogenousHeads')(
                     state_dim, net_spec['hid_layers'], [action_dim, action_dim, 1], **actor_kwargs)
                 logger.info("Feedforward net, continuous action space, actor and critic combined into single network, sharing params")
+        elif net_type == 'Convseparate':
+            self.is_shared_architecture = False
+            self.is_recurrent = False
+            if self.is_discrete:
+                self.actor = getattr(net, 'ConvNet')(
+                    state_dim, net_spec['hid_layers'], action_dim, **actor_kwargs)
+                logger.info("Convolutional net, discrete action space, actor and critic are separate networks")
+            else:
+                self.actor = getattr(net, 'ConvNet')(
+                    state_dim, net_spec['hid_layers'], [action_dim, action_dim], **actor_kwargs)
+                logger.info("Convolutional net, continuous action space, actor and critic are separate networks")
+            self.critic = getattr(net, 'ConvNet')(
+                state_dim, net_spec['hid_layers'], 1, **critic_kwargs)
+        elif net_type == 'Convshared':
+            self.is_shared_architecture = True
+            self.is_recurrent = False
+            if self.is_discrete:
+                self.actorcritic = getattr(net, 'ConvNet')(
+                    state_dim, net_spec['hid_layers'], [action_dim, 1], **actor_kwargs)
+                logger.info("Convolutional net, discrete action space, actor and critic combined into single network, sharing params")
+            else:
+                self.actorcritic = getattr(net, 'ConvNet')(
+                    state_dim, net_spec['hid_layers'], [action_dim, action_dim, 1], **actor_kwargs)
+                logger.info("Convolutional net, continuous action space, actor and critic combined into single network, sharing params")
         elif net_type == 'Recurrentseparate':
             self.is_shared_architecture = False
             self.is_recurrent = True
