@@ -93,6 +93,9 @@
           "lr": 0.02
         },
         "batch_size": 32,
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0
@@ -146,6 +149,9 @@
           "lr": 0.02
         },
         "batch_size": 32,
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0
@@ -154,11 +160,11 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 50
     }, {
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 50
     }],
     "body": {
       "product": "outer",
@@ -199,6 +205,9 @@
           "lr": 0.02
         },
         "batch_size": 32,
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0
@@ -215,55 +224,6 @@
     }, {
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "max_session": 1,
-      "max_trial": 1,
-      "train_mode": true
-    }
-  },
-  "dqn_2dball": {
-    "agent": [{
-      "name": "DQN",
-      "algorithm": {
-        "name": "DQN",
-        "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
-        "gamma": 0.999,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "training_iters_per_batch": 3,
-        "training_min_timestep": 0
-      },
-      "memory": {
-        "name": "Replay",
-        "max_size": 10000
-      },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
-        "optim": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "batch_size": 32,
-        "update_type": "replace",
-        "update_frequency": 1,
-        "polyak_weight": 0.9
-      }
-    }],
-    "env": [{
-      "name": "2dball",
-      "max_timestep": 200,
       "max_episode": 1000
     }],
     "body": {
@@ -305,6 +265,9 @@
           "lr": 0.02
         },
         "batch_size": 32,
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0
@@ -358,6 +321,9 @@
           "lr": 0.02
         },
         "batch_size": 32,
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0
@@ -375,161 +341,6 @@
     "body": {
       "product": "outer",
       "num": 1
-    },
-    "meta": {
-      "max_session": 1,
-      "max_trial": 1,
-      "train_mode": true
-    }
-  },
-  "dqn_acrobot_cartpole": {
-    "agent": [{
-      "name": "MultitaskDQN",
-      "algorithm": {
-        "name": "MultitaskDQN",
-        "action_policy": "multi_boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 15,
-        "gamma": 0.999,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "training_iters_per_batch": 3,
-        "training_min_timestep": 10
-      },
-      "memory": {
-        "name": "Replay",
-        "max_size": 10000
-      },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [64],
-        "hid_layers_activation": "relu",
-        "optim": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "batch_size": 32,
-        "update_type": "replace",
-        "update_frequency": 1,
-        "polyak_weight": 0
-      }
-    }],
-    "env": [{
-      "name": "Acrobot-v1",
-      "max_timestep": null,
-      "max_episode": 1000
-    }, {
-      "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 1000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "max_session": 1,
-      "max_trial": 1,
-      "train_mode": true
-    }
-  },
-  "dqn_3dball_single": {
-    "agent": [{
-      "name": "DQN",
-      "algorithm": {
-        "name": "DQN",
-        "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 70,
-        "gamma": 0.999,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "training_iters_per_batch": 3,
-        "training_min_timestep": 0
-      },
-      "memory": {
-        "name": "Replay",
-        "max_size": 10000
-      },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [200, 100],
-        "hid_layers_activation": "relu",
-        "optim": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "batch_size": 32,
-        "update_type": "replace",
-        "update_frequency": 1,
-        "polyak_weight": 0
-      }
-    }],
-    "env": [{
-      "name": "3dball",
-      "max_timestep": 200,
-      "max_episode": 1000
-    }],
-    "body": {
-      "product": "outer",
-      "num": 12
-    },
-    "meta": {
-      "max_session": 1,
-      "max_trial": 1,
-      "train_mode": true
-    }
-  },
-  "dqn_cartpole_3dball": {
-    "agent": [{
-      "name": "MultitaskDQN",
-      "algorithm": {
-        "name": "MultitaskDQN",
-        "action_policy": "multi_boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 30,
-        "gamma": 0.999,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "training_iters_per_batch": 3,
-        "training_min_timestep": 0
-      },
-      "memory": {
-        "name": "Replay",
-        "max_size": 10000
-      },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [32],
-        "hid_layers_activation": "relu",
-        "optim": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "batch_size": 32,
-        "update_type": "replace",
-        "update_frequency": 1,
-        "polyak_weight": 0
-      }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 1000
-    }, {
-      "name": "3dball",
-      "max_timestep": 200,
-      "max_episode": 1000
-    }],
-    "body": {
-      "product": "outer",
-      "num": [1, 12]
     },
     "meta": {
       "max_session": 1,
@@ -569,6 +380,9 @@
           "name": "mse_loss"
         },
         "batch_size": 16,
+        "decay_lr": true,
+        "decay_lr_frequency": 400,
+        "decay_lr_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0

@@ -3,11 +3,9 @@
 
 A research framework for Deep Reinforcement Learning using Unity, OpenAI Gym, PyTorch, Tensorflow.
 
-Read on for tutorials, research and results.
-
 **[Github Repo](https://github.com/kengz/SLM-Lab) | [Lab Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log Book](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
 
-### Features
+## Features
 
 This lab is for general deep reinforcement learning research, built with proper software engineering:
 
@@ -19,7 +17,7 @@ This lab is for general deep reinforcement learning research, built with proper 
 - useful graphs and analytics
 - fitness vector for universal benchmarking of agents, environments
 
-### Baselines
+#### Baselines
 
 >Work in progress.
 
@@ -33,6 +31,21 @@ The implemented baseline algorithms (besides research) are:
     - Shared or separate actor and critic params
     - Advantage calculated using n-step returns or generalized advantage estimation
     - Option to add entropy to encourage exploration
+
+#### Feature Demos
+
+![dqn cartpole ball2d](https://media.giphy.com/media/l0DAIymuiMS3HyW9G/giphy.gif)
+>A multitask agent solving both OpenAI Cartpole-v0 and Unity Ball2D.
+
+![](https://kengz.gitbooks.io/slm-lab/content/assets/Reinforce_CartPole-v0_experiment_graph.png)
+>Experiment graph showing fitness from hyperparameter search.
+
+![](https://kengz.gitbooks.io/slm-lab/content/assets/Reinforce_CartPole-v0_t150_s0_session_graph.png)
+>Example total reward and loss graph from a session.
+
+Read on for tutorials, research and results.
+
+**[Github Repo](https://github.com/kengz/SLM-Lab) | [Lab Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log Book](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
 
 ## Installation
 
@@ -68,7 +81,11 @@ A config file `config/default.json` will be created.
 
 ### Demo
 
-Run the demo to quickly see the lab in action (and to test your installation). It is `VanillaDQN` in `CartPole-v0`:
+Run the demo to quickly see the lab in action (and to test your installation).
+
+![](https://kengz.gitbooks.io/slm-lab/content/assets/demo.png)
+
+It is `VanillaDQN` in `CartPole-v0`:
 
 1. see `slm_lab/spec/demo.json` for example spec:
     ```json
