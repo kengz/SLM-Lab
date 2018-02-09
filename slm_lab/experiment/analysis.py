@@ -458,12 +458,12 @@ Fitness analysis
 
 def calc_strength(aeb_df, rand_epi_reward, std_epi_reward):
     '''
-    Calculate the strength for each episode:
-    strength_epi = (epi_reward - rand_epi_reward) / (std_epi_reward - rand_epi_reward)
-    Propeties:
-    - random agent has strength ~0, baseline agent has strength ~1.
+    For each episode, use the total rewards to calculate the strength as
+    strength_epi = (reward_epi - reward_rand) / (reward_std - reward_rand)
+    **Properties:**
+    - random agent has strength 0, standard agent has strength 1.
     - if an agent achieve x2 rewards, the strength is ~x2, and so on.
-    - strength of learning agent always tends toward positive regardless of the sign of rewards
+    - strength of learning agent always tends toward positive regardless of the sign of rewards (some environments use negative rewards)
     - scale of strength is always standard at 1 and its multiplies, regardless of the scale of actual rewards. Strength stays invariant even as reward gets rescaled.
     This allows for standard comparison between agents on the same problem using an intuitive measurement of strength. With proper scaling by a difficulty factor, we can compare across problems of different difficulties.
     '''
@@ -501,15 +501,17 @@ def calc_std_strength_timestep(aeb_df):
 
 def calc_speed(aeb_df, std_timestep):
     '''
-    Calculate the speed (using absolute timesteps) to attain std_strength 1:
-    speed = std_timestep / agent_timestep
-    Propeties:
-    - random agent has speed ~0, baseline agent has speed ~1
-    - if an agent takes x2 timesteps to read std_strength, we can it is 2x slower.
-    - speed of learning agent always tends toward positive regardless of the shape of rewards curve
-    - scale of speed is always standard at 1 and its multiplies, regardless of absolute timestep.
-    This allows an intuitive measurement of learning speed and the standard comparison between agents on the same problem. Absolute timestep also measures the bits of new information given to the agent, which is a more grounded metric. With proper scaling of timescale (or bits scale), we can compare across problems of different difficulties.
-    For agent failing to achieve std_strength 1, it is meaningless to measure speed or give false interpolation, so speed is 0.
+    For each session, measure the moving average for strength with interval = 100 episodes.
+    Next, measure the total timesteps up to the first episode that first surpasses standard strength.
+    Finally, calculate speed as
+    speed = timestep_std / timestep_solved
+    **Properties:**
+    - random agent has speed 0, standard agent has speed 1.
+    - if an agent takes x2 timesteps to exceed standard strength, we can say it is 2x slower.
+    - the speed of learning agent always tends toward positive regardless of the shape of the rewards curve
+    - the scale of speed is always standard at 1 and its multiplies, regardless of the absolute timesteps.
+    For agent failing to achieve standard strength 1, it is meaningless to measure speed or give false interpolation, so the speed is 0.
+    This allows an intuitive measurement of learning speed and the standard comparison between agents on the same problem.
     '''
     agent_timestep = calc_std_strength_timestep(aeb_df)
     speed = std_timestep / agent_timestep
@@ -527,15 +529,16 @@ def is_noisy_mono_inc(sr):
 
 def calc_stability(aeb_df):
     '''
-    Calculate the stability at maintaining std_strength and higher:
-    stability = ratio of times strength is monotonically increasing with (STABLE_WINDOW) 5% allowance for noise since becoming stable.
-    Propeties:
-    - considers once strength becomes stable (note, stable does not imply stability = 1)
-    - allows for drop in strength of 5% of std_strength, which is invariant to the scale of rewards
+    Consider the episodes starting from epi_solved, let #epi_+ be the number of episodes, and #epi_>= the number of episodes where strength_ma_epi is monotonically increasing, allowing for noise of 0.05, i.e. 5% of standard strength.
+    Calculate stability as
+    stability = #epi_>= / #epi_+
+    **Properties:**
+    - stable agent has value 1, unstable agent < 1, and non-solution = 0.
+    - allows for drops strength MA of 5% of standard strength, which is invariant to the scale of rewards
     - if strength is monotonically increasing (with 5% noise), then it is stable
     - sharp gain in strength is considered stable
-    - works even for partial solution (not attaining std_strength), due to how stable_idx is calculated
-    When an agent fails to achieve std_strength, it is meaningless to measure stability or give false interpolation, so stability is 0.
+    - monotonically increasing implies strength can keep growing and as long as it does not fall much, it is considered stable
+    When an agent fails to achieve standard strength, it is meaningless to measure stability or give false interpolation, so stability is 0.
     '''
     stable_idx = calc_stable_idx(aeb_df)
     if np.isnan(stable_idx):
@@ -550,11 +553,11 @@ def calc_consistency(aeb_fitness_df):
     '''
     Calculate the consistency of trial by the fitness_vectors of its sessions:
     consistency = ratio of non-outlier vectors
-    Properties:
+    **Properties:**
     - outliers are calculated using MAD modified z-score
     - if all the fitness vectors are zero or all strength are zero, consistency = 0
     - works for all sorts of session fitness vectors, with the standard scale
-    When an agent fails to achieve std_strength, it is meaningless to measure consistency or give false interpolation, so consistency is 0.
+    When an agent fails to achieve standard strength, it is meaningless to measure consistency or give false interpolation, so consistency is 0.
     '''
     fitness_vecs = aeb_fitness_df.values
     if ~np.any(fitness_vecs) or ~np.any(aeb_fitness_df['strength']):
