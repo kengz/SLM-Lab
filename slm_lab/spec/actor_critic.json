@@ -133,7 +133,7 @@
       "train_mode": true
     },
   },
-  "actor_critic_conv_spec": {
+  "actor_critic_conv_test_spec": {
     "agent": [{
       "name": "ActorCritic",
       "algorithm": {
@@ -154,7 +154,6 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "length_history": 4
       },
       "net": {
         "type": "Convseparate",
