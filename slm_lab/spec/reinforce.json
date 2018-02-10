@@ -119,6 +119,54 @@
       }]
     }
   },
+  "reinforce_conv_test_spec": {
+    "agent": [{
+      "name": "Reinforce",
+      "algorithm": {
+        "name": "Reinforce",
+        "action_policy": "default",
+        "gamma": 0.95,
+        "num_epis_to_collect": 1,
+        "add_entropy": false,
+        "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0
+      },
+      "memory": {
+        "name": "OnPolicyReplay",
+      },
+      "net": {
+        "type": "ConvNet",
+        "hid_layers": [[[3, 16, [5, 5], 2, 0, [1, 1]],
+                       [16, 32, [5, 5], 2, 0, [2, 2]],
+                       [32, 32, [5, 5], 2, 0, [2, 2]]],
+                       [128, 64]],
+        "hid_layers_activation": "relu",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "clamp_grad": false,
+        "clamp_grad_val": 1.0,
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 600
+      }
+    }],
+    "env": [{
+      "name": "Breakout-v0",
+      "max_timestep": null,
+      "max_episode": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": false
+    }
+  },
   "reinforce_cartpole": {
     "agent": [{
       "name": "Reinforce",

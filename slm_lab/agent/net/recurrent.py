@@ -17,7 +17,7 @@ class RecurrentNet(nn.Module):
     The entire model consists of three parts:
          1. self.state_proc_model
          2. self.rnn
-         3. self.fc_out
+         3. self.out_layers
     '''
 
     def __init__(self,
@@ -139,7 +139,7 @@ class RecurrentNet(nn.Module):
         '''
         Takes a single training step: one forward and one backwards pass
         '''
-        self.set_train_eval(train=False)
+        self.set_train_eval(train=True)
         self.optim.zero_grad()
         out = self(x)
         loss = self.loss_fn(out, y)

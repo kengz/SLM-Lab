@@ -314,6 +314,54 @@ def test_multiline_str():
         None,
         2
     ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'hid_layers': ([[3, 16, (7, 7), 1, 0, 1],
+                            [16, 32, (5, 5), 1, 0, 1],
+                            [32, 64, (3, 3), 1, 0, 1]],
+                           [100, 50]),
+            'out_dim': [10],
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+            'clamp_grad': False,
+            'batch_norm': True,
+        },
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'hid_layers': ([[3, 16, (7, 7), 1, 0, 1],
+                            [16, 32, (5, 5), 1, 0, 1],
+                            [32, 64, (3, 3), 1, 0, 1]],
+                           [100, 50]),
+            'out_dim': [10, 5],
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+            'clamp_grad': False,
+            'batch_norm': True,
+        },
+        None,
+        2
+    ), (
+        ConvNet,
+        {
+            'in_dim': (3, 32, 32),
+            'hid_layers': ([[3, 16, (7, 7), 1, 0, 1],
+                            [16, 32, (5, 5), 1, 0, 1],
+                            [32, 64, (3, 3), 1, 0, 1]],
+                           [100, 50]),
+            'out_dim': [10, 5, 1],
+            'optim_param':{'name': 'Adam'},
+            'loss_param': {'name': 'mse_loss'},
+            'clamp_grad': False,
+            'batch_norm': True,
+        },
+        None,
+        2
+    ), (
         MultiMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
