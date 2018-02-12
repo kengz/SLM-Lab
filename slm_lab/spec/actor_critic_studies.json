@@ -1,5 +1,5 @@
 {
-  "actor_critic_cartpole_critic_lamda": {
+  "actor_critic_cartpole_lamda": {
     "agent": [{
       "name": "ActorCritic",
       "algorithm": {
@@ -63,7 +63,7 @@
       }]
     }
   },
-  "actor_critic_cartpole_critic_batch_epi": {
+  "actor_critic_cartpole_batch_epi": {
     "agent": [{
       "name": "ActorCritic",
       "algorithm": {
@@ -127,7 +127,7 @@
       }]
     }
   },
-  "actor_critic_cartpole_critic_entropy": {
+  "actor_critic_cartpole_entropy": {
     "agent": [{
       "name": "ActorCritic",
       "algorithm": {
@@ -191,7 +191,7 @@
       }]
     }
   },
-  "actor_critic_cartpole_critic_shared_param_losses": {
+  "actor_critic_cartpole_shared_param_losses": {
     "agent": [{
       "name": "ActorCritic",
       "algorithm": {
