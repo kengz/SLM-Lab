@@ -29,6 +29,7 @@ def get_session_data(session):
     @returns {dict, dict} session_mdp_data, session_data
     '''
     data_names = AGENT_DATA_NAMES + ENV_DATA_NAMES
+    mdp_data_names = ['t', 'epi'] + data_names
     agg_data_names = ['epi'] + list(DATA_AGG_FNS.keys())
     data_h_v_dict = {
         data_name: session.aeb_space.get_history_v(data_name) for data_name in data_names}
@@ -45,7 +46,8 @@ def get_session_data(session):
         data_h_dict['epi'] = reset_idx.astype(int).cumsum()
         mdp_df = pd.DataFrame({
             data_name: data_h_dict[data_name][:data_len][nonreset_idx]
-            for data_name in ['t', 'epi'] + data_names})
+            for data_name in mdp_data_names})
+        mdp_df = mdp_df.reindex(mdp_data_names, axis=1)
         aeb_df = mdp_df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
         aeb_df.reset_index(drop=False, inplace=True)
         session_mdp_data[aeb], session_data[aeb] = mdp_df, aeb_df
