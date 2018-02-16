@@ -531,18 +531,29 @@ def is_noisy_mono_inc(sr):
 
 def calc_stability(aeb_df):
     '''
-    Consider the episodes starting from epi_solved, let #epi_+ be the number of episodes, and #epi_>= the number of episodes where strength_ma_epi is monotonically increasing, allowing for noise of 0.05, i.e. 5% of standard strength.
+    Find a baseline =
+    - 0. + noise for very weak solution
+    - max(strength_ma_epi) for partial solution weak solution, accounting for noise
+    - 1. for solution achieving standard strength and beyond, accounting for noise
+    So we get:
+    - weak_baseline = 0. + noise
+    - strong_baseline = min(max(strength_ma_epi), 1.) - NOISE_WINDOW
+    - baseline = max(weak_baseline, strong_baseline)
+
+    Let epi_baseline be the episode where baseline is first attained. Consider the episodes starting from epi_baseline, let #epi_+ be the number of episodes, and #epi_>= the number of episodes where strength_ma_epi is monotonically increasing.
     Calculate stability as
     stability = #epi_>= / #epi_+
     **Properties:**
     - stable agent has value 1, unstable agent < 1, and non-solution = 0.
-    - allows for drops strength MA of 5% of standard strength, which is invariant to the scale of rewards
+    - allows for drops strength MA of 5% to account for noise, which is invariant to the scale of rewards
     - if strength is monotonically increasing (with 5% noise), then it is stable
     - sharp gain in strength is considered stable
     - monotonically increasing implies strength can keep growing and as long as it does not fall much, it is considered stable
-    When an agent fails to achieve standard strength, it is meaningless to measure stability or give false interpolation, so stability is 0.
     '''
-    stable_idx = calc_stable_idx(aeb_df, min_strength_ma=1. - NOISE_WINDOW)
+    weak_baseline = 0. + NOISE_WINDOW
+    strong_baseline = min(aeb_df['strength_ma'].max(), 1.) - NOISE_WINDOW
+    baseline = max(weak_baseline, strong_baseline)
+    stable_idx = calc_stable_idx(aeb_df, min_strength_ma=baseline)
     if np.isnan(stable_idx):
         stability = 0.
     else:
