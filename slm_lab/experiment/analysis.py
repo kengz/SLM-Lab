@@ -19,7 +19,7 @@ DATA_AGG_FNS = {
 }
 FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
 FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
-STABLE_WINDOW = 0.05
+NOISE_WINDOW = 0.05
 MA_WINDOW = 100
 
 
@@ -476,7 +476,8 @@ def calc_strength(aeb_df, rand_epi_reward, std_epi_reward):
 def calc_stable_idx(aeb_df):
     '''Calculate the index (epi) when strength first becomes stable (using moving mean and working backward)'''
     std_strength = 1.
-    above_std_strength_sr = (aeb_df['strength_ma'] >= std_strength)
+    above_std_strength_sr = (
+        aeb_df['strength_ma'] >= (std_strength - NOISE_WINDOW))
     if above_std_strength_sr.any():
         # if it achieved stable (ma) std_strength at some point, the index when
         std_strength_ra_idx = above_std_strength_sr.idxmax()
@@ -488,7 +489,7 @@ def calc_stable_idx(aeb_df):
 
 def calc_std_strength_timestep(aeb_df):
     '''
-    Calculate the timestep needed to achieve stable (within window) std_strength.
+    Calculate the timestep needed to achieve stable (within NOISE_WINDOW) std_strength.
     For agent failing to achieve std_strength 1, it is meaningless to measure speed or give false interpolation, so set as inf (never).
     '''
     std_strength = 1.
@@ -504,7 +505,7 @@ def calc_std_strength_timestep(aeb_df):
 def calc_speed(aeb_df, std_timestep):
     '''
     For each session, measure the moving average for strength with interval = 100 episodes.
-    Next, measure the total timesteps up to the first episode that first surpasses standard strength.
+    Next, measure the total timesteps up to the first episode that first surpasses standard strength, allowing for noise of 0.05.
     Finally, calculate speed as
     speed = timestep_std / timestep_solved
     **Properties:**
@@ -521,8 +522,8 @@ def calc_speed(aeb_df, std_timestep):
 
 
 def is_noisy_mono_inc(sr):
-    '''Check if sr is monotonically increasing, (given STABLE_WINDOW = 5%) within noise = 5% * std_strength = 0.05 * 1'''
-    zero_noise = -STABLE_WINDOW
+    '''Check if sr is monotonically increasing, (given NOISE_WINDOW = 5%) within noise = 5% * std_strength = 0.05 * 1'''
+    zero_noise = -NOISE_WINDOW
     mono_inc_sr = np.diff(sr) >= zero_noise
     # restore sr to same length
     mono_inc_sr = np.insert(mono_inc_sr, 0, np.nan)
@@ -569,7 +570,7 @@ def calc_consistency(aeb_fitness_df):
         # if only has 2 vectors, check norm_diff
         diff_norm = np.linalg.norm(
             np.diff(fitness_vecs, axis=0)) / np.linalg.norm(np.ones(len(fitness_vecs[0])))
-        consistency = diff_norm <= STABLE_WINDOW
+        consistency = diff_norm <= NOISE_WINDOW
     else:
         is_outlier_arr = util.is_outlier(fitness_vecs)
         consistency = (~is_outlier_arr).sum() / len(is_outlier_arr)
