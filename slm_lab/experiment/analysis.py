@@ -533,11 +533,11 @@ def calc_stability(aeb_df):
     '''
     Find a baseline =
     - 0. + noise for very weak solution
-    - max(strength_ma_epi) for partial solution weak solution, accounting for noise
-    - 1. for solution achieving standard strength and beyond, accounting for noise
+    - max(strength_ma_epi) - noise for partial solution weak solution
+    - 1. - noise for solution achieving standard strength and beyond
     So we get:
     - weak_baseline = 0. + noise
-    - strong_baseline = min(max(strength_ma_epi), 1.) - NOISE_WINDOW
+    - strong_baseline = min(max(strength_ma_epi), 1.) - noise
     - baseline = max(weak_baseline, strong_baseline)
 
     Let epi_baseline be the episode where baseline is first attained. Consider the episodes starting from epi_baseline, let #epi_+ be the number of episodes, and #epi_>= the number of episodes where strength_ma_epi is monotonically increasing.
