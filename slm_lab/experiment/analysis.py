@@ -167,7 +167,7 @@ def plot_experiment(experiment_spec, experiment_df):
                 title='<br>'.join(_.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
         fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
     fig.layout.update(
-        title=f'experiment graph: {experiment_spec["name"]}', width=len(x_cols) * 200, height=700)
+        title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 200), height=700)
     viz.plot(fig)
     return fig
 
