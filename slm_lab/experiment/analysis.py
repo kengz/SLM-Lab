@@ -19,7 +19,7 @@ DATA_AGG_FNS = {
 }
 FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
 FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
-STABLE_WINDOW = 0.05
+NOISE_WINDOW = 0.05
 MA_WINDOW = 100
 
 
@@ -29,6 +29,7 @@ def get_session_data(session):
     @returns {dict, dict} session_mdp_data, session_data
     '''
     data_names = AGENT_DATA_NAMES + ENV_DATA_NAMES
+    mdp_data_names = ['t', 'epi'] + data_names
     agg_data_names = ['epi'] + list(DATA_AGG_FNS.keys())
     data_h_v_dict = {
         data_name: session.aeb_space.get_history_v(data_name) for data_name in data_names}
@@ -45,7 +46,8 @@ def get_session_data(session):
         data_h_dict['epi'] = reset_idx.astype(int).cumsum()
         mdp_df = pd.DataFrame({
             data_name: data_h_dict[data_name][:data_len][nonreset_idx]
-            for data_name in ['t', 'epi'] + data_names})
+            for data_name in mdp_data_names})
+        mdp_df = mdp_df.reindex(mdp_data_names, axis=1)
         aeb_df = mdp_df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
         aeb_df.reset_index(drop=False, inplace=True)
         session_mdp_data[aeb], session_data[aeb] = mdp_df, aeb_df
@@ -165,7 +167,7 @@ def plot_experiment(experiment_spec, experiment_df):
                 title='<br>'.join(_.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
         fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
     fig.layout.update(
-        title=f'experiment graph: {experiment_spec["name"]}', width=len(x_cols) * 200, height=700)
+        title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 200), height=700)
     viz.plot(fig)
     return fig
 
@@ -471,12 +473,11 @@ def calc_strength(aeb_df, rand_epi_reward, std_epi_reward):
     return (aeb_df['reward'] - rand_epi_reward).clip(0.) / (std_epi_reward - rand_epi_reward)
 
 
-def calc_stable_idx(aeb_df):
+def calc_stable_idx(aeb_df, min_strength_ma):
     '''Calculate the index (epi) when strength first becomes stable (using moving mean and working backward)'''
-    std_strength = 1.
-    above_std_strength_sr = (aeb_df['strength_ma'] >= std_strength)
+    above_std_strength_sr = (aeb_df['strength_ma'] >= min_strength_ma)
     if above_std_strength_sr.any():
-        # if it achieved stable (ma) std_strength at some point, the index when
+        # if it achieved stable (ma) min_strength_ma at some point, the index when
         std_strength_ra_idx = above_std_strength_sr.idxmax()
         stable_idx = std_strength_ra_idx - (MA_WINDOW - 1)
     else:
@@ -486,11 +487,12 @@ def calc_stable_idx(aeb_df):
 
 def calc_std_strength_timestep(aeb_df):
     '''
-    Calculate the timestep needed to achieve stable (within window) std_strength.
+    Calculate the timestep needed to achieve stable (within NOISE_WINDOW) std_strength.
     For agent failing to achieve std_strength 1, it is meaningless to measure speed or give false interpolation, so set as inf (never).
     '''
     std_strength = 1.
-    stable_idx = calc_stable_idx(aeb_df)
+    stable_idx = calc_stable_idx(
+        aeb_df, min_strength_ma=std_strength - NOISE_WINDOW)
     if np.isnan(stable_idx):
         std_strength_timestep = np.inf
     else:
@@ -502,7 +504,7 @@ def calc_std_strength_timestep(aeb_df):
 def calc_speed(aeb_df, std_timestep):
     '''
     For each session, measure the moving average for strength with interval = 100 episodes.
-    Next, measure the total timesteps up to the first episode that first surpasses standard strength.
+    Next, measure the total timesteps up to the first episode that first surpasses standard strength, allowing for noise of 0.05.
     Finally, calculate speed as
     speed = timestep_std / timestep_solved
     **Properties:**
@@ -519,8 +521,8 @@ def calc_speed(aeb_df, std_timestep):
 
 
 def is_noisy_mono_inc(sr):
-    '''Check if sr is monotonically increasing, (given STABLE_WINDOW = 5%) within noise = 5% * std_strength = 0.05 * 1'''
-    zero_noise = -STABLE_WINDOW
+    '''Check if sr is monotonically increasing, (given NOISE_WINDOW = 5%) within noise = 5% * std_strength = 0.05 * 1'''
+    zero_noise = -NOISE_WINDOW
     mono_inc_sr = np.diff(sr) >= zero_noise
     # restore sr to same length
     mono_inc_sr = np.insert(mono_inc_sr, 0, np.nan)
@@ -529,18 +531,29 @@ def is_noisy_mono_inc(sr):
 
 def calc_stability(aeb_df):
     '''
-    Consider the episodes starting from epi_solved, let #epi_+ be the number of episodes, and #epi_>= the number of episodes where strength_ma_epi is monotonically increasing, allowing for noise of 0.05, i.e. 5% of standard strength.
+    Find a baseline =
+    - 0. + noise for very weak solution
+    - max(strength_ma_epi) - noise for partial solution weak solution
+    - 1. - noise for solution achieving standard strength and beyond
+    So we get:
+    - weak_baseline = 0. + noise
+    - strong_baseline = min(max(strength_ma_epi), 1.) - noise
+    - baseline = max(weak_baseline, strong_baseline)
+
+    Let epi_baseline be the episode where baseline is first attained. Consider the episodes starting from epi_baseline, let #epi_+ be the number of episodes, and #epi_>= the number of episodes where strength_ma_epi is monotonically increasing.
     Calculate stability as
     stability = #epi_>= / #epi_+
     **Properties:**
     - stable agent has value 1, unstable agent < 1, and non-solution = 0.
-    - allows for drops strength MA of 5% of standard strength, which is invariant to the scale of rewards
+    - allows for drops strength MA of 5% to account for noise, which is invariant to the scale of rewards
     - if strength is monotonically increasing (with 5% noise), then it is stable
     - sharp gain in strength is considered stable
     - monotonically increasing implies strength can keep growing and as long as it does not fall much, it is considered stable
-    When an agent fails to achieve standard strength, it is meaningless to measure stability or give false interpolation, so stability is 0.
     '''
-    stable_idx = calc_stable_idx(aeb_df)
+    weak_baseline = 0. + NOISE_WINDOW
+    strong_baseline = min(aeb_df['strength_ma'].max(), 1.) - NOISE_WINDOW
+    baseline = max(weak_baseline, strong_baseline)
+    stable_idx = calc_stable_idx(aeb_df, min_strength_ma=baseline)
     if np.isnan(stable_idx):
         stability = 0.
     else:
@@ -567,7 +580,7 @@ def calc_consistency(aeb_fitness_df):
         # if only has 2 vectors, check norm_diff
         diff_norm = np.linalg.norm(
             np.diff(fitness_vecs, axis=0)) / np.linalg.norm(np.ones(len(fitness_vecs[0])))
-        consistency = diff_norm <= STABLE_WINDOW
+        consistency = diff_norm <= NOISE_WINDOW
     else:
         is_outlier_arr = util.is_outlier(fitness_vecs)
         consistency = (~is_outlier_arr).sum() / len(is_outlier_arr)
