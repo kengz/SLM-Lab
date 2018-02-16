@@ -131,6 +131,21 @@ Now the lab is ready for usage.
 
 **Read on: [Github Repo](https://github.com/kengz/SLM-Lab) | [Lab Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log Book](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
 
+## Citing
+
+If you use `SLM-Lab` in your research, you can cite it as follows:
+
+```
+@misc{kenggraesser2017slmlab,
+    author = {Wah Loon Keng, Laura Graesser},
+    title = {SLM-Lab},
+    year = {2017},
+    publisher = {GitHub},
+    journal = {GitHub repository},
+    howpublished = {\url{https://github.com/kengz/SLM-Lab}},
+}
+```
+
 ## Contributing
 
 If you're interested in using the lab for research, teaching or applications, please contact the [authors](https://twitter.com/kengzwl).
