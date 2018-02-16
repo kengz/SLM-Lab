@@ -473,13 +473,11 @@ def calc_strength(aeb_df, rand_epi_reward, std_epi_reward):
     return (aeb_df['reward'] - rand_epi_reward).clip(0.) / (std_epi_reward - rand_epi_reward)
 
 
-def calc_stable_idx(aeb_df):
+def calc_stable_idx(aeb_df, min_strength_ma):
     '''Calculate the index (epi) when strength first becomes stable (using moving mean and working backward)'''
-    std_strength = 1.
-    above_std_strength_sr = (
-        aeb_df['strength_ma'] >= (std_strength - NOISE_WINDOW))
+    above_std_strength_sr = (aeb_df['strength_ma'] >= min_strength_ma)
     if above_std_strength_sr.any():
-        # if it achieved stable (ma) std_strength at some point, the index when
+        # if it achieved stable (ma) min_strength_ma at some point, the index when
         std_strength_ra_idx = above_std_strength_sr.idxmax()
         stable_idx = std_strength_ra_idx - (MA_WINDOW - 1)
     else:
@@ -493,7 +491,8 @@ def calc_std_strength_timestep(aeb_df):
     For agent failing to achieve std_strength 1, it is meaningless to measure speed or give false interpolation, so set as inf (never).
     '''
     std_strength = 1.
-    stable_idx = calc_stable_idx(aeb_df)
+    stable_idx = calc_stable_idx(
+        aeb_df, min_strength_ma=std_strength - NOISE_WINDOW)
     if np.isnan(stable_idx):
         std_strength_timestep = np.inf
     else:
@@ -543,7 +542,7 @@ def calc_stability(aeb_df):
     - monotonically increasing implies strength can keep growing and as long as it does not fall much, it is considered stable
     When an agent fails to achieve standard strength, it is meaningless to measure stability or give false interpolation, so stability is 0.
     '''
-    stable_idx = calc_stable_idx(aeb_df)
+    stable_idx = calc_stable_idx(aeb_df, min_strength_ma=1. - NOISE_WINDOW)
     if np.isnan(stable_idx):
         stability = 0.
     else:
