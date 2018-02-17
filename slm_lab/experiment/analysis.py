@@ -187,7 +187,8 @@ def save_session_data(spec, info_space, session_mdp_data, session_data, session_
     if session_mdp_data is not None:  # not from retro analysis
         session_mdp_df = pd.concat(session_mdp_data, axis=1)
         session_df = pd.concat(session_data, axis=1)
-        util.write(session_mdp_df, f'{prepath}_session_mdp_df.csv')
+        # TODO reactivate saving when get to the transition matrix research
+        # util.write(session_mdp_df, f'{prepath}_session_mdp_df.csv')
         util.write(session_df, f'{prepath}_session_df.csv')
     util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
     # TODO replaced by plot_best_sessions until Feb 2018
