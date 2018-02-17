@@ -78,6 +78,20 @@ Latex(r'''\begin{eqnarray}
 \text{Backward pass: } \nabla_\theta L_i(\theta_i) = E_{s,a \sim p(\cdot), s \sim \xi}\big[ L_i(\theta_i) - \nabla_{\theta_i} Q(s,a; \theta_i) \big] \\
 \end{eqnarray}''')
 
+Latex(r'''\begin{eqnarray}
+\text{Algorithm SARSA} \\
+\text{For k = 1 .... N:} \\
+\quad \text{Gather data } {(s_i, a_i, r_i, s'_i, a'_i)} \ \text{by acting in the environment using the current policy} \\
+\quad \text{for each example, $i$, in the dataset} \\
+\quad \quad \text{1. Calculate target values for each example} \\
+\quad \quad \text{if $s_i$ is terminal:} \\
+\quad \quad \quad \quad y_i = r_i \\
+\quad \quad \text{else:}
+\quad \quad \quad \quad y_i = r_i + \gamma \ Q(s'_i, a'; \theta_{i-1})|s_i, a_i \\
+\quad \quad \text{2. Update network parameters, using MSE loss} \\
+\quad \quad \quad \quad L_i(\theta) = \frac{1}{2} \sum_i || (y_i - Q(s_i,a_i; \theta_i)) ||^2 \\
+\end{eqnarray}''')
+
 
 Latex(r'''\begin{eqnarray}
 \text{Algorithm DQN} \\
