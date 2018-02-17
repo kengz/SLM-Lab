@@ -9,6 +9,7 @@
     "debug2": "LOG_LEVEL=DEBUG2 python run_lab.py",
     "debug3": "LOG_LEVEL=DEBUG3 python run_lab.py",
     "watch": "if pgrep grunt >/dev/null 2>&1; then echo 'Grunt file watch-sync already running'; else node_modules/grunt/bin/grunt; fi",
+    "analyze": "python -c 'import sys; from slm_lab.experiment import analysis; analysis.retro_analyze(sys.argv[1])'",
     "reset": "rm -rf data/*",
     "kill": "pkill -f slm-env; pkill -f ipykernel; pkill -f run_lab.py; ray stop;",
     "export-env": "conda env export > environment.yml",
