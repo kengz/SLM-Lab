@@ -91,30 +91,102 @@ class SARSA(Algorithm):
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
             'num_epis_to_collect',  # how many episodes to collect before training for episodic training
         ]))
+        self.to_train = 0
+        self.set_memory_flag()
+
+    def set_memory_flag(self):
+        '''Flags if memory is episodic or discrete. This affects how self.sample() handles the batch it gets back from memory'''
+        body = self.agent.nanflat_body_a[0]
+        memory = body.memory.__class__.__name__
+        if (memory.find('OnPolicyReplay') != -1) or (memory.find('OnPolicyNStepReplay') != -1):
+            self.is_episodic = True
+        elif (memory.find('OnPolicyBatchReplay') != -1) or (memory.find('OnPolicyNStepBatchReplay') != -1):
+            self.is_episodic = False
+        else:
+            logger.warn(f'Error: Memory {memory} not recognized')
+            raise NotImplementedError
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
-        # TODO update for sarsa
+        # Calculate the Q values of the current and next states
+        q_sts = self.net.wrap_eval(batch['states'])
+        q_next_st = self.net.wrap_eval(batch['next_states'])
+        q_next_actions = batch['next_actions']
+        logger.debug2(f'Q next states: {q_next_st.size()}')
+        # Get the q value for the next action that was actually taken
+        idx = torch.from_numpy(np.array(list(range(q_next_st.size(0)))))
+        q_next_st_vals = q_next_st[idx, q_next_actions.squeeze_(1).data.long()]
+        # Expand the dims so that q_next_st_vals can be broadcast
+        q_next_st_vals.unsqueeze_(1)
+        logger.debug2(f'Q next_states vals {q_next_st_vals.size()}')
+        # Compute q_targets using reward and estimated best Q value from the next state if there is one
+        # Make future reward 0 if the current state is done
+        q_targets_actual = batch['rewards'].data + self.gamma * \
+            torch.mul((1 - batch['dones'].data), q_next_st_vals)
+        logger.debug2(f'Q targets actual: {q_targets_actual.size()}')
+        # We only want to train the network for the action selected in the current state
+        # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
+        q_targets = torch.mul(q_targets_actual, batch['actions'].data) + \
+            torch.mul(q_sts, (1 - batch['actions'].data))
+        logger.debug2(f'Q targets: {q_targets.size()}')
         return q_targets
 
     def sample(self):
-        '''Samples a batch from memory of size self.batch_size'''
-        # TODO update for sarsa
+        '''Samples a batch from memory'''
+        batches = [body.memory.sample()
+                   for body in self.agent.nanflat_body_a]
+        batch = util.concat_dict(batches)
+        if self.is_episodic:
+            util.to_torch_nested_batch(batch)
+            # Add next action to batch
+            batch['next_actions'] = []
+            for acts in batch['actions']:
+                next_acts = torch.zeros_like(acts)
+                # The next actions are the actions shifted by one time step
+                # For episodic training is does not matter that the action in the last state is set to zero since there is no corresponding next state. The Q target is just the reward received in the terminal state.
+                next_acts[:-1] = acts[1:]
+                batch['next_actions'].append(next_acts)
+            logger.debug3(f'Actions: {batch["actions"]}')
+            logger.debug3(f'Next actions: {batch["next_actions"]}')
+            # Flatten the batch to train all at once
+            batch = util.concat_episodes(batch)
+        else:
+            util.to_torch_batch(batch)
+            batch['next_actions'] = torch.zeros_like(batch['actions'])
+            batch['next_actions'][:-1] = batch['actions'][1:]
+            logger.debug2(f'Actions: {batch["actions"]}')
+            logger.debug2(f'Next actions: {batch["next_actions"]}')
+            logger.debug(f'Dones: {batch["dones"]}')
+            if not batch['dones'][-1]:
+                # The last experience in the batch is not terminal so we have to shorten the batch by one element since we do not yet have access to the next action taken for the final experience
+                logger.debug(f'States: {batch["states"].size()}')
+                logger.debug(f'Actions: {batch["actions"].size()}')
+                logger.debug(f'Next actions: {batch["next_actions"].size()}')
+                logger.debug(f'Rewards: {batch["rewards"].size()}')
+                batch_elems = ['states', 'actions', 'rewards', 'dones', 'next_states']
+                for k in batch_elems:
+                    batch[k] = batch[k][:-1]
+                logger.debug(f'States: {batch["states"].size()}')
+                logger.debug(f'Actions: {batch["actions"].size()}')
+                logger.debug(f'Next actions: {batch["next_actions"].size()}')
+                logger.debug(f'Rewards: {batch["rewards"].size()}')
         return batch
 
     @lab_api
     def train(self):
         '''Completes one training step for the agent if it is time to train.
-           i.e. the environment timestep is greater than the minimum training
-           timestep and a multiple of the training_frequency.
-           # TODO sarsa comments
            Otherwise this function does nothing.
         '''
         t = util.s_get(self, 'aeb_space.clock').get('total_t')
-        if (t > self.training_min_timestep and t % self.training_frequency == 0):
+        if self.to_train == 1:
             logger.debug3(f'Training at t: {t}')
-            # TODO update for sarsa
-            return total_loss
+            batch = self.sample()
+            q_targets = self.compute_q_target_values(batch)
+            y = Variable(q_targets)
+            loss = self.net.training_step(batch['states'], y)
+            logger.debug(f'loss {loss.data[0]}')
+            self.to_train = 0
+            return loss.data[0]
         else:
             logger.debug3('NOT training')
             return np.nan
