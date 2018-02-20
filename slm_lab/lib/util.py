@@ -671,9 +671,7 @@ def to_torch_batch(batch):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch Variable'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
     for k in float_data_names:
-        # print(f'Original {k}: {batch[k]}')
         batch[k] = Variable(torch.from_numpy(batch[k]).float())
-        # print(f'Torch {k}: {batch[k]}')
     return batch
 
 
@@ -698,4 +696,18 @@ def to_torch_nested_batch_helper(batch, float_data_names):
             tx = Variable(torch.from_numpy(nx).float())
             k_b.append(tx)
         batch[k] = k_b
+    return batch
+
+
+def concat_episodes(batch):
+    '''Concat episodic data into single tensors. Excludes data that isn't already a tensor'''
+    for k in batch:
+        classname = batch[k][0].__class__.__name__
+        if classname.find('ndarray') != -1:
+            # print(f'Skipping {k}')
+            pass
+        else:
+            batch[k] = torch.cat(batch[k], dim=0)
+            if batch[k].dim() == 1:
+                batch[k].unsqueeze_(1)
     return batch
