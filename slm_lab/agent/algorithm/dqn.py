@@ -96,9 +96,8 @@ class VanillaDQN(SARSA):
         q_targets_max = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), q_next_st_max)
         logger.debug2(f'Q targets max: {q_targets_max.size()}')
-        # We only want to train the network for the action selected
-        # For all other actions we set the q_target = q_sts
-        # So that the loss for these actions is 0
+        # We only want to train the network for the action selected in the current state
+        # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
         q_targets = torch.mul(q_targets_max, batch['actions'].data) + \
             torch.mul(q_sts, (1 - batch['actions'].data))
         logger.debug2(f'Q targets: {q_targets.size()}')
