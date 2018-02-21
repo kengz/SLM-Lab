@@ -1,15 +1,77 @@
 {
-  "sarsa_cartpole": {
+  "sarsa_cartpole_epsilon_batch": {
     "agent": [{
       "name": "SARSA",
       "algorithm": {
         "name": "SARSA",
-        "action_policy": "boltzmann",
+        "action_policy": "epsilon_greedy",
         "action_policy_update": "linear_decay",
-        "explore_var_start": 1.5,
-        "explore_var_end": 0.3,
-        "explore_anneal_epi": 40,
-        "gamma": 0.99,
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.005,
+        "explore_anneal_epi": 100,
+        "gamma": 0.999,
+        "training_frequency": 32,
+        "num_epis_to_collect": 3,
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay",
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.1
+        },
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1000
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 1000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 4,
+      "max_trial": 150,
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999],
+          "training_frequency__choice": [8, 16, 32, 64, 128],
+          "explore_var_end__uniform": [0.001, 0.1],
+          "explore_anneal_epi__choice": [10, 25, 50, 100],
+        },
+        "net": {
+          "optim": {
+            "lr__uniform": [0.001, 0.3]
+          },
+          "hid_layers__choice": [[16], [32], [64], [64, 32]],
+          "hid_layers_activation__choice": ["relu", "sigmoid"],
+        }
+      }]
+    }
+  },
+  "sarsa_cartpole_epsilon_episodic": {
+    "agent": [{
+      "name": "SARSA",
+      "algorithm": {
+        "name": "SARSA",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.005,
+        "explore_anneal_epi": 100,
+        "gamma": 0.999,
         "training_frequency": 32,
         "num_epis_to_collect": 1,
       },
@@ -19,28 +81,90 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "relu",
+        "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.1
         },
         "decay_lr": true,
-        "decay_lr_frequency": 800,
+        "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
     }],
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 300
+      "max_episode": 1000
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 1,
-      "max_trial": 1,
+      "max_session": 4,
+      "max_trial": 150,
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999],
+          "num_epis_to_collect__choice": [1, 2, 3, 4, 5, 10],
+          "explore_var_end__uniform": [0.001, 0.1],
+          "explore_anneal_epi__choice": [10, 25, 50, 100],
+        },
+        "net": {
+          "optim": {
+            "lr__uniform": [0.001, 0.3]
+          },
+          "hid_layers__choice": [[16], [32], [64], [64, 32]],
+          "hid_layers_activation__choice": ["relu", "sigmoid"],
+        }
+      }]
+    }
+  },
+  "sarsa_cartpole_boltzmann_batch": {
+    "agent": [{
+      "name": "SARSA",
+      "algorithm": {
+        "name": "SARSA",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.5,
+        "explore_var_end": 0.3,
+        "explore_anneal_epi": 100,
+        "gamma": 0.999,
+        "training_frequency": 32,
+        "num_epis_to_collect": 3,
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay",
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.1
+        },
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1000
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 1000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 4,
+      "max_trial": 150,
       "train_mode": true
     },
     "search": {
@@ -48,11 +172,77 @@
         "algorithm": {
           "gamma__uniform": [0.9, 0.9999],
           "training_frequency__choice": [8, 16, 32, 64, 128],
+          "explore_var_end__uniform": [0.1, 1.0],
+          "explore_anneal_epi__choice": [10, 25, 50, 100],
         },
         "net": {
           "optim": {
-            "lr__uniform": [0.001, 0.1]
-          }
+            "lr__uniform": [0.001, 0.3]
+          },
+          "hid_layers__choice": [[16], [32], [64], [64, 32]],
+          "hid_layers_activation__choice": ["relu", "sigmoid"],
+        }
+      }]
+    }
+  },
+  "sarsa_cartpole_boltzmann_episodic": {
+    "agent": [{
+      "name": "SARSA",
+      "algorithm": {
+        "name": "SARSA",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.5,
+        "explore_var_end": 0.3,
+        "explore_anneal_epi": 100,
+        "gamma": 0.999,
+        "training_frequency": 32,
+        "num_epis_to_collect": 1,
+      },
+      "memory": {
+        "name": "OnPolicyReplay",
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.1
+        },
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1000
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 1000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 4,
+      "max_trial": 150,
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999],
+          "num_epis_to_collect__choice": [1, 2, 3, 4, 5, 10],
+          "explore_var_end__uniform": [0.3, 1.0],
+          "explore_anneal_epi__choice": [10, 25, 50, 100],
+        },
+        "net": {
+          "optim": {
+            "lr__uniform": [0.001, 0.3]
+          },
+          "hid_layers__choice": [[16], [32], [64], [64, 32]],
+          "hid_layers_activation__choice": ["relu", "sigmoid"],
         }
       }]
     }
