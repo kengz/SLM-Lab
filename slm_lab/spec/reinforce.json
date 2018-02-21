@@ -100,8 +100,8 @@
       "num": 1
     },
     "meta": {
-      "max_session": 3,
-      "max_trial": 1,
+      "max_session": 4,
+      "max_trial": 30,
       "train_mode": true
     },
     "search": {
@@ -208,8 +208,8 @@
       "num": 1
     },
     "meta": {
-      "max_session": 3,
-      "max_trial": 1,
+      "max_session": 4,
+      "max_trial": 40,
       "train_mode": true
     },
     "search": {
