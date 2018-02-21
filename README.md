@@ -62,6 +62,8 @@ Read on for tutorials, research and results.
     source activate lab
     ```
 
+> Alternatively, run the content of `bin/setup_macOS` or `bin/setup_ubuntu` on your terminal manually.
+
 ### Setup
 
 A config file `config/default.json` will be created.
