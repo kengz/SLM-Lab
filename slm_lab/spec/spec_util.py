@@ -171,14 +171,3 @@ def resolve_aeb(spec):
     assert is_aeb_compact(
         aeb_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
     return aeb_list
-
-
-def resolve_param(spec):
-    '''
-    Resolve an experiment spec into the param space or generator for experiment trials. Do so for each of Agent param, Env param, then their combinations.
-    Each point in the param space is a trial, which contains its own copy of AEB space. Hence the base experiment info space cardinality is param space x AEB space.
-    @param {dict} spec An experiment spec.
-    @returns {list} param_list Resolved param space list of points or generator.
-    TODO implement and design AE params, like AEB space
-    '''
-    return

@@ -167,7 +167,7 @@ def plot_experiment(experiment_spec, experiment_df):
                 title='<br>'.join(_.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
         fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
     fig.layout.update(
-        title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 200), height=700)
+        title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 300), height=700)
     viz.plot(fig)
     return fig
 
@@ -191,7 +191,7 @@ def save_session_data(spec, info_space, session_mdp_data, session_data, session_
         # util.write(session_mdp_df, f'{prepath}_session_mdp_df.csv')
         util.write(session_df, f'{prepath}_session_df.csv')
     util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
-    # TODO replaced by plot_best_sessions until Feb 2018
+    # TODO replaced by plot_best_sessions until Feb 2018 https://github.com/plotly/plotly.py/issues/880
     if os.environ.get('run_mode') == 'train':
         viz.save_image(session_fig, f'{prepath}_session_graph.png')
 

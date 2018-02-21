@@ -131,7 +131,7 @@
       "max_session": 1,
       "max_trial": 1,
       "train_mode": true
-    },
+    }
   },
   "actor_critic_conv_test_spec": {
     "agent": [{
@@ -153,7 +153,7 @@
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay",
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "Convseparate",
@@ -191,7 +191,7 @@
       "max_session": 1,
       "max_trial": 1,
       "train_mode": false
-    },
+    }
   },
   "actor_critic_cartpole_coarse_search": {
     "agent": [{
@@ -213,7 +213,7 @@
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay",
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPseparate",
