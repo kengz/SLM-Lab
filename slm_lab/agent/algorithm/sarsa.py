@@ -49,8 +49,8 @@ class SARSA(Algorithm):
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
         body = self.agent.nanflat_body_a[0]  # single-body algo
-        state_dim = body.state_dim  # dimension of the environment state, e.g. 4
-        action_dim = body.action_dim  # dimension of the environment actions, e.g. 2
+        self.state_dim = body.state_dim  # dimension of the environment state, e.g. 4
+        self.action_dim = body.action_dim  # dimension of the environment actions, e.g. 2
         net_spec = self.agent.spec['net']
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -60,7 +60,7 @@ class SARSA(Algorithm):
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         ))
         self.net = getattr(net, net_spec['type'])(
-            state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
+            self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)
         self.set_net_attributes()
 
     def set_net_attributes(self):
@@ -119,16 +119,23 @@ class SARSA(Algorithm):
         # Expand the dims so that q_next_st_vals can be broadcast
         q_next_st_vals.unsqueeze_(1)
         logger.debug2(f'Q next_states vals {q_next_st_vals.size()}')
+        logger.debug3(f'Q next_states {q_next_st}')
+        logger.debug3(f'Q next actions {q_next_actions}')
+        logger.debug3(f'Q next_states vals {q_next_st_vals}')
+        logger.debug3(f'Dones {batch["dones"]}')
         # Compute q_targets using reward and estimated best Q value from the next state if there is one
         # Make future reward 0 if the current state is done
         q_targets_actual = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), q_next_st_vals)
         logger.debug2(f'Q targets actual: {q_targets_actual.size()}')
+        logger.debug3(f'Q states {q_sts}')
+        logger.debug3(f'Q targets actual: {q_targets_actual}')
         # We only want to train the network for the action selected in the current state
         # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
-        q_targets = torch.mul(q_targets_actual, batch['actions'].data) + \
-            torch.mul(q_sts, (1 - batch['actions'].data))
+        q_targets = torch.mul(q_targets_actual, batch['actions_onehot'].data) + \
+            torch.mul(q_sts, (1 - batch['actions_onehot'].data))
         logger.debug2(f'Q targets: {q_targets.size()}')
+        logger.debug3(f'Q targets: {q_targets}')
         return q_targets
 
     def sample(self):
@@ -139,37 +146,36 @@ class SARSA(Algorithm):
         if self.is_episodic:
             util.to_torch_nested_batch(batch)
             # Add next action to batch
+            batch['actions_onehot'] = []
             batch['next_actions'] = []
             for acts in batch['actions']:
-                next_acts = torch.zeros_like(acts)
                 # The next actions are the actions shifted by one time step
                 # For episodic training is does not matter that the action in the last state is set to zero since there is no corresponding next state. The Q target is just the reward received in the terminal state.
+                next_acts = torch.zeros_like(acts)
                 next_acts[:-1] = acts[1:]
+                # Convert actions to one hot (both representations are needed for SARSA)
+                acts_onehot = util.convert_to_one_hot(acts, self.action_dim)
+                batch['actions_onehot'].append(acts_onehot)
                 batch['next_actions'].append(next_acts)
-            logger.debug3(f'Actions: {batch["actions"]}')
-            logger.debug3(f'Next actions: {batch["next_actions"]}')
             # Flatten the batch to train all at once
             batch = util.concat_episodes(batch)
         else:
             util.to_torch_batch(batch)
-            batch['next_actions'] = torch.zeros_like(batch['actions'])
-            batch['next_actions'][:-1] = batch['actions'][1:]
-            logger.debug2(f'Actions: {batch["actions"]}')
-            logger.debug2(f'Next actions: {batch["next_actions"]}')
-            logger.debug(f'Dones: {batch["dones"]}')
-            if not batch['dones'][-1]:
-                # The last experience in the batch is not terminal so we have to shorten the batch by one element since we do not yet have access to the next action taken for the final experience
-                logger.debug(f'States: {batch["states"].size()}')
-                logger.debug(f'Actions: {batch["actions"].size()}')
-                logger.debug(f'Next actions: {batch["next_actions"].size()}')
-                logger.debug(f'Rewards: {batch["rewards"].size()}')
-                batch_elems = ['states', 'actions', 'rewards', 'dones', 'next_states']
+            # Batch only useful to train with if it has more than one element
+            # Train function checks for this and skips training if batch is too small
+            if batch['states'].size(0) > 1:
+                batch['next_actions'] = torch.zeros_like(batch['actions'])
+                batch['next_actions'][:-1] = batch['actions'][1:]
+                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.action_dim)
+                batch_elems = ['states', 'actions', 'actions_onehot', 'rewards', 'dones', 'next_states', 'next_actions']
                 for k in batch_elems:
-                    batch[k] = batch[k][:-1]
-                logger.debug(f'States: {batch["states"].size()}')
-                logger.debug(f'Actions: {batch["actions"].size()}')
-                logger.debug(f'Next actions: {batch["next_actions"].size()}')
-                logger.debug(f'Rewards: {batch["rewards"].size()}')
+                    if batch[k].dim() == 1:
+                        batch[k].unsqueeze_(1)
+                if batch['dones'].data[-1].int().eq_(0).numpy()[0]:
+                    logger.debug(f'Popping last element')
+                    # The last experience in the batch is not terminal the batch has to be shortened by one element since the algorithm does not yet have access to the next action taken for the final experience
+                    for k in batch_elems:
+                        batch[k] = batch[k][:-1]
         return batch
 
     @lab_api
@@ -181,6 +187,10 @@ class SARSA(Algorithm):
         if self.to_train == 1:
             logger.debug3(f'Training at t: {t}')
             batch = self.sample()
+            if batch['states'].size(0) < 2:
+                logger.info(f'Batch too small to train with, skipping...')
+                self.to_train = 0
+                return np.nan
             q_targets = self.compute_q_target_values(batch)
             y = Variable(q_targets)
             loss = self.net.training_step(batch['states'], y)

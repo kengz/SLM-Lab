@@ -703,7 +703,7 @@ def concat_episodes(batch):
     '''Concat episodic data into single tensors. Excludes data that isn't already a tensor'''
     for k in batch:
         classname = batch[k][0].__class__.__name__
-        if classname.find('ndarray') != -1:
+        if classname.find('ndarray') != -1 or classname.find('list') != -1:
             # print(f'Skipping {k}')
             pass
         else:
@@ -711,3 +711,11 @@ def concat_episodes(batch):
             if batch[k].dim() == 1:
                 batch[k].unsqueeze_(1)
     return batch
+
+
+def convert_to_one_hot(data, categories):
+    '''Converts categorical data to one hot representation'''
+    data_onehot = torch.zeros(data.size(0), categories)
+    idxs = torch.from_numpy(np.array(list(range(data.size(0)))))
+    data_onehot[idxs, data.data.long()] = 1
+    return Variable(data_onehot)
