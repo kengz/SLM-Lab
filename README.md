@@ -57,7 +57,7 @@ Read on for tutorials, research and results.
 2. Install dependencies (or inspect `bin/setup_*` first):
     ```shell
     cd SLM-Lab/
-    sudo bin/setup
+    bin/setup
     yarn install
     source activate lab
     ```
@@ -77,7 +77,16 @@ A config file `config/default.json` will be created.
 ```
 
 - update `"data_sync_dir"` if you run lab on remote and want to sync data for easy access; it will copy `data/` there.
-- for plots, sign up for a free [Plotly account](https://plot.ly/) and update `"plotly"`.
+- for plots, sign up for a free [Plotly account](https://plot.ly/) and update the `"plotly"` JSON key.
+
+### Update
+
+To update SLM Lab, pull the latest git commits and run update:
+
+```shell
+git pull
+yarn update
+```
 
 ### Demo
 
