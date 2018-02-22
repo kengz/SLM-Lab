@@ -117,8 +117,10 @@ class DataSpace:
         '''
         if e is None:
             return self.data[a]
-        else:
+        elif a is None:
             return self.swap_data[e]
+        else:
+            return self.data[a][e]
 
 
 class AEBSpace:
