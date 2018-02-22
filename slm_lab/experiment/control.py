@@ -68,7 +68,7 @@ class Session:
         _reward_space, state_space, _done_space = self.env_space.reset()
         self.agent_space.reset(state_space)
         while True:
-            end_session = self.aeb_space.tick_clocks()
+            end_session = self.aeb_space.tick_clocks(self)
             if end_session:
                 break
             action_space = self.agent_space.act(state_space)
