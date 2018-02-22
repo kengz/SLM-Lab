@@ -3,7 +3,7 @@
     "agent": [{
       "name": "DQN",
       "algorithm": {
-        "name": "DQN",
+        "name": "VanillaDQN",
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.5,
@@ -36,14 +36,14 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 200
+      "max_episode": 150
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 8,
       "train_mode": false
     },
