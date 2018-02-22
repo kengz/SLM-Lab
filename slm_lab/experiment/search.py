@@ -85,15 +85,11 @@ class RaySearch:
             }
             prepath = analysis.get_prepath(spec, info_space, unit='trial')
             util.write(trial_data, f'{prepath}_trial_data.json')
-            done = True
-            # TODO timesteps = episode len or total_t from space_clock
-            # call reporter from inside trial/session loop
-            # TODO put reporter into info space so it can be called to update. easy.
-            reporter(timesteps_total=-1, done=done, info=trial_data)
+            reporter(timesteps_total=-1, done=True, info=trial_data)
 
         register_trainable('lab_trial', lab_trial)
 
-        # TODO use hyperband
+        # TODO use ES
         # TODO use advanced conditional config space via lambda func
         config_space = self.build_config_space()
         spec = self.experiment.spec
