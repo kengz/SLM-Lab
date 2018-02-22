@@ -227,8 +227,7 @@ class DQNBase(VanillaDQN):
         q_next_st_maxs = q_next_sts[idx, q_next_acts]
         q_next_st_maxs.unsqueeze_(1)
         logger.debug2(f'Q next_states max {q_next_st_maxs.size()}')
-        # Compute final q_target using reward and estimated best Q value from the next state if there is one
-        # Make future reward 0 if the current state is done
+        # Compute final q_target using reward and estimated best Q value from the next state if there is one. Make next state Q value 0 if the current state is done
         q_targets_max = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), q_next_st_maxs)
         logger.debug2(f'Q targets max: {q_targets_max.size()}')

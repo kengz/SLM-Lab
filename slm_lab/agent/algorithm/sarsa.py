@@ -39,7 +39,7 @@ class SARSA(Algorithm):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
             - Memory (holding experiences obtained by acting in the environment)
-            - State and action dimentions for an environment
+            - State and action dimensions for an environment
             - Boolean var for if the action space is discrete
         '''
         self.init_nets()
@@ -123,8 +123,7 @@ class SARSA(Algorithm):
         logger.debug3(f'Q next actions {q_next_actions}')
         logger.debug3(f'Q next_states vals {q_next_st_vals}')
         logger.debug3(f'Dones {batch["dones"]}')
-        # Compute q_targets using reward and estimated best Q value from the next state if there is one
-        # Make future reward 0 if the current state is done
+        # Compute q_targets using reward and Q value corresponding to the action taken in the next state if there is one. Make next state Q value 0 if the current state is done
         q_targets_actual = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), q_next_st_vals)
         logger.debug2(f'Q targets actual: {q_targets_actual.size()}')
