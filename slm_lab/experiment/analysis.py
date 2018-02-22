@@ -604,7 +604,6 @@ def calc_fitness(fitness_vec):
 
 def calc_aeb_fitness_sr(aeb_df, env_name):
     '''Top level method to calculate fitness vector for AEB level data (strength, speed, stability)'''
-    logger.info('Dev feature: fitness computation')
     no_fitness_sr = pd.Series({
         'strength': 0., 'speed': 0., 'stability': 0.})
     if len(aeb_df) < MA_WINDOW:
