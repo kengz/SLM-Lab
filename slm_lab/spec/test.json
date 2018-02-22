@@ -39,7 +39,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 18
+      "max_episode": 20
     }],
     "body": {
       "product": "outer",
