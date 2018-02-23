@@ -5,6 +5,7 @@ from slm_lab.experiment import analysis
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api, ray_init_dc
+import json
 import numpy as np
 import pandas as pd
 import pydash as _
@@ -135,8 +136,7 @@ class RandomSearch(RaySearch):
             for config in configs:
                 pending_ids.append(run_trial.remote(self.experiment, config))
 
-        total_trial_len = len(pending_ids)
-        for _t in total_trial_len:
+        for _t in len(pending_ids):
             ready_ids, pending_ids = ray.wait(pending_ids, num_returns=1)
             try:
                 trial_data = ray.get(ready_ids[0])
@@ -186,17 +186,6 @@ class EvolutionarySearch(RaySearch):
                 ind1[k], ind2[k] = ind2[k], ind1[k]
         return ind1, ind2
 
-
-    def evaluate(self, config):
-        # config = individual
-        pending_id = run_trial.remote(self.experiment, config)
-        # uhh cant call wait here, will turn into serial
-        # maybe run all externally, so this only fetch all result already compiled
-        # yeah
-
-        fitness = sum(list(individual.values())[:2])
-        return fitness,
-
     def init_deap(self):
         toolbox = base.Toolbox()
         toolbox.register('attr', self.generate_config)
@@ -205,15 +194,11 @@ class EvolutionarySearch(RaySearch):
         toolbox.register('population', tools.initRepeat,
                          list, toolbox.individual)
 
-        # TODO wrapper to get fitness
-        # run_trial.remote returns pending_id
-        # don't need this
-        # toolbox.register('evaluate', evaluate)
         toolbox.register('mate', self.cx_uniform, indpb=0.5)
-        toolbox.register('mutate', self.mutate, indpb=1 / len(toolbox.individual()))
+        toolbox.register('mutate', self.mutate, indpb=1 /
+                         len(toolbox.individual()))
         toolbox.register('select', tools.selTournament, tournsize=3)
         return
-
 
     def calc_population_size(self):
         return 60
@@ -221,37 +206,49 @@ class EvolutionarySearch(RaySearch):
     @lab_api
     @ray_init_dc
     def run(self):
+        # TODO max_trial how to set?
+        self.init_deap()
+        trial_data_dict = {}
+        config_hash = {}  # config hash_str to trial_index
         population = toolbox.population(n=self.calc_population_size())
         # move to meta?
         num_generation = 10
-        # Begin the generational process
         for gen in range(num_generation):
             logger.info(f'Running generation {gen}')
-            # Evaluate the individuals with an invalid fitness
-            # TODO hash to not run but get score if seen before
-            # reduce uniq
-            pending_configs = [ind for ind in population if not ind.fitness.valid]
             pending_ids = []
-            for config in pending_configs:
-                config['trial_index'] = self.experiment.info_space.tick('trial')[
-                    'trial']
-                pending_ids.append(run_trial.remote(self.experiment, config))
+            for ind in population:
+                config = dict(ind.items())
+                hash_str = util.to_json(config, indent=0)
+                if hash_str in config_hash:
+                    ind['trial_index'] = config_hash[hash_str]
+                else:
+                    trial_index = self.experiment.info_space.tick('trial')[
+                        'trial']
+                    config_hash[hash_str] = trial_index
+                    ind['trial_index'] = config_hash[hash_str]
+                    pending_ids.append(
+                        run_trial.remote(self.experiment, config))
 
-            # TODO handler error
-            trial_datas = ray.get(pending_ids)
-            for ind, trial_data in zip(invalid_inds, trial_datas):
-                trial_index = trial_data.pop('trial_index')
-                trial_data_dict[trial_index] = trial_data
+            for _t in len(pending_ids):
+                ready_ids, pending_ids = ray.wait(pending_ids, num_returns=1)
+                try:
+                    trial_data = ray.get(ready_ids[0])
+                    trial_index = trial_data.pop('trial_index')
+                    trial_data_dict[trial_index] = trial_data
+                except:
+                    logger.exception(f'Trial at ray id {ready_ids[0]} failed.')
+
+            for ind in population:
+                trial_index = ind.pop('trial_index')
+                trial_data = trial_data_dict.get(
+                    trial_index, {'fitness': 0})  # if trial errored
                 ind.fitness.values = trial_data['fitness']
 
             # prepare offspring for next generation
             if gen < num_generation - 1:
-                # TODO tick clock, and don't overtick (if last gen, skip)
-                # Select the next generation individuals
-                population = toolbox.select(offspring, len(population))
+                population = toolbox.select(population, len(population))
                 # Vary the pool of individuals
-                population = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.5)
+                population = algorithms.varAnd(
+                    population, toolbox, cxpb=0.5, mutpb=0.5)
 
-
-        top10 = tools.selBest(population, k=10)
         return trial_data_dict
