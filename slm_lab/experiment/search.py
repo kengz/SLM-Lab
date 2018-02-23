@@ -1,4 +1,5 @@
 from copy import deepcopy
+from deap import creator, base, tools, algorithms
 from ray.tune import grid_search, variant_generator
 from slm_lab.experiment import analysis
 from slm_lab.experiment.monitor import InfoSpace
@@ -147,13 +148,110 @@ class RandomSearch(RaySearch):
 
 
 class EvolutionarySearch(RaySearch):
+
     def generate_config(self):
         for resolved_vars, config in variant_generator._generate_variants(self.config_space):
-            config['trial_index'] = self.experiment.info_space.tick('trial')[
-                'trial']
+            # trial_index is set at population level
             return config
+            # TODO ban grid search for evo search
+
+    def mutate(cls, individual, indpb):
+        '''
+        Deap implementation for dict individual (config),
+        mutate an attribute with some probability - resample using the generate_config method and ensuring the new value is different.
+        @param {dict} individual Individual to be mutated.
+        @param {float} indpb Independent probability for each attribute to be mutated.
+        @returns A tuple of one individual.
+        '''
+        for k, v in individual.items():
+            if random.random() < indpb:
+                while True:
+                    new_ind = self.generate_config()
+                    if new_ind[k] != v:
+                        individual[k] = new_ind[k]
+                        break
+        return individual,
+
+    def cx_uniform(cls, ind1, ind2, indpb):
+        '''
+        Deap implementation for dict individual (config),
+        do a uniform crossover that modify in place the two individuals. The attributes are swapped with probability indpd.
+        @param {dict} ind1 The first individual participating in the crossover.
+        @param {dict} ind2 The second individual participating in the crossover.
+        @param {float} indpb Independent probabily for each attribute to be exchanged.
+        @returns A tuple of two individuals.
+        '''
+        for k in ind1:
+            if random.random() < indpb:
+                ind1[k], ind2[k] = ind2[k], ind1[k]
+        return ind1, ind2
+
+
+    def evaluate(self, config):
+        # config = individual
+        pending_id = run_trial.remote(self.experiment, config)
+        # uhh cant call wait here, will turn into serial
+        # maybe run all externally, so this only fetch all result already compiled
+        # yeah
+
+        fitness = sum(list(individual.values())[:2])
+        return fitness,
+
+    def init_deap(self):
+        toolbox = base.Toolbox()
+        toolbox.register('attr', self.generate_config)
+        toolbox.register('individual', tools.initIterate,
+                         creator.Individual, toolbox.attr)
+        toolbox.register('population', tools.initRepeat,
+                         list, toolbox.individual)
+
+        # TODO wrapper to get fitness
+        # run_trial.remote returns pending_id
+        # don't need this
+        # toolbox.register('evaluate', evaluate)
+        toolbox.register('mate', self.cx_uniform, indpb=0.5)
+        toolbox.register('mutate', self.mutate, indpb=1 / len(toolbox.individual()))
+        toolbox.register('select', tools.selTournament, tournsize=3)
+        return
+
+
+    def calc_population_size(self):
+        return 60
 
     @lab_api
     @ray_init_dc
     def run(self):
+        population = toolbox.population(n=self.calc_population_size())
+        # move to meta?
+        num_generation = 10
+        # Begin the generational process
+        for gen in range(num_generation):
+            logger.info(f'Running generation {gen}')
+            # Evaluate the individuals with an invalid fitness
+            # TODO hash to not run but get score if seen before
+            # reduce uniq
+            pending_configs = [ind for ind in population if not ind.fitness.valid]
+            pending_ids = []
+            for config in pending_configs:
+                config['trial_index'] = self.experiment.info_space.tick('trial')[
+                    'trial']
+                pending_ids.append(run_trial.remote(self.experiment, config))
+
+            # TODO handler error
+            trial_datas = ray.get(pending_ids)
+            for ind, trial_data in zip(invalid_inds, trial_datas):
+                trial_index = trial_data.pop('trial_index')
+                trial_data_dict[trial_index] = trial_data
+                ind.fitness.values = trial_data['fitness']
+
+            # prepare offspring for next generation
+            if gen < num_generation - 1:
+                # TODO tick clock, and don't overtick (if last gen, skip)
+                # Select the next generation individuals
+                population = toolbox.select(offspring, len(population))
+                # Vary the pool of individuals
+                population = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.5)
+
+
+        top10 = tools.selBest(population, k=10)
         return trial_data_dict
