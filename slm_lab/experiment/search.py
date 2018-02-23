@@ -238,8 +238,8 @@ class EvolutionarySearch(RaySearch):
         for gen in range(max_generation):
             logger.info(f'Running generation {gen}')
             pending_ids = []
-            for ind in population:
-                config = dict(ind.items())
+            for individual in population:
+                config = dict(individual.items())
                 hash_str = util.to_json(config, indent=0)
                 if hash_str not in config_hash:
                     trial_index = self.experiment.info_space.tick('trial')[
@@ -247,15 +247,15 @@ class EvolutionarySearch(RaySearch):
                     config_hash[hash_str] = trial_index
                     pending_ids.append(
                         run_trial.remote(self.experiment, config))
-                ind['trial_index'] = config_hash[hash_str]
+                individual['trial_index'] = config_hash[hash_str]
 
             trial_data_dict.update(get_ray_results(pending_ids))
 
-            for ind in population:
-                trial_index = ind.pop('trial_index')
+            for individual in population:
+                trial_index = individual.pop('trial_index')
                 trial_data = trial_data_dict.get(
                     trial_index, {'fitness': 0})  # if trial errored
-                ind.fitness.values = trial_data['fitness']
+                individual.fitness.values = trial_data['fitness']
 
             # prepare offspring for next generation
             if gen < num_generation - 1:
