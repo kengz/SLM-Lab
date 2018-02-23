@@ -229,7 +229,7 @@ class AEBSpace:
             body_end_sessions.append(env_end_session)
 
         env_early_stops = []
-        if any(env_dones):
+        if any(env_dones) and self.clock.get('epi') > analysis.MA_WINDOW:
             session_mdp_data, session_data = analysis.get_session_data(session)
             for aeb in session_data:
                 aeb_df = session_data[aeb]
