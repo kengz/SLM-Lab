@@ -46,6 +46,23 @@ def build_config_space(experiment):
     return config_space
 
 
+def calc_pop_size(experiment):
+    '''Calculate the population size for RandomSearch or EvolutionarySearch'''
+    pop_size = 2  # start with x2 for better sampling coverage
+    for k, v in util.flatten_dict(experiment.spec['search']).items():
+        if '__' in k:
+            key, space_type = k.split('__')
+        else:
+            key, space_type = k, 'grid_search'
+        if space_type in ('grid_search', 'choice'):
+            pop_size *= len(v)
+        elif space_type == 'randint':
+            pop_size *= (v[1] - v[0])
+        else:
+            pop_size *= 5
+    return pop_size
+
+
 def spec_from_config(experiment, config):
     '''Helper to create spec from config - variables in spec.'''
     spec = deepcopy(experiment.spec)
@@ -200,9 +217,6 @@ class EvolutionarySearch(RaySearch):
         toolbox.register('select', tools.selTournament, tournsize=3)
         return
 
-    def calc_population_size(self):
-        return 60
-
     @lab_api
     @ray_init_dc
     def run(self):
@@ -210,7 +224,7 @@ class EvolutionarySearch(RaySearch):
         self.init_deap()
         trial_data_dict = {}
         config_hash = {}  # config hash_str to trial_index
-        population = toolbox.population(n=self.calc_population_size())
+        population = toolbox.population(n=calc_pop_size(self.experiment))
         # move to meta?
         num_generation = 10
         for gen in range(num_generation):
