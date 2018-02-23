@@ -121,7 +121,7 @@ class RandomSearch(RaySearch):
             config['trial_index'] = self.experiment.info_space.tick('trial')[
                 'trial']
             configs.append(config)
-            return configs
+        return configs
 
     @lab_api
     @ray_init_dc
@@ -144,4 +144,17 @@ class RandomSearch(RaySearch):
                 trial_data_dict[trial_index] = trial_data
             except:
                 logger.exception(f'Trial at ray id {ready_ids[0]} failed.')
+        return trial_data_dict
+
+
+class EvolutionarySearch(RaySearch):
+    def generate_config(self):
+        for resolved_vars, config in variant_generator._generate_variants(self.config_space):
+            config['trial_index'] = self.experiment.info_space.tick('trial')[
+                'trial']
+            return config
+
+    @lab_api
+    @ray_init_dc
+    def run(self):
         return trial_data_dict
