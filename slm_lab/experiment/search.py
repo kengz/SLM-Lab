@@ -1,11 +1,10 @@
 from copy import deepcopy
-from ray.tune import register_trainable, grid_search, variant_generator, run_experiments
+from ray.tune import grid_search, variant_generator
 from slm_lab.experiment import analysis
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api, ray_init_dc
 import numpy as np
-import os
 import pandas as pd
 import pydash as _
 import random
@@ -14,7 +13,7 @@ import ray
 
 def build_config_space(experiment):
     '''
-    Build ray config space from flattened spec.search for ray spec passed to run_experiments()
+    Build ray config space from flattened spec.search
     Specify a config space in spec using `"{key}__{space_type}": {v}`.
     Where `{space_type}` is `grid_search` of `ray.tune`, or any function name of `np.random`:
     - `grid_search`: str/int/float. v = list of choices
