@@ -48,9 +48,6 @@ class RaySearch:
             else:
                 np_fn = getattr(np.random, space_type)
                 config_space[key] = lambda spec, v=v: np_fn(*v)
-        # RaySearch.lab_trial on ray.remote is not thread-safe, we have to carry the trial_index from config, created at the top level on the same thread, ticking once a trial (one samping).
-        config_space['trial_index'] = lambda spec: self.experiment.info_space.tick('trial')[
-            'trial']
         self.config_space = config_space
         return self.config_space
 
@@ -63,10 +60,11 @@ class RaySearch:
         return spec
 
     def generate_config(self):
-        # TODO some evo heuricstics to tweak config space
-        # TODO ban grid_search
+        # TODO pick first only, so ban grid search
         for resolved_vars, config in variant_generator._generate_variants(self.config_space):
-            # pick first only, so ban grid search
+            # RaySearch.lab_trial on ray.remote is not thread-safe, we have to carry the trial_index from config, created at the top level on the same thread, ticking once a trial (one samping).
+            config['trial_index'] = self.experiment.info_space.tick('trial')[
+                'trial']
             return config
 
     @lab_api
