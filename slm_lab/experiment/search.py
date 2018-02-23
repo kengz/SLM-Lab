@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod, abstractproperty
 from copy import deepcopy
 from deap import creator, base, tools, algorithms
 from ray.tune import grid_search, variant_generator
@@ -46,7 +47,7 @@ def build_config_space(experiment):
     return config_space
 
 
-def calc_pop_size(experiment):
+def calc_population_size(experiment):
     '''Calculate the population size for RandomSearch or EvolutionarySearch'''
     pop_size = 2  # start with x2 for better sampling coverage
     for k, v in util.flatten_dict(experiment.spec['search']).items():
@@ -229,7 +230,7 @@ class EvolutionarySearch(RaySearch):
     def run(self):
         meta_spec = self.experiment.spec['meta']
         max_generation = meta_spec['max_generation']
-        pop_size = meta_spec['max_trial'] or calc_pop_size(self.experiment)
+        pop_size = meta_spec['max_trial'] or calc_population_size(self.experiment)
         trial_data_dict = {}
         config_hash = {}  # config hash_str to trial_index
 
