@@ -81,17 +81,34 @@ class RaySearch(ABC):
 
     def __init__(self, experiment):
         self.experiment = experiment
+        self.config_space = build_config_space(experiment)
 
     @abstractmethod
-    def generate_config(self, config_space):
-        '''Generate the next config given config_space, may update belief first'''
+    def generate_config(self):
+        '''
+        Generate the next config given config_space, may update belief first.
+        Remember to update trial_index in config.
+        '''
+        # use self.config_space to build config
+        config['trial_index'] = self.experiment.info_space.tick('trial')[
+            'trial']
         raise NotImplementedError
         return config
 
     @lab_api
     @abstractmethod
     def run(self):
-        '''Implement the main run_trial loop. Remember to call ray init and disconnect before and after loop.'''
+        '''
+        Implement the main run_trial loop.
+        Remember to call ray init and disconnect before and after loop.
+        '''
+        ray.init()
+        # serialize here as ray is not thread safe outside
+        ray.register_custom_serializer(InfoSpace, use_pickle=True)
+        ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
+        ray.register_custom_serializer(pd.Series, use_pickle=True)
+        # loop for max_trial: generate_config(); run_trial.remote(config)
+        ray.disconnect()
         raise NotImplementedError
         return trial_data_dict
 
@@ -99,9 +116,10 @@ class RaySearch(ABC):
 # TODO implement different class extending this
 class RandomSearch(RaySearch):
 
-    def generate_config(self, config_space):
+    def generate_config(self):
         # TODO pick first only, so ban grid search
-        for resolved_vars, config in variant_generator._generate_variants(config_space):
+        # TODO restore grid search here
+        for resolved_vars, config in variant_generator._generate_variants(self.config_space):
             # RaySearch.lab_trial on ray.remote is not thread-safe, we have to carry the trial_index from config, created at the top level on the same thread, ticking once a trial (one samping).
             config['trial_index'] = self.experiment.info_space.tick('trial')[
                 'trial']
@@ -115,9 +133,7 @@ class RandomSearch(RaySearch):
         ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
         ray.register_custom_serializer(pd.Series, use_pickle=True)
 
-        config_space = build_config_space(self.experiment)
         meta_spec = self.experiment.spec['meta']
-
         parallel_num = meta_spec.get('cpu', util.CPU_NUM)
         trial_data_dict = {}
         pending_ids = []
@@ -134,7 +150,7 @@ class RandomSearch(RaySearch):
                     logger.exception(f'Trial at ray id {ready_ids[0]} failed.')
             # TODO update belief using fitnesses and configs, pool per parallel_num
             if t < meta_spec['max_trial']:
-                config = self.generate_config(config_space)
+                config = self.generate_config()
                 pending_ids.append(run_trial.remote(self.experiment, config))
 
         ray.disconnect()
