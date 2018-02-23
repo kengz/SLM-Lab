@@ -89,6 +89,20 @@ def run_trial(experiment, config):
     return trial_data
 
 
+def get_ray_results(pending_ids):
+    '''Helper to wait and get ray results into a new trial_data_dict, or handle ray error'''
+    trial_data_dict = {}
+    for _t in len(pending_ids):
+        ready_ids, pending_ids = ray.wait(pending_ids, num_returns=1)
+        try:
+            trial_data = ray.get(ready_ids[0])
+            trial_index = trial_data.pop('trial_index')
+            trial_data_dict[trial_index] = trial_data
+        except:
+            logger.exception(f'Trial at ray id {ready_ids[0]} failed.')
+    return trial_data_dict
+
+
 class RaySearch(ABC):
     '''
     RaySearch module for Experiment - Ray API integration with Lab
@@ -153,14 +167,7 @@ class RandomSearch(RaySearch):
             for config in configs:
                 pending_ids.append(run_trial.remote(self.experiment, config))
 
-        for _t in len(pending_ids):
-            ready_ids, pending_ids = ray.wait(pending_ids, num_returns=1)
-            try:
-                trial_data = ray.get(ready_ids[0])
-                trial_index = trial_data.pop('trial_index')
-                trial_data_dict[trial_index] = trial_data
-            except:
-                logger.exception(f'Trial at ray id {ready_ids[0]} failed.')
+        trial_data_dict.update(get_ray_results(pending_ids))
         return trial_data_dict
 
 
@@ -215,42 +222,34 @@ class EvolutionarySearch(RaySearch):
         toolbox.register('mutate', self.mutate, indpb=1 /
                          len(toolbox.individual()))
         toolbox.register('select', tools.selTournament, tournsize=3)
-        return
+        return toolbox
 
     @lab_api
     @ray_init_dc
     def run(self):
-        # TODO max_trial how to set?
-        self.init_deap()
+        meta_spec = self.experiment.spec['meta']
+        max_generation = meta_spec['max_generation']
+        pop_size = meta_spec['max_trial'] or calc_pop_size(self.experiment)
         trial_data_dict = {}
         config_hash = {}  # config hash_str to trial_index
-        population = toolbox.population(n=calc_pop_size(self.experiment))
-        # move to meta?
-        num_generation = 10
-        for gen in range(num_generation):
+
+        toolbox = self.init_deap()
+        population = toolbox.population(n=pop_size)
+        for gen in range(max_generation):
             logger.info(f'Running generation {gen}')
             pending_ids = []
             for ind in population:
                 config = dict(ind.items())
                 hash_str = util.to_json(config, indent=0)
-                if hash_str in config_hash:
-                    ind['trial_index'] = config_hash[hash_str]
-                else:
+                if hash_str not in config_hash:
                     trial_index = self.experiment.info_space.tick('trial')[
                         'trial']
                     config_hash[hash_str] = trial_index
-                    ind['trial_index'] = config_hash[hash_str]
                     pending_ids.append(
                         run_trial.remote(self.experiment, config))
+                ind['trial_index'] = config_hash[hash_str]
 
-            for _t in len(pending_ids):
-                ready_ids, pending_ids = ray.wait(pending_ids, num_returns=1)
-                try:
-                    trial_data = ray.get(ready_ids[0])
-                    trial_index = trial_data.pop('trial_index')
-                    trial_data_dict[trial_index] = trial_data
-                except:
-                    logger.exception(f'Trial at ray id {ready_ids[0]} failed.')
+            trial_data_dict.update(get_ray_results(pending_ids))
 
             for ind in population:
                 trial_index = ind.pop('trial_index')
