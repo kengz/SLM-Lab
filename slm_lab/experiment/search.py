@@ -3,7 +3,7 @@ from ray.tune import register_trainable, grid_search, variant_generator, run_exp
 from slm_lab.experiment import analysis
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
-from slm_lab.lib.decorator import lab_api
+from slm_lab.lib.decorator import lab_api, ray_init_dc
 import numpy as np
 import os
 import pandas as pd
@@ -82,6 +82,11 @@ class RaySearch(ABC):
     def __init__(self, experiment):
         self.experiment = experiment
         self.config_space = build_config_space(experiment)
+        ray.init()
+        # serialize here as ray is not thread safe outside
+        ray.register_custom_serializer(InfoSpace, use_pickle=True)
+        ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
+        ray.register_custom_serializer(pd.Series, use_pickle=True)
 
     @abstractmethod
     def generate_config(self):
@@ -95,20 +100,15 @@ class RaySearch(ABC):
         raise NotImplementedError
         return config
 
-    @lab_api
     @abstractmethod
+    @lab_api
+    @ray_init_dc
     def run(self):
         '''
         Implement the main run_trial loop.
         Remember to call ray init and disconnect before and after loop.
         '''
-        ray.init()
-        # serialize here as ray is not thread safe outside
-        ray.register_custom_serializer(InfoSpace, use_pickle=True)
-        ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
-        ray.register_custom_serializer(pd.Series, use_pickle=True)
         # loop for max_trial: generate_config(); run_trial.remote(config)
-        ray.disconnect()
         raise NotImplementedError
         return trial_data_dict
 
@@ -124,13 +124,8 @@ class RandomSearch(RaySearch):
             return configs
 
     @lab_api
+    @ray_init_dc
     def run(self):
-        ray.init()
-        # serialize here as ray is not thread safe outside
-        ray.register_custom_serializer(InfoSpace, use_pickle=True)
-        ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
-        ray.register_custom_serializer(pd.Series, use_pickle=True)
-
         max_trial = self.experiment.spec['meta']['max_trial']
         pending_ids = []
         trial_data_dict = {}
@@ -149,6 +144,4 @@ class RandomSearch(RaySearch):
                 trial_data_dict[trial_index] = trial_data
             except:
                 logger.exception(f'Trial at ray id {ready_ids[0]} failed.')
-
-        ray.disconnect()
         return trial_data_dict
