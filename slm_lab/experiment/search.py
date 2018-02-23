@@ -133,25 +133,22 @@ class RandomSearch(RaySearch):
         ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
         ray.register_custom_serializer(pd.Series, use_pickle=True)
 
-        meta_spec = self.experiment.spec['meta']
-        parallel_num = meta_spec.get('cpu', util.CPU_NUM)
-        trial_data_dict = {}
+        max_trial = self.experiment.spec['meta']['max_trial']
         pending_ids = []
-        # TODO rewrite wait loop
-        for t in range(meta_spec['max_trial'] + parallel_num):
-            if t >= parallel_num:
-                ready_ids, pending_ids = ray.wait(
-                    pending_ids, num_returns=1)
-                try:
-                    trial_data = ray.get(ready_ids[0])
-                    trial_index = trial_data.pop('trial_index')
-                    trial_data_dict[trial_index] = trial_data
-                except:
-                    logger.exception(f'Trial at ray id {ready_ids[0]} failed.')
-            # TODO update belief using fitnesses and configs, pool per parallel_num
-            if t < meta_spec['max_trial']:
-                config = self.generate_config()
-                pending_ids.append(run_trial.remote(self.experiment, config))
+        trial_data_dict = {}
+
+        for t in range(max_trial):
+            config = self.generate_config()
+            pending_ids.append(run_trial.remote(self.experiment, config))
+
+        for t in range(max_trial):
+            ready_ids, pending_ids = ray.wait(pending_ids, num_returns=1)
+            try:
+                trial_data = ray.get(ready_ids[0])
+                trial_index = trial_data.pop('trial_index')
+                trial_data_dict[trial_index] = trial_data
+            except:
+                logger.exception(f'Trial at ray id {ready_ids[0]} failed.')
 
         ray.disconnect()
         return trial_data_dict
