@@ -155,7 +155,7 @@ class Experiment:
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.trial_data_dict = {}
         self.data = None
-        SearchClass = getattr(search, spec['meta'].get('search', 'RandomSearch'))
+        SearchClass = getattr(search, spec['meta'].get('search'))
         self.search = SearchClass(self)
         analysis.save_spec(spec, info_space, unit='experiment')
         logger.info(f'Initialized experiment {self.index}')
