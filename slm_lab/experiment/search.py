@@ -115,11 +115,6 @@ class RaySearch(ABC):
     def __init__(self, experiment):
         self.experiment = experiment
         self.config_space = build_config_space(experiment)
-        ray.init()
-        # serialize here as ray is not thread safe outside
-        ray.register_custom_serializer(InfoSpace, use_pickle=True)
-        ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
-        ray.register_custom_serializer(pd.Series, use_pickle=True)
 
     @abstractmethod
     def generate_config(self):
@@ -173,6 +168,7 @@ class RandomSearch(RaySearch):
 
 
 class EvolutionarySearch(RaySearch):
+    # TODO log search module in control
 
     def generate_config(self):
         for resolved_vars, config in variant_generator._generate_variants(self.config_space):
@@ -230,7 +226,8 @@ class EvolutionarySearch(RaySearch):
     def run(self):
         meta_spec = self.experiment.spec['meta']
         max_generation = meta_spec['max_generation']
-        pop_size = meta_spec['max_trial'] or calc_population_size(self.experiment)
+        pop_size = meta_spec['max_trial'] or calc_population_size(
+            self.experiment)
         trial_data_dict = {}
         config_hash = {}  # config hash_str to trial_index
 
