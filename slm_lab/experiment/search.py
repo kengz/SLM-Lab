@@ -1,5 +1,5 @@
 from copy import deepcopy
-from ray.tune import register_trainable, grid_search, run_experiments
+from ray.tune import register_trainable, grid_search, variant_generator, run_experiments
 from slm_lab.experiment import analysis
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
@@ -49,9 +49,10 @@ class RaySearch:
                 np_fn = getattr(np.random, space_type)
                 config_space[key] = lambda spec, v=v: np_fn(*v)
         # RaySearch.lab_trial on ray.remote is not thread-safe, we have to carry the trial_index from config, created at the top level on the same thread, ticking once a trial (one samping).
-        config_space['trial_index'] = lambda spec: self.experiment.info_space.tick(
-            'trial')['trial']
-        return config_space
+        config_space['trial_index'] = lambda spec: self.experiment.info_space.tick('trial')[
+            'trial']
+        self.config_space = config_space
+        return self.config_space
 
     def spec_from_config(self, config):
         '''Helper to create spec from config - variables in spec.'''
@@ -61,6 +62,13 @@ class RaySearch:
             _.set_(spec, k, v)
         return spec
 
+    def generate_config(self):
+        # TODO some evo heuricstics to tweak config space
+        # TODO ban grid_search
+        for resolved_vars, config in variant_generator._generate_variants(self.config_space):
+            # pick first only, so ban grid search
+            return config
+
     @lab_api
     def run(self):
         ray.init()
@@ -69,8 +77,8 @@ class RaySearch:
         ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
         ray.register_custom_serializer(pd.Series, use_pickle=True)
 
-        def lab_trial(config, reporter):
-            '''Trainable method to run a trial given ray config and reporter'''
+        @ray.remote
+        def run_trial(config):
             trial_index = config.pop('trial_index')
             spec = self.spec_from_config(config)
             info_space = deepcopy(self.experiment.info_space)
@@ -79,47 +87,32 @@ class RaySearch:
                 spec, info_space)
             fitness_vec = trial_fitness_df.iloc[0].to_dict()
             fitness = analysis.calc_fitness(trial_fitness_df)
-            trial_index = trial_fitness_df.index[0]
             trial_data = {
                 **config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
             }
             prepath = analysis.get_prepath(spec, info_space, unit='trial')
             util.write(trial_data, f'{prepath}_trial_data.json')
-            reporter(timesteps_total=-1, done=True, info=trial_data)
+            return trial_data
 
-        register_trainable('lab_trial', lab_trial)
-
-        # TODO use ES
-        # TODO use advanced conditional config space via lambda func
-        config_space = self.build_config_space()
-        spec = self.experiment.spec
-        try:
-            ray_experiment = {
-                spec['name']: {
-                    'run': 'lab_trial',
-                    'stop': {'done': True},
-                    'config': config_space,
-                    'repeat': spec['meta']['max_trial'],
-                }
-            }
-            if 'resource' in spec['meta']:
-                ray_experiment[spec['name']].update(
-                    {'resource': spec['meta']['resource']})
-            ray_trials = run_experiments(ray_experiment)
-            logger.info('Ray.tune experiment.search.run() done.')
-            # compose data format for experiment analysis
-            trial_data_dict = {}
-            for ray_trial in ray_trials:
-                exp_trial_data = ray_trial.last_result.info
-                trial_index = exp_trial_data.pop('trial_index')
-                trial_data_dict[trial_index] = exp_trial_data
-        except Exception as e:
-            logger.exception(
-                'Some Ray trials failed, finish experiment analysis from files.')
-            prepath = analysis.get_prepath(
-                self.experiment.spec, self.experiment.info_space, unit='experiment')
-            predir = os.path.dirname(prepath)
-            trial_data_dict = analysis.trial_data_dict_from_file(predir)
+        self.config_space = self.build_config_space()
+        meta_spec = self.experiment.spec['meta']
+        parallel_num = meta_spec.get('cpu', util.CPU_NUM)
+        trial_data_dict = {}
+        pending_ids = []
+        for t in range(meta_spec['max_trial'] + parallel_num):
+            if t >= parallel_num:
+                ready_ids, pending_ids = ray.wait(
+                    pending_ids, num_returns=1)
+                try:
+                    trial_data = ray.get(ready_ids[0])
+                    trial_index = trial_data.pop('trial_index')
+                    trial_data_dict[trial_index] = trial_data
+                except:
+                    logger.exception(f'Trial at ray id {ready_ids[0]} failed.')
+            # TODO update belief using fitnesses and configs, pool per parallel_num
+            if t < meta_spec['max_trial']:
+                config = self.generate_config()
+                pending_ids.append(run_trial.remote(config))
 
         ray.disconnect()
         return trial_data_dict
