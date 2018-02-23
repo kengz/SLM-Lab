@@ -87,7 +87,7 @@ class RaySearch(ABC):
     def generate_config(self):
         '''
         Generate the next config given config_space, may update belief first.
-        Remember to update trial_index in config.
+        Remember to update trial_index in config here, since run_trial() on ray.remote is not thread-safe.
         '''
         # use self.config_space to build config
         config['trial_index'] = self.experiment.info_space.tick('trial')[
@@ -113,17 +113,15 @@ class RaySearch(ABC):
         return trial_data_dict
 
 
-# TODO implement different class extending this
 class RandomSearch(RaySearch):
 
     def generate_config(self):
-        # TODO pick first only, so ban grid search
-        # TODO restore grid search here
+        configs = []  # to accommodate for grid_search
         for resolved_vars, config in variant_generator._generate_variants(self.config_space):
-            # RaySearch.lab_trial on ray.remote is not thread-safe, we have to carry the trial_index from config, created at the top level on the same thread, ticking once a trial (one samping).
             config['trial_index'] = self.experiment.info_space.tick('trial')[
                 'trial']
-            return config
+            configs.append(config)
+            return configs
 
     @lab_api
     def run(self):
@@ -137,11 +135,13 @@ class RandomSearch(RaySearch):
         pending_ids = []
         trial_data_dict = {}
 
-        for t in range(max_trial):
-            config = self.generate_config()
-            pending_ids.append(run_trial.remote(self.experiment, config))
+        for _t in range(max_trial):
+            configs = self.generate_config()
+            for config in configs:
+                pending_ids.append(run_trial.remote(self.experiment, config))
 
-        for t in range(max_trial):
+        total_trial_len = len(pending_ids)
+        for _t in total_trial_len:
             ready_ids, pending_ids = ray.wait(pending_ids, num_returns=1)
             try:
                 trial_data = ray.get(ready_ids[0])
