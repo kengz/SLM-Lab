@@ -240,7 +240,7 @@ class AEBSpace:
                     aeb_fitness_sr = analysis.calc_aeb_fitness_sr(
                         aeb_df, body.env.name)
                     strength = aeb_fitness_sr['strength']
-                    env_early_stop = strength < 0.5
+                    env_early_stop = strength < analysis.NOISE_WINDOW
                 else:
                     env_early_stop = False
                 env_early_stops.append(env_early_stop)
