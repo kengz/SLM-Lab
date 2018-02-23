@@ -71,12 +71,33 @@ def run_trial(experiment, config):
     return trial_data
 
 
-# TODO implement different class extending this
-class RaySearch:
-    '''Search module for Experiment - Ray.tune API integration with Lab'''
+class RaySearch(ABC):
+    '''
+    RaySearch module for Experiment - Ray API integration with Lab
+    Abstract class ancestor to all RaySearch (using Ray).
+    specifies the necessary design blueprint for agent to work in Lab.
+    Mostly, implement just the abstract methods and properties.
+    '''
 
     def __init__(self, experiment):
         self.experiment = experiment
+
+    @abstractmethod
+    def generate_config(self, config_space):
+        '''Generate the next config given config_space, may update belief first'''
+        raise NotImplementedError
+        return config
+
+    @lab_api
+    @abstractmethod
+    def run(self):
+        '''Implement the main run_trial loop. Remember to call ray init and disconnect before and after loop.'''
+        raise NotImplementedError
+        return trial_data_dict
+
+
+# TODO implement different class extending this
+class RandomSearch(RaySearch):
 
     def generate_config(self, config_space):
         # TODO pick first only, so ban grid search
@@ -100,8 +121,7 @@ class RaySearch:
         parallel_num = meta_spec.get('cpu', util.CPU_NUM)
         trial_data_dict = {}
         pending_ids = []
-        # TODO need to change for evo, by population size
-        # TODO maybe wrap below by search method, as different search class, along with generate_config: random, evo
+        # TODO rewrite wait loop
         for t in range(meta_spec['max_trial'] + parallel_num):
             if t >= parallel_num:
                 ready_ids, pending_ids = ray.wait(
@@ -114,7 +134,7 @@ class RaySearch:
                     logger.exception(f'Trial at ray id {ready_ids[0]} failed.')
             # TODO update belief using fitnesses and configs, pool per parallel_num
             if t < meta_spec['max_trial']:
-                config = generate_config(config_space)
+                config = self.generate_config(config_space)
                 pending_ids.append(run_trial.remote(self.experiment, config))
 
         ray.disconnect()

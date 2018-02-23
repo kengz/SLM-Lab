@@ -155,14 +155,14 @@ class Experiment:
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.trial_data_dict = {}
         self.data = None
-        SearchClass = getattr(search, 'RaySearch')
+        SearchClass = getattr(search, spec['meta'].get('search', 'RandomSearch'))
         self.search = SearchClass(self)
         analysis.save_spec(spec, info_space, unit='experiment')
         logger.info(f'Initialized experiment {self.index}')
 
     def init_trial_and_run(self, spec, info_space):
         '''
-        Method to run trial with the properly updated info_space (trial_index) from experiment.RaySearch.lab_trial.
+        Method to run trial with the properly updated info_space (trial_index) from experiment.search.lab_trial.
         Do not tick info_space below, it is already updated when passed from lab_trial.
         '''
         trial = Trial(spec, info_space)
