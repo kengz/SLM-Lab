@@ -1,4 +1,3 @@
-import ray
 import time
 from functools import wraps
 from slm_lab.lib import logger
@@ -36,6 +35,9 @@ def ray_init_dc(fn):
     '''
     @wraps(fn)
     def init_dc(*args, **kwargs):
+        from slm_lab.experiment.monitor import InfoSpace
+        import pandas as pd
+        import ray
         ray.init()
         # serialize here as ray is not thread safe outside
         ray.register_custom_serializer(InfoSpace, use_pickle=True)
