@@ -92,6 +92,7 @@ def run_trial(experiment, config):
 
 def get_ray_results(pending_ids):
     '''Helper to wait and get ray results into a new trial_data_dict, or handle ray error'''
+    # TODO print trial number and config of the failed stuff, use a ray_id to config dict
     trial_data_dict = {}
     for _t in range(len(pending_ids)):
         ready_ids, pending_ids = ray.wait(pending_ids, num_returns=1)
@@ -247,8 +248,7 @@ class EvolutionarySearch(RaySearch):
                 if hash_str not in config_hash:
                     trial_index = self.experiment.info_space.tick('trial')[
                         'trial']
-                    config_hash[hash_str] = trial_index
-                    config['trial_index'] = trial_index
+                    config_hash[hash_str] = config['trial_index'] = trial_index
                     pending_ids.append(
                         run_trial.remote(self.experiment, config))
                 individual['trial_index'] = config_hash[hash_str]
@@ -261,8 +261,10 @@ class EvolutionarySearch(RaySearch):
                     trial_index, {'fitness': 0})  # if trial errored
                 individual.fitness.values = trial_data['fitness'],
 
-            logger.info(
-                f'Fittest of population preview: \n{tools.selBest(population, k=min(10, pop_size))}')
+            preview = 'Fittest of population preview:'
+            for individual in tools.selBest(population, k=min(10, pop_size)):
+                preview += f'fitness: {individual.fitness.values[0]}, {individual}'
+            logger.info(preview)
 
             # prepare offspring for next generation
             if gen < max_generation:
