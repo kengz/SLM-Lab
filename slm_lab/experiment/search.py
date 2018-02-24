@@ -115,6 +115,8 @@ class RaySearch(ABC):
     def __init__(self, experiment):
         self.experiment = experiment
         self.config_space = build_config_space(experiment)
+        logger.info(
+            f'Running {util.get_class_name(self)}, with meta spec:\n{self.experiment.spec["meta"]}')
 
     @abstractmethod
     def generate_config(self):
@@ -168,7 +170,6 @@ class RandomSearch(RaySearch):
 
 
 class EvolutionarySearch(RaySearch):
-    # TODO log search module in control
 
     def generate_config(self):
         for resolved_vars, config in variant_generator._generate_variants(self.config_space):
@@ -230,13 +231,15 @@ class EvolutionarySearch(RaySearch):
         max_generation = meta_spec['max_generation']
         pop_size = meta_spec['max_trial'] or calc_population_size(
             self.experiment)
+        logger.info(
+            f'EvolutionarySearch max_generation: {max_generation}, population size: {pop_size}')
         trial_data_dict = {}
         config_hash = {}  # config hash_str to trial_index
 
         toolbox = self.init_deap()
         population = toolbox.population(n=pop_size)
-        for gen in range(max_generation):
-            logger.info(f'Running generation {gen}')
+        for gen in range(1, max_generation + 1):
+            logger.info(f'Running generation: {gen}/{max_generation}')
             pending_ids = []
             for individual in population:
                 config = dict(individual.items())
@@ -258,8 +261,11 @@ class EvolutionarySearch(RaySearch):
                     trial_index, {'fitness': 0})  # if trial errored
                 individual.fitness.values = trial_data['fitness'],
 
+            logger.info(
+                'Fittest of population preview: \n{tools.selBest(population, k=min(10, pop_size))}')
+
             # prepare offspring for next generation
-            if gen < num_generation - 1:
+            if gen < max_generation:
                 population = toolbox.select(population, len(population))
                 # Vary the pool of individuals
                 population = algorithms.varAnd(
