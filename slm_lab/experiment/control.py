@@ -68,7 +68,7 @@ class Session:
         _reward_space, state_space, _done_space = self.env_space.reset()
         self.agent_space.reset(state_space)
         while True:
-            end_session = self.aeb_space.tick_clocks()
+            end_session = self.aeb_space.tick_clocks(self)
             if end_session:
                 break
             action_space = self.agent_space.act(state_space)
@@ -155,14 +155,14 @@ class Experiment:
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.trial_data_dict = {}
         self.data = None
-        SearchClass = getattr(search, 'RaySearch')
+        SearchClass = getattr(search, spec['meta'].get('search'))
         self.search = SearchClass(self)
         analysis.save_spec(spec, info_space, unit='experiment')
         logger.info(f'Initialized experiment {self.index}')
 
     def init_trial_and_run(self, spec, info_space):
         '''
-        Method to run trial with the properly updated info_space (trial_index) from experiment.RaySearch.lab_trial.
+        Method to run trial with the properly updated info_space (trial_index) from experiment.search.lab_trial.
         Do not tick info_space below, it is already updated when passed from lab_trial.
         '''
         trial = Trial(spec, info_space)

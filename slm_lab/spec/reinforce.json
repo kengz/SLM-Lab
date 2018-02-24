@@ -41,6 +41,7 @@
     "meta": {
       "max_session": 2,
       "max_trial": 200,
+      "search": "RandomSearch",
       "train_mode": true
     },
     "search": {
@@ -102,6 +103,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 30,
+      "search": "RandomSearch",
       "train_mode": true
     },
     "search": {
@@ -164,6 +166,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
+      "search": "RandomSearch",
       "train_mode": false
     }
   },
@@ -210,6 +213,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 40,
+      "search": "RandomSearch",
       "train_mode": true
     },
     "search": {
