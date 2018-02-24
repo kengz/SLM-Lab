@@ -35,11 +35,13 @@ def ray_init_dc(fn):
     '''
     @wraps(fn)
     def init_dc(*args, **kwargs):
+        from slm_lab.experiment.control import Experiment
         from slm_lab.experiment.monitor import InfoSpace
         import pandas as pd
         import ray
         ray.init()
         # serialize here as ray is not thread safe outside
+        ray.register_custom_serializer(Experiment, use_pickle=True)
         ray.register_custom_serializer(InfoSpace, use_pickle=True)
         ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
         ray.register_custom_serializer(pd.Series, use_pickle=True)
