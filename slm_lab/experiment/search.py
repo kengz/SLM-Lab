@@ -93,7 +93,7 @@ def run_trial(experiment, config):
 def get_ray_results(pending_ids):
     '''Helper to wait and get ray results into a new trial_data_dict, or handle ray error'''
     trial_data_dict = {}
-    for _t in len(pending_ids):
+    for _t in range(len(pending_ids)):
         ready_ids, pending_ids = ray.wait(pending_ids, num_returns=1)
         try:
             trial_data = ray.get(ready_ids[0])
