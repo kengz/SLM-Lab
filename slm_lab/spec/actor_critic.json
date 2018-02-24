@@ -196,6 +196,86 @@
       "train_mode": false
     }
   },
+  "actor_critic_cartpole": {
+    "agent": [{
+      "name": "ActorCritic",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_policy": "default",
+        "gamma": 0.91,
+        "num_epis_to_collect": 1,
+        "add_entropy": true,
+        "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0,
+        "lamda": 0.74,
+        "num_step_returns": 10,
+        "training_frequency": 32,
+        "training_iters_per_batch": 4,
+        "use_GAE": true,
+        "policy_loss_weight": 1.0,
+        "val_loss_weight": 1.0
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPseparate",
+        "hid_layers": [
+          16
+        ],
+        "hid_layers_activation": "relu",
+        "use_same_optim": false,
+        "optim_actor": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "optim_critic": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "clamp_grad": false,
+        "clamp_grad_val": 25.0,
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 2000
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 200
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 4,
+      "max_trial": null,
+      "search": "EvolutionarySearch",
+      "max_generation": 15,
+      "train_mode": false
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.8, 0.999]
+        },
+        "net": {
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64],
+            [16, 8],
+            [32, 16]
+          ],
+          "optim_actor": {
+            "lr__uniform": [0.001, 0.1]
+          }
+        }
+      }]
+    }
+  },
   "actor_critic_cartpole_coarse_search": {
     "agent": [{
       "name": "ActorCritic",
