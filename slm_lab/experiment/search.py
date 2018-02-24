@@ -255,7 +255,7 @@ class EvolutionarySearch(RaySearch):
                 trial_index = individual.pop('trial_index')
                 trial_data = trial_data_dict.get(
                     trial_index, {'fitness': 0})  # if trial errored
-                individual.fitness.values = trial_data['fitness']
+                individual.fitness.values = trial_data['fitness'],
 
             # prepare offspring for next generation
             if gen < num_generation - 1:
