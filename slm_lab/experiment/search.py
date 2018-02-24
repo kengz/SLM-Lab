@@ -262,7 +262,7 @@ class EvolutionarySearch(RaySearch):
                 individual.fitness.values = trial_data['fitness'],
 
             logger.info(
-                'Fittest of population preview: \n{tools.selBest(population, k=min(10, pop_size))}')
+                f'Fittest of population preview: \n{tools.selBest(population, k=min(10, pop_size))}')
 
             # prepare offspring for next generation
             if gen < max_generation:
