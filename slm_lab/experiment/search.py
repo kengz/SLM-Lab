@@ -90,18 +90,18 @@ def run_trial(experiment, config):
     return trial_data
 
 
-def get_ray_results(pending_ids):
+def get_ray_results(pending_ids, ray_id_to_config):
     '''Helper to wait and get ray results into a new trial_data_dict, or handle ray error'''
-    # TODO print trial number and config of the failed stuff, use a ray_id to config dict
     trial_data_dict = {}
     for _t in range(len(pending_ids)):
         ready_ids, pending_ids = ray.wait(pending_ids, num_returns=1)
+        ready_id = ready_ids[0]
         try:
-            trial_data = ray.get(ready_ids[0])
+            trial_data = ray.get(ready_id)
             trial_index = trial_data.pop('trial_index')
             trial_data_dict[trial_index] = trial_data
         except:
-            logger.exception(f'Trial at ray id {ready_ids[0]} failed.')
+            logger.exception(f'Trial failed: {ray_id_to_config[ready_id]}')
     return trial_data_dict
 
 
@@ -158,15 +158,18 @@ class RandomSearch(RaySearch):
     @ray_init_dc
     def run(self):
         max_trial = self.experiment.spec['meta']['max_trial']
-        pending_ids = []
         trial_data_dict = {}
+        ray_id_to_config = {}
+        pending_ids = []
 
         for _t in range(max_trial):
             configs = self.generate_config()
             for config in configs:
-                pending_ids.append(run_trial.remote(self.experiment, config))
+                ray_id = run_trial.remote(self.experiment, config)
+                ray_id_to_config[ray_id] = config
+                pending_ids.append(ray_id)
 
-        trial_data_dict.update(get_ray_results(pending_ids))
+        trial_data_dict.update(get_ray_results(pending_ids, ray_id_to_config))
         return trial_data_dict
 
 
@@ -176,7 +179,6 @@ class EvolutionarySearch(RaySearch):
         for resolved_vars, config in variant_generator._generate_variants(self.config_space):
             # trial_index is set at population level
             return config
-            # TODO ban grid search for evo search
 
     def mutate(self, individual, indpb):
         '''
@@ -241,6 +243,7 @@ class EvolutionarySearch(RaySearch):
         population = toolbox.population(n=pop_size)
         for gen in range(1, max_generation + 1):
             logger.info(f'Running generation: {gen}/{max_generation}')
+            ray_id_to_config = {}
             pending_ids = []
             for individual in population:
                 config = dict(individual.items())
@@ -249,11 +252,13 @@ class EvolutionarySearch(RaySearch):
                     trial_index = self.experiment.info_space.tick('trial')[
                         'trial']
                     config_hash[hash_str] = config['trial_index'] = trial_index
-                    pending_ids.append(
-                        run_trial.remote(self.experiment, config))
+                    ray_id = run_trial.remote(self.experiment, config)
+                    ray_id_to_config[ray_id] = config
+                    pending_ids.append(ray_id)
                 individual['trial_index'] = config_hash[hash_str]
 
-            trial_data_dict.update(get_ray_results(pending_ids))
+            trial_data_dict.update(get_ray_results(
+                pending_ids, ray_id_to_config))
 
             for individual in population:
                 trial_index = individual.pop('trial_index')
