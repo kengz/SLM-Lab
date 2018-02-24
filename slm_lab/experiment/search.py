@@ -245,6 +245,7 @@ class EvolutionarySearch(RaySearch):
                     trial_index = self.experiment.info_space.tick('trial')[
                         'trial']
                     config_hash[hash_str] = trial_index
+                    config['trial_index'] = trial_index
                     pending_ids.append(
                         run_trial.remote(self.experiment, config))
                 individual['trial_index'] = config_hash[hash_str]
