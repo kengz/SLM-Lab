@@ -5,7 +5,7 @@ from ray.tune import grid_search, variant_generator
 from slm_lab.experiment import analysis
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
-from slm_lab.lib.decorator import lab_api, ray_init_dc
+from slm_lab.lib.decorator import lab_api
 import json
 import numpy as np
 import pandas as pd
@@ -114,6 +114,11 @@ class RaySearch(ABC):
     '''
 
     def __init__(self, experiment):
+        from slm_lab.experiment.control import Experiment
+        ray.register_custom_serializer(Experiment, use_pickle=True)
+        ray.register_custom_serializer(InfoSpace, use_pickle=True)
+        ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
+        ray.register_custom_serializer(pd.Series, use_pickle=True)
         self.experiment = experiment
         self.config_space = build_config_space(experiment)
         logger.info(
@@ -133,13 +138,14 @@ class RaySearch(ABC):
 
     @abstractmethod
     @lab_api
-    @ray_init_dc
     def run(self):
         '''
         Implement the main run_trial loop.
         Remember to call ray init and disconnect before and after loop.
         '''
+        ray.init()
         # loop for max_trial: generate_config(); run_trial.remote(config)
+        ray.disconnect()
         raise NotImplementedError
         return trial_data_dict
 
@@ -155,9 +161,10 @@ class RandomSearch(RaySearch):
         return configs
 
     @lab_api
-    @ray_init_dc
     def run(self):
-        max_trial = self.experiment.spec['meta']['max_trial']
+        meta_spec = self.experiment.spec['meta']
+        ray.init(**meta_spec.get('resources', {}))
+        max_trial = meta_spec['max_trial']
         trial_data_dict = {}
         ray_id_to_config = {}
         pending_ids = []
@@ -170,6 +177,7 @@ class RandomSearch(RaySearch):
                 pending_ids.append(ray_id)
 
         trial_data_dict.update(get_ray_results(pending_ids, ray_id_to_config))
+        ray.disconnect()
         return trial_data_dict
 
 
@@ -228,9 +236,9 @@ class EvolutionarySearch(RaySearch):
         return toolbox
 
     @lab_api
-    @ray_init_dc
     def run(self):
         meta_spec = self.experiment.spec['meta']
+        ray.init(**meta_spec.get('resources', {}))
         max_generation = meta_spec['max_generation']
         pop_size = meta_spec['max_trial'] or calc_population_size(
             self.experiment)
@@ -278,4 +286,5 @@ class EvolutionarySearch(RaySearch):
                 population = algorithms.varAnd(
                     population, toolbox, cxpb=0.5, mutpb=0.5)
 
+        ray.disconnect()
         return trial_data_dict

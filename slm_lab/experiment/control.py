@@ -113,13 +113,15 @@ class Trial:
         logger.info('Trial done, closing.')
 
     def run(self):
+        num_cpus = _.get(self.spec['meta'],
+                         'resources.num_cpus', util.NUM_CPUS)
         info_spaces = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
             info_spaces.append(deepcopy(self.info_space))
         if self.spec['meta']['train_mode'] and len(info_spaces) > 1:
             session_datas = util.parallelize_fn(
-                self.init_session_and_run, info_spaces)
+                self.init_session_and_run, info_spaces, num_cpus)
         else:  # dont parallelize when debugging to allow render
             session_datas = [
                 self.init_session_and_run(info_space) for info_space in info_spaces

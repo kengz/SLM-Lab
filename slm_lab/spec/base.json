@@ -30,8 +30,8 @@
       "max_trial": 1,
       "search": "RandomSearch",
       "resource": {
-        "cpu": 4,
-        "gpu": 0
+        "num_cpus": 4,
+        "num_gpus": 0
       },
       "train_mode": false
     },
