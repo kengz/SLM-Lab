@@ -177,7 +177,7 @@ class EvolutionarySearch(RaySearch):
             return config
             # TODO ban grid search for evo search
 
-    def mutate(cls, individual, indpb):
+    def mutate(self, individual, indpb):
         '''
         Deap implementation for dict individual (config),
         mutate an attribute with some probability - resample using the generate_config method and ensuring the new value is different.
