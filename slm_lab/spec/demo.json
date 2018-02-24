@@ -65,7 +65,7 @@
         },
         "net": {
           "optim_actor": {
-            "lr__choice": [0.01, 0.2]
+            "lr__choice": [0.001, 0.01]
           }
         }
       }]
