@@ -263,7 +263,7 @@ class EvolutionarySearch(RaySearch):
 
             preview = 'Fittest of population preview:'
             for individual in tools.selBest(population, k=min(10, pop_size)):
-                preview += f'fitness: {individual.fitness.values[0]}, {individual}'
+                preview += f'\nfitness: {individual.fitness.values[0]}, {individual}'
             logger.info(preview)
 
             # prepare offspring for next generation
