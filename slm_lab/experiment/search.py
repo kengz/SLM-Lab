@@ -162,8 +162,9 @@ class RandomSearch(RaySearch):
 
     @lab_api
     def run(self):
-        ray.init()
-        max_trial = self.experiment.spec['meta']['max_trial']
+        meta_spec = self.experiment.spec['meta']
+        ray.init(**meta_spec.get('resources', {}))
+        max_trial = meta_spec['max_trial']
         trial_data_dict = {}
         ray_id_to_config = {}
         pending_ids = []
@@ -236,8 +237,8 @@ class EvolutionarySearch(RaySearch):
 
     @lab_api
     def run(self):
-        ray.init()
         meta_spec = self.experiment.spec['meta']
+        ray.init(**meta_spec.get('resources', {}))
         max_generation = meta_spec['max_generation']
         pop_size = meta_spec['max_trial'] or calc_population_size(
             self.experiment)
