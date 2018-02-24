@@ -208,6 +208,8 @@ class EvolutionarySearch(RaySearch):
         return ind1, ind2
 
     def init_deap(self):
+        creator.create('FitnessMax', base.Fitness, weights=(1.0,))
+        creator.create('Individual', dict, fitness=creator.FitnessMax)
         toolbox = base.Toolbox()
         toolbox.register('attr', self.generate_config)
         toolbox.register('individual', tools.initIterate,
