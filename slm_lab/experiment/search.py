@@ -49,7 +49,7 @@ def build_config_space(experiment):
 
 def calc_population_size(experiment):
     '''Calculate the population size for RandomSearch or EvolutionarySearch'''
-    pop_size = 1
+    pop_size = 2  # x2 for more search coverage
     for k, v in util.flatten_dict(experiment.spec['search']).items():
         if '__' in k:
             key, space_type = k.split('__')
