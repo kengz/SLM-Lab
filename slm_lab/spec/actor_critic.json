@@ -253,7 +253,7 @@
       "max_session": 4,
       "max_trial": null,
       "search": "EvolutionarySearch",
-      "max_generation": 15,
+      "max_generation": 5,
       "train_mode": false
     },
     "search": {
@@ -265,12 +265,14 @@
           "hid_layers__choice": [
             [16],
             [32],
-            [64],
             [16, 8],
             [32, 16]
           ],
           "optim_actor": {
-            "lr__uniform": [0.001, 0.1]
+            "lr__choice": [0.002, 0.02]
+          },
+          "optim_critic": {
+            "lr__choice": [0.002, 0.02]
           }
         }
       }]
