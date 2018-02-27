@@ -22,6 +22,7 @@ This lab is for general deep reinforcement learning research, built with proper 
 >Work in progress.
 
 The implemented baseline algorithms (besides research) are:
+- SARSA
 - DQN
 - Double DQN
 - REINFORCE

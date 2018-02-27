@@ -1,7 +1,7 @@
 from copy import deepcopy
 from slm_lab.agent import net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
-from slm_lab.agent.algorithm.base import Algorithm
+from slm_lab.agent.algorithm.sarsa import SARSA
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -12,7 +12,7 @@ import sys
 import torch
 
 
-class VanillaDQN(Algorithm):
+class VanillaDQN(SARSA):
     '''Implementation of a simple DQN algorithm.
     Algorithm:
         1. Collect some examples by acting in the environment and store them in a replay memory
@@ -47,25 +47,15 @@ class VanillaDQN(Algorithm):
             - State and action dimentions for an environment
             - Boolean var for if the action space is discrete
         '''
-        self.init_nets()
-        self.init_algo_params()
-        logger.info(util.self_desc(self))
+        super(VanillaDQN, self).post_body_init()
 
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
-        body = self.agent.nanflat_body_a[0]  # single-body algo
-        state_dim = body.state_dim  # dimension of the environment state, e.g. 4
-        action_dim = body.action_dim  # dimension of the environment actions, e.g. 2
+        super(VanillaDQN, self).init_nets()
+
+    def set_net_attributes(self):
+        '''Initializes additional parameters from the net spec. Called by init_nets'''
         net_spec = self.agent.spec['net']
-        net_kwargs = util.compact_dict(dict(
-            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-            optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'),
-            clamp_grad=_.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-        ))
-        self.net = getattr(net, net_spec['type'])(
-            state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
         util.set_attr(self, _.pick(net_spec, [
             # how many examples to learn per training iteration
             'batch_size',
@@ -74,10 +64,11 @@ class VanillaDQN(Algorithm):
 
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
+        super(VanillaDQN, self).init_algo_params()
+
+    def set_other_algo_attributes(self):
+        '''Initializes additional parameters from the algorithm spec. Called by init_algo_params'''
         algorithm_spec = self.agent.spec['algorithm']
-        net_spec = self.agent.spec['net']
-        self.action_policy = act_fns[algorithm_spec['action_policy']]
-        self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
         util.set_attr(self, _.pick(algorithm_spec, [
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
@@ -88,8 +79,6 @@ class VanillaDQN(Algorithm):
             'training_iters_per_batch',  # how many times to train each batch
             'training_min_timestep',  # how long before starting training
         ]))
-        self.nanflat_explore_var_a = [
-            self.explore_var_start] * self.agent.body_num
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
@@ -107,9 +96,8 @@ class VanillaDQN(Algorithm):
         q_targets_max = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), q_next_st_max)
         logger.debug2(f'Q targets max: {q_targets_max.size()}')
-        # We only want to train the network for the action selected
-        # For all other actions we set the q_target = q_sts
-        # So that the loss for these actions is 0
+        # We only want to train the network for the action selected in the current state
+        # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
         q_targets = torch.mul(q_targets_max, batch['actions'].data) + \
             torch.mul(q_sts, (1 - batch['actions'].data))
         logger.debug2(f'Q targets: {q_targets.size()}')
@@ -157,24 +145,19 @@ class VanillaDQN(Algorithm):
     @lab_api
     def body_act_discrete(self, body, state):
         ''' Selects and returns a discrete action for body using the action policy'''
-        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx])
+        return super(VanillaDQN, self).body_act_discrete(body, state)
 
     def update_explore_var(self):
         '''Updates the explore variables'''
-        space_clock = util.s_get(self, 'aeb_space.clock')
-        nanflat_explore_var_a = self.action_policy_update(self, space_clock)
-        explore_var_a = self.nanflat_to_data_a(
-            'explore_var', nanflat_explore_var_a)
-        return explore_var_a
+        return super(VanillaDQN, self).update_explore_var()
 
     def update_learning_rate(self):
-        decay_learning_rate(self, [self.net])
+        super(VanillaDQN, self).update_learning_rate()
 
     @lab_api
     def update(self):
         '''Update the agent after training'''
-        self.update_learning_rate()
-        return self.update_explore_var()
+        return super(VanillaDQN, self).update()
 
 
 class DQNBase(VanillaDQN):
@@ -244,8 +227,7 @@ class DQNBase(VanillaDQN):
         q_next_st_maxs = q_next_sts[idx, q_next_acts]
         q_next_st_maxs.unsqueeze_(1)
         logger.debug2(f'Q next_states max {q_next_st_maxs.size()}')
-        # Compute final q_target using reward and estimated best Q value from the next state if there is one
-        # Make future reward 0 if the current state is done
+        # Compute final q_target using reward and estimated best Q value from the next state if there is one. Make next state Q value 0 if the current state is done
         q_targets_max = batch['rewards'].data + self.gamma * \
             torch.mul((1 - batch['dones'].data), q_next_st_maxs)
         logger.debug2(f'Q targets max: {q_targets_max.size()}')

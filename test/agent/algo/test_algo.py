@@ -28,6 +28,24 @@ def generic_algo_test(spec, algo_name):
 
 @pytest.mark.skip(reason="Crashes on CI")
 @flaky(max_runs=3)
+def test_sarsa():
+    algo_name = 'unit_test_sarsa'
+    spec = spec_util.get('test.json', 'unit_test_sarsa')
+    assert generic_algo_test(spec, algo_name) > 100
+
+
+@pytest.mark.skip(reason="Crashes on CI")
+@flaky(max_runs=3)
+def test_sarsa_episodic():
+    algo_name = 'unit_test_sarsa_episodic'
+    spec = spec_util.get('test.json', 'unit_test_sarsa')
+    spec['name'] = algo_name
+    spec['agent'][0]['memory']['name'] = "OnPolicyReplay"
+    assert generic_algo_test(spec, algo_name) > 100
+
+
+@pytest.mark.skip(reason="Crashes on CI")
+@flaky(max_runs=3)
 def test_dqn():
     algo_name = 'unit_test_dqn'
     spec = spec_util.get('test.json', 'unit_test_dqn')
@@ -41,7 +59,6 @@ def test_vanilla_dqn():
     spec = spec_util.get('test.json', 'unit_test_dqn')
     spec['name'] = algo_name
     spec['agent'][0]['algorithm']['name'] = "VanillaDQN"
-    spec['meta']['max_episode'] = 25
     assert generic_algo_test(spec, algo_name) > 100
 
 
