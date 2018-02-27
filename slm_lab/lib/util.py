@@ -16,7 +16,7 @@ import ujson
 import yaml
 import pprint
 
-CPU_NUM = mp.cpu_count()
+NUM_CPUS = mp.cpu_count()
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
@@ -419,7 +419,7 @@ def override_test_spec(spec):
     return spec
 
 
-def parallelize_fn(fn, args):
+def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
     '''
     Parallelize a method fn, args and return results with order preserved per args.
     fn should take only a single arg.
@@ -429,7 +429,7 @@ def parallelize_fn(fn, args):
         # you can never be too safe in multiprocessing gc
         import gc
         gc.collect()
-    pool = mp.Pool(CPU_NUM,
+    pool = mp.Pool(num_cpus,
                    initializer=pool_init, maxtasksperchild=1)
     results = pool.map(fn, args)
     pool.close()

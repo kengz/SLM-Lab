@@ -37,6 +37,7 @@ SPEC_FORMAT = {
     "meta": {
         "max_session": int,
         "max_trial": (type(None), int),
+        "search": str,
         "train_mode": bool,
     },
     "name": str,

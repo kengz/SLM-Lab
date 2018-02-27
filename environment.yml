@@ -44,6 +44,7 @@ dependencies:
 - pip:
   - cloudpickle==0.5.2
   - colorlover==0.2.1
+  - deap==1.2.2
   - gym==0.9.4
   - gym[atari]
   - gym[box2d]
