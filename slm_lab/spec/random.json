@@ -23,6 +23,7 @@
     "meta": {
       "max_session": 5,
       "max_trial": 1,
+      "search": "RandomSearch",
       "train_mode": true
     }
   },
@@ -50,6 +51,7 @@
     "meta": {
       "max_session": 5,
       "max_trial": 1,
+      "search": "RandomSearch",
       "train_mode": true
     }
   }

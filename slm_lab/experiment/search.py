@@ -1,129 +1,290 @@
+from abc import ABC, abstractmethod, abstractproperty
 from copy import deepcopy
-from ray.tune import register_trainable, grid_search, run_experiments
+from deap import creator, base, tools, algorithms
+from ray.tune import grid_search, variant_generator
 from slm_lab.experiment import analysis
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
+import json
 import numpy as np
-import os
 import pandas as pd
 import pydash as _
 import random
 import ray
 
 
-class RaySearch:
-    '''Search module for Experiment - Ray.tune API integration with Lab'''
+def build_config_space(experiment):
+    '''
+    Build ray config space from flattened spec.search
+    Specify a config space in spec using `"{key}__{space_type}": {v}`.
+    Where `{space_type}` is `grid_search` of `ray.tune`, or any function name of `np.random`:
+    - `grid_search`: str/int/float. v = list of choices
+    - `choice`: str/int/float. v = list of choices
+    - `randint`: int. v = [low, high)
+    - `uniform`: float. v = [low, high)
+    - `normal`: float. v = [mean, stdev)
+
+    For example:
+    - `"explore_anneal_epi__randint": [10, 60],` will sample integers uniformly from 10 to 60 for `explore_anneal_epi`,
+    - `"lr__uniform": [0.001, 0.1]`, and it will sample `lr` using `np.random.uniform(0.001, 0.1)`
+
+    If any key uses `grid_search`, it will be combined exhaustively in combination with other random sampling.
+    '''
+    config_space = {}
+    for k, v in util.flatten_dict(experiment.spec['search']).items():
+        if '__' in k:
+            key, space_type = k.split('__')
+        else:
+            key, space_type = k, 'grid_search'
+        if space_type == 'grid_search':
+            config_space[key] = grid_search(v)
+        elif space_type == 'choice':
+            config_space[key] = lambda spec, v=v: random.choice(v)
+        else:
+            np_fn = getattr(np.random, space_type)
+            config_space[key] = lambda spec, v=v: np_fn(*v)
+    return config_space
+
+
+def calc_population_size(experiment):
+    '''Calculate the population size for RandomSearch or EvolutionarySearch'''
+    pop_size = 2  # x2 for more search coverage
+    for k, v in util.flatten_dict(experiment.spec['search']).items():
+        if '__' in k:
+            key, space_type = k.split('__')
+        else:
+            key, space_type = k, 'grid_search'
+        if space_type in ('grid_search', 'choice'):
+            pop_size *= len(v)
+        elif space_type == 'randint':
+            pop_size *= (v[1] - v[0])
+        else:
+            pop_size *= 3
+    return pop_size
+
+
+def spec_from_config(experiment, config):
+    '''Helper to create spec from config - variables in spec.'''
+    spec = deepcopy(experiment.spec)
+    spec.pop('search', None)
+    for k, v in config.items():
+        _.set_(spec, k, v)
+    return spec
+
+
+@ray.remote
+def run_trial(experiment, config):
+    trial_index = config.pop('trial_index')
+    spec = spec_from_config(experiment, config)
+    info_space = deepcopy(experiment.info_space)
+    info_space.set('trial', trial_index)
+    trial_fitness_df = experiment.init_trial_and_run(spec, info_space)
+    fitness_vec = trial_fitness_df.iloc[0].to_dict()
+    fitness = analysis.calc_fitness(trial_fitness_df)
+    trial_data = {
+        **config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
+    }
+    prepath = analysis.get_prepath(spec, info_space, unit='trial')
+    util.write(trial_data, f'{prepath}_trial_data.json')
+    return trial_data
+
+
+def get_ray_results(pending_ids, ray_id_to_config):
+    '''Helper to wait and get ray results into a new trial_data_dict, or handle ray error'''
+    trial_data_dict = {}
+    for _t in range(len(pending_ids)):
+        ready_ids, pending_ids = ray.wait(pending_ids, num_returns=1)
+        ready_id = ready_ids[0]
+        try:
+            trial_data = ray.get(ready_id)
+            trial_index = trial_data.pop('trial_index')
+            trial_data_dict[trial_index] = trial_data
+        except:
+            logger.exception(f'Trial failed: {ray_id_to_config[ready_id]}')
+    return trial_data_dict
+
+
+class RaySearch(ABC):
+    '''
+    RaySearch module for Experiment - Ray API integration with Lab
+    Abstract class ancestor to all RaySearch (using Ray).
+    specifies the necessary design blueprint for agent to work in Lab.
+    Mostly, implement just the abstract methods and properties.
+    '''
 
     def __init__(self, experiment):
-        self.experiment = experiment
-
-    def build_config_space(self):
-        '''
-        Build ray config space from flattened spec.search for ray spec passed to run_experiments()
-        Specify a config space in spec using `"{key}__{space_type}": {v}`.
-        Where `{space_type}` is `grid_search` of `ray.tune`, or any function name of `np.random`:
-        - `grid_search`: str/int/float. v = list of choices
-        - `choice`: str/int/float. v = list of choices
-        - `randint`: int. v = [low, high)
-        - `uniform`: float. v = [low, high)
-        - `normal`: float. v = [mean, stdev)
-
-        For example:
-        - `"explore_anneal_epi__randint": [10, 60],` will sample integers uniformly from 10 to 60 for `explore_anneal_epi`,
-        - `"lr__uniform": [0.001, 0.1]`, and it will sample `lr` using `np.random.uniform(0.001, 0.1)`
-
-        If any key uses `grid_search`, it will be combined exhaustively in combination with other random sampling.
-        '''
-        config_space = {}
-        for k, v in util.flatten_dict(self.experiment.spec['search']).items():
-            if '__' in k:
-                key, space_type = k.split('__')
-            else:
-                key, space_type = k, 'grid_search'
-            if space_type == 'grid_search':
-                config_space[key] = grid_search(v)
-            elif space_type == 'choice':
-                config_space[key] = lambda spec, v=v: random.choice(v)
-            else:
-                np_fn = getattr(np.random, space_type)
-                config_space[key] = lambda spec, v=v: np_fn(*v)
-        # RaySearch.lab_trial on ray.remote is not thread-safe, we have to carry the trial_index from config, created at the top level on the same thread, ticking once a trial (one samping).
-        config_space['trial_index'] = lambda spec: self.experiment.info_space.tick(
-            'trial')['trial']
-        return config_space
-
-    def spec_from_config(self, config):
-        '''Helper to create spec from config - variables in spec.'''
-        spec = deepcopy(self.experiment.spec)
-        spec.pop('search', None)
-        for k, v in config.items():
-            _.set_(spec, k, v)
-        return spec
-
-    @lab_api
-    def run(self):
-        ray.init()
-        # serialize here as ray is not thread safe outside
+        from slm_lab.experiment.control import Experiment
+        ray.register_custom_serializer(Experiment, use_pickle=True)
         ray.register_custom_serializer(InfoSpace, use_pickle=True)
         ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
         ray.register_custom_serializer(pd.Series, use_pickle=True)
+        self.experiment = experiment
+        self.config_space = build_config_space(experiment)
+        logger.info(
+            f'Running {util.get_class_name(self)}, with meta spec:\n{self.experiment.spec["meta"]}')
 
-        def lab_trial(config, reporter):
-            '''Trainable method to run a trial given ray config and reporter'''
-            trial_index = config.pop('trial_index')
-            spec = self.spec_from_config(config)
-            info_space = deepcopy(self.experiment.info_space)
-            info_space.set('trial', trial_index)
-            trial_fitness_df = self.experiment.init_trial_and_run(
-                spec, info_space)
-            fitness_vec = trial_fitness_df.iloc[0].to_dict()
-            fitness = analysis.calc_fitness(trial_fitness_df)
-            trial_index = trial_fitness_df.index[0]
-            trial_data = {
-                **config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
-            }
-            prepath = analysis.get_prepath(spec, info_space, unit='trial')
-            util.write(trial_data, f'{prepath}_trial_data.json')
-            done = True
-            # TODO timesteps = episode len or total_t from space_clock
-            # call reporter from inside trial/session loop
-            # TODO put reporter into info space so it can be called to update. easy.
-            reporter(timesteps_total=-1, done=done, info=trial_data)
+    @abstractmethod
+    def generate_config(self):
+        '''
+        Generate the next config given config_space, may update belief first.
+        Remember to update trial_index in config here, since run_trial() on ray.remote is not thread-safe.
+        '''
+        # use self.config_space to build config
+        config['trial_index'] = self.experiment.info_space.tick('trial')[
+            'trial']
+        raise NotImplementedError
+        return config
 
-        register_trainable('lab_trial', lab_trial)
+    @abstractmethod
+    @lab_api
+    def run(self):
+        '''
+        Implement the main run_trial loop.
+        Remember to call ray init and disconnect before and after loop.
+        '''
+        ray.init()
+        # loop for max_trial: generate_config(); run_trial.remote(config)
+        ray.disconnect()
+        raise NotImplementedError
+        return trial_data_dict
 
-        # TODO use hyperband
-        # TODO use advanced conditional config space via lambda func
-        config_space = self.build_config_space()
-        spec = self.experiment.spec
-        try:
-            ray_experiment = {
-                spec['name']: {
-                    'run': 'lab_trial',
-                    'stop': {'done': True},
-                    'config': config_space,
-                    'repeat': spec['meta']['max_trial'],
-                }
-            }
-            if 'resource' in spec['meta']:
-                ray_experiment[spec['name']].update(
-                    {'resource': spec['meta']['resource']})
-            ray_trials = run_experiments(ray_experiment)
-            logger.info('Ray.tune experiment.search.run() done.')
-            # compose data format for experiment analysis
-            trial_data_dict = {}
-            for ray_trial in ray_trials:
-                exp_trial_data = ray_trial.last_result.info
-                trial_index = exp_trial_data.pop('trial_index')
-                trial_data_dict[trial_index] = exp_trial_data
-        except Exception as e:
-            logger.exception(
-                'Some Ray trials failed, finish experiment analysis from files.')
-            prepath = analysis.get_prepath(
-                self.experiment.spec, self.experiment.info_space, unit='experiment')
-            predir = os.path.dirname(prepath)
-            trial_data_dict = analysis.trial_data_dict_from_file(predir)
+
+class RandomSearch(RaySearch):
+
+    def generate_config(self):
+        configs = []  # to accommodate for grid_search
+        for resolved_vars, config in variant_generator._generate_variants(self.config_space):
+            config['trial_index'] = self.experiment.info_space.tick('trial')[
+                'trial']
+            configs.append(config)
+        return configs
+
+    @lab_api
+    def run(self):
+        meta_spec = self.experiment.spec['meta']
+        ray.init(**meta_spec.get('resources', {}))
+        max_trial = meta_spec['max_trial']
+        trial_data_dict = {}
+        ray_id_to_config = {}
+        pending_ids = []
+
+        for _t in range(max_trial):
+            configs = self.generate_config()
+            for config in configs:
+                ray_id = run_trial.remote(self.experiment, config)
+                ray_id_to_config[ray_id] = config
+                pending_ids.append(ray_id)
+
+        trial_data_dict.update(get_ray_results(pending_ids, ray_id_to_config))
+        ray.disconnect()
+        return trial_data_dict
+
+
+class EvolutionarySearch(RaySearch):
+
+    def generate_config(self):
+        for resolved_vars, config in variant_generator._generate_variants(self.config_space):
+            # trial_index is set at population level
+            return config
+
+    def mutate(self, individual, indpb):
+        '''
+        Deap implementation for dict individual (config),
+        mutate an attribute with some probability - resample using the generate_config method and ensuring the new value is different.
+        @param {dict} individual Individual to be mutated.
+        @param {float} indpb Independent probability for each attribute to be mutated.
+        @returns A tuple of one individual.
+        '''
+        for k, v in individual.items():
+            if random.random() < indpb:
+                while True:
+                    new_ind = self.generate_config()
+                    if new_ind[k] != v:
+                        individual[k] = new_ind[k]
+                        break
+        return individual,
+
+    def cx_uniform(cls, ind1, ind2, indpb):
+        '''
+        Deap implementation for dict individual (config),
+        do a uniform crossover that modify in place the two individuals. The attributes are swapped with probability indpd.
+        @param {dict} ind1 The first individual participating in the crossover.
+        @param {dict} ind2 The second individual participating in the crossover.
+        @param {float} indpb Independent probabily for each attribute to be exchanged.
+        @returns A tuple of two individuals.
+        '''
+        for k in ind1:
+            if random.random() < indpb:
+                ind1[k], ind2[k] = ind2[k], ind1[k]
+        return ind1, ind2
+
+    def init_deap(self):
+        creator.create('FitnessMax', base.Fitness, weights=(1.0,))
+        creator.create('Individual', dict, fitness=creator.FitnessMax)
+        toolbox = base.Toolbox()
+        toolbox.register('attr', self.generate_config)
+        toolbox.register('individual', tools.initIterate,
+                         creator.Individual, toolbox.attr)
+        toolbox.register('population', tools.initRepeat,
+                         list, toolbox.individual)
+
+        toolbox.register('mate', self.cx_uniform, indpb=0.5)
+        toolbox.register('mutate', self.mutate, indpb=1 /
+                         len(toolbox.individual()))
+        toolbox.register('select', tools.selTournament, tournsize=3)
+        return toolbox
+
+    @lab_api
+    def run(self):
+        meta_spec = self.experiment.spec['meta']
+        ray.init(**meta_spec.get('resources', {}))
+        max_generation = meta_spec['max_generation']
+        pop_size = meta_spec['max_trial'] or calc_population_size(
+            self.experiment)
+        logger.info(
+            f'EvolutionarySearch max_generation: {max_generation}, population size: {pop_size}')
+        trial_data_dict = {}
+        config_hash = {}  # config hash_str to trial_index
+
+        toolbox = self.init_deap()
+        population = toolbox.population(n=pop_size)
+        for gen in range(1, max_generation + 1):
+            logger.info(f'Running generation: {gen}/{max_generation}')
+            ray_id_to_config = {}
+            pending_ids = []
+            for individual in population:
+                config = dict(individual.items())
+                hash_str = util.to_json(config, indent=0)
+                if hash_str not in config_hash:
+                    trial_index = self.experiment.info_space.tick('trial')[
+                        'trial']
+                    config_hash[hash_str] = config['trial_index'] = trial_index
+                    ray_id = run_trial.remote(self.experiment, config)
+                    ray_id_to_config[ray_id] = config
+                    pending_ids.append(ray_id)
+                individual['trial_index'] = config_hash[hash_str]
+
+            trial_data_dict.update(get_ray_results(
+                pending_ids, ray_id_to_config))
+
+            for individual in population:
+                trial_index = individual.pop('trial_index')
+                trial_data = trial_data_dict.get(
+                    trial_index, {'fitness': 0})  # if trial errored
+                individual.fitness.values = trial_data['fitness'],
+
+            preview = 'Fittest of population preview:'
+            for individual in tools.selBest(population, k=min(10, pop_size)):
+                preview += f'\nfitness: {individual.fitness.values[0]}, {individual}'
+            logger.info(preview)
+
+            # prepare offspring for next generation
+            if gen < max_generation:
+                population = toolbox.select(population, len(population))
+                # Vary the pool of individuals
+                population = algorithms.varAnd(
+                    population, toolbox, cxpb=0.5, mutpb=0.5)
 
         ray.disconnect()
         return trial_data_dict
