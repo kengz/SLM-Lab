@@ -41,7 +41,8 @@
     "meta": {
       "max_session": 100,
       "max_trial": 1,
-      "train_mode": true
+      "train_mode": true,
+      "search": "RandomSearch",
     },
   },
   "sarsa_cartpole_episodic": {
@@ -86,7 +87,8 @@
     "meta": {
       "max_session": 100,
       "max_trial": 1,
-      "train_mode": true
+      "train_mode": true,
+      "search": "RandomSearch",
     },
   },
   "sarsa_2dball": {
@@ -251,7 +253,8 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "train_mode": true
+      "train_mode": true,
+      "search": "RandomSearch",
     },
     "search": {
       "agent": [{
@@ -303,7 +306,8 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "train_mode": true
+      "train_mode": true,
+      "search": "RandomSearch",
     },
     "search": {
       "agent": [{
@@ -355,7 +359,8 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "train_mode": true
+      "train_mode": true,
+      "search": "RandomSearch",
     },
     "search": {
       "agent": [{
@@ -407,7 +412,8 @@
     "meta": {
       "max_session": 4,
       "max_trial": 150,
-      "train_mode": true
+      "train_mode": true,
+      "search": "RandomSearch",
     },
     "search": {
       "agent": [{
@@ -469,7 +475,8 @@
     "meta": {
       "max_session": 4,
       "max_trial": 150,
-      "train_mode": true
+      "train_mode": true,
+      "search": "RandomSearch",
     },
     "search": {
       "agent": [{
@@ -531,7 +538,8 @@
     "meta": {
       "max_session": 4,
       "max_trial": 150,
-      "train_mode": true
+      "train_mode": true,
+      "search": "RandomSearch",
     },
     "search": {
       "agent": [{
@@ -593,7 +601,8 @@
     "meta": {
       "max_session": 4,
       "max_trial": 150,
-      "train_mode": true
+      "train_mode": true,
+      "search": "RandomSearch",
     },
     "search": {
       "agent": [{
