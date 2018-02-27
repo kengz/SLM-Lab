@@ -9,7 +9,7 @@ from plotly import (
     tools,
 )
 from slm_lab import config
-from slm_lab.lib import util
+from slm_lab.lib import util, logger
 import os
 import plotly
 import pydash as _
