@@ -26,7 +26,7 @@ def generic_algo_test(spec, algo_name):
     return maxr
 
 
-# @pytest.mark.skip(reason="Crashes on CI")
+@pytest.mark.skip(reason="Crashes on CI")
 @flaky(max_runs=3)
 def test_sarsa():
     algo_name = 'unit_test_sarsa'
@@ -34,7 +34,7 @@ def test_sarsa():
     assert generic_algo_test(spec, algo_name) > 100
 
 
-# @pytest.mark.skip(reason="Crashes on CI")
+@pytest.mark.skip(reason="Crashes on CI")
 @flaky(max_runs=3)
 def test_sarsa_episodic():
     algo_name = 'unit_test_sarsa_episodic'
