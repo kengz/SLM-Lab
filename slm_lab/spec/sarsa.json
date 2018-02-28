@@ -8,9 +8,9 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
-        "explore_anneal_epi": 25,
+        "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 64,
+        "training_frequency": 32,
         "num_epis_to_collect": 1,
       },
       "memory": {
@@ -18,11 +18,11 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [16],
+        "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.27
+          "lr": 0.2
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
@@ -54,9 +54,9 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
-        "explore_anneal_epi": 25,
+        "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 64,
+        "training_frequency": 32,
         "num_epis_to_collect": 1,
       },
       "memory": {
@@ -64,11 +64,11 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [16],
+        "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.27
+          "lr": 0.2
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
@@ -100,9 +100,9 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
-        "explore_anneal_epi": 25,
-        "gamma": 0.97,
-        "training_frequency": 64,
+        "explore_anneal_epi": 100,
+        "gamma": 0.99,
+        "training_frequency": 32,
         "num_epis_to_collect": 1,
       },
       "memory": {
@@ -114,7 +114,7 @@
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.27
+          "lr": 0.2
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
@@ -160,9 +160,9 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
-        "explore_anneal_epi": 25,
-        "gamma": 0.97,
-        "training_frequency": 64,
+        "explore_anneal_epi": 100,
+        "gamma": 0.99,
+        "training_frequency": 32,
         "num_epis_to_collect": 1,
       },
       "memory": {
@@ -174,7 +174,7 @@
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.27
+          "lr": 0.2
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
@@ -220,9 +220,9 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
-        "explore_anneal_epi": 25,
+        "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 64,
+        "training_frequency": 32,
         "num_epis_to_collect": 1,
       },
       "memory": {
@@ -230,11 +230,11 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [16],
+        "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.27
+          "lr": 0.2
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
@@ -273,9 +273,9 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
-        "explore_anneal_epi": 25,
+        "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 64,
+        "training_frequency": 32,
         "num_epis_to_collect": 1,
       },
       "memory": {
@@ -283,11 +283,11 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [16],
+        "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.27
+          "lr": 0.2
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
@@ -326,9 +326,9 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
-        "explore_anneal_epi": 25,
+        "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 64,
+        "training_frequency": 32,
         "num_epis_to_collect": 1,
       },
       "memory": {
@@ -336,11 +336,11 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [16],
+        "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.27
+          "lr": 0.2
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
