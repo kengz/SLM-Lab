@@ -174,7 +174,7 @@ def act_with_softmax(algo, state, body):
     # Calculate entropy of the distribution
     H = - torch.sum(torch.mul(probs, torch.log(probs)))
     if np.isnan(H.data.numpy()):
-        logger.info(f'NaN entropy, setting to 0')
+        logger.debug(f'NaN entropy, setting to 0')
         H = Variable(torch.zeros(1))
     algo.entropy.append(H)
     return action.data[0]
@@ -196,7 +196,7 @@ def act_with_gaussian(algo, state, body):
     # Calculate entropy of the distribution
     H = 0.5 * torch.log(2.0 * np.pi * np.e * sigma * sigma)
     if np.isnan(H.data.numpy()):
-        logger.info(f'NaN entropy, setting to 0')
+        logger.debug(f'NaN entropy, setting to 0')
         H = Variable(torch.zeros(1))
     algo.entropy.append(H)
     return action.data
