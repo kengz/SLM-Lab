@@ -69,7 +69,7 @@
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "RMSprop",
-          "lr": 0.008
+          "lr": 0.01
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
