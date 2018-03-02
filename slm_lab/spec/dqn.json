@@ -10,9 +10,9 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 10,
         "gamma": 0.999,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "training_iters_per_batch": 3,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -39,7 +39,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 200
     }],
     "body": {
       "product": "outer",
@@ -76,9 +76,9 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 15,
         "gamma": 0.999,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "training_iters_per_batch": 3,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -133,9 +133,9 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 15,
         "gamma": 0.999,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "training_iters_per_batch": 3,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -190,9 +190,9 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 15,
         "gamma": 0.999,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "training_iters_per_batch": 3,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -251,9 +251,9 @@
         "explore_var_end": 1.0,
         "explore_anneal_epi": 30,
         "gamma": 0.999,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "training_iters_per_batch": 3,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -308,9 +308,9 @@
         "explore_var_end": 1.0,
         "explore_anneal_epi": 30,
         "gamma": 0.999,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "training_iters_per_batch": 3,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -365,9 +365,9 @@
         "explore_var_end": 1.0,
         "explore_anneal_epi": 10,
         "gamma": 0.999,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "training_iters_per_batch": 3,
+        "training_epoch": 1,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
         "training_min_timestep": 0
       },
       "memory": {
