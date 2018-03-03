@@ -53,10 +53,10 @@
         "action_policy": "epsilon_greedy",
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
-        "explore_var_end": 0.05,
-        "explore_anneal_epi": 50,
-        "gamma": 0.99,
-        "training_frequency": 32,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 20,
+        "gamma": 0.97,
+        "training_frequency": 8,
         "num_epis_to_collect": 1,
       },
       "memory": {
@@ -69,7 +69,7 @@
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "RMSprop",
-          "lr": 0.01
+          "lr": 0.02
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
