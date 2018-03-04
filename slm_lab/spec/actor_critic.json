@@ -14,7 +14,7 @@
         "num_step_returns": 100,
         "training_frequency": 32,
         "training_iters_per_batch": 8,
-        "use_GAE": true,
+        "use_GAE": false,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
       },
@@ -51,16 +51,16 @@
       "num": 1
     },
     "meta": {
-      "max_session": 2,
-      "max_trial": 200,
-      "search": "RandomSearch",
+      "max_session": 4,
+      "max_trial": null,
+      "search": "EvolutionarySearch",
+      "max_generation": 4,
       "train_mode": true
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "gamma__uniform": [0.9, 0.9999],
-          "lambda__uniform": [0, 1]
+          "gamma__uniform": [0.9, 0.9999]
         },
         "net": {
           "hid_layers__choice": [[16], [64], [32, 16], [64, 32]],
@@ -69,9 +69,7 @@
           },
           "optim_critic": {
             "lr__uniform": [0.001, 0.2]
-          },
-          "decay_lr_frequency__choice": [500, 1000, 5000, 10000],
-          "decay_lr_min_timestep__choice": [1000, 2000, 5000]
+          }
         }
       }]
     }
@@ -269,10 +267,10 @@
             [32, 16]
           ],
           "optim_actor": {
-            "lr__choice": [0.002, 0.02]
+            "lr__uniform": [0.002, 0.02]
           },
           "optim_critic": {
-            "lr__choice": [0.002, 0.02]
+            "lr__uniform": [0.002, 0.02]
           }
         }
       }]

@@ -141,11 +141,11 @@ class RaySearch(ABC):
     def run(self):
         '''
         Implement the main run_trial loop.
-        Remember to call ray init and disconnect before and after loop.
+        Remember to call ray init and cleanup before and after loop.
         '''
         ray.init()
         # loop for max_trial: generate_config(); run_trial.remote(config)
-        ray.disconnect()
+        ray.worker.cleanup()
         raise NotImplementedError
         return trial_data_dict
 
@@ -177,7 +177,7 @@ class RandomSearch(RaySearch):
                 pending_ids.append(ray_id)
 
         trial_data_dict.update(get_ray_results(pending_ids, ray_id_to_config))
-        ray.disconnect()
+        ray.worker.cleanup()
         return trial_data_dict
 
 
@@ -286,5 +286,5 @@ class EvolutionarySearch(RaySearch):
                 population = algorithms.varAnd(
                     population, toolbox, cxpb=0.5, mutpb=0.5)
 
-        ray.disconnect()
+        ray.worker.cleanup()
         return trial_data_dict

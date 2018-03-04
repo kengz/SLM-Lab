@@ -156,7 +156,7 @@ def plot_experiment(experiment_spec, experiment_df):
                 x=guard_cat_x, xaxis=f'x{col_idx+1}',
                 showlegend=False, mode='markers',
                 marker={
-                    'symbol': 'circle-open-dot', 'color': experiment_df['fitness'],
+                    'symbol': 'circle-open-dot', 'color': experiment_df['fitness'], 'opacity': 0.5,
                     # dump first quarter of colorscale that is too bright
                     'cmin': min_fitness - 0.25 * (max_fitness - min_fitness), 'cmax': max_fitness,
                     'colorscale': 'YIGnBu', 'reversescale': True
