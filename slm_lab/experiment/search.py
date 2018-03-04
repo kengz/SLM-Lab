@@ -57,8 +57,6 @@ def calc_population_size(experiment):
             key, space_type = k, 'grid_search'
         if space_type in ('grid_search', 'choice'):
             pop_size *= len(v)
-        elif space_type == 'randint':
-            pop_size *= (v[1] - v[0])
         else:
             pop_size *= 3
     return pop_size
