@@ -269,10 +269,10 @@
             [32, 16]
           ],
           "optim_actor": {
-            "lr__choice": [0.002, 0.02]
+            "lr__uniform": [0.002, 0.02]
           },
           "optim_critic": {
-            "lr__choice": [0.002, 0.02]
+            "lr__uniform": [0.002, 0.02]
           }
         }
       }]
