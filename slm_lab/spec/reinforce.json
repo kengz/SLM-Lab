@@ -39,9 +39,10 @@
       "num": 1
     },
     "meta": {
-      "max_session": 2,
-      "max_trial": 200,
-      "search": "RandomSearch",
+      "max_session": 4,
+      "max_trial": null,
+      "search": "EvolutionarySearch",
+      "max_generation": 4,
       "train_mode": true
     },
     "search": {
@@ -52,10 +53,8 @@
         "net": {
           "hid_layers__choice": [[16], [64], [32, 16], [64, 32]],
           "optim": {
-            "lr__uniform": [0.001, 0.1]
-          },
-          "decay_lr_frequency__choice": [500, 1000, 5000, 10000],
-          "decay_lr_min_timestep__choice": [1000, 2000, 5000]
+            "lr__uniform": [0.001, 0.2]
+          }
         }
       }]
     }
