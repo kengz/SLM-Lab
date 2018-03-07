@@ -52,6 +52,11 @@ class VanillaDQN(SARSA):
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
         super(VanillaDQN, self).init_nets()
+        '''Guard againsts recurrent nets. Not supported with with DQN family of algorithms.'''
+        net_spec = self.agent.spec['net']
+        if net_spec['type'].find('Recurrent') != -1:
+            logger.warn(f'Recurrent networks not with DQN family of algorithms. Please select another network type''')
+            sys.exit()
 
     def set_net_attributes(self):
         '''Initializes additional parameters from the net spec. Called by init_nets'''
@@ -197,6 +202,9 @@ class DQNBase(VanillaDQN):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         ))
+        if net_spec['type'].find('Recurrent') != -1:
+            logger.warn(f'Recurrent networks not supported with DQN family of algorithms. Please select another network type''')
+            sys.exit()
         self.net = getattr(net, net_spec['type'])(
             state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
         self.target_net = getattr(net, net_spec['type'])(

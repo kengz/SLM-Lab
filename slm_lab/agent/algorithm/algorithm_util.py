@@ -42,9 +42,12 @@ def act_with_epsilon_greedy(body, state, net, epsilon):
     if epsilon > np.random.rand():
         action = np.random.randint(body.action_dim)
     else:
-        torch_state = Variable(torch.from_numpy(state).float())
-        out = net.wrap_eval(torch_state)
+        recurrent = body.agent.len_state_buffer > 0
+        logger.debug2(f'Length state buffer: {body.agent.len_state_buffer}')
+        torch_state = create_torch_state(state, body.state_buffer, recurrent, body.agent.len_state_buffer)
+        out = net.wrap_eval(torch_state).squeeze_(dim=0)
         action = int(torch.max(out, dim=0)[1][0])
+        logger.debug2(f'Outs {out} Action {action}')
     return action
 
 
@@ -98,12 +101,14 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
 
 
 def act_with_boltzmann(body, state, net, tau):
-    torch_state = Variable(torch.from_numpy(state).float())
+    recurrent = body.agent.len_state_buffer > 0
+    logger.debug2(f'Length state buffer: {body.agent.len_state_buffer}')
+    torch_state = create_torch_state(state, body.state_buffer, recurrent, body.agent.len_state_buffer)
     out = net.wrap_eval(torch_state)
-    out_with_temp = torch.div(out, tau)
+    out_with_temp = torch.div(out, tau).squeeze_(dim=0)
     probs = F.softmax(Variable(out_with_temp), dim=0).data.numpy()
     action = np.random.choice(list(range(body.action_dim)), p=probs)
-    logger.debug2('prob: {}, action: {}'.format(probs, action))
+    logger.debug2('out with temp: {}, prob: {}, action: {}'.format(out_with_temp, probs, action))
     return action
 
 

@@ -46,6 +46,18 @@ def test_sarsa_episodic():
 
 @pytest.mark.skip(reason="Crashes on CI")
 @flaky(max_runs=3)
+def test_sarsa_recurrent():
+    algo_name = 'unit_test_sarsa_recurrent'
+    spec = spec_util.get('test.json', 'unit_test_sarsa')
+    spec['agent'][0]['memory']['name'] = "OnPolicyNStepBatchReplay"
+    spec['agent'][0]['memory']['length_history'] = 4
+    spec['agent'][0]['net']['type'] = "RecurrentNet"
+    spec['agent'][0]['net']['hid_layers'] = [64]
+    assert generic_algo_test(spec, algo_name) > 100
+
+
+@pytest.mark.skip(reason="Crashes on CI")
+@flaky(max_runs=3)
 def test_dqn():
     algo_name = 'unit_test_dqn'
     spec = spec_util.get('test.json', 'unit_test_dqn')

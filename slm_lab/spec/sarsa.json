@@ -45,6 +45,55 @@
       "search": "RandomSearch",
     },
   },
+  "sarsa_cartpole_recurrent": {
+    "agent": [{
+      "name": "SARSA",
+      "algorithm": {
+        "name": "SARSA",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 20,
+        "gamma": 0.97,
+        "training_frequency": 8,
+        "num_epis_to_collect": 1,
+      },
+      "memory": {
+        "name": "OnPolicyNStepBatchReplay",
+        "length_history": 4,
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "RMSprop",
+          "lr": 0.02
+        },
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1000,
+        "clamp_grad": true,
+        "clamp_grad_val": 25.0
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 500
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 1,
+      "max_trial": 1,
+      "train_mode": true,
+      "search": "RandomSearch",
+    },
+  },
   "sarsa_cartpole_episodic": {
     "agent": [{
       "name": "SARSA",
