@@ -3,12 +3,12 @@ The control module
 Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Session
 '''
 from copy import deepcopy
+from importlib import reload
 from slm_lab.agent import AgentSpace
 from slm_lab.env import EnvSpace
 from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import logger, util, viz
-import importlib
 import numpy as np
 import os
 import pandas as pd
@@ -22,7 +22,7 @@ def init_thread_vars(spec, info_space, unit):
         info_space.tick(unit)
     if logger.to_init(spec, info_space):
         os.environ['PREPATH'] = analysis.get_prepath(spec, info_space)
-        importlib.reload(logger)
+        reload(logger)
 
 
 class Session:
@@ -172,6 +172,7 @@ class Experiment:
         return trial_data
 
     def close(self):
+        reload(search)  # to fix ray consecutive run crash due to bad cleanup
         logger.info('Experiment done, closing.')
 
     def run(self):
