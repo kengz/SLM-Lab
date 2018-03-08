@@ -1,0 +1,58 @@
+{
+  "dqn_pong": {
+    "agent": [{
+      "name": "AtariDQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_policy": "atari_epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 0.0,
+        "explore_var_end": 0.0,
+        "explore_anneal_epi": 200,
+        "gamma": 0.99,
+        "training_epoch": 1,
+        "training_frequency": 4,
+        "training_iters_per_batch": 1,
+        "training_min_timestep": 250
+      },
+      "memory": {
+        "name": "Atari",
+        "max_size": 100000
+      },
+      "net": {
+        "type": "ConvNet",
+        "hid_layers": [[[4, 16, [8, 8], 4, 0, [1, 1]],
+                       [16, 32, [4, 4], 2, 0, [1, 1]]],
+                       [256]],
+        "hid_layers_activation": "relu",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "batch_size": 32,
+        "decay_lr": false,
+        "decay_lr_frequency": 400,
+        "decay_lr_min_timestep": 1400,
+        "update_type": "replace",
+        "update_frequency": 500,
+        "polyak_weight": 0.9,
+        "batch_norm": false
+      }
+    }],
+    "env": [{
+      "name": "Breakout-v0",
+      "max_timestep": null,
+      "max_episode": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 1,
+      "max_trial": 1,
+      "search": "RandomSearch",
+      "train_mode": true
+    }
+  },
+}
