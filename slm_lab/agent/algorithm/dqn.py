@@ -192,9 +192,10 @@ class DQNBase(VanillaDQN):
     def init_nets(self):
         '''Initialize networks'''
         body = self.agent.nanflat_body_a[0]  # single-body algo
-        state_dim = body.state_dim
-        action_dim = body.action_dim
+        self.state_dim = body.state_dim
+        self.action_dim = body.action_dim
         net_spec = self.agent.spec['net']
+        logger.debug3(f'State dim: {self.state_dim}')
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
@@ -202,13 +203,26 @@ class DQNBase(VanillaDQN):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         ))
+        ''' Make adjustments for Atari mode '''
+        if self.agent.spec['memory']['name'].find('Atari') != -1:
+            self.state_dim = (84, 84, 4)
+            self.agent.last_action = None
+            logger.debug3(f'State dim: {self.state_dim}')
+            net_kwargs = util.compact_dict(dict(
+                hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
+                optim_param=_.get(net_spec, 'optim'),
+                loss_param=_.get(net_spec, 'loss'),
+                clamp_grad=_.get(net_spec, 'clamp_grad'),
+                clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+                batch_norm=_.get(net_spec, 'batch_norm'),
+            ))
         if net_spec['type'].find('Recurrent') != -1:
             logger.warn(f'Recurrent networks not supported with DQN family of algorithms. Please select another network type''')
             sys.exit()
         self.net = getattr(net, net_spec['type'])(
-            state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
+            self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)
         self.target_net = getattr(net, net_spec['type'])(
-            state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
+            self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)
         self.online_net = self.target_net
         self.eval_net = self.target_net
         util.set_attr(self, _.pick(net_spec, [
@@ -249,7 +263,7 @@ class DQNBase(VanillaDQN):
 
     def update_nets(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
-        t = space_clock.get('t')
+        t = space_clock.get('total_t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
@@ -294,7 +308,7 @@ class DoubleDQN(DQN):
     def update_nets(self):
         res = super(DoubleDQN, self).update_nets()
         space_clock = util.s_get(self, 'aeb_space.clock')
-        t = space_clock.get('t')
+        t = space_clock.get('total_t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
                 self.online_net = self.net
@@ -557,7 +571,7 @@ class MultiHeadDQN(MultitaskDQN):
     def update_nets(self):
         # NOTE: Once polyak updating for multi-headed networks is supported via updates to flatten_params and load_params then this can be removed
         space_clock = util.s_get(self, 'aeb_space.clock')
-        t = space_clock.get('t')
+        t = space_clock.get('total_t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
