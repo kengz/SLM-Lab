@@ -1,5 +1,5 @@
 from slm_lab.agent.memory.base import Memory
-from slm_lab.lib import util
+from slm_lab.lib import util, logger
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as _
@@ -47,7 +47,6 @@ class Replay(Memory):
         self.next_states = np.zeros((self.max_size, self.state_dim))
         self.dones = np.zeros((self.max_size, 1))
         self.priorities = np.zeros((self.max_size, 1))
-
         self.true_size = 0
         self.head = -1  # Index of most recent experience
 
@@ -62,6 +61,7 @@ class Replay(Memory):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
+        logger.debug2(f'state: {state.shape}')
         self.states[self.head] = state
         # make action into one_hot
         if _.is_iterable(action):
@@ -120,3 +120,40 @@ class Replay(Memory):
         '''
         assert len(priorites) == self.batch_idxs.size
         self.priorities[self.batch_idxs] = priorities
+
+
+class Atari(Replay):
+    '''Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
+       Otherwise the same as Replay memory'''
+
+    def reset(self):
+        self.states = np.zeros((self.max_size, 84, 84, 4))
+        self.actions = np.zeros((self.max_size, self.action_dim))
+        self.rewards = np.zeros((self.max_size, 1))
+        self.next_states = np.zeros((self.max_size, 84, 84, 4))
+        self.dones = np.zeros((self.max_size, 1))
+        self.priorities = np.zeros((self.max_size, 1))
+        self.true_size = 0
+        self.head = -1  # Index of most recent experience
+        self.state_buffer = []
+        for _ in range(3):
+            self.state_buffer.append(np.zeros((84, 84)))
+
+    def preprocess_state(self, state):
+        if len(self.state_buffer) == 4:
+            del self.state_buffer[0]
+        state = util.transform_image(state)
+        self.state_buffer.append(state)
+        processed_state = np.stack(self.state_buffer, axis=-1)
+        return processed_state
+
+    @lab_api
+    def update(self, action, reward, state, done):
+        '''Interface method to update memory'''
+        logger.debug2(f'original reward: {reward}')
+        state = self.preprocess_state(state)
+        reward = max(-1, min(1, reward))
+        logger.debug3(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
+        if not np.isnan(reward):
+            self.add_experience(self.last_state, action, reward, state, done)
+        self.last_state = state
