@@ -46,6 +46,7 @@ class SARSA(Algorithm):
         self.init_algo_params()
         logger.info(util.self_desc(self))
 
+    @lab_api
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
         body = self.agent.nanflat_body_a[0]  # single-body algo
@@ -75,6 +76,7 @@ class SARSA(Algorithm):
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
         ]))
 
+    @lab_api
     def init_algo_params(self):
         '''Initialize other algorithm parameters.'''
         algorithm_spec = self.agent.spec['algorithm']
@@ -142,6 +144,7 @@ class SARSA(Algorithm):
         logger.debug3(f'Q targets: {q_targets}')
         return q_targets
 
+    @lab_api
     def sample(self):
         '''Samples a batch from memory'''
         batches = [body.memory.sample()
