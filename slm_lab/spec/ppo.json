@@ -1,0 +1,62 @@
+{
+  "ppo_benchmark": {
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_policy": "default",
+        "gamma": 0.95,
+        "num_epis_to_collect": 1,
+        "add_entropy": false,
+        "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPdefault",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "clamp_grad": false,
+        "clamp_grad_val": 1.0,
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 2000
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 1000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 4,
+      "max_trial": null,
+      "search": "EvolutionarySearch",
+      "max_generation": 4,
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999]
+        },
+        "net": {
+          "hid_layers__choice": [[16], [64], [32, 16], [64, 32]],
+          "optim": {
+            "lr__uniform": [0.001, 0.2]
+          }
+        }
+      }]
+    }
+  }
+}
