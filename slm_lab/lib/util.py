@@ -7,6 +7,7 @@ import json
 import math
 import multiprocessing as mp
 import numpy as np
+import scipy as sp
 import os
 import pandas as pd
 import pydash as _
@@ -719,3 +720,27 @@ def convert_to_one_hot(data, categories):
     idxs = torch.from_numpy(np.array(list(range(data.size(0)))))
     data_onehot[idxs, data.data.long()] = 1
     return Variable(data_onehot)
+
+
+def resize_image(im):
+    return sp.misc.imresize(im, (110, 84))
+
+
+def crop_image(im):
+    return im[-84:, :]
+
+
+def transform_image(im):
+    '''
+    Image preprocessing from the paper Playing Atari with Deep Reinforcement Learning, 2013
+    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84, taking bottomost rows of image
+    '''
+    # print(im.shape)
+    im = np.dot(im[..., :3], [0.299, 0.587, 0.114])
+    # print(im.shape)
+    im = resize_image(im)
+    # print(im.shape)
+    im = crop_image(im)
+    # print(im.shape)
+    sp.misc.imsave('test.jpg', im)
+    return im
