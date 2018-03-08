@@ -126,6 +126,10 @@ class Atari(Replay):
     '''Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
        Otherwise the same as Replay memory'''
 
+    def reset_last_state(self, state):
+        '''Do reset of body memory per session during agent_space.reset() to set last_state'''
+        self.last_state = self.preprocess_state(state)
+
     def reset(self):
         self.states = np.zeros((self.max_size, 84, 84, 4))
         self.actions = np.zeros((self.max_size, self.action_dim))
