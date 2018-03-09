@@ -24,12 +24,13 @@ def create_torch_state(state, state_buffer, gpu, recurrent=False, length=0):
         '''Hack to fix buffer not storing the very first state in an epi'''
         if np.sum(state_buffer) == 0:
             state_buffer[-1] = state
-        torch_state = Variable(torch.from_numpy(state_buffer).float())
+        torch_state = torch.from_numpy(state_buffer).float()
         torch_state.unsqueeze_(dim=0)
     else:
-        torch_state = Variable(torch.from_numpy(state).float())
+        torch_state = torch.from_numpy(state).float()
     if torch.cuda.is_available() and gpu:
-        torch_state = torch_state.gpu()
+        torch_state = torch_state.cuda()
+    torch_state = Variable(torch_state)
     logger.debug2(f'State size: {torch_state.size()}')
     logger.debug3(f'Original state: {state}')
     logger.debug3(f'State: {torch_state}')
@@ -68,9 +69,10 @@ def multi_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_epsilon_
         else:
             logger.debug2(f'Greedy action')
             cat_state_a = cat_state_a.astype('float')
-            torch_state = Variable(torch.from_numpy(cat_state_a).float())
+            torch_state = torch.from_numpy(cat_state_a).float()
             if torch.cuda.is_available() and gpu:
-                torch_state = torch_state.gpu()
+                torch_state = torch_state.cuda()
+            torch_state = Variable(torch_state)
             out = net.wrap_eval(torch_state)
             action = int(torch.max(out[start_idx: end_idx], dim=0)[1][0])
         nanflat_action_a.append(action)
@@ -89,10 +91,12 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
     for state in nanflat_state_a:
         state = state.astype('float')
         torch_states.append(
-            Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
+            torch.from_numpy(state).float().unsqueeze_(dim=0))
     if torch.cuda.is_available() and gpu:
         for torch_state in torch_states:
-            torch_state = torch_state.gpu()
+            torch_state = torch_state.cuda()
+    for torch_state in torch_states:
+        torch_state = Variable(torch_state)
     outs = net.wrap_eval(torch_states)
     for body, e, output in zip(nanflat_body_a, nanflat_epsilon_a, outs):
         logger.debug2(f'body: {body.aeb}, epsilon: {e}')
@@ -122,9 +126,10 @@ def act_with_boltzmann(body, state, net, tau, gpu):
 def multi_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, gpu):
     nanflat_state_a = util.nanflatten(state_a)
     cat_state_a = np.concatenate(nanflat_state_a).astype(float)
-    torch_state = Variable(torch.from_numpy(cat_state_a).float())
+    torch_state = torch.from_numpy(cat_state_a).float()
     if torch.cuda.is_available() and gpu:
-        torch_state = torch_state.gpu()
+        torch_state = torch_state.cuda()
+    torch_state = Variable(torch_state)
     out = net.wrap_eval(torch_state)
     nanflat_action_a = []
     start_idx = 0
@@ -152,10 +157,12 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, g
     for state in nanflat_state_a:
         state = state.astype('float')
         torch_states.append(
-            Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
+            torch.from_numpy(state).float().unsqueeze_(dim=0))
     if torch.cuda.is_available() and gpu:
         for torch_state in torch_states:
-            torch_state = torch_state.gpu()
+            torch_state = torch_state.cuda()
+    for torch_state in torch_states:
+        torch_state = Variable(torch_state)
     outs = net.wrap_eval(torch_states)
     out_with_temp = [torch.div(x, t) for x, t in zip(outs, nanflat_tau_a)]
     logger.debug2(
@@ -192,9 +199,10 @@ def act_with_softmax(algo, state, body, gpu):
     H = - torch.sum(torch.mul(probs, torch.log(probs)))
     if np.isnan(H.data.numpy()):
         logger.debug(f'NaN entropy, setting to 0')
-        H = Variable(torch.zeros(1))
+        H = torch.zeros(1)
         if torch.cuda.is_available() and gpu:
-            H = H.gpu()
+            H = H.cuda()
+        H = Variable(H)
     algo.entropy.append(H)
     return action.data[0]
 
@@ -216,9 +224,10 @@ def act_with_gaussian(algo, state, body, gpu):
     H = 0.5 * torch.log(2.0 * np.pi * np.e * sigma * sigma)
     if np.isnan(H.data.numpy()):
         logger.debug(f'NaN entropy, setting to 0')
-        H = Variable(torch.zeros(1))
+        H = torch.zeros(1)
         if torch.cuda.is_available() and gpu:
-            H = H.gpu()
+            H = H.cuda()
+        H = Variable(H)
     algo.entropy.append(H)
     return action.data
 

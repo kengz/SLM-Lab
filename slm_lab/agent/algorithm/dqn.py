@@ -138,9 +138,9 @@ class VanillaDQN(SARSA):
                 batch_loss = 0.0
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
-                    y = Variable(q_targets)
                     if torch.cuda.is_available() and self.gpu:
-                        y = y.cuda()
+                        q_targets = q_targets.cuda()
+                    y = Variable(q_targets)
                     loss = self.net.training_step(batch['states'], y)
                     batch_loss += loss.data[0]
                 batch_loss /= self.training_iters_per_batch
@@ -555,9 +555,9 @@ class MultiHeadDQN(MultitaskDQN):
                 batch = self.sample()
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
-                    y = [Variable(q) for q in q_targets]
                     if torch.cuda.is_available() and self.gpu:
-                        y = [q.cuda() for q in y]
+                        q_targets = [q.cuda() for q in q_targets]
+                    y = [Variable(q) for q in q_targets]
                     losses = self.net.training_step(batch['states'], y)
                     logger.debug(f'losses {losses}')
                     batch_losses += losses

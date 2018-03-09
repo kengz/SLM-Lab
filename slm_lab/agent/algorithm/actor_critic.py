@@ -105,9 +105,9 @@ class ActorCritic(Reinforce):
             if self.is_episodic:
                 target = torch.cat(target)
                 states = torch.cat(states)
-            y = Variable(target.unsqueeze_(dim=-1))
             if torch.cuda.is_available() and self.gpu:
-                y = y.cuda()
+                target = target.cuda()
+            y = Variable(target.unsqueeze_(dim=-1))
             state_vals = self.get_critic_output(states, evaluate=False)
             assert state_vals.data.size() == y.data.size()
             val_loss = F.mse_loss(state_vals, y)
@@ -181,9 +181,9 @@ class ActorCritic(Reinforce):
         loss = 0
         for _i in range(self.training_iters_per_batch):
             target = self.get_target(batch, critic_specific=True)
-            y = Variable(target)
             if torch.cuda.is_available() and self.gpu:
-                y = y.cuda()
+                target = target.cuda()
+            y = Variable(target)
             loss = self.critic.training_step(batch['states'], y).data[0]
             logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss
@@ -201,9 +201,9 @@ class ActorCritic(Reinforce):
                 logger.debug2(f'states: {state.size()}')
             x = torch.cat(x, dim=0)
             logger.debug2(f'Combined states: {x.size()}')
-            y = Variable(target)
             if torch.cuda.is_available() and self.gpu:
-                y = y.cuda()
+                target = target.cuda()
+            y = Variable(target)
             loss = self.critic.training_step(x, y).data[0]
             logger.debug2(f'Critic grad norms: {self.critic.get_grad_norms()}')
         return loss

@@ -200,9 +200,9 @@ class SARSA(Algorithm):
                 self.to_train = 0
                 return np.nan
             q_targets = self.compute_q_target_values(batch)
-            y = Variable(q_targets)
             if torch.cuda.is_available() and self.gpu:
-                y = y.cuda()
+                q_targets = q_targets.cuda()
+            y = Variable(q_targets)
             loss = self.net.training_step(batch['states'], y)
             logger.debug(f'loss {loss.data[0]}')
             self.to_train = 0
