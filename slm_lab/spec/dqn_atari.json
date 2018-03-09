@@ -1,5 +1,5 @@
 {
-  "dqn_pong": {
+  "dqn_breakout": {
     "agent": [{
       "name": "AtariDQN",
       "algorithm": {
