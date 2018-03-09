@@ -64,7 +64,7 @@ class VanillaDQN(SARSA):
         util.set_attr(self, _.pick(net_spec, [
             # how many examples to learn per training iteration
             'batch_size',
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
 
     def init_algo_params(self):
@@ -201,6 +201,7 @@ class DQNBase(VanillaDQN):
             loss_param=_.get(net_spec, 'loss'),
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+            gpu=_.get(net_spec, 'gpu'),
         ))
         if net_spec['type'].find('Recurrent') != -1:
             logger.warn(f'Recurrent networks not supported with DQN family of algorithms. Please select another network type''')
@@ -213,7 +214,7 @@ class DQNBase(VanillaDQN):
         self.eval_net = self.target_net
         util.set_attr(self, _.pick(net_spec, [
             'batch_size',
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
         # Default network update params for base
         self.update_type = 'replace'
@@ -322,6 +323,7 @@ class MultitaskDQN(DQN):
             loss_param=_.get(net_spec, 'loss'),
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+            gpu=_.get(net_spec, 'gpu'),
         ))
         self.net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim, **net_kwargs)
@@ -332,7 +334,7 @@ class MultitaskDQN(DQN):
         util.set_attr(self, _.pick(net_spec, [
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
-            'update_type', 'update_frequency', 'polyak_weight',
+            'update_type', 'update_frequency', 'polyak_weight', 'gpu'
         ]))
 
     def sample(self):
@@ -451,6 +453,7 @@ class MultiHeadDQN(MultitaskDQN):
             loss_param=_.get(net_spec, 'loss'),
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+            gpu=_.get(net_spec, 'gpu'),
         ))
         self.net = getattr(net, net_spec['type'])(
             self.state_dims, net_spec['hid_layers'], self.action_dims, **net_kwargs)
@@ -461,7 +464,7 @@ class MultiHeadDQN(MultitaskDQN):
         util.set_attr(self, _.pick(net_spec, [
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
-            'update_type', 'update_frequency', 'polyak_weight',
+            'update_type', 'update_frequency', 'polyak_weight', 'gpu'
         ]))
 
     def sample(self):

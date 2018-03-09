@@ -421,6 +421,7 @@ class ActorCritic(Reinforce):
             loss_param=_.get(net_spec, 'loss'),  # Note: Not used for training actor
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+            gpu=_.get(net_spec, 'gpu'),
         ))
         if self.agent.spec['net']['use_same_optim']:
             logger.info('Using same optimizer for actor and critic')
@@ -433,6 +434,7 @@ class ActorCritic(Reinforce):
                 loss_param=_.get(net_spec, 'loss'),
                 clamp_grad=_.get(net_spec, 'clamp_grad'),
                 clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+                gpu=_.get(net_spec, 'gpu'),
             ))
         '''
          Below we automatically select an appropriate net based on two different conditions
@@ -540,7 +542,7 @@ class ActorCritic(Reinforce):
 
         ]))
         util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
         '''Select appropriate function for calculating state-action-value estimate (target)'''
         self.get_target = self.get_nstep_target

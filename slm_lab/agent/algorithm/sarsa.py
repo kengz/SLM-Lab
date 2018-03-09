@@ -59,6 +59,7 @@ class SARSA(Algorithm):
             loss_param=_.get(net_spec, 'loss'),
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+            gpu=_.get(net_spec, 'gpu'),
         ))
         if net_spec['type'].find('Recurrent') != -1:
             self.net = getattr(net, net_spec['type'])(
@@ -72,7 +73,7 @@ class SARSA(Algorithm):
         '''Initializes additional parameters from the net spec. Called by init_nets'''
         net_spec = self.agent.spec['net']
         util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
 
     def init_algo_params(self):
