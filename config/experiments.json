@@ -1,5 +1,5 @@
 {
-  "sarsa.json": {
-    "sarsa_cartpole_recurrent": "train"
+  "demo.json": {
+    "actor_critic_cartpole": "train"
   }
 }
