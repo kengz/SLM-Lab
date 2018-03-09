@@ -93,8 +93,6 @@ class ConvNet(nn.Module):
             self.params.extend(list(layer.parameters()))
         self.optim_param = optim_param
         self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
-        if torch.cuda.is_available() and gpu:
-            self.optim = self.optim.cuda()
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
