@@ -59,6 +59,7 @@ class SARSA(Algorithm):
             loss_param=_.get(net_spec, 'loss'),
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+            gpu=_.get(net_spec, 'gpu'),
         ))
         if net_spec['type'].find('Recurrent') != -1:
             self.net = getattr(net, net_spec['type'])(
@@ -72,8 +73,11 @@ class SARSA(Algorithm):
         '''Initializes additional parameters from the net spec. Called by init_nets'''
         net_spec = self.agent.spec['net']
         util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
+        logger.info(f'Training on gpu: {self.gpu}')
 
     def init_algo_params(self):
         '''Initialize other algorithm parameters.'''
@@ -120,6 +124,8 @@ class SARSA(Algorithm):
         logger.debug2(f'Q next states: {q_next_st.size()}')
         # Get the q value for the next action that was actually taken
         idx = torch.from_numpy(np.array(list(range(q_next_st.size(0)))))
+        if torch.cuda.is_available() and self.gpu:
+            idx = idx.cuda()
         q_next_st_vals = q_next_st[idx, q_next_actions.squeeze_(1).data.long()]
         # Expand the dims so that q_next_st_vals can be broadcast
         q_next_st_vals.unsqueeze_(1)
@@ -148,7 +154,7 @@ class SARSA(Algorithm):
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         if self.is_episodic:
-            util.to_torch_nested_batch(batch)
+            util.to_torch_nested_batch(batch, self.gpu)
             # Add next action to batch
             batch['actions_onehot'] = []
             batch['next_actions'] = []
@@ -164,19 +170,19 @@ class SARSA(Algorithm):
             # Flatten the batch to train all at once
             batch = util.concat_episodes(batch)
         else:
-            util.to_torch_batch(batch)
+            util.to_torch_batch(batch, self.gpu)
             # Batch only useful to train with if it has more than one element
             # Train function checks for this and skips training if batch is too small
             if batch['states'].size(0) > 1:
                 batch['next_actions'] = torch.zeros_like(batch['actions'])
                 batch['next_actions'][:-1] = batch['actions'][1:]
-                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.action_dim)
+                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.action_dim, self.gpu)
                 batch_elems = ['states', 'actions', 'actions_onehot', 'rewards', 'dones', 'next_states', 'next_actions']
                 for k in batch_elems:
                     if batch[k].dim() == 1:
                         batch[k].unsqueeze_(1)
                 # If the last experience in the batch is not terminal the batch has to be shortened by one element since the algorithm does not yet have access to the next action taken for the final experience
-                if batch['dones'].data[-1].int().eq_(0).numpy()[0]:
+                if batch['dones'].data[-1].int().eq_(0).cpu().numpy()[0]:
                     logger.debug(f'Popping last element')
                     for k in batch_elems:
                         batch[k] = batch[k][:-1]
@@ -196,6 +202,8 @@ class SARSA(Algorithm):
                 self.to_train = 0
                 return np.nan
             q_targets = self.compute_q_target_values(batch)
+            if torch.cuda.is_available() and self.gpu:
+                q_targets = q_targets.cuda()
             y = Variable(q_targets)
             loss = self.net.training_step(batch['states'], y)
             logger.debug(f'loss {loss.data[0]}')
@@ -208,7 +216,7 @@ class SARSA(Algorithm):
     @lab_api
     def body_act_discrete(self, body, state):
         ''' Selects and returns a discrete action for body using the action policy'''
-        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx])
+        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx], self.gpu)
 
     def update_explore_var(self):
         '''Updates the explore variables'''
