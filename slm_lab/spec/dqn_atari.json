@@ -6,8 +6,8 @@
         "name": "DQN",
         "action_policy": "atari_epsilon_greedy",
         "action_policy_update": "linear_decay",
-        "explore_var_start": 0.0,
-        "explore_var_end": 0.0,
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
         "explore_anneal_epi": 200,
         "gamma": 0.99,
         "training_epoch": 1,
@@ -27,7 +27,7 @@
         "hid_layers_activation": "relu",
         "optim": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.001
         },
         "batch_size": 32,
         "decay_lr": false,
@@ -42,7 +42,7 @@
     "env": [{
       "name": "Breakout-v0",
       "max_timestep": null,
-      "max_episode": 1
+      "max_episode": 1000
     }],
     "body": {
       "product": "outer",

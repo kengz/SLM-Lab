@@ -278,12 +278,12 @@ class DQNBase(VanillaDQN):
         t = space_clock.get('total_t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
-                logger.debug('Updating target_net by replacing')
+                logger.info('Updating target_net by replacing')
                 self.target_net = deepcopy(self.net)
                 self.online_net = self.target_net
                 self.eval_net = self.target_net
         elif self.update_type == 'polyak':
-            logger.debug('Updating net by averaging')
+            logger.info('Updating net by averaging')
             avg_params = self.polyak_weight * net_util.flatten_params(self.target_net) + \
                 (1 - self.polyak_weight) * net_util.flatten_params(self.net)
             self.target_net = net_util.load_params(self.target_net, avg_params)
