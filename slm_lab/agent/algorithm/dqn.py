@@ -66,6 +66,7 @@ class VanillaDQN(SARSA):
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        logger.info(f'Training on gpu: {self.gpu}')
 
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
@@ -113,7 +114,7 @@ class VanillaDQN(SARSA):
         batches = [body.memory.sample(self.batch_size)
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
-        util.to_torch_batch(batch)
+        util.to_torch_batch(batch, self.gpu)
         return batch
 
     @lab_api
@@ -345,7 +346,7 @@ class MultitaskDQN(DQN):
                    for body in self.agent.nanflat_body_a]
         # Package data into pytorch variables
         for batch_b in batches:
-            util.to_torch_batch(batch_b)
+            util.to_torch_batch(batch_b, self.gpu)
         # Concat state
         combined_states = torch.cat(
             [batch_b['states'] for batch_b in batches], dim=1)
@@ -475,7 +476,7 @@ class MultiHeadDQN(MultitaskDQN):
                    for body in self.agent.nanflat_body_a]
         # Package data into pytorch variables
         for batch_b in batches:
-            util.to_torch_batch(batch_b)
+            util.to_torch_batch(batch_b, self.gpu)
         batch = {'states': [], 'next_states': []}
         for b in batches:
             batch['states'].append(b['states'])

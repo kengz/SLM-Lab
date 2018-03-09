@@ -80,9 +80,9 @@ class ActorCritic(Reinforce):
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         if self.is_episodic:
-            util.to_torch_nested_batch(batch)
+            util.to_torch_nested_batch(batch, self.gpu)
         else:
-            util.to_torch_batch(batch)
+            util.to_torch_batch(batch, self.gpu)
         return batch
 
     @lab_api
@@ -550,6 +550,7 @@ class ActorCritic(Reinforce):
         util.set_attr(self, _.pick(net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        logger.info(f'Training on gpu: {self.gpu}')
         '''Select appropriate function for calculating state-action-value estimate (target)'''
         self.get_target = self.get_nstep_target
         if self.use_GAE:

@@ -96,6 +96,7 @@ class Reinforce(Algorithm):
         util.set_attr(self, _.pick(net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        logger.info(f'Training on gpu: {self.gpu}')
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.entropy = []
@@ -114,7 +115,7 @@ class Reinforce(Algorithm):
         batches = [body.memory.sample()
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
-        batch = util.to_torch_nested_batch_ex_rewards(batch)
+        batch = util.to_torch_nested_batch_ex_rewards(batch, self.gpu)
         return batch
 
     @lab_api

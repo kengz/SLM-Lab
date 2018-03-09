@@ -667,33 +667,37 @@ def write_as_plain(data, data_path):
     return data_path
 
 
-def to_torch_batch(batch):
+def to_torch_batch(batch, gpu):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch Variable'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
     for k in float_data_names:
         batch[k] = Variable(torch.from_numpy(batch[k]).float())
+        if torch.cuda.is_available() and gpu:
+            batch[k] = batch[k].cuda()
     return batch
 
 
-def to_torch_nested_batch(batch):
+def to_torch_nested_batch(batch, gpu):
     '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable.'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
-    return to_torch_nested_batch_helper(batch, float_data_names)
+    return to_torch_nested_batch_helper(batch, float_data_names, gpu)
 
 
-def to_torch_nested_batch_ex_rewards(batch):
+def to_torch_nested_batch_ex_rewards(batch, gpu):
     '''Mutate a nested batch (dict of lists) to make its values (excluding rewards) from numpy into PyTorch Variable.'''
     float_data_names = ['states', 'actions', 'dones', 'next_states']
-    return to_torch_nested_batch_helper(batch, float_data_names)
+    return to_torch_nested_batch_helper(batch, float_data_names, gpu)
 
 
-def to_torch_nested_batch_helper(batch, float_data_names):
+def to_torch_nested_batch_helper(batch, float_data_names, gpu):
     '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable. Excludes keys not included in float_data_names'''
     for k in float_data_names:
         k_b = []
         for x in batch[k]:
             nx = np.asarray(x)
             tx = Variable(torch.from_numpy(nx).float())
+            if torch.cuda.is_available() and gpu:
+                tx = tx.cuda()
             k_b.append(tx)
         batch[k] = k_b
     return batch
@@ -713,9 +717,12 @@ def concat_episodes(batch):
     return batch
 
 
-def convert_to_one_hot(data, categories):
+def convert_to_one_hot(data, categories, gpu):
     '''Converts categorical data to one hot representation'''
     data_onehot = torch.zeros(data.size(0), categories)
     idxs = torch.from_numpy(np.array(list(range(data.size(0)))))
     data_onehot[idxs, data.data.long()] = 1
-    return Variable(data_onehot)
+    new_data = Variable(data_onehot)
+    if torch.cuda.is_available() and gpu:
+        new_data = new_data.cuda()
+    return new_data

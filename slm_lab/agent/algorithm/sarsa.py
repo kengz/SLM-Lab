@@ -75,6 +75,7 @@ class SARSA(Algorithm):
         util.set_attr(self, _.pick(net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        logger.info(f'Training on gpu: {self.gpu}')
 
     def init_algo_params(self):
         '''Initialize other algorithm parameters.'''
@@ -149,7 +150,7 @@ class SARSA(Algorithm):
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         if self.is_episodic:
-            util.to_torch_nested_batch(batch)
+            util.to_torch_nested_batch(batch, self.gpu)
             # Add next action to batch
             batch['actions_onehot'] = []
             batch['next_actions'] = []
@@ -165,13 +166,13 @@ class SARSA(Algorithm):
             # Flatten the batch to train all at once
             batch = util.concat_episodes(batch)
         else:
-            util.to_torch_batch(batch)
+            util.to_torch_batch(batch, self.gpu)
             # Batch only useful to train with if it has more than one element
             # Train function checks for this and skips training if batch is too small
             if batch['states'].size(0) > 1:
                 batch['next_actions'] = torch.zeros_like(batch['actions'])
                 batch['next_actions'][:-1] = batch['actions'][1:]
-                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.action_dim)
+                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.action_dim, self.gpu)
                 batch_elems = ['states', 'actions', 'actions_onehot', 'rewards', 'dones', 'next_states', 'next_actions']
                 for k in batch_elems:
                     if batch[k].dim() == 1:
