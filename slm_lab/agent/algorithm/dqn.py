@@ -66,6 +66,8 @@ class VanillaDQN(SARSA):
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')
 
     def init_algo_params(self):
@@ -339,6 +341,9 @@ class MultitaskDQN(DQN):
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
             'update_type', 'update_frequency', 'polyak_weight', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
+        logger.info(f'Training on gpu: {self.gpu}')
 
     def sample(self):
         # NOTE the purpose of multi-body is to parallelize and get more batch_sizes
@@ -469,6 +474,9 @@ class MultiHeadDQN(MultitaskDQN):
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
             'update_type', 'update_frequency', 'polyak_weight', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
+        logger.info(f'Training on gpu: {self.gpu}')
 
     def sample(self):
         '''Samples one batch per environment'''

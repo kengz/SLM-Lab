@@ -96,6 +96,8 @@ class Reinforce(Algorithm):
         util.set_attr(self, _.pick(net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []

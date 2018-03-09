@@ -550,6 +550,8 @@ class ActorCritic(Reinforce):
         util.set_attr(self, _.pick(net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')
         '''Select appropriate function for calculating state-action-value estimate (target)'''
         self.get_target = self.get_nstep_target

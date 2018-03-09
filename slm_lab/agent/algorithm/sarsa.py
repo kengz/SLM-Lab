@@ -75,6 +75,8 @@ class SARSA(Algorithm):
         util.set_attr(self, _.pick(net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')
 
     def init_algo_params(self):
