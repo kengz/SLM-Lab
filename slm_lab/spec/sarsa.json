@@ -184,6 +184,7 @@
       "max_trial": 50,
       "train_mode": true,
       "search": "EvolutionarySearch",
+      "max_generation": 4
     },
     "search": {
       "agent": [{
@@ -244,6 +245,7 @@
       "max_trial": 50,
       "train_mode": true,
       "search": "EvolutionarySearch",
+      "max_generation": 4
     },
     "search": {
       "agent": [{
