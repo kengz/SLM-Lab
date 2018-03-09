@@ -182,7 +182,7 @@ class SARSA(Algorithm):
                     if batch[k].dim() == 1:
                         batch[k].unsqueeze_(1)
                 # If the last experience in the batch is not terminal the batch has to be shortened by one element since the algorithm does not yet have access to the next action taken for the final experience
-                if batch['dones'].data[-1].int().eq_(0).numpy()[0]:
+                if batch['dones'].data[-1].int().eq_(0).cpu().numpy()[0]:
                     logger.debug(f'Popping last element')
                     for k in batch_elems:
                         batch[k] = batch[k][:-1]
