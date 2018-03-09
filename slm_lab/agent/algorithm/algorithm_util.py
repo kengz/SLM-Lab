@@ -13,9 +13,10 @@ from torch.distributions import Categorical, Normal
 import sys
 
 
-def create_torch_state(state, state_buffer, gpu, state_seq=False, length=0, atari=False):
+def create_torch_state(state, state_buf, gpu, state_seq=False, length=0, atari=False):
     if state_seq:
         '''Create sequence of inputs for nets that take sequences of states as input'''
+        state_buffer = deepcopy(state_buf) # Copy so as not to mutate running state buffer
         logger.debug3(f'length of state buffer: {length}')
         if len(state_buffer) < length:
             PAD = np.zeros_like(state)

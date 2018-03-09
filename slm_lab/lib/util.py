@@ -743,12 +743,9 @@ def transform_image(im):
     Image preprocessing from the paper Playing Atari with Deep Reinforcement Learning, 2013
     Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84, taking bottomost rows of image
     '''
-    # print(im.shape)
+    if im.ndim != 3:
+        print(f'Unexpected image dimension: {im.ndim}, {im.shape}')
     im = np.dot(im[..., :3], [0.299, 0.587, 0.114])
-    # print(im.shape)
     im = resize_image(im)
-    # print(im.shape)
     im = crop_image(im)
-    # print(im.shape)
-    sp.misc.imsave('test.jpg', im)
     return im
