@@ -46,7 +46,7 @@ def act_with_epsilon_greedy(body, state, net, epsilon, gpu):
     else:
         recurrent = body.agent.len_state_buffer > 0
         logger.debug2(f'Length state buffer: {body.agent.len_state_buffer}')
-        torch_state = create_torch_state(state, body.state_buffer, recurrent, body.agent.len_state_buffer)
+        torch_state = create_torch_state(state, body.state_buffer, gpu, recurrent, body.agent.len_state_buffer)
         out = net.wrap_eval(torch_state).squeeze_(dim=0)
         action = int(torch.max(out, dim=0)[1][0])
         logger.debug2(f'Outs {out} Action {action}')
@@ -110,7 +110,7 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
 def act_with_boltzmann(body, state, net, tau, gpu):
     recurrent = body.agent.len_state_buffer > 0
     logger.debug2(f'Length state buffer: {body.agent.len_state_buffer}')
-    torch_state = create_torch_state(state, body.state_buffer, recurrent, body.agent.len_state_buffer)
+    torch_state = create_torch_state(state, body.state_buffer, gpu, recurrent, body.agent.len_state_buffer)
     out = net.wrap_eval(torch_state)
     out_with_temp = torch.div(out, tau).squeeze_(dim=0)
     probs = F.softmax(Variable(out_with_temp.cpu()), dim=0).data.numpy()
@@ -175,7 +175,7 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, g
 def act_with_softmax(algo, state, body, gpu):
     '''Assumes actor network outputs one variable; the logits of a categorical probability distribution over the actions'''
     recurrent = algo.agent.len_state_buffer > 0
-    torch_state = create_torch_state(state, body.state_buffer, recurrent, algo.agent.len_state_buffer)
+    torch_state = create_torch_state(state, body.state_buffer, gpu, recurrent, algo.agent.len_state_buffer)
     out = algo.get_actor_output(torch_state, evaluate=False)
     if type(out) is list:
         out = out[0]
@@ -203,7 +203,7 @@ def act_with_softmax(algo, state, body, gpu):
 def act_with_gaussian(algo, state, body, gpu):
     '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
     recurrent = algo.agent.len_state_buffer > 0
-    torch_state = create_torch_state(state, body.state_buffer, recurrent, algo.agent.len_state_buffer)
+    torch_state = create_torch_state(state, body.state_buffer, gpu, recurrent, algo.agent.len_state_buffer)
     [mu, sigma] = algo.get_actor_output(torch_state, evaluate=False)
     sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0
     m = Normal(mu, sigma)
