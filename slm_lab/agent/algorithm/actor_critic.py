@@ -384,6 +384,8 @@ class ActorCritic(Reinforce):
             big_r = rewards[i] + self.gamma * big_r
             target.insert(0, big_r)
         target = torch.Tensor(target)
+        if torch.cuda.is_available() and self.gpu:
+            target = target.cuda()
         logger.debug3(f'Target: {target}')
         return target
 
@@ -406,6 +408,8 @@ class ActorCritic(Reinforce):
             gae = deltas[i] + self.gamma * self.lamda * gae
             advantage.insert(0, gae)
         advantage = torch.Tensor(advantage)
+        if torch.cuda.is_available() and self.gpu:
+            advantage = advantage.cuda()
         '''Add state_vals so that calc_advantage() api is preserved'''
         target = advantage + state_vals
         logger.debug3(f'Advantage: {advantage}')
