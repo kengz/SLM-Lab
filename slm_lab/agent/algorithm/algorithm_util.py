@@ -197,7 +197,7 @@ def act_with_softmax(algo, state, body, gpu):
     algo.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = - torch.sum(torch.mul(probs, torch.log(probs)))
-    if np.isnan(H.data.numpy()):
+    if np.isnan(H.data.cpu().numpy()):
         logger.debug(f'NaN entropy, setting to 0')
         H = torch.zeros(1)
         if torch.cuda.is_available() and gpu:
@@ -222,7 +222,7 @@ def act_with_gaussian(algo, state, body, gpu):
     algo.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = 0.5 * torch.log(2.0 * np.pi * np.e * sigma * sigma)
-    if np.isnan(H.data.numpy()):
+    if np.isnan(H.data.cpu().numpy()):
         logger.debug(f'NaN entropy, setting to 0')
         H = torch.zeros(1)
         if torch.cuda.is_available() and gpu:
