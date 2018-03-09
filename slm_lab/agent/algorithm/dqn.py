@@ -221,6 +221,7 @@ class DQNBase(VanillaDQN):
                 clamp_grad=_.get(net_spec, 'clamp_grad'),
                 clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
                 batch_norm=_.get(net_spec, 'batch_norm'),
+                gpu=_.get(net_spec, 'gpu'),
             ))
         if net_spec['type'].find('Recurrent') != -1:
             logger.warn(f'Recurrent networks not supported with DQN family of algorithms. Please select another network type''')
@@ -235,6 +236,9 @@ class DQNBase(VanillaDQN):
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
+        logger.info(f'Training on gpu: {self.gpu}')
         # Default network update params for base
         self.update_type = 'replace'
         self.update_frequency = 1
