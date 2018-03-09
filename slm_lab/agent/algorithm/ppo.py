@@ -9,6 +9,7 @@ from torch.autograd import Variable
 import numpy as np
 import torch
 import pydash as _
+import tensorflow as tf
 
 
 class PPO(Algorithm):
@@ -43,7 +44,6 @@ class PPO(Algorithm):
         action_dim = body.action_dim
         self.is_discrete = body.is_discrete
         net_spec = self.agent.spec['net']
-        mem_spec = self.agent.spec['memory']
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
@@ -51,6 +51,56 @@ class PPO(Algorithm):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
         ))
+
+        # NOTE OpenAI: init tf net
+        # state_dim, net_spec['hid_layers'], action_dim,
+
+        # TODO replace
+        self.pdtype = pdtype = make_pdtype(ac_space)
+
+        ob = tf.placeholder(
+            name="ob", dtype=tf.float32, shape=(state_dim,))
+
+        # TODO replace
+        with tf.variable_scope("obfilter"):
+            self.ob_rms = RunningMeanStd(shape=ob_space.shape)
+
+        with tf.variable_scope('vf'):
+            obz = tf.clip_by_value(
+                (ob - self.ob_rms.mean) / self.ob_rms.std, -5.0, 5.0)
+            last_out = obz
+            for i, hid_size in enumerate(net_spec['hid_layers']):
+                # TODO dont hard code activation
+                last_out = tf.nn.tanh(tf.layers.dense(
+                    last_out, hid_size, name=f"fc_{i+1}", kernel_initializer=U.normc_initializer(1.0)))
+            self.vpred = tf.layers.dense(
+                last_out, 1, name='final', kernel_initializer=U.normc_initializer(1.0))[:, 0]
+
+        with tf.variable_scope('pol'):
+            last_out = obz
+            for i, hid_size in enumerate(net_spec['hid_layers']):
+                last_out = tf.nn.tanh(tf.layers.dense(
+                    last_out, hid_size, name=f"fc_{i+1}", kernel_initializer=U.normc_initializer(1.0)))
+            # TODO restore param gaussian_fixed_var=True
+            if gaussian_fixed_var and not body.is_discrete:
+                mean = tf.layers.dense(
+                    last_out, pdtype.param_shape()[0] // 2, name='final', kernel_initializer=U.normc_initializer(0.01))
+                logstd = tf.get_variable(
+                    name="logstd", shape=[1, pdtype.param_shape()[0] // 2], initializer=tf.zeros_initializer())
+                pdparam = tf.concat([mean, mean * 0.0 + logstd], axis=1)
+            else:
+                pdparam = tf.layers.dense(
+                    last_out, pdtype.param_shape()[0], name='final', kernel_initializer=U.normc_initializer(0.01))
+
+        self.pd = pdtype.pdfromflat(pdparam)
+
+        self.state_in = []
+        self.state_out = []
+
+        stochastic = tf.placeholder(dtype=tf.bool, shape=())
+        # action
+        ac = U.switch(stochastic, self.pd.sample(), self.pd.mode())
+        self._act = U.function([stochastic, ob], [ac, self.vpred])
 
     @lab_api
     def init_algo_params(self):
@@ -82,10 +132,16 @@ class PPO(Algorithm):
 
     @lab_api
     def body_act_discrete(self, body, state):
+        # TODO uhh auto discrete or cont?
+        ac1, vpred1 =  self._act(stochastic, ob[None])
+        return ac1[0], vpred1[0]
         return self.action_policy(self, state, body)
 
     @lab_api
     def body_act_continuous(self, body, state):
+        # TODO uhh auto discrete or cont?
+        ac1, vpred1 =  self._act(stochastic, ob[None])
+        return ac1[0], vpred1[0]
         return self.action_policy(self, state, body)
 
     @lab_api
