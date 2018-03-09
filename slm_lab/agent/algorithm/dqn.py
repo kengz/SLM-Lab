@@ -424,7 +424,7 @@ class MultitaskDQN(DQN):
     def act(self, state_a):
         '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
         nanflat_action_a = self.action_policy(
-            self.agent.nanflat_body_a, state_a, self.net, self.nanflat_explore_var_a)
+            self.agent.nanflat_body_a, state_a, self.net, self.nanflat_explore_var_a, self.gpu)
         action_a = self.nanflat_to_data_a('action', nanflat_action_a)
         return action_a
 

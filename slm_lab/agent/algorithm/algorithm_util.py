@@ -12,7 +12,7 @@ from torch.autograd import Variable
 from torch.distributions import Categorical, Normal
 
 
-def create_torch_state(state, state_buffer, recurrent=False, length=0):
+def create_torch_state(state, state_buffer, gpu, recurrent=False, length=0):
     if recurrent:
         '''Create sequence of inputs for recurrent net'''
         logger.debug3(f'length of state buffer: {length}')
@@ -28,13 +28,15 @@ def create_torch_state(state, state_buffer, recurrent=False, length=0):
         torch_state.unsqueeze_(dim=0)
     else:
         torch_state = Variable(torch.from_numpy(state).float())
+    if torch.cuda.is_available() and gpu:
+        torch_state = torch_state.gpu()
     logger.debug2(f'State size: {torch_state.size()}')
     logger.debug3(f'Original state: {state}')
     logger.debug3(f'State: {torch_state}')
     return torch_state
 
 
-def act_with_epsilon_greedy(body, state, net, epsilon):
+def act_with_epsilon_greedy(body, state, net, epsilon, gpu):
     '''
     Single body action with probability epsilon to select a random action,
     otherwise select the action associated with the largest q value
@@ -51,7 +53,7 @@ def act_with_epsilon_greedy(body, state, net, epsilon):
     return action
 
 
-def multi_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_epsilon_a):
+def multi_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_epsilon_a, gpu):
     '''Multi-body nanflat_action_a on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
     nanflat_state_a = util.nanflatten(state_a)
     cat_state_a = np.concatenate(nanflat_state_a)
@@ -67,6 +69,8 @@ def multi_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_epsilon_
             logger.debug2(f'Greedy action')
             cat_state_a = cat_state_a.astype('float')
             torch_state = Variable(torch.from_numpy(cat_state_a).float())
+            if torch.cuda.is_available() and gpu:
+                torch_state = torch_state.gpu()
             out = net.wrap_eval(torch_state)
             action = int(torch.max(out[start_idx: end_idx], dim=0)[1][0])
         nanflat_action_a.append(action)
@@ -77,7 +81,7 @@ def multi_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_epsilon_
     return nanflat_action_a
 
 
-def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_epsilon_a):
+def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_epsilon_a, gpu):
     '''Multi-headed body nanflat_action_a on a single-pass from net. Uses epsilon-greedy but in a batch manner.'''
     nanflat_state_a = util.nanflatten(state_a)
     nanflat_action_a = []
@@ -86,6 +90,9 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
         state = state.astype('float')
         torch_states.append(
             Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
+    if torch.cuda.is_available() and gpu:
+        for torch_state in torch_states:
+            torch_state = torch_state.gpu()
     outs = net.wrap_eval(torch_states)
     for body, e, output in zip(nanflat_body_a, nanflat_epsilon_a, outs):
         logger.debug2(f'body: {body.aeb}, epsilon: {e}')
@@ -100,22 +107,24 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
     return nanflat_action_a
 
 
-def act_with_boltzmann(body, state, net, tau):
+def act_with_boltzmann(body, state, net, tau, gpu):
     recurrent = body.agent.len_state_buffer > 0
     logger.debug2(f'Length state buffer: {body.agent.len_state_buffer}')
     torch_state = create_torch_state(state, body.state_buffer, recurrent, body.agent.len_state_buffer)
     out = net.wrap_eval(torch_state)
     out_with_temp = torch.div(out, tau).squeeze_(dim=0)
-    probs = F.softmax(Variable(out_with_temp), dim=0).data.numpy()
+    probs = F.softmax(Variable(out_with_temp.cpu()), dim=0).data.numpy()
     action = np.random.choice(list(range(body.action_dim)), p=probs)
     logger.debug2('out with temp: {}, prob: {}, action: {}'.format(out_with_temp, probs, action))
     return action
 
 
-def multi_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
+def multi_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, gpu):
     nanflat_state_a = util.nanflatten(state_a)
     cat_state_a = np.concatenate(nanflat_state_a).astype(float)
     torch_state = Variable(torch.from_numpy(cat_state_a).float())
+    if torch.cuda.is_available() and gpu:
+        torch_state = torch_state.gpu()
     out = net.wrap_eval(torch_state)
     nanflat_action_a = []
     start_idx = 0
@@ -127,7 +136,7 @@ def multi_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
         tau: {tau}, out: {out},
         out select: {out[start_idx: end_idx]},
         out with temp: {out_with_temp}''')
-        probs = F.softmax(Variable(out_with_temp), dim=0).data.numpy()
+        probs = F.softmax(Variable(out_with_temp.cpu()), dim=0).data.numpy()
         action = np.random.choice(list(range(body.action_dim)), p=probs)
         logger.debug3(f'''
         body: {body.aeb}, net idx: {start_idx}-{end_idx}
@@ -137,20 +146,23 @@ def multi_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
     return nanflat_action_a
 
 
-def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
+def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, gpu):
     nanflat_state_a = util.nanflatten(state_a)
     torch_states = []
     for state in nanflat_state_a:
         state = state.astype('float')
         torch_states.append(
             Variable(torch.from_numpy(state).float().unsqueeze_(dim=0)))
+    if torch.cuda.is_available() and gpu:
+        for torch_state in torch_states:
+            torch_state = torch_state.gpu()
     outs = net.wrap_eval(torch_states)
     out_with_temp = [torch.div(x, t) for x, t in zip(outs, nanflat_tau_a)]
     logger.debug2(
         f'taus: {nanflat_tau_a}, outs: {outs}, out_with_temp: {out_with_temp}')
     nanflat_action_a = []
     for body, output in zip(nanflat_body_a, out_with_temp):
-        probs = F.softmax(Variable(output), dim=1).data.numpy()[0]
+        probs = F.softmax(Variable(output.cpu()), dim=1).data.numpy()[0]
         action = np.random.choice(list(range(body.action_dim)), p=probs)
         logger.debug3(f'''
         body: {body.aeb}, output: {output},
@@ -160,7 +172,7 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a):
 
 
 # Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
-def act_with_softmax(algo, state, body):
+def act_with_softmax(algo, state, body, gpu):
     '''Assumes actor network outputs one variable; the logits of a categorical probability distribution over the actions'''
     recurrent = algo.agent.len_state_buffer > 0
     torch_state = create_torch_state(state, body.state_buffer, recurrent, algo.agent.len_state_buffer)
@@ -181,12 +193,14 @@ def act_with_softmax(algo, state, body):
     if np.isnan(H.data.numpy()):
         logger.debug(f'NaN entropy, setting to 0')
         H = Variable(torch.zeros(1))
+        if torch.cuda.is_available() and gpu:
+            H = H.gpu()
     algo.entropy.append(H)
     return action.data[0]
 
 
 # Denny Britz has a very helpful implementation of an Actor Critic algorithm. This function is adapted from his approach. I highly recommend looking at his full implementation available here https://github.com/dennybritz/reinforcement-learning/blob/master/PolicyGradient/Continuous%20MountainCar%20Actor%20Critic%20Solution.ipynb
-def act_with_gaussian(algo, state, body):
+def act_with_gaussian(algo, state, body, gpu):
     '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
     recurrent = algo.agent.len_state_buffer > 0
     torch_state = create_torch_state(state, body.state_buffer, recurrent, algo.agent.len_state_buffer)
@@ -203,11 +217,13 @@ def act_with_gaussian(algo, state, body):
     if np.isnan(H.data.numpy()):
         logger.debug(f'NaN entropy, setting to 0')
         H = Variable(torch.zeros(1))
+        if torch.cuda.is_available() and gpu:
+            H = H.gpu()
     algo.entropy.append(H)
     return action.data
 
 
-def act_with_multivariate_gaussian(algo, state, body):
+def act_with_multivariate_gaussian(algo, state, body, gpu):
     '''Assumes net outputs two tensors which contain the mean and std dev of a multivariate normal distribution'''
     raise NotImplementedError
     return np.nan

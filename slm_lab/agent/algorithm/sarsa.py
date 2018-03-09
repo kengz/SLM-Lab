@@ -212,7 +212,7 @@ class SARSA(Algorithm):
     @lab_api
     def body_act_discrete(self, body, state):
         ''' Selects and returns a discrete action for body using the action policy'''
-        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx])
+        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx], self.gpu)
 
     def update_explore_var(self):
         '''Updates the explore variables'''
