@@ -124,6 +124,8 @@ class SARSA(Algorithm):
         logger.debug2(f'Q next states: {q_next_st.size()}')
         # Get the q value for the next action that was actually taken
         idx = torch.from_numpy(np.array(list(range(q_next_st.size(0)))))
+        if torch.cuda.is_available() and self.gpu:
+            idx = idx.cuda()
         q_next_st_vals = q_next_st[idx, q_next_actions.squeeze_(1).data.long()]
         # Expand the dims so that q_next_st_vals can be broadcast
         q_next_st_vals.unsqueeze_(1)

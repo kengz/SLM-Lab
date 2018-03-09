@@ -238,6 +238,8 @@ class DQNBase(VanillaDQN):
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         logger.debug2(f'Q next_states: {q_next_sts.size()}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
+        if torch.cuda.is_available() and self.gpu:
+            idx = idx.cuda()
         q_next_st_maxs = q_next_sts[idx, q_next_acts]
         q_next_st_maxs.unsqueeze_(1)
         logger.debug2(f'Q next_states max {q_next_st_maxs.size()}')
@@ -390,6 +392,8 @@ class MultitaskDQN(DQN):
         logger.debug2(f'Q next_states: {q_next_sts.size()}')
         logger.debug3(f'Q next_states: {q_next_sts}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
+        if torch.cuda.is_available() and self.gpu:
+            idx = idx.cuda()
         q_next_st_maxs = []
         for q_next_act_b in q_next_acts:
             q_next_st_max_b = q_next_sts[idx, q_next_act_b]
@@ -407,6 +411,8 @@ class MultitaskDQN(DQN):
                 np.broadcast_to(
                     q_targets_max_b,
                     (q_targets_max_b.shape[0], self.action_dims[b])))
+            if torch.cuda.is_available() and self.gpu:
+                q_targets_max_b = q_targets_max_b.cuda()
             q_targets_maxs.append(q_targets_max_b)
             logger.debug2(f'Q targets max: {q_targets_max_b.size()}')
         q_targets_maxs = torch.cat(q_targets_maxs, dim=1)
@@ -509,6 +515,8 @@ class MultiHeadDQN(MultitaskDQN):
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         logger.debug3(f'Q next_states: {q_next_sts}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
+        if torch.cuda.is_available() and self.gpu:
+            idx = idx.cuda()
         q_next_st_maxs = []
         for q_next_st_val_b, q_next_act_b in zip(q_next_sts, q_next_acts):
             q_next_st_max_b = q_next_st_val_b[idx, q_next_act_b]
