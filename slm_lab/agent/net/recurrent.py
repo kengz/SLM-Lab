@@ -61,6 +61,7 @@ class RecurrentNet(nn.Module):
         self.in_dim = in_dim
         self.sequence_length = sequence_length
         self.hid_dim = hid_dim[-1]
+        self.gpu = gpu
         # Handle multiple types of out_dim (single and multi-headed)
         if type(out_dim) is int:
             out_dim = [out_dim]
@@ -116,7 +117,10 @@ class RecurrentNet(nn.Module):
         return nn.Sequential(*self.state_processing_layers)
 
     def init_hidden(self, batch_size, volatile=False):
-        return Variable(torch.zeros(self.num_rnn_layers, batch_size, self.hid_dim), volatile=volatile)
+        hid = torch.zeros(self.num_rnn_layers, batch_size, self.hid_dim)
+        if torch.cuda.is_available() and self.gpu:
+            hid = hid.cuda()
+        return Variable(hid, volatile=volatile)
 
     def forward(self, x):
         '''The feedforward step.
