@@ -30,7 +30,8 @@ class RecurrentNet(nn.Module):
                  loss_param=None,
                  clamp_grad=False,
                  clamp_grad_val=1.0,
-                 num_rnn_layers=1):
+                 num_rnn_layers=1,
+                 gpu=False):
         '''
         in_dim: dimension of the states
         hid_dim: list containing dimensions of the hidden layers. The last element of the list is should be the dimension of the hidden state for the recurrent layer. The other elements in the list are the dimensions of the MLP (if desired) which is to transform the state space.
@@ -42,6 +43,7 @@ class RecurrentNet(nn.Module):
         clamp_grad: whether to clamp the gradient
         clamp_grad_val: what value to clamp the gradient at
         num_rnn_layers: number of recurrent layers
+        gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
         net = RecurrentNet(
                 4,
@@ -51,13 +53,15 @@ class RecurrentNet(nn.Module):
                 hid_layers_activation='relu',
                 optim_param={'name': 'Adam'},
                 loss_param={'name': 'mse_loss'},
-                clamp_grad=False)
+                clamp_grad=False,
+                gpu=True)
         '''
         super(RecurrentNet, self).__init__()
         # Create net and initialize params
         self.in_dim = in_dim
         self.sequence_length = sequence_length
         self.hid_dim = hid_dim[-1]
+        self.gpu = gpu
         # Handle multiple types of out_dim (single and multi-headed)
         if type(out_dim) is int:
             out_dim = [out_dim]
@@ -78,6 +82,11 @@ class RecurrentNet(nn.Module):
         self.layers = [self.state_processing_layers] + [self.rnn] + [self.out_layers]
         self.num_hid_layers = None
         self.init_params()
+        if torch.cuda.is_available() and gpu:
+            self.state_proc_model.cuda()
+            self.rnn.cuda()
+            for l in self.out_layers:
+                l.cuda()
         # Init other net variables
         self.params = list(self.state_proc_model.parameters()) + list(self.rnn.parameters())
         for layer in self.out_layers:
@@ -108,7 +117,10 @@ class RecurrentNet(nn.Module):
         return nn.Sequential(*self.state_processing_layers)
 
     def init_hidden(self, batch_size, volatile=False):
-        return Variable(torch.zeros(self.num_rnn_layers, batch_size, self.hid_dim), volatile=volatile)
+        hid = torch.zeros(self.num_rnn_layers, batch_size, self.hid_dim)
+        if torch.cuda.is_available() and self.gpu:
+            hid = hid.cuda()
+        return Variable(hid, volatile=volatile)
 
     def forward(self, x):
         '''The feedforward step.

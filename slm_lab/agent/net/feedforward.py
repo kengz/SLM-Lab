@@ -19,7 +19,8 @@ class MLPNet(nn.Module):
                  optim_param=None,
                  loss_param=None,
                  clamp_grad=False,
-                 clamp_grad_val=1.0):
+                 clamp_grad_val=1.0,
+                 gpu=False):
         '''
         in_dim: dimension of the inputs
         hid_dim: list containing dimensions of the hidden layers
@@ -28,6 +29,7 @@ class MLPNet(nn.Module):
         optim_param: parameters for initializing the optimizer
         loss_param: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
+        gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
         net = MLPNet(
                 1000,
@@ -37,7 +39,8 @@ class MLPNet(nn.Module):
                 optim_param={'name': 'Adam'},
                 loss_param={'name': 'mse_loss'},
                 clamp_grad=True,
-                clamp_grad_val=2.0)
+                clamp_grad_val=2.0,
+                gpu=True)
         '''
         super(MLPNet, self).__init__()
         # Create net and initialize params
@@ -53,6 +56,8 @@ class MLPNet(nn.Module):
         self.layers += [nn.Linear(in_D, out_dim)]
         self.model = nn.Sequential(*self.layers)
         self.init_params()
+        if torch.cuda.is_available() and gpu:
+            self.model.cuda()
         # Init other net variables
         self.params = list(self.model.parameters())
         self.optim_param = optim_param
@@ -141,7 +146,8 @@ class MLPHeterogenousHeads(MLPNet):
                  optim_param=None,
                  loss_param=None,
                  clamp_grad=False,
-                 clamp_grad_val=1.0):
+                 clamp_grad_val=1.0,
+                 gpu=False):
         '''
         in_dim: dimension of the inputs
         hid_dim: list containing dimensions of the hidden layers
@@ -150,6 +156,7 @@ class MLPHeterogenousHeads(MLPNet):
         optim_param: parameters for initializing the optimizer
         loss_param: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
+        gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
         net = MLPHeterogenousHeads(
                 1000,
@@ -159,7 +166,8 @@ class MLPHeterogenousHeads(MLPNet):
                 optim_param={'name': 'Adam'},
                 loss_param={'name': 'mse_loss'},
                 clamp_grad=True,
-                clamp_grad_val=2.0)
+                clamp_grad_val=2.0,
+                gpu=True)
         '''
         nn.Module.__init__(self)
         # Create net and initialize params
@@ -180,6 +188,10 @@ class MLPHeterogenousHeads(MLPNet):
             self.out_layers += [nn.Linear(in_D, dim)]
         self.layers += [self.out_layers]
         self.init_params()
+        if torch.cuda.is_available() and gpu:
+            self.body.cuda()
+            for l in self.out_layers:
+                l.cuda()
         # Init other net variables
         self.params = list(self.body.parameters())
         for layer in self.out_layers:
@@ -241,7 +253,8 @@ class MultiMLPNet(nn.Module):
                  optim_param=None,
                  loss_param=None,
                  clamp_grad=False,
-                 clamp_grad_val=1.0):
+                 clamp_grad_val=1.0,
+                 gpu=False):
         '''
         Multi state processing heads, single shared body, and multi action heads.
         There is one state and action head per environment
@@ -270,6 +283,7 @@ class MultiMLPNet(nn.Module):
         optim_param: parameters for initializing the optimizer
         loss_param: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
+        gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
         net = MLPNet(
             [[800, 200],[400, 200]],
@@ -279,7 +293,8 @@ class MultiMLPNet(nn.Module):
              optim_param={'name': 'Adam'},
              loss_param={'name': 'mse_loss'},
              clamp_grad=True,
-             clamp_grad_val2.0)
+             clamp_grad_val2.0,
+             gpu=False)
         '''
         super(MultiMLPNet, self).__init__()
         # Create net and initialize params
@@ -296,6 +311,12 @@ class MultiMLPNet(nn.Module):
         self.action_heads_models = self.make_action_heads(
             in_D, self.out_dim, hid_layers_activation)
         self.init_params()
+        if torch.cuda.is_available() and gpu:
+            for l in self.state_heads_models:
+                l.cuda()
+            self.body.cuda()
+            for l in self.action_heads_models:
+                l.cuda()
         # Init other net variables
         self.params = []
         for model in self.state_heads_models:
