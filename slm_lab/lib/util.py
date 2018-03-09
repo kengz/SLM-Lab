@@ -723,6 +723,8 @@ def convert_to_one_hot(data, categories, gpu):
     '''Converts categorical data to one hot representation'''
     data_onehot = torch.zeros(data.size(0), categories)
     idxs = torch.from_numpy(np.array(list(range(data.size(0)))))
+    if torch.cuda.is_available() and gpu:
+        idxs = idxs.gpu()
     data_onehot[idxs, data.data.long()] = 1
     if torch.cuda.is_available() and gpu:
         data_onehot = data_onehot.cuda()
