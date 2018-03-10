@@ -107,6 +107,7 @@ class CategoricalPd(PD):
 
     @classmethod
     def fromflat(cls, flat):
+        '''Builds a new instances of pd from flat = output layer of NN'''
         return cls(flat)
 
 

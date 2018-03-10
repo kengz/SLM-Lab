@@ -3,7 +3,7 @@ from slm_lab.agent import net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
+from slm_lab.lib import distribution, logger, util
 from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import numpy as np
@@ -55,8 +55,7 @@ class PPO(Algorithm):
         # NOTE OpenAI: init tf net
         # state_dim, net_spec['hid_layers'], action_dim,
 
-        # TODO replace
-        self.pdtype = pdtype = make_pdtype(ac_space)
+        self.pdtype = pdtype = distribution.make_pdtype(body)
 
         ob = tf.placeholder(
             name="ob", dtype=tf.float32, shape=(state_dim,))
@@ -128,19 +127,21 @@ class PPO(Algorithm):
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.entropy = []
-        self.to_train = 0
+
+
+…        self.to_train = 0
 
     @lab_api
     def body_act_discrete(self, body, state):
         # TODO uhh auto discrete or cont?
-        ac1, vpred1 =  self._act(stochastic, ob[None])
+        ac1, vpred1 = self._act(stochastic, ob[None])
         return ac1[0], vpred1[0]
         return self.action_policy(self, state, body)
 
     @lab_api
     def body_act_continuous(self, body, state):
         # TODO uhh auto discrete or cont?
-        ac1, vpred1 =  self._act(stochastic, ob[None])
+        ac1, vpred1 = self._act(stochastic, ob[None])
         return ac1[0], vpred1[0]
         return self.action_policy(self, state, body)
 
@@ -152,16 +153,18 @@ class PPO(Algorithm):
         """
         Compute target value using TD(lambda) estimator, and advantage with GAE(lambda)
         """
-        new = np.append(seg["new"], 0) # last element is only used for last vtarg, but we already zeroed it if last new = 1
+        new = np.append(
+            seg["new"], 0)  # last element is only used for last vtarg, but we already zeroed it if last new = 1
         vpred = np.append(seg["vpred"], seg["nextvpred"])
         T = len(seg["rew"])
         seg["adv"] = gaelam = np.empty(T, 'float32')
         rew = seg["rew"]
         lastgaelam = 0
         for t in reversed(range(T)):
-            nonterminal = 1-new[t+1]
-            delta = rew[t] + gamma * vpred[t+1] * nonterminal - vpred[t]
-            gaelam[t] = lastgaelam = delta + gamma * lam * nonterminal * lastgaelam
+            nonterminal = 1 - new[t + 1]
+            delta = rew[t] + gamma * vpred[t + 1] * nonterminal - vpred[t]
+            gaelam[t] = lastgaelam = delta + \
+                gamma * lam * nonterminal * lastgaelam
         seg["tdlamret"] = seg["adv"] + seg["vpred"]
 
     def ppo_loss():
@@ -171,7 +174,7 @@ class PPO(Algorithm):
         L^{CLIP+VF+S} = E[ L^CLIP - c1 * L^VF + c2 * S[pi](s) ]
 
         Breakdown piecewise,
-        1. L^CLIP = E[ min(ratio) * A, clip(ratio, 1-eps, 1+eps) * A) ]
+        1. L^CLIP = E[ min(ratio * A, clip(ratio, 1-eps, 1+eps) * A) ]
         where ratio = pi(a|s) / pi_old(a|s)
 
         2. L^VF = E[ (V(s_t) - V^target)^2 ]
@@ -179,16 +182,46 @@ class PPO(Algorithm):
         3. S = E[ entropy ]
         '''
 
-        return
+        # L^CLIP
+        self.val_net
+        self.pi_net
+        self.pi_old_net
+        adv_target  # target advantage
+        pi_output  # = output layer of pi_net
+        pi_old_output  # = output layer of pi_old_net
+        pi_pd = pdtype.pdfromflat(pi_output)
+        pi_old_pd = pdtype.pdfromflat(pi_old_output)
+        ratio = tf.exp(pi_pd.logp(action) - pi_old_pd.logp(action))
+        sur_1 = ratio * adv_target
+        sur_2 = tf.clip_by_value(
+            ratio, 1.0 - clip_eps, 1.0 + clip_eps) * adv_target
+        # flip sign cuz need to maximize
+        loss_clip = -tf.reduce_mean(tf.minimum(sur_1, sur_2))
+
+        # L^VF
+        # where v_emp = discounted rewards
+        loss_vf = tf.reduce_mean(tf.square(val_net.v_pred - v_emp))
+
+        # S
+        loss_ent = -entropy_weight * tf.reduce_mean(pi_pd.entropy())
+
+        loss = loss_clip + loss_vf + loss_ent
+
+        return loss
 
     def learn():
-        pi = policy_fn("pi", ob_space, ac_space) # Construct network for new policy
-        oldpi = policy_fn("oldpi", ob_space, ac_space) # Network for old policy
-        atarg = tf.placeholder(dtype=tf.float32, shape=[None]) # Target advantage function (if applicable)
-        ret = tf.placeholder(dtype=tf.float32, shape=[None]) # Empirical return
+        # Construct network for new policy
+        pi = policy_fn("pi", ob_space, ac_space)
+        # Network for old policy
+        oldpi = policy_fn("oldpi", ob_space, ac_space)
+        # Target advantage function (if applicable)
+        atarg = tf.placeholder(dtype=tf.float32, shape=[None])
+        ret = tf.placeholder(dtype=tf.float32, shape=[
+                             None])  # Empirical return
 
-        lrmult = tf.placeholder(name='lrmult', dtype=tf.float32, shape=[]) # learning rate multiplier, updated with schedule
-        clip_param = clip_param * lrmult # Annealed cliping parameter epislon
+        # learning rate multiplier, updated with schedule
+        lrmult = tf.placeholder(name='lrmult', dtype=tf.float32, shape=[])
+        clip_param = clip_param * lrmult  # Annealed cliping parameter epislon
 
         ob = U.get_placeholder_cached(name="ob")
         ac = pi.pdtype.sample_placeholder([None])
@@ -199,11 +232,13 @@ class PPO(Algorithm):
         meanent = tf.reduce_mean(ent)
         pol_entpen = (-entcoeff) * meanent
 
-        ratio = tf.exp(pi.pd.logp(ac) - oldpi.pd.logp(ac)) # pnew / pold
-        surr1 = ratio * atarg # surrogate from conservative policy iteration
-        surr2 = tf.clip_by_value(ratio, 1.0 - clip_param, 1.0 + clip_param) * atarg #
+        ratio = tf.exp(pi.pd.logp(ac) - oldpi.pd.logp(ac))  # pnew / pold
+        surr1 = ratio * atarg  # surrogate from conservative policy iteration
+        surr2 = tf.clip_by_value(
+            ratio, 1.0 - clip_param, 1.0 + clip_param) * atarg
         # maximize, so sign flip
-        pol_surr = -tf.reduce_mean(tf.minimum(surr1, surr2)) # PPO's pessimistic surrogate (L^CLIP)
+        # PPO's pessimistic surrogate (L^CLIP)
+        pol_surr = -tf.reduce_mean(tf.minimum(surr1, surr2))
 
         # rms loss
         vf_loss = tf.reduce_mean(tf.square(pi.vpred - ret))
@@ -212,11 +247,12 @@ class PPO(Algorithm):
         loss_names = ["pol_surr", "pol_entpen", "vf_loss", "kl", "ent"]
 
         var_list = pi.get_trainable_variables()
-        lossandgrad = U.function([ob, ac, atarg, ret, lrmult], losses + [U.flatgrad(total_loss, var_list)])
+        lossandgrad = U.function(
+            [ob, ac, atarg, ret, lrmult], losses + [U.flatgrad(total_loss, var_list)])
         adam = MpiAdam(var_list, epsilon=adam_epsilon)
 
-        assign_old_eq_new = U.function([],[], updates=[tf.assign(oldv, newv)
-            for (oldv, newv) in zipsame(oldpi.get_variables(), pi.get_variables())])
+        assign_old_eq_new = U.function([], [], updates=[tf.assign(oldv, newv)
+                                                        for (oldv, newv) in zipsame(oldpi.get_variables(), pi.get_variables())])
         compute_losses = U.function([ob, ac, atarg, ret, lrmult], losses)
 
         U.initialize()
@@ -224,19 +260,22 @@ class PPO(Algorithm):
 
         # Prepare for rollouts
         # ----------------------------------------
-        seg_gen = traj_segment_generator(pi, env, timesteps_per_actorbatch, stochastic=True)
+        seg_gen = traj_segment_generator(
+            pi, env, timesteps_per_actorbatch, stochastic=True)
 
         episodes_so_far = 0
         timesteps_so_far = 0
         iters_so_far = 0
         tstart = time.time()
-        lenbuffer = deque(maxlen=100) # rolling buffer for episode lengths
-        rewbuffer = deque(maxlen=100) # rolling buffer for episode rewards
+        lenbuffer = deque(maxlen=100)  # rolling buffer for episode lengths
+        rewbuffer = deque(maxlen=100)  # rolling buffer for episode rewards
 
-        assert sum([max_iters>0, max_timesteps>0, max_episodes>0, max_seconds>0])==1, "Only one time constraint permitted"
+        assert sum([max_iters > 0, max_timesteps > 0, max_episodes > 0,
+                    max_seconds > 0]) == 1, "Only one time constraint permitted"
 
         while True:
-            if callback: callback(locals(), globals())
+            if callback:
+                callback(locals(), globals())
             if max_timesteps and timesteps_so_far >= max_timesteps:
                 break
             elif max_episodes and episodes_so_far >= max_episodes:
@@ -249,32 +288,38 @@ class PPO(Algorithm):
             if schedule == 'constant':
                 cur_lrmult = 1.0
             elif schedule == 'linear':
-                cur_lrmult =  max(1.0 - float(timesteps_so_far) / max_timesteps, 0)
+                cur_lrmult = max(
+                    1.0 - float(timesteps_so_far) / max_timesteps, 0)
             else:
                 raise NotImplementedError
 
-            logger.log("********** Iteration %i ************"%iters_so_far)
+            logger.log("********** Iteration %i ************" % iters_so_far)
 
             seg = seg_gen.__next__()
             add_vtarg_and_adv(seg, gamma, lam)
 
             # ob, ac, atarg, ret, td1ret = map(np.concatenate, (obs, acs, atargs, rets, td1rets))
             ob, ac, atarg, tdlamret = seg["ob"], seg["ac"], seg["adv"], seg["tdlamret"]
-            vpredbefore = seg["vpred"] # predicted value function before udpate
-            atarg = (atarg - atarg.mean()) / atarg.std() # standardized advantage function estimate
-            d = Dataset(dict(ob=ob, ac=ac, atarg=atarg, vtarg=tdlamret), shuffle=not pi.recurrent)
+            # predicted value function before udpate
+            vpredbefore = seg["vpred"]
+            # standardized advantage function estimate
+            atarg = (atarg - atarg.mean()) / atarg.std()
+            d = Dataset(dict(ob=ob, ac=ac, atarg=atarg,
+                             vtarg=tdlamret), shuffle=not pi.recurrent)
             optim_batchsize = optim_batchsize or ob.shape[0]
 
-            if hasattr(pi, "ob_rms"): pi.ob_rms.update(ob) # update running mean/std for policy
+            if hasattr(pi, "ob_rms"):
+                pi.ob_rms.update(ob)  # update running mean/std for policy
 
-            assign_old_eq_new() # set old parameter values to new parameter values
+            assign_old_eq_new()  # set old parameter values to new parameter values
             logger.log("Optimizing...")
             logger.log(fmt_row(13, loss_names))
             # Here we do a bunch of optimization epochs over the data
             for _ in range(optim_epochs):
-                losses = [] # list of tuples, each of which gives the loss for a minibatch
+                losses = []  # list of tuples, each of which gives the loss for a minibatch
                 for batch in d.iterate_once(optim_batchsize):
-                    *newlosses, g = lossandgrad(batch["ob"], batch["ac"], batch["atarg"], batch["vtarg"], cur_lrmult)
+                    *newlosses, g = lossandgrad(
+                        batch["ob"], batch["ac"], batch["atarg"], batch["vtarg"], cur_lrmult)
                     adam.update(g, optim_stepsize * cur_lrmult)
                     losses.append(newlosses)
                 logger.log(fmt_row(13, np.mean(losses, axis=0)))
@@ -282,15 +327,17 @@ class PPO(Algorithm):
             logger.log("Evaluating losses...")
             losses = []
             for batch in d.iterate_once(optim_batchsize):
-                newlosses = compute_losses(batch["ob"], batch["ac"], batch["atarg"], batch["vtarg"], cur_lrmult)
+                newlosses = compute_losses(
+                    batch["ob"], batch["ac"], batch["atarg"], batch["vtarg"], cur_lrmult)
                 losses.append(newlosses)
-            meanlosses,_,_ = mpi_moments(losses, axis=0)
+            meanlosses, _, _ = mpi_moments(losses, axis=0)
             logger.log(fmt_row(13, meanlosses))
             for (lossval, name) in zipsame(meanlosses, loss_names):
-                logger.record_tabular("loss_"+name, lossval)
-            logger.record_tabular("ev_tdlam_before", explained_variance(vpredbefore, tdlamret))
-            lrlocal = (seg["ep_lens"], seg["ep_rets"]) # local values
-            listoflrpairs = MPI.COMM_WORLD.allgather(lrlocal) # list of tuples
+                logger.record_tabular("loss_" + name, lossval)
+            logger.record_tabular(
+                "ev_tdlam_before", explained_variance(vpredbefore, tdlamret))
+            lrlocal = (seg["ep_lens"], seg["ep_rets"])  # local values
+            listoflrpairs = MPI.COMM_WORLD.allgather(lrlocal)  # list of tuples
             lens, rews = map(flatten_lists, zip(*listoflrpairs))
             lenbuffer.extend(lens)
             rewbuffer.extend(rews)
@@ -303,7 +350,7 @@ class PPO(Algorithm):
             logger.record_tabular("EpisodesSoFar", episodes_so_far)
             logger.record_tabular("TimestepsSoFar", timesteps_so_far)
             logger.record_tabular("TimeElapsed", time.time() - tstart)
-            if MPI.COMM_WORLD.Get_rank()==0:
+            if MPI.COMM_WORLD.Get_rank() == 0:
                 logger.dump_tabular()
 
     # ok at this stage it shd be sufficient to port functions over directly
