@@ -221,6 +221,9 @@ class DQNBase(VanillaDQN):
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
+        logger.info(f'Training on gpu: {self.gpu}')
         # Default network update params for base
         self.update_type = 'replace'
         self.update_frequency = 1
