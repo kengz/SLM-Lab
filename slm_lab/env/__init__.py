@@ -113,7 +113,7 @@ class OpenAIEnv:
 
     def is_discrete(self, a):
         '''Check if an agent (brain) is subject to discrete actions'''
-        return self.u_env.action_space.__class__.__name__ != 'Box'  # continuous
+        return util.get_class_name(self.u_env.action_space) != 'Box'  # continuous
 
     def get_action_dim(self, a):
         '''Get the action dim for an agent (brain) in env'''
@@ -122,6 +122,10 @@ class OpenAIEnv:
         else:
             action_dim = self.u_env.action_space.shape[0]
         return action_dim
+
+    def get_action_space(self, a):
+        '''Get the action space type for an agent (brain) in env, e.g. Box, Discrete, MultiDiscrete, MultiBinary'''
+        return util.get_class_name(self.u_env.action_space)
 
     def get_observable(self, a):
         '''Get the observable for an agent (brain) in env'''
@@ -236,6 +240,10 @@ class UnityEnv:
     def get_action_dim(self, a):
         '''Get the action dim for an agent (brain) in env'''
         return self.get_brain(a).get_action_dim()
+
+    def get_action_space(self, a):
+        '''Get the action space type for an agent (brain) in env, by converting to OpenAI gym space types, e.g. Box, Discrete, MultiDiscrete, MultiBinary'''
+        return 'Discrete' if self.is_discrete(a) else 'Box'
 
     def get_observable(self, a):
         '''Get the observable for an agent (brain) in env'''

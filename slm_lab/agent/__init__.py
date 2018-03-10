@@ -45,6 +45,7 @@ class Body:
         # TODO use tuples for state_dim for pixel-based in the future, generalize all and call as shape
         self.state_dim = self.observable_dim['state']
         self.action_dim = self.env.get_action_dim(self.a)
+        self.action_space = self.env.get_action_space(self.a)
         self.is_discrete = self.env.is_discrete(self.a)
 
         MemoryClass = getattr(memory, _.get(self.agent.spec, 'memory.name'))
