@@ -117,7 +117,7 @@ class OpenAIEnv:
 
     def get_action_dim(self, a):
         '''Get the action dim for an agent (brain) in env'''
-        action_space = self.get_action_space(a)
+        action_space = self.u_env.action_space
         if self.is_discrete(a=0):
             if util.get_class_name(action_space) == 'MultiDiscrete':
                 # TODO not encountered yet, generalization needed
