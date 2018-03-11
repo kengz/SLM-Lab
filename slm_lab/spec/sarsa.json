@@ -9,7 +9,7 @@
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
-        "gamma": 0.97,
+        "gamma": 0.91,
         "training_frequency": 32,
         "num_epis_to_collect": 1,
       },
@@ -22,7 +22,7 @@
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.2
+          "lr": 0.1
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
@@ -32,14 +32,14 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 500
+      "max_episode": 1000
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 100,
+      "max_session": 200,
       "max_trial": 1,
       "train_mode": true,
       "search": "RandomSearch",
@@ -104,7 +104,7 @@
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
-        "gamma": 0.97,
+        "gamma": 0.91,
         "training_frequency": 32,
         "num_epis_to_collect": 1,
       },
@@ -117,7 +117,7 @@
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.2
+          "lr": 0.1
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
@@ -127,14 +127,106 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 500
+      "max_episode": 1000
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 100,
+      "max_session": 200,
+      "max_trial": 1,
+      "train_mode": true,
+      "search": "RandomSearch",
+    },
+  },
+  "sarsa_cartpole_episodic_3": {
+    "agent": [{
+      "name": "SARSA",
+      "algorithm": {
+        "name": "SARSA",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.04,
+        "explore_anneal_epi": 100,
+        "gamma": 0.91,
+        "training_frequency": 32,
+        "num_epis_to_collect": 3,
+      },
+      "memory": {
+        "name": "OnPolicyReplay",
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.1
+        },
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1000
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 1000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 200,
+      "max_trial": 1,
+      "train_mode": true,
+      "search": "RandomSearch",
+    },
+  },
+  "sarsa_cartpole_episodic_5": {
+    "agent": [{
+      "name": "SARSA",
+      "algorithm": {
+        "name": "SARSA",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.04,
+        "explore_anneal_epi": 100,
+        "gamma": 0.91,
+        "training_frequency": 32,
+        "num_epis_to_collect": 5,
+      },
+      "memory": {
+        "name": "OnPolicyReplay",
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.1
+        },
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1000
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 1000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 200,
       "max_trial": 1,
       "train_mode": true,
       "search": "RandomSearch",
