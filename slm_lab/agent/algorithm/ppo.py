@@ -11,6 +11,39 @@ import torch
 import pydash as _
 import tensorflow as tf
 
+# TODO may need to switch to non-MPI version
+
+
+class RunningMeanStd(object):
+    # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
+    def __init__(self, epsilon=1e-4, shape=()):
+        self.mean = np.zeros(shape, 'float64')
+        self.var = np.ones(shape, 'float64')
+        self.count = epsilon
+
+    def update(self, x):
+        batch_mean = np.mean(x, axis=0)
+        batch_var = np.var(x, axis=0)
+        batch_count = x.shape[0]
+        self.update_from_moments(batch_mean, batch_var, batch_count)
+
+    def update_from_moments(self, batch_mean, batch_var, batch_count):
+        delta = batch_mean - self.mean
+        tot_count = self.count + batch_count
+
+        new_mean = self.mean + delta * batch_count / tot_count
+        m_a = self.var * (self.count)
+        m_b = batch_var * (batch_count)
+        M2 = m_a + m_b + np.square(delta) * self.count * \
+            batch_count / (self.count + batch_count)
+        new_var = M2 / (self.count + batch_count)
+
+        new_count = batch_count + self.count
+
+        self.mean = new_mean
+        self.var = new_var
+        self.count = new_count
+
 
 class PPO(Algorithm):
     '''
@@ -53,25 +86,23 @@ class PPO(Algorithm):
         ))
 
         # NOTE OpenAI: init tf net
-        # state_dim, net_spec['hid_layers'], action_dim,
+        self.pdtype = distribution.make_pdtype(body)
 
-        self.pdtype = pdtype = distribution.make_pdtype(body)
+        # observation placeholder
+        self.ob = tf.placeholder(name='ob', dtype=tf.float32, shape=(state_dim,))
 
-        ob = tf.placeholder(
-            name="ob", dtype=tf.float32, shape=(state_dim,))
-
-        # TODO replace
-        with tf.variable_scope("obfilter"):
+        # TODO externalize into preprocessor, standardize into z-score
+        with tf.variable_scope('obfilter'):
             self.ob_rms = RunningMeanStd(shape=ob_space.shape)
 
         with tf.variable_scope('vf'):
             obz = tf.clip_by_value(
-                (ob - self.ob_rms.mean) / self.ob_rms.std, -5.0, 5.0)
+                (self.ob - self.ob_rms.mean) / self.ob_rms.std, -5.0, 5.0)
             last_out = obz
             for i, hid_size in enumerate(net_spec['hid_layers']):
                 # TODO dont hard code activation
                 last_out = tf.nn.tanh(tf.layers.dense(
-                    last_out, hid_size, name=f"fc_{i+1}", kernel_initializer=U.normc_initializer(1.0)))
+                    last_out, hid_size, name=f'fc_{i+1}', kernel_initializer=U.normc_initializer(1.0)))
             self.vpred = tf.layers.dense(
                 last_out, 1, name='final', kernel_initializer=U.normc_initializer(1.0))[:, 0]
 
@@ -79,27 +110,32 @@ class PPO(Algorithm):
             last_out = obz
             for i, hid_size in enumerate(net_spec['hid_layers']):
                 last_out = tf.nn.tanh(tf.layers.dense(
-                    last_out, hid_size, name=f"fc_{i+1}", kernel_initializer=U.normc_initializer(1.0)))
+                    last_out, hid_size, name=f'fc_{i+1}', kernel_initializer=U.normc_initializer(1.0)))
             # TODO restore param gaussian_fixed_var=True
-            if gaussian_fixed_var and not body.is_discrete:
+            # continuous action output layer
+            if gaussian_fixed_var and body.action_space == 'Box':
                 mean = tf.layers.dense(
-                    last_out, pdtype.param_shape()[0] // 2, name='final', kernel_initializer=U.normc_initializer(0.01))
+                    last_out, self.pdtype.param_shape()[0] // 2, name='final', kernel_initializer=U.normc_initializer(0.01))
                 logstd = tf.get_variable(
-                    name="logstd", shape=[1, pdtype.param_shape()[0] // 2], initializer=tf.zeros_initializer())
+                    name='logstd', shape=[1, self.pdtype.param_shape()[0] // 2], initializer=tf.zeros_initializer())
                 pdparam = tf.concat([mean, mean * 0.0 + logstd], axis=1)
             else:
                 pdparam = tf.layers.dense(
-                    last_out, pdtype.param_shape()[0], name='final', kernel_initializer=U.normc_initializer(0.01))
+                    last_out, self.pdtype.param_shape()[0], name='final', kernel_initializer=U.normc_initializer(0.01))
 
-        self.pd = pdtype.pdfromflat(pdparam)
+        self.pd = self.pdtype.pdfromflat(pdparam)
 
         self.state_in = []
         self.state_out = []
 
-        stochastic = tf.placeholder(dtype=tf.bool, shape=())
-        # action
-        ac = U.switch(stochastic, self.pd.sample(), self.pd.mode())
-        self._act = U.function([stochastic, ob], [ac, self.vpred])
+        # switcher to sample or use mode
+        # stochastic = tf.placeholder(dtype=tf.bool, shape=())
+        # action placeholder to sample or use mode
+        # ac = U.switch(stochastic, self.pd.sample(), self.pd.mode())
+        # stochastic is always true anyway
+        self.ac = tf.cond(True, lambda x: self.pd.sample(), lambda x: self.pd.mode())
+        # action function to output action and its value
+        # self._act = U.function([ob], [ac, self.vpred])
 
     @lab_api
     def init_algo_params(self):
@@ -128,22 +164,23 @@ class PPO(Algorithm):
         self.saved_log_probs = []
         self.entropy = []
 
-
-…        self.to_train = 0
+        self.to_train = 0
 
     @lab_api
     def body_act_discrete(self, body, state):
         # TODO uhh auto discrete or cont?
-        ac1, vpred1 = self._act(stochastic, ob[None])
+        # ac1, vpred1 = self._act(ob[None])
+        ac1, vpred1 = tf.get_default_session.run([self.ac, self.vpred], feed_dict={self.ob: state})
         return ac1[0], vpred1[0]
-        return self.action_policy(self, state, body)
+        # return self.action_policy(self, state, body)
 
     @lab_api
     def body_act_continuous(self, body, state):
         # TODO uhh auto discrete or cont?
-        ac1, vpred1 = self._act(stochastic, ob[None])
+        # ac1, vpred1 = self._act(stochastic, ob[None])
+        ac1, vpred1 = tf.get_default_session.run([self.ac, self.vpred], feed_dict={self.ob: state})
         return ac1[0], vpred1[0]
-        return self.action_policy(self, state, body)
+        # return self.action_policy(self, state, body)
 
     def generate_traj_segment():
         '''It is online anyway, so run per episode to generate trajectory'''
