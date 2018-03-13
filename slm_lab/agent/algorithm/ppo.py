@@ -182,9 +182,24 @@ class PPO(Algorithm):
         return ac1[0], vpred1[0]
         # return self.action_policy(self, state, body)
 
-    def generate_traj_segment():
-        '''It is online anyway, so run per episode to generate trajectory'''
-        return
+    def calc_advantage(self, raw_rewards):
+        # TODO this is just advantage, need to use GAE using TD lambda estimator
+        advantage = []
+        logger.debug3(f'Raw rewards: {raw_rewards}')
+        for epi_rewards in raw_rewards:
+            rewards = []
+            big_r = 0
+            for idx, r in enumerate(epi_rewards[::-1]): # reverse
+                big_r = r + self.gamma * big_r
+                rewards.insert(0, big_r)
+            rewards = np.array(rewards)
+            logger.debug3(f'Rewards: {rewards}')
+            rewards = (rewards - rewards.mean()) / (
+                rewards.std() + np.finfo(np.float32).eps)
+            logger.debug3(f'Normalized rewards: {rewards}')
+            advantage.append(rewards)
+        advantage = tf.concat(advantage, axis=0)
+        return advantage
 
     def add_vtarg_and_adv(self, seg, gamma, lam):
         """
