@@ -9,7 +9,7 @@
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
-        "gamma": 0.91,
+        "gamma": 0.97,
         "training_frequency": 32,
         "num_epis_to_collect": 1,
       },
@@ -22,11 +22,11 @@
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.1
+          "lr": 0.2
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 2000
+        "decay_lr_min_timestep": 1000
       }
     }],
     "env": [{
@@ -104,7 +104,7 @@
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
-        "gamma": 0.91,
+        "gamma": 0.97,
         "training_frequency": 32,
         "num_epis_to_collect": 1,
       },
@@ -117,11 +117,11 @@
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.1
+          "lr": 0.2
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 2000
+        "decay_lr_min_timestep": 1000
       }
     }],
     "env": [{
@@ -150,7 +150,7 @@
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
-        "gamma": 0.91,
+        "gamma": 0.97,
         "training_frequency": 32,
         "num_epis_to_collect": 3,
       },
@@ -163,11 +163,11 @@
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.1
+          "lr": 0.2
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 2000
+        "decay_lr_min_timestep": 1000
       }
     }],
     "env": [{
@@ -196,7 +196,7 @@
         "explore_var_start": 1.0,
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
-        "gamma": 0.91,
+        "gamma": 0.97,
         "training_frequency": 32,
         "num_epis_to_collect": 5,
       },
@@ -209,11 +209,11 @@
         "hid_layers_activation": "sigmoid",
         "optim": {
           "name": "Adam",
-          "lr": 0.1
+          "lr": 0.2
         },
         "decay_lr": true,
         "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 2000
+        "decay_lr_min_timestep": 1000
       }
     }],
     "env": [{
