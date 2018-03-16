@@ -574,7 +574,8 @@
         "decay_lr_min_timestep": 10000,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0.9
+        "polyak_weight": 0.9,
+        "gpu": true
       }
     }],
     "env": [{
