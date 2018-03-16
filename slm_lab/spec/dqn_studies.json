@@ -1,0 +1,183 @@
+{
+  "dqn_cartpole_tau": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.5,
+        "explore_var_end": 0.3,
+        "explore_anneal_epi": 10,
+        "gamma": 0.999,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
+        "training_min_timestep": 10
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 10000
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "batch_size": 32,
+        "decay_lr": true,
+        "decay_lr_frequency": 400,
+        "decay_lr_min_timestep": 1400,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_weight": 0.9
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 200
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 4,
+      "max_trial": 50,
+      "search": "RandomSearch",
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_var_start__uniform": [1.0, 5.0],
+          "explore_var_end__uniform": [0.1, 1.0]
+        },
+      }]
+    }
+  },
+  "dqn_cartpole_num_batches": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.5,
+        "explore_var_end": 0.3,
+        "explore_anneal_epi": 10,
+        "gamma": 0.999,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
+        "training_min_timestep": 10
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 10000
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "batch_size": 32,
+        "decay_lr": true,
+        "decay_lr_frequency": 400,
+        "decay_lr_min_timestep": 1400,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_weight": 0.9
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 200
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 4,
+      "max_trial": 30,
+      "search": "RandomSearch",
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "training_epoch__choice": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        },
+      }]
+    }
+  },
+  "dqn_cartpole_num_iters": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.5,
+        "explore_var_end": 0.3,
+        "explore_anneal_epi": 10,
+        "gamma": 0.999,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
+        "training_min_timestep": 10
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 10000
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "batch_size": 32,
+        "decay_lr": true,
+        "decay_lr_frequency": 400,
+        "decay_lr_min_timestep": 1400,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_weight": 0.9
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 200
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 4,
+      "max_trial": 30,
+      "search": "RandomSearch",
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "training_iters_per_batch__choice": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        },
+      }]
+    }
+  },
+}
