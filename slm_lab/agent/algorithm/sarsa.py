@@ -164,7 +164,7 @@ class SARSA(Algorithm):
                 next_acts = torch.zeros_like(acts)
                 next_acts[:-1] = acts[1:]
                 # Convert actions to one hot (both representations are needed for SARSA)
-                acts_onehot = util.convert_to_one_hot(acts, self.action_dim)
+                acts_onehot = util.convert_to_one_hot(acts, self.action_dim, self.gpu)
                 batch['actions_onehot'].append(acts_onehot)
                 batch['next_actions'].append(next_acts)
             # Flatten the batch to train all at once
