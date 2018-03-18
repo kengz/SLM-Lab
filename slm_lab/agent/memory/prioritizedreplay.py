@@ -50,6 +50,7 @@ class PrioritizedReplay(Replay):
             b = segment * (i + 1)
 
             s = random.uniform(a, b)
+            print(f's: {s}, a: {a}, b: {b}')
             (_, p, idx) = self.tree.get(s)
             batch_idxs.append(idx)
 
