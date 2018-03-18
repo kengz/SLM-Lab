@@ -540,4 +540,66 @@
       "train_mode": true
     }
   },
+  "dqn_lunar": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 150,
+        "gamma": 0.99,
+        "training_epoch": 5,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
+        "training_min_timestep": 200
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 10000
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [400, 200],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.005
+        },
+        "batch_size": 32,
+        "decay_lr": true,
+        "decay_lr_frequency": 10000,
+        "decay_lr_min_timestep": 10000,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_weight": 0.9,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 400
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 3,
+      "max_trial": 15,
+      "search": "RandomSearch",
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "hid_layers_activation__choice": ["sigmoid", "relu"],
+          "update_frequency__choice": [1, 200, 500]
+        },
+      }]
+    }
+  },
 }
