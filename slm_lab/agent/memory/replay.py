@@ -118,5 +118,5 @@ class Replay(Memory):
         Updates the priorities from the most recent batch
         Assumes the relevant batch indices are stored in self.batch_idxs
         '''
-        assert len(priorites) == self.batch_idxs.size
+        assert len(priorities) == self.batch_idxs.size
         self.priorities[self.batch_idxs] = priorities
