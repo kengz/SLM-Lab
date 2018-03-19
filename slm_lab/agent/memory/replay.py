@@ -38,6 +38,7 @@ class Replay(Memory):
         self.action_dim = self.body.action_dim
         self.batch_idxs = None
         self.total_experiences = 0  # to know total size even with forgetting
+        self.prioritized_replay = False  # flag specifying whether memory is prioritized or not
         self.reset()
 
     def reset(self):

@@ -16,6 +16,7 @@ class PrioritizedReplay(Replay):
     '''
     def __init__(self, body):
         super(PrioritizedReplay, self).__init__(body)
+        self.prioritized_replay = True  # flag specifying whether memory is prioritized or not
         self.e = self.body.agent.spec['memory']['e']
         self.e = torch.zeros(1).fill_(self.e)
         self.alpha = self.body.agent.spec['memory']['alpha']

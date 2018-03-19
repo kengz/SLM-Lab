@@ -138,10 +138,26 @@ class VanillaDQN(SARSA):
                 batch_loss = 0.0
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
+                    q_sts = self.net.wrap_eval(batch['states'])
+                    errors = torch.abs(q_targets - q_sts)
+                    errors = errors.sum(dim=1).unsqueeze_(dim=1)
                     if torch.cuda.is_available() and self.gpu:
                         q_targets = q_targets.cuda()
                     y = Variable(q_targets)
                     loss = self.net.training_step(batch['states'], y)
+                    if self.agent.nanflat_body_a[0].memory.prioritized_replay:
+                        logger.debug(f'Updating priorities for all bodies')
+                        for body in self.agent.nanflat_body_a:
+                            start = 0
+                            end = self.batch_size
+                            if end == errors.size(0):
+                                e = errors[start:]
+                            else:
+                                e = errors[start:end]
+                            logger.debug(f'start: {start}, end: {end}, e: {e.size()}')
+                            body.memory.update_priorities(e)
+                            start = end
+                            end += self.batch_size
                     batch_loss += loss.data[0]
                 batch_loss /= self.training_iters_per_batch
                 total_loss += batch_loss
