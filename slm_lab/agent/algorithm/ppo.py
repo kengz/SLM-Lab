@@ -45,6 +45,14 @@ class RunningMeanStd(object):
         self.count = new_count
 
 
+def normc_initializer(std=1.0):
+    def _initializer(shape, dtype=None, partition_info=None):  # pylint: disable=W0613
+        out = np.random.randn(*shape).astype(np.float32)
+        out *= std / np.sqrt(np.square(out).sum(axis=0, keepdims=True))
+        return tf.constant(out)
+    return _initializer
+
+
 class PPO(Algorithm):
     '''
     Implementation of PPO
@@ -89,7 +97,8 @@ class PPO(Algorithm):
         self.pdtype = distribution.make_pdtype(body)
 
         # observation placeholder
-        self.ob = tf.placeholder(name='ob', dtype=tf.float32, shape=(state_dim,))
+        self.ob = tf.placeholder(
+            name='ob', dtype=tf.float32, shape=(state_dim,))
 
         # TODO externalize into preprocessor, standardize into z-score
         with tf.variable_scope('obfilter'):
@@ -102,38 +111,37 @@ class PPO(Algorithm):
             for i, hid_size in enumerate(net_spec['hid_layers']):
                 # TODO dont hard code activation
                 last_out = tf.nn.tanh(tf.layers.dense(
-                    last_out, hid_size, name=f'fc_{i+1}', kernel_initializer=U.normc_initializer(1.0)))
+                    last_out, hid_size, name=f'fc_{i+1}', kernel_initializer=normc_initializer(1.0)))
             self.vpred = tf.layers.dense(
-                last_out, 1, name='final', kernel_initializer=U.normc_initializer(1.0))[:, 0]
+                last_out, 1, name='final', kernel_initializer=normc_initializer(1.0))[:, 0]
 
         with tf.variable_scope('pol'):
             last_out = obz
             for i, hid_size in enumerate(net_spec['hid_layers']):
                 last_out = tf.nn.tanh(tf.layers.dense(
-                    last_out, hid_size, name=f'fc_{i+1}', kernel_initializer=U.normc_initializer(1.0)))
+                    last_out, hid_size, name=f'fc_{i+1}', kernel_initializer=normc_initializer(1.0)))
             # TODO restore param gaussian_fixed_var=True
+            gaussian_fixed_var = True
             # continuous action output layer
             if gaussian_fixed_var and body.action_space == 'Box':
                 mean = tf.layers.dense(
-                    last_out, self.pdtype.param_shape()[0] // 2, name='final', kernel_initializer=U.normc_initializer(0.01))
+                    last_out, self.pdtype.param_shape()[0] // 2, name='final', kernel_initializer=normc_initializer(0.01))
                 logstd = tf.get_variable(
                     name='logstd', shape=[1, self.pdtype.param_shape()[0] // 2], initializer=tf.zeros_initializer())
                 pdparam = tf.concat([mean, mean * 0.0 + logstd], axis=1)
             else:
                 pdparam = tf.layers.dense(
-                    last_out, self.pdtype.param_shape()[0], name='final', kernel_initializer=U.normc_initializer(0.01))
+                    last_out, self.pdtype.param_shape()[0], name='final', kernel_initializer=normc_initializer(0.01))
 
         self.pd = self.pdtype.pdfromflat(pdparam)
-
-        self.state_in = []
-        self.state_out = []
 
         # switcher to sample or use mode
         # stochastic = tf.placeholder(dtype=tf.bool, shape=())
         # action placeholder to sample or use mode
         # ac = U.switch(stochastic, self.pd.sample(), self.pd.mode())
         # stochastic is always true anyway
-        self.ac = tf.cond(True, lambda x: self.pd.sample(), lambda x: self.pd.mode())
+        self.ac = tf.cond(True, lambda x: self.pd.sample(),
+                          lambda x: self.pd.mode())
         # action function to output action and its value
         # self._act = U.function([ob], [ac, self.vpred])
 
@@ -168,18 +176,22 @@ class PPO(Algorithm):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        # TODO uhh auto discrete or cont?
+        # TODO uhh auto discrete or cont? yeahhh from distribution
         # ac1, vpred1 = self._act(ob[None])
-        ac1, vpred1 = tf.get_default_session.run([self.ac, self.vpred], feed_dict={self.ob: state})
-        return ac1[0], vpred1[0]
+        ac1, vpred1 = tf.get_default_session.run(
+            [self.ac, self.vpred], feed_dict={self.ob: state})
+        # return ac1[0], vpred1[0]
+        return ac1[0]
         # return self.action_policy(self, state, body)
 
     @lab_api
     def body_act_continuous(self, body, state):
         # TODO uhh auto discrete or cont?
         # ac1, vpred1 = self._act(stochastic, ob[None])
-        ac1, vpred1 = tf.get_default_session.run([self.ac, self.vpred], feed_dict={self.ob: state})
-        return ac1[0], vpred1[0]
+        ac1, vpred1 = tf.get_default_session.run(
+            [self.ac, self.vpred], feed_dict={self.ob: state})
+        # return ac1[0], vpred1[0]
+        return ac1[0]
         # return self.action_policy(self, state, body)
 
     def calc_advantage(self, raw_rewards):
@@ -189,7 +201,7 @@ class PPO(Algorithm):
         for epi_rewards in raw_rewards:
             rewards = []
             big_r = 0
-            for idx, r in enumerate(epi_rewards[::-1]): # reverse
+            for idx, r in enumerate(epi_rewards[::-1]):  # reverse
                 big_r = r + self.gamma * big_r
                 rewards.insert(0, big_r)
             rewards = np.array(rewards)
@@ -235,6 +247,7 @@ class PPO(Algorithm):
         '''
 
         # L^CLIP
+        # TODO continue here, and train method
         self.val_net
         self.pi_net
         self.pi_old_net
