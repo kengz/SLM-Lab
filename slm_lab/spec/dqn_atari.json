@@ -17,7 +17,7 @@
       },
       "memory": {
         "name": "Atari",
-        "max_size": 100000
+        "max_size": 50000
       },
       "net": {
         "type": "ConvNet",
@@ -36,13 +36,14 @@
         "update_type": "replace",
         "update_frequency": 2000,
         "polyak_weight": 0.9,
-        "batch_norm": false
+        "batch_norm": false,
+        "gpu": true,
       }
     }],
     "env": [{
       "name": "Breakout-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 10000
     }],
     "body": {
       "product": "outer",

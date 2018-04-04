@@ -84,7 +84,8 @@
       },
       "memory": {
         "name": "Replay",
-        "max_size": 10000
+        "max_size": 10000,
+        "length_history": 4
       },
       "net": {
         "type": "MLPNet",
@@ -106,7 +107,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 200
+      "max_episode": 100
     }],
     "body": {
       "product": "outer",
@@ -552,13 +553,14 @@
         "explore_anneal_epi": 150,
         "gamma": 0.99,
         "training_epoch": 5,
-        "training_frequency": 10,
+        "training_frequency": 1,
         "training_iters_per_batch": 1,
         "training_min_timestep": 200
       },
       "memory": {
-        "name": "Replay",
-        "max_size": 10000
+        "name": "StackReplay",
+        "max_size": 50000,
+        "length_history": 4
       },
       "net": {
         "type": "MLPNet",
@@ -570,8 +572,8 @@
         },
         "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_frequency": 10000,
-        "decay_lr_min_timestep": 10000,
+        "decay_lr_frequency": 5000,
+        "decay_lr_min_timestep": 40000,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0.9,
@@ -581,17 +583,17 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 400
+      "max_episode": 500
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 3,
+      "max_session": 1,
       "max_trial": 15,
       "search": "RandomSearch",
-      "train_mode": true
+      "train_mode": false
     },
     "search": {
       "agent": [{
