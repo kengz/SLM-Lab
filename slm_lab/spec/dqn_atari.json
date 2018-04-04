@@ -8,7 +8,7 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
         "explore_var_end": 0.1,
-        "explore_anneal_epi": 200,
+        "explore_anneal_epi": 500,
         "gamma": 0.99,
         "training_epoch": 1,
         "training_frequency": 4,
@@ -17,7 +17,7 @@
       },
       "memory": {
         "name": "Atari",
-        "max_size": 50000
+        "max_size": 100000
       },
       "net": {
         "type": "ConvNet",
@@ -27,14 +27,14 @@
         "hid_layers_activation": "relu",
         "optim": {
           "name": "Adam",
-          "lr": 0.001
+          "lr": 0.00025
         },
         "batch_size": 32,
         "decay_lr": false,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
-        "update_frequency": 2000,
+        "update_frequency": 2500,
         "polyak_weight": 0.9,
         "batch_norm": false,
         "gpu": true,
