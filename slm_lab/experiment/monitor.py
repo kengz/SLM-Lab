@@ -220,7 +220,9 @@ class AEBSpace:
             if done:
                 done_space.data[:, env.e, :] = 1.
                 done_space.swap_data[env.e, :, :] = 1.
-                msg = f'Done: trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e} epi {clock.get("epi")}, t {clock.get("t")}'
+                session_mdp_data, session_data = analysis.get_session_data(session)
+                reward = session_data[(0, 0, 0)]['reward'].iloc[-1]
+                msg = f'Done: trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e} epi {clock.get("epi")}, t {clock.get("t")}, reward {reward}'
                 logger.info(msg)
                 clock.tick('epi')
             else:
