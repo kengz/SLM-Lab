@@ -13,10 +13,10 @@ from torch.distributions import Categorical, Normal
 import sys
 
 
-def create_torch_state(state, state_buf, gpu, state_seq=False, length=0, atari=False):
+def create_torch_state(state, state_buf, gpu, state_seq=False, length=0, atari=False, flatten=False):
     if state_seq:
         '''Create sequence of inputs for nets that take sequences of states as input'''
-        state_buffer = deepcopy(state_buf) # Copy so as not to mutate running state buffer
+        state_buffer = deepcopy(state_buf)  # Copy so as not to mutate running state buffer
         logger.debug3(f'length of state buffer: {length}')
         if len(state_buffer) < length:
             PAD = np.zeros_like(state)
@@ -39,12 +39,14 @@ def create_torch_state(state, state_buf, gpu, state_seq=False, length=0, atari=F
             state_buffer = np.transpose(state_buffer, (1, 2, 0))
         torch_state = torch.from_numpy(state_buffer).float()
         torch_state.unsqueeze_(dim=0)
+        if flatten:
+            torch_state = torch_state.view(-1)
     else:
         torch_state = torch.from_numpy(state).float()
     if torch.cuda.is_available() and gpu:
         torch_state = torch_state.cuda()
     torch_state = Variable(torch_state)
-    logger.debug2(f'State size: {torch_state.size()}')
+    logger.debug3(f'State size: {torch_state.size()}')
     logger.debug3(f'Original state: {state}')
     logger.debug3(f'State: {torch_state}')
     return torch_state
@@ -59,8 +61,9 @@ def act_with_epsilon_greedy(body, state, net, epsilon, gpu, atari=False):
         action = np.random.randint(body.action_dim)
     else:
         state_seq = body.agent.len_state_buffer > 0
-        logger.debug2(f'Length state buffer: {body.agent.len_state_buffer}')
-        torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, body.agent.len_state_buffer, atari)
+        logger.debug(f'Length state buffer: {body.agent.len_state_buffer}')
+        flatten = body.memory.stacked
+        torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, body.agent.len_state_buffer, atari, flatten)
         out = net.wrap_eval(torch_state).squeeze_(dim=0)
         action = int(torch.max(out, dim=0)[1][0])
         logger.debug2(f'Outs {out} Action {action}')
@@ -143,7 +146,9 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
 def act_with_boltzmann(body, state, net, tau, gpu):
     state_seq = body.agent.len_state_buffer > 0
     logger.debug2(f'Length state buffer: {body.agent.len_state_buffer}')
-    torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, body.agent.len_state_buffer)
+    atari = False
+    flatten = body.memory.stacked
+    torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, body.agent.len_state_buffer, atari, flatten)
     out = net.wrap_eval(torch_state)
     out_with_temp = torch.div(out, tau).squeeze_(dim=0)
     probs = F.softmax(Variable(out_with_temp.cpu()), dim=0).data.numpy()

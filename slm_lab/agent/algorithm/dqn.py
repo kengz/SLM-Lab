@@ -212,7 +212,24 @@ class DQNBase(VanillaDQN):
         ''' Make adjustments for Atari mode '''
         if self.agent.spec['memory']['name'].find('Atari') != -1:
             self.state_dim = (84, 84, 4)
+            # TODO check what this does
             self.agent.last_action = None
+            logger.debug3(f'State dim: {self.state_dim}')
+            net_kwargs = util.compact_dict(dict(
+                hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
+                optim_param=_.get(net_spec, 'optim'),
+                loss_param=_.get(net_spec, 'loss'),
+                clamp_grad=_.get(net_spec, 'clamp_grad'),
+                clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+                batch_norm=_.get(net_spec, 'batch_norm'),
+                gpu=_.get(net_spec, 'gpu'),
+            ))
+        elif self.agent.spec['memory']['name'].find('Stack') != -1:
+            ''' Make adjustments for StackedReplay memory '''
+            if net_spec['type'].find('MLP') == -1:
+                logger.warn(f'StackedReplay should only be used with MLPs, to stack states with ConvNets use Atari memory. It is not necessary to stack states with RNNs''')
+                sys.exit()
+            self.state_dim = self.state_dim * self.agent.spec['memory']['length_history']
             logger.debug3(f'State dim: {self.state_dim}')
             net_kwargs = util.compact_dict(dict(
                 hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
@@ -278,12 +295,12 @@ class DQNBase(VanillaDQN):
         t = space_clock.get('total_t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
-                logger.info('Updating target_net by replacing')
+                logger.debug('Updating target_net by replacing')
                 self.target_net = deepcopy(self.net)
                 self.online_net = self.target_net
                 self.eval_net = self.target_net
         elif self.update_type == 'polyak':
-            logger.info('Updating net by averaging')
+            logger.debug('Updating net by averaging')
             avg_params = self.polyak_weight * net_util.flatten_params(self.target_net) + \
                 (1 - self.polyak_weight) * net_util.flatten_params(self.net)
             self.target_net = net_util.load_params(self.target_net, avg_params)

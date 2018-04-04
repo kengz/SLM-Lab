@@ -76,6 +76,8 @@ class Agent:
         self.len_state_buffer = 0
         if spec['memory']['name'].find('NStep') != -1:
             self.len_state_buffer = spec['memory']['length_history']
+        elif spec['memory']['name'].find('Stack') != -1:
+            self.len_state_buffer = spec['memory']['length_history']
         elif spec['memory']['name'].find('Atari') != -1:
             self.len_state_buffer = 4
 

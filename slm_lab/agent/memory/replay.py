@@ -38,6 +38,7 @@ class Replay(Memory):
         self.action_dim = self.body.action_dim
         self.batch_idxs = None
         self.total_experiences = 0  # to know total size even with forgetting
+        self.stacked = False  # Memory does not stack states
         self.reset()
 
     def reset(self):
@@ -122,6 +123,56 @@ class Replay(Memory):
         self.priorities[self.batch_idxs] = priorities
 
 
+class StackReplay(Replay):
+    '''Preprocesses an state to be the concatenation of the last n states. Otherwise the same as Replay memory'''
+    def __init__(self, body):
+        self.num_stacked_states = body.agent.spec['memory']['length_history']
+        super(StackReplay, self).__init__(body)
+        self.stacked = True  # Memory stacks states
+
+    def reset_last_state(self, state):
+        '''Do reset of body memory per session during agent_space.reset() to set last_state'''
+        self.last_state = self.preprocess_state(state)
+
+    def clear_buffer(self):
+        self.state_buffer = []
+        for _ in range(self.num_stacked_states - 1):
+            self.state_buffer.append(np.zeros((self.state_dim)))
+
+    def reset(self):
+        self.states = np.zeros((self.max_size, self.state_dim * self.num_stacked_states))
+        self.actions = np.zeros((self.max_size, self.action_dim))
+        self.rewards = np.zeros((self.max_size, 1))
+        self.next_states = np.zeros((self.max_size, self.state_dim * self.num_stacked_states))
+        self.dones = np.zeros((self.max_size, 1))
+        self.priorities = np.zeros((self.max_size, 1))
+        self.true_size = 0
+        self.head = -1  # Index of most recent experience
+        self.state_buffer = []
+        self.clear_buffer()
+
+    def preprocess_state(self, state):
+        if len(self.state_buffer) == self.num_stacked_states:
+            del self.state_buffer[0]
+        self.state_buffer.append(state)
+        processed_state = np.concatenate(self.state_buffer)
+        return processed_state
+
+    @lab_api
+    def update(self, action, reward, state, done):
+        '''Interface method to update memory'''
+        state = self.preprocess_state(state)
+        logger.debug(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
+        logger.debug2(f'state buffer: {self.state_buffer}, state: {state}')
+        if not np.isnan(reward):
+            self.add_experience(self.last_state, action, reward, state, done)
+        self.last_state = state
+        if done:
+            '''Clear buffer so there are no experiences from previous states spilling over to new episodes'''
+            self.clear_buffer()
+            self.body.state_buffer = []
+
+
 class Atari(Replay):
     '''Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
        Otherwise the same as Replay memory'''
@@ -129,6 +180,11 @@ class Atari(Replay):
     def reset_last_state(self, state):
         '''Do reset of body memory per session during agent_space.reset() to set last_state'''
         self.last_state = self.preprocess_state(state)
+
+    def clear_buffer(self):
+        self.state_buffer = []
+        for _ in range(3):
+            self.state_buffer.append(np.zeros((84, 84)))
 
     def reset(self):
         self.states = np.zeros((self.max_size, 84, 84, 4))
@@ -140,8 +196,7 @@ class Atari(Replay):
         self.true_size = 0
         self.head = -1  # Index of most recent experience
         self.state_buffer = []
-        for _ in range(3):
-            self.state_buffer.append(np.zeros((84, 84)))
+        self.clear_buffer()
 
     def preprocess_state(self, state):
         if len(self.state_buffer) == 4:
@@ -161,3 +216,7 @@ class Atari(Replay):
         if not np.isnan(reward):
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
+        if done:
+            '''Clear buffer so there are no experiences from previous states spilling over to new episodes'''
+            self.clear_buffer()
+            self.body.state_buffer = []
