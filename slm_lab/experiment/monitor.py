@@ -106,6 +106,12 @@ class DataSpace:
             self.data = new_data
             self.swap_data = new_data.swapaxes(0, 1)
         self.data_history.append(self.data)
+        if self.data_name == 'state':
+            # Hack to keep size of data storage small - only store most recent state
+            if len(self.data_history) > 1:
+                nan = np.zeros((1, 1, 1))
+                nan[0][0][0] = np.nan
+                self.data_history[-2] = nan
         return self.data
 
     def get(self, a=None, e=None):
