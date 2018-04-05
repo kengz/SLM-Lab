@@ -65,6 +65,7 @@ class MLPNet(nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
+        logger.info(f'loss fn: {self.loss_fn}')
 
     def forward(self, x):
         '''The feedforward step'''
@@ -469,5 +470,5 @@ class MultiMLPNet(nn.Module):
         assert 'lr' in self.optim_param
         old_lr = self.optim_param['lr']
         self.optim_param['lr'] = old_lr * 0.9
-        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
+        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
         self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
