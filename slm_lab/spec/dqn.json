@@ -593,16 +593,90 @@
       "num": 1
     },
     "meta": {
-      "max_session": 1,
-      "max_trial": 15,
-      "search": "RandomSearch",
-      "train_mode": false
+      "max_session": 4,
+      "max_trial": null,
+      "search": "EvolutionarySearch",
+      "max_generation": 4,
+      "train_mode": true
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "explore_anneal_epi__choice": [25, 50, 100, 150],
+          "training_frequency__choice": [1, 2, 3, 5],
+          "explore_var_end__uniform": [0.1, 1.0]
+        },
         "net": {
           "hid_layers_activation__choice": ["sigmoid", "relu"],
-          "update_frequency__choice": [1, 200, 500]
+          "update_frequency__choice": [1, 200, 500],
+        },
+      }]
+    }
+  },
+  "dqn_lunar_boltzmann": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 3.0,
+        "explore_var_end": 0.3,
+        "explore_anneal_epi": 150,
+        "gamma": 0.99,
+        "training_epoch": 5,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
+        "training_min_timestep": 200
+      },
+      "memory": {
+        "name": "Replay",
+        "max_size": 50000
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [400, 200],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.005
+        },
+        "batch_size": 32,
+        "decay_lr": true,
+        "decay_lr_frequency": 5000,
+        "decay_lr_min_timestep": 100000,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_weight": 0.99,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 400
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 4,
+      "max_trial": null,
+      "search": "EvolutionarySearch",
+      "max_generation": 4,
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_anneal_epi__choice": [25, 50, 100, 150],
+          "training_frequency__choice": [1, 2, 3, 5],
+          "explore_var_end__uniform": [0.1, 1.0]
+        },
+        "net": {
+          "hid_layers_activation__choice": ["sigmoid", "relu"],
+          "update_frequency__choice": [1, 200, 500],
         },
       }]
     }
