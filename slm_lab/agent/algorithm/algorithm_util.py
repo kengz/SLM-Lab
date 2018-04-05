@@ -308,6 +308,7 @@ def decay_learning_rate(algo, nets):
     t = space_clock.get('total_t')
     if algo.decay_lr and t > algo.decay_lr_min_timestep:
         if t % algo.decay_lr_frequency == 0:
+            logger.info(f'============= DECAYING LEARNING RATE ==============')
             for net in nets:
                 net.update_lr()
 
