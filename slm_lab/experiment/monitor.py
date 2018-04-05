@@ -222,7 +222,7 @@ class AEBSpace:
                 done_space.swap_data[env.e, :, :] = 1.
                 session_mdp_data, session_data = analysis.get_session_data(session)
                 reward = session_data[(0, 0, 0)]['reward'].iloc[-1]
-                last_k_rewards = min(env.e, 100)
+                last_k_rewards = min(clock.get("epi"), 100)
                 mean_reward = session_data[(0, 0, 0)]['reward'].iloc[-last_k_rewards:].mean()
                 msg = f'Done: trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e} epi {clock.get("epi")}, t {clock.get("t")}, reward {reward:.2f}, mean reward (last 100 epis) {mean_reward:.2f}'
                 logger.info(msg)
