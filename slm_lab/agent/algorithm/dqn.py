@@ -310,6 +310,12 @@ class DQNBase(VanillaDQN):
             logger.error(
                 'Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
             sys.exit()
+        # Check size of memory
+        if t % 1000:
+            memory_size = 0
+            for body in self.agent.nanflat_body_a:
+                memory_size += util.total_size(body.memory)
+            logger.info(f'Size of memory: {memory_size / 1000000} MB')
 
     @lab_api
     def update(self):
