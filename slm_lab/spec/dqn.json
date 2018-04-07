@@ -548,27 +548,27 @@
         "name": "DQN",
         "action_policy": "epsilon_greedy",
         "action_policy_update": "linear_decay",
-        "explore_var_start": 0.95,
-        "explore_var_end": 0.1,
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.08,
         "explore_anneal_epi": 175,
         "gamma": 0.99,
-        "training_epoch": 3,
+        "training_epoch": 5,
         "training_frequency": 1,
         "training_iters_per_batch": 3,
         "training_min_timestep": 1000
       },
       "memory": {
         "name": "StackReplay",
-        "max_size": 50000,
+        "max_size": 100000,
         "length_history": 4
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128, 64],
+        "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "optim": {
           "name": "Adam",
-          "lr": 0.0005
+          "lr": 0.0002
         },
         "loss": {
           "name": "smooth_l1_loss"
@@ -586,97 +586,88 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 700
+      "max_episode": 600
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": null,
       "search": "EvolutionarySearch",
       "max_generation": 4,
       "train_mode": true
     },
-    "search": {
-      "agent": [{
-        "algorithm": {
-          "explore_anneal_epi__choice": [25, 50, 100, 150],
-          "training_frequency__choice": [1, 2, 3, 5],
-          "explore_var_end__uniform": [0.1, 1.0]
-        },
-        "net": {
-          "hid_layers_activation__choice": ["sigmoid", "relu"],
-          "update_frequency__choice": [1, 200, 500],
-        },
-      }]
-    }
   },
-  "dqn_lunar_boltzmann": {
+  "dqn_lunar_search": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
-        "action_policy": "boltzmann",
+        "action_policy": "epsilon_greedy",
         "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 0.3,
-        "explore_anneal_epi": 150,
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.08,
+        "explore_anneal_epi": 175,
         "gamma": 0.99,
         "training_epoch": 5,
-        "training_frequency": 10,
-        "training_iters_per_batch": 1,
-        "training_min_timestep": 200
+        "training_frequency": 1,
+        "training_iters_per_batch": 3,
+        "training_min_timestep": 1000
       },
       "memory": {
-        "name": "Replay",
-        "max_size": 50000
+        "name": "StackReplay",
+        "max_size": 100000,
+        "length_history": 4
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [400, 200],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers": [128, 64],
+        "hid_layers_activation": "relu",
         "optim": {
           "name": "Adam",
-          "lr": 0.005
+          "lr": 0.0002
+        },
+        "loss": {
+          "name": "smooth_l1_loss"
         },
         "batch_size": 32,
         "decay_lr": true,
         "decay_lr_frequency": 5000,
-        "decay_lr_min_timestep": 100000,
+        "decay_lr_min_timestep": 50000,
         "update_type": "replace",
-        "update_frequency": 1,
-        "polyak_weight": 0.99,
-        "gpu": true
+        "update_frequency": 500,
+        "polyak_weight": 0.9,
+        "gpu": false
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 400
+      "max_episode": 800
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 4,
-      "max_trial": null,
-      "search": "EvolutionarySearch",
+      "max_session": 3,
+      "max_trial": 40,
+      "search": "RandomSearch",
       "max_generation": 4,
       "train_mode": true
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "explore_anneal_epi__choice": [25, 50, 100, 150],
-          "training_frequency__choice": [1, 2, 3, 5],
-          "explore_var_end__uniform": [0.1, 1.0]
+        "memory": {
+          "length_history__choice": [1, 2, 3, 4, 5, 6]
         },
         "net": {
-          "hid_layers_activation__choice": ["sigmoid", "relu"],
-          "update_frequency__choice": [1, 200, 500],
+          "optim": {
+            "lr__uniform": [0.0001, 0.0003]
+          },
+          "update_frequency__choice": [200, 350, 500, 650, 800],
         },
       }]
     }
