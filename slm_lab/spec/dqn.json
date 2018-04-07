@@ -645,7 +645,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 800
+      "max_episode": 750
     }],
     "body": {
       "product": "outer",
@@ -656,7 +656,8 @@
       "max_trial": 40,
       "search": "RandomSearch",
       "max_generation": 4,
-      "train_mode": true
+      "train_mode": true,
+      "resource": {"num_cpus": 8, "num_gpus": 0}
     },
     "search": {
       "agent": [{
