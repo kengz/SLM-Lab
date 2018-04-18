@@ -450,19 +450,19 @@ def read(data_path, **kwargs):
     @returns {data} The read data in sensible format
     @example
 
-    data_df = util.read('test/fixture/common/util/test_df.csv')
-    data_df = util.read('test/fixture/common/util/test_df.xls')
-    data_df = util.read('test/fixture/common/util/test_df.xlsx')
+    data_df = util.read('test/fixture/lib/util/test_df.csv')
+    data_df = util.read('test/fixture/lib/util/test_df.xls')
+    data_df = util.read('test/fixture/lib/util/test_df.xlsx')
     # => <DataFrame>
 
-    data_dict = util.read('test/fixture/common/util/test_dict.json')
-    data_dict = util.read('test/fixture/common/util/test_dict.yml')
+    data_dict = util.read('test/fixture/lib/util/test_dict.json')
+    data_dict = util.read('test/fixture/lib/util/test_dict.yml')
     # => <dict>
 
-    data_list = util.read('test/fixture/common/util/test_list.json')
+    data_list = util.read('test/fixture/lib/util/test_list.json')
     # => <list>
 
-    data_str = util.read('test/fixture/common/util/test_str.txt')
+    data_str = util.read('test/fixture/lib/util/test_str.txt')
     # => <str>
     '''
     data_path = smart_path(data_path)
@@ -617,16 +617,16 @@ def write(data, data_path):
     @returns {data_path} The data path written to
     @example
 
-    data_path = util.write(data_df, 'test/fixture/common/util/test_df.csv')
-    data_path = util.write(data_df, 'test/fixture/common/util/test_df.xls')
-    data_path = util.write(data_df, 'test/fixture/common/util/test_df.xlsx')
+    data_path = util.write(data_df, 'test/fixture/lib/util/test_df.csv')
+    data_path = util.write(data_df, 'test/fixture/lib/util/test_df.xls')
+    data_path = util.write(data_df, 'test/fixture/lib/util/test_df.xlsx')
 
-    data_path = util.write(data_dict, 'test/fixture/common/util/test_dict.json')
-    data_path = util.write(data_dict, 'test/fixture/common/util/test_dict.yml')
+    data_path = util.write(data_dict, 'test/fixture/lib/util/test_dict.json')
+    data_path = util.write(data_dict, 'test/fixture/lib/util/test_dict.yml')
 
-    data_path = util.write(data_list, 'test/fixture/common/util/test_list.json')
+    data_path = util.write(data_list, 'test/fixture/lib/util/test_list.json')
 
-    data_path = util.write(data_str, 'test/fixture/common/util/test_str.txt')
+    data_path = util.write(data_str, 'test/fixture/lib/util/test_str.txt')
     '''
     data_path = smart_path(data_path)
     data_dir = os.path.dirname(data_path)
