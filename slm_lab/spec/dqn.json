@@ -608,12 +608,12 @@
         "action_policy": "epsilon_greedy",
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
-        "explore_var_end": 0.08,
-        "explore_anneal_epi": 175,
-        "gamma": 0.99,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 150,
+        "gamma": 0.995,
         "training_epoch": 5,
         "training_frequency": 1,
-        "training_iters_per_batch": 3,
+        "training_iters_per_batch": 1,
         "training_min_timestep": 1000
       },
       "memory": {
@@ -623,41 +623,40 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [128, 64],
-        "hid_layers_activation": "relu",
+        "hid_layers": [400, 200],
+        "hid_layers_activation": "sigmoid",
         "optim": {
-          "name": "Adam",
-          "lr": 0.0002
+          "name": "RMSprop",
+          "lr": 0.005
         },
         "loss": {
           "name": "smooth_l1_loss"
         },
         "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_frequency": 5000,
-        "decay_lr_min_timestep": 50000,
+        "decay_lr_frequency": 10000,
+        "decay_lr_min_timestep": 60000,
         "update_type": "replace",
         "update_frequency": 500,
-        "polyak_weight": 0.9,
+        "polyak_weight": 0.993,
         "gpu": false
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 750
+      "max_episode": 500
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 3,
+      "max_session": 1,
       "max_trial": 40,
       "search": "RandomSearch",
       "max_generation": 4,
       "train_mode": true,
-      "resource": {"num_cpus": 8, "num_gpus": 0}
     },
     "search": {
       "agent": [{
