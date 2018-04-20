@@ -66,6 +66,7 @@ class MLPNet(nn.Module):
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
         logger.info(f'loss fn: {self.loss_fn}')
+        logger.info(f'optimizer: {self.optim}')
 
     def forward(self, x):
         '''The feedforward step'''
