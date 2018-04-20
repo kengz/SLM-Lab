@@ -262,9 +262,9 @@ class DQNBase(VanillaDQN):
         self.polyak_weight = 0.0
 
     def compute_q_target_values(self, batch):
-        '''Computes the target Q values for a batch of experiences. Note that the net references may differe based on algorithm.'''
+        '''Computes the target Q values for a batch of experiences. Note that the net references may differ based on algorithm.'''
         q_sts = self.net.wrap_eval(batch['states'])
-        # Use act_select network to select actions in next state
+        # Use online_net to select actions in next state
         q_next_st_acts = self.online_net.wrap_eval(batch['next_states'])
         _val, q_next_acts = torch.max(q_next_st_acts, dim=1)
         logger.debug2(f'Q next action: {q_next_acts.size()}')
