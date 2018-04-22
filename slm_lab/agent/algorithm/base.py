@@ -28,6 +28,7 @@ class Algorithm(ABC):
         raise NotImplementedError
         return action
 
+    @util.fn_timer
     def body_act(self, body, state):
         '''Standard atomic body_act method. Atomic body logic should be implemented in submethods.'''
         if body.is_discrete:
@@ -35,6 +36,7 @@ class Algorithm(ABC):
         else:
             return self.body_act_continuous(body, state)
 
+    @util.fn_timer
     def act(self, state_a):
         '''Interface-level agent act method for all its bodies. Resolves state to state; get action and compose into action.'''
         data_names = ['action']
@@ -55,11 +57,13 @@ class Algorithm(ABC):
             data_a[(e, b)] = data
         return data_a
 
+    @util.fn_timer
     @abstractmethod
     def train(self):
         '''Implement algorithm train, or throw NotImplementedError'''
         raise NotImplementedError
 
+    @util.fn_timer
     @abstractmethod
     def update(self):
         '''Implement algorithm update, or throw NotImplementedError'''

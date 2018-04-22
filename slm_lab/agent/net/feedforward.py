@@ -1,4 +1,4 @@
-from slm_lab.lib import logger
+from slm_lab.lib import logger, util
 from slm_lab.agent.net import net_util
 from torch.autograd import Variable
 import torch
@@ -68,10 +68,12 @@ class MLPNet(nn.Module):
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
 
+    @util.fn_timer
     def forward(self, x):
         '''The feedforward step'''
         return self.model(x)
 
+    @util.fn_timer
     def training_step(self, x, y):
         '''
         Takes a single training step: one forward and one backwards pass
@@ -89,6 +91,7 @@ class MLPNet(nn.Module):
         self.optim.step()
         return loss
 
+    @util.fn_timer
     def wrap_eval(self, x):
         '''
         Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x

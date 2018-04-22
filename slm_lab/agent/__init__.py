@@ -81,6 +81,7 @@ class Agent:
         elif spec['memory']['name'].find('Atari') != -1:
             self.len_state_buffer = 4
 
+    @util.fn_timer
     @lab_api
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
@@ -91,18 +92,21 @@ class Agent:
         self.algorithm.post_body_init()
         logger.info(util.self_desc(self))
 
+    @util.fn_timer
     @lab_api
     def reset(self, state_a):
         '''Do agent reset per session, such as memory pointer'''
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.reset_last_state(state_a[(e, b)])
 
+    @util.fn_timer
     @lab_api
     def act(self, state_a):
         '''Standard act method from algorithm.'''
         action_a = self.algorithm.act(state_a)
         return action_a
 
+    @util.fn_timer
     @lab_api
     def update(self, action_a, reward_a, state_a, done_a):
         '''
@@ -121,6 +125,7 @@ class Agent:
         explore_var_a = util.guard_data_a(self, explore_var_a, 'explore_var')
         return loss_a, explore_var_a
 
+    @util.fn_timer
     @lab_api
     def close(self):
         '''Close agent at the end of a session, e.g. save model'''

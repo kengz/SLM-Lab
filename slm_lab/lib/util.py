@@ -3,6 +3,7 @@ from slm_lab import ROOT_DIR
 from torch.autograd import Variable
 import collections
 import colorlover as cl
+from functools import wraps
 import json
 import math
 import multiprocessing as mp
@@ -12,6 +13,7 @@ import os
 import pandas as pd
 import pydash as _
 import regex as re
+import time
 import torch
 import ujson
 import yaml
@@ -797,3 +799,14 @@ def total_size(o, handlers={}, verbose=False):
         return s
 
     return sizeof(o)
+
+
+def fn_timer(function):
+    @wraps(function)
+    def function_timer(*args, **kwargs):
+        t0 = time.time()
+        result = function(*args, **kwargs)
+        t1 = time.time()
+        print("Time %s %s: %s seconds" % (function, function.__name__, str(t1 - t0)))
+        return result
+    return function_timer
