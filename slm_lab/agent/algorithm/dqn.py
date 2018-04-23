@@ -261,7 +261,6 @@ class DQNBase(VanillaDQN):
         self.update_frequency = 1
         self.polyak_weight = 0.0
 
-    @util.fn_timer
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences. Note that the net references may differ based on algorithm.'''
         q_sts = self.net.wrap_eval(batch['states'])
@@ -291,7 +290,6 @@ class DQNBase(VanillaDQN):
         logger.debug2(f'Q targets: {q_targets.size()}')
         return q_targets
 
-    @util.fn_timer
     def update_nets(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
         t = space_clock.get('total_t')

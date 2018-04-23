@@ -80,7 +80,6 @@ class Replay(Memory):
             self.true_size += 1
         self.total_experiences += 1
 
-    @util.fn_timer
     @lab_api
     def sample(self, batch_size, latest=False):
         '''
@@ -109,7 +108,6 @@ class Replay(Memory):
         batch['priorities'] = self.priorities[batch_idxs]
         return batch
 
-    @util.fn_timer
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
         batch_idxs = np.random.choice(

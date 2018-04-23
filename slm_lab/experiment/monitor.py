@@ -212,6 +212,7 @@ class AEBSpace:
         else:
             return [self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v)]
 
+    @util.fn_timer
     def tick_clocks(self, session):
         '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''
         from slm_lab.experiment import analysis

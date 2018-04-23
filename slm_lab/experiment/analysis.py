@@ -23,6 +23,7 @@ NOISE_WINDOW = 0.05
 MA_WINDOW = 100
 
 
+@util.fn_timer
 def get_session_data(session):
     '''
     Gather data from session: MDP, Agent, Env data, hashed by aeb; then aggregate.
