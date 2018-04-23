@@ -80,6 +80,7 @@ class Replay(Memory):
             self.true_size += 1
         self.total_experiences += 1
 
+    @util.fn_timer
     @lab_api
     def sample(self, batch_size, latest=False):
         '''
