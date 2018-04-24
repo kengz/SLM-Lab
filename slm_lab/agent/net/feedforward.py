@@ -72,6 +72,7 @@ class MLPNet(nn.Module):
         '''The feedforward step'''
         return self.model(x)
 
+    @util.fn_timer
     def training_step(self, x, y):
         '''
         Takes a single training step: one forward and one backwards pass
