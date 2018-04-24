@@ -336,7 +336,7 @@ class EnvSpace:
         logger.debug(f'\nstate_space: {state_space}')
         return _reward_space, state_space, _done_space
 
-    @util.fn_timer
+    # @util.fn_timer
     @lab_api
     def step(self, action_space):
         reward_v, state_v, done_v = self.aeb_space.init_data_v(
