@@ -2,6 +2,8 @@ import time
 from functools import wraps
 from slm_lab.lib import logger
 
+logger = logger.get_logger(__name__)
+
 
 def lab_api(fn):
     '''

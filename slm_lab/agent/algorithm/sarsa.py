@@ -11,6 +11,8 @@ import pydash as _
 import sys
 import torch
 
+logger = logger.get_logger(__name__)
+
 
 class SARSA(Algorithm):
     '''Implementation of SARSA.

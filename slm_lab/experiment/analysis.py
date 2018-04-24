@@ -21,6 +21,7 @@ FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
 FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
 NOISE_WINDOW = 0.05
 MA_WINDOW = 100
+logger = logger.get_logger(__name__)
 
 
 def get_session_data(session):

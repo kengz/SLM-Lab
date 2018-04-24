@@ -9,6 +9,13 @@ from slm_lab.spec import spec_util, benchmarker
 import os
 
 
+debug_modules = [
+    'slm_lab.agent.algorithm.actor_critic',
+]
+debug_level = 'DEBUG'
+logger.toggle_debug(debug_modules, debug_level)
+
+
 def run_benchmark(spec, const):
     benchmark_specs = benchmarker.generate_specs(spec, const)
     logger.info('Running benchmark')

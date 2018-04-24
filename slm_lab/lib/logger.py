@@ -20,9 +20,9 @@ NEW_LVLS = {'DEBUG2': 9, 'DEBUG3': 8}
 for name, val in NEW_LVLS.items():
     logging.addLevelName(val, name)
     setattr(logging, name, val)
-LOG_FORMAT = '[%(asctime)s %(levelname)s] %(message)s'
+LOG_FORMAT = '[%(asctime)s %(levelname)s %(filename)s:l%(lineno)d] %(message)s'
 color_formatter = colorlog.ColoredFormatter(
-    '%(log_color)s[%(asctime)s %(levelname)s]%(reset)s %(message)s')
+    '%(log_color)s[%(asctime)s %(levelname)s %(filename)s:l%(lineno)d]%(reset)s %(message)s')
 sh = logging.StreamHandler(sys.stdout)
 sh.setFormatter(color_formatter)
 lab_logger = logging.getLogger()
@@ -118,13 +118,10 @@ def get_logger(__name__):
     return module_logger
 
 
-def toggle_debug(module_csv, level):
-    '''Turn on module-specific debug logging by providing a csv of names'''
-    for module in module_csv.split(','):
+def toggle_debug(modules, level='DEBUG'):
+    '''Turn on module-specific debugging using their names, e.g. slm_lab.agent.algorithm.actor_critic, at the desired debug level.'''
+    for module in modules:
         name = module.strip()
         if not _.is_empty(name):
             module_logger = logging.getLogger(name)
             module_logger.setLevel(getattr(logging, level))
-
-
-toggle_debug('slm_lab.agent.algorithm.actor_critic', 'DEBUG')

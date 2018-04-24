@@ -1,5 +1,4 @@
-from slm_lab.agent import memory
-from slm_lab.agent import net
+from slm_lab.agent import memory, net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
@@ -9,6 +8,8 @@ from torch.autograd import Variable
 import numpy as np
 import torch
 import pydash as _
+
+logger = logger.get_logger(__name__)
 
 
 class Reinforce(Algorithm):

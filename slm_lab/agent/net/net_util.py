@@ -5,6 +5,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from slm_lab.lib import logger
 
+logger = logger.get_logger(__name__)
+
 
 def get_activation_fn(activation):
     '''Helper to generate activation function layers for net'''

@@ -5,6 +5,8 @@ from slm_lab.lib.decorator import lab_api
 import numpy as np
 import copy
 
+logger = logger.get_logger(__name__)
+
 
 class OnPolicyReplay(Memory):
     '''
