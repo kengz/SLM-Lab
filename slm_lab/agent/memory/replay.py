@@ -141,14 +141,9 @@ class StackReplay(Replay):
             self.state_buffer.append(np.zeros((self.state_dim)))
 
     def reset(self):
+        super(StackReplay, self).reset()
         self.states = np.zeros((self.max_size, self.state_dim * self.num_stacked_states))
-        self.actions = np.zeros((self.max_size, self.action_dim))
-        self.rewards = np.zeros((self.max_size, 1))
         self.next_states = np.zeros((self.max_size, self.state_dim * self.num_stacked_states))
-        self.dones = np.zeros((self.max_size, 1))
-        self.priorities = np.zeros((self.max_size, 1))
-        self.true_size = 0
-        self.head = -1  # Index of most recent experience
         self.state_buffer = []
         self.clear_buffer()
 
@@ -188,14 +183,9 @@ class Atari(Replay):
             self.state_buffer.append(np.zeros((84, 84)))
 
     def reset(self):
+        super(Atari, self).reset()
         self.states = np.zeros((self.max_size, 84, 84, 4))
-        self.actions = np.zeros((self.max_size, self.action_dim))
-        self.rewards = np.zeros((self.max_size, 1))
         self.next_states = np.zeros((self.max_size, 84, 84, 4))
-        self.dones = np.zeros((self.max_size, 1))
-        self.priorities = np.zeros((self.max_size, 1))
-        self.true_size = 0
-        self.head = -1  # Index of most recent experience
         self.state_buffer = []
         self.clear_buffer()
 
