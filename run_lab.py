@@ -25,36 +25,35 @@ def run_benchmark(spec, const):
             Experiment(benchmark_spec).run()
 
 
-def run_by_mode(spec_file, spec_name, run_mode):
+def run_by_mode(spec_file, spec_name, lab_mode):
     spec = spec_util.get(spec_file, spec_name)
     # TODO remove when analysis can save all plotly plots
-    os.environ['run_mode'] = run_mode
-    if run_mode == 'search':
+    os.environ['lab_mode'] = lab_mode
+    if lab_mode == 'search':
         Experiment(spec).run()
-    elif run_mode == 'train':
+    elif lab_mode == 'train':
         Trial(spec).run()
-    elif run_mode == 'enjoy':
+    elif lab_mode == 'enjoy':
         # TODO turn on save/load model mode
-        # Session(spec).run()
-        pass
-    elif run_mode == 'generate_benchmark':
+        Session(spec).run()
+    elif lab_mode == 'generate_benchmark':
         benchmarker.generate_specs(spec, const='agent')
-    elif run_mode == 'benchmark':
+    elif lab_mode == 'benchmark':
         # TODO allow changing const to env
         run_benchmark(spec, const='agent')
-    elif run_mode == 'dev':
+    elif lab_mode == 'dev':
         os.environ['PY_ENV'] = 'test'  # to not save in viz
         spec = util.override_dev_spec(spec)
         Trial(spec).run()
     else:
-        logger.warn('run_mode not recognized; must be one of `search, train, enjoy, benchmark, dev`.')
+        logger.warn('lab_mode not recognized; must be one of `search, train, enjoy, benchmark, dev`.')
 
 
 def main():
     experiments = util.read('config/experiments.json')
     for spec_file in experiments:
-        for spec_name, run_mode in experiments[spec_file].items():
-            run_by_mode(spec_file, spec_name, run_mode)
+        for spec_name, lab_mode in experiments[spec_file].items():
+            run_by_mode(spec_file, spec_name, lab_mode)
 
 
 if __name__ == '__main__':

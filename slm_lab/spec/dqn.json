@@ -49,8 +49,7 @@
       "max_session": 4,
       "max_trial": null,
       "search": "EvolutionarySearch",
-      "max_generation": 4,
-      "train_mode": true
+      "max_generation": 4
     },
     "search": {
       "agent": [{
@@ -115,8 +114,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 20,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -181,8 +179,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -248,8 +245,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "multihead_dqn_cartpole": {
@@ -305,8 +301,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "multihead_dqn_cartpole_x3": {
@@ -366,8 +361,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "dqn_2dball_2dball": {
@@ -423,8 +417,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "dqn_2dball_cartpole": {
@@ -480,8 +473,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "dqn_test_case": {
@@ -536,8 +528,7 @@
     "meta": {
       "max_session": 3,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "dqn_lunar": {
@@ -591,8 +582,7 @@
       "max_session": 4,
       "max_trial": null,
       "search": "EvolutionarySearch",
-      "max_generation": 4,
-      "train_mode": true
+      "max_generation": 4
     },
     "search": {
       "agent": [{
@@ -659,8 +649,7 @@
       "max_session": 4,
       "max_trial": null,
       "search": "EvolutionarySearch",
-      "max_generation": 4,
-      "train_mode": true
+      "max_generation": 4
     },
     "search": {
       "agent": [{

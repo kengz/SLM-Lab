@@ -185,7 +185,7 @@ def save_session_data(spec, info_space, session_mdp_data, session_data, session_
         util.write(session_df, f'{prepath}_session_df.csv')
     util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
     # TODO replaced by plot_best_sessions until Feb 2018 https://github.com/plotly/plotly.py/issues/880
-    if os.environ.get('run_mode') == 'train':
+    if os.environ.get('lab_mode') == 'train':
         viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
 

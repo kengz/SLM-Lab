@@ -59,8 +59,7 @@
       "resources": {
         "num_cpus": 4,
         "num_gpus": 0
-      },
-      "train_mode": false
+      }
     },
     "search": {
       "agent": [{

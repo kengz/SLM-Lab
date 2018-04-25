@@ -397,7 +397,6 @@ def override_dev_spec(spec):
     spec['meta'] = {
         'max_session': 1,
         'max_trial': 2,
-        'train_mode': False,
     }
     return spec
 
@@ -407,7 +406,6 @@ def override_test_spec(spec):
     spec['meta'] = {
         'max_session': 1,
         'max_trial': 2,
-        'train_mode': True,
     }
     return spec
 

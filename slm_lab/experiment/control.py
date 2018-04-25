@@ -116,7 +116,7 @@ class Trial:
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
             info_spaces.append(deepcopy(self.info_space))
-        if self.spec['meta']['train_mode'] and len(info_spaces) > 1:
+        if os.environ.get('lab_mode') == 'train' and len(info_spaces) > 1:
             session_datas = util.parallelize_fn(self.init_session_and_run, info_spaces, num_cpus)
         else:  # dont parallelize when debugging to allow render
             session_datas = [self.init_session_and_run(info_space) for info_space in info_spaces]
@@ -145,7 +145,6 @@ class Experiment:
         info_space = info_space or InfoSpace()
         init_thread_vars(spec, info_space, unit='experiment')
         self.spec = spec
-        spec['meta']['train_mode'] = True
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.trial_data_dict = {}
