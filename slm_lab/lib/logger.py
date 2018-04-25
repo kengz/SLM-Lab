@@ -21,8 +21,7 @@ for name, val in NEW_LVLS.items():
     logging.addLevelName(val, name)
     setattr(logging, name, val)
 LOG_FORMAT = '[%(asctime)s %(levelname)s %(filename)s:l%(lineno)d] %(message)s'
-color_formatter = colorlog.ColoredFormatter(
-    '%(log_color)s[%(asctime)s %(levelname)s %(filename)s:l%(lineno)d]%(reset)s %(message)s')
+color_formatter = colorlog.ColoredFormatter('%(log_color)s[%(asctime)s %(levelname)s %(filename)s:l%(lineno)d]%(reset)s %(message)s')
 sh = logging.StreamHandler(sys.stdout)
 sh.setFormatter(color_formatter)
 lab_logger = logging.getLogger()
@@ -31,8 +30,7 @@ lab_logger.handlers = FixedList([sh])
 # this will trigger from Experiment init on reload(logger)
 if os.environ.get('PREPATH') is not None:
     # mute the competing loggers
-    warnings.filterwarnings(
-        'ignore', category=pd.io.pytables.PerformanceWarning)
+    warnings.filterwarnings('ignore', category=pd.io.pytables.PerformanceWarning)
 
     log_filepath = os.environ['PREPATH'] + '.log'
     os.makedirs(os.path.dirname(log_filepath), exist_ok=True)

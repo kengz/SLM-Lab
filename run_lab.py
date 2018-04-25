@@ -10,7 +10,7 @@ import os
 
 
 debug_modules = [
-    'slm_lab.agent.algorithm.actor_critic',
+    # 'slm_lab.agent.algorithm.actor_critic',
 ]
 debug_level = 'DEBUG'
 logger.toggle_debug(debug_modules, debug_level)
@@ -47,8 +47,7 @@ def run_by_mode(spec_file, spec_name, run_mode):
         spec = util.override_dev_spec(spec)
         Trial(spec).run()
     else:
-        logger.warn(
-            'run_mode not recognized; must be one of `search, train, enjoy, benchmark, dev`.')
+        logger.warn('run_mode not recognized; must be one of `search, train, enjoy, benchmark, dev`.')
 
 
 def main():

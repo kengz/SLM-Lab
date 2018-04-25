@@ -96,8 +96,7 @@ class OpenAIEnv:
         self.body_num = None
 
         self.u_env = gym.make(self.name)
-        self.max_timestep = self.max_timestep or self.u_env.spec.tags.get(
-            'wrapper_config.TimeLimit.max_episode_steps')
+        self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
         # TODO ensure clock_speed from spec
         self.clock_speed = 1
         self.clock = Clock(self.clock_speed)
@@ -139,8 +138,7 @@ class OpenAIEnv:
     @lab_api
     def reset(self):
         self.done = False
-        _reward_e, state_e, _done_e = self.env_space.aeb_space.init_data_s(
-            ENV_DATA_NAMES, e=self.e)
+        _reward_e, state_e, _done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[(a, b)] = state
@@ -161,14 +159,12 @@ class OpenAIEnv:
         (state, reward, done, _info) = self.u_env.step(action)
         if not self.train_mode:
             self.u_env.render()
-        reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(
-            ENV_DATA_NAMES, e=self.e)
+        reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             reward_e[(a, b)] = reward
             state_e[(a, b)] = state
             done_e[(a, b)] = done
-        self.done = (util.nonan_all(done_e) or
-                     self.clock.get('t') > self.max_timestep)
+        self.done = (util.nonan_all(done_e) or self.clock.get('t') > self.max_timestep)
         return reward_e, state_e, done_e
 
     @lab_api
@@ -194,8 +190,7 @@ class UnityEnv:
         self.body_num = None
 
         worker_id = int(f'{os.getpid()}{self.e+int(_.unique_id())}'[-4:])
-        self.u_env = UnityEnvironment(
-            file_name=util.get_env_path(self.name), worker_id=worker_id)
+        self.u_env = UnityEnvironment(file_name=util.get_env_path(self.name), worker_id=worker_id)
         # TODO experiment to find out optimal benchmarking max_timestep, set
         # TODO ensure clock_speed from spec
         self.clock_speed = 1
@@ -254,10 +249,8 @@ class UnityEnv:
     @lab_api
     def reset(self):
         self.done = False
-        env_info_dict = self.u_env.reset(
-            train_mode=self.train_mode, config=self.spec.get('unity'))
-        _reward_e, state_e, _done_e = self.env_space.aeb_space.init_data_s(
-            ENV_DATA_NAMES, e=self.e)
+        env_info_dict = self.u_env.reset(train_mode=self.train_mode, config=self.spec.get('unity'))
+        _reward_e, state_e, _done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             self.check_u_agent_to_body(env_info_a, a)
@@ -271,15 +264,13 @@ class UnityEnv:
             return self.reset()
         action_e = util.nanflatten(action_e)
         env_info_dict = self.u_env.step(action_e)
-        reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(
-            ENV_DATA_NAMES, e=self.e)
+        reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             reward_e[(a, b)] = env_info_a.rewards[b]
             state_e[(a, b)] = env_info_a.states[b]
             done_e[(a, b)] = env_info_a.local_done[b]
-        self.done = (util.nonan_all(done_e) or
-                     self.clock.get('t') > self.max_timestep)
+        self.done = (util.nonan_all(done_e) or self.clock.get('t') > self.max_timestep)
         return reward_e, state_e, done_e
 
     @lab_api
@@ -326,21 +317,18 @@ class EnvSpace:
     @lab_api
     def reset(self):
         logger.debug('EnvSpace.reset')
-        _reward_v, state_v, _done_v = self.aeb_space.init_data_v(
-            ENV_DATA_NAMES)
+        _reward_v, state_v, _done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
         self.total_reward_v = _reward_v.copy()  # for debugging
         for env in self.envs:
             _reward_e, state_e, _done_e = env.reset()
             state_v[env.e, 0:len(state_e)] = state_e
-        _reward_space, state_space, _done_space = self.aeb_space.add(
-            ENV_DATA_NAMES, [_reward_v, state_v, _done_v])
+        _reward_space, state_space, _done_space = self.aeb_space.add(ENV_DATA_NAMES, [_reward_v, state_v, _done_v])
         logger.debug(f'\nstate_space: {state_space}')
         return _reward_space, state_space, _done_space
 
     @lab_api
     def step(self, action_space):
-        reward_v, state_v, done_v = self.aeb_space.init_data_v(
-            ENV_DATA_NAMES)
+        reward_v, state_v, done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
         for env in self.envs:
             e = env.e
             action_e = action_space.get(e=e)
@@ -348,12 +336,10 @@ class EnvSpace:
             reward_v[e, 0:len(reward_e)] = reward_e
             state_v[e, 0:len(state_e)] = state_e
             done_v[e, 0:len(done_e)] = done_e
-        reward_space, state_space, done_space = self.aeb_space.add(
-            ENV_DATA_NAMES, [reward_v, state_v, done_v])
+        reward_space, state_space, done_space = self.aeb_space.add(ENV_DATA_NAMES, [reward_v, state_v, done_v])
         self.total_reward_v += reward_v  # for debugging
         logger.debug(f'\ntotal_reward_v: {self.total_reward_v}')
-        logger.debug(
-            f'\nreward_space: {reward_space}\nstate_space: {state_space}\ndone_space: {done_space}')
+        logger.debug(f'\nreward_space: {reward_space}\nstate_space: {state_space}\ndone_space: {done_space}')
         return reward_space, state_space, done_space
 
     @lab_api
