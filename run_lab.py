@@ -42,7 +42,6 @@ def run_by_mode(spec_file, spec_name, lab_mode):
         # TODO allow changing const to env
         run_benchmark(spec, const='agent')
     elif lab_mode == 'dev':
-        os.environ['PY_ENV'] = 'test'  # to not save in viz
         spec = util.override_dev_spec(spec)
         Trial(spec).run()
     else:
