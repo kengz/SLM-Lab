@@ -1,6 +1,6 @@
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.experiment.control import Session, Trial, Experiment
-from slm_lab.lib import util, logger
+from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 from flaky import flaky
 import pytest

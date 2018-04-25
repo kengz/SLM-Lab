@@ -42,6 +42,7 @@ SPEC_FORMAT = {
     },
     "name": str,
 }
+logger = logger.get_logger(__name__)
 
 
 def check_comp_spec(comp_spec, comp_spec_format):

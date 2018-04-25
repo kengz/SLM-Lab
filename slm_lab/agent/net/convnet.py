@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+logger = logger.get_logger(__name__)
+
 
 class ConvNet(nn.Module):
     '''

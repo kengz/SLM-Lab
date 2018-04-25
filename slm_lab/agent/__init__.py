@@ -26,6 +26,7 @@ import numpy as np
 import pydash as _
 
 AGENT_DATA_NAMES = ['action', 'loss', 'explore_var']
+logger = logger.get_logger(__name__)
 
 
 class Body:

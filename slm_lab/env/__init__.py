@@ -15,6 +15,7 @@ import os
 import pydash as _
 
 ENV_DATA_NAMES = ['reward', 'state', 'done']
+logger = logger.get_logger(__name__)
 
 
 class Clock:

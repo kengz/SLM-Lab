@@ -39,6 +39,7 @@ COOR_AXES_ORDER = {
     axis: idx for idx, axis in enumerate(COOR_AXES)
 }
 COOR_DIM = len(COOR_AXES)
+logger = logger.get_logger(__name__)
 
 
 class DataSpace:

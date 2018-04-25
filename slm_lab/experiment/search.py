@@ -13,6 +13,8 @@ import pydash as _
 import random
 import ray
 
+logger = logger.get_logger(__name__)
+
 
 def build_config_space(experiment):
     '''

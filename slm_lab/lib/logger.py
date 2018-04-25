@@ -3,32 +3,36 @@ import colorlog
 import logging
 import os
 import pandas as pd
+import pydash as _
 import sys
 import warnings
+
+
+class FixedList(list):
+    '''fixed-list to restrict addition to root logger handler'''
+
+    def append(self, e):
+        pass
+
 
 # extra debugging level deeper than the default debug
 NEW_LVLS = {'DEBUG2': 9, 'DEBUG3': 8}
 for name, val in NEW_LVLS.items():
     logging.addLevelName(val, name)
     setattr(logging, name, val)
-LOG_FORMAT = '[%(asctime)s %(levelname)s] %(message)s'
+LOG_FORMAT = '[%(asctime)s %(levelname)s %(filename)s:l%(lineno)d] %(message)s'
 color_formatter = colorlog.ColoredFormatter(
-    '%(log_color)s[%(asctime)s %(levelname)s]%(reset)s %(message)s')
+    '%(log_color)s[%(asctime)s %(levelname)s %(filename)s:l%(lineno)d]%(reset)s %(message)s')
 sh = logging.StreamHandler(sys.stdout)
 sh.setFormatter(color_formatter)
 lab_logger = logging.getLogger()
-lab_logger.addHandler(sh)
-lab_logger.propagate = False
+lab_logger.handlers = FixedList([sh])
 
 # this will trigger from Experiment init on reload(logger)
 if os.environ.get('PREPATH') is not None:
     # mute the competing loggers
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
     warnings.filterwarnings(
         'ignore', category=pd.io.pytables.PerformanceWarning)
-    logging.getLogger('gym').setLevel(logging.WARN)
-    logging.getLogger('requests').setLevel(logging.WARN)
-    logging.getLogger('unityagents').setLevel(logging.WARN)
 
     log_filepath = os.environ['PREPATH'] + '.log'
     os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
@@ -36,12 +40,8 @@ if os.environ.get('PREPATH') is not None:
     formatter = logging.Formatter(LOG_FORMAT)
     fh = logging.FileHandler(log_filepath)
     fh.setFormatter(formatter)
-    # remove old handlers to prevent repeated logging
-    for handler in lab_logger.handlers[:]:
-        lab_logger.removeHandler(handler)
     # add stream and file handler
-    lab_logger.addHandler(sh)
-    lab_logger.addHandler(fh)
+    lab_logger.handlers = FixedList([sh, fh])
 
 if os.environ.get('LOG_LEVEL'):
     lab_logger.setLevel(os.environ['LOG_LEVEL'])
@@ -101,3 +101,27 @@ def info(msg, *args, **kwargs):
 
 def warn(msg, *args, **kwargs):
     return lab_logger.warn(msg, *args, **kwargs)
+
+
+def get_logger(__name__):
+    '''Create a child logger specific to a module'''
+    module_logger = logging.getLogger(__name__)
+
+    def debug2(msg, *args, **kwargs):
+        return module_logger.log(NEW_LVLS['DEBUG2'], msg, *args, **kwargs)
+
+    def debug3(msg, *args, **kwargs):
+        return module_logger.log(NEW_LVLS['DEBUG3'], msg, *args, **kwargs)
+
+    setattr(module_logger, 'debug2', debug2)
+    setattr(module_logger, 'debug3', debug3)
+    return module_logger
+
+
+def toggle_debug(modules, level='DEBUG'):
+    '''Turn on module-specific debugging using their names, e.g. slm_lab.agent.algorithm.actor_critic, at the desired debug level.'''
+    for module in modules:
+        name = module.strip()
+        if not _.is_empty(name):
+            module_logger = logging.getLogger(name)
+            module_logger.setLevel(getattr(logging, level))

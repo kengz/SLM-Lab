@@ -9,7 +9,7 @@ from plotly import (
     tools,
 )
 from slm_lab import config
-from slm_lab.lib import util, logger
+from slm_lab.lib import logger, util
 import os
 import plotly
 import pydash as _
@@ -18,6 +18,7 @@ PLOT_FILEDIR = util.smart_path('data')
 os.makedirs(PLOT_FILEDIR, exist_ok=True)
 if util.is_jupyter():
     py.init_notebook_mode(connected=True)
+logger = logger.get_logger(__name__)
 
 
 def plot(*args, **kwargs):
