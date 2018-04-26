@@ -1,0 +1,8 @@
+.cache
+config/default.json
+data/
+htmlcov/
+node_modules/
+.coverage
+coverage.xml
+nb.py
