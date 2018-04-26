@@ -57,8 +57,7 @@ class DataSpace:
         self.swap_aeb_shape = self.aeb_shape[1], self.aeb_shape[0], self.aeb_shape[2]
 
         self.data_shape = self.swap_aeb_shape if self.to_swap else self.aeb_shape
-        self.data_type = object if self.data_name in [
-            'state', 'action'] else np.float32
+        self.data_type = object if self.data_name in ['state', 'action'] else np.float32
         self.data = None  # standard data in aeb_shape
         self.swap_data = None
         self.data_history = []  # index = clock.total_t
@@ -238,8 +237,7 @@ class AEBSpace:
                 body = self.body_space.data[aeb]
                 env_epi = body.env.clock.get('epi')
                 if env_epi > max(analysis.MA_WINDOW, body.env.max_episode / 2):
-                    aeb_fitness_sr = analysis.calc_aeb_fitness_sr(
-                        aeb_df, body.env.name)
+                    aeb_fitness_sr = analysis.calc_aeb_fitness_sr(aeb_df, body.env.name)
                     strength = aeb_fitness_sr['strength']
                     env_early_stop = strength < analysis.NOISE_WINDOW
                 else:

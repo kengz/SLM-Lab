@@ -38,7 +38,6 @@ SPEC_FORMAT = {
         "max_session": int,
         "max_trial": (type(None), int),
         "search": str,
-        "train_mode": bool,
     },
     "name": str,
 }
@@ -54,8 +53,7 @@ def check_comp_spec(comp_spec, comp_spec_format):
             assert comp_spec_v in v_set, f'Component spec value {_.pick(comp_spec, spec_k)} needs to be one of {util.to_json(v_set)}'
         else:
             v_type = spec_format_v
-            assert isinstance(
-                comp_spec_v, v_type), f'Component spec {_.pick(comp_spec, spec_k)} needs to be of type: {v_type}'
+            assert isinstance(comp_spec_v, v_type), f'Component spec {_.pick(comp_spec, spec_k)} needs to be of type: {v_type}'
 
 
 def check_body_spec(spec):
@@ -76,8 +74,7 @@ def check(spec):
     '''Check a single spec for validity'''
     try:
         spec_name = spec.get('name')
-        assert set(spec.keys()) >= set(SPEC_FORMAT.keys(
-        )), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
+        assert set(spec.keys()) >= set(SPEC_FORMAT.keys()), f'Spec needs to follow spec.SPEC_FORMAT. Given \n {spec_name}: {util.to_json(spec)}'
         for agent_spec in spec['agent']:
             check_comp_spec(agent_spec, SPEC_FORMAT['agent'][0])
         for env_spec in spec['env']:
@@ -93,8 +90,7 @@ def check(spec):
 
 def check_all():
     '''Check all spec files, all specs.'''
-    spec_files = _.filter_(
-        os.listdir(SPEC_DIR), lambda f: f.endswith('.json') and not f.startswith('_'))
+    spec_files = _.filter_(os.listdir(SPEC_DIR), lambda f: f.endswith('.json') and not f.startswith('_'))
     for spec_file in spec_files:
         spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
         for spec_name, spec in spec_dict.items():
@@ -159,17 +155,14 @@ def resolve_aeb(spec):
     aeb_list = []
     if ae_product == 'outer':
         for e in range(env_num):
-            sub_aeb_list = list(itertools.product(
-                range(agent_num), [e], range(body_num_list[e])))
+            sub_aeb_list = list(itertools.product(range(agent_num), [e], range(body_num_list[e])))
             aeb_list.extend(sub_aeb_list)
     elif ae_product == 'inner':
         for a, e in zip(range(agent_num), range(env_num)):
-            sub_aeb_list = list(
-                itertools.product([a], [e], range(body_num_list[e])))
+            sub_aeb_list = list(itertools.product([a], [e], range(body_num_list[e])))
             aeb_list.extend(sub_aeb_list)
     else:  # custom AEB, body_num is a aeb_list
         aeb_list = [tuple(aeb) for aeb in body_num]
     aeb_list.sort()
-    assert is_aeb_compact(
-        aeb_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
+    assert is_aeb_compact(aeb_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
     return aeb_list

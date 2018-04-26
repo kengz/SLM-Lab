@@ -18,8 +18,7 @@ Agent components:
 - algorithm (with net, policy)
 - memory (per body)
 '''
-from slm_lab.agent import algorithm
-from slm_lab.agent import memory
+from slm_lab.agent import algorithm, memory
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -106,8 +105,7 @@ class Agent:
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
-            body.memory.update(
-                action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
+            body.memory.update(action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
             if self.len_state_buffer > 0:
                 if len(body.state_buffer) == self.len_state_buffer:
                     del body.state_buffer[0]
@@ -138,8 +136,7 @@ class AgentSpace:
         self.aeb_space = aeb_space
         self.aeb_shape = aeb_space.aeb_shape
         aeb_space.agent_space = self
-        self.agents = [
-            Agent(agent_spec, self, a) for a, agent_spec in enumerate(self.agent_spec)]
+        self.agents = [Agent(agent_spec, self, a) for a, agent_spec in enumerate(self.agent_spec)]
 
     @lab_api
     def post_body_init(self):
@@ -154,13 +151,11 @@ class AgentSpace:
     @lab_api
     def reset(self, state_space):
         logger.debug('AgentSpace.reset')
-        _action_v, _loss_v, _explore_var_v = self.aeb_space.init_data_v(
-            AGENT_DATA_NAMES)
+        _action_v, _loss_v, _explore_var_v = self.aeb_space.init_data_v(AGENT_DATA_NAMES)
         for agent in self.agents:
             state_a = state_space.get(a=agent.a)
             agent.reset(state_a)
-        _action_space, _loss_space, _explore_var_space = self.aeb_space.add(
-            AGENT_DATA_NAMES, [_action_v, _loss_v, _explore_var_v])
+        _action_space, _loss_space, _explore_var_space = self.aeb_space.add(AGENT_DATA_NAMES, [_action_v, _loss_v, _explore_var_v])
 
     @lab_api
     def act(self, state_space):
@@ -185,14 +180,11 @@ class AgentSpace:
             reward_a = reward_space.get(a=a)
             state_a = state_space.get(a=a)
             done_a = done_space.get(a=a)
-            loss_a, explore_var_a = agent.update(
-                action_a, reward_a, state_a, done_a)
+            loss_a, explore_var_a = agent.update(action_a, reward_a, state_a, done_a)
             loss_v[a, 0:len(loss_a)] = loss_a
             explore_var_v[a, 0:len(explore_var_a)] = explore_var_a
-        loss_space, explore_var_space = self.aeb_space.add(
-            data_names, [loss_v, explore_var_v])
-        logger.debug(
-            f'\nloss_space: {loss_space}\nexplore_var_space: {explore_var_space}')
+        loss_space, explore_var_space = self.aeb_space.add(data_names, [loss_v, explore_var_v])
+        logger.debug(f'\nloss_space: {loss_space}\nexplore_var_space: {explore_var_space}')
         return loss_space, explore_var_space
 
     @lab_api

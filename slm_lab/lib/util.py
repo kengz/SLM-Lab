@@ -49,9 +49,7 @@ def calc_ts_diff(ts2, ts1):
     ts_diff = util.calc_ts_diff(ts2, ts1)
     # => '0:00:01'
     '''
-    delta_t = datetime.strptime(
-        ts2, FILE_TS_FORMAT) - datetime.strptime(
-        ts1, FILE_TS_FORMAT)
+    delta_t = datetime.strptime(ts2, FILE_TS_FORMAT) - datetime.strptime(ts1, FILE_TS_FORMAT)
     return str(delta_t)
 
 
@@ -136,8 +134,7 @@ def filter_nonan(arr):
 
 def fix_multiindex_dtype(df):
     '''Restore aeb multiindex dtype from string to int, when read from file'''
-    df.columns = pd.MultiIndex.from_tuples(
-        [(int(x[0]), int(x[1]), int(x[2]), x[3]) for x in df.columns])
+    df.columns = pd.MultiIndex.from_tuples([(int(x[0]), int(x[1]), int(x[2]), x[3]) for x in df.columns])
     return df
 
 
@@ -162,8 +159,7 @@ def gen_isnan(v):
 
 def get_df_aeb_list(session_df):
     '''Get the aeb list for session_df for iterating.'''
-    aeb_list = sorted(_.uniq(
-        [(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
+    aeb_list = sorted(_.uniq([(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
     return aeb_list
 
 
@@ -195,8 +191,7 @@ def get_env_path(env_name):
     '''Get the path to Unity env binaries distributed via npm'''
     env_path = smart_path(f'node_modules/slm-env-{env_name}/build/{env_name}')
     env_dir = os.path.dirname(env_path)
-    assert os.path.exists(
-        env_dir), f'Missing {env_path}. See README to install from yarn.'
+    assert os.path.exists(env_dir), f'Missing {env_path}. See README to install from yarn.'
     return env_path
 
 
@@ -209,9 +204,7 @@ def get_fn_list(a_cls):
     Get the callable, non-private functions of a class
     @returns {[*str]} A list of strings of fn names
     '''
-    fn_list = _.filter_(
-        dir(a_cls),
-        lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
+    fn_list = _.filter_(dir(a_cls), lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
     return fn_list
 
 
@@ -404,7 +397,6 @@ def override_dev_spec(spec):
     spec['meta'] = {
         'max_session': 1,
         'max_trial': 2,
-        'train_mode': False,
     }
     return spec
 
@@ -414,7 +406,6 @@ def override_test_spec(spec):
     spec['meta'] = {
         'max_session': 1,
         'max_trial': 2,
-        'train_mode': True,
     }
     return spec
 
@@ -511,8 +502,7 @@ def s_get(cls, attr_path):
     util.s_get(self, 'aeb_space.clock')
     '''
     from_class_name = get_class_name(cls, lower=True)
-    from_idx = _.find_index(
-        SPACE_PATH, lambda s: from_class_name in (s, s.replace('_', '')))
+    from_idx = _.find_index(SPACE_PATH, lambda s: from_class_name in (s, s.replace('_', '')))
     from_idx = max(from_idx, 0)
     attr_path = attr_path.split('.')
     to_idx = SPACE_PATH.index(attr_path[0])

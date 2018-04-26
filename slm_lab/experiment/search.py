@@ -82,9 +82,7 @@ def run_trial(experiment, config):
     trial_fitness_df = experiment.init_trial_and_run(spec, info_space)
     fitness_vec = trial_fitness_df.iloc[0].to_dict()
     fitness = analysis.calc_fitness(trial_fitness_df)
-    trial_data = {
-        **config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
-    }
+    trial_data = {**config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index}
     prepath = analysis.get_prepath(spec, info_space, unit='trial')
     util.write(trial_data, f'{prepath}_trial_data.json')
     return trial_data
@@ -121,8 +119,7 @@ class RaySearch(ABC):
         ray.register_custom_serializer(pd.Series, use_pickle=True)
         self.experiment = experiment
         self.config_space = build_config_space(experiment)
-        logger.info(
-            f'Running {util.get_class_name(self)}, with meta spec:\n{self.experiment.spec["meta"]}')
+        logger.info(f'Running {util.get_class_name(self)}, with meta spec:\n{self.experiment.spec["meta"]}')
 
     @abstractmethod
     def generate_config(self):
@@ -131,8 +128,7 @@ class RaySearch(ABC):
         Remember to update trial_index in config here, since run_trial() on ray.remote is not thread-safe.
         '''
         # use self.config_space to build config
-        config['trial_index'] = self.experiment.info_space.tick('trial')[
-            'trial']
+        config['trial_index'] = self.experiment.info_space.tick('trial')['trial']
         raise NotImplementedError
         return config
 
@@ -155,8 +151,7 @@ class RandomSearch(RaySearch):
     def generate_config(self):
         configs = []  # to accommodate for grid_search
         for resolved_vars, config in variant_generator._generate_variants(self.config_space):
-            config['trial_index'] = self.experiment.info_space.tick('trial')[
-                'trial']
+            config['trial_index'] = self.experiment.info_space.tick('trial')['trial']
             configs.append(config)
         return configs
 
@@ -240,10 +235,8 @@ class EvolutionarySearch(RaySearch):
         meta_spec = self.experiment.spec['meta']
         ray.init(**meta_spec.get('resources', {}))
         max_generation = meta_spec['max_generation']
-        pop_size = meta_spec['max_trial'] or calc_population_size(
-            self.experiment)
-        logger.info(
-            f'EvolutionarySearch max_generation: {max_generation}, population size: {pop_size}')
+        pop_size = meta_spec['max_trial'] or calc_population_size(self.experiment)
+        logger.info(f'EvolutionarySearch max_generation: {max_generation}, population size: {pop_size}')
         trial_data_dict = {}
         config_hash = {}  # config hash_str to trial_index
 
@@ -257,21 +250,18 @@ class EvolutionarySearch(RaySearch):
                 config = dict(individual.items())
                 hash_str = util.to_json(config, indent=0)
                 if hash_str not in config_hash:
-                    trial_index = self.experiment.info_space.tick('trial')[
-                        'trial']
+                    trial_index = self.experiment.info_space.tick('trial')['trial']
                     config_hash[hash_str] = config['trial_index'] = trial_index
                     ray_id = run_trial.remote(self.experiment, config)
                     ray_id_to_config[ray_id] = config
                     pending_ids.append(ray_id)
                 individual['trial_index'] = config_hash[hash_str]
 
-            trial_data_dict.update(get_ray_results(
-                pending_ids, ray_id_to_config))
+            trial_data_dict.update(get_ray_results(pending_ids, ray_id_to_config))
 
             for individual in population:
                 trial_index = individual.pop('trial_index')
-                trial_data = trial_data_dict.get(
-                    trial_index, {'fitness': 0})  # if trial errored
+                trial_data = trial_data_dict.get(trial_index, {'fitness': 0})  # if trial errored
                 individual.fitness.values = trial_data['fitness'],
 
             preview = 'Fittest of population preview:'
@@ -283,8 +273,7 @@ class EvolutionarySearch(RaySearch):
             if gen < max_generation:
                 population = toolbox.select(population, len(population))
                 # Vary the pool of individuals
-                population = algorithms.varAnd(
-                    population, toolbox, cxpb=0.5, mutpb=0.5)
+                population = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.5)
 
         ray.worker.cleanup()
         return trial_data_dict

@@ -48,14 +48,13 @@
     "meta": {
       "max_session": 10,
       "max_trial": 15,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
         "algorithm": {
           "explore_var_end__uniform": [0.1, 1.0]
-        },
+        }
       }]
     }
   },
@@ -108,8 +107,7 @@
     "meta": {
       "max_session": 10,
       "max_trial": 10,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -168,8 +166,7 @@
     "meta": {
       "max_session": 10,
       "max_trial": 10,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -228,8 +225,7 @@
     "meta": {
       "max_session": 20,
       "max_trial": 4,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -288,8 +284,7 @@
     "meta": {
       "max_session": 5,
       "max_trial": 12,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -348,8 +343,7 @@
     "meta": {
       "max_session": 5,
       "max_trial": 12,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
