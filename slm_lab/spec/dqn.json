@@ -600,7 +600,7 @@
         "explore_var_start": 1.0,
         "explore_var_end": 0.1,
         "explore_anneal_epi": 150,
-        "gamma": 0.995,
+        "gamma": 0.99,
         "training_epoch": 5,
         "training_frequency": 1,
         "training_iters_per_batch": 1,
@@ -620,7 +620,7 @@
           "lr": 0.005
         },
         "loss": {
-          "name": "smooth_l1_loss"
+          "name": "mse_loss"
         },
         "batch_size": 32,
         "decay_lr": true,
