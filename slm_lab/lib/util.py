@@ -737,6 +737,10 @@ def crop_image(im):
     return im[-84:, :]
 
 
+def normalize_image(im):
+    return np.divide(im, 255.0)
+
+
 def transform_image(im):
     '''
     Image preprocessing from the paper Playing Atari with Deep Reinforcement Learning, 2013
@@ -747,6 +751,7 @@ def transform_image(im):
     im = np.dot(im[..., :3], [0.299, 0.587, 0.114])
     im = resize_image(im)
     im = crop_image(im)
+    im = normalize_image(im)
     return im
 
 
