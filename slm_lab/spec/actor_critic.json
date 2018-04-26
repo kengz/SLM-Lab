@@ -54,8 +54,7 @@
       "max_session": 4,
       "max_trial": null,
       "search": "EvolutionarySearch",
-      "max_generation": 4,
-      "train_mode": true
+      "max_generation": 4
     },
     "search": {
       "agent": [{
@@ -129,8 +128,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "actor_critic_conv_test_spec": {
@@ -190,8 +188,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "actor_critic_cartpole": {
@@ -251,8 +248,7 @@
       "max_session": 4,
       "max_trial": null,
       "search": "EvolutionarySearch",
-      "max_generation": 5,
-      "train_mode": false
+      "max_generation": 5
     },
     "search": {
       "agent": [{
@@ -330,8 +326,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -409,8 +404,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -489,8 +483,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -568,8 +561,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -649,8 +641,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{

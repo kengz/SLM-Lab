@@ -1,16 +1,19 @@
 '''
 Functions used by more than one algorithm
 '''
-
 from copy import deepcopy
 from slm_lab.lib import logger, util
 from torch.autograd import Variable
+from torch.autograd import Variable
+from torch.distributions import Categorical, Normal
 import numpy as np
 import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.distributions import Categorical, Normal
 import sys
+
+logger = logger.get_logger(__name__)
 
 
 def create_torch_state(state, state_buf, gpu, state_seq=False, length=0, atari=False, flatten=False):

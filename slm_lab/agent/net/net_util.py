@@ -5,6 +5,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from slm_lab.lib import logger
 
+logger = logger.get_logger(__name__)
+
 
 def get_activation_fn(activation):
     '''Helper to generate activation function layers for net'''
@@ -62,8 +64,7 @@ def load_params(net, flattened):
     Source: https://discuss.pytorch.org/t/running-average-of-parameters/902/2'''
     offset = 0
     for param in net.parameters():
-        param.data.copy_(
-            flattened[offset:offset + param.nelement()]).view(param.size())
+        param.data.copy_(flattened[offset:offset + param.nelement()]).view(param.size())
         offset += param.nelement()
     return net
 

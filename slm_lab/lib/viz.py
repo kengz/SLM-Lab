@@ -9,7 +9,7 @@ from plotly import (
     tools,
 )
 from slm_lab import config
-from slm_lab.lib import util, logger
+from slm_lab.lib import logger, util
 import os
 import plotly
 import pydash as _
@@ -18,6 +18,7 @@ PLOT_FILEDIR = util.smart_path('data')
 os.makedirs(PLOT_FILEDIR, exist_ok=True)
 if util.is_jupyter():
     py.init_notebook_mode(connected=True)
+logger = logger.get_logger(__name__)
 
 
 def plot(*args, **kwargs):
@@ -29,7 +30,7 @@ def plot(*args, **kwargs):
 
 
 def save_image(figure, filepath=None):
-    if os.environ.get('PY_ENV') == 'test':
+    if os.environ.get('lab_mode') == 'dev':
         return
     if filepath is None:
         filepath = f'{PLOT_FILEDIR}/{_.get(figure, "layout.title")}.png'
@@ -37,8 +38,7 @@ def save_image(figure, filepath=None):
         plotly.tools.set_credentials_file(
             username=_.get(config, 'plotly.username'),
             api_key=_.get(config, 'plotly.api_key'))
-        plotly.tools.set_config_file(
-            world_readable=True, sharing='public')
+        plotly.tools.set_config_file(world_readable=True, sharing='public')
         return plotly.plotly.image.save_as(figure, filepath)
     except Exception:
         logger.error(
@@ -122,8 +122,7 @@ def plot_go(
     y_col_list, x_col_list = label['y_col_list'], label['x_col_list']
 
     if y2_col is not None:
-        label2 = create_label(
-            y2_col, x_col, title, y_title, x_title, legend_name)
+        label2 = create_label(y2_col, x_col, title, y_title, x_title, legend_name)
         layout.update(dict(yaxis2=dict(
             rangemode='tozero', title=label2['y_title'],
             side='right', overlaying='y1', anchor='x1',
@@ -135,8 +134,7 @@ def plot_go(
         label2_legend_name_list = []
 
     combo_y_col_list = y_col_list + y2_col_list
-    combo_legend_name_list = label[
-        'legend_name_list'] + label2_legend_name_list
+    combo_legend_name_list = label['legend_name_list'] + label2_legend_name_list
     y_col_num, x_col_num = len(combo_y_col_list), len(x_col_list)
     trace_num = max(y_col_num, x_col_num)
     data = []
@@ -144,8 +142,7 @@ def plot_go(
         y_c = _.get(combo_y_col_list, idx % y_col_num)
         x_c = _.get(x_col_list, idx % x_col_num)
         df_y, df_x = _.get(df, y_c), _.get(df, x_c)
-        trace = _.get(go, trace_class)(
-            y=df_y, x=df_x, name=combo_legend_name_list[idx])
+        trace = _.get(go, trace_class)(y=df_y, x=df_x, name=combo_legend_name_list[idx])
         trace.update(trace_kwargs)
         if idx >= len(y_col_list):
             trace.update(dict(yaxis='y2', xaxis='x1'))
@@ -168,8 +165,7 @@ def plot_area(
         df, y_col = args[:2]
         stack_df = stack_cumsum(df, y_col)
         args = (stack_df,) + args[1:]
-    trace_kwargs = _.merge(
-        dict(fill=fill, mode='lines', line=dict(width=1)), trace_kwargs)
+    trace_kwargs = _.merge(dict(fill=fill, mode='lines', line=dict(width=1)), trace_kwargs)
     layout_kwargs = _.merge(dict(), layout_kwargs)
     return plot_go(
         *args, trace_class='Scatter',
@@ -195,8 +191,7 @@ def plot_line(
     trace_kwargs=None, layout_kwargs=None,
         **kwargs):
     '''Plot line from df'''
-    trace_kwargs = _.merge(
-        dict(mode='lines', line=dict(width=1)), trace_kwargs)
+    trace_kwargs = _.merge(dict(mode='lines', line=dict(width=1)), trace_kwargs)
     layout_kwargs = _.merge(dict(), layout_kwargs)
     return plot_go(
         *args, trace_class='Scatter',
@@ -222,8 +217,7 @@ def plot_histogram(
     trace_kwargs=None, layout_kwargs=None,
         **kwargs):
     '''Plot histogram from df'''
-    trace_kwargs = _.merge(dict(orientation=orientation,
-                                xbins={}, histnorm=histnorm), trace_kwargs)
+    trace_kwargs = _.merge(dict(orientation=orientation, xbins={}, histnorm=histnorm), trace_kwargs)
     layout_kwargs = _.merge(dict(barmode=barmode), layout_kwargs)
     return plot_go(
         *args, trace_class='Histogram',

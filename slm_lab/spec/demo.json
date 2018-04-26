@@ -56,7 +56,10 @@
       "max_session": 1,
       "max_trial": 4,
       "search": "RandomSearch",
-      "train_mode": false
+      "resources": {
+        "num_cpus": 4,
+        "num_gpus": 0
+      }
     },
     "search": {
       "agent": [{

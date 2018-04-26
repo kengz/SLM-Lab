@@ -1,15 +1,16 @@
-from slm_lab.agent import memory
-from slm_lab.agent import net
+from slm_lab.agent import memory, net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, decay_learning_rate
 from slm_lab.agent.algorithm.reinforce import Reinforce
 from slm_lab.agent.net import net_util
-from slm_lab.lib import util, logger
+from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import torch.nn.functional as F
 import numpy as np
 import torch
 import pydash as _
+
+logger = logger.get_logger(__name__)
 
 
 class ActorCritic(Reinforce):
