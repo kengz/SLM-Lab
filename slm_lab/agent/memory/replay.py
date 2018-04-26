@@ -157,10 +157,11 @@ class StackReplay(Replay):
         '''Clears the raw state buffer'''
         self.state_buffer = []
         for _ in range(self.num_stacked_states - 1):
-            self.state_buffer.append(np.zeros((self.state_dim)))
+            self.state_buffer.append(np.zeros((self.orig_state_dim)))
 
     def reset_states(self):
         '''Initializes the state and next state arrays'''
+        self.orig_state_dim = self.state_dim
         self.state_dim = self.state_dim * self.num_stacked_states
         super(StackReplay, self).reset_states()
 
