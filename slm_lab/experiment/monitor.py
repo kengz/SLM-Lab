@@ -109,8 +109,7 @@ class DataSpace:
         if self.data_name == 'state':
             # Hack to keep size of data storage small - only store most recent state
             if len(self.data_history) > 1:
-                nan = np.zeros((1, 1, 1))
-                nan[0][0][0] = np.nan
+                nan = np.zeros_like(self.data_history[-1])
                 self.data_history[-2] = nan
         return self.data
 
