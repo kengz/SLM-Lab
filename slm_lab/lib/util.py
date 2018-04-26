@@ -18,6 +18,7 @@ import torch
 import ujson
 import yaml
 import pprint
+from scipy.misc import imsave
 from sys import getsizeof, stderr
 from itertools import chain
 from collections import deque
@@ -748,9 +749,11 @@ def transform_image(im):
     '''
     if im.ndim != 3:
         print(f'Unexpected image dimension: {im.ndim}, {im.shape}')
+    # imsave('atari_before.png', im)
     im = np.dot(im[..., :3], [0.299, 0.587, 0.114])
     im = resize_image(im)
     im = crop_image(im)
+    # imsave('atari_after.png', im)
     im = normalize_image(im)
     return im
 
