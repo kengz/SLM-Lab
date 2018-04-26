@@ -41,7 +41,7 @@
       }
     }],
     "env": [{
-      "name": "Breakout-v0",
+      "name": "BreakoutDeterministic-v4",
       "max_timestep": null,
       "max_episode": 100000
     }],
@@ -98,7 +98,7 @@
       }
     }],
     "env": [{
-      "name": "Seaquest-v0",
+      "name": "SeaquestDeterministic-v4",
       "max_timestep": null,
       "max_episode": 100000
     }],
