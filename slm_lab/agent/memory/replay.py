@@ -32,7 +32,6 @@ class Replay(Memory):
 
     def __init__(self, body):
         super(Replay, self).__init__(body)
-
         self.max_size = self.body.agent.spec['memory']['max_size']
         self.state_dim = self.body.state_dim
         self.action_dim = self.body.action_dim
@@ -41,14 +40,20 @@ class Replay(Memory):
         self.stacked = False  # Memory does not stack states
         self.atari = False  # Memory is not specialised for Atari games
         self.reset()
+        self.print_memory_info()
 
-    def reset(self):
+    def reset_states(self):
+        '''Initializes the state and next state arrays'''
         if type(self.state_dim) is int:
             self.states = np.zeros((self.max_size, self.state_dim))
             self.next_states = np.zeros((self.max_size, self.state_dim))
         elif type(self.state_dim) is tuple:
             self.states = np.zeros((self.max_size, *self.state_dim))
             self.next_states = np.zeros((self.max_size, *self.state_dim))
+
+    def reset(self):
+        '''Initializes the memory arrays, size and head pointer'''
+        self.reset_states()
         self.actions = np.zeros((self.max_size, self.action_dim))
         self.rewards = np.zeros((self.max_size, 1))
         self.dones = np.zeros((self.max_size, 1))
@@ -127,6 +132,15 @@ class Replay(Memory):
         assert len(priorites) == self.batch_idxs.size
         self.priorities[self.batch_idxs] = priorities
 
+    def print_memory_info(self):
+        '''Prints size of all of the memory arrays'''
+        logger.info(f'MEMORY: states :{self.states.shape}')
+        logger.info(f'MEMORY: next states :{self.next_states.shape}')
+        logger.info(f'MEMORY: actions :{self.actions.shape}')
+        logger.info(f'MEMORY: dones :{self.dones.shape}')
+        logger.info(f'MEMORY: rewards :{self.rewards.shape}')
+        logger.info(f'MEMORY: priorities :{self.priorities.shape}')
+
 
 class StackReplay(Replay):
     '''Preprocesses an state to be the concatenation of the last n states. Otherwise the same as Replay memory'''
@@ -140,18 +154,24 @@ class StackReplay(Replay):
         self.last_state = self.preprocess_state(state)
 
     def clear_buffer(self):
+        '''Clears the raw state buffer'''
         self.state_buffer = []
         for _ in range(self.num_stacked_states - 1):
             self.state_buffer.append(np.zeros((self.state_dim)))
 
+    def reset_states(self):
+        '''Initializes the state and next state arrays'''
+        self.state_dim = self.state_dim * self.num_stacked_states
+        super(StackReplay, self).reset_states()
+
     def reset(self):
+        '''Initializes the memory arrays, size and head pointer'''
         super(StackReplay, self).reset()
-        self.states = np.zeros((self.max_size, self.state_dim * self.num_stacked_states))
-        self.next_states = np.zeros((self.max_size, self.state_dim * self.num_stacked_states))
         self.state_buffer = []
         self.clear_buffer()
 
     def preprocess_state(self, state):
+        '''Transforms the raw state into format that is fed into the network'''
         if len(self.state_buffer) == self.num_stacked_states:
             del self.state_buffer[0]
         self.state_buffer.append(state)
@@ -185,18 +205,24 @@ class Atari(Replay):
         self.last_state = self.preprocess_state(state)
 
     def clear_buffer(self):
+        '''Clears the raw state buffer'''
         self.state_buffer = []
         for _ in range(3):
             self.state_buffer.append(np.zeros((84, 84)))
 
+    def reset_states(self):
+        '''Initializes the state and next state arrays'''
+        self.state_dim = (84, 84, 4)
+        super(Atari, self).reset_states()
+
     def reset(self):
+        '''Initializes the memory arrays, size and head pointer'''
         super(Atari, self).reset()
-        self.states = np.zeros((self.max_size, 84, 84, 4))
-        self.next_states = np.zeros((self.max_size, 84, 84, 4))
         self.state_buffer = []
         self.clear_buffer()
 
     def preprocess_state(self, state):
+        '''Transforms the raw state into format that is fed into the network'''
         if len(self.state_buffer) == 4:
             del self.state_buffer[0]
         state = util.transform_image(state)
