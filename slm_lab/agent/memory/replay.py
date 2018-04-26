@@ -37,15 +37,20 @@ class Replay(Memory):
         self.state_dim = self.body.state_dim
         self.action_dim = self.body.action_dim
         self.batch_idxs = None
-        self.total_experiences = 0  # to know total size even with forgetting
+        self.total_experiences = 0  # To track total experiences encountered even with forgetting
         self.stacked = False  # Memory does not stack states
+        self.atari = False  # Memory is not specialised for Atari games
         self.reset()
 
     def reset(self):
-        self.states = np.zeros((self.max_size, self.state_dim))
+        if type(self.state_dim) is int:
+            self.states = np.zeros((self.max_size, self.state_dim))
+            self.next_states = np.zeros((self.max_size, self.state_dim))
+        elif type(self.state_dim) is tuple:
+            self.states = np.zeros((self.max_size, *self.state_dim))
+            self.next_states = np.zeros((self.max_size, *self.state_dim))
         self.actions = np.zeros((self.max_size, self.action_dim))
         self.rewards = np.zeros((self.max_size, 1))
-        self.next_states = np.zeros((self.max_size, self.state_dim))
         self.dones = np.zeros((self.max_size, 1))
         self.priorities = np.zeros((self.max_size, 1))
         self.true_size = 0
@@ -171,6 +176,9 @@ class StackReplay(Replay):
 class Atari(Replay):
     '''Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
        Otherwise the same as Replay memory'''
+    def __init__(self, body):
+        super(Atari, self).__init__(body)
+        self.atari = True  # Memory is specialized for playing Atari games
 
     def reset_last_state(self, state):
         '''Do reset of body memory per session during agent_space.reset() to set last_state'''
