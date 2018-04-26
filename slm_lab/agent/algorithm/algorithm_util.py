@@ -55,7 +55,7 @@ def create_torch_state(state, state_buf, gpu, state_seq=False, length=0, atari=F
     return torch_state
 
 
-def act_with_epsilon_greedy(body, state, net, epsilon, gpu, atari=False):
+def act_with_epsilon_greedy(body, state, net, epsilon, gpu):
     '''
     Single body action with probability epsilon to select a random action,
     otherwise select the action associated with the largest q value
@@ -64,28 +64,13 @@ def act_with_epsilon_greedy(body, state, net, epsilon, gpu, atari=False):
         action = np.random.randint(body.action_dim)
     else:
         state_seq = body.agent.len_state_buffer > 0
+        atari = body.memory.atari
         logger.debug(f'Length state buffer: {body.agent.len_state_buffer}')
         flatten = body.memory.stacked
         torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, body.agent.len_state_buffer, atari, flatten)
         out = net.wrap_eval(torch_state).squeeze_(dim=0)
         action = int(torch.max(out, dim=0)[1][0])
         logger.debug2(f'Outs {out} Action {action}')
-    return action
-
-
-def act_with_epsilon_greedy_atari(body, state, net, epsilon, gpu):
-    '''
-    Selects an action every four timesteps. The last action is repeated until the next action selection
-    '''
-    space_clock = util.s_get(body.agent, 'aeb_space.clock')
-    t = space_clock.get('t')
-    logger.debug2(f't: {t}')
-    if t % 4 == 1:
-        action = act_with_epsilon_greedy(body, state, net, epsilon, gpu, atari=True)
-        body.agent.last_action = action
-    else:
-        action = body.agent.last_action
-    logger.debug2(f'Action: {action}')
     return action
 
 
@@ -149,7 +134,7 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
 def act_with_boltzmann(body, state, net, tau, gpu):
     state_seq = body.agent.len_state_buffer > 0
     logger.debug2(f'Length state buffer: {body.agent.len_state_buffer}')
-    atari = False
+    atari = body.memory.atari
     flatten = body.memory.stacked
     torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, body.agent.len_state_buffer, atari, flatten)
     out = net.wrap_eval(torch_state)
@@ -320,7 +305,6 @@ act_fns = {
     'epsilon_greedy': act_with_epsilon_greedy,
     'multi_epsilon_greedy': multi_act_with_epsilon_greedy,
     'multi_head_epsilon_greedy': multi_head_act_with_epsilon_greedy,
-    'atari_epsilon_greedy': act_with_epsilon_greedy_atari,
     'boltzmann': act_with_boltzmann,
     'multi_boltzmann': multi_act_with_boltzmann,
     'multi_head_boltzmann': multi_head_act_with_boltzmann,
