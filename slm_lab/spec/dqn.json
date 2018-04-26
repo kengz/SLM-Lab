@@ -626,7 +626,7 @@
         "hid_layers": [400, 200],
         "hid_layers_activation": "sigmoid",
         "optim": {
-          "name": "RMSprop",
+          "name": "Adam",
           "lr": 0.005
         },
         "loss": {
@@ -634,9 +634,9 @@
         },
         "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
-        "decay_lr_frequency": 200000,
-        "decay_lr_min_timestep": 80000,
+        "decay_lr_factor": 0.1,
+        "decay_lr_frequency": 100000,
+        "decay_lr_min_timestep": 100000,
         "update_type": "replace",
         "update_frequency": 500,
         "polyak_weight": 0.993,
@@ -646,15 +646,15 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 500
+      "max_episode": 600
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 1,
-      "max_trial": 40,
+      "max_session": 2,
+      "max_trial": 16,
       "search": "RandomSearch",
       "max_generation": 4,
       "train_mode": true,
@@ -662,13 +662,13 @@
     "search": {
       "agent": [{
         "memory": {
-          "length_history__choice": [1, 2, 3, 4, 5, 6]
+          "length_history__choice": [3, 4, 5]
         },
         "net": {
           "optim": {
-            "lr__uniform": [0.0001, 0.0003]
+            "lr__uniform": [0.001, 0.01]
           },
-          "update_frequency__choice": [200, 350, 500, 650, 800],
+          "update_frequency__choice": [500, 750, 1000],
         },
       }]
     }
