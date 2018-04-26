@@ -55,7 +55,7 @@ def get_session_data(session):
         session_mdp_data[aeb], session_data[aeb] = mdp_df, aeb_df
     logger.debug(f'{session_data}')
     data_size_in_bytes = util.total_size(session_mdp_data)
-    logger.info(f'Size of session data: {data_size_in_bytes / 1000000} MB')
+    logger.debug(f'Size of session data: {data_size_in_bytes / 1000000} MB')
     if data_size_in_bytes / 1000000 > 25:
         logger.warn(f'Session data > 25 MB')
     return session_mdp_data, session_data

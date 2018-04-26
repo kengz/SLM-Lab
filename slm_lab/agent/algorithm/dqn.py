@@ -216,8 +216,6 @@ class DQNBase(VanillaDQN):
         ''' Make adjustments for Atari mode '''
         if self.agent.spec['memory']['name'].find('Atari') != -1:
             self.state_dim = (84, 84, 4)
-            # TODO check what this does
-            self.agent.last_action = None
             logger.debug3(f'State dim: {self.state_dim}')
             net_kwargs = util.compact_dict(dict(
                 hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
