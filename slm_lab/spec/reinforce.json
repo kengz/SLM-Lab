@@ -25,6 +25,7 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 2000
       }
@@ -85,6 +86,7 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 600
       }
@@ -147,6 +149,7 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 600
       }
@@ -193,6 +196,7 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 600
       }
@@ -207,7 +211,7 @@
       "num": 1
     },
     "meta": {
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 40,
       "search": "RandomSearch"
     },

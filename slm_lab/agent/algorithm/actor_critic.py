@@ -433,6 +433,7 @@ class ActorCritic(Reinforce):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
             gpu=_.get(net_spec, 'gpu'),
+            decay_lr=_.get(net_spec, 'decay_lr_factor'),
         ))
         if self.agent.spec['net']['use_same_optim']:
             logger.info('Using same optimizer for actor and critic')
@@ -446,6 +447,7 @@ class ActorCritic(Reinforce):
                 clamp_grad=_.get(net_spec, 'clamp_grad'),
                 clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
                 gpu=_.get(net_spec, 'gpu'),
+                decay_lr=_.get(net_spec, 'decay_lr_factor'),
             ))
         '''
          Below we automatically select an appropriate net based on two different conditions

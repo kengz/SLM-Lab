@@ -211,6 +211,7 @@ class DQNBase(VanillaDQN):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
             gpu=_.get(net_spec, 'gpu'),
+            decay_lr=_.get(net_spec, 'decay_lr_factor'),
         ))
         ''' Make adjustments for Atari mode '''
         if self.agent.spec['memory']['name'].find('Atari') != -1:
@@ -226,6 +227,7 @@ class DQNBase(VanillaDQN):
                 clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
                 batch_norm=_.get(net_spec, 'batch_norm'),
                 gpu=_.get(net_spec, 'gpu'),
+                decay_lr=_.get(net_spec, 'decay_lr_factor'),
             ))
         elif self.agent.spec['memory']['name'].find('Stack') != -1:
             ''' Make adjustments for StackedReplay memory '''
@@ -242,6 +244,7 @@ class DQNBase(VanillaDQN):
                 clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
                 batch_norm=_.get(net_spec, 'batch_norm'),
                 gpu=_.get(net_spec, 'gpu'),
+                decay_lr=_.get(net_spec, 'decay_lr_factor'),
             ))
         if net_spec['type'].find('Recurrent') != -1:
             logger.warn(f'Recurrent networks not supported with DQN family of algorithms. Please select another network type''')
@@ -370,6 +373,7 @@ class MultitaskDQN(DQN):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
             gpu=_.get(net_spec, 'gpu'),
+            decay_lr=_.get(net_spec, 'decay_lr_factor'),
         ))
         self.net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim, **net_kwargs)
@@ -507,6 +511,7 @@ class MultiHeadDQN(MultitaskDQN):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
             gpu=_.get(net_spec, 'gpu'),
+            decay_lr=_.get(net_spec, 'decay_lr_factor'),
         ))
         self.net = getattr(net, net_spec['type'])(
             self.state_dims, net_spec['hid_layers'], self.action_dims, **net_kwargs)

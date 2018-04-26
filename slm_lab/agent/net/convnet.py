@@ -31,7 +31,8 @@ class ConvNet(nn.Module):
                  clamp_grad=False,
                  clamp_grad_val=1.0,
                  batch_norm=True,
-                 gpu=False):
+                 gpu=False,
+                 decay_lr=0.9):
         '''
         in_dim: dimension of the inputs
         hid_layers: tuple consisting of two elements. (conv_hid, flat_hid)
@@ -58,7 +59,8 @@ class ConvNet(nn.Module):
                 loss_param={'name': 'mse_loss'},
                 clamp_grad=False,
                 batch_norm=True,
-                gpu=True)
+                gpu=True,
+                decay_lr=0.9)
         '''
         super(ConvNet, self).__init__()
         # Create net and initialize params
@@ -98,6 +100,10 @@ class ConvNet(nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
+        self.decay_lr = decay_lr
+        logger.info(f'loss fn: {self.loss_fn}')
+        logger.info(f'optimizer: {self.optim}')
+        logger.info(f'decay lr: {self.decay_lr}')
 
     def get_conv_output_size(self):
         '''Helper function to calculate the size of the
@@ -248,6 +254,6 @@ class ConvNet(nn.Module):
     def update_lr(self):
         assert 'lr' in self.optim_param
         old_lr = self.optim_param['lr']
-        self.optim_param['lr'] = old_lr * 0.9
+        self.optim_param['lr'] = old_lr * self.decay_lr
         logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
         self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
