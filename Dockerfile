@@ -17,7 +17,7 @@ RUN curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.s
     rm Miniconda3-latest-Linux-x86_64.sh && \
     /opt/conda/bin/conda clean -tipsy && \
     ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
-    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> /root/.bashrc && \
     conda update -n base conda
 
 # install Python and Conda dependencies
@@ -27,24 +27,24 @@ RUN conda config --add channels conda-forge && \
     source activate lab && \
     python -m ipykernel install --user --name lab
 
-RUN echo "source activate lab" >> ~/.bashrc
+RUN echo "source activate lab" >> /root/.bashrc
 
 # create and set the working directory
-RUN mkdir -p ~/SLM-Lab
+RUN mkdir -p /root/SLM-Lab
 
-WORKDIR ~/SLM-Lab
+WORKDIR /root/SLM-Lab
 
 # install dependencies, only retrigger on dependency changes
-COPY package.json ~/SLM-Lab/package.json
+COPY package.json /root/SLM-Lab/package.json
 RUN yarn install
 
-COPY environment.yml ~/SLM-Lab/environment.yml
-RUN conda env update -f environment.yml
+COPY environment.yml /root/SLM-Lab/environment.yml
+# RUN conda env update -f ./environment.yml
 
 # copy file at last to not trigger changes above unnecessarily
-COPY . ~/SLM-Lab/
+COPY . /root/SLM-Lab/
 
 # RUN source activate lab && \
 #     yarn test
 
-CMD ["bin/bash"]
+CMD ["/bin/bash"]
