@@ -1,32 +1,33 @@
-FROM continuumio/miniconda3 AS conda_container
-
 FROM tensorflow/tensorflow:1.8.0-rc1-py3 AS tf_container
 
-COPY --from=conda_container /opt/conda /opt/conda
-COPY --from=conda_container /opt/conda/bin/conda /usr/local/bin/conda
-
-# change default shell from sh to bash
 SHELL ["/bin/bash", "-c"]
+
+# install system dependencies for OpenAI gym
+RUN apt-get update && \
+    apt-get install -y nano git python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig
 
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g yarn
 
-RUN node -v
-RUN yarn -v
+ENV PATH /opt/conda/bin:$PATH
 
-# # install system dependencies for OpenAI gym
-# RUN apt-get update && \
-#     apt-get install -y nano git python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig
-#
-# # install Python and Conda dependencies
-# RUN conda config --add channels conda-forge && \
-#     conda config --add channels pytorch && \
-#     conda create -n lab python=3.6 ipykernel -c conda-forge -c pytorch -y && \
-#     echo "conda activate lab" >> /root/.bashrc
-#
-# RUN conda activate lab && python -m ipykernel install --user --name lab
-#
+RUN curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda && \
+    rm Miniconda3-latest-Linux-x86_64.sh && \
+    /opt/conda/bin/conda clean -tipsy && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc
+
+# install Python and Conda dependencies
+RUN conda config --add channels conda-forge && \
+    conda config --add channels pytorch && \
+    conda create -n lab python=3.6 ipykernel -c conda-forge -c pytorch -y && \
+    source activate lab && \
+    python -m ipykernel install --user --name lab
+
+RUN echo "source activate lab" >> ~/.bashrc
+
 # # Copy the current directory contents
 # COPY . ~/SLM-Lab
 #
