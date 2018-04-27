@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:1.8.0-rc1-py3 AS tf_container
+FROM floydhub/pytorch:0.3.0-py3.22 AS pytorch_container
 
 SHELL ["/bin/bash", "-c"]
 
@@ -40,18 +40,7 @@ RUN yarn install
 
 RUN conda env update -f environment.yml
 
-# RUN yarn test
-# # # Run app.py when the container launches
-# # CMD ["yarn test"]
-#
-# # docker image ls
-# # docker container ls --all
-# # docker system prune
-# # docker build -t slm-lab .
-# # docker run --name test1 -d slm-lab
-# # docker exec -it test1 bash
-# # docker stop test1
-# # docker rm test1
-#
-# # ENTRYPOINT [ "/usr/bin/tini", "--" ]
-# # CMD [ "/bin/bash" ]
+RUN source activate lab && \
+    yarn test
+
+CMD ["bin/bash"]
