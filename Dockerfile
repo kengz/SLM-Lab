@@ -1,5 +1,8 @@
 FROM floydhub/pytorch:0.3.0-py3.22 AS pytorch_container
 
+LABEL maintainer="kengzwl@gmail.com"
+LABEL website="https://github.com/kengz/SLM-Lab"
+
 SHELL ["/bin/bash", "-c"]
 
 # install system dependencies for OpenAI gym
@@ -30,21 +33,22 @@ RUN conda config --add channels conda-forge && \
 RUN echo "source activate lab" >> /root/.bashrc
 
 # create and set the working directory
-RUN mkdir -p /root/SLM-Lab
+RUN mkdir -p /opt/SLM-Lab
 
-WORKDIR /root/SLM-Lab
+WORKDIR /opt/SLM-Lab
 
 # install dependencies, only retrigger on dependency changes
-COPY package.json /root/SLM-Lab/package.json
+COPY package.json package.json
 RUN yarn install
 
-COPY environment.yml /root/SLM-Lab/environment.yml
-# RUN conda env update -f ./environment.yml
+COPY environment.yml environment.yml
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64
+RUN conda env update -f environment.yml
 
 # copy file at last to not trigger changes above unnecessarily
-COPY . /root/SLM-Lab/
+COPY . .
 
-# RUN source activate lab && \
-#     yarn test
+RUN source activate lab && \
+    yarn test
 
 CMD ["/bin/bash"]
