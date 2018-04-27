@@ -42,8 +42,9 @@ COPY package.json package.json
 RUN yarn install
 
 COPY environment.yml environment.yml
-ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64
 RUN conda env update -f environment.yml
+
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64
 
 # copy file at last to not trigger changes above unnecessarily
 COPY . .
