@@ -29,18 +29,22 @@ RUN conda config --add channels conda-forge && \
 
 RUN echo "source activate lab" >> ~/.bashrc
 
-# copy lab
-COPY . ~/SLM-Lab
+# create and set the working directory
+RUN mkdir -p ~/SLM-Lab
 
-# set the working directory
 WORKDIR ~/SLM-Lab
 
-# install dependencies
+# install dependencies, only retrigger on dependency changes
+COPY package.json ~/SLM-Lab/package.json
 RUN yarn install
 
+COPY environment.yml ~/SLM-Lab/environment.yml
 RUN conda env update -f environment.yml
 
-RUN source activate lab && \
-    yarn test
+# copy file at last to not trigger changes above unnecessarily
+COPY . ~/SLM-Lab/
+
+# RUN source activate lab && \
+#     yarn test
 
 CMD ["bin/bash"]
