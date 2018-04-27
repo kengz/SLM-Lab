@@ -17,7 +17,8 @@ RUN curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.s
     rm Miniconda3-latest-Linux-x86_64.sh && \
     /opt/conda/bin/conda clean -tipsy && \
     ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
-    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    conda update -n base conda
 
 # install Python and Conda dependencies
 RUN conda config --add channels conda-forge && \
@@ -28,16 +29,17 @@ RUN conda config --add channels conda-forge && \
 
 RUN echo "source activate lab" >> ~/.bashrc
 
-# # Copy the current directory contents
-# COPY . ~/SLM-Lab
-#
-# # Set the working directory to /app
-# WORKDIR ~/SLM-Lab
-#
-# # install dependencies
-# RUN yarn install
-# RUN conda env update -f environment.yml
-#
+# copy lab
+COPY . ~/SLM-Lab
+
+# set the working directory
+WORKDIR ~/SLM-Lab
+
+# install dependencies
+RUN yarn install
+
+RUN conda env update -f environment.yml
+
 # RUN yarn test
 # # # Run app.py when the container launches
 # # CMD ["yarn test"]
