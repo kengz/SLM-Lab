@@ -672,7 +672,7 @@ def to_torch_batch(batch, gpu):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch Variable'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
     for k in float_data_names:
-        batch[k] = torch.from_numpy(batch[k]).float()
+        batch[k] = torch.from_numpy(batch[k].astype(np.float)).float()
         if torch.cuda.is_available() and gpu:
             batch[k] = batch[k].cuda()
         batch[k] = Variable(batch[k])
@@ -696,7 +696,7 @@ def to_torch_nested_batch_helper(batch, float_data_names, gpu):
     for k in float_data_names:
         k_b = []
         for x in batch[k]:
-            nx = np.asarray(x)
+            nx = np.asarray(x).astype(np.float)
             tx = torch.from_numpy(nx).float()
             if torch.cuda.is_available() and gpu:
                 tx = tx.cuda()

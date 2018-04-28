@@ -55,9 +55,9 @@ class Replay(Memory):
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
         self.reset_states()
-        self.actions = np.zeros((self.max_size, self.action_dim))
+        self.actions = np.zeros((self.max_size, self.action_dim), dtype=np.uint16)
         self.rewards = np.zeros((self.max_size, 1))
-        self.dones = np.zeros((self.max_size, 1))
+        self.dones = np.zeros((self.max_size, 1), dtype=np.uint8)
         self.priorities = np.zeros((self.max_size, 1))
         self.true_size = 0
         self.head = -1  # Index of most recent experience
@@ -137,12 +137,12 @@ class Replay(Memory):
 
     def print_memory_info(self):
         '''Prints size of all of the memory arrays'''
-        logger.info(f'MEMORY: states :{self.states.shape}')
-        logger.info(f'MEMORY: next states :{self.next_states.shape}')
-        logger.info(f'MEMORY: actions :{self.actions.shape}')
-        logger.info(f'MEMORY: dones :{self.dones.shape}')
-        logger.info(f'MEMORY: rewards :{self.rewards.shape}')
-        logger.info(f'MEMORY: priorities :{self.priorities.shape}')
+        logger.info(f'MEMORY: states :{self.states.shape} dtype: {self.states.dtype}')
+        logger.info(f'MEMORY: next states :{self.next_states.shape} dtype: {self.next_states.dtype}')
+        logger.info(f'MEMORY: actions :{self.actions.shape} dtype: {self.actions.dtype}')
+        logger.info(f'MEMORY: dones :{self.dones.shape} dtype: {self.dones.dtype}')
+        logger.info(f'MEMORY: rewards :{self.rewards.shape} dtype: {self.rewards.dtype}')
+        logger.info(f'MEMORY: priorities :{self.priorities.shape} dtype: {self.priorities.dtype}')
 
 
 class StackReplay(Replay):
@@ -218,7 +218,8 @@ class Atari(Replay):
     def reset_states(self):
         '''Initializes the state and next state arrays'''
         self.state_dim = (84, 84, 4)
-        super(Atari, self).reset_states()
+        self.states = np.zeros((self.max_size, *self.state_dim), dtype=np.float16)
+        self.next_states = np.zeros((self.max_size, *self.state_dim), dtype=np.float16)
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
