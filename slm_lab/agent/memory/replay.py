@@ -137,12 +137,12 @@ class Replay(Memory):
 
     def print_memory_info(self):
         '''Prints size of all of the memory arrays'''
-        logger.info(f'MEMORY: states :{self.states.shape} dtype: {self.states.dtype}')
-        logger.info(f'MEMORY: next states :{self.next_states.shape} dtype: {self.next_states.dtype}')
-        logger.info(f'MEMORY: actions :{self.actions.shape} dtype: {self.actions.dtype}')
-        logger.info(f'MEMORY: dones :{self.dones.shape} dtype: {self.dones.dtype}')
-        logger.info(f'MEMORY: rewards :{self.rewards.shape} dtype: {self.rewards.dtype}')
-        logger.info(f'MEMORY: priorities :{self.priorities.shape} dtype: {self.priorities.dtype}')
+        logger.info(f'MEMORY: states :{self.states.shape} dtype: {self.states.dtype}, size: {util.total_size(self.states) / 1000000}MB')
+        logger.info(f'MEMORY: next states :{self.next_states.shape} dtype: {self.next_states.dtype}, size: {util.total_size(self.next_states) / 1000000}MB')
+        logger.info(f'MEMORY: actions :{self.actions.shape} dtype: {self.actions.dtype}, size: {util.total_size(self.actions) / 1000000}MB')
+        logger.info(f'MEMORY: dones :{self.dones.shape} dtype: {self.dones.dtype}, size: {util.total_size(self.dones) / 1000000}MB')
+        logger.info(f'MEMORY: rewards :{self.rewards.shape} dtype: {self.rewards.dtype}, size: {util.total_size(self.rewards) / 1000000}MB')
+        logger.info(f'MEMORY: priorities :{self.priorities.shape} dtype: {self.priorities.dtype}, size: {util.total_size(self.priorities) / 1000000}MB')
 
 
 class StackReplay(Replay):
@@ -233,7 +233,7 @@ class Atari(Replay):
             del self.state_buffer[0]
         state = util.transform_image(state)
         self.state_buffer.append(state)
-        processed_state = np.stack(self.state_buffer, axis=-1)
+        processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
         return processed_state
 
     @lab_api
