@@ -44,12 +44,9 @@ RUN yarn install
 COPY environment.yml environment.yml
 RUN conda env update -f environment.yml
 
-ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64
-
 # copy file at last to not trigger changes above unnecessarily
 COPY . .
 
-RUN source activate lab && \
-    yarn test
+RUN yarn test
 
 CMD ["/bin/bash"]
