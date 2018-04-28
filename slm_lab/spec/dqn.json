@@ -634,11 +634,11 @@
         },
         "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_factor": 0.1,
-        "decay_lr_frequency": 100000,
-        "decay_lr_min_timestep": 100000,
+        "decay_lr_factor": 0.15,
+        "decay_lr_frequency": 80000,
+        "decay_lr_min_timestep": 80000,
         "update_type": "replace",
-        "update_frequency": 500,
+        "update_frequency": 600,
         "polyak_weight": 0.993,
         "gpu": false
       }
@@ -653,7 +653,7 @@
       "num": 1
     },
     "meta": {
-      "max_session": 2,
+      "max_session": 1,
       "max_trial": 16,
       "search": "RandomSearch",
       "max_generation": 4,
