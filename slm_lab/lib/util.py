@@ -769,7 +769,9 @@ def total_size(o, handlers={}, verbose=False):
                     OtherContainerClass: OtherContainerClass.get_elements}
     Source: https://code.activestate.com/recipes/577504/
     """
-    dict_handler = def lambda_fn(d): return chain.from_iterable(d.items())
+    def lambda_fn(d):
+        return chain.from_iterable(d.items())
+    dict_handler = lambda_fn
     all_handlers = {tuple: iter,
                     list: iter,
                     deque: iter,
