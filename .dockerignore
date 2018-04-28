@@ -33,6 +33,7 @@ gym/
 
 # Data files
 config/
+!config/example_default.json
 data/
 model/
 nb.py

@@ -1,4 +1,4 @@
-FROM floydhub/pytorch:0.3.0-py3.22 AS pytorch_container
+FROM tensorflow/tensorflow:1.8.0-py3
 
 LABEL maintainer="kengzwl@gmail.com"
 LABEL website="https://github.com/kengz/SLM-Lab"
@@ -47,6 +47,7 @@ RUN conda env update -f environment.yml
 # copy file at last to not trigger changes above unnecessarily
 COPY . .
 
+RUN ./bin/copy_config
 RUN yarn test
 
 CMD ["/bin/bash"]
