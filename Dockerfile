@@ -48,6 +48,10 @@ RUN conda env update -f environment.yml
 COPY . .
 
 RUN ./bin/copy_config
-RUN yarn test
+
+RUN find . -name "__pycache__" -print0 | xargs -0 rm -rf && \
+    find . -name "*.pyc" -print0 | xargs -0 rm -rf && \
+    source activate lab && \
+    yarn test
 
 CMD ["/bin/bash"]
