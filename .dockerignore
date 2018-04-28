@@ -1,14 +1,45 @@
-__pycache__
-*.pyc
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
 *.egg*
 *.manifest
-.ipynb_checkpoints
 .cache
-config/default.json
-data/
+build/
+dist/
+src/
 htmlcov/
-node_modules/
-.coverage
 coverage.xml
-nb.py
+.coverage
+.env
+.venv
+venv/
+ml-agents/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# NodeJS
+node_modules/
+
+# Gym
+gym/
+
+# System
 .DS_Store
+
+# Unity environment
+*.app
+
+# Data files
+config/
+data/
+model/
+nb.py
+*.html
+*.log
+*.meta
+*.tfl*
+*.xls
+*.xlsx
+*checkpoint*
