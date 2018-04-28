@@ -39,6 +39,7 @@ class Replay(Memory):
         self.total_experiences = 0  # To track total experiences encountered even with forgetting
         self.stacked = False  # Memory does not stack states
         self.atari = False  # Memory is not specialised for Atari games
+        self.last_done = None
         self.reset()
         self.print_memory_info()
 
@@ -63,10 +64,12 @@ class Replay(Memory):
 
     @lab_api
     def update(self, action, reward, state, done):
-        '''Interface method to update memory'''
-        if not np.isnan(reward):
+        '''Interface method to update memory.
+        Guard for nan rewards and last state from previous episode'''
+        if (not np.isnan(reward)) and (self.last_done != 1):
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
+        self.last_done = done
 
     def add_experience(self, state, action, reward, next_state, done, priority=1):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
@@ -185,9 +188,10 @@ class StackReplay(Replay):
         state = self.preprocess_state(state)
         logger.debug(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
         logger.debug2(f'state buffer: {self.state_buffer}, state: {state}')
-        if not np.isnan(reward):
+        if (not np.isnan(reward)) and (self.last_done != 1):
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
+        self.last_done = done
         if done:
             '''Clear buffer so there are no experiences from previous states spilling over to new episodes'''
             self.clear_buffer()
@@ -238,9 +242,10 @@ class Atari(Replay):
         state = self.preprocess_state(state)
         reward = max(-1, min(1, reward))
         logger.debug3(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
-        if not np.isnan(reward):
+        if (not np.isnan(reward)) and (self.last_done != 1):
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
+        self.last_done = done
         if done:
             '''Clear buffer so there are no experiences from previous states spilling over to new episodes'''
             self.clear_buffer()
