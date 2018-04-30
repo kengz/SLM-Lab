@@ -24,6 +24,7 @@ MA_WINDOW = 100
 logger = logger.get_logger(__name__)
 
 
+# @util.fn_timer
 def get_session_data(session):
     '''
     Gather data from session: MDP, Agent, Env data, hashed by aeb; then aggregate.
@@ -53,6 +54,10 @@ def get_session_data(session):
         aeb_df.reset_index(drop=False, inplace=True)
         session_mdp_data[aeb], session_data[aeb] = mdp_df, aeb_df
     logger.debug(f'{session_data}')
+    data_size_in_bytes = util.total_size(session_mdp_data)
+    logger.debug(f'Size of session data: {data_size_in_bytes / 1000000} MB')
+    if data_size_in_bytes / 1000000 > 25:
+        logger.warn(f'Session data > 25 MB')
     return session_mdp_data, session_data
 
 

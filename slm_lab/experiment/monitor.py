@@ -106,6 +106,11 @@ class DataSpace:
             self.data = new_data
             self.swap_data = new_data.swapaxes(0, 1)
         self.data_history.append(self.data)
+        if self.data_name == 'state':
+            # Hack to keep size of data storage small - only store most recent state
+            if len(self.data_history) > 1:
+                nan = np.zeros_like(self.data_history[-1])
+                self.data_history[-2] = nan
         return self.data
 
     def get(self, a=None, e=None):
@@ -206,6 +211,7 @@ class AEBSpace:
         else:
             return [self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v)]
 
+    # @util.fn_timer
     def tick_clocks(self, session):
         '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''
         from slm_lab.experiment import analysis
@@ -220,7 +226,11 @@ class AEBSpace:
             if done:
                 done_space.data[:, env.e, :] = 1.
                 done_space.swap_data[env.e, :, :] = 1.
-                msg = f'Done: trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e} epi {clock.get("epi")}, t {clock.get("t")}'
+                session_mdp_data, session_data = analysis.get_session_data(session)
+                reward = session_data[(0, 0, 0)]['reward'].iloc[-1]
+                last_k_rewards = min(clock.get("epi"), 100)
+                mean_reward = session_data[(0, 0, 0)]['reward'].iloc[-last_k_rewards:].mean()
+                msg = f'Done: trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e} epi {clock.get("epi")}, t {clock.get("t")}, reward {reward:.2f}, mean reward (last 100 epis) {mean_reward:.2f}'
                 logger.info(msg)
                 clock.tick('epi')
             else:
@@ -239,7 +249,8 @@ class AEBSpace:
                 if env_epi > max(analysis.MA_WINDOW, body.env.max_episode / 2):
                     aeb_fitness_sr = analysis.calc_aeb_fitness_sr(aeb_df, body.env.name)
                     strength = aeb_fitness_sr['strength']
-                    env_early_stop = strength < analysis.NOISE_WINDOW
+                    # env_early_stop = strength < analysis.NOISE_WINDOW
+                    env_early_stop = False
                 else:
                     env_early_stop = False
                 env_early_stops.append(env_early_stop)

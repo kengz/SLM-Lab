@@ -3,18 +3,29 @@ from slm_lab import ROOT_DIR
 from torch.autograd import Variable
 import collections
 import colorlover as cl
+from functools import wraps
 import json
 import math
 import multiprocessing as mp
 import numpy as np
+import scipy as sp
 import os
 import pandas as pd
 import pydash as _
 import regex as re
+import time
 import torch
 import ujson
 import yaml
 import pprint
+from scipy.misc import imsave
+from sys import getsizeof, stderr
+from itertools import chain
+from collections import deque
+try:
+    from reprlib import repr
+except ImportError:
+    pass
 
 NUM_CPUS = mp.cpu_count()
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
@@ -661,7 +672,7 @@ def to_torch_batch(batch, gpu):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch Variable'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
     for k in float_data_names:
-        batch[k] = torch.from_numpy(batch[k]).float()
+        batch[k] = torch.from_numpy(batch[k].astype(np.float)).float()
         if torch.cuda.is_available() and gpu:
             batch[k] = batch[k].cuda()
         batch[k] = Variable(batch[k])
@@ -685,7 +696,7 @@ def to_torch_nested_batch_helper(batch, float_data_names, gpu):
     for k in float_data_names:
         k_b = []
         for x in batch[k]:
-            nx = np.asarray(x)
+            nx = np.asarray(x).astype(np.float)
             tx = torch.from_numpy(nx).float()
             if torch.cuda.is_available() and gpu:
                 tx = tx.cuda()
@@ -717,3 +728,85 @@ def convert_to_one_hot(data, categories, gpu):
     if torch.cuda.is_available() and gpu:
         data_onehot = data_onehot.cuda()
     return Variable(data_onehot)
+
+
+def resize_image(im):
+    return sp.misc.imresize(im, (110, 84))
+
+
+def crop_image(im):
+    return im[-84:, :]
+
+
+def normalize_image(im):
+    return np.divide(im, 255.0)
+
+
+def transform_image(im):
+    '''
+    Image preprocessing from the paper Playing Atari with Deep Reinforcement Learning, 2013
+    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84, taking bottomost rows of image
+    '''
+    if im.ndim != 3:
+        print(f'Unexpected image dimension: {im.ndim}, {im.shape}')
+    # imsave('atari_before.png', im)
+    im = np.dot(im[..., :3], [0.299, 0.587, 0.114])
+    im = resize_image(im)
+    im = crop_image(im)
+    # imsave('atari_after.png', im)
+    im = normalize_image(im)
+    return im
+
+
+def total_size(o, handlers={}, verbose=False):
+    """ Returns the approximate memory footprint an object and all of its contents.
+
+    Automatically finds the contents of the following builtin containers and
+    their subclasses:  tuple, list, deque, dict, set and frozenset.
+    To search other containers, add handlers to iterate over their contents:
+
+        handlers = {SomeContainerClass: iter,
+                    OtherContainerClass: OtherContainerClass.get_elements}
+    Source: https://code.activestate.com/recipes/577504/
+    """
+    def lambda_fn(d):
+        return chain.from_iterable(d.items())
+    dict_handler = lambda_fn
+    all_handlers = {tuple: iter,
+                    list: iter,
+                    deque: iter,
+                    dict: dict_handler,
+                    set: iter,
+                    frozenset: iter,
+                    }
+    all_handlers.update(handlers)     # user handlers take precedence
+    seen = set()                      # track which object id's have already been seen
+    default_size = getsizeof(0)       # estimate sizeof object without __sizeof__
+
+    def sizeof(o):
+        if id(o) in seen:       # do not double count the same object
+            return 0
+        seen.add(id(o))
+        s = getsizeof(o, default_size)
+
+        if verbose:
+            print(s, type(o), repr(o), file=stderr)
+
+        for typ, handler in all_handlers.items():
+            if isinstance(o, typ):
+                s += sum(map(sizeof, handler(o)))
+                break
+        return s
+
+    return sizeof(o)
+
+
+def fn_timer(function):
+    @wraps(function)
+    def function_timer(*args, **kwargs):
+        t0 = time.time()
+        result = function(*args, **kwargs)
+        t1 = time.time()
+        print("Time %s %s: %s seconds" % (function, function.__name__, str(t1 - t0)))
+        return result
+    return function_timer
