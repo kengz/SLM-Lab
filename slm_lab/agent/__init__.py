@@ -76,6 +76,10 @@ class Agent:
         self.len_state_buffer = 0
         if spec['memory']['name'].find('NStep') != -1:
             self.len_state_buffer = spec['memory']['length_history']
+        elif spec['memory']['name'].find('Stack') != -1:
+            self.len_state_buffer = spec['memory']['length_history']
+        elif spec['memory']['name'].find('Atari') != -1:
+            self.len_state_buffer = 4
 
     @lab_api
     def post_body_init(self):
@@ -93,12 +97,14 @@ class Agent:
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.reset_last_state(state_a[(e, b)])
 
+    # @util.fn_timer
     @lab_api
     def act(self, state_a):
         '''Standard act method from algorithm.'''
         action_a = self.algorithm.act(state_a)
         return action_a
 
+    # @util.fn_timer
     @lab_api
     def update(self, action_a, reward_a, state_a, done_a):
         '''

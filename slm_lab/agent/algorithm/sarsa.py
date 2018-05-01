@@ -62,6 +62,7 @@ class SARSA(Algorithm):
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
             gpu=_.get(net_spec, 'gpu'),
+            decay_lr=_.get(net_spec, 'decay_lr_factor'),
         ))
         if net_spec['type'].find('Recurrent') != -1:
             self.net = getattr(net, net_spec['type'])(
