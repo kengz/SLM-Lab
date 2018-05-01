@@ -29,6 +29,7 @@
         },
         "batch_size": 32,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -49,8 +50,7 @@
       "max_session": 4,
       "max_trial": null,
       "search": "EvolutionarySearch",
-      "max_generation": 4,
-      "train_mode": true
+      "max_generation": 4
     },
     "search": {
       "agent": [{
@@ -84,7 +84,8 @@
       },
       "memory": {
         "name": "Replay",
-        "max_size": 10000
+        "max_size": 10000,
+        "length_history": 4
       },
       "net": {
         "type": "MLPNet",
@@ -96,6 +97,7 @@
         },
         "batch_size": 32,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -106,17 +108,16 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 200
+      "max_episode": 100
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 20,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -162,6 +163,7 @@
         },
         "batch_size": 32,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -181,8 +183,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -225,6 +226,7 @@
         },
         "batch_size": 32,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -248,8 +250,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "multihead_dqn_cartpole": {
@@ -282,6 +283,7 @@
         },
         "batch_size": 32,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -305,8 +307,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "multihead_dqn_cartpole_x3": {
@@ -339,6 +340,7 @@
         },
         "batch_size": 32,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -366,8 +368,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "dqn_2dball_2dball": {
@@ -400,6 +401,7 @@
         },
         "batch_size": 32,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -423,8 +425,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "dqn_2dball_cartpole": {
@@ -457,6 +458,7 @@
         },
         "batch_size": 32,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -480,8 +482,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "dqn_test_case": {
@@ -517,6 +518,7 @@
         },
         "batch_size": 16,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -536,11 +538,69 @@
     "meta": {
       "max_session": 3,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "dqn_lunar": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.08,
+        "explore_anneal_epi": 175,
+        "gamma": 0.99,
+        "training_epoch": 5,
+        "training_frequency": 1,
+        "training_iters_per_batch": 3,
+        "training_min_timestep": 1000
+      },
+      "memory": {
+        "name": "StackReplay",
+        "max_size": 100000,
+        "length_history": 4
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.0002
+        },
+        "loss": {
+          "name": "smooth_l1_loss"
+        },
+        "batch_size": 32,
+        "decay_lr": true,
+        "decay_lr_factor": 0.9,
+        "decay_lr_frequency": 5000,
+        "decay_lr_min_timestep": 50000,
+        "update_type": "replace",
+        "update_frequency": 500,
+        "polyak_weight": 0.9,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 600
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 1,
+      "max_trial": null,
+      "search": "EvolutionarySearch",
+      "max_generation": 4
+    },
+  },
+  "dqn_lunar_search": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -552,13 +612,14 @@
         "explore_anneal_epi": 150,
         "gamma": 0.99,
         "training_epoch": 5,
-        "training_frequency": 10,
+        "training_frequency": 1,
         "training_iters_per_batch": 1,
-        "training_min_timestep": 200
+        "training_min_timestep": 1000
       },
       "memory": {
-        "name": "Replay",
-        "max_size": 10000
+        "name": "StackReplay",
+        "max_size": 100000,
+        "length_history": 4
       },
       "net": {
         "type": "MLPNet",
@@ -568,36 +629,46 @@
           "name": "Adam",
           "lr": 0.005
         },
+        "loss": {
+          "name": "mse_loss"
+        },
         "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_frequency": 10000,
-        "decay_lr_min_timestep": 10000,
+        "decay_lr_factor": 0.15,
+        "decay_lr_frequency": 80000,
+        "decay_lr_min_timestep": 80000,
         "update_type": "replace",
-        "update_frequency": 1,
-        "polyak_weight": 0.9,
-        "gpu": true
+        "update_frequency": 600,
+        "polyak_weight": 0.993,
+        "gpu": false
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 400
+      "max_episode": 600
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 3,
-      "max_trial": 15,
+      "max_session": 1,
+      "max_trial": 16,
       "search": "RandomSearch",
-      "train_mode": true
+      "max_generation": 4,
+      "train_mode": true,
     },
     "search": {
       "agent": [{
+        "memory": {
+          "length_history__choice": [3, 4, 5]
+        },
         "net": {
-          "hid_layers_activation__choice": ["sigmoid", "relu"],
-          "update_frequency__choice": [1, 200, 500]
+          "optim": {
+            "lr__uniform": [0.001, 0.01]
+          },
+          "update_frequency__choice": [500, 750, 1000],
         },
       }]
     }

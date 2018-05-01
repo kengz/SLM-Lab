@@ -1,6 +1,6 @@
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.experiment.control import Session, Trial, Experiment
-from slm_lab.lib import util, logger
+from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 from flaky import flaky
 import pytest
@@ -27,7 +27,7 @@ def generic_algo_test(spec, algo_name):
 
 
 @pytest.mark.skip(reason="Crashes on CI")
-@flaky(max_runs=3)
+@flaky(max_runs=5)
 def test_sarsa():
     algo_name = 'unit_test_sarsa'
     spec = spec_util.get('test.json', 'unit_test_sarsa')
@@ -35,7 +35,7 @@ def test_sarsa():
 
 
 @pytest.mark.skip(reason="Crashes on CI")
-@flaky(max_runs=3)
+@flaky(max_runs=5)
 def test_sarsa_episodic():
     algo_name = 'unit_test_sarsa_episodic'
     spec = spec_util.get('test.json', 'unit_test_sarsa')
@@ -45,10 +45,11 @@ def test_sarsa_episodic():
 
 
 @pytest.mark.skip(reason="Crashes on CI")
-@flaky(max_runs=3)
+@flaky(max_runs=5)
 def test_sarsa_recurrent():
     algo_name = 'unit_test_sarsa_recurrent'
     spec = spec_util.get('test.json', 'unit_test_sarsa')
+    spec['name'] = algo_name
     spec['agent'][0]['memory']['name'] = "OnPolicyNStepBatchReplay"
     spec['agent'][0]['memory']['length_history'] = 4
     spec['agent'][0]['net']['type'] = "RecurrentNet"

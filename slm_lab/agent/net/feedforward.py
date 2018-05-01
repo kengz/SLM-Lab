@@ -1,9 +1,11 @@
-from slm_lab.lib import logger
+from slm_lab.lib import logger, util
 from slm_lab.agent.net import net_util
 from torch.autograd import Variable
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+logger = logger.get_logger(__name__)
 
 
 class MLPNet(nn.Module):
@@ -20,7 +22,8 @@ class MLPNet(nn.Module):
                  loss_param=None,
                  clamp_grad=False,
                  clamp_grad_val=1.0,
-                 gpu=False):
+                 gpu=False,
+                 decay_lr=0.9):
         '''
         in_dim: dimension of the inputs
         hid_dim: list containing dimensions of the hidden layers
@@ -40,7 +43,8 @@ class MLPNet(nn.Module):
                 loss_param={'name': 'mse_loss'},
                 clamp_grad=True,
                 clamp_grad_val=2.0,
-                gpu=True)
+                gpu=True,
+                decay_lr=0.9)
         '''
         super(MLPNet, self).__init__()
         # Create net and initialize params
@@ -65,11 +69,16 @@ class MLPNet(nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
+        self.decay_lr = decay_lr
+        logger.info(f'loss fn: {self.loss_fn}')
+        logger.info(f'optimizer: {self.optim}')
+        logger.info(f'decay lr: {self.decay_lr}')
 
     def forward(self, x):
         '''The feedforward step'''
         return self.model(x)
 
+    # @util.fn_timer
     def training_step(self, x, y):
         '''
         Takes a single training step: one forward and one backwards pass
@@ -128,8 +137,8 @@ class MLPNet(nn.Module):
     def update_lr(self):
         assert 'lr' in self.optim_param
         old_lr = self.optim_param['lr']
-        self.optim_param['lr'] = old_lr * 0.9
-        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
+        self.optim_param['lr'] = old_lr * self.decay_lr
+        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
         self.optim = net_util.get_optim(self, self.optim_param)
 
 
@@ -147,7 +156,8 @@ class MLPHeterogenousHeads(MLPNet):
                  loss_param=None,
                  clamp_grad=False,
                  clamp_grad_val=1.0,
-                 gpu=False):
+                 gpu=False,
+                 decay_lr=0.9):
         '''
         in_dim: dimension of the inputs
         hid_dim: list containing dimensions of the hidden layers
@@ -167,7 +177,8 @@ class MLPHeterogenousHeads(MLPNet):
                 loss_param={'name': 'mse_loss'},
                 clamp_grad=True,
                 clamp_grad_val=2.0,
-                gpu=True)
+                gpu=True,
+                decay_lr=0.9)
         '''
         nn.Module.__init__(self)
         # Create net and initialize params
@@ -201,6 +212,10 @@ class MLPHeterogenousHeads(MLPNet):
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
+        self.decay_lr = decay_lr
+        logger.info(f'loss fn: {self.loss_fn}')
+        logger.info(f'optimizer: {self.optim}')
+        logger.info(f'decay lr: {self.decay_lr}')
 
     def forward(self, x):
         '''The feedforward step'''
@@ -235,7 +250,7 @@ class MLPHeterogenousHeads(MLPNet):
     def update_lr(self):
         assert 'lr' in self.optim_param
         old_lr = self.optim_param['lr']
-        self.optim_param['lr'] = old_lr * 0.9
+        self.optim_param['lr'] = old_lr * self.decay_lr
         logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
         self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
 
@@ -254,7 +269,8 @@ class MultiMLPNet(nn.Module):
                  loss_param=None,
                  clamp_grad=False,
                  clamp_grad_val=1.0,
-                 gpu=False):
+                 gpu=False,
+                 decay_lr=0.9):
         '''
         Multi state processing heads, single shared body, and multi action heads.
         There is one state and action head per environment
@@ -294,7 +310,8 @@ class MultiMLPNet(nn.Module):
              loss_param={'name': 'mse_loss'},
              clamp_grad=True,
              clamp_grad_val2.0,
-             gpu=False)
+             gpu=False,
+             decay_lr=0.9)
         '''
         super(MultiMLPNet, self).__init__()
         # Create net and initialize params
@@ -329,6 +346,10 @@ class MultiMLPNet(nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
+        self.decay_lr = decay_lr
+        logger.info(f'loss fn: {self.loss_fn}')
+        logger.info(f'optimizer: {self.optim}')
+        logger.info(f'decay lr: {self.decay_lr}')
 
     def make_state_heads(self, state_heads, hid_layers_activation):
         '''Creates each state head. These are stored as Sequential
@@ -468,6 +489,6 @@ class MultiMLPNet(nn.Module):
     def update_lr(self):
         assert 'lr' in self.optim_param
         old_lr = self.optim_param['lr']
-        self.optim_param['lr'] = old_lr * 0.9
-        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
+        self.optim_param['lr'] = old_lr * self.decay_lr
+        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
         self.optim = net_util.get_optim_multinet(self.params, self.optim_param)

@@ -29,11 +29,10 @@
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch",
-      "resource": {
+      "resources": {
         "num_cpus": 4,
         "num_gpus": 0
-      },
-      "train_mode": false
+      }
     },
     "search": {
       "agent": [{
@@ -72,8 +71,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "base_memory": {
@@ -100,8 +98,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "base_on_policy_memory": {
@@ -129,8 +126,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "base_on_policy_batch_memory": {
@@ -158,8 +154,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "base_prioritized_replay_memory": {
@@ -216,8 +211,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "multi_agent": {
@@ -254,8 +248,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "multi_env": {
@@ -286,8 +279,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "multi_agent_multi_env": {
@@ -328,8 +320,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "general_outer": {
@@ -370,8 +361,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "general_inner": {
@@ -412,8 +402,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "general_custom": {
@@ -458,8 +447,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   }
 }

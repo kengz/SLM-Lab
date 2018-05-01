@@ -72,10 +72,8 @@ class Session:
             if end_session:
                 break
             action_space = self.agent_space.act(state_space)
-            reward_space, state_space, done_space = self.env_space.step(
-                action_space)
-            self.agent_space.update(
-                action_space, reward_space, state_space, done_space)
+            reward_space, state_space, done_space = self.env_space.step(action_space)
+            self.agent_space.update(action_space, reward_space, state_space, done_space)
 
     def run(self):
         self.run_all_episodes()
@@ -113,21 +111,16 @@ class Trial:
         logger.info('Trial done, closing.')
 
     def run(self):
-        num_cpus = _.get(self.spec['meta'],
-                         'resources.num_cpus', util.NUM_CPUS)
+        num_cpus = _.get(self.spec['meta'], 'resources.num_cpus', util.NUM_CPUS)
         info_spaces = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
             info_spaces.append(deepcopy(self.info_space))
-        if self.spec['meta']['train_mode'] and len(info_spaces) > 1:
-            session_datas = util.parallelize_fn(
-                self.init_session_and_run, info_spaces, num_cpus)
+        if os.environ.get('lab_mode') == 'train' and len(info_spaces) > 1:
+            session_datas = util.parallelize_fn(self.init_session_and_run, info_spaces, num_cpus)
         else:  # dont parallelize when debugging to allow render
-            session_datas = [
-                self.init_session_and_run(info_space) for info_space in info_spaces
-            ]
-        self.session_data_dict = {
-            data.index[0]: data for data in session_datas}
+            session_datas = [self.init_session_and_run(info_space) for info_space in info_spaces]
+        self.session_data_dict = {data.index[0]: data for data in session_datas}
         self.data = analysis.analyze_trial(self)
         self.close()
         return self.data
@@ -152,7 +145,6 @@ class Experiment:
         info_space = info_space or InfoSpace()
         init_thread_vars(spec, info_space, unit='experiment')
         self.spec = spec
-        spec['meta']['train_mode'] = True
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.trial_data_dict = {}
