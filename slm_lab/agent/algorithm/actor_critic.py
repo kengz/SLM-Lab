@@ -1,15 +1,16 @@
-from slm_lab.agent import memory
-from slm_lab.agent import net
+from slm_lab.agent import memory, net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, decay_learning_rate
 from slm_lab.agent.algorithm.reinforce import Reinforce
 from slm_lab.agent.net import net_util
-from slm_lab.lib import util, logger
+from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import torch.nn.functional as F
 import numpy as np
 import torch
 import pydash as _
+
+logger = logger.get_logger(__name__)
 
 
 class ActorCritic(Reinforce):
@@ -68,11 +69,11 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        return self.action_policy(self, state, body)
+        return self.action_policy(self, state, body, self.gpu)
 
     @lab_api
     def body_act_continuous(self, body, state):
-        return self.action_policy(self, state, body)
+        return self.action_policy(self, state, body, self.gpu)
 
     @lab_api
     def sample(self):
@@ -81,9 +82,9 @@ class ActorCritic(Reinforce):
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         if self.is_episodic:
-            util.to_torch_nested_batch(batch)
+            util.to_torch_nested_batch(batch, self.gpu)
         else:
-            util.to_torch_batch(batch)
+            util.to_torch_batch(batch, self.gpu)
         return batch
 
     @lab_api
@@ -106,6 +107,8 @@ class ActorCritic(Reinforce):
             if self.is_episodic:
                 target = torch.cat(target)
                 states = torch.cat(states)
+            if torch.cuda.is_available() and self.gpu:
+                target = target.cuda()
             y = Variable(target.unsqueeze_(dim=-1))
             state_vals = self.get_critic_output(states, evaluate=False)
             assert state_vals.data.size() == y.data.size()
@@ -180,6 +183,8 @@ class ActorCritic(Reinforce):
         loss = 0
         for _i in range(self.training_iters_per_batch):
             target = self.get_target(batch, critic_specific=True)
+            if torch.cuda.is_available() and self.gpu:
+                target = target.cuda()
             y = Variable(target)
             loss = self.critic.training_step(batch['states'], y).data[0]
             logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
@@ -198,6 +203,8 @@ class ActorCritic(Reinforce):
                 logger.debug2(f'states: {state.size()}')
             x = torch.cat(x, dim=0)
             logger.debug2(f'Combined states: {x.size()}')
+            if torch.cuda.is_available() and self.gpu:
+                target = target.cuda()
             y = Variable(target)
             loss = self.critic.training_step(x, y).data[0]
             logger.debug2(f'Critic grad norms: {self.critic.get_grad_norms()}')
@@ -379,6 +386,8 @@ class ActorCritic(Reinforce):
             big_r = rewards[i] + self.gamma * big_r
             target.insert(0, big_r)
         target = torch.Tensor(target)
+        if torch.cuda.is_available() and self.gpu:
+            target = target.cuda()
         logger.debug3(f'Target: {target}')
         return target
 
@@ -401,6 +410,8 @@ class ActorCritic(Reinforce):
             gae = deltas[i] + self.gamma * self.lamda * gae
             advantage.insert(0, gae)
         advantage = torch.Tensor(advantage)
+        if torch.cuda.is_available() and self.gpu:
+            advantage = advantage.cuda()
         '''Add state_vals so that calc_advantage() api is preserved'''
         target = advantage + state_vals
         logger.debug3(f'Advantage: {advantage}')
@@ -422,6 +433,8 @@ class ActorCritic(Reinforce):
             loss_param=_.get(net_spec, 'loss'),  # Note: Not used for training actor
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+            gpu=_.get(net_spec, 'gpu'),
+            decay_lr=_.get(net_spec, 'decay_lr_factor'),
         ))
         if self.agent.spec['net']['use_same_optim']:
             logger.info('Using same optimizer for actor and critic')
@@ -434,6 +447,8 @@ class ActorCritic(Reinforce):
                 loss_param=_.get(net_spec, 'loss'),
                 clamp_grad=_.get(net_spec, 'clamp_grad'),
                 clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+                gpu=_.get(net_spec, 'gpu'),
+                decay_lr=_.get(net_spec, 'decay_lr_factor'),
             ))
         '''
          Below we automatically select an appropriate net based on two different conditions
@@ -541,8 +556,11 @@ class ActorCritic(Reinforce):
 
         ]))
         util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
+        logger.info(f'Training on gpu: {self.gpu}')
         '''Select appropriate function for calculating state-action-value estimate (target)'''
         self.get_target = self.get_nstep_target
         if self.use_GAE:

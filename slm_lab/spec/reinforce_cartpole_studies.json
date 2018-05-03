@@ -42,8 +42,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -96,8 +95,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -152,8 +150,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{

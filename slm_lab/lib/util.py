@@ -3,18 +3,29 @@ from slm_lab import ROOT_DIR
 from torch.autograd import Variable
 import collections
 import colorlover as cl
+from functools import wraps
 import json
 import math
 import multiprocessing as mp
 import numpy as np
+import scipy as sp
 import os
 import pandas as pd
 import pydash as _
 import regex as re
+import time
 import torch
 import ujson
 import yaml
 import pprint
+from scipy.misc import imsave
+from sys import getsizeof, stderr
+from itertools import chain
+from collections import deque
+try:
+    from reprlib import repr
+except ImportError:
+    pass
 
 NUM_CPUS = mp.cpu_count()
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
@@ -49,9 +60,7 @@ def calc_ts_diff(ts2, ts1):
     ts_diff = util.calc_ts_diff(ts2, ts1)
     # => '0:00:01'
     '''
-    delta_t = datetime.strptime(
-        ts2, FILE_TS_FORMAT) - datetime.strptime(
-        ts1, FILE_TS_FORMAT)
+    delta_t = datetime.strptime(ts2, FILE_TS_FORMAT) - datetime.strptime(ts1, FILE_TS_FORMAT)
     return str(delta_t)
 
 
@@ -136,8 +145,7 @@ def filter_nonan(arr):
 
 def fix_multiindex_dtype(df):
     '''Restore aeb multiindex dtype from string to int, when read from file'''
-    df.columns = pd.MultiIndex.from_tuples(
-        [(int(x[0]), int(x[1]), int(x[2]), x[3]) for x in df.columns])
+    df.columns = pd.MultiIndex.from_tuples([(int(x[0]), int(x[1]), int(x[2]), x[3]) for x in df.columns])
     return df
 
 
@@ -162,8 +170,7 @@ def gen_isnan(v):
 
 def get_df_aeb_list(session_df):
     '''Get the aeb list for session_df for iterating.'''
-    aeb_list = sorted(_.uniq(
-        [(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
+    aeb_list = sorted(_.uniq([(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
     return aeb_list
 
 
@@ -195,8 +202,7 @@ def get_env_path(env_name):
     '''Get the path to Unity env binaries distributed via npm'''
     env_path = smart_path(f'node_modules/slm-env-{env_name}/build/{env_name}')
     env_dir = os.path.dirname(env_path)
-    assert os.path.exists(
-        env_dir), f'Missing {env_path}. See README to install from yarn.'
+    assert os.path.exists(env_dir), f'Missing {env_path}. See README to install from yarn.'
     return env_path
 
 
@@ -209,9 +215,7 @@ def get_fn_list(a_cls):
     Get the callable, non-private functions of a class
     @returns {[*str]} A list of strings of fn names
     '''
-    fn_list = _.filter_(
-        dir(a_cls),
-        lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
+    fn_list = _.filter_(dir(a_cls), lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
     return fn_list
 
 
@@ -404,7 +408,6 @@ def override_dev_spec(spec):
     spec['meta'] = {
         'max_session': 1,
         'max_trial': 2,
-        'train_mode': False,
     }
     return spec
 
@@ -414,7 +417,6 @@ def override_test_spec(spec):
     spec['meta'] = {
         'max_session': 1,
         'max_trial': 2,
-        'train_mode': True,
     }
     return spec
 
@@ -450,19 +452,19 @@ def read(data_path, **kwargs):
     @returns {data} The read data in sensible format
     @example
 
-    data_df = util.read('test/fixture/common/util/test_df.csv')
-    data_df = util.read('test/fixture/common/util/test_df.xls')
-    data_df = util.read('test/fixture/common/util/test_df.xlsx')
+    data_df = util.read('test/fixture/lib/util/test_df.csv')
+    data_df = util.read('test/fixture/lib/util/test_df.xls')
+    data_df = util.read('test/fixture/lib/util/test_df.xlsx')
     # => <DataFrame>
 
-    data_dict = util.read('test/fixture/common/util/test_dict.json')
-    data_dict = util.read('test/fixture/common/util/test_dict.yml')
+    data_dict = util.read('test/fixture/lib/util/test_dict.json')
+    data_dict = util.read('test/fixture/lib/util/test_dict.yml')
     # => <dict>
 
-    data_list = util.read('test/fixture/common/util/test_list.json')
+    data_list = util.read('test/fixture/lib/util/test_list.json')
     # => <list>
 
-    data_str = util.read('test/fixture/common/util/test_str.txt')
+    data_str = util.read('test/fixture/lib/util/test_str.txt')
     # => <str>
     '''
     data_path = smart_path(data_path)
@@ -511,8 +513,7 @@ def s_get(cls, attr_path):
     util.s_get(self, 'aeb_space.clock')
     '''
     from_class_name = get_class_name(cls, lower=True)
-    from_idx = _.find_index(
-        SPACE_PATH, lambda s: from_class_name in (s, s.replace('_', '')))
+    from_idx = _.find_index(SPACE_PATH, lambda s: from_class_name in (s, s.replace('_', '')))
     from_idx = max(from_idx, 0)
     attr_path = attr_path.split('.')
     to_idx = SPACE_PATH.index(attr_path[0])
@@ -617,16 +618,16 @@ def write(data, data_path):
     @returns {data_path} The data path written to
     @example
 
-    data_path = util.write(data_df, 'test/fixture/common/util/test_df.csv')
-    data_path = util.write(data_df, 'test/fixture/common/util/test_df.xls')
-    data_path = util.write(data_df, 'test/fixture/common/util/test_df.xlsx')
+    data_path = util.write(data_df, 'test/fixture/lib/util/test_df.csv')
+    data_path = util.write(data_df, 'test/fixture/lib/util/test_df.xls')
+    data_path = util.write(data_df, 'test/fixture/lib/util/test_df.xlsx')
 
-    data_path = util.write(data_dict, 'test/fixture/common/util/test_dict.json')
-    data_path = util.write(data_dict, 'test/fixture/common/util/test_dict.yml')
+    data_path = util.write(data_dict, 'test/fixture/lib/util/test_dict.json')
+    data_path = util.write(data_dict, 'test/fixture/lib/util/test_dict.yml')
 
-    data_path = util.write(data_list, 'test/fixture/common/util/test_list.json')
+    data_path = util.write(data_list, 'test/fixture/lib/util/test_list.json')
 
-    data_path = util.write(data_str, 'test/fixture/common/util/test_str.txt')
+    data_path = util.write(data_str, 'test/fixture/lib/util/test_str.txt')
     '''
     data_path = smart_path(data_path)
     data_dir = os.path.dirname(data_path)
@@ -667,33 +668,39 @@ def write_as_plain(data, data_path):
     return data_path
 
 
-def to_torch_batch(batch):
+def to_torch_batch(batch, gpu):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch Variable'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
     for k in float_data_names:
-        batch[k] = Variable(torch.from_numpy(batch[k]).float())
+        batch[k] = torch.from_numpy(batch[k].astype(np.float)).float()
+        if torch.cuda.is_available() and gpu:
+            batch[k] = batch[k].cuda()
+        batch[k] = Variable(batch[k])
     return batch
 
 
-def to_torch_nested_batch(batch):
+def to_torch_nested_batch(batch, gpu):
     '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable.'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
-    return to_torch_nested_batch_helper(batch, float_data_names)
+    return to_torch_nested_batch_helper(batch, float_data_names, gpu)
 
 
-def to_torch_nested_batch_ex_rewards(batch):
+def to_torch_nested_batch_ex_rewards(batch, gpu):
     '''Mutate a nested batch (dict of lists) to make its values (excluding rewards) from numpy into PyTorch Variable.'''
     float_data_names = ['states', 'actions', 'dones', 'next_states']
-    return to_torch_nested_batch_helper(batch, float_data_names)
+    return to_torch_nested_batch_helper(batch, float_data_names, gpu)
 
 
-def to_torch_nested_batch_helper(batch, float_data_names):
+def to_torch_nested_batch_helper(batch, float_data_names, gpu):
     '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable. Excludes keys not included in float_data_names'''
     for k in float_data_names:
         k_b = []
         for x in batch[k]:
-            nx = np.asarray(x)
-            tx = Variable(torch.from_numpy(nx).float())
+            nx = np.asarray(x).astype(np.float)
+            tx = torch.from_numpy(nx).float()
+            if torch.cuda.is_available() and gpu:
+                tx = tx.cuda()
+            tx = Variable(tx)
             k_b.append(tx)
         batch[k] = k_b
     return batch
@@ -713,9 +720,93 @@ def concat_episodes(batch):
     return batch
 
 
-def convert_to_one_hot(data, categories):
+def convert_to_one_hot(data, categories, gpu):
     '''Converts categorical data to one hot representation'''
     data_onehot = torch.zeros(data.size(0), categories)
     idxs = torch.from_numpy(np.array(list(range(data.size(0)))))
-    data_onehot[idxs, data.data.long()] = 1
+    data_onehot[idxs, data.data.long().cpu()] = 1
+    if torch.cuda.is_available() and gpu:
+        data_onehot = data_onehot.cuda()
     return Variable(data_onehot)
+
+
+def resize_image(im):
+    return sp.misc.imresize(im, (110, 84))
+
+
+def crop_image(im):
+    return im[-84:, :]
+
+
+def normalize_image(im):
+    return np.divide(im, 255.0)
+
+
+def transform_image(im):
+    '''
+    Image preprocessing from the paper Playing Atari with Deep Reinforcement Learning, 2013
+    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84, taking bottomost rows of image
+    '''
+    if im.ndim != 3:
+        print(f'Unexpected image dimension: {im.ndim}, {im.shape}')
+    # imsave('atari_before.png', im)
+    im = np.dot(im[..., :3], [0.299, 0.587, 0.114])
+    im = resize_image(im)
+    im = crop_image(im)
+    # imsave('atari_after.png', im)
+    im = normalize_image(im)
+    return im
+
+
+def total_size(o, handlers={}, verbose=False):
+    """ Returns the approximate memory footprint an object and all of its contents.
+
+    Automatically finds the contents of the following builtin containers and
+    their subclasses:  tuple, list, deque, dict, set and frozenset.
+    To search other containers, add handlers to iterate over their contents:
+
+        handlers = {SomeContainerClass: iter,
+                    OtherContainerClass: OtherContainerClass.get_elements}
+    Source: https://code.activestate.com/recipes/577504/
+    """
+    def lambda_fn(d):
+        return chain.from_iterable(d.items())
+    dict_handler = lambda_fn
+    all_handlers = {tuple: iter,
+                    list: iter,
+                    deque: iter,
+                    dict: dict_handler,
+                    set: iter,
+                    frozenset: iter,
+                    }
+    all_handlers.update(handlers)     # user handlers take precedence
+    seen = set()                      # track which object id's have already been seen
+    default_size = getsizeof(0)       # estimate sizeof object without __sizeof__
+
+    def sizeof(o):
+        if id(o) in seen:       # do not double count the same object
+            return 0
+        seen.add(id(o))
+        s = getsizeof(o, default_size)
+
+        if verbose:
+            print(s, type(o), repr(o), file=stderr)
+
+        for typ, handler in all_handlers.items():
+            if isinstance(o, typ):
+                s += sum(map(sizeof, handler(o)))
+                break
+        return s
+
+    return sizeof(o)
+
+
+def fn_timer(function):
+    @wraps(function)
+    def function_timer(*args, **kwargs):
+        t0 = time.time()
+        result = function(*args, **kwargs)
+        t1 = time.time()
+        print("Time %s %s: %s seconds" % (function, function.__name__, str(t1 - t0)))
+        return result
+    return function_timer

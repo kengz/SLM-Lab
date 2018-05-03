@@ -223,7 +223,7 @@ def test_smart_path():
     ('test_df.xls', pd.DataFrame),
 ])
 def test_write_read_as_df(test_df, filename, dtype):
-    data_path = f'test/fixture/common/util/{filename}'
+    data_path = f'test/fixture/lib/util/{filename}'
     util.write(test_df, util.smart_path(data_path))
     assert os.path.exists(data_path)
     data_df = util.read(util.smart_path(data_path))
@@ -235,7 +235,7 @@ def test_write_read_as_df(test_df, filename, dtype):
     ('test_dict.yml', dict),
 ])
 def test_write_read_as_plain_dict(test_dict, filename, dtype):
-    data_path = f'test/fixture/common/util/{filename}'
+    data_path = f'test/fixture/lib/util/{filename}'
     util.write(test_dict, util.smart_path(data_path))
     assert os.path.exists(data_path)
     data_dict = util.read(util.smart_path(data_path))
@@ -246,7 +246,7 @@ def test_write_read_as_plain_dict(test_dict, filename, dtype):
     ('test_list.json', list),
 ])
 def test_write_read_as_plain_list(test_list, filename, dtype):
-    data_path = f'test/fixture/common/util/{filename}'
+    data_path = f'test/fixture/lib/util/{filename}'
     util.write(test_list, util.smart_path(data_path))
     assert os.path.exists(data_path)
     data_dict = util.read(util.smart_path(data_path))
@@ -257,7 +257,7 @@ def test_write_read_as_plain_list(test_list, filename, dtype):
     ('test_str.txt', str),
 ])
 def test_write_read_as_plain_list(test_str, filename, dtype):
-    data_path = f'test/fixture/common/util/{filename}'
+    data_path = f'test/fixture/lib/util/{filename}'
     util.write(test_str, util.smart_path(data_path))
     assert os.path.exists(data_path)
     data_dict = util.read(util.smart_path(data_path))

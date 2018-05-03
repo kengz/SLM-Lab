@@ -11,6 +11,8 @@ import pydash as _
 import sys
 import torch
 
+logger = logger.get_logger(__name__)
+
 
 class VanillaDQN(SARSA):
     '''Implementation of a simple DQN algorithm.
@@ -65,8 +67,11 @@ class VanillaDQN(SARSA):
         util.set_attr(self, _.pick(net_spec, [
             # how many examples to learn per training iteration
             'batch_size',
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
+        logger.info(f'Training on gpu: {self.gpu}')
 
     @lab_api
     def init_algo_params(self):
@@ -116,9 +121,10 @@ class VanillaDQN(SARSA):
         batches = [body.memory.sample(self.batch_size)
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
-        util.to_torch_batch(batch)
+        util.to_torch_batch(batch, self.gpu)
         return batch
 
+    # @util.fn_timer
     @lab_api
     def train(self):
         '''Completes one training step for the agent if it is time to train.
@@ -138,6 +144,8 @@ class VanillaDQN(SARSA):
                 batch_loss = 0.0
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
+                    if torch.cuda.is_available() and self.gpu:
+                        q_targets = q_targets.cuda()
                     y = Variable(q_targets)
                     loss = self.net.training_step(batch['states'], y)
                     batch_loss += loss.data[0]
@@ -196,38 +204,76 @@ class DQNBase(VanillaDQN):
     def init_nets(self):
         '''Initialize networks'''
         body = self.agent.nanflat_body_a[0]  # single-body algo
-        state_dim = body.state_dim
-        action_dim = body.action_dim
+        self.state_dim = body.state_dim
+        self.action_dim = body.action_dim
         net_spec = self.agent.spec['net']
+        logger.debug3(f'State dim: {self.state_dim}')
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
             optim_param=_.get(net_spec, 'optim'),
             loss_param=_.get(net_spec, 'loss'),
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+            gpu=_.get(net_spec, 'gpu'),
+            decay_lr=_.get(net_spec, 'decay_lr_factor'),
         ))
+        ''' Make adjustments for Atari mode '''
+        if self.agent.spec['memory']['name'].find('Atari') != -1:
+            self.state_dim = (84, 84, 4)
+            logger.debug3(f'State dim: {self.state_dim}')
+            net_kwargs = util.compact_dict(dict(
+                hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
+                optim_param=_.get(net_spec, 'optim'),
+                loss_param=_.get(net_spec, 'loss'),
+                clamp_grad=_.get(net_spec, 'clamp_grad'),
+                clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+                batch_norm=_.get(net_spec, 'batch_norm'),
+                gpu=_.get(net_spec, 'gpu'),
+                decay_lr=_.get(net_spec, 'decay_lr_factor'),
+            ))
+        elif self.agent.spec['memory']['name'].find('Stack') != -1:
+            ''' Make adjustments for StackedReplay memory '''
+            if net_spec['type'].find('MLP') == -1:
+                logger.warn(f'StackedReplay should only be used with MLPs, to stack states with ConvNets use Atari memory. It is not necessary to stack states with RNNs''')
+                sys.exit()
+            self.state_dim = self.state_dim * self.agent.spec['memory']['length_history']
+            logger.debug3(f'State dim: {self.state_dim}')
+            net_kwargs = util.compact_dict(dict(
+                hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
+                optim_param=_.get(net_spec, 'optim'),
+                loss_param=_.get(net_spec, 'loss'),
+                clamp_grad=_.get(net_spec, 'clamp_grad'),
+                clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+                batch_norm=_.get(net_spec, 'batch_norm'),
+                gpu=_.get(net_spec, 'gpu'),
+                decay_lr=_.get(net_spec, 'decay_lr_factor'),
+            ))
         if net_spec['type'].find('Recurrent') != -1:
             logger.warn(f'Recurrent networks not supported with DQN family of algorithms. Please select another network type''')
             sys.exit()
         self.net = getattr(net, net_spec['type'])(
-            state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
+            self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)
         self.target_net = getattr(net, net_spec['type'])(
-            state_dim, net_spec['hid_layers'], action_dim, **net_kwargs)
+            self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)
         self.online_net = self.target_net
         self.eval_net = self.target_net
         util.set_attr(self, _.pick(net_spec, [
             'batch_size',
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
+        logger.info(f'Training on gpu: {self.gpu}')
         # Default network update params for base
         self.update_type = 'replace'
         self.update_frequency = 1
         self.polyak_weight = 0.0
 
+    # @util.fn_timer
     def compute_q_target_values(self, batch):
-        '''Computes the target Q values for a batch of experiences. Note that the net references may differe based on algorithm.'''
+        '''Computes the target Q values for a batch of experiences. Note that the net references may differ based on algorithm.'''
         q_sts = self.net.wrap_eval(batch['states'])
-        # Use act_select network to select actions in next state
+        # Use online_net to select actions in next state
         q_next_st_acts = self.online_net.wrap_eval(batch['next_states'])
         _val, q_next_acts = torch.max(q_next_st_acts, dim=1)
         logger.debug2(f'Q next action: {q_next_acts.size()}')
@@ -236,6 +282,8 @@ class DQNBase(VanillaDQN):
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         logger.debug2(f'Q next_states: {q_next_sts.size()}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
+        if torch.cuda.is_available() and self.gpu:
+            idx = idx.cuda()
         q_next_st_maxs = q_next_sts[idx, q_next_acts]
         q_next_st_maxs.unsqueeze_(1)
         logger.debug2(f'Q next_states max {q_next_st_maxs.size()}')
@@ -253,7 +301,7 @@ class DQNBase(VanillaDQN):
 
     def update_nets(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
-        t = space_clock.get('t')
+        t = space_clock.get('total_t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
@@ -300,7 +348,7 @@ class DoubleDQN(DQN):
     def update_nets(self):
         res = super(DoubleDQN, self).update_nets()
         space_clock = util.s_get(self, 'aeb_space.clock')
-        t = space_clock.get('t')
+        t = space_clock.get('total_t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
                 self.online_net = self.net
@@ -329,6 +377,8 @@ class MultitaskDQN(DQN):
             loss_param=_.get(net_spec, 'loss'),
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+            gpu=_.get(net_spec, 'gpu'),
+            decay_lr=_.get(net_spec, 'decay_lr_factor'),
         ))
         self.net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim, **net_kwargs)
@@ -339,8 +389,11 @@ class MultitaskDQN(DQN):
         util.set_attr(self, _.pick(net_spec, [
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
-            'update_type', 'update_frequency', 'polyak_weight',
+            'update_type', 'update_frequency', 'polyak_weight', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
+        logger.info(f'Training on gpu: {self.gpu}')
 
     @lab_api
     def sample(self):
@@ -349,7 +402,7 @@ class MultitaskDQN(DQN):
                    for body in self.agent.nanflat_body_a]
         # Package data into pytorch variables
         for batch_b in batches:
-            util.to_torch_batch(batch_b)
+            util.to_torch_batch(batch_b, self.gpu)
         # Concat state
         combined_states = torch.cat(
             [batch_b['states'] for batch_b in batches], dim=1)
@@ -388,6 +441,8 @@ class MultitaskDQN(DQN):
         logger.debug2(f'Q next_states: {q_next_sts.size()}')
         logger.debug3(f'Q next_states: {q_next_sts}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
+        if torch.cuda.is_available() and self.gpu:
+            idx = idx.cuda()
         q_next_st_maxs = []
         for q_next_act_b in q_next_acts:
             q_next_st_max_b = q_next_sts[idx, q_next_act_b]
@@ -405,6 +460,8 @@ class MultitaskDQN(DQN):
                 np.broadcast_to(
                     q_targets_max_b,
                     (q_targets_max_b.shape[0], self.action_dims[b])))
+            if torch.cuda.is_available() and self.gpu:
+                q_targets_max_b = q_targets_max_b.cuda()
             q_targets_maxs.append(q_targets_max_b)
             logger.debug2(f'Q targets max: {q_targets_max_b.size()}')
         q_targets_maxs = torch.cat(q_targets_maxs, dim=1)
@@ -427,7 +484,7 @@ class MultitaskDQN(DQN):
     def act(self, state_a):
         '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
         nanflat_action_a = self.action_policy(
-            self.agent.nanflat_body_a, state_a, self.net, self.nanflat_explore_var_a)
+            self.agent.nanflat_body_a, state_a, self.net, self.nanflat_explore_var_a, self.gpu)
         action_a = self.nanflat_to_data_a('action', nanflat_action_a)
         return action_a
 
@@ -460,6 +517,8 @@ class MultiHeadDQN(MultitaskDQN):
             loss_param=_.get(net_spec, 'loss'),
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+            gpu=_.get(net_spec, 'gpu'),
+            decay_lr=_.get(net_spec, 'decay_lr_factor'),
         ))
         self.net = getattr(net, net_spec['type'])(
             self.state_dims, net_spec['hid_layers'], self.action_dims, **net_kwargs)
@@ -470,8 +529,11 @@ class MultiHeadDQN(MultitaskDQN):
         util.set_attr(self, _.pick(net_spec, [
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
-            'update_type', 'update_frequency', 'polyak_weight',
+            'update_type', 'update_frequency', 'polyak_weight', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
+        logger.info(f'Training on gpu: {self.gpu}')
 
     @lab_api
     def sample(self):
@@ -480,7 +542,7 @@ class MultiHeadDQN(MultitaskDQN):
                    for body in self.agent.nanflat_body_a]
         # Package data into pytorch variables
         for batch_b in batches:
-            util.to_torch_batch(batch_b)
+            util.to_torch_batch(batch_b, self.gpu)
         batch = {'states': [], 'next_states': []}
         for b in batches:
             batch['states'].append(b['states'])
@@ -505,6 +567,8 @@ class MultiHeadDQN(MultitaskDQN):
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         logger.debug3(f'Q next_states: {q_next_sts}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
+        if torch.cuda.is_available() and self.gpu:
+            idx = idx.cuda()
         q_next_st_maxs = []
         for q_next_st_val_b, q_next_act_b in zip(q_next_sts, q_next_acts):
             q_next_st_max_b = q_next_st_val_b[idx, q_next_act_b]
@@ -551,6 +615,8 @@ class MultiHeadDQN(MultitaskDQN):
                 batch = self.sample()
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
+                    if torch.cuda.is_available() and self.gpu:
+                        q_targets = [q.cuda() for q in q_targets]
                     y = [Variable(q) for q in q_targets]
                     losses = self.net.training_step(batch['states'], y)
                     logger.debug(f'losses {losses}')
@@ -567,7 +633,7 @@ class MultiHeadDQN(MultitaskDQN):
     def update_nets(self):
         # NOTE: Once polyak updating for multi-headed networks is supported via updates to flatten_params and load_params then this can be removed
         space_clock = util.s_get(self, 'aeb_space.clock')
-        t = space_clock.get('t')
+        t = space_clock.get('total_t')
         if self.update_type == 'replace':
             if t % self.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')

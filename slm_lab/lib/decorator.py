@@ -2,6 +2,8 @@ import time
 from functools import wraps
 from slm_lab.lib import logger
 
+logger = logger.get_logger(__name__)
+
 
 def lab_api(fn):
     '''
@@ -42,7 +44,6 @@ def timeit(fn):
         start = time.time()
         output = fn(*args, **kwargs)
         end = time.time()
-        logger.debug(
-            f'Timed: {fn.__name__} {round((end - start) * 1000, 4)}ms')
+        logger.debug(f'Timed: {fn.__name__} {round((end - start) * 1000, 4)}ms')
         return output
     return time_fn

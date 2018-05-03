@@ -25,6 +25,7 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 2000
       }
@@ -42,8 +43,7 @@
       "max_session": 4,
       "max_trial": null,
       "search": "EvolutionarySearch",
-      "max_generation": 4,
-      "train_mode": true
+      "max_generation": 4
     },
     "search": {
       "agent": [{
@@ -86,6 +86,7 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 600
       }
@@ -102,8 +103,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 30,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -149,6 +149,7 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 600
       }
@@ -165,8 +166,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": false
+      "search": "RandomSearch"
     }
   },
   "reinforce_cartpole": {
@@ -196,6 +196,7 @@
         "clamp_grad": false,
         "clamp_grad_val": 1.0,
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 600
       }
@@ -210,10 +211,9 @@
       "num": 1
     },
     "meta": {
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 40,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{

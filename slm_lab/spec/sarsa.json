@@ -11,10 +11,10 @@
         "explore_anneal_epi": 100,
         "gamma": 0.97,
         "training_frequency": 32,
-        "num_epis_to_collect": 1,
+        "num_epis_to_collect": 1
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -25,6 +25,7 @@
           "lr": 0.2
         },
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -32,18 +33,17 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 500
+      "max_episode": 1000
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 100,
+      "max_session": 200,
       "max_trial": 1,
-      "train_mode": true,
-      "search": "RandomSearch",
-    },
+      "search": "RandomSearch"
+    }
   },
   "sarsa_cartpole_recurrent": {
     "agent": [{
@@ -57,11 +57,11 @@
         "explore_anneal_epi": 20,
         "gamma": 0.97,
         "training_frequency": 8,
-        "num_epis_to_collect": 1,
+        "num_epis_to_collect": 1
       },
       "memory": {
         "name": "OnPolicyNStepBatchReplay",
-        "length_history": 4,
+        "length_history": 4
       },
       "net": {
         "type": "RecurrentNet",
@@ -72,6 +72,7 @@
           "lr": 0.02
         },
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000,
         "clamp_grad": true,
@@ -90,9 +91,8 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "train_mode": true,
-      "search": "RandomSearch",
-    },
+      "search": "RandomSearch"
+    }
   },
   "sarsa_cartpole_episodic": {
     "agent": [{
@@ -106,10 +106,10 @@
         "explore_anneal_epi": 100,
         "gamma": 0.97,
         "training_frequency": 32,
-        "num_epis_to_collect": 1,
+        "num_epis_to_collect": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -120,6 +120,7 @@
           "lr": 0.2
         },
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -127,18 +128,109 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 500
+      "max_episode": 1000
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 100,
+      "max_session": 200,
       "max_trial": 1,
-      "train_mode": true,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
+    }
+  },
+  "sarsa_cartpole_episodic_3": {
+    "agent": [{
+      "name": "SARSA",
+      "algorithm": {
+        "name": "SARSA",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.04,
+        "explore_anneal_epi": 100,
+        "gamma": 0.97,
+        "training_frequency": 32,
+        "num_epis_to_collect": 3
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.2
+        },
+        "decay_lr": true,
+        "decay_lr_factor": 0.9,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1000
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 1000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
     },
+    "meta": {
+      "max_session": 200,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    }
+  },
+  "sarsa_cartpole_episodic_5": {
+    "agent": [{
+      "name": "SARSA",
+      "algorithm": {
+        "name": "SARSA",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.04,
+        "explore_anneal_epi": 100,
+        "gamma": 0.97,
+        "training_frequency": 32,
+        "num_epis_to_collect": 5
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "optim": {
+          "name": "Adam",
+          "lr": 0.2
+        },
+        "decay_lr": true,
+        "decay_lr_factor": 0.9,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1000
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 1000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 200,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    }
   },
   "sarsa_2dball": {
     "agent": [{
@@ -152,10 +244,10 @@
         "explore_anneal_epi": 100,
         "gamma": 0.99,
         "training_frequency": 32,
-        "num_epis_to_collect": 1,
+        "num_epis_to_collect": 1
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -166,6 +258,7 @@
           "lr": 0.2
         },
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -182,20 +275,20 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "train_mode": true,
       "search": "EvolutionarySearch",
+      "max_generation": 4
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 25, 50, 100],
+          "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
           "optim": {
             "lr__uniform": [0.001, 0.3]
           },
           "hid_layers__choice": [[16], [32], [64], [128], [64, 32]],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }
@@ -212,10 +305,10 @@
         "explore_anneal_epi": 100,
         "gamma": 0.99,
         "training_frequency": 32,
-        "num_epis_to_collect": 1,
+        "num_epis_to_collect": 1
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -226,6 +319,7 @@
           "lr": 0.2
         },
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -242,20 +336,20 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "train_mode": true,
       "search": "EvolutionarySearch",
+      "max_generation": 4
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 25, 50, 100],
+          "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
           "optim": {
             "lr__uniform": [0.001, 0.3]
           },
           "hid_layers__choice": [[32], [64], [128], [256], [128, 64]],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }
@@ -272,10 +366,10 @@
         "explore_anneal_epi": 100,
         "gamma": 0.97,
         "training_frequency": 32,
-        "num_epis_to_collect": 1,
+        "num_epis_to_collect": 1
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -286,6 +380,7 @@
           "lr": 0.2
         },
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -302,14 +397,13 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "train_mode": true,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "gamma__uniform": [0, 1.0],
-        },
+          "gamma__uniform": [0, 1.0]
+        }
       }]
     }
   },
@@ -325,10 +419,10 @@
         "explore_anneal_epi": 100,
         "gamma": 0.97,
         "training_frequency": 32,
-        "num_epis_to_collect": 1,
+        "num_epis_to_collect": 1
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -339,6 +433,7 @@
           "lr": 0.2
         },
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -355,14 +450,13 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "train_mode": true,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "gamma__uniform": [0.9, 0.9999],
-        },
+          "gamma__uniform": [0.9, 0.9999]
+        }
       }]
     }
   },
@@ -378,10 +472,10 @@
         "explore_anneal_epi": 100,
         "gamma": 0.97,
         "training_frequency": 32,
-        "num_epis_to_collect": 1,
+        "num_epis_to_collect": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -392,6 +486,7 @@
           "lr": 0.2
         },
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -408,14 +503,13 @@
     "meta": {
       "max_session": 4,
       "max_trial": 50,
-      "train_mode": true,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "num_epis_to_collect__choice": [1, 2, 3, 4, 5, 10],
-        },
+          "num_epis_to_collect__choice": [1, 2, 3, 4, 5, 10]
+        }
       }]
     }
   },
@@ -431,10 +525,10 @@
         "explore_anneal_epi": 100,
         "gamma": 0.999,
         "training_frequency": 32,
-        "num_epis_to_collect": 3,
+        "num_epis_to_collect": 3
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -445,6 +539,7 @@
           "lr": 0.1
         },
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -461,8 +556,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 150,
-      "train_mode": true,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -470,14 +564,14 @@
           "gamma__uniform": [0.9, 0.9999],
           "training_frequency__choice": [8, 16, 32, 64, 128],
           "explore_var_end__uniform": [0.001, 0.1],
-          "explore_anneal_epi__choice": [10, 25, 50, 100],
+          "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
           "optim": {
             "lr__uniform": [0.001, 0.3]
           },
           "hid_layers__choice": [[16], [32], [64], [64, 32]],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }
@@ -494,10 +588,10 @@
         "explore_anneal_epi": 100,
         "gamma": 0.999,
         "training_frequency": 32,
-        "num_epis_to_collect": 1,
+        "num_epis_to_collect": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -508,6 +602,7 @@
           "lr": 0.1
         },
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -524,8 +619,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 150,
-      "train_mode": true,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -533,14 +627,14 @@
           "gamma__uniform": [0.9, 0.9999],
           "num_epis_to_collect__choice": [1, 2, 3, 4, 5, 10],
           "explore_var_end__uniform": [0.001, 0.1],
-          "explore_anneal_epi__choice": [10, 25, 50, 100],
+          "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
           "optim": {
             "lr__uniform": [0.001, 0.3]
           },
           "hid_layers__choice": [[16], [32], [64], [64, 32]],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }
@@ -557,10 +651,10 @@
         "explore_anneal_epi": 100,
         "gamma": 0.999,
         "training_frequency": 32,
-        "num_epis_to_collect": 3,
+        "num_epis_to_collect": 3
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -571,6 +665,7 @@
           "lr": 0.1
         },
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -587,8 +682,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 150,
-      "train_mode": true,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -596,14 +690,14 @@
           "gamma__uniform": [0.9, 0.9999],
           "training_frequency__choice": [8, 16, 32, 64, 128],
           "explore_var_end__uniform": [0.1, 1.0],
-          "explore_anneal_epi__choice": [10, 25, 50, 100],
+          "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
           "optim": {
             "lr__uniform": [0.001, 0.3]
           },
           "hid_layers__choice": [[16], [32], [64], [64, 32]],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }
@@ -620,10 +714,10 @@
         "explore_anneal_epi": 100,
         "gamma": 0.999,
         "training_frequency": 32,
-        "num_epis_to_collect": 1,
+        "num_epis_to_collect": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -634,6 +728,7 @@
           "lr": 0.1
         },
         "decay_lr": true,
+        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -650,8 +745,7 @@
     "meta": {
       "max_session": 4,
       "max_trial": 150,
-      "train_mode": true,
-      "search": "RandomSearch",
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -659,14 +753,14 @@
           "gamma__uniform": [0.9, 0.9999],
           "num_epis_to_collect__choice": [1, 2, 3, 4, 5, 10],
           "explore_var_end__uniform": [0.3, 1.0],
-          "explore_anneal_epi__choice": [10, 25, 50, 100],
+          "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
           "optim": {
             "lr__uniform": [0.001, 0.3]
           },
           "hid_layers__choice": [[16], [32], [64], [64, 32]],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }

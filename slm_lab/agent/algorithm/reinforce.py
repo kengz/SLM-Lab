@@ -1,5 +1,4 @@
-from slm_lab.agent import memory
-from slm_lab.agent import net
+from slm_lab.agent import memory, net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
@@ -9,6 +8,8 @@ from torch.autograd import Variable
 import numpy as np
 import torch
 import pydash as _
+
+logger = logger.get_logger(__name__)
 
 
 class Reinforce(Algorithm):
@@ -47,6 +48,8 @@ class Reinforce(Algorithm):
             loss_param=_.get(net_spec, 'loss'),
             clamp_grad=_.get(net_spec, 'clamp_grad'),
             clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
+            gpu=_.get(net_spec, 'gpu'),
+            decay_lr=_.get(net_spec, 'decay_lr_factor'),
         ))
         # Below we automatically select an appropriate net for a discrete or continuous action space if the setting is of the form 'MLPdefault'. Otherwise the correct type of network is assumed to be specified in the spec.
         # Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
@@ -95,8 +98,11 @@ class Reinforce(Algorithm):
             'continuous_action_clip'
         ]))
         util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
+        if not hasattr(self, 'gpu'):
+            self.gpu = False
+        logger.info(f'Training on gpu: {self.gpu}')
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.entropy = []
@@ -104,11 +110,11 @@ class Reinforce(Algorithm):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        return self.action_policy(self, state, body)
+        return self.action_policy(self, state, body, self.gpu)
 
     @lab_api
     def body_act_continuous(self, body, state):
-        return self.action_policy(self, state, body)
+        return self.action_policy(self, state, body, self.gpu)
 
     @lab_api
     def sample(self):
@@ -116,7 +122,7 @@ class Reinforce(Algorithm):
         batches = [body.memory.sample()
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
-        batch = util.to_torch_nested_batch_ex_rewards(batch)
+        batch = util.to_torch_nested_batch_ex_rewards(batch, self.gpu)
         return batch
 
     @lab_api

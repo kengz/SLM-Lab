@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+logger = logger.get_logger(__name__)
+
 
 class ConvNet(nn.Module):
     '''
@@ -28,7 +30,9 @@ class ConvNet(nn.Module):
                  loss_param=None,
                  clamp_grad=False,
                  clamp_grad_val=1.0,
-                 batch_norm=True):
+                 batch_norm=True,
+                 gpu=False,
+                 decay_lr=0.9):
         '''
         in_dim: dimension of the inputs
         hid_layers: tuple consisting of two elements. (conv_hid, flat_hid)
@@ -44,6 +48,7 @@ class ConvNet(nn.Module):
         loss_param: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
         batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
+        gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
         net = ConvNet(
                 (3, 32, 32),
@@ -53,7 +58,9 @@ class ConvNet(nn.Module):
                 optim_param={'name': 'Adam'},
                 loss_param={'name': 'mse_loss'},
                 clamp_grad=False,
-                batch_norm=True)
+                batch_norm=True,
+                gpu=True,
+                decay_lr=0.9)
         '''
         super(ConvNet, self).__init__()
         # Create net and initialize params
@@ -78,6 +85,11 @@ class ConvNet(nn.Module):
             self.out_layers += [nn.Linear(in_D, dim)]
         self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers)
         self.init_params()
+        if torch.cuda.is_available() and gpu:
+            self.conv_model.cuda()
+            self.dense_model.cuda()
+            for l in self.out_layers:
+                l.cuda()
         # Init other net variables
         self.params = list(self.conv_model.parameters()) + \
             list(self.dense_model.parameters())
@@ -88,6 +100,10 @@ class ConvNet(nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, loss_param)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
+        self.decay_lr = decay_lr
+        logger.info(f'loss fn: {self.loss_fn}')
+        logger.info(f'optimizer: {self.optim}')
+        logger.info(f'decay lr: {self.decay_lr}')
 
     def get_conv_output_size(self):
         '''Helper function to calculate the size of the
@@ -143,7 +159,7 @@ class ConvNet(nn.Module):
             x.unsqueeze_(dim=0)
         elif x.dim() == 4:
             x = x.permute(0, 3, 1, 2)
-            logger.info(f'x: {x.size()}')
+            logger.debug(f'x: {x.size()}')
         x = self.conv_model(x)
         x = x.view(-1, self.flat_dim)
         x = self.dense_model(x)
@@ -238,6 +254,6 @@ class ConvNet(nn.Module):
     def update_lr(self):
         assert 'lr' in self.optim_param
         old_lr = self.optim_param['lr']
-        self.optim_param['lr'] = old_lr * 0.9
+        self.optim_param['lr'] = old_lr * self.decay_lr
         logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
         self.optim = net_util.get_optim_multinet(self.params, self.optim_param)

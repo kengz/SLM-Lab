@@ -97,19 +97,19 @@ Run the demo to quickly see the lab in action (and to test your installation).
 
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo.png)
 
-It is `VanillaDQN` in `CartPole-v0`:
+It is `ActorCritic` in `CartPole-v0`:
 
 1. see `slm_lab/spec/demo.json` for example spec:
     ```json
-    "dqn_cartpole": {
+    "actor_critic_cartpole": {
       "agent": [{
-        "name": "VanillaDQN",
+        "name": "ActorCritic",
         "algorithm": {
-          "name": "VanillaDQN",
-          "action_policy": "boltzmann",
-          "action_policy_update": "linear_decay",
-          "gamma": 0.999,
-          ...
+        "name": "ActorCritic",
+        "action_policy": "default",
+        "gamma": 0.91,
+        "num_epis_to_collect": 1,
+        ...
         }
       }]
     }
@@ -118,7 +118,7 @@ It is `VanillaDQN` in `CartPole-v0`:
 2. see `config/experiments.json` to schedule experiments:
     ```json
     "demo.json": {
-      "dqn_cartpole": "train"
+      "actor_critic_cartpole": "train"
     }
     ```
 
@@ -128,12 +128,12 @@ It is `VanillaDQN` in `CartPole-v0`:
     yarn start
     ```
 
-4. This demo will run a single trial using the default parameters, and render the environment. After completion, check the output for data `data/dqn_cartpole/`. You should see a healthy session graph.
+4. This demo will run a single trial using the default parameters, and render the environment. After completion, check the output for data `data/actor_critic_cartpole/`. You should see a healthy session graph.
 
 5. Next, change the run mode from `"train"` to `"search"`  `config/experiments.json`, and rerun. This runs experiments of multiple trials with hyperparameter search. Environments will not be rendered.:
     ```json
     "demo.json": {
-      "dqn_cartpole": "search"
+      "actor_critic_cartpole": "search"
     }
     ```
 
