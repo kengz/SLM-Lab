@@ -40,12 +40,11 @@ class Body:
         self.nanflat_e_idx = None
         self.agent = agent
         self.env = env
-        self.observable_dim = self.env.get_observable_dim(self.a)
         # TODO generalize and make state_space to include observables
         # TODO use tuples for state_dim for pixel-based in the future, generalize all and call as shape
+        self.observable_dim = self.env.get_observable_dim(self.a)
         self.state_dim = self.observable_dim['state']
         self.action_dim = self.env.get_action_dim(self.a)
-        self.action_space = self.env.get_action_space(self.a)
         self.is_discrete = self.env.is_discrete(self.a)
 
         MemoryClass = getattr(memory, _.get(self.agent.spec, 'memory.name'))

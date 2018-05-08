@@ -96,6 +96,9 @@ class OpenAIEnv:
         self.body_num = None
 
         self.u_env = gym.make(self.name)
+        self.observation_space = self.u_env.observation_space
+        self.action_space = self.u_env.action_space
+
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
         # TODO ensure clock_speed from spec
         self.clock_speed = 1
@@ -113,25 +116,19 @@ class OpenAIEnv:
 
     def is_discrete(self, a):
         '''Check if an agent (brain) is subject to discrete actions'''
-        return util.get_class_name(self.u_env.action_space) != 'Box'  # continuous
+        return util.get_class_name(self.action_space) != 'Box'  # continuous
 
     def get_action_dim(self, a):
         '''Get the action dim for an agent (brain) in env'''
-        action_space = self.u_env.action_space
-        if self.is_discrete(a=0):
-            if util.get_class_name(action_space) == 'MultiDiscrete':
+        if self.is_discrete(a=a):
+            if util.get_class_name(self.action_space) == 'MultiDiscrete':
                 # TODO not encountered yet, generalization needed
-                action_dim = action_space.nvec
+                action_dim = self.action_space.nvec
             else:
-                action_dim = action_space.n
+                action_dim = self.action_space.n
         else:
-            action_dim = action_space.shape[0]
+            action_dim = self.action_space.shape[0]
         return action_dim
-
-    # TODO construct actual spaces using OpenAI Gym spaces
-    def get_action_space(self, a):
-        '''Get the action space type for an agent (brain) in env, e.g. Box, Discrete, MultiDiscrete, MultiBinary'''
-        return util.get_class_name(self.u_env.action_space)
 
     def get_observable(self, a):
         '''Get the observable for an agent (brain) in env'''
@@ -140,9 +137,9 @@ class OpenAIEnv:
 
     def get_observable_dim(self, a):
         '''Get the observable dim for an agent (brain) in env'''
-        state_dim = self.u_env.observation_space.shape[0]
-        if (len(self.u_env.observation_space.shape) > 1):
-            state_dim = self.u_env.observation_space.shape
+        state_dim = self.observation_space.shape[0]
+        if (len(self.observation_space.shape) > 1):
+            state_dim = self.observation_space.shape
         return {'state': state_dim}
 
     @lab_api
@@ -152,6 +149,7 @@ class OpenAIEnv:
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[(a, b)] = state
+            body.memory.reset_last_state(state)
         # TODO internalize render code
         if os.environ.get('lab_mode') == 'dev':
             self.u_env.render()
@@ -201,6 +199,15 @@ class UnityEnv:
 
         worker_id = int(f'{os.getpid()}{self.e+int(_.unique_id())}'[-4:])
         self.u_env = UnityEnvironment(file_name=util.get_env_path(self.name), worker_id=worker_id)
+
+        # TODO no way to know range for unity env for now
+        raise NotImplementedError
+        self.observation_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(self.get_observable_dim(),))
+        if self.is_discrete():
+            self.action_space = gym.spaces.Box(low=0, high=self.get_action_dim(), shape=(1,))
+        else:
+            self.action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(1,))
+
         # TODO experiment to find out optimal benchmarking max_timestep, set
         # TODO ensure clock_speed from spec
         self.clock_speed = 1
@@ -243,10 +250,6 @@ class UnityEnv:
         '''Get the action dim for an agent (brain) in env'''
         return self.get_brain(a).get_action_dim()
 
-    def get_action_space(self, a):
-        '''Get the action space type for an agent (brain) in env, by converting to OpenAI gym space types, e.g. Box, Discrete, MultiDiscrete, MultiBinary'''
-        return 'Discrete' if self.is_discrete(a) else 'Box'
-
     def get_observable(self, a):
         '''Get the observable for an agent (brain) in env'''
         return self.get_brain(a).get_observable()
@@ -268,7 +271,9 @@ class UnityEnv:
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             self.check_u_agent_to_body(env_info_a, a)
-            state_e[(a, b)] = env_info_a.states[b]
+            state = env_info_a.states[b]
+            state_e[(a, b)] = state
+            body.memory.reset_last_state(state)
         return _reward_e, state_e, _done_e
 
     @lab_api
