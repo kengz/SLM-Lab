@@ -13,6 +13,7 @@
         "epoch": 4,
         "batch_size": 32,
         "lr": 0.001,
+        "max_timestep": 1e4,
         "schedule": "linear"
       },
       "memory": {

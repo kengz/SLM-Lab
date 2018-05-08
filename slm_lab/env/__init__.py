@@ -145,17 +145,18 @@ class OpenAIEnv:
     @lab_api
     def reset(self):
         self.done = False
-        _reward_e, state_e, _done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[(a, b)] = state
+            done_e[(a, b)] = self.done
             body.memory.reset_last_state(state)
         # TODO internalize render code
         if os.environ.get('lab_mode') == 'dev':
             self.u_env.render()
         non_nan_cnt = util.count_nonan(state_e.flatten())
         assert non_nan_cnt == 1, 'OpenAI Gym supports only single body'
-        return _reward_e, state_e, _done_e
+        return _reward_e, state_e, done_e
 
     @lab_api
     def step(self, action_e):
@@ -267,12 +268,13 @@ class UnityEnv:
     def reset(self):
         self.done = False
         env_info_dict = self.u_env.reset(train_mode=(os.environ.get('lab_mode') != 'dev'), config=self.spec.get('unity'))
-        _reward_e, state_e, _done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             self.check_u_agent_to_body(env_info_a, a)
             state = env_info_a.states[b]
             state_e[(a, b)] = state
+            done_e[(a, b)] = done
             body.memory.reset_last_state(state)
         return _reward_e, state_e, _done_e
 

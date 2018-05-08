@@ -275,12 +275,12 @@ def make_pdtype(env):
     action_space = env.action_space
     if isinstance(action_space, spaces.Box):
         assert len(action_space.shape) == 1
-        return DiagGaussianPdType(action_space.shape[0])
+        return DiagGaussianPDType(action_space.shape[0])
     elif isinstance(action_space, spaces.Discrete):
-        return CategoricalPdType(action_space.n)
+        return CategoricalPDType(action_space.n)
     elif isinstance(action_space, spaces.MultiDiscrete):
-        return MultiCategoricalPdType(action_space.nvec)
+        return MultiCategoricalPDType(action_space.nvec)
     elif isinstance(action_space, spaces.MultiBinary):
-        return BernoulliPdType(action_space.n)
+        return BernoulliPDType(action_space.n)
     else:
         raise NotImplementedError

@@ -17,21 +17,28 @@ class GAEOnPolicyReplay(Memory):
     def __init__(self, body):
         super(GAEOnPolicyReplay, self).__init__(body)
         # TODO properly design sub specs
-        self.horizon = self.memory_spec['horizon']
-        self.last_state = None
-        self.done = None
-        self.v_pred = None
+
+        self.horizon = self.body.agent.spec['algorithm']['horizon']
+        # self.last_state = None
+        # self.v_pred = None
+        self.reset()
+
+    def reset_last_state(self, state):
+        super(GAEOnPolicyReplay, self).reset_last_state(state)
+        # TODO merge this back to inits below
 
     def reset(self):
         # self.last_state is updated from Memory.reset_last_state
-        self.t = 0
+        self.total_t = 0
         self.done = False
         self.new = True  # is the start of epi, to set v=0
 
-        ac = self.body.env.action_space.sample()
         horizon = self.horizon
-        self.obs = np.array([self.last_state for _ in range(horizon)])
-        self.acs = np.array([ac for _i in range(horizon)])
+        # just for shape
+        sample_ob = self.body.env.observation_space.sample()
+        ob = np.zeros(shape=sample_ob.shape, dtype=sample_ob.dtype)
+        ac = self.body.env.action_space.sample()
+        self.obs = np.array([ob for _ in range(horizon)])
         self.acs = np.array([ac for _i in range(horizon)])
         self.v_preds = np.zeros(horizon, 'float32')
         self.rews = np.zeros(horizon, 'float32')
@@ -49,12 +56,12 @@ class GAEOnPolicyReplay(Memory):
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Interface helper method for update() to add experience to memory'''
-        i = self.t % self.horizon
+        i = self.total_t % self.horizon
         self.obs[i] = state
         self.acs[i] = action
         self.v_preds[i] = self.v_pred
         self.next_v_pred = self.v_pred * (1 - self.new)
-        self.rews[i] = self.reward
+        self.rews[i] = reward
         self.news[i] = self.new
         self.new = self.done = done
 
@@ -67,7 +74,7 @@ class GAEOnPolicyReplay(Memory):
             self.cur_epi_ret = 0.0
             self.cur_epi_len = 0
         self.last_state = next_state
-        self.t += 1
+        self.total_t += 1
 
     def sample(self):
         segment = {

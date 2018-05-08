@@ -1,17 +1,17 @@
+import pydash as _
 import tensorflow as tf
-from slm_lab.lib import distribution, tf_util
-from slm_lab.experiment.monitor import analysis
+from slm_lab.lib import distribution, tf_util, util
 
 
 class MLPPolicy:
-    def __init__(self, agent, name=''):
-        scope = analysis.get_prepath(agent.spec, agent.info_space, unit='session').split('/')[-1] + name
+    def __init__(self, algo, name=''):
+        scope = f'{util.get_ts()}_{name}'
         with tf.variable_scope(scope):
             self.scope = tf.get_variable_scope().name
-            self.agent = agent
-            self.body = agent.body  # default body for env
+            self.algo = algo
+            self.body = algo.body  # default body for env
 
-            net_spec = self.agent.spec['net']
+            net_spec = algo.agent.spec['net']
             util.set_attr(self, _.pick(net_spec, [
                 'hid_layers_activation', 'hid_layers'
             ]))
@@ -25,13 +25,13 @@ class MLPPolicy:
             name='ob', dtype=tf.float32, shape=[None] + list(self.body.env.observation_space.shape))
 
         with tf.variable_scope('ob_filter'):
-            self.ob_rms = RunningMeanStd(shape=ob_space.shape)
+            self.ob_rms = tf_util.RunningMeanStd(shape=self.body.env.observation_space.shape, comm=self.algo.comm)
 
         with tf.variable_scope('vf'):
             obz = tf.clip_by_value(
                 (self.ob - self.ob_rms.mean) / self.ob_rms.std, -5.0, 5.0)
             last_out = obz
-            for i, hid_size in enumerate(net_spec['hid_layers']):
+            for i, hid_size in enumerate(self.hid_layers):
                 # TODO dont hard code activation
                 last_out = getattr(tf.nn, self.hid_layers_activation)(tf.layers.dense(
                     last_out, hid_size, name=f'fc_{i+1}', kernel_initializer=tf_util.normc_initializer(1.0)))
@@ -40,13 +40,13 @@ class MLPPolicy:
 
         with tf.variable_scope('pol'):
             last_out = obz
-            for i, hid_size in enumerate(net_spec['hid_layers']):
+            for i, hid_size in enumerate(self.hid_layers):
                 last_out = getattr(tf.nn, self.hid_layers_activation)(tf.layers.dense(
                     last_out, hid_size, name=f'fc_{i+1}', kernel_initializer=tf_util.normc_initializer(1.0)))
             # TODO restore param gaussian_fixed_var=True
             gaussian_fixed_var = True
             # continuous action output layer
-            if gaussian_fixed_var and not body.env.is_discrete():
+            if gaussian_fixed_var and not self.body.env.is_discrete(a=0):
                 mean = tf.layers.dense(
                     last_out, self.pdtype.param_shape()[0] // 2, name='final', kernel_initializer=tf_util.normc_initializer(0.01))
                 logstd = tf.get_variable(
@@ -58,9 +58,9 @@ class MLPPolicy:
 
         self.pd = self.pdtype.pdfromflat(pdparam)
         self.ac = self.pd.sample()
-        self.ac_fn = tf_util.function([ob], [self.ac, self.v_pred])
+        self.ac_fn = tf_util.function([self.ob], [self.ac, self.v_pred])
 
-    def body_act(self, body, state):
+    def act(self, state):
         actions, v_preds = self.ac_fn(state[None])
         return actions[0], v_preds[0]
 

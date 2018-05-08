@@ -69,9 +69,9 @@ class GetFlat:
 
 
 class MpiAdam:
-    from mpi4py import MPI
 
     def __init__(self, var_list, *, beta1=0.9, beta2=0.999, epsilon=1e-08, scale_grad_by_procs=True, comm=None):
+        from mpi4py import MPI
         self.var_list = var_list
         self.beta1 = beta1
         self.beta2 = beta2
@@ -86,6 +86,7 @@ class MpiAdam:
         self.comm = MPI.COMM_WORLD if comm is None else comm
 
     def update(self, localg, stepsize):
+        from mpi4py import MPI
         if self.t % 100 == 0:
             self.check_synced()
         localg = localg.astype('float32')
@@ -115,6 +116,51 @@ class MpiAdam:
             thetaroot = np.empty_like(thetalocal)
             self.comm.Bcast(thetaroot, root=0)
             assert (thetaroot == thetalocal).all(), (thetaroot, thetalocal)
+
+class RunningMeanStd:
+    # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
+    def __init__(self, epsilon=1e-2, shape=(), comm=None):
+        from mpi4py import MPI
+        # TODO clone if not, set
+        self.comm = MPI.COMM_WORLD if comm is None else comm
+
+        self._sum = tf.get_variable(
+            dtype=tf.float64,
+            shape=shape,
+            initializer=tf.constant_initializer(0.0),
+            name="runningsum", trainable=False)
+        self._sumsq = tf.get_variable(
+            dtype=tf.float64,
+            shape=shape,
+            initializer=tf.constant_initializer(epsilon),
+            name="runningsumsq", trainable=False)
+        self._count = tf.get_variable(
+            dtype=tf.float64,
+            shape=(),
+            initializer=tf.constant_initializer(epsilon),
+            name="count", trainable=False)
+        self.shape = shape
+
+        self.mean = tf.to_float(self._sum / self._count)
+        self.std = tf.sqrt( tf.maximum( tf.to_float(self._sumsq / self._count) - tf.square(self.mean) , 1e-2 ))
+
+        newsum = tf.placeholder(shape=self.shape, dtype=tf.float64, name='sum')
+        newsumsq = tf.placeholder(shape=self.shape, dtype=tf.float64, name='var')
+        newcount = tf.placeholder(shape=[], dtype=tf.float64, name='count')
+        self.incfiltparams = function([newsum, newsumsq, newcount], [],
+            updates=[tf.assign_add(self._sum, newsum),
+                     tf.assign_add(self._sumsq, newsumsq),
+                     tf.assign_add(self._count, newcount)])
+
+
+    def update(self, x):
+        from mpi4py import MPI
+        x = x.astype('float64')
+        n = int(np.prod(self.shape))
+        totalvec = np.zeros(n*2+1, 'float64')
+        addvec = np.concatenate([x.sum(axis=0).ravel(), np.square(x).sum(axis=0).ravel(), np.array([len(x)],dtype='float64')])
+        self.comm.Allreduce(addvec, totalvec, op=MPI.SUM)
+        self.incfiltparams(totalvec[0:n].reshape(self.shape), totalvec[n:2*n].reshape(self.shape), totalvec[2*n])
 
 
 def function(inputs, outputs, updates=None, givens=None):
@@ -227,7 +273,7 @@ def normc_initializer(std=1.0):
     return _initializer
 
 
-def initialize():
+def init():
     '''Initialize all the uninitialized variables in the global scope.'''
     new_variables = set(tf.global_variables()) - ALREADY_INITIALIZED
     tf.get_default_session().run(tf.variables_initializer(new_variables))
