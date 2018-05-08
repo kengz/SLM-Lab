@@ -1,9 +1,11 @@
 '''
-The probability distribution module in tensorflow
+The probability distribution used to sample actions and compute statistics
+written in tensorflow
 adapted from https://github.com/openai/baselines/blob/master/baselines/common/distributions.py
 '''
 
 from abc import ABC
+from gym import spaces
 from tensorflow.python.ops import math_ops
 import numpy as np
 import tensorflow as tf
@@ -58,15 +60,13 @@ class PDType(ABC):
         raise NotImplementedError
 
     def param_placeholder(self, prepend_shape, name=None):
-        return tf.placeholder(
-            dtype=tf.float32, shape=prepend_shape + self.param_shape(), name=name)
+        return tf.placeholder(dtype=tf.float32, shape=prepend_shape + self.param_shape(), name=name)
 
     def sample_placeholder(self, prepend_shape, name=None):
-        return tf.placeholder(
-            dtype=self.sample_dtype(), shape=prepend_shape + self.sample_shape(), name=name)
+        return tf.placeholder(dtype=self.sample_dtype(), shape=prepend_shape + self.sample_shape(), name=name)
 
 
-class CategoricalPd(PD):
+class CategoricalPD(PD):
     def __init__(self, logits):
         self.logits = logits
 
@@ -81,8 +81,7 @@ class CategoricalPd(PD):
         # Note: we can't use sparse_softmax_cross_entropy_with_logits because
         #       the implementation does not allow second-order derivatives...
         one_hot_actions = tf.one_hot(x, self.logits.get_shape().as_list()[-1])
-        return tf.nn.softmax_cross_entropy_with_logits(
-            logits=self.logits, labels=one_hot_actions)
+        return tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=one_hot_actions)
 
     def kl(self, other):
         a0 = self.logits - tf.reduce_max(self.logits, axis=-1, keepdims=True)
@@ -111,11 +110,10 @@ class CategoricalPd(PD):
         return cls(flat)
 
 
-class MultiCategoricalPd(PD):
+class MultiCategoricalPD(PD):
     def __init__(self, nvec, flat):
         self.flat = flat
-        self.categoricals = list(
-            map(CategoricalPd, tf.split(flat, nvec, axis=-1)))
+        self.categoricals = list(map(CategoricalPD, tf.split(flat, nvec, axis=-1)))
 
     def flatparam(self):
         return self.flat
@@ -140,11 +138,10 @@ class MultiCategoricalPd(PD):
         raise NotImplementedError
 
 
-class DiagGaussianPd(PD):
+class DiagGaussianPD(PD):
     def __init__(self, flat):
         self.flat = flat
-        mean, logstd = tf.split(
-            axis=len(flat.shape) - 1, num_or_size_splits=2, value=flat)
+        mean, logstd = tf.split(axis=len(flat.shape) - 1, num_or_size_splits=2, value=flat)
         self.mean = mean
         self.logstd = logstd
         self.std = tf.exp(logstd)
@@ -156,12 +153,10 @@ class DiagGaussianPd(PD):
         return self.mean
 
     def neglogp(self, x):
-        return 0.5 * tf.reduce_sum(tf.square((x - self.mean) / self.std), axis=-1) \
-            + 0.5 * np.log(2.0 * np.pi) * tf.to_float(tf.shape(x)[-1]) \
-            + tf.reduce_sum(self.logstd, axis=-1)
+        return 0.5 * tf.reduce_sum(tf.square((x - self.mean) / self.std), axis=-1) + 0.5 * np.log(2.0 * np.pi) * tf.to_float(tf.shape(x)[-1]) + tf.reduce_sum(self.logstd, axis=-1)
 
     def kl(self, other):
-        assert isinstance(other, DiagGaussianPd)
+        assert isinstance(other, DiagGaussianPD)
         return tf.reduce_sum(other.logstd - self.logstd + (tf.square(self.std) + tf.square(self.mean - other.mean)) / (2.0 * tf.square(other.std)) - 0.5, axis=-1)
 
     def entropy(self):
@@ -175,7 +170,7 @@ class DiagGaussianPd(PD):
         return cls(flat)
 
 
-class BernoulliPd(PD):
+class BernoulliPD(PD):
     def __init__(self, logits):
         self.logits = logits
         self.ps = tf.sigmoid(logits)
@@ -209,7 +204,7 @@ class CategoricalPDType(PDType):
         self.ncat = ncat
 
     def pdclass(self):
-        return CategoricalPd
+        return CategoricalPD
 
     def param_shape(self):
         return [self.ncat]
@@ -226,10 +221,10 @@ class MultiCategoricalPDType(PDType):
         self.ncats = nvec
 
     def pdclass(self):
-        return MultiCategoricalPd
+        return MultiCategoricalPD
 
     def pdfromflat(self, flat):
-        return MultiCategoricalPd(self.ncats, flat)
+        return MultiCategoricalPD(self.ncats, flat)
 
     def param_shape(self):
         return [sum(self.ncats)]
@@ -246,7 +241,7 @@ class DiagGaussianPDType(PDType):
         self.size = size
 
     def pdclass(self):
-        return DiagGaussianPd
+        return DiagGaussianPD
 
     def param_shape(self):
         return [2 * self.size]
@@ -263,7 +258,7 @@ class BernoulliPDType(PDType):
         self.size = size
 
     def pdclass(self):
-        return BernoulliPd
+        return BernoulliPD
 
     def param_shape(self):
         return [self.size]
@@ -275,16 +270,17 @@ class BernoulliPDType(PDType):
         return tf.int32
 
 
-def make_pdtype(body):
-    space = body.action_space
-    dim = body.action_dim
-    if space == 'Box':
-        return DiagGaussianPDType(dim)
-    elif space == 'Discrete':
-        return CategoricalPDType(dim)
-    elif space == 'MultiDiscrete':
-        return MultiCategoricalPDType(dim)
-    elif space == 'MultiBinary':
-        return BernoulliPDType(dim)
+# TODO add beta distribution
+def make_pdtype(env):
+    action_space = env.action_space
+    if isinstance(action_space, spaces.Box):
+        assert len(action_space.shape) == 1
+        return DiagGaussianPdType(action_space.shape[0])
+    elif isinstance(action_space, spaces.Discrete):
+        return CategoricalPdType(action_space.n)
+    elif isinstance(action_space, spaces.MultiDiscrete):
+        return MultiCategoricalPdType(action_space.nvec)
+    elif isinstance(action_space, spaces.MultiBinary):
+        return BernoulliPdType(action_space.n)
     else:
         raise NotImplementedError

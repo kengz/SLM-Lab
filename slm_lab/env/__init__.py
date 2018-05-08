@@ -128,6 +128,7 @@ class OpenAIEnv:
             action_dim = action_space.shape[0]
         return action_dim
 
+    # TODO construct actual spaces using OpenAI Gym spaces
     def get_action_space(self, a):
         '''Get the action space type for an agent (brain) in env, e.g. Box, Discrete, MultiDiscrete, MultiBinary'''
         return util.get_class_name(self.u_env.action_space)
