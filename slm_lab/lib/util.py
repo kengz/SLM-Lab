@@ -404,7 +404,6 @@ def nonan_all(v):
 
 
 def override_dev_spec(spec):
-    spec['env'][0]['max_episode'] = 20
     spec['meta'] = {
         'max_session': 1,
         'max_trial': 2,

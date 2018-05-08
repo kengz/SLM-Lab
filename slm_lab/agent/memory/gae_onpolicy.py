@@ -57,17 +57,24 @@ class GAEOnPolicyReplay(Memory):
     def add_experience(self, state, action, reward, next_state, done):
         '''Interface helper method for update() to add experience to memory'''
         i = self.total_t % self.horizon
-        self.obs[i] = state
-        self.acs[i] = action
-        self.v_preds[i] = self.v_pred
-        self.next_v_pred = self.v_pred * (1 - self.new)
-        self.rews[i] = reward
-        self.news[i] = self.new
+        # ignore terminal state and the followed tuple of action, v, etc. except reward
+        if not done:
+            self.obs[i] = state
+            self.acs[i] = action
+            self.v_preds[i] = self.v_pred
+            self.next_v_pred = self.v_pred * (1 - self.new)
+            self.news[i] = self.new
+        # reward index is offset for computation and ease of saving to index
+        if not self.new:  # not at new epi, i.e. previous done == true
+            rew_offset_idx = i - 1
+            if rew_offset_idx >= 0:
+                self.rews[rew_offset_idx] = reward
+
         self.new = self.done = done
 
         self.cur_epi_ret += reward
         self.cur_epi_len += 1
-        if self.done:
+        if done:
             self.epi_rets.append(self.cur_epi_ret)
             self.epi_lens.append(self.cur_epi_len)
             # episodic-reset

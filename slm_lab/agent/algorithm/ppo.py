@@ -138,8 +138,8 @@ class PPO(Algorithm):
 
     @lab_api
     def train(self):
-        t = self.body.env.clock.get('t')
-        if t > 0 and (t % self.horizon == 0 or self.memory.done):
+        total_t = self.body.env.clock.get('total_t')
+        if total_t > 0 and (total_t % self.horizon == 0):
             mean_losses = self._train()
             loss = mean_losses.sum()
         else:
@@ -152,7 +152,7 @@ class PPO(Algorithm):
         obs, acs, adv_targets, v_targets = seg['obs'], seg['acs'], seg['advs'], seg['tdlamrets']
 
         # predicted values before update
-        prev_v_preds = seg['v_preds']
+        # prev_v_preds = seg['v_preds']
         # standardized advantage function estimate
         adv_targets = (adv_targets - adv_targets.mean()) / adv_targets.std()
         data = {'obs': obs, 'acs': acs, 'adv_targets': adv_targets, 'v_targets': v_targets}
@@ -169,7 +169,7 @@ class PPO(Algorithm):
                 inputs.append(self.cur_lr_mult)
                 outputs = self.compute_loss_grad(*inputs)
                 g = outputs.pop()
-                assert not np.isnan(g).any(), 'grad has nan'
+                assert not np.isnan(g).any(), f'grad has nan: {g}'
                 self.adam.update(g, self.cur_lr_mult * self.lr)
                 losses.append(outputs)
             mean_losses = np.mean(losses, axis=0)
@@ -180,9 +180,9 @@ class PPO(Algorithm):
             inputs = [batch[k] for k in ['obs', 'acs', 'adv_targets', 'v_targets']]
             inputs.append(self.cur_lr_mult)
             new_losses = self.compute_losses(*inputs)
-            losses.append(outputs)
+            losses.append(new_losses)
         mean_losses, _std, _count = tf_util.mpi_moments(losses, axis=0, comm=self.comm)
-        # TODO log diagnosis variables
+        logger.debug(f'Training losses {list(zip(self.loss_names, mean_losses))}')
         return mean_losses
 
     @lab_api
@@ -208,4 +208,5 @@ class PPO(Algorithm):
             nonterminal = 1 - news[t + 1]
             delta = rews[t] + self.gamma * v_preds[t + 1] * nonterminal - v_preds[t]
             gaelams[t] = last_gaelam = delta + self.gamma * self.lam * nonterminal * last_gaelam
+        assert not np.isnan(gaelams).any(), f'GAE has nan: {gaelams}'
         seg['tdlamrets'] = seg['advs'] + seg['v_preds']
