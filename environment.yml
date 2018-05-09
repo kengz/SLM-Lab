@@ -15,7 +15,7 @@ dependencies:
 - ipykernel=4.7.0=py36_0
 - numpy=1.14.0=py36_blas_openblas_200
 - openblas=0.2.20=7
-- mpi4py=2.0.0=py36_0    
+- mpi4py=2.0.
 - openpyxl=2.5.0b1=py36_0
 - openssl=1.0.2n=0
 - pandas=0.22.0=py36_0

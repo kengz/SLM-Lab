@@ -1,9 +1,8 @@
 '''
 The probability distribution used to sample actions and compute statistics
 written in tensorflow
-adapted from https://github.com/openai/baselines/blob/master/baselines/common/distributions.py
+adapted from OpenAI https://github.com/openai/baselines/blob/master/baselines/common/distributions.py
 '''
-
 from abc import ABC
 from gym import spaces
 from tensorflow.python.ops import math_ops

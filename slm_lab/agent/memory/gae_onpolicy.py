@@ -1,8 +1,7 @@
 from slm_lab.agent.memory.base import Memory
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import copy
 
 logger = logger.get_logger(__name__)
 
@@ -12,6 +11,7 @@ class GAEOnPolicyReplay(Memory):
     On-policy replay memory that supports GAE computation
     Needs to store v_pred computed with action whenever agent acts
     and support the creation of trajectory segment used for computation and training
+    adapted from OpenAI https://github.com/openai/baselines/blob/master/baselines/ppo1/pposgd_simple.py
     '''
 
     def __init__(self, body):
@@ -83,6 +83,7 @@ class GAEOnPolicyReplay(Memory):
         self.last_state = next_state
         self.total_t += 1
 
+    @lab_api
     def sample(self):
         segment = {
             'obs': self.obs,

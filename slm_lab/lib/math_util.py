@@ -1,6 +1,6 @@
 '''
 Math util
-adopted from https://github.com/openai/baselines/blob/master/baselines/common/math_util.py
+adapted from OpenAI https://github.com/openai/baselines/blob/master/baselines/common/math_util.py
 '''
 import numpy as np
 import scipy.signal

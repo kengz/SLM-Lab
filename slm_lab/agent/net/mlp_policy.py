@@ -4,7 +4,13 @@ from slm_lab.lib import distribution, tf_util, util
 
 
 class MLPPolicy:
+    '''
+    Policy network
+    adapted from OpenAI https://github.com/openai/baselines/blob/master/baselines/ppo1/mlp_policy.py
+    '''
+
     def __init__(self, algo, name=''):
+        # TODO fix scope using prepath name
         scope = f'{util.get_ts()}_{name}'
         with tf.variable_scope(scope):
             self.scope = tf.get_variable_scope().name
@@ -18,7 +24,6 @@ class MLPPolicy:
             self._init()
 
     def _init(self):
-        # NOTE set action_space
         self.pdtype = distribution.make_pdtype(self.body.env)
 
         self.ob = tf_util.get_global_placeholder(

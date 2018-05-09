@@ -1,8 +1,7 @@
 '''
 Tensorflow util
-adopted from https://github.com/openai/baselines/blob/master/baselines/common/tf_util.py
+adapted from OpenAI https://github.com/openai/baselines/blob/master/baselines/common/tf_util.py
 '''
-
 from collections import OrderedDict
 from mpi4py import MPI
 import numpy as np
@@ -120,7 +119,6 @@ class MpiAdam:
 class RunningMeanStd:
     # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
     def __init__(self, epsilon=1e-2, shape=(), comm=None):
-        # TODO clone if not, set
         self.comm = MPI.COMM_WORLD if comm is None else comm
 
         self._sum = tf.get_variable(

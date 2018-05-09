@@ -126,7 +126,7 @@ class PPO(Algorithm):
             'epoch',
             'batch_size',
             'lr',
-            'max_timestep',
+            'max_frame',
             'schedule',
         ]))
 
@@ -147,12 +147,10 @@ class PPO(Algorithm):
         return loss
 
     def _train(self):
-        seg = self.sample()
+        seg = self.sample()  # sample a segment
         self.add_v_target_and_adv(seg)
         obs, acs, adv_targets, v_targets = seg['obs'], seg['acs'], seg['advs'], seg['tdlamrets']
 
-        # predicted values before update
-        # prev_v_preds = seg['v_preds']
         # standardized advantage function estimate
         adv_targets = (adv_targets - adv_targets.mean()) / adv_targets.std()
         data = {'obs': obs, 'acs': acs, 'adv_targets': adv_targets, 'v_targets': v_targets}
@@ -190,7 +188,7 @@ class PPO(Algorithm):
         if self.schedule == 'constant':
             self.cur_lr_mult = 1.0
         elif self.schedule == 'linear':
-            self.cur_lr_mult = max(1.0 - self.body.env.clock.get('total_t') / self.max_timestep, 0.0)
+            self.cur_lr_mult = max(1.0 - self.body.env.clock.get('total_t') / self.max_frame, 0.0)
         else:
             raise NotImplementedError
 
@@ -198,6 +196,7 @@ class PPO(Algorithm):
         return explore_var
 
     def add_v_target_and_adv(self, seg):
+        '''Compute advantage given a segment of trajectory'''
         news = np.append(seg['news'], 0)
         v_preds = np.append(seg['v_preds'], seg['next_v_pred'])
         rews = seg['rews']
