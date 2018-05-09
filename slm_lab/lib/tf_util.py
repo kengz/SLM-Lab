@@ -3,9 +3,10 @@ Tensorflow util
 adopted from https://github.com/openai/baselines/blob/master/baselines/common/tf_util.py
 '''
 
+from collections import OrderedDict
+from mpi4py import MPI
 import numpy as np
 import tensorflow as tf
-from collections import OrderedDict
 
 ALREADY_INITIALIZED = set()
 GLOBAL_PLACEHOLDER = {}  # global placeholder cache. {name: (placeholder, dtype, shape)}
@@ -71,7 +72,6 @@ class GetFlat:
 class MpiAdam:
 
     def __init__(self, var_list, *, beta1=0.9, beta2=0.999, epsilon=1e-08, scale_grad_by_procs=True, comm=None):
-        from mpi4py import MPI
         self.var_list = var_list
         self.beta1 = beta1
         self.beta2 = beta2
@@ -86,7 +86,6 @@ class MpiAdam:
         self.comm = MPI.COMM_WORLD if comm is None else comm
 
     def update(self, localg, stepsize):
-        from mpi4py import MPI
         if self.t % 100 == 0:
             self.check_synced()
         localg = localg.astype('float32')
@@ -117,10 +116,10 @@ class MpiAdam:
             self.comm.Bcast(thetaroot, root=0)
             assert (thetaroot == thetalocal).all(), (thetaroot, thetalocal)
 
+
 class RunningMeanStd:
     # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
     def __init__(self, epsilon=1e-2, shape=(), comm=None):
-        from mpi4py import MPI
         # TODO clone if not, set
         self.comm = MPI.COMM_WORLD if comm is None else comm
 
@@ -142,25 +141,23 @@ class RunningMeanStd:
         self.shape = shape
 
         self.mean = tf.to_float(self._sum / self._count)
-        self.std = tf.sqrt( tf.maximum( tf.to_float(self._sumsq / self._count) - tf.square(self.mean) , 1e-2 ))
+        self.std = tf.sqrt(tf.maximum(tf.to_float(self._sumsq / self._count) - tf.square(self.mean), 1e-2))
 
         newsum = tf.placeholder(shape=self.shape, dtype=tf.float64, name='sum')
         newsumsq = tf.placeholder(shape=self.shape, dtype=tf.float64, name='var')
         newcount = tf.placeholder(shape=[], dtype=tf.float64, name='count')
         self.incfiltparams = function([newsum, newsumsq, newcount], [],
-            updates=[tf.assign_add(self._sum, newsum),
-                     tf.assign_add(self._sumsq, newsumsq),
-                     tf.assign_add(self._count, newcount)])
-
+                                      updates=[tf.assign_add(self._sum, newsum),
+                                               tf.assign_add(self._sumsq, newsumsq),
+                                               tf.assign_add(self._count, newcount)])
 
     def update(self, x):
-        from mpi4py import MPI
         x = x.astype('float64')
         n = int(np.prod(self.shape))
-        totalvec = np.zeros(n*2+1, 'float64')
-        addvec = np.concatenate([x.sum(axis=0).ravel(), np.square(x).sum(axis=0).ravel(), np.array([len(x)],dtype='float64')])
+        totalvec = np.zeros(n * 2 + 1, 'float64')
+        addvec = np.concatenate([x.sum(axis=0).ravel(), np.square(x).sum(axis=0).ravel(), np.array([len(x)], dtype='float64')])
         self.comm.Allreduce(addvec, totalvec, op=MPI.SUM)
-        self.incfiltparams(totalvec[0:n].reshape(self.shape), totalvec[n:2*n].reshape(self.shape), totalvec[2*n])
+        self.incfiltparams(totalvec[0:n].reshape(self.shape), totalvec[n:2 * n].reshape(self.shape), totalvec[2 * n])
 
 
 def function(inputs, outputs, updates=None, givens=None):
@@ -281,7 +278,6 @@ def init():
 
 
 def mpi_mean(x, axis=0, comm=None, keepdims=False):
-    from mpi4py import MPI
     x = np.asarray(x)
     assert x.ndim > 0
     if comm is None:

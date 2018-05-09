@@ -1,3 +1,4 @@
+from mpi4py import MPI
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net.mlp_policy import MLPPolicy
 from slm_lab.lib import logger, math_util, tf_util, util
@@ -27,7 +28,6 @@ class PPO(Algorithm):
     @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
-        from mpi4py import MPI
         self.comm = MPI.Comm.Clone(MPI.COMM_WORLD)
         # TODO fix access to info_space then set below
         tf_util.make_session(num_cpus=1).__enter__()
@@ -182,7 +182,7 @@ class PPO(Algorithm):
             new_losses = self.compute_losses(*inputs)
             losses.append(new_losses)
         mean_losses, _std, _count = tf_util.mpi_moments(losses, axis=0, comm=self.comm)
-        logger.debug(f'Training losses {list(zip(self.loss_names, mean_losses))}')
+        logger.info(f'Training losses {list(zip(self.loss_names, mean_losses))}')
         return mean_losses
 
     @lab_api
