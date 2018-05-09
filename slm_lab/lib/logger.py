@@ -117,9 +117,11 @@ def get_logger(__name__):
 
 
 def toggle_debug(modules, level='DEBUG'):
-    '''Turn on module-specific debugging using their names, e.g. slm_lab.agent.algorithm.actor_critic, at the desired debug level.'''
+    '''Turn on module-specific debugging using their names, e.g. algorithm, actor_critic, at the desired debug level.'''
+    logger_names = list(logging.Logger.manager.loggerDict.keys())
     for module in modules:
         name = module.strip()
-        if not _.is_empty(name):
-            module_logger = logging.getLogger(name)
-            module_logger.setLevel(getattr(logging, level))
+        for logger_name in logger_names:
+            if name in logger_name.split('.'):
+                module_logger = logging.getLogger(logger_name)
+                module_logger.setLevel(getattr(logging, level))
