@@ -276,7 +276,7 @@ class UnityEnv:
             state_e[(a, b)] = state
             done_e[(a, b)] = done
             body.memory.reset_last_state(state)
-        return _reward_e, state_e, _done_e
+        return _reward_e, state_e, done_e
 
     @lab_api
     def step(self, action_e):
@@ -338,14 +338,15 @@ class EnvSpace:
     @lab_api
     def reset(self):
         logger.debug('EnvSpace.reset')
-        _reward_v, state_v, _done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
+        _reward_v, state_v, done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
         self.total_reward_v = _reward_v.copy()  # for debugging
         for env in self.envs:
-            _reward_e, state_e, _done_e = env.reset()
+            _reward_e, state_e, done_e = env.reset()
             state_v[env.e, 0:len(state_e)] = state_e
-        _reward_space, state_space, _done_space = self.aeb_space.add(ENV_DATA_NAMES, [_reward_v, state_v, _done_v])
+            done_v[env.e, 0:len(done_e)] = done_e
+        _reward_space, state_space, done_space = self.aeb_space.add(ENV_DATA_NAMES, [_reward_v, state_v, done_v])
         logger.debug(f'\nstate_space: {state_space}')
-        return _reward_space, state_space, _done_space
+        return _reward_space, state_space, done_space
 
     # @util.fn_timer
     @lab_api

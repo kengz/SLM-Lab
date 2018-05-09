@@ -7,6 +7,8 @@ import numpy as np
 import pydash as _
 import tensorflow as tf
 
+logger = logger.get_logger(__name__)
+
 
 class PPO(Algorithm):
     '''
@@ -180,7 +182,7 @@ class PPO(Algorithm):
             new_losses = self.compute_losses(*inputs)
             losses.append(new_losses)
         mean_losses, _std, _count = tf_util.mpi_moments(losses, axis=0, comm=self.comm)
-        logger.info(f'Training losses {list(zip(self.loss_names, mean_losses))}')
+        logger.debug(f'Training losses {list(zip(self.loss_names, mean_losses))}')
         return mean_losses
 
     @lab_api
