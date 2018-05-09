@@ -202,7 +202,6 @@ class UnityEnv:
         self.u_env = UnityEnvironment(file_name=util.get_env_path(self.name), worker_id=worker_id)
 
         # TODO no way to know range for unity env for now
-        raise NotImplementedError
         self.observation_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(self.get_observable_dim(),))
         if self.is_discrete():
             self.action_space = gym.spaces.Box(low=0, high=self.get_action_dim(), shape=(1,))
