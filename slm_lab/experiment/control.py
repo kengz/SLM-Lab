@@ -12,7 +12,7 @@ from slm_lab.lib import logger, util, viz
 import numpy as np
 import os
 import pandas as pd
-import pydash as _
+import pydash as ps
 import torch
 
 
@@ -111,7 +111,7 @@ class Trial:
         logger.info('Trial done, closing.')
 
     def run(self):
-        num_cpus = _.get(self.spec['meta'], 'resources.num_cpus', util.NUM_CPUS)
+        num_cpus = ps.get(self.spec['meta'], 'resources.num_cpus', util.NUM_CPUS)
         info_spaces = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')

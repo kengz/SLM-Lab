@@ -1,4 +1,4 @@
-import pydash as _
+import pydash as ps
 import tensorflow as tf
 from slm_lab.lib import distribution, tf_util, util
 
@@ -18,7 +18,7 @@ class MLPPolicy:
             self.body = algo.body  # default body for env
 
             net_spec = algo.agent.spec['net']
-            util.set_attr(self, _.pick(net_spec, [
+            util.set_attr(self, ps.pick(net_spec, [
                 'hid_layers_activation', 'hid_layers'
             ]))
             self._init()
@@ -33,11 +33,9 @@ class MLPPolicy:
             self.ob_rms = tf_util.RunningMeanStd(shape=self.body.env.observation_space.shape, comm=self.algo.comm)
 
         with tf.variable_scope('vf'):
-            obz = tf.clip_by_value(
-                (self.ob - self.ob_rms.mean) / self.ob_rms.std, -5.0, 5.0)
+            obz = tf.clip_by_value((self.ob - self.ob_rms.mean) / self.ob_rms.std, -5.0, 5.0)
             last_out = obz
             for i, hid_size in enumerate(self.hid_layers):
-                # TODO dont hard code activation
                 last_out = getattr(tf.nn, self.hid_layers_activation)(tf.layers.dense(
                     last_out, hid_size, name=f'fc_{i+1}', kernel_initializer=tf_util.normc_initializer(1.0)))
             self.v_pred = tf.layers.dense(

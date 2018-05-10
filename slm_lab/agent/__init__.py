@@ -22,7 +22,7 @@ from slm_lab.agent import algorithm, memory
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import pydash as _
+import pydash as ps
 
 AGENT_DATA_NAMES = ['action', 'loss', 'explore_var']
 logger = logger.get_logger(__name__)
@@ -47,7 +47,7 @@ class Body:
         self.action_dim = self.env.get_action_dim(self.a)
         self.is_discrete = self.env.is_discrete(self.a)
 
-        MemoryClass = getattr(memory, _.get(self.agent.spec, 'memory.name'))
+        MemoryClass = getattr(memory, ps.get(self.agent.spec, 'memory.name'))
         self.memory = MemoryClass(self)
         self.state_buffer = []
 
@@ -71,7 +71,7 @@ class Agent:
         self.nanflat_body_a = None  # nanflatten version of bodies
         self.body_num = None
 
-        AlgoClass = getattr(algorithm, _.get(self.spec, 'algorithm.name'))
+        AlgoClass = getattr(algorithm, ps.get(self.spec, 'algorithm.name'))
         self.algorithm = AlgoClass(self)
         self.len_state_buffer = 0
         if spec['memory']['name'].find('NStep') != -1:

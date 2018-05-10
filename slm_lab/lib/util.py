@@ -11,7 +11,7 @@ import numpy as np
 import scipy as sp
 import os
 import pandas as pd
-import pydash as _
+import pydash as ps
 import regex as re
 import time
 import torch
@@ -73,7 +73,7 @@ def cast_df(val):
 
 def cast_list(val):
     '''missing pydash method to cast value as list'''
-    if _.is_list(val):
+    if ps.is_list(val):
         return val
     else:
         return [val]
@@ -117,14 +117,14 @@ def flatten_dict(obj, delim='.'):
     '''Missing pydash method to flatten dict'''
     nobj = {}
     for key, val in obj.items():
-        if _.is_dict(val) and not _.is_empty(val):
+        if ps.is_dict(val) and not ps.is_empty(val):
             strip = flatten_dict(val, delim)
             for k, v in strip.items():
                 nobj[key + delim + k] = v
-        elif _.is_list(val) and not _.is_empty(val) and _.is_dict(val[0]):
+        elif ps.is_list(val) and not ps.is_empty(val) and ps.is_dict(val[0]):
             for idx, v in enumerate(val):
                 nobj[key + delim + str(idx)] = v
-                if _.is_object(v):
+                if ps.is_object(v):
                     nobj = flatten_dict(nobj, delim)
         else:
             nobj[key] = val
@@ -170,7 +170,7 @@ def gen_isnan(v):
 
 def get_df_aeb_list(session_df):
     '''Get the aeb list for session_df for iterating.'''
-    aeb_list = sorted(_.uniq([(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
+    aeb_list = sorted(ps.uniq([(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
     return aeb_list
 
 
@@ -190,7 +190,7 @@ def get_class_attr(obj):
     '''Get the class attr of an object as dict'''
     attr_dict = {}
     for k, v in obj.__dict__.items():
-        if hasattr(v, '__dict__') or _.is_tuple(v):
+        if hasattr(v, '__dict__') or ps.is_tuple(v):
             val = str(v)
         else:
             val = v
@@ -215,7 +215,7 @@ def get_fn_list(a_cls):
     Get the callable, non-private functions of a class
     @returns {[*str]} A list of strings of fn names
     '''
-    fn_list = _.filter_(dir(a_cls), lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
+    fn_list = ps.filter_(dir(a_cls), lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
     return fn_list
 
 
@@ -377,7 +377,7 @@ def is_sub_dict(sub_dict, super_dict):
         super_v = super_dict[sub_k]
         if type(sub_v) != type(super_v):
             return False
-        if _.is_dict(sub_v):
+        if ps.is_dict(sub_v):
             if not is_sub_dict(sub_v, super_v):
                 return False
         else:
@@ -512,7 +512,7 @@ def s_get(cls, attr_path):
     util.s_get(self, 'aeb_space.clock')
     '''
     from_class_name = get_class_name(cls, lower=True)
-    from_idx = _.find_index(SPACE_PATH, lambda s: from_class_name in (s, s.replace('_', '')))
+    from_idx = ps.find_index(SPACE_PATH, lambda s: from_class_name in (s, s.replace('_', '')))
     from_idx = max(from_idx, 0)
     attr_path = attr_path.split('.')
     to_idx = SPACE_PATH.index(attr_path[0])
@@ -520,7 +520,7 @@ def s_get(cls, attr_path):
     if from_idx < to_idx:
         path_link = SPACE_PATH[from_idx: to_idx]
     else:
-        path_link = _.reverse(SPACE_PATH[to_idx: from_idx])
+        path_link = ps.reverse(SPACE_PATH[to_idx: from_idx])
 
     res = cls
     for attr in path_link + attr_path:
@@ -535,7 +535,7 @@ def self_desc(cls):
     for k, v in get_class_attr(cls).items():
         if k == 'spec':
             continue
-        if _.is_dict(v) or _.is_dict(_.head(v)):
+        if ps.is_dict(v) or ps.is_dict(ps.head(v)):
             desc_v = to_json(v)
         else:
             desc_v = v

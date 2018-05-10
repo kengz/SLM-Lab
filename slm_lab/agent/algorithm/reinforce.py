@@ -7,7 +7,7 @@ from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import numpy as np
 import torch
-import pydash as _
+import pydash as ps
 
 logger = logger.get_logger(__name__)
 
@@ -43,13 +43,13 @@ class Reinforce(Algorithm):
         net_spec = self.agent.spec['net']
         mem_spec = self.agent.spec['memory']
         net_kwargs = util.compact_dict(dict(
-            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-            optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'),
-            clamp_grad=_.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-            gpu=_.get(net_spec, 'gpu'),
-            decay_lr=_.get(net_spec, 'decay_lr_factor'),
+            hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
+            optim_param=ps.get(net_spec, 'optim'),
+            loss_param=ps.get(net_spec, 'loss'),
+            clamp_grad=ps.get(net_spec, 'clamp_grad'),
+            clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
+            gpu=ps.get(net_spec, 'gpu'),
+            decay_lr=ps.get(net_spec, 'decay_lr_factor'),
         ))
         # Below we automatically select an appropriate net for a discrete or continuous action space if the setting is of the form 'MLPdefault'. Otherwise the correct type of network is assumed to be specified in the spec.
         # Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
@@ -91,13 +91,13 @@ class Reinforce(Algorithm):
                 self.action_policy = act_fns['gaussian']
         else:
             self.action_policy = act_fns[action_fn]
-        util.set_attr(self, _.pick(algorithm_spec, [
+        util.set_attr(self, ps.pick(algorithm_spec, [
             'gamma',
             'num_epis_to_collect',
             'add_entropy', 'entropy_weight',
             'continuous_action_clip'
         ]))
-        util.set_attr(self, _.pick(net_spec, [
+        util.set_attr(self, ps.pick(net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
         if not hasattr(self, 'gpu'):

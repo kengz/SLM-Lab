@@ -8,7 +8,7 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 import numpy as np
 import torch
-import pydash as _
+import pydash as ps
 
 logger = logger.get_logger(__name__)
 
@@ -428,13 +428,13 @@ class ActorCritic(Reinforce):
         mem_spec = self.agent.spec['memory']
         net_type = self.agent.spec['net']['type']
         actor_kwargs = util.compact_dict(dict(
-            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-            optim_param=_.get(net_spec, 'optim_actor'),
-            loss_param=_.get(net_spec, 'loss'),  # Note: Not used for training actor
-            clamp_grad=_.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-            gpu=_.get(net_spec, 'gpu'),
-            decay_lr=_.get(net_spec, 'decay_lr_factor'),
+            hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
+            optim_param=ps.get(net_spec, 'optim_actor'),
+            loss_param=ps.get(net_spec, 'loss'),  # Note: Not used for training actor
+            clamp_grad=ps.get(net_spec, 'clamp_grad'),
+            clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
+            gpu=ps.get(net_spec, 'gpu'),
+            decay_lr=ps.get(net_spec, 'decay_lr_factor'),
         ))
         if self.agent.spec['net']['use_same_optim']:
             logger.info('Using same optimizer for actor and critic')
@@ -442,13 +442,13 @@ class ActorCritic(Reinforce):
         else:
             logger.info('Using different optimizer for actor and critic')
             critic_kwargs = util.compact_dict(dict(
-                hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-                optim_param=_.get(net_spec, 'optim_critic'),
-                loss_param=_.get(net_spec, 'loss'),
-                clamp_grad=_.get(net_spec, 'clamp_grad'),
-                clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-                gpu=_.get(net_spec, 'gpu'),
-                decay_lr=_.get(net_spec, 'decay_lr_factor'),
+                hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
+                optim_param=ps.get(net_spec, 'optim_critic'),
+                loss_param=ps.get(net_spec, 'loss'),
+                clamp_grad=ps.get(net_spec, 'clamp_grad'),
+                clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
+                gpu=ps.get(net_spec, 'gpu'),
+                decay_lr=ps.get(net_spec, 'decay_lr_factor'),
             ))
         '''
          Below we automatically select an appropriate net based on two different conditions
@@ -544,7 +544,7 @@ class ActorCritic(Reinforce):
         algorithm_spec = self.agent.spec['algorithm']
         net_spec = self.agent.spec['net']
         self.set_action_fn()
-        util.set_attr(self, _.pick(algorithm_spec, [
+        util.set_attr(self, ps.pick(algorithm_spec, [
             'gamma',
             'num_epis_to_collect',
             'add_entropy', 'entropy_weight',
@@ -555,7 +555,7 @@ class ActorCritic(Reinforce):
             'policy_loss_weight', 'val_loss_weight',
 
         ]))
-        util.set_attr(self, _.pick(net_spec, [
+        util.set_attr(self, ps.pick(net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
         if not hasattr(self, 'gpu'):

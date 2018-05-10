@@ -7,7 +7,7 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import numpy as np
-import pydash as _
+import pydash as ps
 import sys
 import torch
 
@@ -57,13 +57,13 @@ class SARSA(Algorithm):
         net_spec = self.agent.spec['net']
         mem_spec = self.agent.spec['memory']
         net_kwargs = util.compact_dict(dict(
-            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-            optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'),
-            clamp_grad=_.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-            gpu=_.get(net_spec, 'gpu'),
-            decay_lr=_.get(net_spec, 'decay_lr_factor'),
+            hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
+            optim_param=ps.get(net_spec, 'optim'),
+            loss_param=ps.get(net_spec, 'loss'),
+            clamp_grad=ps.get(net_spec, 'clamp_grad'),
+            clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
+            gpu=ps.get(net_spec, 'gpu'),
+            decay_lr=ps.get(net_spec, 'decay_lr_factor'),
         ))
         if net_spec['type'].find('Recurrent') != -1:
             self.net = getattr(net, net_spec['type'])(
@@ -76,7 +76,7 @@ class SARSA(Algorithm):
     def set_net_attributes(self):
         '''Initializes additional parameters from the net spec. Called by init_nets'''
         net_spec = self.agent.spec['net']
-        util.set_attr(self, _.pick(net_spec, [
+        util.set_attr(self, ps.pick(net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
         if not hasattr(self, 'gpu'):
@@ -97,7 +97,7 @@ class SARSA(Algorithm):
     def set_other_algo_attributes(self):
         '''Initializes additional parameters from the algorithm spec. Called by init_algo_params'''
         algorithm_spec = self.agent.spec['algorithm']
-        util.set_attr(self, _.pick(algorithm_spec, [
+        util.set_attr(self, ps.pick(algorithm_spec, [
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',

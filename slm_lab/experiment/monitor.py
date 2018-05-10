@@ -26,7 +26,7 @@ from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import numpy as np
 import pandas as pd
-import pydash as _
+import pydash as ps
 
 # These correspond to the control unit classes, lower cased
 COOR_AXES = [
@@ -205,7 +205,7 @@ class AEBSpace:
         @param {[x: [yb_idx:[body_v]]} data_v, where x, y could be a, e interchangeably.
         @returns {DataSpace} data_space (aeb is implied)
         '''
-        if _.is_string(data_name):
+        if ps.is_string(data_name):
             data_space = self.data_spaces[data_name]
             data_space.add(data_v)
             return data_space

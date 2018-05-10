@@ -9,7 +9,7 @@ from slm_lab.lib.decorator import lab_api
 import json
 import numpy as np
 import pandas as pd
-import pydash as _
+import pydash as ps
 import random
 import ray
 
@@ -69,7 +69,7 @@ def spec_from_config(experiment, config):
     spec = deepcopy(experiment.spec)
     spec.pop('search', None)
     for k, v in config.items():
-        _.set_(spec, k, v)
+        ps.set_(spec, k, v)
     return spec
 
 

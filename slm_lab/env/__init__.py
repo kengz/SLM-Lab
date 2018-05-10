@@ -12,7 +12,7 @@ import gym
 import logging
 import numpy as np
 import os
-import pydash as _
+import pydash as ps
 
 ENV_DATA_NAMES = ['reward', 'state', 'done']
 logger = logger.get_logger(__name__)
@@ -198,7 +198,7 @@ class UnityEnv:
         self.nanflat_body_e = None  # nanflatten version of bodies
         self.body_num = None
 
-        worker_id = int(f'{os.getpid()}{self.e+int(_.unique_id())}'[-4:])
+        worker_id = int(f'{os.getpid()}{self.e+int(ps.unique_id())}'[-4:])
         self.u_env = UnityEnvironment(file_name=util.get_env_path(self.name), worker_id=worker_id)
 
         # TODO no way to know range for unity env for now
@@ -311,7 +311,7 @@ class EnvSpace:
         aeb_space.env_space = self
         self.envs = []
         for e, env_spec in enumerate(self.env_spec):
-            env_spec = _.merge(spec['meta'].copy(), env_spec)
+            env_spec = ps.merge(spec['meta'].copy(), env_spec)
             try:
                 env = OpenAIEnv(env_spec, self, e)
             except gym.error.Error:
@@ -330,7 +330,7 @@ class EnvSpace:
 
     def get_base_clock(self):
         '''Get the clock with the finest time unit, i.e. ticks the most cycles in a given time, or the highest clock_speed'''
-        fastest_env = _.max_by(self.envs, lambda env: env.clock_speed)
+        fastest_env = ps.max_by(self.envs, lambda env: env.clock_speed)
         clock = fastest_env.clock
         return clock
 

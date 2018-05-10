@@ -7,7 +7,7 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import numpy as np
-import pydash as _
+import pydash as ps
 import sys
 import torch
 
@@ -64,7 +64,7 @@ class VanillaDQN(SARSA):
     def set_net_attributes(self):
         '''Initializes additional parameters from the net spec. Called by init_nets'''
         net_spec = self.agent.spec['net']
-        util.set_attr(self, _.pick(net_spec, [
+        util.set_attr(self, ps.pick(net_spec, [
             # how many examples to learn per training iteration
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
@@ -81,7 +81,7 @@ class VanillaDQN(SARSA):
     def set_other_algo_attributes(self):
         '''Initializes additional parameters from the algorithm spec. Called by init_algo_params'''
         algorithm_spec = self.agent.spec['algorithm']
-        util.set_attr(self, _.pick(algorithm_spec, [
+        util.set_attr(self, ps.pick(algorithm_spec, [
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
@@ -209,27 +209,27 @@ class DQNBase(VanillaDQN):
         net_spec = self.agent.spec['net']
         logger.debug3(f'State dim: {self.state_dim}')
         net_kwargs = util.compact_dict(dict(
-            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-            optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'),
-            clamp_grad=_.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-            gpu=_.get(net_spec, 'gpu'),
-            decay_lr=_.get(net_spec, 'decay_lr_factor'),
+            hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
+            optim_param=ps.get(net_spec, 'optim'),
+            loss_param=ps.get(net_spec, 'loss'),
+            clamp_grad=ps.get(net_spec, 'clamp_grad'),
+            clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
+            gpu=ps.get(net_spec, 'gpu'),
+            decay_lr=ps.get(net_spec, 'decay_lr_factor'),
         ))
         ''' Make adjustments for Atari mode '''
         if self.agent.spec['memory']['name'].find('Atari') != -1:
             self.state_dim = (84, 84, 4)
             logger.debug3(f'State dim: {self.state_dim}')
             net_kwargs = util.compact_dict(dict(
-                hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-                optim_param=_.get(net_spec, 'optim'),
-                loss_param=_.get(net_spec, 'loss'),
-                clamp_grad=_.get(net_spec, 'clamp_grad'),
-                clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-                batch_norm=_.get(net_spec, 'batch_norm'),
-                gpu=_.get(net_spec, 'gpu'),
-                decay_lr=_.get(net_spec, 'decay_lr_factor'),
+                hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
+                optim_param=ps.get(net_spec, 'optim'),
+                loss_param=ps.get(net_spec, 'loss'),
+                clamp_grad=ps.get(net_spec, 'clamp_grad'),
+                clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
+                batch_norm=ps.get(net_spec, 'batch_norm'),
+                gpu=ps.get(net_spec, 'gpu'),
+                decay_lr=ps.get(net_spec, 'decay_lr_factor'),
             ))
         elif self.agent.spec['memory']['name'].find('Stack') != -1:
             ''' Make adjustments for StackedReplay memory '''
@@ -239,14 +239,14 @@ class DQNBase(VanillaDQN):
             self.state_dim = self.state_dim * self.agent.spec['memory']['length_history']
             logger.debug3(f'State dim: {self.state_dim}')
             net_kwargs = util.compact_dict(dict(
-                hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-                optim_param=_.get(net_spec, 'optim'),
-                loss_param=_.get(net_spec, 'loss'),
-                clamp_grad=_.get(net_spec, 'clamp_grad'),
-                clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-                batch_norm=_.get(net_spec, 'batch_norm'),
-                gpu=_.get(net_spec, 'gpu'),
-                decay_lr=_.get(net_spec, 'decay_lr_factor'),
+                hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
+                optim_param=ps.get(net_spec, 'optim'),
+                loss_param=ps.get(net_spec, 'loss'),
+                clamp_grad=ps.get(net_spec, 'clamp_grad'),
+                clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
+                batch_norm=ps.get(net_spec, 'batch_norm'),
+                gpu=ps.get(net_spec, 'gpu'),
+                decay_lr=ps.get(net_spec, 'decay_lr_factor'),
             ))
         if net_spec['type'].find('Recurrent') != -1:
             logger.warn(f'Recurrent networks not supported with DQN family of algorithms. Please select another network type''')
@@ -257,7 +257,7 @@ class DQNBase(VanillaDQN):
             self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        util.set_attr(self, _.pick(net_spec, [
+        util.set_attr(self, ps.pick(net_spec, [
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
@@ -333,7 +333,7 @@ class DQN(DQNBase):
         super(DQN, self).init_nets()
         # Network update params
         net_spec = self.agent.spec['net']
-        util.set_attr(self, _.pick(net_spec, [
+        util.set_attr(self, ps.pick(net_spec, [
             'update_type', 'update_frequency', 'polyak_weight',
         ]))
 
@@ -372,13 +372,13 @@ class MultitaskDQN(DQN):
         self.total_action_dim = sum(self.action_dims)
         net_spec = self.agent.spec['net']
         net_kwargs = util.compact_dict(dict(
-            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-            optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'),
-            clamp_grad=_.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-            gpu=_.get(net_spec, 'gpu'),
-            decay_lr=_.get(net_spec, 'decay_lr_factor'),
+            hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
+            optim_param=ps.get(net_spec, 'optim'),
+            loss_param=ps.get(net_spec, 'loss'),
+            clamp_grad=ps.get(net_spec, 'clamp_grad'),
+            clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
+            gpu=ps.get(net_spec, 'gpu'),
+            decay_lr=ps.get(net_spec, 'decay_lr_factor'),
         ))
         self.net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim, **net_kwargs)
@@ -386,7 +386,7 @@ class MultitaskDQN(DQN):
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim, **net_kwargs)
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        util.set_attr(self, _.pick(net_spec, [
+        util.set_attr(self, ps.pick(net_spec, [
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
             'update_type', 'update_frequency', 'polyak_weight', 'gpu'
@@ -512,13 +512,13 @@ class MultiHeadDQN(MultitaskDQN):
         logger.debug(
             f'Action dims: {self.action_dims}, total: {self.total_action_dim}')
         net_kwargs = util.compact_dict(dict(
-            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-            optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'),
-            clamp_grad=_.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-            gpu=_.get(net_spec, 'gpu'),
-            decay_lr=_.get(net_spec, 'decay_lr_factor'),
+            hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
+            optim_param=ps.get(net_spec, 'optim'),
+            loss_param=ps.get(net_spec, 'loss'),
+            clamp_grad=ps.get(net_spec, 'clamp_grad'),
+            clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
+            gpu=ps.get(net_spec, 'gpu'),
+            decay_lr=ps.get(net_spec, 'decay_lr_factor'),
         ))
         self.net = getattr(net, net_spec['type'])(
             self.state_dims, net_spec['hid_layers'], self.action_dims, **net_kwargs)
@@ -526,7 +526,7 @@ class MultiHeadDQN(MultitaskDQN):
             self.state_dims, net_spec['hid_layers'], self.action_dims, **net_kwargs)
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        util.set_attr(self, _.pick(net_spec, [
+        util.set_attr(self, ps.pick(net_spec, [
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
             'update_type', 'update_frequency', 'polyak_weight', 'gpu'

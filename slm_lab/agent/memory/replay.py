@@ -2,7 +2,7 @@ from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import util, logger
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import pydash as _
+import pydash as ps
 
 
 class Replay(Memory):
@@ -78,7 +78,7 @@ class Replay(Memory):
         logger.debug2(f'state: {state.shape}')
         self.states[self.head] = state
         # make action into one_hot
-        if _.is_iterable(action):
+        if ps.is_iterable(action):
             # non-singular action
             # self.actions[self.head] = one hot of multi-action (matrix) on a 3rd axis, to be implement
             raise NotImplementedError

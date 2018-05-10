@@ -4,7 +4,6 @@ Newbie tensorflow refresher
 from slm_lab.lib import util, viz
 import numpy as np
 import pandas as pd
-import pydash as _
 import tensorflow as tf
 # import tensorflow.contrib.eager as tfe
 

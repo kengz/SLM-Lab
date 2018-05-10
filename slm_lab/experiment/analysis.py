@@ -9,7 +9,7 @@ import colorlover as cl
 import numpy as np
 import os
 import pandas as pd
-import pydash as _
+import pydash as ps
 
 DATA_AGG_FNS = {
     't': 'sum',
@@ -128,7 +128,7 @@ def plot_session(session_spec, info_space, session_data):
     fig.layout['yaxis2'].update(showgrid=False, domain=[0, 0.45])
     fig.layout['yaxis3'].update(fig_2.layout['yaxis2'])
     fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
-    fig.layout.update(_.pick(fig_1.layout, ['legend']))
+    fig.layout.update(ps.pick(fig_1.layout, ['legend']))
     fig.layout.update(title=f'session graph: {session_spec["name"]} t{info_space.get("trial")} s{info_space.get("session")}', width=500, height=600)
     viz.plot(fig)
     return fig
@@ -140,7 +140,7 @@ def plot_experiment(experiment_spec, experiment_df):
     ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
     '''
     y_cols = ['fitness'] + FITNESS_COLS
-    x_cols = _.difference(experiment_df.columns.tolist(), y_cols)
+    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
 
     fig = viz.tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True)
     fitness_sr = experiment_df['fitness']
@@ -162,7 +162,7 @@ def plot_experiment(experiment_spec, experiment_df):
                 },
             )
             fig.append_trace(trace, row_idx + 1, col_idx + 1)
-            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(_.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
+            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
         fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
     fig.layout.update(title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 300), height=700)
     viz.plot(fig)
@@ -248,7 +248,7 @@ def analyze_experiment(experiment):
     logger.info('Analyzing experiment')
     experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
     cols = FITNESS_COLS + ['fitness']
-    config_cols = sorted(_.difference(experiment_df.columns.tolist(), cols))
+    config_cols = sorted(ps.difference(experiment_df.columns.tolist(), cols))
     sorted_cols = config_cols + cols
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
     experiment_df.sort_values(by=['fitness'], ascending=False, inplace=True)

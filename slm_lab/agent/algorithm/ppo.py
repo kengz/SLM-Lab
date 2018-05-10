@@ -4,7 +4,7 @@ from slm_lab.agent.net.mlp_policy import MLPPolicy
 from slm_lab.lib import logger, math_util, tf_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import pydash as _
+import pydash as ps
 import tensorflow as tf
 
 logger = logger.get_logger(__name__)
@@ -118,7 +118,7 @@ class PPO(Algorithm):
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
-        util.set_attr(self, _.pick(algorithm_spec, [
+        util.set_attr(self, ps.pick(algorithm_spec, [
             'clip_eps',
             'ent_coef',
             'adam_epsilon',
