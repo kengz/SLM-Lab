@@ -225,16 +225,13 @@ class AEBSpace:
             done = env.done or clock.get('t') > env.max_timestep
             env_dones.append(done)
             if done:
-                # propagate done
-                done_space.data[:, env.e, :] = 1.
-                done_space.swap_data[env.e, :, :] = 1.
                 session_mdp_data, session_data = analysis.get_session_data(session)
                 # TODO make proper and general: log first reward
                 reward = session_data[(0, 0, 0)]['reward'].iloc[-1]
                 last_k = min(clock.get('epi'), 100)
                 last_k_rewards = session_data[(0, 0, 0)]['reward'].iloc[-last_k:]
                 mean_reward = last_k_rewards.mean()
-                msg = f'Done: trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e} epi {clock.get("epi")}, t {clock.get("t")}, reward {reward:.2f}, mean reward (last 100 epis) {mean_reward:.2f}'
+                msg = f'Trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e}, epi {clock.get("epi")}, t {clock.get("t")}, reward {reward:.2f}, 100-epi mean reward {mean_reward:.2f}'
                 logger.info(msg)
                 clock.tick('epi')
             else:

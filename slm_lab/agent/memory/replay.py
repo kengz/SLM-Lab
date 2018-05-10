@@ -4,6 +4,8 @@ from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
 
+logger = logger.get_logger(__name__)
+
 
 class Replay(Memory):
     '''
@@ -147,6 +149,7 @@ class Replay(Memory):
 
 class StackReplay(Replay):
     '''Preprocesses an state to be the concatenation of the last n states. Otherwise the same as Replay memory'''
+
     def __init__(self, body):
         self.num_stacked_states = body.agent.spec['memory']['length_history']
         super(StackReplay, self).__init__(body)
@@ -201,6 +204,7 @@ class StackReplay(Replay):
 class Atari(Replay):
     '''Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
        Otherwise the same as Replay memory'''
+
     def __init__(self, body):
         super(Atari, self).__init__(body)
         self.atari = True  # Memory is specialized for playing Atari games
