@@ -216,6 +216,7 @@ class AEBSpace:
     def tick_clocks(self, session):
         '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''
         from slm_lab.experiment import analysis
+        # TODO simplify below
 
         done_space = self.data_spaces['done']
         env_dones = []

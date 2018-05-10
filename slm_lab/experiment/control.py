@@ -66,7 +66,7 @@ class Session:
         Run all episodes, where each env can step and reset at its own clock_speed and timeline. Will terminate when all envs done running max_episode.
         '''
         _reward_space, state_space, _done_space = self.env_space.reset()
-        self.agent_space.reset(state_space)
+        _action_space = self.agent_space.reset(state_space)  # nan action at t=0 for bookkeeping in data_space
         while True:
             end_session = self.aeb_space.tick_clocks(self)
             if end_session:

@@ -162,6 +162,7 @@ class AgentSpace:
             state_a = state_space.get(a=agent.a)
             agent.reset(state_a)
         _action_space, _loss_space, _explore_var_space = self.aeb_space.add(AGENT_DATA_NAMES, [_action_v, _loss_v, _explore_var_v])
+        return _action_space
 
     @lab_api
     def act(self, state_space):

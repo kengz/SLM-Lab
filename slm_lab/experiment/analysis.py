@@ -33,20 +33,21 @@ def get_session_data(session):
     data_names = AGENT_DATA_NAMES + ENV_DATA_NAMES
     mdp_data_names = ['t', 'epi'] + data_names
     agg_data_names = ['epi'] + list(DATA_AGG_FNS.keys())
-    data_h_v_dict = {
-        data_name: session.aeb_space.get_history_v(data_name) for data_name in data_names}
+    data_h_v_dict = {data_name: session.aeb_space.get_history_v(data_name) for data_name in data_names}
     session_mdp_data, session_data = {}, {}
     for aeb in session.aeb_space.aeb_list:
         data_h_dict = {data_name: data_h_v[aeb] for data_name, data_h_v in data_h_v_dict.items()}
-        # remove any incomplete session timesteps from tail (due to multienv termination)
+        # trim back to remove any incomplete sessions due to multienv termination
         complete_done_h = np.trim_zeros(data_h_dict['done'], 'b')
-        data_len = len(complete_done_h)
-        reset_idx = complete_done_h.astype('bool')
+        # offset properly to bin separate episodes
+        reset_bin = np.concatenate([[0.], complete_done_h[:-1]])
+        data_len = len(reset_bin)
+        reset_idx = reset_bin.astype('bool')
         nonreset_idx = ~reset_idx
         data_h_dict['t'] = np.ones(reset_idx.shape)
         data_h_dict['epi'] = reset_idx.astype(int).cumsum()
         mdp_df = pd.DataFrame({
-            data_name: data_h_dict[data_name][:data_len][nonreset_idx]
+            data_name: data_h_dict[data_name][:data_len]
             for data_name in mdp_data_names})
         mdp_df = mdp_df.reindex(mdp_data_names, axis=1)
         aeb_df = mdp_df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
