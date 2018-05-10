@@ -201,12 +201,16 @@ class UnityEnv:
         worker_id = int(f'{os.getpid()}{self.e+int(ps.unique_id())}'[-4:])
         self.u_env = UnityEnvironment(file_name=util.get_env_path(self.name), worker_id=worker_id)
 
-        # TODO no way to know range for unity env for now
-        self.observation_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(self.get_observable_dim(),))
-        if self.is_discrete():
-            self.action_space = gym.spaces.Box(low=0, high=self.get_action_dim(), shape=(1,))
+        # NOTE assume singleton and same for all agents in multi-agent environment
+        logger.warn('Unity environment observation_space and action_space are constructed with invalid range. Use only their shapes.')
+        if self.get_brain(a=0).state_space_type == 'discrete':
+            self.observation_space = gym.spaces.Box(low=0, high=1, shape=(self.get_observable_dim(a=0)['state'],), dtype=np.int32)
         else:
-            self.action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(1,))
+            self.observation_space = gym.spaces.Box(low=0.0, high=1.0, shape=(self.get_observable_dim(a=0)['state'],), dtype=np.float32)
+        if self.is_discrete(a=0):
+            self.action_space = gym.spaces.Box(low=0, high=self.get_action_dim(a=0) - 1, shape=(1,), dtype=np.int32)
+        else:
+            self.action_space = gym.spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
 
         # TODO experiment to find out optimal benchmarking max_timestep, set
         # TODO ensure clock_speed from spec
@@ -273,7 +277,7 @@ class UnityEnv:
             self.check_u_agent_to_body(env_info_a, a)
             state = env_info_a.states[b]
             state_e[(a, b)] = state
-            done_e[(a, b)] = done
+            done_e[(a, b)] = self.done
             body.memory.reset_last_state(state)
         return _reward_e, state_e, done_e
 
