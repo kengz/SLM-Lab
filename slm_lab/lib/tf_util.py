@@ -217,7 +217,7 @@ def flat_grad(loss, var_list, clip_norm=None):
     grads = tf.gradients(loss, var_list)
     # TODO test this below
     if clip_norm is not None:
-        grads = [tf.clip_by_norm(grad, clip_norm=clip_norm) for grad in grads]
+        grads, _global_norm = tf.clip_by_global_norm(grads, clip_norm=clip_norm)
     return tf.concat(axis=0, values=[
         tf.reshape(grad if grad is not None else tf.zeros_like(v), [numel(v)])
         for (v, grad) in zip(var_list, grads)
