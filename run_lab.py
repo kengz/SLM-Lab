@@ -10,7 +10,7 @@ import os
 
 
 debug_modules = [
-    # 'slm_lab.agent.algorithm.actor_critic',
+    # 'algorithm',
 ]
 debug_level = 'DEBUG'
 logger.toggle_debug(debug_modules, debug_level)

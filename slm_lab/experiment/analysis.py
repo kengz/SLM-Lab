@@ -37,12 +37,11 @@ def get_session_data(session):
         data_name: session.aeb_space.get_history_v(data_name) for data_name in data_names}
     session_mdp_data, session_data = {}, {}
     for aeb in session.aeb_space.aeb_list:
-        data_h_dict = {
-            data_name: data_h_v[aeb] for data_name, data_h_v in data_h_v_dict.items()}
+        data_h_dict = {data_name: data_h_v[aeb] for data_name, data_h_v in data_h_v_dict.items()}
         # remove any incomplete session timesteps from tail (due to multienv termination)
         complete_done_h = np.trim_zeros(data_h_dict['done'], 'b')
         data_len = len(complete_done_h)
-        reset_idx = np.isnan(complete_done_h)
+        reset_idx = complete_done_h.astype('bool')
         nonreset_idx = ~reset_idx
         data_h_dict['t'] = np.ones(reset_idx.shape)
         data_h_dict['epi'] = reset_idx.astype(int).cumsum()

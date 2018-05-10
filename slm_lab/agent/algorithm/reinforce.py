@@ -33,6 +33,7 @@ class Reinforce(Algorithm):
         self.init_algo_params()
         logger.info(util.self_desc(self))
 
+    @lab_api
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
         body = self.agent.nanflat_body_a[0]  # singleton algo
@@ -76,6 +77,7 @@ class Reinforce(Algorithm):
                 self.net = getattr(net, net_spec['type'])(
                     state_dim, net_spec['hid_layers'], [action_dim, action_dim], **net_kwargs)
 
+    @lab_api
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
@@ -114,6 +116,7 @@ class Reinforce(Algorithm):
     def body_act_continuous(self, body, state):
         return self.action_policy(self, state, body, self.gpu)
 
+    @lab_api
     def sample(self):
         '''Samples a batch from memory'''
         batches = [body.memory.sample()

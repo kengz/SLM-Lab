@@ -51,6 +51,7 @@ class VanillaDQN(SARSA):
         '''
         super(VanillaDQN, self).post_body_init()
 
+    @lab_api
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
         super(VanillaDQN, self).init_nets()
@@ -72,6 +73,7 @@ class VanillaDQN(SARSA):
             self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')
 
+    @lab_api
     def init_algo_params(self):
         '''Initialize other algorithm parameters'''
         super(VanillaDQN, self).init_algo_params()
@@ -113,6 +115,7 @@ class VanillaDQN(SARSA):
         logger.debug2(f'Q targets: {q_targets.size()}')
         return q_targets
 
+    @lab_api
     def sample(self):
         '''Samples a batch from memory of size self.batch_size'''
         batches = [body.memory.sample(self.batch_size)
@@ -197,6 +200,7 @@ class DQNBase(VanillaDQN):
     action_dim: dimensions of the action space
     '''
 
+    @lab_api
     def init_nets(self):
         '''Initialize networks'''
         body = self.agent.nanflat_body_a[0]  # single-body algo
@@ -324,6 +328,7 @@ class DQNBase(VanillaDQN):
 
 
 class DQN(DQNBase):
+    @lab_api
     def init_nets(self):
         super(DQN, self).init_nets()
         # Network update params
@@ -334,6 +339,7 @@ class DQN(DQNBase):
 
 
 class DoubleDQN(DQN):
+    @lab_api
     def init_nets(self):
         super(DoubleDQN, self).init_nets()
         self.online_net = self.net
@@ -355,6 +361,7 @@ class DoubleDQN(DQN):
 class MultitaskDQN(DQN):
     '''Simplest Multi-task DQN implementation. States and action dimensions are concatenated, and a single shared network is reponsible for processing concatenated states, and generating one action per environment from a single output layer.'''
 
+    @lab_api
     def init_nets(self):
         '''Initialize nets with multi-task dimensions, and set net params'''
         self.state_dims = [
@@ -388,6 +395,7 @@ class MultitaskDQN(DQN):
             self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')
 
+    @lab_api
     def sample(self):
         # NOTE the purpose of multi-body is to parallelize and get more batch_sizes
         batches = [body.memory.sample(self.batch_size)
@@ -484,6 +492,7 @@ class MultitaskDQN(DQN):
 class MultiHeadDQN(MultitaskDQN):
     '''Multi-task DQN with separate state and action processors per environment'''
 
+    @lab_api
     def init_nets(self):
         '''Initialize nets with multi-task dimensions, and set net params'''
         # NOTE: Separate init from MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
@@ -526,6 +535,7 @@ class MultiHeadDQN(MultitaskDQN):
             self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')
 
+    @lab_api
     def sample(self):
         '''Samples one batch per environment'''
         batches = [body.memory.sample(self.batch_size)

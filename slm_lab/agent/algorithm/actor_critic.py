@@ -75,6 +75,7 @@ class ActorCritic(Reinforce):
     def body_act_continuous(self, body, state):
         return self.action_policy(self, state, body, self.gpu)
 
+    @lab_api
     def sample(self):
         '''Samples a batch from memory'''
         batches = [body.memory.sample()

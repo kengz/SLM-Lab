@@ -404,7 +404,6 @@ def nonan_all(v):
 
 
 def override_dev_spec(spec):
-    spec['env'][0]['max_episode'] = 20
     spec['meta'] = {
         'max_session': 1,
         'max_trial': 2,
@@ -709,7 +708,7 @@ def to_torch_nested_batch_helper(batch, float_data_names, gpu):
 def concat_episodes(batch):
     '''Concat episodic data into single tensors. Excludes data that isn't already a tensor'''
     for k in batch:
-        classname = batch[k][0].__class__.__name__
+        classname = get_class_name(batch[k][0])
         if classname.find('ndarray') != -1 or classname.find('list') != -1:
             # print(f'Skipping {k}')
             pass

@@ -106,6 +106,7 @@ class DataSpace:
             self.data = new_data
             self.swap_data = new_data.swapaxes(0, 1)
         self.data_history.append(self.data)
+        # TODO dont modify without warning, unintended side effects
         if self.data_name == 'state':
             # Hack to keep size of data storage small - only store most recent state
             if len(self.data_history) > 1:
@@ -224,12 +225,15 @@ class AEBSpace:
             done = env.done or clock.get('t') > env.max_timestep
             env_dones.append(done)
             if done:
+                # propagate done
                 done_space.data[:, env.e, :] = 1.
                 done_space.swap_data[env.e, :, :] = 1.
                 session_mdp_data, session_data = analysis.get_session_data(session)
+                # TODO make proper and general: log first reward
                 reward = session_data[(0, 0, 0)]['reward'].iloc[-1]
-                last_k_rewards = min(clock.get("epi"), 100)
-                mean_reward = session_data[(0, 0, 0)]['reward'].iloc[-last_k_rewards:].mean()
+                last_k = min(clock.get('epi'), 100)
+                last_k_rewards = session_data[(0, 0, 0)]['reward'].iloc[-last_k:]
+                mean_reward = last_k_rewards.mean()
                 msg = f'Done: trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e} epi {clock.get("epi")}, t {clock.get("t")}, reward {reward:.2f}, mean reward (last 100 epis) {mean_reward:.2f}'
                 logger.info(msg)
                 clock.tick('epi')

@@ -96,6 +96,9 @@ class OpenAIEnv:
         self.body_num = None
 
         self.u_env = gym.make(self.name)
+        self.observation_space = self.u_env.observation_space
+        self.action_space = self.u_env.action_space
+
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
         # TODO ensure clock_speed from spec
         self.clock_speed = 1
@@ -113,14 +116,18 @@ class OpenAIEnv:
 
     def is_discrete(self, a):
         '''Check if an agent (brain) is subject to discrete actions'''
-        return self.u_env.action_space.__class__.__name__ != 'Box'  # continuous
+        return util.get_class_name(self.action_space) != 'Box'  # continuous
 
     def get_action_dim(self, a):
         '''Get the action dim for an agent (brain) in env'''
-        if self.is_discrete(a=0):
-            action_dim = self.u_env.action_space.n
+        if self.is_discrete(a=a):
+            if util.get_class_name(self.action_space) == 'MultiDiscrete':
+                # TODO not encountered yet, generalization needed
+                action_dim = self.action_space.nvec
+            else:
+                action_dim = self.action_space.n
         else:
-            action_dim = self.u_env.action_space.shape[0]
+            action_dim = self.action_space.shape[0]
         return action_dim
 
     def get_observable(self, a):
@@ -130,24 +137,26 @@ class OpenAIEnv:
 
     def get_observable_dim(self, a):
         '''Get the observable dim for an agent (brain) in env'''
-        state_dim = self.u_env.observation_space.shape[0]
-        if (len(self.u_env.observation_space.shape) > 1):
-            state_dim = self.u_env.observation_space.shape
+        state_dim = self.observation_space.shape[0]
+        if (len(self.observation_space.shape) > 1):
+            state_dim = self.observation_space.shape
         return {'state': state_dim}
 
     @lab_api
     def reset(self):
         self.done = False
-        _reward_e, state_e, _done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[(a, b)] = state
+            done_e[(a, b)] = self.done
+            body.memory.reset_last_state(state)
         # TODO internalize render code
         if os.environ.get('lab_mode') == 'dev':
             self.u_env.render()
         non_nan_cnt = util.count_nonan(state_e.flatten())
         assert non_nan_cnt == 1, 'OpenAI Gym supports only single body'
-        return _reward_e, state_e, _done_e
+        return _reward_e, state_e, done_e
 
     @lab_api
     def step(self, action_e):
@@ -191,6 +200,14 @@ class UnityEnv:
 
         worker_id = int(f'{os.getpid()}{self.e+int(_.unique_id())}'[-4:])
         self.u_env = UnityEnvironment(file_name=util.get_env_path(self.name), worker_id=worker_id)
+
+        # TODO no way to know range for unity env for now
+        self.observation_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(self.get_observable_dim(),))
+        if self.is_discrete():
+            self.action_space = gym.spaces.Box(low=0, high=self.get_action_dim(), shape=(1,))
+        else:
+            self.action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(1,))
+
         # TODO experiment to find out optimal benchmarking max_timestep, set
         # TODO ensure clock_speed from spec
         self.clock_speed = 1
@@ -250,12 +267,15 @@ class UnityEnv:
     def reset(self):
         self.done = False
         env_info_dict = self.u_env.reset(train_mode=(os.environ.get('lab_mode') != 'dev'), config=self.spec.get('unity'))
-        _reward_e, state_e, _done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             self.check_u_agent_to_body(env_info_a, a)
-            state_e[(a, b)] = env_info_a.states[b]
-        return _reward_e, state_e, _done_e
+            state = env_info_a.states[b]
+            state_e[(a, b)] = state
+            done_e[(a, b)] = done
+            body.memory.reset_last_state(state)
+        return _reward_e, state_e, done_e
 
     @lab_api
     def step(self, action_e):
@@ -317,14 +337,15 @@ class EnvSpace:
     @lab_api
     def reset(self):
         logger.debug('EnvSpace.reset')
-        _reward_v, state_v, _done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
+        _reward_v, state_v, done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
         self.total_reward_v = _reward_v.copy()  # for debugging
         for env in self.envs:
-            _reward_e, state_e, _done_e = env.reset()
+            _reward_e, state_e, done_e = env.reset()
             state_v[env.e, 0:len(state_e)] = state_e
-        _reward_space, state_space, _done_space = self.aeb_space.add(ENV_DATA_NAMES, [_reward_v, state_v, _done_v])
+            done_v[env.e, 0:len(done_e)] = done_e
+        _reward_space, state_space, done_space = self.aeb_space.add(ENV_DATA_NAMES, [_reward_v, state_v, done_v])
         logger.debug(f'\nstate_space: {state_space}')
-        return _reward_space, state_space, _done_space
+        return _reward_space, state_space, done_space
 
     # @util.fn_timer
     @lab_api
