@@ -179,7 +179,7 @@ def save_session_data(spec, info_space, session_mdp_data, session_data, session_
     session_data = util.session_df_to_data(session_df)
     Likewise for session_mdp_df
     '''
-    prepath = get_prepath(spec, info_space, unit='session')
+    prepath = util.get_prepath(spec, info_space, unit='session')
     logger.info(f'Saving session data to {prepath}')
     if session_mdp_data is not None:  # not from retro analysis
         session_mdp_df = pd.concat(session_mdp_data, axis=1)
@@ -195,14 +195,14 @@ def save_session_data(spec, info_space, session_mdp_data, session_data, session_
 
 def save_trial_data(spec, info_space, trial_fitness_df):
     '''Save the trial data: spec, trial_fitness_df.'''
-    prepath = get_prepath(spec, info_space, unit='trial')
+    prepath = util.get_prepath(spec, info_space, unit='trial')
     logger.info(f'Saving trial data to {prepath}')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
 
 
 def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
     '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
-    prepath = get_prepath(spec, info_space, unit='experiment')
+    prepath = util.get_prepath(spec, info_space, unit='experiment')
     logger.info(f'Saving experiment data to {prepath}')
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
@@ -258,23 +258,9 @@ def analyze_experiment(experiment):
     return experiment_df
 
 
-def get_prepath(spec, info_space, unit='experiment'):
-    spec_name = spec['name']
-    predir = f'data/{spec_name}_{info_space.experiment_ts}'
-    prename = f'{spec_name}'
-    trial_index = info_space.get('trial')
-    session_index = info_space.get('session')
-    if unit == 'trial':
-        prename += f'_t{trial_index}'
-    elif unit == 'session':
-        prename += f'_t{trial_index}_s{session_index}'
-    prepath = f'{predir}/{prename}'
-    return prepath
-
-
 def save_spec(spec, info_space, unit='experiment'):
     '''Save spec to proper path. Called at Experiment or Trial init.'''
-    prepath = get_prepath(spec, info_space, unit)
+    prepath = util.get_prepath(spec, info_space, unit)
     util.write(spec, f'{prepath}_spec.json')
 
 

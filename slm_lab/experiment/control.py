@@ -21,7 +21,7 @@ def init_thread_vars(spec, info_space, unit):
     if info_space.get(unit) is None:
         info_space.tick(unit)
     if logger.to_init(spec, info_space):
-        os.environ['PREPATH'] = analysis.get_prepath(spec, info_space)
+        os.environ['PREPATH'] = util.get_prepath(spec, info_space)
         reload(logger)
 
 

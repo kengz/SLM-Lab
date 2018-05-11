@@ -1,6 +1,6 @@
+from slm_lab.lib import distribution, tf_util, util
 import pydash as ps
 import tensorflow as tf
-from slm_lab.lib import distribution, tf_util, util
 
 
 class MLPPolicy:
@@ -10,17 +10,19 @@ class MLPPolicy:
     '''
 
     def __init__(self, algo, name=''):
-        # TODO fix scope using prepath name
-        scope = f'{util.get_ts()}_{name}'
+        self.algo = algo
+        self.body = algo.body  # default body for env
+        spec = algo.agent.spec
+        info_space = algo.agent.info_space
+
+        net_spec = spec['net']
+        util.set_attr(self, ps.pick(net_spec, [
+            'hid_layers_activation', 'hid_layers'
+        ]))
+
+        scope = util.get_prepath(spec, info_space, unit='session').split('/')[-1] + '_' + name
         with tf.variable_scope(scope):
             self.scope = tf.get_variable_scope().name
-            self.algo = algo
-            self.body = algo.body  # default body for env
-
-            net_spec = algo.agent.spec['net']
-            util.set_attr(self, ps.pick(net_spec, [
-                'hid_layers_activation', 'hid_layers'
-            ]))
             self._init()
 
     def _init(self):

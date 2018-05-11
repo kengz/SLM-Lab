@@ -219,6 +219,20 @@ def get_fn_list(a_cls):
     return fn_list
 
 
+def get_prepath(spec, info_space, unit='experiment'):
+    spec_name = spec['name']
+    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    prename = f'{spec_name}'
+    trial_index = info_space.get('trial')
+    session_index = info_space.get('session')
+    if unit == 'trial':
+        prename += f'_t{trial_index}'
+    elif unit == 'session':
+        prename += f'_t{trial_index}_s{session_index}'
+    prepath = f'{predir}/{prename}'
+    return prepath
+
+
 def get_ts(pattern=FILE_TS_FORMAT):
     '''
     Get current ts, defaults to format used for filename
