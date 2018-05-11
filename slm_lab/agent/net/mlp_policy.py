@@ -24,13 +24,13 @@ class MLPPolicy:
             self._init()
 
     def _init(self):
-        self.pdtype = distribution.make_pdtype(self.body.env)
+        self.pdtype = distribution.make_pdtype(self.body.action_space)
 
         self.ob = tf_util.get_global_placeholder(
-            name='ob', dtype=tf.float32, shape=[None] + list(self.body.env.observation_space.shape))
+            name='ob', dtype=tf.float32, shape=[None] + list(self.body.observation_space.shape))
 
         with tf.variable_scope('ob_filter'):
-            self.ob_rms = tf_util.RunningMeanStd(shape=self.body.env.observation_space.shape, comm=self.algo.comm)
+            self.ob_rms = tf_util.RunningMeanStd(shape=self.body.observation_space.shape, comm=self.algo.comm)
 
         with tf.variable_scope('vf'):
             obz = tf.clip_by_value((self.ob - self.ob_rms.mean) / self.ob_rms.std, -5.0, 5.0)
@@ -49,7 +49,7 @@ class MLPPolicy:
             # TODO restore param gaussian_fixed_var=True
             gaussian_fixed_var = True
             # continuous action output layer
-            if gaussian_fixed_var and not self.body.env.is_discrete(a=0):
+            if gaussian_fixed_var and not self.body.is_discrete:
                 mean = tf.layers.dense(
                     last_out, self.pdtype.param_shape()[0] // 2, name='final', kernel_initializer=tf_util.normc_initializer(0.01))
                 logstd = tf.get_variable(

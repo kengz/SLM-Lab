@@ -42,12 +42,13 @@ class Body:
         self.nanflat_a_idx = None
         self.nanflat_e_idx = None
 
-        # the specific data interface variables for a body
         # TODO generalize and make state_space to include observables
-        # TODO use tuples for state_dim for pixel-based in the future, generalize all and call as shape
+        # the specific agent-env interface variables for a body
         self.observable_dim = self.env.get_observable_dim(self.a)
         self.state_dim = self.observable_dim['state']
+        self.observation_space = self.env.get_observation_space(self.a)
         self.action_dim = self.env.get_action_dim(self.a)
+        self.action_space = self.env.get_action_space(self.a)
         self.is_discrete = self.env.is_discrete(self.a)
 
         # every body has its own memory for ease of computation

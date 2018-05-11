@@ -35,9 +35,9 @@ class GAEOnPolicyReplay(Memory):
 
         horizon = self.horizon
         # just for shape
-        sample_ob = self.body.env.observation_space.sample()
+        sample_ob = self.body.observation_space.sample()
         ob = np.zeros(shape=sample_ob.shape, dtype=sample_ob.dtype)
-        ac = self.body.env.action_space.sample()
+        ac = self.body.action_space.sample()
         self.obs = np.array([ob for _ in range(horizon)])
         self.acs = np.array([ac for _i in range(horizon)])
         self.v_preds = np.zeros(horizon, 'float32')
