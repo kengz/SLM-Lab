@@ -87,6 +87,7 @@ class OpenAIEnv:
     def __init__(self, spec, env_space, e=0):
         self.spec = spec
         self.env_space = env_space
+        self.info_space = env_space.info_space
         util.set_attr(self, self.spec)
         self.name = self.spec['name']
         self.e = e
@@ -206,6 +207,7 @@ class UnityEnv:
     def __init__(self, spec, env_space, e=0):
         self.spec = spec
         self.env_space = env_space
+        self.info_space = env_space.info_space
         self.e = e
         util.set_attr(self, self.spec)
         self.name = self.spec['name']
@@ -339,6 +341,7 @@ class EnvSpace:
         self.aeb_space = aeb_space
         aeb_space.env_space = self
         self.env_spec = spec['env']
+        self.info_space = aeb_space.info_space
         self.envs = []
         for e, env_spec in enumerate(self.env_spec):
             env_spec = ps.merge(spec['meta'].copy(), env_spec)

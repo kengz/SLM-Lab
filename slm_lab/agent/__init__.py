@@ -71,6 +71,7 @@ class Agent:
         self.spec = spec
         self.agent_space = agent_space
         self.a = a
+        self.info_space = agent_space.info_space
         self.name = self.spec['name']
         self.body_a = None
         self.nanflat_body_a = None  # nanflatten version of bodies
@@ -145,9 +146,10 @@ class AgentSpace:
     def __init__(self, spec, aeb_space):
         self.spec = spec
         self.aeb_space = aeb_space
-        self.agent_spec = spec['agent']
-        self.aeb_shape = aeb_space.aeb_shape
         aeb_space.agent_space = self
+        self.agent_spec = spec['agent']
+        self.info_space = aeb_space.info_space
+        self.aeb_shape = aeb_space.aeb_shape
         self.agents = [Agent(agent_spec, self, a) for a, agent_spec in enumerate(self.agent_spec)]
 
     @lab_api
