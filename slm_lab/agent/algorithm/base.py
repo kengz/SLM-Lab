@@ -13,7 +13,8 @@ class Algorithm(ABC):
 
     def __init__(self, agent):
         self.agent = agent
-        self.algorithm_spec = agent.spec['algorithm']
+        self.spec = agent.spec
+        self.algorithm_spec = self.spec['algorithm']
 
     @abstractmethod
     @lab_api

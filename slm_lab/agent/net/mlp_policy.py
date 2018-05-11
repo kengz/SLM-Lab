@@ -1,26 +1,24 @@
+from slm_lab.agent.net.base import Net
 from slm_lab.lib import distribution, tf_util, util
 import pydash as ps
 import tensorflow as tf
 
 
-class MLPPolicy:
+class MLPPolicy(Net):
     '''
     Policy network
     adapted from OpenAI https://github.com/openai/baselines/blob/master/baselines/ppo1/mlp_policy.py
     '''
 
     def __init__(self, algorithm, name=''):
-        self.algorithm = algorithm
-        self.net_spec = algorithm.agent.spec['net_spec']
-        self.body = algorithm.body  # default body for env
-        spec = algorithm.agent.spec
-        info_space = algorithm.agent.info_space
-
-        net_spec = spec['net']
+        super(MLPPolicy, self).__init__(algorithm)
         util.set_attr(self, ps.pick(self.net_spec, [
             'hid_layers_activation', 'hid_layers'
         ]))
 
+        self.body = algorithm.body  # default body for env
+        spec = algorithm.agent.spec
+        info_space = algorithm.agent.info_space
         scope = util.get_prepath(spec, info_space, unit='session').split('/')[-1] + '_' + name
         with tf.variable_scope(scope):
             self.scope = tf.get_variable_scope().name
