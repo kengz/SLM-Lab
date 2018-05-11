@@ -17,9 +17,8 @@ class MLPPolicy(Net):
         ]))
 
         self.body = algorithm.body  # default body for env
-        spec = algorithm.agent.spec
         info_space = algorithm.agent.info_space
-        scope = util.get_prepath(spec, info_space, unit='session').split('/')[-1] + '_' + name
+        scope = util.get_prepath(self.spec, info_space, unit='session').split('/')[-1] + '_' + name
         with tf.variable_scope(scope):
             self.scope = tf.get_variable_scope().name
             self._init()

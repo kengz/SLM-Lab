@@ -16,11 +16,8 @@ class GAEOnPolicyReplay(Memory):
 
     def __init__(self, body):
         super(GAEOnPolicyReplay, self).__init__(body)
-        # TODO properly design sub specs
-
-        self.horizon = self.body.agent.spec['algorithm']['horizon']
-        # self.last_state = None
-        # self.v_pred = None
+        self.horizon = self.spec['algorithm']['horizon']
+        self.v_pred = np.nan
         self.reset()
 
     def reset_last_state(self, state):
@@ -28,6 +25,7 @@ class GAEOnPolicyReplay(Memory):
         # TODO merge this back to inits below
 
     def reset(self):
+        # TODO make such reset visible and unify epi vs overall reset
         # self.last_state is updated from Memory.reset_last_state
         self.total_t = 0
         self.done = False

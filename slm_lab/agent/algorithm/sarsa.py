@@ -55,7 +55,7 @@ class SARSA(Algorithm):
         self.state_dim = body.state_dim  # dimension of the environment state, e.g. 4
         self.action_dim = body.action_dim  # dimension of the environment actions, e.g. 2
         net_spec = self.agent.spec['net']
-        mem_spec = self.agent.spec['memory']
+        memory_spec = self.agent.spec['memory']
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
             optim_param=ps.get(net_spec, 'optim'),
@@ -67,7 +67,7 @@ class SARSA(Algorithm):
         ))
         if net_spec['type'].find('Recurrent') != -1:
             self.net = getattr(net, net_spec['type'])(
-                self.state_dim, net_spec['hid_layers'], self.action_dim, mem_spec['length_history'], **net_kwargs)
+                self.state_dim, net_spec['hid_layers'], self.action_dim, memory_spec['length_history'], **net_kwargs)
         else:
             self.net = getattr(net, net_spec['type'])(
                 self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)

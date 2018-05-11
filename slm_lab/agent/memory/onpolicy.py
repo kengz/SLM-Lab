@@ -34,9 +34,7 @@ class OnPolicyReplay(Memory):
 
     def __init__(self, body):
         super(OnPolicyReplay, self).__init__(body)
-        self.state_dim = self.body.state_dim
-        self.action_dim = self.body.action_dim
-        self.num_epis_to_collect = self.body.agent.spec['algorithm']['num_epis_to_collect']
+        self.num_epis_to_collect = self.spec['algorithm']['num_epis_to_collect']
         # Don't want total experiences reset when memory is
         self.total_experiences = 0
         self.last_nan_idxs = None
@@ -159,7 +157,7 @@ class OnPolicyNStepReplay(OnPolicyReplay):
     '''
     def __init__(self, body):
         super(OnPolicyNStepReplay, self).__init__(body)
-        self.length_history = self.body.agent.spec['memory']['length_history']
+        self.length_history = self.memory_spec['length_history']
 
     def sample(self):
         '''
@@ -218,11 +216,9 @@ class OnPolicyBatchReplay(OnPolicyReplay):
     '''
 
     def __init__(self, body):
-        self.body = body
+        super(OnPolicyBatchReplay, self).__init__(body)
         self.last_state = None
-        self.state_dim = self.body.state_dim
-        self.action_dim = self.body.action_dim
-        self.training_frequency = self.body.agent.spec['algorithm']['training_frequency']
+        self.training_frequency = self.spec['algorithm']['training_frequency']
         # Don't want total experiences reset when memory is
         self.total_experiences = 0
         self.last_nan_idxs = None
@@ -283,7 +279,7 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
     '''
     def __init__(self, body):
         super(OnPolicyNStepBatchReplay, self).__init__(body)
-        self.length_history = self.body.agent.spec['memory']['length_history']
+        self.length_history = self.memory_spec['length_history']
 
     def sample(self):
         '''
