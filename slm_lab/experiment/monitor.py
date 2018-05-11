@@ -107,7 +107,7 @@ class DataSpace:
             self.swap_data = new_data.swapaxes(0, 1)
         self.data_history.append(self.data)
         # NOTE only save last data if individual data is big
-        if self.data.size > 10:
+        if self.data.size > 10 and len(self.data_history) > 2:
             self.data_history[-2] = np.zeros_like(self.data)
         return self.data
 

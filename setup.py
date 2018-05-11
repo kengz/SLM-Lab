@@ -5,7 +5,6 @@ from setuptools.command.test import test as TestCommand
 
 test_args = [
     '-n 0',
-    '--capture=no',
     '--verbose',
     '--no-flaky-report',
     '--timeout=60',
