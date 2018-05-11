@@ -23,7 +23,7 @@ class Clock:
 
     def __init__(self, clock_speed=1):
         self.clock_speed = int(clock_speed)
-        self.ticks = 0
+        self.ticks = 0  # multiple ticks make a timestep; used for clock speed
         self.t = 0
         self.total_t = 0
         self.epi = 1
@@ -87,9 +87,9 @@ util.monkey_patch(BrainParameters, BrainExt)
 class OpenAIEnv:
     def __init__(self, spec, env_space, e=0):
         self.spec = spec
+        self.env_space = env_space
         util.set_attr(self, self.spec)
         self.name = self.spec['name']
-        self.env_space = env_space
         self.e = e
         self.body_e = None
         self.nanflat_body_e = None  # nanflatten version of bodies
@@ -190,10 +190,10 @@ class UnityEnv:
 
     def __init__(self, spec, env_space, e=0):
         self.spec = spec
-        util.set_attr(self, self.spec)
-        self.name = self.spec['name']
         self.env_space = env_space
         self.e = e
+        util.set_attr(self, self.spec)
+        self.name = self.spec['name']
         self.body_e = None
         self.nanflat_body_e = None  # nanflatten version of bodies
         self.body_num = None
@@ -310,9 +310,9 @@ class EnvSpace:
 
     def __init__(self, spec, aeb_space):
         self.spec = spec
-        self.env_spec = spec['env']
         self.aeb_space = aeb_space
         aeb_space.env_space = self
+        self.env_spec = spec['env']
         self.envs = []
         for e, env_spec in enumerate(self.env_spec):
             env_spec = ps.merge(spec['meta'].copy(), env_spec)
@@ -351,7 +351,6 @@ class EnvSpace:
         logger.debug(f'\nstate_space: {state_space}')
         return _reward_space, state_space, done_space
 
-    # @util.fn_timer
     @lab_api
     def step(self, action_space):
         reward_v, state_v, done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)

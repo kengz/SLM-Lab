@@ -24,7 +24,6 @@ MA_WINDOW = 100
 logger = logger.get_logger(__name__)
 
 
-# @util.fn_timer
 def get_session_data(session):
     '''
     Gather data from session: MDP, Agent, Env data, hashed by aeb; then aggregate.

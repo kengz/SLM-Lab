@@ -124,7 +124,6 @@ class VanillaDQN(SARSA):
         util.to_torch_batch(batch, self.gpu)
         return batch
 
-    # @util.fn_timer
     @lab_api
     def train(self):
         '''Completes one training step for the agent if it is time to train.
@@ -269,7 +268,6 @@ class DQNBase(VanillaDQN):
         self.update_frequency = 1
         self.polyak_weight = 0.0
 
-    # @util.fn_timer
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences. Note that the net references may differ based on algorithm.'''
         q_sts = self.net.wrap_eval(batch['states'])

@@ -30,16 +30,19 @@ logger = logger.get_logger(__name__)
 
 class Body:
     '''
-    Body, helpful info reference unit under AEBSpace for sharing info between agent and env.
+    Body is the handler with proper info to reference the single-agent-single-environment unit in this generalized multi-agent-env setting.
     '''
 
     def __init__(self, aeb, agent, env):
+        # essential reference variables
         self.aeb = aeb
+        self.agent = agent
+        self.env = env
         self.a, self.e, self.b = aeb
         self.nanflat_a_idx = None
         self.nanflat_e_idx = None
-        self.agent = agent
-        self.env = env
+
+        # the specific data interface variables for a body
         # TODO generalize and make state_space to include observables
         # TODO use tuples for state_dim for pixel-based in the future, generalize all and call as shape
         self.observable_dim = self.env.get_observable_dim(self.a)
@@ -47,6 +50,7 @@ class Body:
         self.action_dim = self.env.get_action_dim(self.a)
         self.is_discrete = self.env.is_discrete(self.a)
 
+        # every body has its own memory for ease of computation
         MemoryClass = getattr(memory, ps.get(self.agent.spec, 'memory.name'))
         self.memory = MemoryClass(self)
         self.state_buffer = []
@@ -64,22 +68,24 @@ class Agent:
 
     def __init__(self, spec, agent_space, a=0):
         self.spec = spec
-        self.name = self.spec['name']
         self.agent_space = agent_space
         self.a = a
+        self.name = self.spec['name']
         self.body_a = None
         self.nanflat_body_a = None  # nanflatten version of bodies
         self.body_num = None
 
         AlgoClass = getattr(algorithm, ps.get(self.spec, 'algorithm.name'))
         self.algorithm = AlgoClass(self)
-        self.len_state_buffer = 0
-        if spec['memory']['name'].find('NStep') != -1:
+
+        # TODO uhh handle internally to memory?
+        memory_name = spec['memory']['name']
+        if 'NStep' in memory_name or 'Stack' in memory_name:
             self.len_state_buffer = spec['memory']['length_history']
-        elif spec['memory']['name'].find('Stack') != -1:
-            self.len_state_buffer = spec['memory']['length_history']
-        elif spec['memory']['name'].find('Atari') != -1:
+        elif 'Atari' in memory_name:
             self.len_state_buffer = 4
+        else:
+            self.len_state_buffer = 0
 
     @lab_api
     def post_body_init(self):
@@ -97,14 +103,12 @@ class Agent:
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.reset_last_state(state_a[(e, b)])
 
-    # @util.fn_timer
     @lab_api
     def act(self, state_a):
         '''Standard act method from algorithm.'''
         action_a = self.algorithm.act(state_a)
         return action_a
 
-    # @util.fn_timer
     @lab_api
     def update(self, action_a, reward_a, state_a, done_a):
         '''
@@ -112,6 +116,7 @@ class Agent:
         '''
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.update(action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
+            # TODO also internalize to memory
             if self.len_state_buffer > 0:
                 if len(body.state_buffer) == self.len_state_buffer:
                     del body.state_buffer[0]
@@ -138,8 +143,8 @@ class AgentSpace:
 
     def __init__(self, spec, aeb_space):
         self.spec = spec
-        self.agent_spec = spec['agent']
         self.aeb_space = aeb_space
+        self.agent_spec = spec['agent']
         self.aeb_shape = aeb_space.aeb_shape
         aeb_space.agent_space = self
         self.agents = [Agent(agent_spec, self, a) for a, agent_spec in enumerate(self.agent_spec)]
