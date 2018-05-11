@@ -45,7 +45,7 @@ class SARSA(Algorithm):
             - Boolean var for if the action space is discrete
         '''
         self.init_nets()
-        self.init_algo_params()
+        self.init_algorithm_params()
         logger.info(util.self_desc(self))
 
     @lab_api
@@ -84,18 +84,18 @@ class SARSA(Algorithm):
         logger.info(f'Training on gpu: {self.gpu}')
 
     @lab_api
-    def init_algo_params(self):
+    def init_algorithm_params(self):
         '''Initialize other algorithm parameters.'''
         algorithm_spec = self.agent.spec['algorithm']
         net_spec = self.agent.spec['net']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
         self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
-        self.set_other_algo_attributes()
+        self.set_other_algorithm_attributes()
         self.nanflat_explore_var_a = [
             self.explore_var_start] * self.agent.body_num
 
-    def set_other_algo_attributes(self):
-        '''Initializes additional parameters from the algorithm spec. Called by init_algo_params'''
+    def set_other_algorithm_attributes(self):
+        '''Initializes additional parameters from the algorithm spec. Called by init_algorithm_params'''
         algorithm_spec = self.agent.spec['algorithm']
         util.set_attr(self, ps.pick(algorithm_spec, [
             # explore_var is epsilon, tau or etc. depending on the action policy

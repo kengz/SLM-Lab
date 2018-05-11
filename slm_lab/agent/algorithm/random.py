@@ -23,7 +23,7 @@ class Random(Algorithm):
         pass
 
     @lab_api
-    def init_algo_params(self):
+    def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         pass
 

@@ -9,14 +9,15 @@ class MLPPolicy:
     adapted from OpenAI https://github.com/openai/baselines/blob/master/baselines/ppo1/mlp_policy.py
     '''
 
-    def __init__(self, algo, name=''):
-        self.algo = algo
-        self.body = algo.body  # default body for env
-        spec = algo.agent.spec
-        info_space = algo.agent.info_space
+    def __init__(self, algorithm, name=''):
+        self.algorithm = algorithm
+        self.net_spec = algorithm.agent.spec['net_spec']
+        self.body = algorithm.body  # default body for env
+        spec = algorithm.agent.spec
+        info_space = algorithm.agent.info_space
 
         net_spec = spec['net']
-        util.set_attr(self, ps.pick(net_spec, [
+        util.set_attr(self, ps.pick(self.net_spec, [
             'hid_layers_activation', 'hid_layers'
         ]))
 
@@ -32,7 +33,7 @@ class MLPPolicy:
             name='ob', dtype=tf.float32, shape=[None] + list(self.body.observation_space.shape))
 
         with tf.variable_scope('ob_filter'):
-            self.ob_rms = tf_util.RunningMeanStd(shape=self.body.observation_space.shape, comm=self.algo.comm)
+            self.ob_rms = tf_util.RunningMeanStd(shape=self.body.observation_space.shape, comm=self.algorithm.comm)
 
         with tf.variable_scope('vf'):
             obz = tf.clip_by_value((self.ob - self.ob_rms.mean) / self.ob_rms.std, -5.0, 5.0)

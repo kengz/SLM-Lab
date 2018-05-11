@@ -220,11 +220,11 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, g
 
 
 # Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
-def act_with_softmax(algo, state, body, gpu):
+def act_with_softmax(algorithm, state, body, gpu):
     '''Assumes actor network outputs one variable; the logits of a categorical probability distribution over the actions'''
-    state_seq = algo.agent.len_state_buffer > 0
-    torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, algo.agent.len_state_buffer)
-    out = algo.get_actor_output(torch_state, evaluate=False)
+    state_seq = algorithm.agent.len_state_buffer > 0
+    torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, algorithm.agent.len_state_buffer)
+    out = algorithm.get_actor_output(torch_state, evaluate=False)
     if type(out) is list:
         out = out[0]
     out.squeeze_(dim=0)
@@ -235,7 +235,7 @@ def act_with_softmax(algo, state, body, gpu):
     logger.debug2(f'Probability of actions: {probs.data}')
     logger.debug(
         f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
-    algo.saved_log_probs.append(m.log_prob(action))
+    algorithm.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = - torch.sum(torch.mul(probs, torch.log(probs)))
     if np.isnan(H.data.cpu().numpy()):
@@ -244,23 +244,23 @@ def act_with_softmax(algo, state, body, gpu):
         if torch.cuda.is_available() and gpu:
             H = H.cuda()
         H = Variable(H)
-    algo.entropy.append(H)
+    algorithm.entropy.append(H)
     return action.data[0]
 
 
 # Denny Britz has a very helpful implementation of an Actor Critic algorithm. This function is adapted from his approach. I highly recommend looking at his full implementation available here https://github.com/dennybritz/reinforcement-learning/blob/master/PolicyGradient/Continuous%20MountainCar%20Actor%20Critic%20Solution.ipynb
-def act_with_gaussian(algo, state, body, gpu):
+def act_with_gaussian(algorithm, state, body, gpu):
     '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
-    state_seq = algo.agent.len_state_buffer > 0
-    torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, algo.agent.len_state_buffer)
-    [mu, sigma] = algo.get_actor_output(torch_state, evaluate=False)
+    state_seq = algorithm.agent.len_state_buffer > 0
+    torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, algorithm.agent.len_state_buffer)
+    [mu, sigma] = algorithm.get_actor_output(torch_state, evaluate=False)
     sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0
     m = Normal(mu, sigma)
     action = m.sample()
-    action = torch.clamp(action, -algo.continuous_action_clip, algo.continuous_action_clip)
+    action = torch.clamp(action, -algorithm.continuous_action_clip, algorithm.continuous_action_clip)
     logger.debug2(
         f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
-    algo.saved_log_probs.append(m.log_prob(action))
+    algorithm.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = 0.5 * torch.log(2.0 * np.pi * np.e * sigma * sigma)
     if np.isnan(H.data.cpu().numpy()):
@@ -269,11 +269,11 @@ def act_with_gaussian(algo, state, body, gpu):
         if torch.cuda.is_available() and gpu:
             H = H.cuda()
         H = Variable(H)
-    algo.entropy.append(H)
+    algorithm.entropy.append(H)
     return action.data
 
 
-def act_with_multivariate_gaussian(algo, state, body, gpu):
+def act_with_multivariate_gaussian(algorithm, state, body, gpu):
     '''Assumes net outputs two tensors which contain the mean and std dev of a multivariate normal distribution'''
     raise NotImplementedError
     return np.nan
@@ -306,16 +306,16 @@ def update_multi_linear_decay(cls, _space_clock):
     return cls.nanflat_explore_var_a
 
 
-def decay_learning_rate(algo, nets):
+def decay_learning_rate(algorithm, nets):
     '''
     Decay learning rate for each net by the decay method update_lr() defined in them.
     In the future, might add more flexible lr adjustment, like boosting and decaying on need.
     '''
-    space_clock = util.s_get(algo, 'aeb_space.clock')
+    space_clock = util.s_get(algorithm, 'aeb_space.clock')
     t = space_clock.get('total_t')
     epi = space_clock.get('epi')
-    if algo.decay_lr and t >= algo.decay_lr_min_timestep:
-        if t % algo.decay_lr_frequency == 0:
+    if algorithm.decay_lr and t >= algorithm.decay_lr_min_timestep:
+        if t % algorithm.decay_lr_frequency == 0:
             logger.info(f'Epi {epi}: Decaying learning rate...')
             for net in nets:
                 net.update_lr()

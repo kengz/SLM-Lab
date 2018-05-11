@@ -37,7 +37,7 @@ class PPO(Algorithm):
         self.cur_lr_mult = 1.0
         self.body = self.agent.nanflat_body_a[0]  # singleton algo
         self.memory = self.body.memory
-        self.init_algo_params()
+        self.init_algorithm_params()
         self.init_nets()
         logger.info(util.self_desc(self))
 
@@ -115,7 +115,7 @@ class PPO(Algorithm):
         return action
 
     @lab_api
-    def init_algo_params(self):
+    def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
         util.set_attr(self, ps.pick(algorithm_spec, [

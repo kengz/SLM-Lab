@@ -64,7 +64,7 @@ class ActorCritic(Reinforce):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         self.init_nets()
-        self.init_algo_params()
+        self.init_algorithm_params()
         logger.info(util.self_desc(self))
 
     @lab_api
@@ -539,7 +539,7 @@ class ActorCritic(Reinforce):
             logger.warn("Incorrect network type. Please use 'MLPshared', MLPseparate', Recurrentshared, or Recurrentseparate.")
             raise NotImplementedError
 
-    def init_algo_params(self):
+    def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
         net_spec = self.agent.spec['net']

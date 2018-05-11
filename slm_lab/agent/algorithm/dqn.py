@@ -74,12 +74,12 @@ class VanillaDQN(SARSA):
         logger.info(f'Training on gpu: {self.gpu}')
 
     @lab_api
-    def init_algo_params(self):
+    def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
-        super(VanillaDQN, self).init_algo_params()
+        super(VanillaDQN, self).init_algorithm_params()
 
-    def set_other_algo_attributes(self):
-        '''Initializes additional parameters from the algorithm spec. Called by init_algo_params'''
+    def set_other_algorithm_attributes(self):
+        '''Initializes additional parameters from the algorithm spec. Called by init_algorithm_params'''
         algorithm_spec = self.agent.spec['algorithm']
         util.set_attr(self, ps.pick(algorithm_spec, [
             # explore_var is epsilon, tau or etc. depending on the action policy

@@ -30,7 +30,7 @@ class Reinforce(Algorithm):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         self.init_nets()
-        self.init_algo_params()
+        self.init_algorithm_params()
         logger.info(util.self_desc(self))
 
     @lab_api
@@ -78,7 +78,7 @@ class Reinforce(Algorithm):
                     state_dim, net_spec['hid_layers'], [action_dim, action_dim], **net_kwargs)
 
     @lab_api
-    def init_algo_params(self):
+    def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         algorithm_spec = self.agent.spec['algorithm']
         net_spec = self.agent.spec['net']

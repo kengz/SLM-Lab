@@ -13,13 +13,14 @@ class Algorithm(ABC):
 
     def __init__(self, agent):
         self.agent = agent
+        self.algorithm_spec = agent.spec['algorithm']
 
     @abstractmethod
     @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         self.init_nets()
-        self.init_algo_params()
+        self.init_algorithm_params()
         raise NotImplementedError
 
     @abstractmethod
@@ -30,7 +31,7 @@ class Algorithm(ABC):
 
     @abstractmethod
     @lab_api
-    def init_algo_params(self):
+    def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         raise NotImplementedError
 
