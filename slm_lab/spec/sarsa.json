@@ -10,8 +10,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -56,8 +55,7 @@
         "explore_var_end": 0.1,
         "explore_anneal_epi": 20,
         "gamma": 0.97,
-        "training_frequency": 8,
-        "num_epis_to_collect": 1
+        "training_frequency": 8
       },
       "memory": {
         "name": "OnPolicyNStepBatchReplay",
@@ -105,11 +103,11 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "MLPNet",
@@ -151,11 +149,11 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 3
+        "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "MLPNet",
@@ -197,11 +195,11 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 5
+        "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "MLPNet",
@@ -243,8 +241,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.99,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -287,7 +284,13 @@
           "optim": {
             "lr__uniform": [0.001, 0.3]
           },
-          "hid_layers__choice": [[16], [32], [64], [128], [64, 32]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64],
+            [128],
+            [64, 32]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
@@ -304,8 +307,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.99,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -348,7 +350,13 @@
           "optim": {
             "lr__uniform": [0.001, 0.3]
           },
-          "hid_layers__choice": [[32], [64], [128], [256], [128, 64]],
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [128],
+            [256],
+            [128, 64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
@@ -365,8 +373,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -418,8 +425,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -471,11 +477,11 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "MLPNet",
@@ -524,8 +530,7 @@
         "explore_var_end": 0.005,
         "explore_anneal_epi": 100,
         "gamma": 0.999,
-        "training_frequency": 32,
-        "num_epis_to_collect": 3
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -570,7 +575,12 @@
           "optim": {
             "lr__uniform": [0.001, 0.3]
           },
-          "hid_layers__choice": [[16], [32], [64], [64, 32]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64],
+            [64, 32]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
@@ -587,11 +597,11 @@
         "explore_var_end": 0.005,
         "explore_anneal_epi": 100,
         "gamma": 0.999,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "MLPNet",
@@ -633,7 +643,12 @@
           "optim": {
             "lr__uniform": [0.001, 0.3]
           },
-          "hid_layers__choice": [[16], [32], [64], [64, 32]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64],
+            [64, 32]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
@@ -650,8 +665,7 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 100,
         "gamma": 0.999,
-        "training_frequency": 32,
-        "num_epis_to_collect": 3
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -696,7 +710,12 @@
           "optim": {
             "lr__uniform": [0.001, 0.3]
           },
-          "hid_layers__choice": [[16], [32], [64], [64, 32]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64],
+            [64, 32]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
@@ -713,11 +732,11 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 100,
         "gamma": 0.999,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "MLPNet",
@@ -759,7 +778,12 @@
           "optim": {
             "lr__uniform": [0.001, 0.3]
           },
-          "hid_layers__choice": [[16], [32], [64], [64, 32]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64],
+            [64, 32]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]

@@ -6,13 +6,13 @@
         "name": "Reinforce",
         "action_policy": "default",
         "gamma": 0.95,
-        "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "MLPdefault",
@@ -51,7 +51,12 @@
           "gamma__uniform": [0.9, 0.9999]
         },
         "net": {
-          "hid_layers__choice": [[16], [64], [32, 16], [64, 32]],
+          "hid_layers__choice": [
+            [16],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
           "optim": {
             "lr__uniform": [0.001, 0.2]
           }
@@ -66,7 +71,6 @@
         "name": "Reinforce",
         "action_policy": "default",
         "gamma": 0.95,
-        "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0
@@ -111,7 +115,11 @@
           "gamma__uniform": [0.9, 0.9999]
         },
         "net": {
-          "hid_layers__choice": [[16], [32], [64]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
           "optim": {
             "lr__uniform": [0.001, 0.2]
@@ -127,20 +135,24 @@
         "name": "Reinforce",
         "action_policy": "default",
         "gamma": 0.95,
-        "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "ConvNet",
-        "hid_layers": [[[3, 16, [5, 5], 2, 0, [1, 1]],
-                       [16, 32, [5, 5], 2, 0, [2, 2]],
-                       [32, 32, [5, 5], 2, 0, [2, 2]]],
-                       [128, 64]],
+        "hid_layers": [
+          [
+            [3, 16, [5, 5], 2, 0, [1, 1]],
+            [16, 32, [5, 5], 2, 0, [2, 2]],
+            [32, 32, [5, 5], 2, 0, [2, 2]]
+          ],
+          [128, 64]
+        ],
         "hid_layers_activation": "relu",
         "optim": {
           "name": "Adam",
@@ -176,13 +188,13 @@
         "name": "Reinforce",
         "action_policy": "default",
         "gamma": 0.95,
-        "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0
       },
       "memory": {
         "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1,
         "length_history": 4
       },
       "net": {
@@ -221,7 +233,11 @@
           "gamma__uniform": [0.9, 0.9999]
         },
         "net": {
-          "hid_layers__choice": [[16], [32], [64]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
           "optim": {
             "lr__uniform": [0.001, 0.2]

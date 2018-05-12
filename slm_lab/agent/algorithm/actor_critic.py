@@ -546,7 +546,6 @@ class ActorCritic(Reinforce):
         self.set_action_fn()
         util.set_attr(self, ps.pick(algorithm_spec, [
             'gamma',
-            'num_epis_to_collect',
             'add_entropy', 'entropy_weight',
             'continuous_action_clip',
             'lamda', 'num_step_returns',

@@ -103,7 +103,6 @@ class SARSA(Algorithm):
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
-            'num_epis_to_collect',  # how many episodes to collect before training for episodic training
         ]))
         self.to_train = 0
         self.set_memory_flag()

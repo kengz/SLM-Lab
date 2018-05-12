@@ -109,7 +109,7 @@ def test_reinforce_multi_epi():
     algorithm_name = 'unit_test_reinforce_multi_epi'
     spec = spec_util.get('test.json', 'unit_test_reinforce')
     spec['name'] = algorithm_name
-    spec['agent'][0]['algorithm']['num_epis_to_collect'] = 3
+    spec['agent'][0]['memory']['num_epis_to_collect'] = 3
     assert generic_algorithm_test(spec, algorithm_name) > 100
 
 
@@ -170,7 +170,7 @@ def test_actor_critic_multi_epi():
     algorithm_name = 'unit_test_actor_critic_multi_epi'
     spec = spec_util.get('test.json', 'unit_test_actor_critic')
     spec['name'] = algorithm_name
-    spec['agent'][0]['algorithm']['num_epis_to_collect'] = 3
+    spec['agent'][0]['memory']['num_epis_to_collect'] = 3
     assert generic_algorithm_test(spec, algorithm_name) > 100
 
 

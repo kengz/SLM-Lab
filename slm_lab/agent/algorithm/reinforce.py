@@ -93,7 +93,6 @@ class Reinforce(Algorithm):
             self.action_policy = act_fns[action_fn]
         util.set_attr(self, ps.pick(algorithm_spec, [
             'gamma',
-            'num_epis_to_collect',
             'add_entropy', 'entropy_weight',
             'continuous_action_clip'
         ]))

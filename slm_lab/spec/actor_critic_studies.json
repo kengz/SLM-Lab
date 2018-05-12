@@ -6,7 +6,6 @@
         "name": "ActorCritic",
         "action_policy": "default",
         "gamma": 0.91,
-        "num_epis_to_collect": 1,
         "add_entropy": true,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
@@ -19,7 +18,8 @@
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "MLPseparate",
@@ -59,7 +59,7 @@
       "agent": [{
         "algorithm": {
           "lamda__uniform": [0.0, 1.0]
-          }
+        }
       }]
     }
   },
@@ -70,7 +70,6 @@
         "name": "ActorCritic",
         "action_policy": "default",
         "gamma": 0.91,
-        "num_epis_to_collect": 1,
         "add_entropy": true,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
@@ -83,7 +82,8 @@
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "MLPseparate",
@@ -123,7 +123,7 @@
       "agent": [{
         "memory": {
           "name__choice": ["OnPolicyReplay", "OnPolicyBatchReplay"]
-          }
+        }
       }]
     }
   },
@@ -134,7 +134,6 @@
         "name": "ActorCritic",
         "action_policy": "default",
         "gamma": 0.91,
-        "num_epis_to_collect": 1,
         "add_entropy": true,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
@@ -147,7 +146,8 @@
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "MLPseparate",
@@ -187,7 +187,7 @@
       "agent": [{
         "algorithm": {
           "entropy_weight__uniform": [0.0, 1.0]
-          }
+        }
       }]
     }
   },
@@ -198,7 +198,6 @@
         "name": "ActorCritic",
         "action_policy": "default",
         "gamma": 0.91,
-        "num_epis_to_collect": 1,
         "add_entropy": true,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
@@ -211,7 +210,8 @@
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "MLPshared",
@@ -251,7 +251,7 @@
       "agent": [{
         "algorithm": {
           "val_loss_weight__uniform": [0.1, 2.0]
-          }
+        }
       }]
     }
   },
@@ -262,7 +262,6 @@
         "name": "ActorCritic",
         "action_policy": "default",
         "gamma": 0.91,
-        "num_epis_to_collect": 1,
         "add_entropy": true,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
@@ -275,7 +274,8 @@
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyReplay",
+        "num_epis_to_collect": 1
       },
       "net": {
         "type": "MLPseparate",
