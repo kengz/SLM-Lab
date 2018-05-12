@@ -33,5 +33,3 @@ class Memory(ABC):
     def sample(self):
         '''Implement memory sampling mechanism'''
         raise NotImplementedError
-
-    # TODO standardize sample method

@@ -45,22 +45,17 @@ class Replay(Memory):
         self.reset()
         self.print_memory_info()
 
-    def reset_states(self):
-        '''Initializes the state and next state arrays'''
-        if type(self.state_dim) is int:
-            self.states = np.zeros((self.max_size, self.state_dim))
-            self.next_states = np.zeros((self.max_size, self.state_dim))
-        elif type(self.state_dim) is tuple:
-            self.states = np.zeros((self.max_size, *self.state_dim))
-            self.next_states = np.zeros((self.max_size, *self.state_dim))
-
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
-        self.reset_states()
-        self.actions = np.zeros((self.max_size, self.action_dim), dtype=np.uint16)
-        self.rewards = np.zeros((self.max_size, 1))
-        self.dones = np.zeros((self.max_size, 1), dtype=np.uint8)
-        self.priorities = np.zeros((self.max_size, 1))
+        states_shape = np.concatenate([[self.max_size], np.squeeze(self.state_dim)[None]])
+        actions_shape = np.concatenate([[self.max_size], np.squeeze(self.action_dim)[None]])
+        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
+        setattr(self, 'states', np.zeros(states_shape))
+        setattr(self, 'actions', np.zeros(actions_shape, dtype=np.uint16))
+        setattr(self, 'rewards', np.zeros((self.max_size, 1)))
+        setattr(self, 'next_states', np.zeros(states_shape))
+        setattr(self, 'dones', np.zeros((self.max_size, 1), dtype=np.uint8))
+        setattr(self, 'priorities', np.zeros((self.max_size, 1)))
         self.true_size = 0
         self.head = -1  # Index of most recent experience
 
@@ -114,13 +109,7 @@ class Replay(Memory):
             raise NotImplementedError
         batch_idxs = self.sample_idxs(batch_size)
         self.batch_idxs = batch_idxs
-        batch = {}
-        batch['states'] = self.states[batch_idxs]
-        batch['actions'] = self.actions[batch_idxs]
-        batch['rewards'] = self.rewards[batch_idxs]
-        batch['next_states'] = self.next_states[batch_idxs]
-        batch['dones'] = self.dones[batch_idxs]
-        batch['priorities'] = self.priorities[batch_idxs]
+        batch = {k: getattr(self, k)[batch_idxs] for k in self.data_keys}
         return batch
 
     def sample_idxs(self, batch_size):
@@ -133,17 +122,14 @@ class Replay(Memory):
         Updates the priorities from the most recent batch
         Assumes the relevant batch indices are stored in self.batch_idxs
         '''
-        assert len(priorites) == self.batch_idxs.size
+        assert len(priorities) == self.batch_idxs.size
         self.priorities[self.batch_idxs] = priorities
 
     def print_memory_info(self):
         '''Prints size of all of the memory arrays'''
-        logger.info(f'MEMORY: states :{self.states.shape} dtype: {self.states.dtype}, size: {util.memory_size(self.states)}MB')
-        logger.info(f'MEMORY: next states :{self.next_states.shape} dtype: {self.next_states.dtype}, size: {util.memory_size(self.next_states)}MB')
-        logger.info(f'MEMORY: actions :{self.actions.shape} dtype: {self.actions.dtype}, size: {util.memory_size(self.actions)}MB')
-        logger.info(f'MEMORY: dones :{self.dones.shape} dtype: {self.dones.dtype}, size: {util.memory_size(self.dones)}MB')
-        logger.info(f'MEMORY: rewards :{self.rewards.shape} dtype: {self.rewards.dtype}, size: {util.memory_size(self.rewards)}MB')
-        logger.info(f'MEMORY: priorities :{self.priorities.shape} dtype: {self.priorities.dtype}, size: {util.memory_size(self.priorities)}MB')
+        for k in self.data_keys:
+            d = getattr(self, k)
+            logger.info(f'MEMORY: {k} :shape: {d.shape}, dtype: {d.dtype}, size: {util.memory_size(d)}MB')
 
 
 class StackReplay(Replay):
@@ -164,14 +150,10 @@ class StackReplay(Replay):
         for _ in range(self.num_stacked_states - 1):
             self.state_buffer.append(np.zeros((self.orig_state_dim)))
 
-    def reset_states(self):
-        '''Initializes the state and next state arrays'''
-        self.orig_state_dim = self.state_dim
-        self.state_dim = self.state_dim * self.num_stacked_states
-        super(StackReplay, self).reset_states()
-
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
+        self.orig_state_dim = self.state_dim
+        self.state_dim = self.state_dim * self.num_stacked_states
         super(StackReplay, self).reset()
         self.state_buffer = []
         self.clear_buffer()
@@ -218,14 +200,9 @@ class Atari(Replay):
         for _ in range(3):
             self.state_buffer.append(np.zeros((84, 84)))
 
-    def reset_states(self):
-        '''Initializes the state and next state arrays'''
-        self.state_dim = (84, 84, 4)
-        self.states = np.zeros((self.max_size, *self.state_dim), dtype=np.float16)
-        self.next_states = np.zeros((self.max_size, *self.state_dim), dtype=np.float16)
-
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
+        assert self.state_dim == (84, 84, 4)
         super(Atari, self).reset()
         self.state_buffer = []
         self.clear_buffer()

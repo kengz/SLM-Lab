@@ -20,10 +20,6 @@ class GAEOnPolicyReplay(Memory):
         self.v_pred = np.nan
         self.reset()
 
-    def reset_last_state(self, state):
-        super(GAEOnPolicyReplay, self).reset_last_state(state)
-        # TODO merge this back to inits below
-
     def reset(self):
         # TODO make such reset visible and unify epi vs overall reset
         # self.last_state is updated from Memory.reset_last_state
