@@ -235,7 +235,7 @@ class DQNBase(VanillaDQN):
             if net_spec['type'].find('MLP') == -1:
                 logger.warn(f'StackedReplay should only be used with MLPs, to stack states with ConvNets use Atari memory. It is not necessary to stack states with RNNs''')
                 sys.exit()
-            self.state_dim = self.state_dim * self.agent.spec['memory']['length_history']
+            self.state_dim = self.state_dim * self.agent.spec['memory']['seq_len']
             logger.debug3(f'State dim: {self.state_dim}')
             net_kwargs = util.compact_dict(dict(
                 hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),

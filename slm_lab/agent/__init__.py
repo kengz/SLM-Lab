@@ -83,7 +83,7 @@ class Agent:
         # TODO uhh handle internally to memory?
         memory_name = spec['memory']['name']
         if 'NStep' in memory_name or 'Stack' in memory_name:
-            self.len_state_buffer = spec['memory']['length_history']
+            self.len_state_buffer = spec['memory']['seq_len']
         elif 'Atari' in memory_name:
             self.len_state_buffer = 4
         else:

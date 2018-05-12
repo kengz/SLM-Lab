@@ -65,10 +65,10 @@ class Reinforce(Algorithm):
         elif net_spec['type'] == 'RecurrentNet':
             if self.is_discrete:
                 self.net = getattr(net, net_spec['type'])(
-                    state_dim, net_spec['hid_layers'], action_dim, memory_spec['length_history'], **net_kwargs)
+                    state_dim, net_spec['hid_layers'], action_dim, memory_spec['seq_len'], **net_kwargs)
             else:
                 self.net = getattr(net, net_spec['type'])(
-                    state_dim, net_spec['hid_layers'], [action_dim, action_dim], memory_spec['length_history'], **net_kwargs)
+                    state_dim, net_spec['hid_layers'], [action_dim, action_dim], memory_spec['seq_len'], **net_kwargs)
         else:
             if self.is_discrete:
                 self.net = getattr(net, net_spec['type'])(

@@ -67,7 +67,7 @@ class SARSA(Algorithm):
         ))
         if net_spec['type'].find('Recurrent') != -1:
             self.net = getattr(net, net_spec['type'])(
-                self.state_dim, net_spec['hid_layers'], self.action_dim, memory_spec['length_history'], **net_kwargs)
+                self.state_dim, net_spec['hid_layers'], self.action_dim, memory_spec['seq_len'], **net_kwargs)
         else:
             self.net = getattr(net, net_spec['type'])(
                 self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)

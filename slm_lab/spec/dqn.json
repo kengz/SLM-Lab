@@ -85,7 +85,7 @@
       "memory": {
         "name": "Replay",
         "max_size": 10000,
-        "length_history": 4
+        "seq_len": 4
       },
       "net": {
         "type": "MLPNet",
@@ -560,7 +560,7 @@
       "memory": {
         "name": "StackReplay",
         "max_size": 100000,
-        "length_history": 4
+        "seq_len": 4
       },
       "net": {
         "type": "MLPNet",
@@ -619,7 +619,7 @@
       "memory": {
         "name": "StackReplay",
         "max_size": 100000,
-        "length_history": 4
+        "seq_len": 4
       },
       "net": {
         "type": "MLPNet",
@@ -662,7 +662,7 @@
     "search": {
       "agent": [{
         "memory": {
-          "length_history__choice": [3, 4, 5]
+          "seq_len__choice": [3, 4, 5]
         },
         "net": {
           "optim": {

@@ -77,7 +77,7 @@
       },
       "memory": {
         "name": "OnPolicyNStepReplay",
-        "length_history": 4
+        "seq_len": 4
       },
       "net": {
         "type": "RecurrentNet",
@@ -195,7 +195,7 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "length_history": 4
+        "seq_len": 4
       },
       "net": {
         "type": "MLPdefault",

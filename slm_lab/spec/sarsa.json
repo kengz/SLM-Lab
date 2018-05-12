@@ -59,7 +59,7 @@
       },
       "memory": {
         "name": "OnPolicyNStepBatchReplay",
-        "length_history": 4
+        "seq_len": 4
       },
       "net": {
         "type": "RecurrentNet",

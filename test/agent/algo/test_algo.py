@@ -51,7 +51,7 @@ def test_sarsa_recurrent():
     spec = spec_util.get('test.json', 'unit_test_sarsa')
     spec['name'] = algorithm_name
     spec['agent'][0]['memory']['name'] = "OnPolicyNStepBatchReplay"
-    spec['agent'][0]['memory']['length_history'] = 4
+    spec['agent'][0]['memory']['seq_len'] = 4
     spec['agent'][0]['net']['type'] = "RecurrentNet"
     spec['agent'][0]['net']['hid_layers'] = [64]
     assert generic_algorithm_test(spec, algorithm_name) > 100
@@ -120,7 +120,7 @@ def test_reinforce_recurrent():
     spec = spec_util.get('test.json', 'unit_test_reinforce')
     spec['name'] = algorithm_name
     spec['agent'][0]['memory']['name'] = "OnPolicyNStepReplay"
-    spec['agent'][0]['memory']['length_history'] = 4
+    spec['agent'][0]['memory']['seq_len'] = 4
     spec['agent'][0]['net']['type'] = "RecurrentNet"
     spec['agent'][0]['net']['hid_layers'] = [16]
     assert generic_algorithm_test(spec, algorithm_name) > 100
@@ -191,7 +191,7 @@ def test_actor_critic_recurrent_episodic():
     spec = spec_util.get('test.json', 'unit_test_actor_critic')
     spec['name'] = algorithm_name
     spec['agent'][0]['memory']['name'] = "OnPolicyNStepReplay"
-    spec['agent'][0]['memory']['length_history'] = 4
+    spec['agent'][0]['memory']['seq_len'] = 4
     spec['agent'][0]['net']['type'] = "Recurrentseparate"
     spec['agent'][0]['net']['hid_layers'] = [16]
     assert generic_algorithm_test(spec, algorithm_name) > 100
@@ -204,7 +204,7 @@ def test_actor_critic_recurrent_batch():
     spec = spec_util.get('test.json', 'unit_test_actor_critic')
     spec['name'] = algorithm_name
     spec['agent'][0]['memory']['name'] = "OnPolicyNStepBatchReplay"
-    spec['agent'][0]['memory']['length_history'] = 4
+    spec['agent'][0]['memory']['seq_len'] = 4
     spec['agent'][0]['net']['type'] = "Recurrentseparate"
     spec['agent'][0]['net']['hid_layers'] = [16]
     assert generic_algorithm_test(spec, algorithm_name) > 100
@@ -217,7 +217,7 @@ def test_actor_critic_recurrent_episodic_shared():
     spec = spec_util.get('test.json', 'unit_test_actor_critic')
     spec['name'] = algorithm_name
     spec['agent'][0]['memory']['name'] = "OnPolicyNStepReplay"
-    spec['agent'][0]['memory']['length_history'] = 4
+    spec['agent'][0]['memory']['seq_len'] = 4
     spec['agent'][0]['net']['type'] = "Recurrentshared"
     spec['agent'][0]['net']['hid_layers'] = [16]
     assert generic_algorithm_test(spec, algorithm_name) > 100

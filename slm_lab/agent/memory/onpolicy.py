@@ -115,20 +115,20 @@ class OnPolicyReplay(Memory):
 
 class OnPolicyNStepReplay(OnPolicyReplay):
     '''
-    Same as OnPolicyReplay Memory but returns the last `length_history` states and next_states for input to a recurrent network.
-    Experiences with less than `length_history` previous examples are padded with a 0 valued state and action vector.
+    Same as OnPolicyReplay Memory but returns the last `seq_len` states and next_states for input to a recurrent network.
+    Experiences with less than `seq_len` previous examples are padded with a 0 valued state and action vector.
     '''
 
     def __init__(self, body):
         super(OnPolicyNStepReplay, self).__init__(body)
-        self.length_history = self.memory_spec['length_history']
+        self.seq_len = self.memory_spec['seq_len']
 
     def sample(self):
         '''
         Returns all the examples from memory in a single batch
         Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are nested lists of the corresponding sampled elements. Elements are nested into episodes
-        states and next_states have are further nested into sequences containing the previous `length_history` - 1 relevant states
+        states and next_states have are further nested into sequences containing the previous `seq_len` - 1 relevant states
         e.g.
             batch = {
                 'states'      : [[[0,...,s0],[0,..,s0,s1],...,[s(k-lh),...,s(k-1),sk]],
@@ -153,19 +153,19 @@ class OnPolicyNStepReplay(OnPolicyReplay):
         return batch
 
     def add_history(self, data):
-        '''Adds previous self.length_history steps to data'''
+        '''Adds previous self.seq_len steps to data'''
         all_epi_data_with_history = []
         for epi in data:
             data_with_history = []
             pad_data = copy.deepcopy(epi)
             PAD = np.zeros_like(epi[0])
-            for i in range(self.length_history - 1):
+            for i in range(self.seq_len - 1):
                 pad_data.insert(0, PAD)
             for i in range(len(epi)):
                 if i == len(epi) - 1:
                     data_with_history.append(pad_data[i:])
                 else:
-                    data_with_history.append(pad_data[i:i + self.length_history])
+                    data_with_history.append(pad_data[i:i + self.seq_len])
             all_epi_data_with_history.append(data_with_history)
         return all_epi_data_with_history
 
@@ -213,20 +213,20 @@ class OnPolicyBatchReplay(OnPolicyReplay):
 
 class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
     '''
-    Same as OnPolicyBatchReplay Memory but returns the last `length_history` states and next_states for input to a recurrent network.
-    Experiences with less than `length_history` previous examples are padded with a 0 valued state and action vector.
+    Same as OnPolicyBatchReplay Memory but returns the last `seq_len` states and next_states for input to a recurrent network.
+    Experiences with less than `seq_len` previous examples are padded with a 0 valued state and action vector.
     '''
 
     def __init__(self, body):
         super(OnPolicyNStepBatchReplay, self).__init__(body)
-        self.length_history = self.memory_spec['length_history']
+        self.seq_len = self.memory_spec['seq_len']
 
     def sample(self):
         '''
         Returns all the examples from memory in a single batch
         Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are a list of the corresponding sampled elements.
-        States and actions are lists of lists where each sublist corresponds to the kth - length_history (lh) to kth state or action.
+        States and actions are lists of lists where each sublist corresponds to the kth - seq_len (lh) to kth state or action.
         e.g.
             batch = {
                 'states'      : [[0,...,s0],[0,..,s0,s1],...,[s(k-lh),...,s(k-1),sk]],
@@ -247,15 +247,15 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
         return batch
 
     def add_history(self, data):
-        '''Adds previous self.length_history steps to data'''
+        '''Adds previous self.seq_len steps to data'''
         data_with_history = []
         pad_data = copy.deepcopy(data)
         PAD = np.zeros_like(data[0])
-        for i in range(self.length_history - 1):
+        for i in range(self.seq_len - 1):
             pad_data.insert(0, PAD)
         for i in range(len(data)):
             if i == len(data) - 1:
                 data_with_history.append(pad_data[i:])
             else:
-                data_with_history.append(pad_data[i:i + self.length_history])
+                data_with_history.append(pad_data[i:i + self.seq_len])
         return data_with_history

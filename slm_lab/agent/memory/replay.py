@@ -137,7 +137,7 @@ class StackReplay(Replay):
 
     def __init__(self, body):
         super(StackReplay, self).__init__(body)
-        self.num_stacked_states = self.memory_spec['length_history']
+        self.num_stacked_states = self.memory_spec['seq_len']
         self.stacked = True  # Memory stacks states
 
     def reset_last_state(self, state):
