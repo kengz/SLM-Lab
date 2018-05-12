@@ -138,12 +138,12 @@ class Replay(Memory):
 
     def print_memory_info(self):
         '''Prints size of all of the memory arrays'''
-        logger.info(f'MEMORY: states :{self.states.shape} dtype: {self.states.dtype}, size: {util.total_size(self.states) / 1000000}MB')
-        logger.info(f'MEMORY: next states :{self.next_states.shape} dtype: {self.next_states.dtype}, size: {util.total_size(self.next_states) / 1000000}MB')
-        logger.info(f'MEMORY: actions :{self.actions.shape} dtype: {self.actions.dtype}, size: {util.total_size(self.actions) / 1000000}MB')
-        logger.info(f'MEMORY: dones :{self.dones.shape} dtype: {self.dones.dtype}, size: {util.total_size(self.dones) / 1000000}MB')
-        logger.info(f'MEMORY: rewards :{self.rewards.shape} dtype: {self.rewards.dtype}, size: {util.total_size(self.rewards) / 1000000}MB')
-        logger.info(f'MEMORY: priorities :{self.priorities.shape} dtype: {self.priorities.dtype}, size: {util.total_size(self.priorities) / 1000000}MB')
+        logger.info(f'MEMORY: states :{self.states.shape} dtype: {self.states.dtype}, size: {util.memory_size(self.states)}MB')
+        logger.info(f'MEMORY: next states :{self.next_states.shape} dtype: {self.next_states.dtype}, size: {util.memory_size(self.next_states)}MB')
+        logger.info(f'MEMORY: actions :{self.actions.shape} dtype: {self.actions.dtype}, size: {util.memory_size(self.actions)}MB')
+        logger.info(f'MEMORY: dones :{self.dones.shape} dtype: {self.dones.dtype}, size: {util.memory_size(self.dones)}MB')
+        logger.info(f'MEMORY: rewards :{self.rewards.shape} dtype: {self.rewards.dtype}, size: {util.memory_size(self.rewards)}MB')
+        logger.info(f'MEMORY: priorities :{self.priorities.shape} dtype: {self.priorities.dtype}, size: {util.memory_size(self.priorities)}MB')
 
 
 class StackReplay(Replay):
