@@ -11,15 +11,14 @@
         "continuous_action_clip": 2.0,
         "lamda": 1.0,
         "num_step_returns": 100,
-        "training_frequency": 32,
+        "training_frequency": 1,
         "training_iters_per_batch": 8,
         "use_GAE": false,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPshared",
@@ -91,7 +90,7 @@
         "continuous_action_clip": 2.0,
         "lamda": 1.0,
         "num_step_returns": 10,
-        "training_frequency": 32,
+        "training_frequency": 1,
         "training_iters_per_batch": 4,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
@@ -149,15 +148,14 @@
         "continuous_action_clip": 2.0,
         "lamda": 1.0,
         "num_step_returns": 10,
-        "training_frequency": 32,
+        "training_frequency": 1,
         "training_iters_per_batch": 4,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "Convseparate",
@@ -214,15 +212,14 @@
         "continuous_action_clip": 2.0,
         "lamda": 0.74,
         "num_step_returns": 10,
-        "training_frequency": 32,
+        "training_frequency": 1,
         "training_iters_per_batch": 4,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPseparate",
@@ -296,15 +293,14 @@
         "continuous_action_clip": 2.0,
         "lamda": 1.0,
         "num_step_returns": 10,
-        "training_frequency": 32,
+        "training_frequency": 1,
         "training_iters_per_batch": 4,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPseparate",
@@ -375,15 +371,14 @@
         "continuous_action_clip": 2.0,
         "lamda": 1.0,
         "num_step_returns": 100,
-        "training_frequency": 32,
+        "training_frequency": 1,
         "training_iters_per_batch": 8,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPshared",
@@ -454,15 +449,14 @@
         "continuous_action_clip": 2.0,
         "lamda": 1.0,
         "num_step_returns": 100,
-        "training_frequency": 32,
+        "training_frequency": 1,
         "training_iters_per_batch": 8,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPshared",
@@ -533,15 +527,14 @@
         "continuous_action_clip": 2.0,
         "lamda": 1.0,
         "num_step_returns": 100,
-        "training_frequency": 32,
+        "training_frequency": 1,
         "training_iters_per_batch": 8,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPshared",
@@ -614,15 +607,14 @@
         "continuous_action_clip": 2.0,
         "lamda": 1.0,
         "num_step_returns": 100,
-        "training_frequency": 32,
+        "training_frequency": 1,
         "training_iters_per_batch": 8,
         "use_GAE": true,
         "policy_loss_weight": 1.0,
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPshared",

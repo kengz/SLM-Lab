@@ -108,7 +108,6 @@ It is `ActorCritic` in `CartPole-v0`:
         "name": "ActorCritic",
         "action_policy": "default",
         "gamma": 0.91,
-        "num_epis_to_collect": 1,
         ...
         }
       }]

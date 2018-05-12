@@ -103,11 +103,10 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -149,11 +148,10 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -195,11 +193,10 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -477,11 +474,10 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -514,7 +510,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "num_epis_to_collect__choice": [1, 2, 3, 4, 5, 10]
+          "training_frequency__choice": [1, 2, 3, 4, 5, 10]
         }
       }]
     }
@@ -597,11 +593,10 @@
         "explore_var_end": 0.005,
         "explore_anneal_epi": 100,
         "gamma": 0.999,
-        "training_frequency": 32
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -635,7 +630,7 @@
       "agent": [{
         "algorithm": {
           "gamma__uniform": [0.9, 0.9999],
-          "num_epis_to_collect__choice": [1, 2, 3, 4, 5, 10],
+          "training_frequency__choice": [1, 2, 3, 4, 5, 10],
           "explore_var_end__uniform": [0.001, 0.1],
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
@@ -732,11 +727,10 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 100,
         "gamma": 0.999,
-        "training_frequency": 32
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -770,7 +764,7 @@
       "agent": [{
         "algorithm": {
           "gamma__uniform": [0.9, 0.9999],
-          "num_epis_to_collect__choice": [1, 2, 3, 4, 5, 10],
+          "training_frequency__choice": [1, 2, 3, 4, 5, 10],
           "explore_var_end__uniform": [0.3, 1.0],
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },

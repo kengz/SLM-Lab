@@ -105,11 +105,11 @@
     "agent": [{
       "name": "BaseOnPolicyMemory",
       "algorithm": {
-        "name": "Random"
+        "name": "Random",
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1,
         "max_size": 5
       },
       "net": {}

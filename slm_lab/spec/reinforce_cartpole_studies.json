@@ -8,11 +8,11 @@
         "gamma": 0.98,
         "add_entropy": false,
         "entropy_weight": 0.01,
-        "continuous_action_clip": 2.0
+        "continuous_action_clip": 2.0,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1,
         "length_history": 4
       },
       "net": {
@@ -61,11 +61,11 @@
         "gamma": 0.98,
         "add_entropy": false,
         "entropy_weight": 0.01,
-        "continuous_action_clip": 2.0
+        "continuous_action_clip": 2.0,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1,
         "length_history": 4
       },
       "net": {
@@ -116,11 +116,11 @@
         "gamma": 0.98,
         "add_entropy": true,
         "entropy_weight": 0.01,
-        "continuous_action_clip": 2.0
+        "continuous_action_clip": 2.0,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "num_epis_to_collect": 1,
         "length_history": 4
       },
       "net": {

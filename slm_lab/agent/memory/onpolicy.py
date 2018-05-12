@@ -34,6 +34,8 @@ class OnPolicyReplay(Memory):
 
     def __init__(self, body):
         super(OnPolicyReplay, self).__init__(body)
+        # NOTE for OnPolicy replay, frequency = episode; for other classes below frequency = frames
+        self.training_frequency = self.spec['algorithm']['training_frequency']
         # Don't want total experiences reset when memory is
         self.total_experiences = 0
         self.last_nan_idxs = None
@@ -79,7 +81,7 @@ class OnPolicyReplay(Memory):
                 getattr(self, k).append(self.cur_epi_data[k])
             self.cur_epi_data = {k: [] for k in self.data_keys}
             # If agent has collected the desired number of episodes, it is ready to train
-            if len(self.states) == self.memory_spec['num_epis_to_collect']:
+            if len(self.states) == self.training_frequency:
                 self.body.agent.algorithm.to_train = 1
         # Track memory size and num experiences
         self.true_size += 1
