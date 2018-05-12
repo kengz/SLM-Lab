@@ -120,12 +120,12 @@ class TestOnPolicyMemory:
         assert memory.true_size == 1
         assert len(memory.states) == 0
         # Handle states and actions with multiple dimensions
-        assert np.array_equal(memory.current_episode['states'][-1], exp[0])
-        assert memory.current_episode['rewards'][-1] == exp[1]
-        assert memory.current_episode['actions'][-1] == exp[2]
-        assert np.array_equal(memory.current_episode['next_states'][-1], exp[3])
-        assert memory.current_episode['dones'][-1] == exp[4]
-        assert memory.current_episode['priorities'][-1] == 1
+        assert np.array_equal(memory.cur_epi_data['states'][-1], exp[0])
+        assert memory.cur_epi_data['rewards'][-1] == exp[1]
+        assert memory.cur_epi_data['actions'][-1] == exp[2]
+        assert np.array_equal(memory.cur_epi_data['next_states'][-1], exp[3])
+        assert memory.cur_epi_data['dones'][-1] == exp[4]
+        assert memory.cur_epi_data['priorities'][-1] == 1
 
     def test_sample(self, test_on_policy_episodic_memory):
         '''Tests that a sample of batch size is returned with the correct dimensions'''
