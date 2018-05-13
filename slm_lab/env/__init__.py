@@ -84,12 +84,12 @@ util.monkey_patch(brain.BrainParameters, BrainExt)
 
 
 class OpenAIEnv:
-    def __init__(self, spec, env_space, e=0):
-        self.spec = spec
+    def __init__(self, env_spec, env_space, e=0):
+        self.env_spec = env_spec
         self.env_space = env_space
         self.info_space = env_space.info_space
-        util.set_attr(self, self.spec)
-        self.name = self.spec['name']
+        util.set_attr(self, self.env_spec)
+        self.name = self.env_spec['name']
         self.e = e
         self.body_e = None
         self.nanflat_body_e = None  # nanflatten version of bodies
@@ -101,7 +101,7 @@ class OpenAIEnv:
         self.action_spaces = [self.u_env.action_space]
 
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
-        # TODO ensure clock_speed from spec
+        # TODO ensure clock_speed from env_spec
         self.clock_speed = 1
         self.clock = Clock(self.clock_speed)
         self.done = False
@@ -204,13 +204,13 @@ class UnityEnv:
     Access Agents properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    def __init__(self, spec, env_space, e=0):
-        self.spec = spec
+    def __init__(self, env_spec, env_space, e=0):
+        self.env_spec = env_spec
         self.env_space = env_space
         self.info_space = env_space.info_space
         self.e = e
-        util.set_attr(self, self.spec)
-        self.name = self.spec['name']
+        util.set_attr(self, self.env_spec)
+        self.name = self.env_spec['name']
         self.body_e = None
         self.nanflat_body_e = None  # nanflatten version of bodies
         self.body_num = None
@@ -235,7 +235,7 @@ class UnityEnv:
             self.action_spaces.append(action_space)
 
         # TODO experiment to find out optimal benchmarking max_timestep, set
-        # TODO ensure clock_speed from spec
+        # TODO ensure clock_speed from env_spec
         self.clock_speed = 1
         self.clock = Clock(self.clock_speed)
         self.done = False
@@ -298,7 +298,7 @@ class UnityEnv:
     @lab_api
     def reset(self):
         self.done = False
-        env_info_dict = self.u_env.reset(train_mode=(os.environ.get('lab_mode') != 'dev'), config=self.spec.get('unity'))
+        env_info_dict = self.u_env.reset(train_mode=(os.environ.get('lab_mode') != 'dev'), config=self.env_spec.get('unity'))
         _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
