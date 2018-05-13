@@ -10,13 +10,11 @@ class MLPPolicy(Net):
     adapted from OpenAI https://github.com/openai/baselines/blob/master/baselines/ppo1/mlp_policy.py
     '''
 
-    def __init__(self, algorithm, name=''):
-        super(MLPPolicy, self).__init__(algorithm)
+    def __init__(self, algorithm, body, name=''):
+        super(MLPPolicy, self).__init__(algorithm, body)
         util.set_attr(self, self.net_spec, [
             'hid_layers_activation', 'hid_layers'
         ])
-
-        self.body = algorithm.body  # default body for env
         info_space = algorithm.agent.info_space
         scope = util.get_prepath(algorithm.agent.agent_space.spec, info_space, unit='session').split('/')[-1] + '_' + name
         with tf.variable_scope(scope):

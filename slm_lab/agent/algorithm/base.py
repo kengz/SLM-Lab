@@ -12,6 +12,9 @@ class Algorithm(ABC):
     '''
 
     def __init__(self, agent):
+        '''
+        @param {*} agent is the container for algorithm and related components, and interfaces with env.
+        '''
         self.agent = agent
         self.agent_spec = agent.agent_spec
         self.algorithm_spec = self.agent_spec['algorithm']

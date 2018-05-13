@@ -57,8 +57,8 @@ class PPO(Algorithm):
 
         3. S = E[ entropy ]
         '''
-        self.pi = pi = MLPPolicy(self, 'pi')
-        self.pi_old = pi_old = MLPPolicy(self, 'pi_old')
+        self.pi = pi = MLPPolicy(self, self.body, 'pi')
+        self.pi_old = pi_old = MLPPolicy(self, self.body, 'pi_old')
         ob = pi.ob
         ac = pi.pdtype.sample_placeholder([None])
         # target advantage function

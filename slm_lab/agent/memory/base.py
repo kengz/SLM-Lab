@@ -10,6 +10,9 @@ class Memory(ABC):
     '''
 
     def __init__(self, body):
+        '''
+        @param {*} body is the unit that stores its experience in this memory. Each body has a distinct memory.
+        '''
         self.body = body
         self.agent_spec = body.agent.agent_spec
         self.memory_spec = self.agent_spec['memory']
