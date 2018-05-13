@@ -34,7 +34,7 @@ class Replay(Memory):
 
     def __init__(self, body):
         super(Replay, self).__init__(body)
-        util.set_attr(self, self.memory_spec, ['max_size'])
+        util.set_attr(self, self.memory_spec, ['max_size', 'batch_size'])
         self.state_dim = self.body.state_dim
         self.action_dim = self.body.action_dim
         self.batch_idxs = None
@@ -91,7 +91,7 @@ class Replay(Memory):
         self.total_experiences += 1
 
     @lab_api
-    def sample(self, batch_size, latest=False):
+    def sample(self, latest=False):
         '''
         Returns a batch of batch_size samples.
         Batch is stored as a dict.
@@ -107,7 +107,7 @@ class Replay(Memory):
         # TODO if latest, return unused. implement
         if latest:
             raise NotImplementedError
-        batch_idxs = self.sample_idxs(batch_size)
+        batch_idxs = self.sample_idxs(self.batch_size)
         self.batch_idxs = batch_idxs
         batch = {k: getattr(self, k)[batch_idxs] for k in self.data_keys}
         return batch

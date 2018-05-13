@@ -68,14 +68,14 @@ class ConvNet(Net, nn.Module):
             'hid_layers_activation',
             'optim_spec',
             'loss_spec',
+            'batch_norm',
             'clamp_grad',
             'clamp_grad_val',
-            'batch_norm',
-            'gpu',
             'decay_lr',
             'decay_lr_factor',
             'decay_lr_frequency',
             'decay_lr_min_timestep',
+            'gpu',
         ])
         # Create net and initialize params
         # We need to transpose the dimensions for pytorch.

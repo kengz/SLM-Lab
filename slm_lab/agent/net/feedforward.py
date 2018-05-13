@@ -56,11 +56,11 @@ class MLPNet(Net, nn.Module):
             'loss_spec',
             'clamp_grad',
             'clamp_grad_val',
-            'gpu',
             'decay_lr',
             'decay_lr_factor',
             'decay_lr_frequency',
             'decay_lr_min_timestep',
+            'gpu',
         ])
         # Create net and initialize params
         self.in_dim = self.body.state_dim
@@ -197,11 +197,11 @@ class MLPHeterogenousHeads(MLPNet):
             'loss_spec',
             'clamp_grad',
             'clamp_grad_val',
-            'gpu',
             'decay_lr',
             'decay_lr_factor',
             'decay_lr_frequency',
             'decay_lr_min_timestep',
+            'gpu',
         ])
         # Create net and initialize params
         self.in_dim = self.body.state_dim
@@ -340,11 +340,11 @@ class MultiMLPNet(Net, nn.Module):
             'loss_spec',
             'clamp_grad',
             'clamp_grad_val',
-            'gpu',
             'decay_lr',
             'decay_lr_factor',
             'decay_lr_frequency',
             'decay_lr_min_timestep',
+            'gpu',
         ])
         # Create net and initialize params
         self.in_dim = self.body.state_dim

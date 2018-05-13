@@ -69,13 +69,13 @@ class RecurrentNet(Net, nn.Module):
             'loss_spec',
             'clamp_grad',
             'clamp_grad_val',
-            'gpu',
             'num_rnn_layers',
             'seq_len',
             'decay_lr',
             'decay_lr_factor',
             'decay_lr_frequency',
             'decay_lr_min_timestep',
+            'gpu',
         ])
         # Create net and initialize params
         self.in_dim = self.body.state_dim
@@ -233,8 +233,7 @@ class RecurrentNet(Net, nn.Module):
 
     def __str__(self):
         '''Overriding so that print() will print the whole network'''
-        s = self.state_proc_model.__str__() + \
-            '\n' + self.rnn.__str__()
+        s = self.state_proc_model.__str__() + '\n' + self.rnn.__str__()
         for layer in self.out_layers:
             s += '\n' + layer.__str__()
         return s

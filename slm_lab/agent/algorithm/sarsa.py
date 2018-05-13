@@ -15,7 +15,8 @@ logger = logger.get_logger(__name__)
 
 
 class SARSA(Algorithm):
-    '''Implementation of SARSA.
+    '''
+    Implementation of SARSA.
 
     Algorithm:
     Repeat:
@@ -39,7 +40,8 @@ class SARSA(Algorithm):
 
     @lab_api
     def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
+        '''
+        Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
             - Memory (holding experiences obtained by acting in the environment)
             - State and action dimensions for an environment
             - Boolean var for if the action space is discrete
@@ -61,18 +63,20 @@ class SARSA(Algorithm):
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters.'''
-        self.action_policy = act_fns[self.algorithm_spec['action_policy']]
-        self.action_policy_update = act_update_fns[self.algorithm_spec['action_policy_update']]
         util.set_attr(self, self.algorithm_spec, [
+            'action_policy',
+            'action_policy_update',
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
         ])
+        self.action_policy = act_fns[self.action_policy]
+        self.action_policy_update = act_update_fns[self.action_policy_update]
         self.to_train = 0
-        self.set_memory_flag()
         self.nanflat_explore_var_a = [self.explore_var_start] * self.agent.body_num
+        self.set_memory_flag()
 
     def set_memory_flag(self):
         '''Flags if memory is episodic or discrete. This affects how self.sample() handles the batch it gets back from memory'''
@@ -81,9 +85,8 @@ class SARSA(Algorithm):
             self.is_episodic = True
         elif any(name in memory_name for name in ['OnPolicyBatchReplay', 'OnPolicyNStepBatchReplay']):
             self.is_episodic = False
-        else:
-            logger.warn(f'Error: Memory {memory_name} not recognized')
-            raise NotImplementedError
+        elif 'OnPolicy' in memory_name:
+            raise ValueError(f'Memory {memory_name} not recognized')
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
@@ -159,8 +162,9 @@ class SARSA(Algorithm):
 
     @lab_api
     def train(self):
-        '''Completes one training step for the agent if it is time to train.
-           Otherwise this function does nothing.
+        '''
+        Completes one training step for the agent if it is time to train.
+        Otherwise this function does nothing.
         '''
         t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if self.to_train == 1:
