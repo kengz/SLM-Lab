@@ -10,7 +10,7 @@ import torch.nn.functional as F
 logger = logger.get_logger(__name__)
 
 
-class ConvNet(nn.Module):
+class ConvNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized convolutional neural network,
     with optional batch normalization
@@ -22,18 +22,7 @@ class ConvNet(nn.Module):
          3. self.out_layers
     '''
 
-    def __init__(self,
-                 in_dim,
-                 hid_layers,
-                 out_dim,
-                 hid_layers_activation=None,
-                 optim_param=None,
-                 loss_param=None,
-                 clamp_grad=False,
-                 clamp_grad_val=1.0,
-                 batch_norm=True,
-                 gpu=False,
-                 decay_lr=0.9):
+    def __init__(self, algorithm, body):
         '''
         in_dim: dimension of the inputs
         hid_layers: tuple consisting of two elements. (conv_hid, flat_hid)
@@ -61,32 +50,48 @@ class ConvNet(nn.Module):
                 clamp_grad=False,
                 batch_norm=True,
                 gpu=True,
-                decay_lr=0.9)
+                decay_lr_factor=0.9)
         '''
-        super(ConvNet, self).__init__()
+        super(ConvNet, self).__init__(algorithm, body)
+        # set default
+        util.set_attr(self, dict(
+            clamp_grad=False,
+            clamp_grad_val=1.0,
+            batch_norm=True,
+            gpu=False,
+            decay_lr_factor=0.9,
+        ))
+        util.set_attr(self, self.net_spec, [
+            'hid_layers',
+            'hid_layers_activation',
+            'optim_spec',
+            'loss_spec',
+            'clamp_grad',
+            'clamp_grad_val',
+            'batch_norm',
+            'gpu',
+            'decay_lr_factor',
+        ])
         # Create net and initialize params
         # We need to transpose the dimensions for pytorch.
         # OpenAI gym provides images as W x H x C, pyTorch expects C x W x H
-        self.in_dim = list(in_dim[:-1])
-        self.in_dim.insert(0, in_dim[-1])
+        self.in_dim = list(self.body.state_dim[:-1])
+        self.in_dim.insert(0, self.body.state_dim[-1])
         # Handle multiple types of out_dim (single and multi-headed)
-        if type(out_dim) is int:
-            out_dim = [out_dim]
-        self.out_dim = out_dim
-        self.batch_norm = batch_norm
+        self.out_dim = np.reshape(self.body.action_dim, (-1,))
         self.conv_layers = []
         self.conv_model = self.build_conv_layers(
-            hid_layers[0], hid_layers_activation)
+            self.hid_layers[0], hid_layers_activation)
         self.flat_layers = []
         self.dense_model = self.build_flat_layers(
-            hid_layers[1], hid_layers_activation)
+            self.hid_layers[1], hid_layers_activation)
         self.out_layers = []
-        in_D = hid_layers[1][-1] if len(hid_layers[1]) > 0 else self.flat_dim
-        for dim in out_dim:
+        in_D = self.hid_layers[1][-1] if len(self.hid_layers[1]) > 0 else self.flat_dim
+        for dim in self.out_dim:
             self.out_layers += [nn.Linear(in_D, dim)]
         self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers)
         self.init_params()
-        if torch.cuda.is_available() and gpu:
+        if torch.cuda.is_available() and self.gpu:
             self.conv_model.cuda()
             self.dense_model.cuda()
             for l in self.out_layers:
@@ -96,12 +101,8 @@ class ConvNet(nn.Module):
             list(self.dense_model.parameters())
         for layer in self.out_layers:
             self.params.extend(list(layer.parameters()))
-        self.optim_spec = optim_spec
         self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
-        self.loss_fn = net_util.get_loss_fn(self, loss_spec)
-        self.clamp_grad = clamp_grad
-        self.clamp_grad_val = clamp_grad_val
-        self.decay_lr_factor = decay_lr_factor
+        self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
         logger.info(f'decay lr: {self.decay_lr_factor}')

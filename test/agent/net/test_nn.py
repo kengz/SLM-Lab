@@ -16,7 +16,7 @@ class TestNet:
     def init_dummy_input(self, net):
         if net.__class__.__name__.find('RecurrentNet') != -1:
             dummy_input = Variable(torch.ones(
-                2, net.sequence_length, net.in_dim))
+                2, net.seq_len, net.in_dim))
         elif type(net.in_dim) is int:
             dummy_input = Variable(torch.ones(2, net.in_dim))
         elif net.__class__.__name__.find('MultiMLPNet') != -1:

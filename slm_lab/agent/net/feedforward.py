@@ -1,5 +1,6 @@
 from slm_lab.lib import logger, util
 from slm_lab.agent.net import net_util
+from slm_lab.agent.net.base import Net
 from torch.autograd import Variable
 import torch
 import torch.nn as nn
@@ -8,23 +9,14 @@ import torch.nn.functional as F
 logger = logger.get_logger(__name__)
 
 
-class MLPNet(nn.Module):
+class MLPNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized feedforward neural network
     '''
 
-    def __init__(self,
-                 in_dim,
-                 hid_dim,
-                 out_dim,
-                 hid_layers_activation=None,
-                 optim_spec=None,
-                 loss_spec=None,
-                 clamp_grad=False,
-                 clamp_grad_val=1.0,
-                 gpu=False,
-                 decay_lr=0.9):
+    def __init__(self, algorithm, body):
         '''
+        net_spec:
         in_dim: dimension of the inputs
         hid_layers: list containing dimensions of the hidden layers
         out_dim: dimension of the ouputs
@@ -34,7 +26,7 @@ class MLPNet(nn.Module):
         clamp_grad: whether to clamp the gradient
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
-        net = MLPNet(
+        dict(
                 1000,
                 [512, 256, 128],
                 10,
@@ -46,30 +38,43 @@ class MLPNet(nn.Module):
                 gpu=True,
                 decay_lr_factor=0.9)
         '''
-        super(MLPNet, self).__init__()
+        super(MLPNet, self).__init__(algorithm, body)
+        # set default
+        util.set_attr(self, dict(
+            clamp_grad=False,
+            clamp_grad_val=1.0,
+            gpu=False,
+            decay_lr_factor=0.9,
+        ))
+        util.set_attr(self, self.net_spec, [
+            'hid_layers',
+            'hid_layers_activation',
+            'optim_spec',
+            'loss_spec',
+            'clamp_grad',
+            'clamp_grad_val',
+            'gpu',
+            'decay_lr_factor',
+        ])
         # Create net and initialize params
-        self.in_dim = in_dim
-        self.out_dim = out_dim
+        self.in_dim = self.body.state_dim
+        self.out_dim = self.body.action_dim
         self.layers = []
-        for i, layer in enumerate(hid_layers):
-            in_D = in_dim if i == 0 else hid_layers[i - 1]
-            out_D = hid_layers[i]
+        for i, layer in enumerate(self.hid_layers):
+            in_D = self.in_dim if i == 0 else self.hid_layers[i - 1]
+            out_D = self.hid_layers[i]
             self.layers += [nn.Linear(in_D, out_D)]
-            self.layers += [net_util.get_activation_fn(hid_layers_activation)]
-        in_D = hid_layers[-1] if len(hid_layers) > 0 else in_dim
-        self.layers += [nn.Linear(in_D, out_dim)]
+            self.layers += [net_util.get_activation_fn(self.hid_layers_activation)]
+        in_D = self.hid_layers[-1] if len(self.hid_layers) > 0 else self.in_dim
+        self.layers += [nn.Linear(in_D, self.out_dim)]
         self.model = nn.Sequential(*self.layers)
         self.init_params()
-        if torch.cuda.is_available() and gpu:
+        if torch.cuda.is_available() and self.gpu:
             self.model.cuda()
         # Init other net variables
         self.params = list(self.model.parameters())
-        self.optim_spec = optim_spec
         self.optim = net_util.get_optim(self, self.optim_spec)
-        self.loss_fn = net_util.get_loss_fn(self, loss_spec)
-        self.clamp_grad = clamp_grad
-        self.clamp_grad_val = clamp_grad_val
-        self.decay_lr_factor = decay_lr_factor
+        self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
         logger.info(f'decay lr: {self.decay_lr_factor}')
@@ -146,17 +151,7 @@ class MLPHeterogenousHeads(MLPNet):
     Class for generating arbitrary sized feedforward neural network, with a heterogenous set of output heads that may correspond to different values. For example, the mean or std deviation of a continous policy, the state-value estimate, or the logits of a categorical action distribution
     '''
 
-    def __init__(self,
-                 in_dim,
-                 hid_layers,
-                 out_dim,
-                 hid_layers_activation=None,
-                 optim_spec=None,
-                 loss_spec=None,
-                 clamp_grad=False,
-                 clamp_grad_val=1.0,
-                 gpu=False,
-                 decay_lr_factor=0.9):
+    def __init__(self, algorithm, body):
         '''
         in_dim: dimension of the inputs
         hid_layers: list containing dimensions of the hidden layers
@@ -167,7 +162,7 @@ class MLPHeterogenousHeads(MLPNet):
         clamp_grad: whether to clamp the gradient
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
-        net = MLPHeterogenousHeads(
+        dict(
                 1000,
                 [512, 256, 128],
                 [1, 1],
@@ -179,26 +174,43 @@ class MLPHeterogenousHeads(MLPNet):
                 gpu=True,
                 decay_lr_factor=0.9)
         '''
-        nn.Module.__init__(self)
+        Net.__init__(self, algorithm, body)
+        # set default
+        util.set_attr(self, dict(
+            clamp_grad=False,
+            clamp_grad_val=1.0,
+            gpu=False,
+            decay_lr_factor=0.9,
+        ))
+        util.set_attr(self, self.net_spec, [
+            'hid_layers',
+            'hid_layers_activation',
+            'optim_spec',
+            'loss_spec',
+            'clamp_grad',
+            'clamp_grad_val',
+            'gpu',
+            'decay_lr_factor',
+        ])
         # Create net and initialize params
-        self.in_dim = in_dim
-        self.out_dim = out_dim
+        self.in_dim = self.body.state_dim
+        self.out_dim = self.body.action_dim
         self.layers = []
         # Init network body
-        for i, layer in enumerate(hid_layers):
-            in_D = in_dim if i == 0 else hid_layers[i - 1]
-            out_D = hid_layers[i]
+        for i, layer in enumerate(self.hid_layers):
+            in_D = self.in_dim if i == 0 else self.hid_layers[i - 1]
+            out_D = self.hid_layers[i]
             self.layers += [nn.Linear(in_D, out_D)]
-            self.layers += [net_util.get_activation_fn(hid_layers_activation)]
-        in_D = hid_layers[-1] if len(hid_layers) > 0 else in_dim
+            self.layers += [net_util.get_activation_fn(self.hid_layers_activation)]
+        in_D = self.hid_layers[-1] if len(self.hid_layers) > 0 else self.in_dim
         self.body = nn.Sequential(*self.layers)
         # Init network output heads
         self.out_layers = []
-        for i, dim in enumerate(out_dim):
+        for i, dim in enumerate(self.out_dim):
             self.out_layers += [nn.Linear(in_D, dim)]
         self.layers += [self.out_layers]
         self.init_params()
-        if torch.cuda.is_available() and gpu:
+        if torch.cuda.is_available() and self.gpu:
             self.body.cuda()
             for l in self.out_layers:
                 l.cuda()
@@ -206,12 +218,8 @@ class MLPHeterogenousHeads(MLPNet):
         self.params = list(self.body.parameters())
         for layer in self.out_layers:
             self.params.extend(list(layer.parameters()))
-        self.optim_spec = optim_spec
         self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
-        self.loss_fn = net_util.get_loss_fn(self, loss_spec)
-        self.clamp_grad = clamp_grad
-        self.clamp_grad_val = clamp_grad_val
-        self.decay_lr_factor = decay_lr_factor
+        self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
         logger.info(f'decay lr: {self.decay_lr_factor}')
@@ -259,17 +267,7 @@ class MultiMLPNet(Net, nn.Module):
     Class for generating arbitrary sized feedforward neural network with multiple state and action heads, and a single shared body.
     '''
 
-    def __init__(self,
-                 in_dim,
-                 hid_layers,
-                 out_dim,
-                 hid_layers_activation=None,
-                 optim_spec=None,
-                 loss_spec=None,
-                 clamp_grad=False,
-                 clamp_grad_val=1.0,
-                 gpu=False,
-                 decay_lr_factor=0.9):
+    def __init__(self, algorithm, body):
         '''
         Multi state processing heads, single shared body, and multi action heads.
         There is one state and action head per environment
@@ -312,22 +310,40 @@ class MultiMLPNet(Net, nn.Module):
              gpu=False,
              decay_lr_factor=0.9)
         '''
-        super(MultiMLPNet, self).__init__()
+        super(MultiMLPNet, self).__init__(algorithm, body)
         # Create net and initialize params
-        self.in_dim = in_dim
-        self.out_dim = out_dim
+        # set default
+        util.set_attr(self, dict(
+            clamp_grad=False,
+            clamp_grad_val=1.0,
+            gpu=False,
+            decay_lr_factor=0.9,
+        ))
+        util.set_attr(self, self.net_spec, [
+            'hid_layers',
+            'hid_layers_activation',
+            'optim_spec',
+            'loss_spec',
+            'clamp_grad',
+            'clamp_grad_val',
+            'gpu',
+            'decay_lr_factor',
+        ])
+        # Create net and initialize params
+        self.in_dim = self.body.state_dim
+        self.out_dim = self.body.action_dim
         self.state_heads_layers = []
         self.state_heads_models = self.make_state_heads(
-            self.in_dim, hid_layers_activation)
+            self.in_dim, self.hid_layers_activation)
         self.shared_layers = []
         self.body = self.make_shared_body(
-            self.state_out_concat, hid_layers, hid_layers_activation)
+            self.state_out_concat, self.hid_layers, self.hid_layers_activation)
         self.action_heads_layers = []
-        in_D = hid_layers[-1] if len(hid_layers) > 0 else self.state_out_concat
+        in_D = self.hid_layers[-1] if len(self.hid_layers) > 0 else self.state_out_concat
         self.action_heads_models = self.make_action_heads(
-            in_D, self.out_dim, hid_layers_activation)
+            in_D, self.out_dim, self.hid_layers_activation)
         self.init_params()
-        if torch.cuda.is_available() and gpu:
+        if torch.cuda.is_available() and self.gpu:
             for l in self.state_heads_models:
                 l.cuda()
             self.body.cuda()
@@ -340,12 +356,8 @@ class MultiMLPNet(Net, nn.Module):
         self.params.extend(list(self.body.parameters()))
         for model in self.action_heads_models:
             self.params.extend(list(model.parameters()))
-        self.optim_spec = optim_spec
         self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
-        self.loss_fn = net_util.get_loss_fn(self, loss_spec)
-        self.clamp_grad = clamp_grad
-        self.clamp_grad_val = clamp_grad_val
-        self.decay_lr_factor = decay_lr_factor
+        self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
         logger.info(f'decay lr: {self.decay_lr_factor}')

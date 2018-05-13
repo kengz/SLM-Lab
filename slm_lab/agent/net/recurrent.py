@@ -16,31 +16,20 @@ class RecurrentNet(Net, nn.Module):
     states as input.
 
     Assumes that a single input example is organized into a 3D tensor
-    batch_size x sequence_length x state_dim
+    batch_size x seq_len x state_dim
     The entire model consists of three parts:
          1. self.state_proc_model
          2. self.rnn
          3. self.out_layers
     '''
 
-    def __init__(self,
-                 in_dim,
-                 hid_layers,
-                 out_dim,
-                 sequence_length,
-                 hid_layers_activation=None,
-                 optim_spec=None,
-                 loss_spec=None,
-                 clamp_grad=False,
-                 clamp_grad_val=1.0,
-                 num_rnn_layers=1,
-                 gpu=False,
-                 decay_lr_factor=0.9):
+    def __init__(self, algorithm, body):
         '''
+        net_spec:
         in_dim: dimension of the states
         hid_layers: list containing dimensions of the hidden layers. The last element of the list is should be the dimension of the hidden state for the recurrent layer. The other elements in the list are the dimensions of the MLP (if desired) which is to transform the state space.
         out_dim: dimension of the output for one output, otherwise a list containing the dimensions of the ouputs for a multi-headed network
-        sequence_length: length of the history of being passed to the net
+        seq_len: length of the history of being passed to the net
         hid_layers_activation: activation function for the hidden layers
         optim_spec: parameters for initializing the optimizer
         loss_spec: measure of error between model predictions and correct output
@@ -49,45 +38,61 @@ class RecurrentNet(Net, nn.Module):
         num_rnn_layers: number of recurrent layers
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
-        net = RecurrentNet(
-                4,
-                [32, 64],
-                10,
-                8,
-                hid_layers_activation='relu',
-                optim_spec={'name': 'Adam'},
-                loss_spec={'name': 'mse_loss'},
-                clamp_grad=False,
-                gpu=True,
-                decay_lr_factor=0.9)
+        dict(
+            4,
+            [32, 64],
+            10,
+            8,
+            hid_layers_activation='relu',
+            optim_spec={'name': 'Adam'},
+            loss_spec={'name': 'mse_loss'},
+            clamp_grad=False,
+            gpu=True,
+            decay_lr_factor=0.9)
         '''
-        super(RecurrentNet, self).__init__()
+        super(RecurrentNet, self).__init__(algorithm, body)
+        # set default
+        util.set_attr(self, dict(
+            clamp_grad=False,
+            clamp_grad_val=1.0,
+            gpu=False,
+            decay_lr_factor=0.9,
+            num_rnn_layers=1,
+        ))
+        util.set_attr(self, self.net_spec, [
+            'hid_layers',
+            'hid_layers_activation',
+            'optim_spec',
+            'loss_spec',
+            'clamp_grad',
+            'clamp_grad_val',
+            'gpu',
+            'decay_lr_factor',
+            'num_rnn_layers',
+        ])
         # Create net and initialize params
-        self.in_dim = in_dim
-        self.sequence_length = sequence_length
-        self.hid_layers = hid_layers[-1]
-        self.gpu = gpu
-        # Handle multiple types of out_dim (single and multi-headed)
-        if type(out_dim) is int:
-            out_dim = [out_dim]
-        self.out_dim = out_dim
-        self.num_rnn_layers = num_rnn_layers
+        self.in_dim = self.body.state_dim
+        self.out_dim = self.body.action_dim
+        # Create net and initialize params
+        # TODO recursive naming. avoid
+        self.hidden_size = self.hid_layers[-1]
         self.state_processing_layers = []
         self.state_proc_model = self.build_state_proc_layers(
-            hid_layers[:-1], hid_layers_activation)
-        self.rnn_input_dim = hid_layers[-2] if len(hid_layers) > 1 else self.in_dim
-        self.rnn = nn.GRU(input_size=self.rnn_input_dim,
-                          hidden_size=self.hid_layers,
-                          num_layers=self.num_rnn_layers,
-                          batch_first=True)
+            self.hid_layers[:-1], self.hid_layers_activation)
+        self.rnn_input_dim = self.hid_layers[-2] if len(self.hid_layers) > 1 else self.in_dim
+        self.rnn = nn.GRU(
+            input_size=self.rnn_input_dim,
+            hidden_size=self.hidden_size,
+            num_layers=self.num_rnn_layers,
+            batch_first=True)
         # Init network output heads
         self.out_layers = []
         for dim in self.out_dim:
-            self.out_layers += [nn.Linear(self.hid_layers, dim)]
+            self.out_layers += [nn.Linear(self.hidden_size, dim)]
         self.layers = [self.state_processing_layers] + [self.rnn] + [self.out_layers]
         self.num_hid_layers = None
         self.init_params()
-        if torch.cuda.is_available() and gpu:
+        if torch.cuda.is_available() and self.gpu:
             self.state_proc_model.cuda()
             self.rnn.cuda()
             for l in self.out_layers:
@@ -100,12 +105,8 @@ class RecurrentNet(Net, nn.Module):
         self.named_params = list(self.state_proc_model.named_parameters()) + list(self.rnn.named_parameters())
         for layer in self.out_layers:
             self.named_params.extend(list(layer.named_parameters()))
-        self.optim_spec = optim_spec
         self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
-        self.loss_fn = net_util.get_loss_fn(self, loss_spec)
-        self.clamp_grad = clamp_grad
-        self.clamp_grad_val = clamp_grad_val
-        self.decay_lr_factor = decay_lr_factor
+        self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
         logger.info(f'decay lr: {self.decay_lr_factor}')
@@ -126,20 +127,20 @@ class RecurrentNet(Net, nn.Module):
         return nn.Sequential(*self.state_processing_layers)
 
     def init_hidden(self, batch_size, volatile=False):
-        hid = torch.zeros(self.num_rnn_layers, batch_size, self.hid_layers)
+        hid = torch.zeros(self.num_rnn_layers, batch_size, self.hidden_size)
         if torch.cuda.is_available() and self.gpu:
             hid = hid.cuda()
         return Variable(hid, volatile=volatile)
 
     def forward(self, x):
         '''The feedforward step.
-        Input is batch_size x sequence_length x state_dim'''
-        '''Unstack input to (batch_size x sequence_length) x state_dim in order to transform all state inputs'''
+        Input is batch_size x seq_len x state_dim'''
+        '''Unstack input to (batch_size x seq_len) x state_dim in order to transform all state inputs'''
         batch_size = x.size(0)
         x = x.view(-1, self.in_dim)
         x = self.state_proc_model(x)
-        '''Restack to batch_size x sequence_length x rnn_input_dim'''
-        x = x.view(-1, self.sequence_length, self.rnn_input_dim)
+        '''Restack to batch_size x seq_len x rnn_input_dim'''
+        x = x.view(-1, self.seq_len, self.rnn_input_dim)
         hid_0 = self.init_hidden(batch_size)
         _, final_hid = self.rnn(x, hid_0)
         final_hid.squeeze_(dim=0)

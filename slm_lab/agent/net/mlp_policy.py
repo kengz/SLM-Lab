@@ -13,7 +13,7 @@ class MLPPolicy(Net):
     def __init__(self, algorithm, body, name=''):
         super(MLPPolicy, self).__init__(algorithm, body)
         util.set_attr(self, self.net_spec, [
-            'hid_layers_activation', 'hid_layers'
+            'hid_layers', 'hid_layers_activation'
         ])
         info_space = algorithm.agent.info_space
         scope = util.get_prepath(algorithm.agent.agent_space.spec, info_space, unit='session').split('/')[-1] + '_' + name
