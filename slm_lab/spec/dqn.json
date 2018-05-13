@@ -58,7 +58,12 @@
           "explore_anneal_epi__randint": [10, 60]
         },
         "net": {
-          "hid_layers__choice": [[16], [64], [32, 16], [64, 32]],
+          "hid_layers__choice": [
+            [16],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
           "optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
@@ -124,7 +129,11 @@
           "explore_var_end__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers__choice": [[16], [32], [64]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
@@ -191,7 +200,11 @@
           "explore_var_end__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers__choice": [[16], [32], [64]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
@@ -326,7 +339,7 @@
         "action_policy_update": "multi_linear_decay",
         "explore_var_start": 1.5,
         "explore_var_end": 0.3,
-        "explore_anneal_epi": 15,
+        "explore_anneal_epi": 100,
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
@@ -340,7 +353,16 @@
       },
       "net": {
         "type": "MultiMLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          [
+            [32],
+            [32]
+          ],
+          [64],
+          [
+            []
+          ]
+        ],
         "hid_layers_activation": "sigmoid",
         "optim_spec": {
           "name": "Adam",
@@ -358,11 +380,11 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 50
+      "max_episode": 200
     }, {
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 50
+      "max_episode": 200
     }],
     "body": {
       "product": "outer",
@@ -397,7 +419,17 @@
       },
       "net": {
         "type": "MultiMLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          [
+            [32],
+            [32]
+          ],
+          [64],
+          [
+            [32],
+            [32]
+          ]
+        ],
         "hid_layers_activation": "sigmoid",
         "optim_spec": {
           "name": "Adam",

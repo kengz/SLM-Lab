@@ -289,7 +289,7 @@ class MultiMLPNet(Net, nn.Module):
     Class for generating arbitrary sized feedforward neural network with multiple state and action heads, and a single shared body.
     '''
 
-    def __init__(self, algorithm, body):
+    def __init__(self, algorithm, body_list):
         '''
         Multi state processing heads, single shared body, and multi action heads.
         There is one state and action head per environment
@@ -333,8 +333,7 @@ class MultiMLPNet(Net, nn.Module):
              decay_lr_factor=0.9)
         '''
         nn.Module.__init__(self)
-        super(MultiMLPNet, self).__init__(algorithm, body)
-        # Create net and initialize params
+        Net.__init__(self, algorithm, body_list)
         # set default
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},
@@ -363,32 +362,38 @@ class MultiMLPNet(Net, nn.Module):
             'polyak_weight',
             'gpu',
         ])
-        # Create net and initialize params
-        self.in_dim = self.body.state_dim
-        self.out_dim = self.body.action_dim
+        assert len(self.hid_layers) == 3, 'Your hidden layers must specify [*heads], [body], [*tails]. If not, use MLPHeterogenousHeads'
+        self.head_hid_layers = self.hid_layers[0]
+        self.body_hid_layers = self.hid_layers[1]
+        self.tail_hid_layers = self.hid_layers[2]
+        if len(self.head_hid_layers) == 1:
+            self.head_hid_layers = self.head_hid_layers * len(body_list)
+        if len(self.tail_hid_layers) == 1:
+            self.tail_hid_layers = self.tail_hid_layers * len(body_list)
+
+        # TODO move away from list-based construction API, too many things to keep track off and might drop the ball
         self.state_heads_layers = []
-        self.state_heads_models = self.make_state_heads(
-            self.in_dim, self.hid_layers_activation)
-        self.shared_layers = []
-        self.body = self.make_shared_body(
-            self.state_out_concat, self.hid_layers, self.hid_layers_activation)
-        self.action_heads_layers = []
-        in_D = self.hid_layers[-1] if len(self.hid_layers) > 0 else self.state_out_concat
-        self.action_heads_models = self.make_action_heads(
-            in_D, self.out_dim, self.hid_layers_activation)
+        self.state_heads_models = self.make_state_heads(body_list)
+
+        self.body_layers = []
+        self.body_model = self.make_shared_body(self.state_out_concat)
+
+        self.action_tails_layers = []
+        self.action_tails_models = self.make_action_tails(body_list)
+
         self.init_params()
         if torch.cuda.is_available() and self.gpu:
             for l in self.state_heads_models:
                 l.cuda()
-            self.body.cuda()
-            for l in self.action_heads_models:
+            self.body_model.cuda()
+            for l in self.action_tails_models:
                 l.cuda()
         # Init other net variables
         self.params = []
         for model in self.state_heads_models:
             self.params.extend(list(model.parameters()))
-        self.params.extend(list(self.body.parameters()))
-        for model in self.action_heads_models:
+        self.params.extend(list(self.body_model.parameters()))
+        for model in self.action_tails_models:
             self.params.extend(list(model.parameters()))
         self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
@@ -396,78 +401,72 @@ class MultiMLPNet(Net, nn.Module):
         logger.info(f'optimizer: {self.optim}')
         logger.info(f'decay lr: {self.decay_lr_factor}')
 
-    def make_state_heads(self, state_heads, hid_layers_activation):
-        '''Creates each state head. These are stored as Sequential
-           models in self.state_heads_models'''
+    def make_state_heads(self, body_list):
+        '''Creates each state head. These are stored as Sequential models in self.state_heads_models'''
+        assert len(self.head_hid_layers) == len(body_list), 'multihead head hid_params inconsistent with number of bodies'
+        # TODO use actual last layers instead of numbers to track interface to body
         self.state_out_concat = 0
         state_heads_models = []
-        for head in state_heads:
+        for body, hid_layers in zip(body_list, self.head_hid_layers):
             layers = []
-            assert len(head) > 1
-            for i, layer in enumerate(head):
-                if i != 0:
-                    in_D = head[i - 1]
-                    out_D = head[i]
-                    layers += [nn.Linear(in_D, out_D)]
-                    layers += [net_util.get_activation_fn(
-                        hid_layers_activation)]
-            self.state_out_concat += head[-1]
+            for i, layer in enumerate(hid_layers):
+                in_D = body.state_dim if i == 0 else hid_layers[i - 1]
+                out_D = hid_layers[i]
+                layers.append(nn.Linear(in_D, out_D))
+                layers.append(net_util.get_activation_fn(self.hid_layers_activation))
+            self.state_out_concat += hid_layers[-1]
             self.state_heads_layers.append(layers)
             state_heads_models.append(nn.Sequential(*layers))
         return state_heads_models
 
-    def make_shared_body(self, in_dim, dims, hid_layers_activation):
-        '''Creates the shared body of the network. Stored as a Sequential
-           model in self.body'''
-        for i, layer in enumerate(dims):
-            in_D = in_dim if i == 0 else dims[i - 1]
-            out_D = dims[i]
-            self.shared_layers += [nn.Linear(in_D, out_D)]
-            self.shared_layers += [
-                net_util.get_activation_fn(hid_layers_activation)]
-        return nn.Sequential(*self.shared_layers)
+    def make_shared_body(self, head_out_concat):
+        '''Creates the shared body of the network. Stored as a Sequential model in self.body_model'''
+        for i, layer in enumerate(self.body_hid_layers):
+            in_D = head_out_concat if i == 0 else self.body_hid_layers[i - 1]
+            out_D = layer
+            self.body_layers.append(nn.Linear(in_D, out_D))
+            self.body_layers.append(net_util.get_activation_fn(self.hid_layers_activation))
+        return nn.Sequential(*self.body_layers)
 
-    def make_action_heads(self, in_dim, act_heads, hid_layers_activation):
-        '''Creates each action head. These are stored as Sequential
-           models in self.action_heads_models'''
-        act_heads_models = []
-        for head in act_heads:
+    def make_action_tails(self, body_list):
+        '''Creates each action head. These are stored as Sequential models in self.action_tails_models'''
+        action_tails_models = []
+        for body, hid_layers in zip(body_list, self.tail_hid_layers):
             layers = []
-            assert len(head) > 0
-            for i, layer in enumerate(head):
-                in_D = head[i - 1] if i > 0 else in_dim
-                out_D = head[i]
-                layers += [nn.Linear(in_D, out_D)]
-                # No activation function in the last layer
-                if i < len(head) - 1:
-                    layers += [net_util.get_activation_fn(
-                        hid_layers_activation)]
-            self.action_heads_layers.append(layers)
-            act_heads_models.append(nn.Sequential(*layers))
-        return act_heads_models
+            for i, layer in enumerate(hid_layers):
+                in_D = self.body_hid_layers[-1] if i == 0 else hid_layers[i - 1]
+                out_D = hid_layers[i]
+                layers.append(nn.Linear(in_D, out_D))
+                layers.append(net_util.get_activation_fn(self.hid_layers_activation))
+            # final output layer, no activation
+            in_D = self.body_hid_layers[-1] if len(hid_layers) == 0 else hid_layers[-1]
+            layers.append(nn.Linear(in_D, body.action_dim))
+            self.action_tails_layers.append(layers)
+            action_tails_models.append(nn.Sequential(*layers))
+        return action_tails_models
 
     def forward(self, states):
         '''The feedforward step'''
         state_outs = []
         final_outs = []
         for i, state in enumerate(states):
-            state_outs += [self.state_heads_models[i](state)]
+            state_outs.append(self.state_heads_models[i](state))
         state_outs = torch.cat(state_outs, dim=1)
-        body_out = self.body(state_outs)
-        for i, act_model in enumerate(self.action_heads_models):
-            final_outs += [act_model(body_out)]
+        body_out = self.body_model(state_outs)
+        for i, act_model in enumerate(self.action_tails_models):
+            final_outs.append(act_model(body_out))
         return final_outs
 
     def set_train_eval(self, train=True):
         '''Helper function to set model in training or evaluation mode'''
-        nets = self.state_heads_models + self.action_heads_models
+        nets = self.state_heads_models + self.action_tails_models
         for net in nets:
             if train:
                 net.train()
-                self.body.train()
+                self.body_model.train()
             else:
                 net.eval()
-                self.body.eval()
+                self.body_model.eval()
 
     def training_step(self, x, y):
         '''
@@ -504,8 +503,8 @@ class MultiMLPNet(Net, nn.Module):
         layers = []
         for l in self.state_heads_layers:
             layers.extend(l)
-        layers.extend(self.shared_layers)
-        for l in self.action_heads_layers:
+        layers.extend(self.body_layers)
+        for l in self.action_tails_layers:
             layers.extend(l)
         net_util.init_layers(layers, 'Linear')
 
@@ -526,8 +525,8 @@ class MultiMLPNet(Net, nn.Module):
         s = ""
         for net in self.state_heads_models:
             s += net.__str__() + '\n'
-        s += self.body.__str__()
-        for net in self.action_heads_models:
+        s += self.body_model.__str__()
+        for net in self.action_tails_models:
             s += '\n' + net.__str__()
         return s
 
