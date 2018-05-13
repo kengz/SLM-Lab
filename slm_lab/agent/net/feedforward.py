@@ -38,9 +38,12 @@ class MLPNet(Net, nn.Module):
                 gpu=True,
                 decay_lr_factor=0.9)
         '''
+        nn.Module.__init__(self)
         super(MLPNet, self).__init__(algorithm, body)
         # set default
         util.set_attr(self, dict(
+            optim_spec={'name': 'Adam'},
+            loss_spec={'name': 'mse_loss'},
             clamp_grad=False,
             clamp_grad_val=1.0,
             gpu=False,
@@ -54,7 +57,10 @@ class MLPNet(Net, nn.Module):
             'clamp_grad',
             'clamp_grad_val',
             'gpu',
+            'decay_lr',
             'decay_lr_factor',
+            'decay_lr_frequency',
+            'decay_lr_min_timestep',
         ])
         # Create net and initialize params
         self.in_dim = self.body.state_dim
@@ -177,6 +183,8 @@ class MLPHeterogenousHeads(MLPNet):
         Net.__init__(self, algorithm, body)
         # set default
         util.set_attr(self, dict(
+            optim_spec={'name': 'Adam'},
+            loss_spec={'name': 'mse_loss'},
             clamp_grad=False,
             clamp_grad_val=1.0,
             gpu=False,
@@ -190,7 +198,10 @@ class MLPHeterogenousHeads(MLPNet):
             'clamp_grad',
             'clamp_grad_val',
             'gpu',
+            'decay_lr',
             'decay_lr_factor',
+            'decay_lr_frequency',
+            'decay_lr_min_timestep',
         ])
         # Create net and initialize params
         self.in_dim = self.body.state_dim
@@ -310,10 +321,13 @@ class MultiMLPNet(Net, nn.Module):
              gpu=False,
              decay_lr_factor=0.9)
         '''
+        nn.Module.__init__(self)
         super(MultiMLPNet, self).__init__(algorithm, body)
         # Create net and initialize params
         # set default
         util.set_attr(self, dict(
+            optim_spec={'name': 'Adam'},
+            loss_spec={'name': 'mse_loss'},
             clamp_grad=False,
             clamp_grad_val=1.0,
             gpu=False,
@@ -327,7 +341,10 @@ class MultiMLPNet(Net, nn.Module):
             'clamp_grad',
             'clamp_grad_val',
             'gpu',
+            'decay_lr',
             'decay_lr_factor',
+            'decay_lr_frequency',
+            'decay_lr_min_timestep',
         ])
         # Create net and initialize params
         self.in_dim = self.body.state_dim

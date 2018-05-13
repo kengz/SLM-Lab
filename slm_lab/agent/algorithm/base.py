@@ -18,6 +18,8 @@ class Algorithm(ABC):
         self.agent = agent
         self.agent_spec = agent.agent_spec
         self.algorithm_spec = self.agent_spec['algorithm']
+        self.memory_spec = self.agent_spec['memory']
+        self.net_spec = self.agent_spec['net']
 
     @abstractmethod
     @lab_api

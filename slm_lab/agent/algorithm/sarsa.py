@@ -128,7 +128,7 @@ class SARSA(Algorithm):
         logger.debug2(f'Q next states: {q_next_st.size()}')
         # Get the q value for the next action that was actually taken
         idx = torch.from_numpy(np.array(list(range(q_next_st.size(0)))))
-        if torch.cuda.is_available() and self.gpu:
+        if torch.cuda.is_available() and self.net.gpu:
             idx = idx.cuda()
         q_next_st_vals = q_next_st[idx, q_next_actions.squeeze_(1).data.long()]
         # Expand the dims so that q_next_st_vals can be broadcast
@@ -139,15 +139,13 @@ class SARSA(Algorithm):
         logger.debug3(f'Q next_states vals {q_next_st_vals}')
         logger.debug3(f'Dones {batch["dones"]}')
         # Compute q_targets using reward and Q value corresponding to the action taken in the next state if there is one. Make next state Q value 0 if the current state is done
-        q_targets_actual = batch['rewards'].data + self.gamma * \
-            torch.mul((1 - batch['dones'].data), q_next_st_vals)
+        q_targets_actual = batch['rewards'].data + self.gamma * torch.mul((1 - batch['dones'].data), q_next_st_vals)
         logger.debug2(f'Q targets actual: {q_targets_actual.size()}')
         logger.debug3(f'Q states {q_sts}')
         logger.debug3(f'Q targets actual: {q_targets_actual}')
         # We only want to train the network for the action selected in the current state
         # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
-        q_targets = torch.mul(q_targets_actual, batch['actions_onehot'].data) + \
-            torch.mul(q_sts, (1 - batch['actions_onehot'].data))
+        q_targets = torch.mul(q_targets_actual, batch['actions_onehot'].data) + torch.mul(q_sts, (1 - batch['actions_onehot'].data))
         logger.debug2(f'Q targets: {q_targets.size()}')
         logger.debug3(f'Q targets: {q_targets}')
         return q_targets
@@ -159,7 +157,7 @@ class SARSA(Algorithm):
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         if self.is_episodic:
-            util.to_torch_nested_batch(batch, self.gpu)
+            util.to_torch_nested_batch(batch, self.net.gpu)
             # Add next action to batch
             batch['actions_onehot'] = []
             batch['next_actions'] = []
@@ -169,19 +167,19 @@ class SARSA(Algorithm):
                 next_acts = torch.zeros_like(acts)
                 next_acts[:-1] = acts[1:]
                 # Convert actions to one hot (both representations are needed for SARSA)
-                acts_onehot = util.convert_to_one_hot(acts, self.action_dim, self.gpu)
+                acts_onehot = util.convert_to_one_hot(acts, self.action_dim, self.net.gpu)
                 batch['actions_onehot'].append(acts_onehot)
                 batch['next_actions'].append(next_acts)
             # Flatten the batch to train all at once
             batch = util.concat_episodes(batch)
         else:
-            util.to_torch_batch(batch, self.gpu)
+            util.to_torch_batch(batch, self.net.gpu)
             # Batch only useful to train with if it has more than one element
             # Train function checks for this and skips training if batch is too small
             if batch['states'].size(0) > 1:
                 batch['next_actions'] = torch.zeros_like(batch['actions'])
                 batch['next_actions'][:-1] = batch['actions'][1:]
-                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.action_dim, self.gpu)
+                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.action_dim, self.net.gpu)
                 batch_elems = ['states', 'actions', 'actions_onehot', 'rewards', 'dones', 'next_states', 'next_actions']
                 for k in batch_elems:
                     if batch[k].dim() == 1:
@@ -207,7 +205,7 @@ class SARSA(Algorithm):
                 self.to_train = 0
                 return np.nan
             q_targets = self.compute_q_target_values(batch)
-            if torch.cuda.is_available() and self.gpu:
+            if torch.cuda.is_available() and self.net.gpu:
                 q_targets = q_targets.cuda()
             y = Variable(q_targets)
             loss = self.net.training_step(batch['states'], y)
@@ -221,7 +219,7 @@ class SARSA(Algorithm):
     @lab_api
     def body_act_discrete(self, body, state):
         ''' Selects and returns a discrete action for body using the action policy'''
-        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx], self.gpu)
+        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx], self.net.gpu)
 
     def update_explore_var(self):
         '''Updates the explore variables'''

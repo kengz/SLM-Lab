@@ -52,9 +52,12 @@ class ConvNet(Net, nn.Module):
                 gpu=True,
                 decay_lr_factor=0.9)
         '''
+        nn.Module.__init__(self)
         super(ConvNet, self).__init__(algorithm, body)
         # set default
         util.set_attr(self, dict(
+            optim_spec={'name': 'Adam'},
+            loss_spec={'name': 'mse_loss'},
             clamp_grad=False,
             clamp_grad_val=1.0,
             batch_norm=True,
@@ -70,7 +73,10 @@ class ConvNet(Net, nn.Module):
             'clamp_grad_val',
             'batch_norm',
             'gpu',
+            'decay_lr',
             'decay_lr_factor',
+            'decay_lr_frequency',
+            'decay_lr_min_timestep',
         ])
         # Create net and initialize params
         # We need to transpose the dimensions for pytorch.

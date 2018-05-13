@@ -69,11 +69,11 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        return self.action_policy(self, state, body, self.gpu)
+        return self.action_policy(self, state, body, self.net.gpu)
 
     @lab_api
     def body_act_continuous(self, body, state):
-        return self.action_policy(self, state, body, self.gpu)
+        return self.action_policy(self, state, body, self.net.gpu)
 
     @lab_api
     def sample(self):
@@ -82,9 +82,9 @@ class ActorCritic(Reinforce):
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         if self.is_episodic:
-            util.to_torch_nested_batch(batch, self.gpu)
+            util.to_torch_nested_batch(batch, self.net.gpu)
         else:
-            util.to_torch_batch(batch, self.gpu)
+            util.to_torch_batch(batch, self.net.gpu)
         return batch
 
     @lab_api
@@ -107,7 +107,7 @@ class ActorCritic(Reinforce):
             if self.is_episodic:
                 target = torch.cat(target)
                 states = torch.cat(states)
-            if torch.cuda.is_available() and self.gpu:
+            if torch.cuda.is_available() and self.net.gpu:
                 target = target.cuda()
             y = Variable(target.unsqueeze_(dim=-1))
             state_vals = self.get_critic_output(states, evaluate=False)
@@ -183,7 +183,7 @@ class ActorCritic(Reinforce):
         loss = 0
         for _i in range(self.training_iters_per_batch):
             target = self.get_target(batch, critic_specific=True)
-            if torch.cuda.is_available() and self.gpu:
+            if torch.cuda.is_available() and self.net.gpu:
                 target = target.cuda()
             y = Variable(target)
             loss = self.critic.training_step(batch['states'], y).data[0]
@@ -203,7 +203,7 @@ class ActorCritic(Reinforce):
                 logger.debug2(f'states: {state.size()}')
             x = torch.cat(x, dim=0)
             logger.debug2(f'Combined states: {x.size()}')
-            if torch.cuda.is_available() and self.gpu:
+            if torch.cuda.is_available() and self.net.gpu:
                 target = target.cuda()
             y = Variable(target)
             loss = self.critic.training_step(x, y).data[0]
@@ -386,7 +386,7 @@ class ActorCritic(Reinforce):
             big_r = rewards[i] + self.gamma * big_r
             target.insert(0, big_r)
         target = torch.Tensor(target)
-        if torch.cuda.is_available() and self.gpu:
+        if torch.cuda.is_available() and self.net.gpu:
             target = target.cuda()
         logger.debug3(f'Target: {target}')
         return target
@@ -410,7 +410,7 @@ class ActorCritic(Reinforce):
             gae = deltas[i] + self.gamma * self.lamda * gae
             advantage.insert(0, gae)
         advantage = torch.Tensor(advantage)
-        if torch.cuda.is_available() and self.gpu:
+        if torch.cuda.is_available() and self.net.gpu:
             advantage = advantage.cuda()
         '''Add state_vals so that calc_advantage() api is preserved'''
         target = advantage + state_vals
@@ -541,10 +541,9 @@ class ActorCritic(Reinforce):
 
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
-        algorithm_spec = self.agent_spec['algorithm']
         net_spec = self.agent_spec['net']
         self.set_action_fn()
-        util.set_attr(self, algorithm_spec, [
+        util.set_attr(self, self.algorithm_spec, [
             'gamma',
             'add_entropy', 'entropy_weight',
             'continuous_action_clip',
@@ -558,8 +557,8 @@ class ActorCritic(Reinforce):
             'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ])
         if not hasattr(self, 'gpu'):
-            self.gpu = False
-        logger.info(f'Training on gpu: {self.gpu}')
+            self.net.gpu = False
+        logger.info(f'Training on gpu: {self.net.gpu}')
         '''Select appropriate function for calculating state-action-value estimate (target)'''
         self.get_target = self.get_nstep_target
         if self.use_GAE:

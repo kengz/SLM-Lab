@@ -50,9 +50,12 @@ class RecurrentNet(Net, nn.Module):
             gpu=True,
             decay_lr_factor=0.9)
         '''
+        nn.Module.__init__(self)
         super(RecurrentNet, self).__init__(algorithm, body)
         # set default
         util.set_attr(self, dict(
+            optim_spec={'name': 'Adam'},
+            loss_spec={'name': 'mse_loss'},
             clamp_grad=False,
             clamp_grad_val=1.0,
             gpu=False,
@@ -67,8 +70,12 @@ class RecurrentNet(Net, nn.Module):
             'clamp_grad',
             'clamp_grad_val',
             'gpu',
-            'decay_lr_factor',
             'num_rnn_layers',
+            'seq_len',
+            'decay_lr',
+            'decay_lr_factor',
+            'decay_lr_frequency',
+            'decay_lr_min_timestep',
         ])
         # Create net and initialize params
         self.in_dim = self.body.state_dim

@@ -77,8 +77,8 @@ class Agent:
         self.nanflat_body_a = None  # nanflatten version of bodies
         self.body_num = None
 
-        AlgoClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
-        self.algorithm = AlgoClass(self)
+        AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
+        self.algorithm = AlgorithmClass(self)
 
         # TODO uhh handle internally to memory?
         memory_name = agent_spec['memory']['name']

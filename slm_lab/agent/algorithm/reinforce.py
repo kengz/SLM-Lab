@@ -100,8 +100,8 @@ class Reinforce(Algorithm):
             'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ])
         if not hasattr(self, 'gpu'):
-            self.gpu = False
-        logger.info(f'Training on gpu: {self.gpu}')
+            self.net.gpu = False
+        logger.info(f'Training on gpu: {self.net.gpu}')
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.entropy = []
@@ -109,11 +109,11 @@ class Reinforce(Algorithm):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        return self.action_policy(self, state, body, self.gpu)
+        return self.action_policy(self, state, body, self.net.gpu)
 
     @lab_api
     def body_act_continuous(self, body, state):
-        return self.action_policy(self, state, body, self.gpu)
+        return self.action_policy(self, state, body, self.net.gpu)
 
     @lab_api
     def sample(self):
@@ -121,7 +121,7 @@ class Reinforce(Algorithm):
         batches = [body.memory.sample()
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
-        batch = util.to_torch_nested_batch_ex_rewards(batch, self.gpu)
+        batch = util.to_torch_nested_batch_ex_rewards(batch, self.net.gpu)
         return batch
 
     @lab_api

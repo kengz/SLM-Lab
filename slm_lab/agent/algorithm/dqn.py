@@ -70,8 +70,8 @@ class VanillaDQN(SARSA):
             'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ])
         if not hasattr(self, 'gpu'):
-            self.gpu = False
-        logger.info(f'Training on gpu: {self.gpu}')
+            self.net.gpu = False
+        logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
     def init_algorithm_params(self):
@@ -121,7 +121,7 @@ class VanillaDQN(SARSA):
         batches = [body.memory.sample(self.batch_size)
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
-        util.to_torch_batch(batch, self.gpu)
+        util.to_torch_batch(batch, self.net.gpu)
         return batch
 
     @lab_api
@@ -143,7 +143,7 @@ class VanillaDQN(SARSA):
                 batch_loss = 0.0
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
-                    if torch.cuda.is_available() and self.gpu:
+                    if torch.cuda.is_available() and self.net.gpu:
                         q_targets = q_targets.cuda()
                     y = Variable(q_targets)
                     loss = self.net.training_step(batch['states'], y)
@@ -261,8 +261,8 @@ class DQNBase(VanillaDQN):
             'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ])
         if not hasattr(self, 'gpu'):
-            self.gpu = False
-        logger.info(f'Training on gpu: {self.gpu}')
+            self.net.gpu = False
+        logger.info(f'Training on gpu: {self.net.gpu}')
         # Default network update params for base
         self.update_type = 'replace'
         self.update_frequency = 1
@@ -280,7 +280,7 @@ class DQNBase(VanillaDQN):
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         logger.debug2(f'Q next_states: {q_next_sts.size()}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
-        if torch.cuda.is_available() and self.gpu:
+        if torch.cuda.is_available() and self.net.gpu:
             idx = idx.cuda()
         q_next_st_maxs = q_next_sts[idx, q_next_acts]
         q_next_st_maxs.unsqueeze_(1)
@@ -390,8 +390,8 @@ class MultitaskDQN(DQN):
             'update_type', 'update_frequency', 'polyak_weight', 'gpu'
         ])
         if not hasattr(self, 'gpu'):
-            self.gpu = False
-        logger.info(f'Training on gpu: {self.gpu}')
+            self.net.gpu = False
+        logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
     def sample(self):
@@ -400,7 +400,7 @@ class MultitaskDQN(DQN):
                    for body in self.agent.nanflat_body_a]
         # Package data into pytorch variables
         for batch_b in batches:
-            util.to_torch_batch(batch_b, self.gpu)
+            util.to_torch_batch(batch_b, self.net.gpu)
         # Concat state
         combined_states = torch.cat(
             [batch_b['states'] for batch_b in batches], dim=1)
@@ -439,7 +439,7 @@ class MultitaskDQN(DQN):
         logger.debug2(f'Q next_states: {q_next_sts.size()}')
         logger.debug3(f'Q next_states: {q_next_sts}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
-        if torch.cuda.is_available() and self.gpu:
+        if torch.cuda.is_available() and self.net.gpu:
             idx = idx.cuda()
         q_next_st_maxs = []
         for q_next_act_b in q_next_acts:
@@ -458,7 +458,7 @@ class MultitaskDQN(DQN):
                 np.broadcast_to(
                     q_targets_max_b,
                     (q_targets_max_b.shape[0], self.action_dims[b])))
-            if torch.cuda.is_available() and self.gpu:
+            if torch.cuda.is_available() and self.net.gpu:
                 q_targets_max_b = q_targets_max_b.cuda()
             q_targets_maxs.append(q_targets_max_b)
             logger.debug2(f'Q targets max: {q_targets_max_b.size()}')
@@ -482,7 +482,7 @@ class MultitaskDQN(DQN):
     def act(self, state_a):
         '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
         nanflat_action_a = self.action_policy(
-            self.agent.nanflat_body_a, state_a, self.net, self.nanflat_explore_var_a, self.gpu)
+            self.agent.nanflat_body_a, state_a, self.net, self.nanflat_explore_var_a, self.net.gpu)
         action_a = self.nanflat_to_data_a('action', nanflat_action_a)
         return action_a
 
@@ -530,8 +530,8 @@ class MultiHeadDQN(MultitaskDQN):
             'update_type', 'update_frequency', 'polyak_weight', 'gpu'
         ])
         if not hasattr(self, 'gpu'):
-            self.gpu = False
-        logger.info(f'Training on gpu: {self.gpu}')
+            self.net.gpu = False
+        logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
     def sample(self):
@@ -540,7 +540,7 @@ class MultiHeadDQN(MultitaskDQN):
                    for body in self.agent.nanflat_body_a]
         # Package data into pytorch variables
         for batch_b in batches:
-            util.to_torch_batch(batch_b, self.gpu)
+            util.to_torch_batch(batch_b, self.net.gpu)
         batch = {'states': [], 'next_states': []}
         for b in batches:
             batch['states'].append(b['states'])
@@ -565,7 +565,7 @@ class MultiHeadDQN(MultitaskDQN):
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         logger.debug3(f'Q next_states: {q_next_sts}')
         idx = torch.from_numpy(np.array(list(range(self.batch_size))))
-        if torch.cuda.is_available() and self.gpu:
+        if torch.cuda.is_available() and self.net.gpu:
             idx = idx.cuda()
         q_next_st_maxs = []
         for q_next_st_val_b, q_next_act_b in zip(q_next_sts, q_next_acts):
@@ -613,7 +613,7 @@ class MultiHeadDQN(MultitaskDQN):
                 batch = self.sample()
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
-                    if torch.cuda.is_available() and self.gpu:
+                    if torch.cuda.is_available() and self.net.gpu:
                         q_targets = [q.cuda() for q in q_targets]
                     y = [Variable(q) for q in q_targets]
                     losses = self.net.training_step(batch['states'], y)
