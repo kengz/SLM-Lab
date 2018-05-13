@@ -58,6 +58,9 @@ class VanillaDQN(SARSA):
         self.body = self.agent.nanflat_body_a[0]  # single-body algo
         if 'Recurrent' in self.net_spec['type']:
             raise ValueError('Recurrent networks does not work with DQN family of algorithms.')
+
+        if self.algorithm_spec['name'] == 'VanillaDQN':
+            assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_weight']), 'Network update not available for VanillaDQN; use DQN.'
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self, self.body)
         logger.info(f'Training on gpu: {self.net.gpu}')
@@ -193,13 +196,16 @@ class DQNBase(VanillaDQN):
             # Make adjustments for Atari mode
             # TODO should be auto-set from preprocessor
             self.body.state_dim = (84, 84, 4)
+            logger.debug3(f'State dim: {self.body.state_dim}')
         elif 'Stack' in memory_name:
             # Make adjustments for StackedReplay memory
             if 'MLP' not in self.net_spec['type']:
                 raise ValueError('StackedReplay should only be used with MLPs, to stack states with ConvNets use Atari memory.')
             self.body.state_dim = self.body.state_dim * self.memory_spec['stack_len']
-        logger.debug3(f'State dim: {self.body.state_dim}')
+            logger.debug3(f'State dim: {self.body.state_dim}')
 
+        if self.algorithm_spec['name'] == 'DQNBase':
+            assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_weight']), 'Network update not available for DQNBase; use DQN.'
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self, self.body)
         self.target_net = NetClass(self, self.body)
@@ -263,11 +269,6 @@ class DQN(DQNBase):
     @lab_api
     def init_nets(self):
         super(DQN, self).init_nets()
-        # Network update params
-        net_spec = self.agent_spec['net']
-        util.set_attr(self, net_spec, [
-            'update_type', 'update_frequency', 'polyak_weight',
-        ])
 
 
 class DoubleDQN(DQN):

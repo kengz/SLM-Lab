@@ -99,10 +99,7 @@
         "decay_lr": true,
         "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
-        "decay_lr_min_timestep": 1400,
-        "update_type": "replace",
-        "update_frequency": 1,
-        "polyak_weight": 0.9
+        "decay_lr_min_timestep": 1400
       }
     }],
     "env": [{
