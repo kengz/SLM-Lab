@@ -12,9 +12,9 @@ class MLPPolicy(Net):
 
     def __init__(self, algorithm, name=''):
         super(MLPPolicy, self).__init__(algorithm)
-        util.set_attr(self, ps.pick(self.net_spec, [
+        util.set_attr(self, self.net_spec, [
             'hid_layers_activation', 'hid_layers'
-        ]))
+        ])
 
         self.body = algorithm.body  # default body for env
         info_space = algorithm.agent.info_space

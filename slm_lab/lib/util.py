@@ -617,8 +617,10 @@ def session_df_to_data(session_df):
     return session_data
 
 
-def set_attr(obj, attr_dict):
+def set_attr(obj, attr_dict, keys=None):
     '''Set attribute of an object from a dict'''
+    if keys is not None:
+        attr_dict = ps.pick(attr_dict, keys)
     for attr, val in attr_dict.items():
         setattr(obj, attr, val)
     return obj

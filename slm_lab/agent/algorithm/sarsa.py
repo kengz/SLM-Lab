@@ -76,9 +76,9 @@ class SARSA(Algorithm):
     def set_net_attributes(self):
         '''Initializes additional parameters from the net spec. Called by init_nets'''
         net_spec = self.agent_spec['net']
-        util.set_attr(self, ps.pick(net_spec, [
+        util.set_attr(self, net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
-        ]))
+        ])
         if not hasattr(self, 'gpu'):
             self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')
@@ -97,13 +97,13 @@ class SARSA(Algorithm):
     def set_other_algorithm_attributes(self):
         '''Initializes additional parameters from the algorithm spec. Called by init_algorithm_params'''
         algorithm_spec = self.agent_spec['algorithm']
-        util.set_attr(self, ps.pick(algorithm_spec, [
+        util.set_attr(self, algorithm_spec, [
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
-        ]))
+        ])
         self.to_train = 0
         self.set_memory_flag()
 

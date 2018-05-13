@@ -544,7 +544,7 @@ class ActorCritic(Reinforce):
         algorithm_spec = self.agent_spec['algorithm']
         net_spec = self.agent_spec['net']
         self.set_action_fn()
-        util.set_attr(self, ps.pick(algorithm_spec, [
+        util.set_attr(self, algorithm_spec, [
             'gamma',
             'add_entropy', 'entropy_weight',
             'continuous_action_clip',
@@ -553,10 +553,10 @@ class ActorCritic(Reinforce):
             'use_GAE',
             'policy_loss_weight', 'val_loss_weight',
 
-        ]))
-        util.set_attr(self, ps.pick(net_spec, [
+        ])
+        util.set_attr(self, net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
-        ]))
+        ])
         if not hasattr(self, 'gpu'):
             self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')

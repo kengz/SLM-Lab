@@ -35,7 +35,7 @@ class OnPolicyReplay(Memory):
     def __init__(self, body):
         super(OnPolicyReplay, self).__init__(body)
         # NOTE for OnPolicy replay, frequency = episode; for other classes below frequency = frames
-        self.training_frequency = self.agent_spec['algorithm']['training_frequency']
+        util.set_attr(self, self.agent_spec['algorithm'], ['training_frequency'])
         # Don't want total experiences reset when memory is
         self.total_experiences = 0
         self.last_nan_idxs = None
@@ -121,7 +121,7 @@ class OnPolicyNStepReplay(OnPolicyReplay):
 
     def __init__(self, body):
         super(OnPolicyNStepReplay, self).__init__(body)
-        self.seq_len = self.memory_spec['seq_len']
+        util.set_attr(self, self.memory_spec, ['seq_len'])
 
     def sample(self):
         '''
@@ -219,7 +219,7 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
 
     def __init__(self, body):
         super(OnPolicyNStepBatchReplay, self).__init__(body)
-        self.seq_len = self.memory_spec['seq_len']
+        util.set_attr(self, self.memory_spec, ['seq_len'])
 
     def sample(self):
         '''

@@ -1,5 +1,5 @@
 from slm_lab.agent.memory.base import Memory
-from slm_lab.lib import util, logger
+from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
@@ -34,7 +34,7 @@ class Replay(Memory):
 
     def __init__(self, body):
         super(Replay, self).__init__(body)
-        self.max_size = self.memory_spec['max_size']
+        util.set_attr(self, self.memory_spec, ['max_size'])
         self.state_dim = self.body.state_dim
         self.action_dim = self.body.action_dim
         self.batch_idxs = None
@@ -137,7 +137,8 @@ class StackReplay(Replay):
 
     def __init__(self, body):
         super(StackReplay, self).__init__(body)
-        self.num_stacked_states = self.memory_spec['seq_len']
+        # seq_len = num_stack_states
+        util.set_attr(self, self.memory_spec, ['seq_len'])
         self.stacked = True  # Memory stacks states
 
     def reset_last_state(self, state):
@@ -147,20 +148,20 @@ class StackReplay(Replay):
     def clear_buffer(self):
         '''Clears the raw state buffer'''
         self.state_buffer = []
-        for _ in range(self.num_stacked_states - 1):
+        for _ in range(self.seq_len - 1):
             self.state_buffer.append(np.zeros((self.orig_state_dim)))
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
         self.orig_state_dim = self.state_dim
-        self.state_dim = self.state_dim * self.num_stacked_states
+        self.state_dim = self.state_dim * self.seq_len
         super(StackReplay, self).reset()
         self.state_buffer = []
         self.clear_buffer()
 
     def preprocess_state(self, state):
         '''Transforms the raw state into format that is fed into the network'''
-        if len(self.state_buffer) == self.num_stacked_states:
+        if len(self.state_buffer) == self.seq_len:
             del self.state_buffer[0]
         self.state_buffer.append(state)
         processed_state = np.concatenate(self.state_buffer)

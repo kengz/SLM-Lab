@@ -64,11 +64,11 @@ class VanillaDQN(SARSA):
     def set_net_attributes(self):
         '''Initializes additional parameters from the net spec. Called by init_nets'''
         net_spec = self.agent_spec['net']
-        util.set_attr(self, ps.pick(net_spec, [
+        util.set_attr(self, net_spec, [
             # how many examples to learn per training iteration
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
-        ]))
+        ])
         if not hasattr(self, 'gpu'):
             self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')
@@ -81,7 +81,7 @@ class VanillaDQN(SARSA):
     def set_other_algorithm_attributes(self):
         '''Initializes additional parameters from the algorithm spec. Called by init_algorithm_params'''
         algorithm_spec = self.agent_spec['algorithm']
-        util.set_attr(self, ps.pick(algorithm_spec, [
+        util.set_attr(self, algorithm_spec, [
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
@@ -90,7 +90,7 @@ class VanillaDQN(SARSA):
             'training_frequency',  # how often to train (once a few timesteps)
             'training_iters_per_batch',  # how many times to train each batch
             'training_min_timestep',  # how long before starting training
-        ]))
+        ])
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
@@ -256,10 +256,10 @@ class DQNBase(VanillaDQN):
             self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        util.set_attr(self, ps.pick(net_spec, [
+        util.set_attr(self, net_spec, [
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
-        ]))
+        ])
         if not hasattr(self, 'gpu'):
             self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')
@@ -331,9 +331,9 @@ class DQN(DQNBase):
         super(DQN, self).init_nets()
         # Network update params
         net_spec = self.agent_spec['net']
-        util.set_attr(self, ps.pick(net_spec, [
+        util.set_attr(self, net_spec, [
             'update_type', 'update_frequency', 'polyak_weight',
-        ]))
+        ])
 
 
 class DoubleDQN(DQN):
@@ -384,11 +384,11 @@ class MultitaskDQN(DQN):
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim, **net_kwargs)
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        util.set_attr(self, ps.pick(net_spec, [
+        util.set_attr(self, net_spec, [
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
             'update_type', 'update_frequency', 'polyak_weight', 'gpu'
-        ]))
+        ])
         if not hasattr(self, 'gpu'):
             self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')
@@ -524,11 +524,11 @@ class MultiHeadDQN(MultitaskDQN):
             self.state_dims, net_spec['hid_layers'], self.action_dims, **net_kwargs)
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        util.set_attr(self, ps.pick(net_spec, [
+        util.set_attr(self, net_spec, [
             'batch_size',
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
             'update_type', 'update_frequency', 'polyak_weight', 'gpu'
-        ]))
+        ])
         if not hasattr(self, 'gpu'):
             self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')

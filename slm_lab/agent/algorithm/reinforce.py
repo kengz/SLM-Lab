@@ -91,14 +91,14 @@ class Reinforce(Algorithm):
                 self.action_policy = act_fns['gaussian']
         else:
             self.action_policy = act_fns[action_fn]
-        util.set_attr(self, ps.pick(algorithm_spec, [
+        util.set_attr(self, algorithm_spec, [
             'gamma',
             'add_entropy', 'entropy_weight',
             'continuous_action_clip'
-        ]))
-        util.set_attr(self, ps.pick(net_spec, [
+        ])
+        util.set_attr(self, net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
-        ]))
+        ])
         if not hasattr(self, 'gpu'):
             self.gpu = False
         logger.info(f'Training on gpu: {self.gpu}')

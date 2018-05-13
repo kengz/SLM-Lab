@@ -1,5 +1,5 @@
 from slm_lab.agent.memory.base import Memory
-from slm_lab.lib import logger
+from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 
@@ -16,7 +16,7 @@ class GAEOnPolicyReplay(Memory):
 
     def __init__(self, body):
         super(GAEOnPolicyReplay, self).__init__(body)
-        self.horizon = self.agent_spec['algorithm']['horizon']
+        util.set_attr(self, self.agent_spec['algorithm'], ['horizon'])
         self.v_pred = np.nan
         self.reset()
 
