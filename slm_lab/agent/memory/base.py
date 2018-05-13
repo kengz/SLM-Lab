@@ -11,8 +11,8 @@ class Memory(ABC):
 
     def __init__(self, body):
         self.body = body
-        self.spec = body.agent.spec
-        self.memory_spec = self.spec['memory']
+        self.agent_spec = body.agent.agent_spec
+        self.memory_spec = self.agent_spec['memory']
         self.last_state = None
 
     def reset_last_state(self, state):

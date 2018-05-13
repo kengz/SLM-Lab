@@ -10,5 +10,5 @@ class Net(ABC):
 
     def __init__(self, algorithm):
         self.algorithm = algorithm
-        self.spec = algorithm.agent.spec
-        self.net_spec = self.spec['net']
+        self.agent_spec = algorithm.agent.agent_spec
+        self.net_spec = self.agent_spec['net']

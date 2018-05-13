@@ -40,8 +40,8 @@ class Reinforce(Algorithm):
         state_dim = body.state_dim
         action_dim = body.action_dim
         self.is_discrete = body.is_discrete
-        net_spec = self.agent.spec['net']
-        memory_spec = self.agent.spec['memory']
+        net_spec = self.agent_spec['net']
+        memory_spec = self.agent_spec['memory']
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
             optim_param=ps.get(net_spec, 'optim'),
@@ -80,8 +80,8 @@ class Reinforce(Algorithm):
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
-        algorithm_spec = self.agent.spec['algorithm']
-        net_spec = self.agent.spec['net']
+        algorithm_spec = self.agent_spec['algorithm']
+        net_spec = self.agent_spec['net']
         # Automatically selects appropriate discrete or continuous action policy if setting is default
         action_fn = algorithm_spec['action_policy']
         if action_fn == 'default':

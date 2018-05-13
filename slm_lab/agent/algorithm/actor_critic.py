@@ -424,9 +424,9 @@ class ActorCritic(Reinforce):
         state_dim = body.state_dim
         action_dim = body.action_dim
         self.is_discrete = body.is_discrete
-        net_spec = self.agent.spec['net']
-        memory_spec = self.agent.spec['memory']
-        net_type = self.agent.spec['net']['type']
+        net_spec = self.agent_spec['net']
+        memory_spec = self.agent_spec['memory']
+        net_type = self.agent_spec['net']['type']
         actor_kwargs = util.compact_dict(dict(
             hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
             optim_param=ps.get(net_spec, 'optim_actor'),
@@ -436,7 +436,7 @@ class ActorCritic(Reinforce):
             gpu=ps.get(net_spec, 'gpu'),
             decay_lr=ps.get(net_spec, 'decay_lr_factor'),
         ))
-        if self.agent.spec['net']['use_same_optim']:
+        if self.agent_spec['net']['use_same_optim']:
             logger.info('Using same optimizer for actor and critic')
             critic_kwargs = actor_kwargs
         else:
@@ -541,8 +541,8 @@ class ActorCritic(Reinforce):
 
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
-        algorithm_spec = self.agent.spec['algorithm']
-        net_spec = self.agent.spec['net']
+        algorithm_spec = self.agent_spec['algorithm']
+        net_spec = self.agent_spec['net']
         self.set_action_fn()
         util.set_attr(self, ps.pick(algorithm_spec, [
             'gamma',
@@ -573,7 +573,7 @@ class ActorCritic(Reinforce):
     def set_action_fn(self):
         '''Sets the function used to select actions. Automatically selects appropriate discrete or continuous action policy under default setting'''
         body = self.agent.nanflat_body_a[0]
-        algorithm_spec = self.agent.spec['algorithm']
+        algorithm_spec = self.agent_spec['algorithm']
         action_fn = algorithm_spec['action_policy']
         if action_fn == 'default':
             if self.is_discrete:

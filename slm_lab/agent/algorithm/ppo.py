@@ -117,7 +117,7 @@ class PPO(Algorithm):
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
-        algorithm_spec = self.agent.spec['algorithm']
+        algorithm_spec = self.agent_spec['algorithm']
         util.set_attr(self, ps.pick(algorithm_spec, [
             'clip_eps',
             'ent_coef',

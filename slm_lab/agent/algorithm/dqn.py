@@ -56,14 +56,14 @@ class VanillaDQN(SARSA):
         '''Initialize the neural network used to learn the Q function from the spec'''
         super(VanillaDQN, self).init_nets()
         '''Guard againsts recurrent nets. Not supported with with DQN family of algorithms.'''
-        net_spec = self.agent.spec['net']
+        net_spec = self.agent_spec['net']
         if net_spec['type'].find('Recurrent') != -1:
             logger.warn(f'Recurrent networks not with DQN family of algorithms. Please select another network type''')
             sys.exit()
 
     def set_net_attributes(self):
         '''Initializes additional parameters from the net spec. Called by init_nets'''
-        net_spec = self.agent.spec['net']
+        net_spec = self.agent_spec['net']
         util.set_attr(self, ps.pick(net_spec, [
             # how many examples to learn per training iteration
             'batch_size',
@@ -80,7 +80,7 @@ class VanillaDQN(SARSA):
 
     def set_other_algorithm_attributes(self):
         '''Initializes additional parameters from the algorithm spec. Called by init_algorithm_params'''
-        algorithm_spec = self.agent.spec['algorithm']
+        algorithm_spec = self.agent_spec['algorithm']
         util.set_attr(self, ps.pick(algorithm_spec, [
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
@@ -205,7 +205,7 @@ class DQNBase(VanillaDQN):
         body = self.agent.nanflat_body_a[0]  # single-body algo
         self.state_dim = body.state_dim
         self.action_dim = body.action_dim
-        net_spec = self.agent.spec['net']
+        net_spec = self.agent_spec['net']
         logger.debug3(f'State dim: {self.state_dim}')
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
@@ -217,7 +217,7 @@ class DQNBase(VanillaDQN):
             decay_lr=ps.get(net_spec, 'decay_lr_factor'),
         ))
         ''' Make adjustments for Atari mode '''
-        if self.agent.spec['memory']['name'].find('Atari') != -1:
+        if self.agent_spec['memory']['name'].find('Atari') != -1:
             self.state_dim = (84, 84, 4)
             logger.debug3(f'State dim: {self.state_dim}')
             net_kwargs = util.compact_dict(dict(
@@ -230,12 +230,12 @@ class DQNBase(VanillaDQN):
                 gpu=ps.get(net_spec, 'gpu'),
                 decay_lr=ps.get(net_spec, 'decay_lr_factor'),
             ))
-        elif self.agent.spec['memory']['name'].find('Stack') != -1:
+        elif self.agent_spec['memory']['name'].find('Stack') != -1:
             ''' Make adjustments for StackedReplay memory '''
             if net_spec['type'].find('MLP') == -1:
                 logger.warn(f'StackedReplay should only be used with MLPs, to stack states with ConvNets use Atari memory. It is not necessary to stack states with RNNs''')
                 sys.exit()
-            self.state_dim = self.state_dim * self.agent.spec['memory']['seq_len']
+            self.state_dim = self.state_dim * self.agent_spec['memory']['seq_len']
             logger.debug3(f'State dim: {self.state_dim}')
             net_kwargs = util.compact_dict(dict(
                 hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
@@ -330,7 +330,7 @@ class DQN(DQNBase):
     def init_nets(self):
         super(DQN, self).init_nets()
         # Network update params
-        net_spec = self.agent.spec['net']
+        net_spec = self.agent_spec['net']
         util.set_attr(self, ps.pick(net_spec, [
             'update_type', 'update_frequency', 'polyak_weight',
         ]))
@@ -368,7 +368,7 @@ class MultitaskDQN(DQN):
             body.action_dim for body in self.agent.nanflat_body_a]
         self.total_state_dim = sum(self.state_dims)
         self.total_action_dim = sum(self.action_dims)
-        net_spec = self.agent.spec['net']
+        net_spec = self.agent_spec['net']
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
             optim_param=ps.get(net_spec, 'optim'),
@@ -494,7 +494,7 @@ class MultiHeadDQN(MultitaskDQN):
     def init_nets(self):
         '''Initialize nets with multi-task dimensions, and set net params'''
         # NOTE: Separate init from MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
-        net_spec = self.agent.spec['net']
+        net_spec = self.agent_spec['net']
         if len(net_spec['hid_layers']) > 0:
             state_head_out_d = int(net_spec['hid_layers'][0] / 4)
         else:

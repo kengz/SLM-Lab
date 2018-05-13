@@ -54,8 +54,8 @@ class SARSA(Algorithm):
         body = self.agent.nanflat_body_a[0]  # single-body algo
         self.state_dim = body.state_dim  # dimension of the environment state, e.g. 4
         self.action_dim = body.action_dim  # dimension of the environment actions, e.g. 2
-        net_spec = self.agent.spec['net']
-        memory_spec = self.agent.spec['memory']
+        net_spec = self.agent_spec['net']
+        memory_spec = self.agent_spec['memory']
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
             optim_param=ps.get(net_spec, 'optim'),
@@ -75,7 +75,7 @@ class SARSA(Algorithm):
 
     def set_net_attributes(self):
         '''Initializes additional parameters from the net spec. Called by init_nets'''
-        net_spec = self.agent.spec['net']
+        net_spec = self.agent_spec['net']
         util.set_attr(self, ps.pick(net_spec, [
             'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ]))
@@ -86,8 +86,8 @@ class SARSA(Algorithm):
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters.'''
-        algorithm_spec = self.agent.spec['algorithm']
-        net_spec = self.agent.spec['net']
+        algorithm_spec = self.agent_spec['algorithm']
+        net_spec = self.agent_spec['net']
         self.action_policy = act_fns[algorithm_spec['action_policy']]
         self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
         self.set_other_algorithm_attributes()
@@ -96,7 +96,7 @@ class SARSA(Algorithm):
 
     def set_other_algorithm_attributes(self):
         '''Initializes additional parameters from the algorithm spec. Called by init_algorithm_params'''
-        algorithm_spec = self.agent.spec['algorithm']
+        algorithm_spec = self.agent_spec['algorithm']
         util.set_attr(self, ps.pick(algorithm_spec, [
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton

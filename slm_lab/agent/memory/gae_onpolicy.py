@@ -16,7 +16,7 @@ class GAEOnPolicyReplay(Memory):
 
     def __init__(self, body):
         super(GAEOnPolicyReplay, self).__init__(body)
-        self.horizon = self.spec['algorithm']['horizon']
+        self.horizon = self.agent_spec['algorithm']['horizon']
         self.v_pred = np.nan
         self.reset()
 

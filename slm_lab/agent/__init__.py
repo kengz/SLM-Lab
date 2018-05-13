@@ -52,7 +52,7 @@ class Body:
         self.is_discrete = self.env.is_discrete(self.a)
 
         # every body has its own memory for ease of computation
-        MemoryClass = getattr(memory, ps.get(self.agent.spec, 'memory.name'))
+        MemoryClass = getattr(memory, ps.get(self.agent.agent_spec, 'memory.name'))
         self.memory = MemoryClass(self)
         self.state_buffer = []
 
@@ -67,23 +67,23 @@ class Agent:
     Access Envs properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    def __init__(self, spec, agent_space, a=0):
-        self.spec = spec
+    def __init__(self, agent_spec, agent_space, a=0):
+        self.agent_spec = agent_spec
         self.agent_space = agent_space
         self.a = a
         self.info_space = agent_space.info_space
-        self.name = self.spec['name']
+        self.name = self.agent_spec['name']
         self.body_a = None
         self.nanflat_body_a = None  # nanflatten version of bodies
         self.body_num = None
 
-        AlgoClass = getattr(algorithm, ps.get(self.spec, 'algorithm.name'))
+        AlgoClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
         self.algorithm = AlgoClass(self)
 
         # TODO uhh handle internally to memory?
-        memory_name = spec['memory']['name']
+        memory_name = agent_spec['memory']['name']
         if 'NStep' in memory_name or 'Stack' in memory_name:
-            self.len_state_buffer = spec['memory']['seq_len']
+            self.len_state_buffer = agent_spec['memory']['seq_len']
         elif 'Atari' in memory_name:
             self.len_state_buffer = 4
         else:
