@@ -57,11 +57,14 @@ class ConvNet(Net, nn.Module):
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},
             loss_spec={'name': 'mse_loss'},
+            batch_norm=True,
             clamp_grad=False,
             clamp_grad_val=1.0,
-            batch_norm=True,
-            gpu=False,
             decay_lr_factor=0.9,
+            update_type='replace',
+            update_frequency=1,
+            polyak_weight=0.0,
+            gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
             'hid_layers',

@@ -167,7 +167,7 @@ class DQNBase(VanillaDQN):
 
     self.net is used to act, and is the network trained.
     self.target_net is used to estimate the maximum value of the Q-function in the next state when calculating the target (see VanillaDQN comments).
-    self.target_net is updated periodically to either match self.net (self.update_type = "replace") or to be a weighted average of self.net and the previous self.target_net (self.update_type = "polyak")
+    self.target_net is updated periodically to either match self.net (self.net.update_type = "replace") or to be a weighted average of self.net and the previous self.target_net (self.net.update_type = "polyak")
     If desired, self.target_net can be updated slowly, and this can help to stabilize learning.
 
     It also allows for different nets to be used to select the action in the next state and to evaluate the value of that action through self.online_net and self.eval_net. This can help reduce the tendency of DQN's to overestimate the value of the Q-function. Following this approach leads to the DoubleDQN algorithm.
@@ -189,7 +189,6 @@ class DQNBase(VanillaDQN):
         self.body = self.agent.nanflat_body_a[0]  # single-body algo
         if 'Recurrent' in self.net_spec['type']:
             raise ValueError('Recurrent networks not with DQN family of algorithms.')
-
         memory_name = self.memory_spec['name']
         if 'Atari' in memory_name:
             # Make adjustments for Atari mode
@@ -198,30 +197,16 @@ class DQNBase(VanillaDQN):
         elif 'Stack' in memory_name:
             # Make adjustments for StackedReplay memory
             if 'MLP' not in self.net_spec['type']:
-                raise ValueError('StackedReplay should only be used with MLPs, to stack states with ConvNets use Atari memory. It is not necessary to stack states with RNNs')
-            self.body.state_dim = self.body.state_dim * self.net_spec['seq_len']
+                raise ValueError('StackedReplay should only be used with MLPs, to stack states with ConvNets use Atari memory.')
+            self.body.state_dim = self.body.state_dim * self.memory_spec['stack_len']
         logger.debug3(f'State dim: {self.body.state_dim}')
-        # TODO batch_norm in net_spec?
+
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self, self.body)
-        logger.info(f'Training on gpu: {self.net.gpu}')
-
-        self.net = getattr(net, net_spec['type'])(
-            self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)
-        self.target_net = getattr(net, net_spec['type'])(
-            self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)
+        self.target_net = NetClass(self, self.body)
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        util.set_attr(self, net_spec, [
-            'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
-        ])
-        if not hasattr(self, 'gpu'):
-            self.net.gpu = False
         logger.info(f'Training on gpu: {self.net.gpu}')
-        # Default network update params for base
-        self.update_type = 'replace'
-        self.update_frequency = 1
-        self.polyak_weight = 0.0
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences. Note that the net references may differ based on algorithm.'''
@@ -253,15 +238,15 @@ class DQNBase(VanillaDQN):
     def update_nets(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
         t = space_clock.get('total_t')
-        if self.update_type == 'replace':
-            if t % self.update_frequency == 0:
+        if self.net.update_type == 'replace':
+            if t % self.net.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
                 self.target_net = deepcopy(self.net)
                 self.online_net = self.target_net
                 self.eval_net = self.target_net
-        elif self.update_type == 'polyak':
+        elif self.net.update_type == 'polyak':
             logger.debug('Updating net by averaging')
-            avg_params = self.polyak_weight * net_util.flatten_params(self.target_net) + (1 - self.polyak_weight) * net_util.flatten_params(self.net)
+            avg_params = self.net.polyak_weight * net_util.flatten_params(self.target_net) + (1 - self.net.polyak_weight) * net_util.flatten_params(self.net)
             self.target_net = net_util.load_params(self.target_net, avg_params)
             self.online_net = self.target_net
             self.eval_net = self.target_net
@@ -299,11 +284,11 @@ class DoubleDQN(DQN):
         res = super(DoubleDQN, self).update_nets()
         space_clock = util.s_get(self, 'aeb_space.clock')
         t = space_clock.get('total_t')
-        if self.update_type == 'replace':
-            if t % self.update_frequency == 0:
+        if self.net.update_type == 'replace':
+            if t % self.net.update_frequency == 0:
                 self.online_net = self.net
                 self.eval_net = self.target_net
-        elif self.update_type == 'polyak':
+        elif self.net.update_type == 'polyak':
             self.online_net = self.net
             self.eval_net = self.target_net
 
@@ -581,13 +566,13 @@ class MultiHeadDQN(MultitaskDQN):
         # NOTE: Once polyak updating for multi-headed networks is supported via updates to flatten_params and load_params then this can be removed
         space_clock = util.s_get(self, 'aeb_space.clock')
         t = space_clock.get('total_t')
-        if self.update_type == 'replace':
-            if t % self.update_frequency == 0:
+        if self.net.update_type == 'replace':
+            if t % self.net.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
                 self.target_net = deepcopy(self.net)
                 self.online_net = self.target_net
                 self.eval_net = self.target_net
-        elif self.update_type == 'polyak':
+        elif self.net.update_type == 'polyak':
             logger.error(
                 '"polyak" updating not supported yet for MultiHeadDQN, please use "replace" instead. Exiting.')
             sys.exit()

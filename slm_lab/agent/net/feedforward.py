@@ -46,8 +46,11 @@ class MLPNet(Net, nn.Module):
             loss_spec={'name': 'mse_loss'},
             clamp_grad=False,
             clamp_grad_val=1.0,
-            gpu=False,
             decay_lr_factor=0.9,
+            update_type='replace',
+            update_frequency=1,
+            polyak_weight=0.0,
+            gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
             'hid_layers',
@@ -190,8 +193,11 @@ class MLPHeterogenousHeads(MLPNet):
             loss_spec={'name': 'mse_loss'},
             clamp_grad=False,
             clamp_grad_val=1.0,
-            gpu=False,
             decay_lr_factor=0.9,
+            update_type='replace',
+            update_frequency=1,
+            polyak_weight=0.0,
+            gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
             'hid_layers',
@@ -336,8 +342,11 @@ class MultiMLPNet(Net, nn.Module):
             loss_spec={'name': 'mse_loss'},
             clamp_grad=False,
             clamp_grad_val=1.0,
-            gpu=False,
             decay_lr_factor=0.9,
+            update_type='replace',
+            update_frequency=1,
+            polyak_weight=0.0,
+            gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
             'hid_layers',

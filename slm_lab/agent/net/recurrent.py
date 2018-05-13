@@ -54,13 +54,13 @@ class RecurrentNet(Net, nn.Module):
         super(RecurrentNet, self).__init__(algorithm, body)
         # set default
         util.set_attr(self, dict(
+            num_rnn_layers=1,
             optim_spec={'name': 'Adam'},
             loss_spec={'name': 'mse_loss'},
             clamp_grad=False,
             clamp_grad_val=1.0,
-            gpu=False,
             decay_lr_factor=0.9,
-            num_rnn_layers=1,
+            gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
             'hid_layers',
