@@ -34,7 +34,10 @@ class Replay(Memory):
 
     def __init__(self, body):
         super(Replay, self).__init__(body)
-        util.set_attr(self, self.memory_spec, ['max_size', 'batch_size'])
+        util.set_attr(self, self.memory_spec, [
+            'batch_size',
+            'max_size',
+        ])
         self.state_dim = self.body.state_dim
         self.action_dim = self.body.action_dim
         self.batch_idxs = None
@@ -136,10 +139,14 @@ class StackReplay(Replay):
     '''Preprocesses an state to be the concatenation of the last n states. Otherwise the same as Replay memory'''
 
     def __init__(self, body):
-        super(StackReplay, self).__init__(body)
         # stack_len = num_stack_states
-        util.set_attr(self, self.memory_spec, ['stack_len'])
+        util.set_attr(self, self.memory_spec, [
+            'batch_size',
+            'max_size',
+            'stack_len',
+        ])
         self.stacked = True  # Memory stacks states
+        super(StackReplay, self).__init__(body)
 
     def reset_last_state(self, state):
         '''Do reset of body memory per session during agent_space.reset() to set last_state'''

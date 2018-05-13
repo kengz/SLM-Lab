@@ -60,6 +60,9 @@ class MLPNet(Net, nn.Module):
             'decay_lr_factor',
             'decay_lr_frequency',
             'decay_lr_min_timestep',
+            'update_type',
+            'update_frequency',
+            'polyak_weight',
             'gpu',
         ])
         # Create net and initialize params
@@ -201,6 +204,9 @@ class MLPHeterogenousHeads(MLPNet):
             'decay_lr_factor',
             'decay_lr_frequency',
             'decay_lr_min_timestep',
+            'update_type',
+            'update_frequency',
+            'polyak_weight',
             'gpu',
         ])
         # Create net and initialize params
@@ -344,6 +350,9 @@ class MultiMLPNet(Net, nn.Module):
             'decay_lr_factor',
             'decay_lr_frequency',
             'decay_lr_min_timestep',
+            'update_type',
+            'update_frequency',
+            'polyak_weight',
             'gpu',
         ])
         # Create net and initialize params

@@ -16,7 +16,9 @@ class GAEOnPolicyReplay(Memory):
 
     def __init__(self, body):
         super(GAEOnPolicyReplay, self).__init__(body)
-        util.set_attr(self, self.memory_spec, ['batch_size'])
+        util.set_attr(self, self.memory_spec, [
+            'batch_size',
+        ])
         util.set_attr(self, self.agent_spec['algorithm'], ['horizon'])
         self.v_pred = np.nan
         self.reset()

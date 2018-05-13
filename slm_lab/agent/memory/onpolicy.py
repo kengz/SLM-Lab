@@ -121,7 +121,7 @@ class OnPolicyNStepReplay(OnPolicyReplay):
 
     def __init__(self, body):
         super(OnPolicyNStepReplay, self).__init__(body)
-        self.seq_len = self.body.algorithm.net.seq_len
+        self.seq_len = self.agent_spec['net'].seq_len
 
     def sample(self):
         '''
@@ -219,7 +219,7 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
 
     def __init__(self, body):
         super(OnPolicyNStepBatchReplay, self).__init__(body)
-        self.seq_len = self.body.algorithm.net.seq_len
+        self.seq_len = self.agent_spec['net'].seq_len
 
     def sample(self):
         '''
