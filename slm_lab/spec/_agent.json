@@ -6,6 +6,7 @@
     },
     "memory": {
       "name": "Replay",
+      "batch_size": 32,
       "max_size": 1000
     },
     "net": {}
@@ -99,6 +100,7 @@
     },
     "memory": {
       "name": "Replay",
+      "batch_size": 32,
       "max_size": 10000
     },
     "net": {
@@ -114,7 +116,6 @@
       },
       "clamp_grad": false,
       "clamp_grad_val": 1.0,
-      "batch_size": 32,
       "decay_lr": true,
       "decay_lr_frequency": 400,
       "decay_lr_min_timestep": 1400
@@ -137,6 +138,7 @@
     },
     "memory": {
       "name": "Replay",
+      "batch_size": 32,
       "max_size": 10000
     },
     "net": {
@@ -152,7 +154,6 @@
       },
       "clamp_grad": false,
       "clamp_grad_val": 1.0,
-      "batch_size": 32,
       "decay_lr": true,
       "decay_lr_frequency": 400,
       "decay_lr_min_timestep": 1400,
@@ -178,6 +179,7 @@
     },
     "memory": {
       "name": "Replay",
+      "batch_size": 32,
       "max_size": 10000
     },
     "net": {
@@ -193,7 +195,6 @@
       },
       "clamp_grad": false,
       "clamp_grad_val": 1.0,
-      "batch_size": 32,
       "decay_lr": true,
       "decay_lr_frequency": 400,
       "decay_lr_min_timestep": 1400,
@@ -219,6 +220,7 @@
     },
     "memory": {
       "name": "Replay",
+      "batch_size": 32,
       "max_size": 10000
     },
     "net": {
@@ -234,7 +236,6 @@
       },
       "clamp_grad": false,
       "clamp_grad_val": 1.0,
-      "batch_size": 32,
       "decay_lr": true,
       "decay_lr_frequency": 400,
       "decay_lr_min_timestep": 1400,
@@ -260,6 +261,7 @@
     },
     "memory": {
       "name": "Replay",
+      "batch_size": 32,
       "max_size": 10000
     },
     "net": {
@@ -275,7 +277,6 @@
       },
       "clamp_grad": false,
       "clamp_grad_val": 1.0,
-      "batch_size": 32,
       "decay_lr": true,
       "decay_lr_frequency": 400,
       "decay_lr_min_timestep": 1400,

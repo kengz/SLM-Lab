@@ -11,13 +11,13 @@
         "lam": 0.95,
         "horizon": 200,
         "epoch": 16,
-        "batch_size": 64,
         "lr": 0.001,
         "max_frame": 1e5,
         "schedule": "linear"
       },
       "memory": {
-        "name": "GAEOnPolicyReplay"
+        "name": "GAEOnPolicyReplay",
+        "batch_size": 64
       },
       "net": {
         "type": "MLPdefault",
@@ -64,13 +64,13 @@
         "lam": 0.95,
         "horizon": 200,
         "epoch": 16,
-        "batch_size": 64,
         "lr": 0.001,
         "max_frame": 1e5,
         "schedule": "linear"
       },
       "memory": {
-        "name": "GAEOnPolicyReplay"
+        "name": "GAEOnPolicyReplay",
+        "batch_size": 64
       },
       "net": {
         "type": "MLPdefault",

@@ -126,7 +126,6 @@ class PPO(Algorithm):
             'lam',
             'horizon',
             'epoch',
-            'batch_size',
             'lr',
             'max_frame',
             'schedule',
@@ -164,7 +163,7 @@ class PPO(Algorithm):
         # compute gradient
         for _i in range(self.epoch):
             losses = []
-            for batch in dataset.iterate_once(self.batch_size):
+            for batch in dataset.iterate_once(self.memory.batch_size):
                 inputs = [batch[k] for k in ['obs', 'acs', 'adv_targets', 'v_targets']]
                 inputs.append(self.cur_lr_mult)
                 outputs = self.compute_loss_grad(*inputs)
@@ -176,7 +175,7 @@ class PPO(Algorithm):
 
         # compute losses
         losses = []
-        for batch in dataset.iterate_once(self.batch_size):
+        for batch in dataset.iterate_once(self.memory.batch_size):
             inputs = [batch[k] for k in ['obs', 'acs', 'adv_targets', 'v_targets']]
             inputs.append(self.cur_lr_mult)
             new_losses = self.compute_losses(*inputs)

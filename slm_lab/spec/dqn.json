@@ -17,6 +17,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
@@ -27,7 +28,6 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
         "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
@@ -218,6 +218,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
@@ -228,7 +229,6 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
         "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
@@ -281,6 +281,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
@@ -291,7 +292,6 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
         "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
@@ -338,6 +338,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
@@ -348,7 +349,6 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
         "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
@@ -395,6 +395,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
@@ -405,7 +406,6 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
         "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
@@ -456,6 +456,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
@@ -466,7 +467,6 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
         "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
@@ -513,6 +513,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
@@ -523,7 +524,6 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
         "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
@@ -570,6 +570,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
@@ -583,7 +584,6 @@
         "loss_spec": {
           "name": "mse_loss"
         },
-        "batch_size": 16,
         "decay_lr": true,
         "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
@@ -626,6 +626,7 @@
       },
       "memory": {
         "name": "StackReplay",
+        "batch_size": 32,
         "max_size": 100000,
         "seq_len": 4
       },
@@ -640,7 +641,6 @@
         "loss_spec": {
           "name": "smooth_l1_loss"
         },
-        "batch_size": 32,
         "decay_lr": true,
         "decay_lr_factor": 0.9,
         "decay_lr_frequency": 5000,
@@ -685,6 +685,7 @@
       },
       "memory": {
         "name": "StackReplay",
+        "batch_size": 32,
         "max_size": 100000,
         "seq_len": 4
       },
@@ -699,7 +700,6 @@
         "loss_spec": {
           "name": "mse_loss"
         },
-        "batch_size": 32,
         "decay_lr": true,
         "decay_lr_factor": 0.15,
         "decay_lr_frequency": 80000,
