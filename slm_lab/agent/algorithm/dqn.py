@@ -105,7 +105,6 @@ class VanillaDQN(SARSA):
     @lab_api
     def sample(self):
         '''Samples a batch from memory of size self.memory_spec['batch_size']'''
-        # TODO internalize batch_size to memory
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         util.to_torch_batch(batch, self.net.gpu)
@@ -300,41 +299,23 @@ class MultitaskDQN(DQN):
     @lab_api
     def init_nets(self):
         '''Initialize nets with multi-task dimensions, and set net params'''
-        self.state_dims = [
-            body.state_dim for body in self.agent.nanflat_body_a]
-        self.action_dims = [
-            body.action_dim for body in self.agent.nanflat_body_a]
-        self.total_state_dim = sum(self.state_dims)
-        self.total_action_dim = sum(self.action_dims)
-        net_spec = self.agent_spec['net']
-        net_kwargs = util.compact_dict(dict(
-            hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
-            optim_spec=ps.get(net_spec, 'optim'),
-            loss_spec=ps.get(net_spec, 'loss'),
-            clamp_grad=ps.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
-            gpu=ps.get(net_spec, 'gpu'),
-            decay_lr_factor=ps.get(net_spec, 'decay_lr_factor'),
-        ))
-        self.net = getattr(net, net_spec['type'])(
-            self.total_state_dim, net_spec['hid_layers'], self.total_action_dim, **net_kwargs)
-        self.target_net = getattr(net, net_spec['type'])(
-            self.total_state_dim, net_spec['hid_layers'], self.total_action_dim, **net_kwargs)
+        self.state_dims = [body.state_dim for body in self.agent.nanflat_body_a]
+        self.action_dims = [body.action_dim for body in self.agent.nanflat_body_a]
+        # NOTE use a virtual body with joined inputs
+        body = deepcopy(self.agent.nanflat_body_a[0])
+        body.state_dim = sum(self.state_dims)
+        body.action_dim = sum(self.action_dims)
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self, body)
+        self.target_net = NetClass(self, body)
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        util.set_attr(self, net_spec, [
-            'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep',
-            'update_type', 'update_frequency', 'polyak_weight', 'gpu'
-        ])
-        if not hasattr(self, 'gpu'):
-            self.net.gpu = False
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
     def sample(self):
         # NOTE the purpose of multi-body is to parallelize and get more batch_sizes
-        batches = [body.memory.sample()
-                   for body in self.agent.nanflat_body_a]
+        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         # Package data into pytorch variables
         for batch_b in batches:
             util.to_torch_batch(batch_b, self.net.gpu)
@@ -435,6 +416,7 @@ class MultiHeadDQN(MultitaskDQN):
             state_head_out_d = int(net_spec['hid_layers'][0] / 4)
         else:
             state_head_out_d = 16
+        # TODO need a hydranet taking body_list as input
         self.state_dims = [
             [body.state_dim, state_head_out_d] for body in self.agent.nanflat_body_a]
         self.action_dims = [
@@ -471,8 +453,7 @@ class MultiHeadDQN(MultitaskDQN):
     @lab_api
     def sample(self):
         '''Samples one batch per environment'''
-        batches = [body.memory.sample()
-                   for body in self.agent.nanflat_body_a]
+        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         # Package data into pytorch variables
         for batch_b in batches:
             util.to_torch_batch(batch_b, self.net.gpu)

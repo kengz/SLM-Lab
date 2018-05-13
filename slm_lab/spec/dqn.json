@@ -252,10 +252,10 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "name__choice": ["DQN", "DoubleDQN"],
+          "name__choice": ["DQN", "DoubleDQN"]
         },
         "net": {
-          "update_type__choice": ["replace", "polyak"],
+          "update_type__choice": ["replace", "polyak"]
         }
       }]
     }
