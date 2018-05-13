@@ -99,7 +99,7 @@ class ConvNet(Net, nn.Module):
         self.out_layers = []
         in_D = self.hid_layers[1][-1] if len(self.hid_layers[1]) > 0 else self.flat_dim
         for dim in self.out_dim:
-            self.out_layers += [nn.Linear(in_D, dim)]
+            self.out_layers.append(nn.Linear(in_D, dim))
         self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers)
         self.init_params()
         if torch.cuda.is_available() and self.gpu:
@@ -134,18 +134,17 @@ class ConvNet(Net, nn.Module):
                 2. self.dense_model
                 3. self.out_layers'''
         for i, layer in enumerate(conv_hid):
-            self.conv_layers += [nn.Conv2d(
+            self.conv_layers.append(nn.Conv2d(
                 conv_hid[i][0],
                 conv_hid[i][1],
                 tuple(conv_hid[i][2]),
                 stride=conv_hid[i][3],
                 padding=conv_hid[i][4],
-                dilation=tuple(conv_hid[i][5]))]
-            self.conv_layers += [
-                net_util.get_activation_fn(hid_layers_activation)]
+                dilation=tuple(conv_hid[i][5])))
+            self.conv_layers.append(net_util.get_activation_fn(hid_layers_activation))
             # Don't include batch norm in the first layer
             if self.batch_norm and i != 0:
-                self.conv_layers += [nn.BatchNorm2d(conv_hid[i][1])]
+                self.conv_layers.append(nn.BatchNorm2d(conv_hid[i][1]))
         return nn.Sequential(*self.conv_layers)
 
     def build_flat_layers(self, flat_hid, hid_layers_activation):
@@ -160,9 +159,8 @@ class ConvNet(Net, nn.Module):
         for i, layer in enumerate(flat_hid):
             in_D = self.flat_dim if i == 0 else flat_hid[i - 1]
             out_D = flat_hid[i]
-            self.flat_layers += [nn.Linear(in_D, out_D)]
-            self.flat_layers += [
-                net_util.get_activation_fn(hid_layers_activation)]
+            self.flat_layers.append(nn.Linear(in_D, out_D))
+            self.flat_layers.append(net_util.get_activation_fn(hid_layers_activation))
         return nn.Sequential(*self.flat_layers)
 
     def forward(self, x):

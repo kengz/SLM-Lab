@@ -75,10 +75,10 @@ class MLPNet(Net, nn.Module):
         for i, layer in enumerate(self.hid_layers):
             in_D = self.in_dim if i == 0 else self.hid_layers[i - 1]
             out_D = self.hid_layers[i]
-            self.layers += [nn.Linear(in_D, out_D)]
-            self.layers += [net_util.get_activation_fn(self.hid_layers_activation)]
+            self.layers.append(nn.Linear(in_D, out_D))
+            self.layers.append(net_util.get_activation_fn(self.hid_layers_activation))
         in_D = self.hid_layers[-1] if len(self.hid_layers) > 0 else self.in_dim
-        self.layers += [nn.Linear(in_D, self.out_dim)]
+        self.layers.append(nn.Linear(in_D, self.out_dim))
         self.model = nn.Sequential(*self.layers)
         self.init_params()
         if torch.cuda.is_available() and self.gpu:
@@ -223,15 +223,15 @@ class MLPHeterogenousHeads(MLPNet):
         for i, layer in enumerate(self.hid_layers):
             in_D = self.in_dim if i == 0 else self.hid_layers[i - 1]
             out_D = self.hid_layers[i]
-            self.layers += [nn.Linear(in_D, out_D)]
-            self.layers += [net_util.get_activation_fn(self.hid_layers_activation)]
+            self.layers.append(nn.Linear(in_D, out_D))
+            self.layers.append(net_util.get_activation_fn(self.hid_layers_activation))
         in_D = self.hid_layers[-1] if len(self.hid_layers) > 0 else self.in_dim
         self.body = nn.Sequential(*self.layers)
         # Init network output heads
         self.out_layers = []
         for i, dim in enumerate(self.out_dim):
-            self.out_layers += [nn.Linear(in_D, dim)]
-        self.layers += [self.out_layers]
+            self.out_layers.append(nn.Linear(in_D, dim))
+        self.layers.append(self.out_layers)
         self.init_params()
         if torch.cuda.is_available() and self.gpu:
             self.body.cuda()

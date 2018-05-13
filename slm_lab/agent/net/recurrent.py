@@ -95,7 +95,7 @@ class RecurrentNet(Net, nn.Module):
         # Init network output heads
         self.out_layers = []
         for dim in self.out_dim:
-            self.out_layers += [nn.Linear(self.hidden_size, dim)]
+            self.out_layers.append(nn.Linear(self.hidden_size, dim))
         self.layers = [self.state_processing_layers] + [self.rnn] + [self.out_layers]
         self.num_hid_layers = None
         self.init_params()
@@ -129,8 +129,8 @@ class RecurrentNet(Net, nn.Module):
         for i, layer in enumerate(state_processing_layers):
             in_D = self.in_dim if i == 0 else state_processing_layers[i - 1]
             out_D = state_processing_layers[i]
-            self.state_processing_layers += [nn.Linear(in_D, out_D)]
-            self.state_processing_layers += [net_util.get_activation_fn(hid_layers_activation)]
+            self.state_processing_layers.append(nn.Linear(in_D, out_D))
+            self.state_processing_layers.append(net_util.get_activation_fn(hid_layers_activation))
         return nn.Sequential(*self.state_processing_layers)
 
     def init_hidden(self, batch_size, volatile=False):
