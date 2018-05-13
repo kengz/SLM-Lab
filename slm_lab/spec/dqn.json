@@ -85,13 +85,13 @@
       "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 10000,
-        "seq_len": 4
+        "max_size": 10000
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
+        "seq_len": 4,
         "optim_spec": {
           "name": "Adam",
           "lr": 0.02
@@ -152,13 +152,13 @@
       "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 10000,
-        "seq_len": 4
+        "max_size": 10000
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
+        "seq_len": 4,
         "optim_spec": {
           "name": "Adam",
           "lr": 0.02
@@ -628,7 +628,7 @@
         "name": "StackReplay",
         "batch_size": 32,
         "max_size": 100000,
-        "seq_len": 4
+        "stack_len": 4
       },
       "net": {
         "type": "MLPNet",
@@ -687,7 +687,7 @@
         "name": "StackReplay",
         "batch_size": 32,
         "max_size": 100000,
-        "seq_len": 4
+        "stack_len": 4
       },
       "net": {
         "type": "MLPNet",
@@ -728,10 +728,8 @@
     },
     "search": {
       "agent": [{
-        "memory": {
-          "seq_len__choice": [3, 4, 5]
-        },
         "net": {
+          "seq_len__choice": [3, 4, 5],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
           },

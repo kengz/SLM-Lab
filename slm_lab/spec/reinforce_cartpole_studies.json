@@ -12,8 +12,7 @@
         "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "seq_len": 4
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPdefault",
@@ -65,8 +64,7 @@
         "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "seq_len": 4
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPdefault",
@@ -120,8 +118,7 @@
         "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "seq_len": 4
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPdefault",

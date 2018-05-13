@@ -516,24 +516,24 @@ class ActorCritic(Reinforce):
             self.is_recurrent = True
             if self.is_discrete:
                 self.actor = getattr(net, 'RecurrentNet')(
-                    state_dim, net_spec['hid_layers'], action_dim, memory_spec['seq_len'], **actor_kwargs)
+                    state_dim, net_spec['hid_layers'], action_dim, net_spec['seq_len'], **actor_kwargs)
                 logger.info("Recurrent net, discrete action space, actor and critic are separate networks")
             else:
                 self.actor = getattr(net, 'RecurrentNet')(
-                    state_dim, net_spec['hid_layers'], [action_dim, action_dim], memory_spec['seq_len'], **actor_kwargs)
+                    state_dim, net_spec['hid_layers'], [action_dim, action_dim], net_spec['seq_len'], **actor_kwargs)
                 logger.info("Recurrent net, continuous action space, actor and critic are separate networks")
             self.critic = getattr(net, 'RecurrentNet')(
-                state_dim, net_spec['hid_layers'], 1, memory_spec['seq_len'], **critic_kwargs)
+                state_dim, net_spec['hid_layers'], 1, net_spec['seq_len'], **critic_kwargs)
         elif net_type == 'Recurrentshared':
             self.is_shared_architecture = True
             self.is_recurrent = True
             if self.is_discrete:
                 self.actorcritic = getattr(net, 'RecurrentNet')(
-                    state_dim, net_spec['hid_layers'], [action_dim, 1], memory_spec['seq_len'], **actor_kwargs)
+                    state_dim, net_spec['hid_layers'], [action_dim, 1], net_spec['seq_len'], **actor_kwargs)
                 logger.info("Recurrent net, discrete action space, actor and critic combined into single network, sharing params")
             else:
                 self.actorcritic = getattr(net, 'RecurrentNet')(
-                    state_dim, net_spec['hid_layers'], [action_dim, action_dim, 1], memory_spec['seq_len'], **actor_kwargs)
+                    state_dim, net_spec['hid_layers'], [action_dim, action_dim, 1], net_spec['seq_len'], **actor_kwargs)
                 logger.info("Recurrent net, continuous action space, actor and critic combined into single network, sharing params")
         else:
             logger.warn("Incorrect network type. Please use 'MLPshared', MLPseparate', Recurrentshared, or Recurrentseparate.")

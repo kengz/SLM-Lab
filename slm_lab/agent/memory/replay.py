@@ -137,8 +137,8 @@ class StackReplay(Replay):
 
     def __init__(self, body):
         super(StackReplay, self).__init__(body)
-        # seq_len = num_stack_states
-        util.set_attr(self, self.memory_spec, ['seq_len'])
+        # stack_len = num_stack_states
+        util.set_attr(self, self.memory_spec, ['stack_len'])
         self.stacked = True  # Memory stacks states
 
     def reset_last_state(self, state):
@@ -148,20 +148,20 @@ class StackReplay(Replay):
     def clear_buffer(self):
         '''Clears the raw state buffer'''
         self.state_buffer = []
-        for _ in range(self.seq_len - 1):
+        for _ in range(self.stack_len - 1):
             self.state_buffer.append(np.zeros((self.orig_state_dim)))
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
         self.orig_state_dim = self.state_dim
-        self.state_dim = self.state_dim * self.seq_len
+        self.state_dim = self.state_dim * self.stack_len
         super(StackReplay, self).reset()
         self.state_buffer = []
         self.clear_buffer()
 
     def preprocess_state(self, state):
         '''Transforms the raw state into format that is fed into the network'''
-        if len(self.state_buffer) == self.seq_len:
+        if len(self.state_buffer) == self.stack_len:
             del self.state_buffer[0]
         self.state_buffer.append(state)
         processed_state = np.concatenate(self.state_buffer)

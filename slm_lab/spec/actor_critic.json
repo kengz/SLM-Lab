@@ -97,13 +97,13 @@
         "val_loss_weight": 1.0
       },
       "memory": {
-        "name": "OnPolicyNStepBatchReplay",
-        "seq_len": 4
+        "name": "OnPolicyNStepBatchReplay"
       },
       "net": {
         "type": "Recurrentseparate",
         "hid_layers": [16],
         "hid_layers_activation": "relu",
+        "seq_len": 4,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",

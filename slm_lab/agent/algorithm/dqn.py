@@ -199,7 +199,7 @@ class DQNBase(VanillaDQN):
             # Make adjustments for StackedReplay memory
             if 'MLP' not in self.net_spec['type']:
                 raise ValueError('StackedReplay should only be used with MLPs, to stack states with ConvNets use Atari memory. It is not necessary to stack states with RNNs')
-            self.body.state_dim = self.body.state_dim * self.memory_spec['seq_len']
+            self.body.state_dim = self.body.state_dim * self.net_spec['seq_len']
         logger.debug3(f'State dim: {self.body.state_dim}')
         # TODO batch_norm in net_spec?
         NetClass = getattr(net, self.net_spec['type'])

@@ -56,7 +56,7 @@ class SARSA(Algorithm):
         self.body = self.agent.nanflat_body_a[0]  # single-body algo
         NetClass = getattr(net, self.net_spec['type'])
         if 'Recurrent' in self.net_spec['type']:
-            self.net_spec.update(seq_len=self.memory_spec['seq_len'])
+            self.net_spec.update(seq_len=self.net_spec['seq_len'])
         self.net = NetClass(self, self.body)
         logger.info(f'Training on gpu: {self.net.gpu}')
 

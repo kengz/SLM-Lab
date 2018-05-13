@@ -76,13 +76,13 @@
         "continuous_action_clip": 2.0
       },
       "memory": {
-        "name": "OnPolicyNStepReplay",
-        "seq_len": 4
+        "name": "OnPolicyNStepReplay"
       },
       "net": {
         "type": "RecurrentNet",
         "hid_layers": [16],
         "hid_layers_activation": "relu",
+        "seq_len": 4,
         "optim_spec": {
           "name": "Adam",
           "lr": 0.01
@@ -194,8 +194,7 @@
         "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "seq_len": 4
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPdefault",

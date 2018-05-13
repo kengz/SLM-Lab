@@ -58,13 +58,13 @@
         "training_frequency": 8
       },
       "memory": {
-        "name": "OnPolicyNStepBatchReplay",
-        "seq_len": 4
+        "name": "OnPolicyNStepBatchReplay"
       },
       "net": {
         "type": "RecurrentNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
+        "seq_len": 4,
         "optim_spec": {
           "name": "RMSprop",
           "lr": 0.02
