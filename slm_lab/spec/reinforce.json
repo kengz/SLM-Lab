@@ -18,7 +18,7 @@
         "type": "MLPdefault",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
@@ -57,7 +57,7 @@
             [32, 16],
             [64, 32]
           ],
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }
@@ -83,7 +83,7 @@
         "type": "RecurrentNet",
         "hid_layers": [16],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
@@ -121,7 +121,7 @@
             [64]
           ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }
@@ -154,7 +154,7 @@
           [128, 64]
         ],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
@@ -201,7 +201,7 @@
         "type": "MLPdefault",
         "hid_layers": [16],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
@@ -239,7 +239,7 @@
             [64]
           ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }

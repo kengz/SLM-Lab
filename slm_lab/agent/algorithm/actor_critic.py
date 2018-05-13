@@ -429,8 +429,8 @@ class ActorCritic(Reinforce):
         net_type = self.agent_spec['net']['type']
         actor_kwargs = util.compact_dict(dict(
             hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
-            optim_param=ps.get(net_spec, 'optim_actor'),
-            loss_param=ps.get(net_spec, 'loss'),  # Note: Not used for training actor
+            optim_spec=ps.get(net_spec, 'actor_optim_spec'),
+            loss_spec=ps.get(net_spec, 'loss'),  # Note: Not used for training actor
             clamp_grad=ps.get(net_spec, 'clamp_grad'),
             clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
             gpu=ps.get(net_spec, 'gpu'),
@@ -443,8 +443,8 @@ class ActorCritic(Reinforce):
             logger.info('Using different optimizer for actor and critic')
             critic_kwargs = util.compact_dict(dict(
                 hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
-                optim_param=ps.get(net_spec, 'optim_critic'),
-                loss_param=ps.get(net_spec, 'loss'),
+                optim_spec=ps.get(net_spec, 'critic_optim_spec'),
+                loss_spec=ps.get(net_spec, 'loss'),
                 clamp_grad=ps.get(net_spec, 'clamp_grad'),
                 clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
                 gpu=ps.get(net_spec, 'gpu'),

@@ -23,7 +23,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -59,7 +59,7 @@
         },
         "net": {
           "hid_layers__choice": [[16], [64], [32, 16], [64, 32]],
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }
@@ -91,7 +91,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -157,7 +157,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -220,7 +220,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -277,7 +277,7 @@
         "type": "MultiMLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -334,7 +334,7 @@
         "type": "MultiMLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -395,7 +395,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -452,7 +452,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -509,11 +509,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "loss": {
+        "loss_spec": {
           "name": "mse_loss"
         },
         "batch_size": 16,
@@ -566,11 +566,11 @@
         "type": "MLPNet",
         "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.0002
         },
-        "loss": {
+        "loss_spec": {
           "name": "smooth_l1_loss"
         },
         "batch_size": 32,
@@ -625,11 +625,11 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.005
         },
-        "loss": {
+        "loss_spec": {
           "name": "mse_loss"
         },
         "batch_size": 32,
@@ -665,7 +665,7 @@
           "seq_len__choice": [3, 4, 5]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.01]
           },
           "update_frequency__choice": [500, 750, 1000],

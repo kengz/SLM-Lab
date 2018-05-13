@@ -209,8 +209,8 @@ class DQNBase(VanillaDQN):
         logger.debug3(f'State dim: {self.state_dim}')
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
-            optim_param=ps.get(net_spec, 'optim'),
-            loss_param=ps.get(net_spec, 'loss'),
+            optim_spec=ps.get(net_spec, 'optim'),
+            loss_spec=ps.get(net_spec, 'loss'),
             clamp_grad=ps.get(net_spec, 'clamp_grad'),
             clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
             gpu=ps.get(net_spec, 'gpu'),
@@ -222,8 +222,8 @@ class DQNBase(VanillaDQN):
             logger.debug3(f'State dim: {self.state_dim}')
             net_kwargs = util.compact_dict(dict(
                 hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
-                optim_param=ps.get(net_spec, 'optim'),
-                loss_param=ps.get(net_spec, 'loss'),
+                optim_spec=ps.get(net_spec, 'optim'),
+                loss_spec=ps.get(net_spec, 'loss'),
                 clamp_grad=ps.get(net_spec, 'clamp_grad'),
                 clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
                 batch_norm=ps.get(net_spec, 'batch_norm'),
@@ -239,8 +239,8 @@ class DQNBase(VanillaDQN):
             logger.debug3(f'State dim: {self.state_dim}')
             net_kwargs = util.compact_dict(dict(
                 hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
-                optim_param=ps.get(net_spec, 'optim'),
-                loss_param=ps.get(net_spec, 'loss'),
+                optim_spec=ps.get(net_spec, 'optim'),
+                loss_spec=ps.get(net_spec, 'loss'),
                 clamp_grad=ps.get(net_spec, 'clamp_grad'),
                 clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
                 batch_norm=ps.get(net_spec, 'batch_norm'),
@@ -371,8 +371,8 @@ class MultitaskDQN(DQN):
         net_spec = self.agent_spec['net']
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
-            optim_param=ps.get(net_spec, 'optim'),
-            loss_param=ps.get(net_spec, 'loss'),
+            optim_spec=ps.get(net_spec, 'optim'),
+            loss_spec=ps.get(net_spec, 'loss'),
             clamp_grad=ps.get(net_spec, 'clamp_grad'),
             clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
             gpu=ps.get(net_spec, 'gpu'),
@@ -511,8 +511,8 @@ class MultiHeadDQN(MultitaskDQN):
             f'Action dims: {self.action_dims}, total: {self.total_action_dim}')
         net_kwargs = util.compact_dict(dict(
             hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
-            optim_param=ps.get(net_spec, 'optim'),
-            loss_param=ps.get(net_spec, 'loss'),
+            optim_spec=ps.get(net_spec, 'optim'),
+            loss_spec=ps.get(net_spec, 'loss'),
             clamp_grad=ps.get(net_spec, 'clamp_grad'),
             clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
             gpu=ps.get(net_spec, 'gpu'),

@@ -19,7 +19,7 @@
         "type": "MLPdefault",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.04
         },
@@ -72,7 +72,7 @@
         "type": "MLPdefault",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.04
         },
@@ -100,7 +100,7 @@
     "search": {
       "agent": [{
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.1]
           }
         }
@@ -127,7 +127,7 @@
         "type": "MLPdefault",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.04
         },

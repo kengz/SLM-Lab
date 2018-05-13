@@ -28,8 +28,8 @@ class RecurrentNet(nn.Module):
                  out_dim,
                  sequence_length,
                  hid_layers_activation=None,
-                 optim_param=None,
-                 loss_param=None,
+                 optim_spec=None,
+                 loss_spec=None,
                  clamp_grad=False,
                  clamp_grad_val=1.0,
                  num_rnn_layers=1,
@@ -41,8 +41,8 @@ class RecurrentNet(nn.Module):
         out_dim: dimension of the output for one output, otherwise a list containing the dimensions of the ouputs for a multi-headed network
         sequence_length: length of the history of being passed to the net
         hid_layers_activation: activation function for the hidden layers
-        optim_param: parameters for initializing the optimizer
-        loss_param: measure of error between model predictions and correct output
+        optim_spec: parameters for initializing the optimizer
+        loss_spec: measure of error between model predictions and correct output
         clamp_grad: whether to clamp the gradient
         clamp_grad_val: what value to clamp the gradient at
         num_rnn_layers: number of recurrent layers
@@ -54,8 +54,8 @@ class RecurrentNet(nn.Module):
                 10,
                 8,
                 hid_layers_activation='relu',
-                optim_param={'name': 'Adam'},
-                loss_param={'name': 'mse_loss'},
+                optim_spec={'name': 'Adam'},
+                loss_spec={'name': 'mse_loss'},
                 clamp_grad=False,
                 gpu=True,
                 decay_lr=0.9)
@@ -99,9 +99,9 @@ class RecurrentNet(nn.Module):
         self.named_params = list(self.state_proc_model.named_parameters()) + list(self.rnn.named_parameters())
         for layer in self.out_layers:
             self.named_params.extend(list(layer.named_parameters()))
-        self.optim_param = optim_param
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
-        self.loss_fn = net_util.get_loss_fn(self, loss_param)
+        self.optim_spec = optim_spec
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
+        self.loss_fn = net_util.get_loss_fn(self, loss_spec)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
         self.decay_lr = decay_lr
@@ -231,8 +231,8 @@ class RecurrentNet(nn.Module):
         return s
 
     def update_lr(self):
-        assert 'lr' in self.optim_param
-        old_lr = self.optim_param['lr']
-        self.optim_param['lr'] = old_lr * self.decay_lr
-        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
+        assert 'lr' in self.optim_spec
+        old_lr = self.optim_spec['lr']
+        self.optim_spec['lr'] = old_lr * self.decay_lr
+        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)

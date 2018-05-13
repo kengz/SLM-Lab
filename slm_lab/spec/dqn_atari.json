@@ -26,7 +26,7 @@
                        [64, 64, [3, 3], 1, 0, [1, 1]]],
                        [512]],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "RMSprop",
           "lr": 0.00025,
           "alpha": 0.95,
@@ -34,7 +34,7 @@
           "momentum": 0.0,
           "centered": true,
         },
-        "loss": {
+        "loss_spec": {
           "name": "smooth_l1_loss"
         },
         "batch_size": 32,

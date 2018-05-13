@@ -28,11 +28,11 @@
       "type": "MLPdefault",
       "hid_layers": [32],
       "hid_layers_activation": "relu",
-      "optim": {
+      "optim_spec": {
         "name": "Adam",
         "lr": 0.01
       },
-      "loss": {
+      "loss_spec": {
         "name": "mse_loss"
       },
       "clamp_grad": false,
@@ -67,11 +67,11 @@
       "hid_layers": [64],
       "hid_layers_activation": "relu",
       "use_same_optim": false,
-      "optim_actor": {
+      "actor_optim_spec": {
         "name": "Adam",
         "lr": 0.02
       },
-      "optim_critic": {
+      "critic_optim_spec": {
         "name": "Adam",
         "lr": 0.02
       },
@@ -105,11 +105,11 @@
       "type": "MLPNet",
       "hid_layers": [64],
       "hid_layers_activation": "sigmoid",
-      "optim": {
+      "optim_spec": {
         "name": "Adam",
         "lr": 0.02
       },
-      "loss": {
+      "loss_spec": {
         "name": "mse_loss"
       },
       "clamp_grad": false,
@@ -143,11 +143,11 @@
       "type": "MLPNet",
       "hid_layers": [64],
       "hid_layers_activation": "sigmoid",
-      "optim": {
+      "optim_spec": {
         "name": "Adam",
         "lr": 0.02
       },
-      "loss": {
+      "loss_spec": {
         "name": "mse_loss"
       },
       "clamp_grad": false,
@@ -184,11 +184,11 @@
       "type": "MLPNet",
       "hid_layers": [64],
       "hid_layers_activation": "sigmoid",
-      "optim": {
+      "optim_spec": {
         "name": "Adam",
         "lr": 0.02
       },
-      "loss": {
+      "loss_spec": {
         "name": "mse_loss"
       },
       "clamp_grad": false,
@@ -225,11 +225,11 @@
       "type": "MLPNet",
       "hid_layers": [64],
       "hid_layers_activation": "sigmoid",
-      "optim": {
+      "optim_spec": {
         "name": "Adam",
         "lr": 0.02
       },
-      "loss": {
+      "loss_spec": {
         "name": "mse_loss"
       },
       "clamp_grad": false,
@@ -266,11 +266,11 @@
       "type": "MultiMLPNet",
       "hid_layers": [64],
       "hid_layers_activation": "sigmoid",
-      "optim": {
+      "optim_spec": {
         "name": "Adam",
         "lr": 0.02
       },
-      "loss": {
+      "loss_spec": {
         "name": "mse_loss"
       },
       "clamp_grad": false,

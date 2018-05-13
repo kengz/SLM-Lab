@@ -25,11 +25,11 @@
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "use_same_optim": true,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
@@ -68,10 +68,10 @@
             [32, 16],
             [64, 32]
           ],
-          "optim_actor": {
+          "actor_optim_spec": {
             "lr__uniform": [0.001, 0.2]
           },
-          "optim_critic": {
+          "critic_optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }
@@ -105,11 +105,11 @@
         "hid_layers": [16],
         "hid_layers_activation": "relu",
         "use_same_optim": false,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
@@ -169,11 +169,11 @@
         ],
         "hid_layers_activation": "relu",
         "use_same_optim": false,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
@@ -228,11 +228,11 @@
         ],
         "hid_layers_activation": "relu",
         "use_same_optim": false,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -271,10 +271,10 @@
             [16, 8],
             [32, 16]
           ],
-          "optim_actor": {
+          "actor_optim_spec": {
             "lr__uniform": [0.002, 0.02]
           },
-          "optim_critic": {
+          "critic_optim_spec": {
             "lr__uniform": [0.002, 0.02]
           }
         }
@@ -307,11 +307,11 @@
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "use_same_optim": false,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
@@ -352,7 +352,7 @@
             [64]
           ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
-          "optim_actor": {
+          "actor_optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }
@@ -385,11 +385,11 @@
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "use_same_optim": true,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
@@ -430,7 +430,7 @@
             [128, 64]
           ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
-          "optim_actor": {
+          "actor_optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }
@@ -463,11 +463,11 @@
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "use_same_optim": true,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
@@ -508,7 +508,7 @@
             [64]
           ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
-          "optim_actor": {
+          "actor_optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }
@@ -541,11 +541,11 @@
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "use_same_optim": true,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
@@ -588,7 +588,7 @@
             [128, 64]
           ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
-          "optim_actor": {
+          "actor_optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }
@@ -621,11 +621,11 @@
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "use_same_optim": true,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
@@ -668,7 +668,7 @@
             [256, 128]
           ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
-          "optim_actor": {
+          "actor_optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }

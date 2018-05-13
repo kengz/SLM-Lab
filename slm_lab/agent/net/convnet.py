@@ -1,5 +1,6 @@
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger
+from slm_lab.agent.net.base import Net
+from slm_lab.lib import logger, util
 from torch.autograd import Variable
 from torch.nn import Module
 import torch
@@ -44,8 +45,8 @@ class ConvNet(nn.Module):
             2. flat_hid: list of dense layers following the convolutional layers
         out_dim: dimension of the output for one output, otherwise a list containing the dimensions of the ouputs for a multi-headed network
         hid_layers_activation: activation function for the hidden layers
-        optim_param: parameters for initializing the optimizer
-        loss_param: measure of error between model predictions and correct outputs
+        optim_spec: parameters for initializing the optimizer
+        loss_spec: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
         batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
@@ -55,8 +56,8 @@ class ConvNet(nn.Module):
                 ([[3, 36, (5, 5), 1, 0, (2, 2)],[36, 128, (5, 5), 1, 0, (2, 2)]],[100]),
                 10,
                 hid_layers_activation='relu',
-                optim_param={'name': 'Adam'},
-                loss_param={'name': 'mse_loss'},
+                optim_spec={'name': 'Adam'},
+                loss_spec={'name': 'mse_loss'},
                 clamp_grad=False,
                 batch_norm=True,
                 gpu=True,
@@ -95,9 +96,9 @@ class ConvNet(nn.Module):
             list(self.dense_model.parameters())
         for layer in self.out_layers:
             self.params.extend(list(layer.parameters()))
-        self.optim_param = optim_param
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
-        self.loss_fn = net_util.get_loss_fn(self, loss_param)
+        self.optim_spec = optim_spec
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
+        self.loss_fn = net_util.get_loss_fn(self, loss_spec)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
         self.decay_lr = decay_lr
@@ -252,8 +253,6 @@ class ConvNet(nn.Module):
         return s
 
     def update_lr(self):
-        assert 'lr' in self.optim_param
-        old_lr = self.optim_param['lr']
-        self.optim_param['lr'] = old_lr * self.decay_lr
-        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
+        self.optim_spec['lr'] = old_lr * self.decay_lr
+        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)

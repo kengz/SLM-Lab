@@ -23,7 +23,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -82,7 +82,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -141,7 +141,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -200,7 +200,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -259,7 +259,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -318,7 +318,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },

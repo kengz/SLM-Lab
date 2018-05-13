@@ -18,8 +18,8 @@ class MLPNet(nn.Module):
                  hid_dim,
                  out_dim,
                  hid_layers_activation=None,
-                 optim_param=None,
-                 loss_param=None,
+                 optim_spec=None,
+                 loss_spec=None,
                  clamp_grad=False,
                  clamp_grad_val=1.0,
                  gpu=False,
@@ -29,8 +29,8 @@ class MLPNet(nn.Module):
         hid_dim: list containing dimensions of the hidden layers
         out_dim: dimension of the ouputs
         hid_layers_activation: activation function for the hidden layers
-        optim_param: parameters for initializing the optimizer
-        loss_param: measure of error between model predictions and correct outputs
+        optim_spec: parameters for initializing the optimizer
+        loss_spec: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
@@ -39,8 +39,8 @@ class MLPNet(nn.Module):
                 [512, 256, 128],
                 10,
                 hid_layers_activation='relu',
-                optim_param={'name': 'Adam'},
-                loss_param={'name': 'mse_loss'},
+                optim_spec={'name': 'Adam'},
+                loss_spec={'name': 'mse_loss'},
                 clamp_grad=True,
                 clamp_grad_val=2.0,
                 gpu=True,
@@ -64,9 +64,9 @@ class MLPNet(nn.Module):
             self.model.cuda()
         # Init other net variables
         self.params = list(self.model.parameters())
-        self.optim_param = optim_param
-        self.optim = net_util.get_optim(self, self.optim_param)
-        self.loss_fn = net_util.get_loss_fn(self, loss_param)
+        self.optim_spec = optim_spec
+        self.optim = net_util.get_optim(self, self.optim_spec)
+        self.loss_fn = net_util.get_loss_fn(self, loss_spec)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
         self.decay_lr = decay_lr
@@ -134,11 +134,11 @@ class MLPNet(nn.Module):
         return norms
 
     def update_lr(self):
-        assert 'lr' in self.optim_param
-        old_lr = self.optim_param['lr']
-        self.optim_param['lr'] = old_lr * self.decay_lr
-        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
-        self.optim = net_util.get_optim(self, self.optim_param)
+        assert 'lr' in self.optim_spec
+        old_lr = self.optim_spec['lr']
+        self.optim_spec['lr'] = old_lr * self.decay_lr
+        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
+        self.optim = net_util.get_optim(self, self.optim_spec)
 
 
 class MLPHeterogenousHeads(MLPNet):
@@ -151,8 +151,8 @@ class MLPHeterogenousHeads(MLPNet):
                  hid_dim,
                  out_dim,
                  hid_layers_activation=None,
-                 optim_param=None,
-                 loss_param=None,
+                 optim_spec=None,
+                 loss_spec=None,
                  clamp_grad=False,
                  clamp_grad_val=1.0,
                  gpu=False,
@@ -162,8 +162,8 @@ class MLPHeterogenousHeads(MLPNet):
         hid_dim: list containing dimensions of the hidden layers
         out_dim: list containing the dimensions of the ouputs
         hid_layers_activation: activation function for the hidden layers
-        optim_param: parameters for initializing the optimizer
-        loss_param: measure of error between model predictions and correct outputs
+        optim_spec: parameters for initializing the optimizer
+        loss_spec: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
@@ -172,8 +172,8 @@ class MLPHeterogenousHeads(MLPNet):
                 [512, 256, 128],
                 [1, 1],
                 hid_layers_activation='relu',
-                optim_param={'name': 'Adam'},
-                loss_param={'name': 'mse_loss'},
+                optim_spec={'name': 'Adam'},
+                loss_spec={'name': 'mse_loss'},
                 clamp_grad=True,
                 clamp_grad_val=2.0,
                 gpu=True,
@@ -206,9 +206,9 @@ class MLPHeterogenousHeads(MLPNet):
         self.params = list(self.body.parameters())
         for layer in self.out_layers:
             self.params.extend(list(layer.parameters()))
-        self.optim_param = optim_param
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
-        self.loss_fn = net_util.get_loss_fn(self, loss_param)
+        self.optim_spec = optim_spec
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
+        self.loss_fn = net_util.get_loss_fn(self, loss_spec)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
         self.decay_lr = decay_lr
@@ -247,14 +247,14 @@ class MLPHeterogenousHeads(MLPNet):
         return s
 
     def update_lr(self):
-        assert 'lr' in self.optim_param
-        old_lr = self.optim_param['lr']
-        self.optim_param['lr'] = old_lr * self.decay_lr
-        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
+        assert 'lr' in self.optim_spec
+        old_lr = self.optim_spec['lr']
+        self.optim_spec['lr'] = old_lr * self.decay_lr
+        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
 
 
-class MultiMLPNet(nn.Module):
+class MultiMLPNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized feedforward neural network with multiple state and action heads, and a single shared body.
     '''
@@ -264,8 +264,8 @@ class MultiMLPNet(nn.Module):
                  hid_dim,
                  out_dim,
                  hid_layers_activation=None,
-                 optim_param=None,
-                 loss_param=None,
+                 optim_spec=None,
+                 loss_spec=None,
                  clamp_grad=False,
                  clamp_grad_val=1.0,
                  gpu=False,
@@ -295,8 +295,8 @@ class MultiMLPNet(nn.Module):
         hid_dim: list containing dimensions of the hidden layers
         out_dim: list of lists containing dimensions of the ouputs
         hid_layers_activation: activation function for the hidden layers
-        optim_param: parameters for initializing the optimizer
-        loss_param: measure of error between model predictions and correct outputs
+        optim_spec: parameters for initializing the optimizer
+        loss_spec: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
@@ -305,8 +305,8 @@ class MultiMLPNet(nn.Module):
              [100, 50, 25],
              [[10], [15]],
              hid_layers_activation='relu',
-             optim_param={'name': 'Adam'},
-             loss_param={'name': 'mse_loss'},
+             optim_spec={'name': 'Adam'},
+             loss_spec={'name': 'mse_loss'},
              clamp_grad=True,
              clamp_grad_val2.0,
              gpu=False,
@@ -340,9 +340,9 @@ class MultiMLPNet(nn.Module):
         self.params.extend(list(self.body.parameters()))
         for model in self.action_heads_models:
             self.params.extend(list(model.parameters()))
-        self.optim_param = optim_param
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
-        self.loss_fn = net_util.get_loss_fn(self, loss_param)
+        self.optim_spec = optim_spec
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
+        self.loss_fn = net_util.get_loss_fn(self, loss_spec)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
         self.decay_lr = decay_lr
@@ -486,8 +486,8 @@ class MultiMLPNet(nn.Module):
         return s
 
     def update_lr(self):
-        assert 'lr' in self.optim_param
-        old_lr = self.optim_param['lr']
-        self.optim_param['lr'] = old_lr * self.decay_lr
-        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
+        assert 'lr' in self.optim_spec
+        old_lr = self.optim_spec['lr']
+        self.optim_spec['lr'] = old_lr * self.decay_lr
+        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)

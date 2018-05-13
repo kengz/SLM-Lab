@@ -19,7 +19,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
@@ -65,7 +65,7 @@
         "type": "RecurrentNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "RMSprop",
           "lr": 0.02
         },
@@ -112,7 +112,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
@@ -157,7 +157,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
@@ -202,7 +202,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
@@ -247,7 +247,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
@@ -278,7 +278,7 @@
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.3]
           },
           "hid_layers__choice": [
@@ -313,7 +313,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
@@ -344,7 +344,7 @@
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.3]
           },
           "hid_layers__choice": [
@@ -379,7 +379,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
@@ -431,7 +431,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
@@ -483,7 +483,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
@@ -535,7 +535,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.1
         },
@@ -568,7 +568,7 @@
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.3]
           },
           "hid_layers__choice": [
@@ -602,7 +602,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.1
         },
@@ -635,7 +635,7 @@
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.3]
           },
           "hid_layers__choice": [
@@ -669,7 +669,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.1
         },
@@ -702,7 +702,7 @@
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.3]
           },
           "hid_layers__choice": [
@@ -736,7 +736,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.1
         },
@@ -769,7 +769,7 @@
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.3]
           },
           "hid_layers__choice": [

@@ -27,11 +27,11 @@
         ],
         "hid_layers_activation": "relu",
         "use_same_optim": false,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -67,7 +67,7 @@
           "gamma__choice": [0.91, 0.95]
         },
         "net": {
-          "optim_actor": {
+          "actor_optim_spec": {
             "lr__choice": [0.002, 0.02]
           }
         }

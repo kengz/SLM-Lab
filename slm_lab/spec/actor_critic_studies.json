@@ -25,11 +25,11 @@
         "hid_layers": [16],
         "hid_layers_activation": "relu",
         "use_same_optim": false,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -88,11 +88,11 @@
         "hid_layers": [16],
         "hid_layers_activation": "relu",
         "use_same_optim": false,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -151,11 +151,11 @@
         "hid_layers": [16],
         "hid_layers_activation": "relu",
         "use_same_optim": false,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -214,11 +214,11 @@
         "hid_layers": [16],
         "hid_layers_activation": "relu",
         "use_same_optim": false,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -277,11 +277,11 @@
         "hid_layers": [16],
         "hid_layers_activation": "relu",
         "use_same_optim": false,
-        "optim_actor": {
+        "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "optim_critic": {
+        "critic_optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -309,7 +309,7 @@
     "search": {
       "agent": [{
         "net": {
-          "optim_critic": {
+          "critic_optim_spec": {
             "lr__uniform": [0.005, 0.05]
           }
         }

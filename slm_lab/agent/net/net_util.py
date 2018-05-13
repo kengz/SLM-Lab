@@ -25,31 +25,31 @@ def get_activation_fn(activation):
     return layer
 
 
-def get_loss_fn(cls, loss_param):
+def get_loss_fn(cls, loss_spec):
     '''Helper to parse loss param and construct loss_fn for net'''
-    loss_param = loss_param or {}
-    loss_fn = getattr(F, ps.get(loss_param, 'name', 'mse_loss'))
-    loss_param = ps.omit(loss_param, 'name')
-    if not ps.is_empty(loss_param):
-        loss_fn = partial(loss_fn, **loss_param)
+    loss_spec = loss_spec or {}
+    loss_fn = getattr(F, ps.get(loss_spec, 'name', 'mse_loss'))
+    loss_spec = ps.omit(loss_spec, 'name')
+    if not ps.is_empty(loss_spec):
+        loss_fn = partial(loss_fn, **loss_spec)
     return loss_fn
 
 
-def get_optim(cls, optim_param):
+def get_optim(cls, optim_spec):
     '''Helper to parse optim param and construct optim for net'''
-    optim_param = optim_param or {}
-    OptimClass = getattr(torch.optim, ps.get(optim_param, 'name', 'Adam'))
-    optim_param = ps.omit(optim_param, 'name')
-    optim = OptimClass(cls.parameters(), **optim_param)
+    optim_spec = optim_spec or {}
+    OptimClass = getattr(torch.optim, ps.get(optim_spec, 'name', 'Adam'))
+    optim_spec = ps.omit(optim_spec, 'name')
+    optim = OptimClass(cls.parameters(), **optim_spec)
     return optim
 
 
-def get_optim_multinet(params, optim_param):
+def get_optim_multinet(params, optim_spec):
     '''Helper to parse optim param and construct optim for net'''
-    optim_param = optim_param or {}
-    OptimClass = getattr(torch.optim, ps.get(optim_param, 'name', 'Adam'))
-    optim_param = ps.omit(optim_param, 'name')
-    optim = OptimClass(params, **optim_param)
+    optim_spec = optim_spec or {}
+    OptimClass = getattr(torch.optim, ps.get(optim_spec, 'name', 'Adam'))
+    optim_spec = ps.omit(optim_spec, 'name')
+    optim = OptimClass(params, **optim_spec)
     return optim
 
 
