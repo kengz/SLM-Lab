@@ -67,7 +67,7 @@ class VanillaDQN(SARSA):
         util.set_attr(self, net_spec, [
             # how many examples to learn per training iteration
             'batch_size',
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
+            'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ])
         if not hasattr(self, 'gpu'):
             self.gpu = False
@@ -214,7 +214,7 @@ class DQNBase(VanillaDQN):
             clamp_grad=ps.get(net_spec, 'clamp_grad'),
             clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
             gpu=ps.get(net_spec, 'gpu'),
-            decay_lr=ps.get(net_spec, 'decay_lr_factor'),
+            decay_lr_factor=ps.get(net_spec, 'decay_lr_factor'),
         ))
         ''' Make adjustments for Atari mode '''
         if self.agent_spec['memory']['name'].find('Atari') != -1:
@@ -228,7 +228,7 @@ class DQNBase(VanillaDQN):
                 clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
                 batch_norm=ps.get(net_spec, 'batch_norm'),
                 gpu=ps.get(net_spec, 'gpu'),
-                decay_lr=ps.get(net_spec, 'decay_lr_factor'),
+                decay_lr_factor=ps.get(net_spec, 'decay_lr_factor'),
             ))
         elif self.agent_spec['memory']['name'].find('Stack') != -1:
             ''' Make adjustments for StackedReplay memory '''
@@ -245,7 +245,7 @@ class DQNBase(VanillaDQN):
                 clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
                 batch_norm=ps.get(net_spec, 'batch_norm'),
                 gpu=ps.get(net_spec, 'gpu'),
-                decay_lr=ps.get(net_spec, 'decay_lr_factor'),
+                decay_lr_factor=ps.get(net_spec, 'decay_lr_factor'),
             ))
         if net_spec['type'].find('Recurrent') != -1:
             logger.warn(f'Recurrent networks not supported with DQN family of algorithms. Please select another network type''')
@@ -258,7 +258,7 @@ class DQNBase(VanillaDQN):
         self.eval_net = self.target_net
         util.set_attr(self, net_spec, [
             'batch_size',
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
+            'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ])
         if not hasattr(self, 'gpu'):
             self.gpu = False
@@ -376,7 +376,7 @@ class MultitaskDQN(DQN):
             clamp_grad=ps.get(net_spec, 'clamp_grad'),
             clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
             gpu=ps.get(net_spec, 'gpu'),
-            decay_lr=ps.get(net_spec, 'decay_lr_factor'),
+            decay_lr_factor=ps.get(net_spec, 'decay_lr_factor'),
         ))
         self.net = getattr(net, net_spec['type'])(
             self.total_state_dim, net_spec['hid_layers'], self.total_action_dim, **net_kwargs)
@@ -386,7 +386,7 @@ class MultitaskDQN(DQN):
         self.eval_net = self.target_net
         util.set_attr(self, net_spec, [
             'batch_size',
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep',
             'update_type', 'update_frequency', 'polyak_weight', 'gpu'
         ])
         if not hasattr(self, 'gpu'):
@@ -516,7 +516,7 @@ class MultiHeadDQN(MultitaskDQN):
             clamp_grad=ps.get(net_spec, 'clamp_grad'),
             clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
             gpu=ps.get(net_spec, 'gpu'),
-            decay_lr=ps.get(net_spec, 'decay_lr_factor'),
+            decay_lr_factor=ps.get(net_spec, 'decay_lr_factor'),
         ))
         self.net = getattr(net, net_spec['type'])(
             self.state_dims, net_spec['hid_layers'], self.action_dims, **net_kwargs)
@@ -526,7 +526,7 @@ class MultiHeadDQN(MultitaskDQN):
         self.eval_net = self.target_net
         util.set_attr(self, net_spec, [
             'batch_size',
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep',
+            'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep',
             'update_type', 'update_frequency', 'polyak_weight', 'gpu'
         ])
         if not hasattr(self, 'gpu'):

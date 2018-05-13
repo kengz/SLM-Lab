@@ -35,7 +35,7 @@ class RecurrentNet(Net, nn.Module):
                  clamp_grad_val=1.0,
                  num_rnn_layers=1,
                  gpu=False,
-                 decay_lr=0.9):
+                 decay_lr_factor=0.9):
         '''
         in_dim: dimension of the states
         hid_layers: list containing dimensions of the hidden layers. The last element of the list is should be the dimension of the hidden state for the recurrent layer. The other elements in the list are the dimensions of the MLP (if desired) which is to transform the state space.
@@ -59,7 +59,7 @@ class RecurrentNet(Net, nn.Module):
                 loss_spec={'name': 'mse_loss'},
                 clamp_grad=False,
                 gpu=True,
-                decay_lr=0.9)
+                decay_lr_factor=0.9)
         '''
         super(RecurrentNet, self).__init__()
         # Create net and initialize params
@@ -105,10 +105,10 @@ class RecurrentNet(Net, nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, loss_spec)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
-        self.decay_lr = decay_lr
+        self.decay_lr_factor = decay_lr_factor
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
-        logger.info(f'decay lr: {self.decay_lr}')
+        logger.info(f'decay lr: {self.decay_lr_factor}')
 
     def build_state_proc_layers(self, state_processing_layers, hid_layers_activation):
         '''Builds all of the state processing layers in the network.
@@ -234,6 +234,6 @@ class RecurrentNet(Net, nn.Module):
     def update_lr(self):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
-        self.optim_spec['lr'] = old_lr * self.decay_lr
+        self.optim_spec['lr'] = old_lr * self.decay_lr_factor
         logger.info(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
         self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)

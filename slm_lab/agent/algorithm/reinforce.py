@@ -49,7 +49,7 @@ class Reinforce(Algorithm):
             clamp_grad=ps.get(net_spec, 'clamp_grad'),
             clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
             gpu=ps.get(net_spec, 'gpu'),
-            decay_lr=ps.get(net_spec, 'decay_lr_factor'),
+            decay_lr_factor=ps.get(net_spec, 'decay_lr_factor'),
         ))
         # Below we automatically select an appropriate net for a discrete or continuous action space if the setting is of the form 'MLPdefault'. Otherwise the correct type of network is assumed to be specified in the spec.
         # Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
@@ -97,7 +97,7 @@ class Reinforce(Algorithm):
             'continuous_action_clip'
         ])
         util.set_attr(self, net_spec, [
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
+            'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ])
         if not hasattr(self, 'gpu'):
             self.gpu = False

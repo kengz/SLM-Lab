@@ -101,10 +101,10 @@ class ConvNet(nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, loss_spec)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
-        self.decay_lr = decay_lr
+        self.decay_lr_factor = decay_lr_factor
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
-        logger.info(f'decay lr: {self.decay_lr}')
+        logger.info(f'decay lr: {self.decay_lr_factor}')
 
     def get_conv_output_size(self):
         '''Helper function to calculate the size of the

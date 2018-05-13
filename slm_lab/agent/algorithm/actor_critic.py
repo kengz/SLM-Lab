@@ -434,7 +434,7 @@ class ActorCritic(Reinforce):
             clamp_grad=ps.get(net_spec, 'clamp_grad'),
             clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
             gpu=ps.get(net_spec, 'gpu'),
-            decay_lr=ps.get(net_spec, 'decay_lr_factor'),
+            decay_lr_factor=ps.get(net_spec, 'decay_lr_factor'),
         ))
         if self.agent_spec['net']['use_same_optim']:
             logger.info('Using same optimizer for actor and critic')
@@ -448,7 +448,7 @@ class ActorCritic(Reinforce):
                 clamp_grad=ps.get(net_spec, 'clamp_grad'),
                 clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
                 gpu=ps.get(net_spec, 'gpu'),
-                decay_lr=ps.get(net_spec, 'decay_lr_factor'),
+                decay_lr_factor=ps.get(net_spec, 'decay_lr_factor'),
             ))
         '''
          Below we automatically select an appropriate net based on two different conditions
@@ -555,7 +555,7 @@ class ActorCritic(Reinforce):
 
         ])
         util.set_attr(self, net_spec, [
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
+            'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
         ])
         if not hasattr(self, 'gpu'):
             self.gpu = False

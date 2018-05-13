@@ -26,7 +26,7 @@ class MLPNet(nn.Module):
                  decay_lr=0.9):
         '''
         in_dim: dimension of the inputs
-        hid_dim: list containing dimensions of the hidden layers
+        hid_layers: list containing dimensions of the hidden layers
         out_dim: dimension of the ouputs
         hid_layers_activation: activation function for the hidden layers
         optim_spec: parameters for initializing the optimizer
@@ -44,19 +44,19 @@ class MLPNet(nn.Module):
                 clamp_grad=True,
                 clamp_grad_val=2.0,
                 gpu=True,
-                decay_lr=0.9)
+                decay_lr_factor=0.9)
         '''
         super(MLPNet, self).__init__()
         # Create net and initialize params
         self.in_dim = in_dim
         self.out_dim = out_dim
         self.layers = []
-        for i, layer in enumerate(hid_dim):
-            in_D = in_dim if i == 0 else hid_dim[i - 1]
-            out_D = hid_dim[i]
+        for i, layer in enumerate(hid_layers):
+            in_D = in_dim if i == 0 else hid_layers[i - 1]
+            out_D = hid_layers[i]
             self.layers += [nn.Linear(in_D, out_D)]
             self.layers += [net_util.get_activation_fn(hid_layers_activation)]
-        in_D = hid_dim[-1] if len(hid_dim) > 0 else in_dim
+        in_D = hid_layers[-1] if len(hid_layers) > 0 else in_dim
         self.layers += [nn.Linear(in_D, out_dim)]
         self.model = nn.Sequential(*self.layers)
         self.init_params()
@@ -69,10 +69,10 @@ class MLPNet(nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, loss_spec)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
-        self.decay_lr = decay_lr
+        self.decay_lr_factor = decay_lr_factor
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
-        logger.info(f'decay lr: {self.decay_lr}')
+        logger.info(f'decay lr: {self.decay_lr_factor}')
 
     def forward(self, x):
         '''The feedforward step'''
@@ -136,7 +136,7 @@ class MLPNet(nn.Module):
     def update_lr(self):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
-        self.optim_spec['lr'] = old_lr * self.decay_lr
+        self.optim_spec['lr'] = old_lr * self.decay_lr_factor
         logger.info(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
         self.optim = net_util.get_optim(self, self.optim_spec)
 
@@ -148,7 +148,7 @@ class MLPHeterogenousHeads(MLPNet):
 
     def __init__(self,
                  in_dim,
-                 hid_dim,
+                 hid_layers,
                  out_dim,
                  hid_layers_activation=None,
                  optim_spec=None,
@@ -156,10 +156,10 @@ class MLPHeterogenousHeads(MLPNet):
                  clamp_grad=False,
                  clamp_grad_val=1.0,
                  gpu=False,
-                 decay_lr=0.9):
+                 decay_lr_factor=0.9):
         '''
         in_dim: dimension of the inputs
-        hid_dim: list containing dimensions of the hidden layers
+        hid_layers: list containing dimensions of the hidden layers
         out_dim: list containing the dimensions of the ouputs
         hid_layers_activation: activation function for the hidden layers
         optim_spec: parameters for initializing the optimizer
@@ -177,7 +177,7 @@ class MLPHeterogenousHeads(MLPNet):
                 clamp_grad=True,
                 clamp_grad_val=2.0,
                 gpu=True,
-                decay_lr=0.9)
+                decay_lr_factor=0.9)
         '''
         nn.Module.__init__(self)
         # Create net and initialize params
@@ -185,12 +185,12 @@ class MLPHeterogenousHeads(MLPNet):
         self.out_dim = out_dim
         self.layers = []
         # Init network body
-        for i, layer in enumerate(hid_dim):
-            in_D = in_dim if i == 0 else hid_dim[i - 1]
-            out_D = hid_dim[i]
+        for i, layer in enumerate(hid_layers):
+            in_D = in_dim if i == 0 else hid_layers[i - 1]
+            out_D = hid_layers[i]
             self.layers += [nn.Linear(in_D, out_D)]
             self.layers += [net_util.get_activation_fn(hid_layers_activation)]
-        in_D = hid_dim[-1] if len(hid_dim) > 0 else in_dim
+        in_D = hid_layers[-1] if len(hid_layers) > 0 else in_dim
         self.body = nn.Sequential(*self.layers)
         # Init network output heads
         self.out_layers = []
@@ -211,10 +211,10 @@ class MLPHeterogenousHeads(MLPNet):
         self.loss_fn = net_util.get_loss_fn(self, loss_spec)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
-        self.decay_lr = decay_lr
+        self.decay_lr_factor = decay_lr_factor
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
-        logger.info(f'decay lr: {self.decay_lr}')
+        logger.info(f'decay lr: {self.decay_lr_factor}')
 
     def forward(self, x):
         '''The feedforward step'''
@@ -249,7 +249,7 @@ class MLPHeterogenousHeads(MLPNet):
     def update_lr(self):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
-        self.optim_spec['lr'] = old_lr * self.decay_lr
+        self.optim_spec['lr'] = old_lr * self.decay_lr_factor
         logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
         self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
 
@@ -261,7 +261,7 @@ class MultiMLPNet(Net, nn.Module):
 
     def __init__(self,
                  in_dim,
-                 hid_dim,
+                 hid_layers,
                  out_dim,
                  hid_layers_activation=None,
                  optim_spec=None,
@@ -269,7 +269,7 @@ class MultiMLPNet(Net, nn.Module):
                  clamp_grad=False,
                  clamp_grad_val=1.0,
                  gpu=False,
-                 decay_lr=0.9):
+                 decay_lr_factor=0.9):
         '''
         Multi state processing heads, single shared body, and multi action heads.
         There is one state and action head per environment
@@ -292,7 +292,7 @@ class MultiMLPNet(Net, nn.Module):
         |______________|  |______________|
 
         in_dim: list of lists containing dimensions of the state processing heads
-        hid_dim: list containing dimensions of the hidden layers
+        hid_layers: list containing dimensions of the hidden layers
         out_dim: list of lists containing dimensions of the ouputs
         hid_layers_activation: activation function for the hidden layers
         optim_spec: parameters for initializing the optimizer
@@ -310,7 +310,7 @@ class MultiMLPNet(Net, nn.Module):
              clamp_grad=True,
              clamp_grad_val2.0,
              gpu=False,
-             decay_lr=0.9)
+             decay_lr_factor=0.9)
         '''
         super(MultiMLPNet, self).__init__()
         # Create net and initialize params
@@ -321,9 +321,9 @@ class MultiMLPNet(Net, nn.Module):
             self.in_dim, hid_layers_activation)
         self.shared_layers = []
         self.body = self.make_shared_body(
-            self.state_out_concat, hid_dim, hid_layers_activation)
+            self.state_out_concat, hid_layers, hid_layers_activation)
         self.action_heads_layers = []
-        in_D = hid_dim[-1] if len(hid_dim) > 0 else self.state_out_concat
+        in_D = hid_layers[-1] if len(hid_layers) > 0 else self.state_out_concat
         self.action_heads_models = self.make_action_heads(
             in_D, self.out_dim, hid_layers_activation)
         self.init_params()
@@ -345,10 +345,10 @@ class MultiMLPNet(Net, nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, loss_spec)
         self.clamp_grad = clamp_grad
         self.clamp_grad_val = clamp_grad_val
-        self.decay_lr = decay_lr
+        self.decay_lr_factor = decay_lr_factor
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
-        logger.info(f'decay lr: {self.decay_lr}')
+        logger.info(f'decay lr: {self.decay_lr_factor}')
 
     def make_state_heads(self, state_heads, hid_layers_activation):
         '''Creates each state head. These are stored as Sequential
@@ -488,6 +488,6 @@ class MultiMLPNet(Net, nn.Module):
     def update_lr(self):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
-        self.optim_spec['lr'] = old_lr * self.decay_lr
+        self.optim_spec['lr'] = old_lr * self.decay_lr_factor
         logger.info(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
         self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
