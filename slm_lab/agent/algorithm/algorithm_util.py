@@ -132,10 +132,10 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
         torch_states.append(
             torch.from_numpy(state).float().unsqueeze_(dim=0))
     if torch.cuda.is_available() and gpu:
-        for torch_state in torch_states:
-            torch_state = torch_state.cuda()
-    for torch_state in torch_states:
-        torch_state = Variable(torch_state)
+        for idx, torch_state in enumerate(torch_states):
+            torch_states[idx] = torch_state.cuda()
+    for idx, torch_state in enumerate(torch_states):
+        torch_states[idx] = Variable(torch_state)
     outs = net.wrap_eval(torch_states)
     for body, e, output in zip(nanflat_body_a, nanflat_epsilon_a, outs):
         logger.debug2(f'body: {body.aeb}, epsilon: {e}')
@@ -199,10 +199,10 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, g
         torch_states.append(
             torch.from_numpy(state).float().unsqueeze_(dim=0))
     if torch.cuda.is_available() and gpu:
-        for torch_state in torch_states:
-            torch_state = torch_state.cuda()
-    for torch_state in torch_states:
-        torch_state = Variable(torch_state)
+        for idx, torch_state in enumerate(torch_states):
+            torch_states[idx] = torch_state.cuda()
+    for idx, torch_state in enumerate(torch_states):
+        torch_states[idx] = Variable(torch_state)
     outs = net.wrap_eval(torch_states)
     out_with_temp = [torch.div(x, t) for x, t in zip(outs, nanflat_tau_a)]
     logger.debug2(
