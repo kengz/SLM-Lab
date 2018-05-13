@@ -17,6 +17,7 @@
       },
       "memory": {
         "name": "Atari",
+        "batch_size": 32,
         "max_size": 250000
       },
       "net": {
@@ -32,12 +33,12 @@
           "alpha": 0.95,
           "eps": 0.01,
           "momentum": 0.0,
-          "centered": true,
+          "centered": true
         },
         "loss_spec": {
           "name": "smooth_l1_loss"
         },
-        "batch_size": 32,
+        "batch_norm": false,
         "decay_lr": false,
         "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
@@ -45,7 +46,6 @@
         "update_type": "replace",
         "update_frequency": 10000,
         "polyak_weight": 0.9,
-        "batch_norm": false,
         "gpu": true,
       }
     }],
