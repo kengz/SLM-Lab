@@ -123,7 +123,7 @@ def test_multiline_str():
     (
         MLPNet,
         {
-            'in_dim': 10, 'hid_dim': [5, 3],
+            'in_dim': 10, 'hid_layers': [5, 3],
             'out_dim':2,
             'hid_layers_activation': 'tanh',
         },
@@ -132,7 +132,7 @@ def test_multiline_str():
     ), (
         MLPNet,
         {
-            'in_dim': 20, 'hid_dim': [10, 50, 5],
+            'in_dim': 20, 'hid_layers': [10, 50, 5],
             'out_dim':2, 'hid_layers_activation': 'tanh',
         },
         None,
@@ -140,7 +140,7 @@ def test_multiline_str():
     ), (
         MLPNet,
         {
-            'in_dim': 10, 'hid_dim': [],
+            'in_dim': 10, 'hid_layers': [],
             'out_dim':5, 'hid_layers_activation': 'tanh',
         },
         None,
@@ -148,7 +148,7 @@ def test_multiline_str():
     ), (
         MLPHeterogenousHeads,
         {
-            'in_dim': 10, 'hid_dim': [5, 3],
+            'in_dim': 10, 'hid_layers': [5, 3],
             'out_dim':[2],
             'hid_layers_activation': 'tanh',
         },
@@ -157,7 +157,7 @@ def test_multiline_str():
     ), (
         MLPHeterogenousHeads,
         {
-            'in_dim': 10, 'hid_dim': [5, 3],
+            'in_dim': 10, 'hid_layers': [5, 3],
             'out_dim':[2, 1],
             'hid_layers_activation': 'tanh',
         },
@@ -166,7 +166,7 @@ def test_multiline_str():
     ), (
         MLPHeterogenousHeads,
         {
-            'in_dim': 10, 'hid_dim': [5, 3],
+            'in_dim': 10, 'hid_layers': [5, 3],
             'out_dim':[2, 5, 1],
             'hid_layers_activation': 'tanh',
         },
@@ -175,7 +175,7 @@ def test_multiline_str():
     ), (
         MLPHeterogenousHeads,
         {
-            'in_dim': 10, 'hid_dim': [10, 50, 5],
+            'in_dim': 10, 'hid_layers': [10, 50, 5],
             'out_dim':[2, 5, 1],
             'hid_layers_activation': 'tanh',
         },
@@ -184,7 +184,7 @@ def test_multiline_str():
     ), (
         MLPHeterogenousHeads,
         {
-            'in_dim': 10, 'hid_dim': [],
+            'in_dim': 10, 'hid_layers': [],
             'out_dim':[5], 'hid_layers_activation': 'tanh',
         },
         None,
@@ -192,7 +192,7 @@ def test_multiline_str():
     ), (
         MLPHeterogenousHeads,
         {
-            'in_dim': 10, 'hid_dim': [],
+            'in_dim': 10, 'hid_layers': [],
             'out_dim':[5, 2], 'hid_layers_activation': 'tanh',
         },
         None,
@@ -200,7 +200,7 @@ def test_multiline_str():
     ), (
         MLPHeterogenousHeads,
         {
-            'in_dim': 10, 'hid_dim': [],
+            'in_dim': 10, 'hid_layers': [],
             'out_dim':[5, 2, 1], 'hid_layers_activation': 'tanh',
         },
         None,
@@ -365,7 +365,7 @@ def test_multiline_str():
         MultiMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
-            'hid_dim': [64],
+            'hid_layers': [64],
             'out_dim': [[3], [2]],
             'hid_layers_activation': 'tanh',
             'optim_spec':{'name': 'Adam'},
@@ -377,7 +377,7 @@ def test_multiline_str():
         MultiMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
-            'hid_dim': [],
+            'hid_layers': [],
             'out_dim': [[3], [2]],
             'hid_layers_activation': 'tanh',
             'optim_spec':{'name': 'Adam'},
@@ -389,7 +389,7 @@ def test_multiline_str():
         MultiMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
-            'hid_dim': [],
+            'hid_layers': [],
             'out_dim': [[5, 3], [8, 2]],
             'hid_layers_activation': 'tanh',
             'optim_spec':{'name': 'Adam'},
@@ -401,7 +401,7 @@ def test_multiline_str():
         MultiMLPNet,
         {
             'in_dim': [[5, 10, 15], [8, 16]],
-            'hid_dim': [],
+            'hid_layers': [],
             'out_dim': [[5, 3], [12, 8, 2]],
             'hid_layers_activation': 'tanh',
             'optim_spec':{'name': 'Adam'},
@@ -413,7 +413,7 @@ def test_multiline_str():
         MultiMLPNet,
         {
             'in_dim': [[5, 10, 15], [8, 16]],
-            'hid_dim': [32, 64],
+            'hid_layers': [32, 64],
             'out_dim': [[5, 3], [12, 8, 2]],
             'hid_layers_activation': 'tanh',
             'optim_spec':{'name': 'Adam'},
@@ -425,7 +425,7 @@ def test_multiline_str():
         MultiMLPNet,
         {
             'in_dim': [[5, 10], [8, 16, 24]],
-            'hid_dim': [32, 64],
+            'hid_layers': [32, 64],
             'out_dim': [[9, 6, 3], [2]],
             'hid_layers_activation': 'tanh',
             'optim_spec':{'name': 'Adam'},
@@ -437,7 +437,7 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 4,
-            'hid_dim': [64, 50],
+            'hid_layers': [64, 50],
             'out_dim': 10,
             'sequence_length': 8,
             'hid_layers_activation': 'tanh',
@@ -450,7 +450,7 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 4,
-            'hid_dim': [50],
+            'hid_layers': [50],
             'out_dim': 10,
             'sequence_length': 8,
             'hid_layers_activation': 'tanh',
@@ -463,7 +463,7 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 4,
-            'hid_dim': [64, 32, 50],
+            'hid_layers': [64, 32, 50],
             'out_dim': 10,
             'sequence_length': 8,
             'hid_layers_activation': 'tanh',
@@ -476,7 +476,7 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 4,
-            'hid_dim': [64, 32, 100],
+            'hid_layers': [64, 32, 100],
             'out_dim': 10,
             'sequence_length': 8,
             'hid_layers_activation': 'tanh',
@@ -489,7 +489,7 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 6,
-            'hid_dim': [64, 32, 100],
+            'hid_layers': [64, 32, 100],
             'out_dim': 10,
             'sequence_length': 8,
             'hid_layers_activation': 'tanh',
@@ -502,7 +502,7 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 6,
-            'hid_dim': [64, 32, 100],
+            'hid_layers': [64, 32, 100],
             'out_dim': 10,
             'sequence_length': 16,
             'hid_layers_activation': 'tanh',
@@ -515,7 +515,7 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 6,
-            'hid_dim': [64, 32, 100],
+            'hid_layers': [64, 32, 100],
             'out_dim': 20,
             'sequence_length': 16,
             'hid_layers_activation': 'tanh',
@@ -528,7 +528,7 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 6,
-            'hid_dim': [64, 32, 16],
+            'hid_layers': [64, 32, 16],
             'out_dim': [20],
             'sequence_length': 16,
             'hid_layers_activation': 'tanh',
@@ -541,7 +541,7 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 6,
-            'hid_dim': [64, 32, 16],
+            'hid_layers': [64, 32, 16],
             'out_dim': [20, 10],
             'sequence_length': 16,
             'hid_layers_activation': 'tanh',
@@ -554,7 +554,7 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 6,
-            'hid_dim': [64, 32, 16],
+            'hid_layers': [64, 32, 16],
             'out_dim': [20, 10, 1],
             'sequence_length': 16,
             'hid_layers_activation': 'tanh',

@@ -1,4 +1,5 @@
 from slm_lab.agent.net import net_util
+from slm_lab.agent.net.base import Net
 from slm_lab.lib import logger
 from torch.autograd import Variable
 from torch.nn import Module
@@ -9,7 +10,7 @@ import torch.nn.functional as F
 logger = logger.get_logger(__name__)
 
 
-class RecurrentNet(nn.Module):
+class RecurrentNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized recurrent neural networks which take a sequence of
     states as input.
@@ -24,7 +25,7 @@ class RecurrentNet(nn.Module):
 
     def __init__(self,
                  in_dim,
-                 hid_dim,
+                 hid_layers,
                  out_dim,
                  sequence_length,
                  hid_layers_activation=None,
@@ -37,7 +38,7 @@ class RecurrentNet(nn.Module):
                  decay_lr=0.9):
         '''
         in_dim: dimension of the states
-        hid_dim: list containing dimensions of the hidden layers. The last element of the list is should be the dimension of the hidden state for the recurrent layer. The other elements in the list are the dimensions of the MLP (if desired) which is to transform the state space.
+        hid_layers: list containing dimensions of the hidden layers. The last element of the list is should be the dimension of the hidden state for the recurrent layer. The other elements in the list are the dimensions of the MLP (if desired) which is to transform the state space.
         out_dim: dimension of the output for one output, otherwise a list containing the dimensions of the ouputs for a multi-headed network
         sequence_length: length of the history of being passed to the net
         hid_layers_activation: activation function for the hidden layers
@@ -64,7 +65,7 @@ class RecurrentNet(nn.Module):
         # Create net and initialize params
         self.in_dim = in_dim
         self.sequence_length = sequence_length
-        self.hid_dim = hid_dim[-1]
+        self.hid_layers = hid_layers[-1]
         self.gpu = gpu
         # Handle multiple types of out_dim (single and multi-headed)
         if type(out_dim) is int:
@@ -73,16 +74,16 @@ class RecurrentNet(nn.Module):
         self.num_rnn_layers = num_rnn_layers
         self.state_processing_layers = []
         self.state_proc_model = self.build_state_proc_layers(
-            hid_dim[:-1], hid_layers_activation)
-        self.rnn_input_dim = hid_dim[-2] if len(hid_dim) > 1 else self.in_dim
+            hid_layers[:-1], hid_layers_activation)
+        self.rnn_input_dim = hid_layers[-2] if len(hid_layers) > 1 else self.in_dim
         self.rnn = nn.GRU(input_size=self.rnn_input_dim,
-                          hidden_size=self.hid_dim,
+                          hidden_size=self.hid_layers,
                           num_layers=self.num_rnn_layers,
                           batch_first=True)
         # Init network output heads
         self.out_layers = []
         for dim in self.out_dim:
-            self.out_layers += [nn.Linear(self.hid_dim, dim)]
+            self.out_layers += [nn.Linear(self.hid_layers, dim)]
         self.layers = [self.state_processing_layers] + [self.rnn] + [self.out_layers]
         self.num_hid_layers = None
         self.init_params()
@@ -125,7 +126,7 @@ class RecurrentNet(nn.Module):
         return nn.Sequential(*self.state_processing_layers)
 
     def init_hidden(self, batch_size, volatile=False):
-        hid = torch.zeros(self.num_rnn_layers, batch_size, self.hid_dim)
+        hid = torch.zeros(self.num_rnn_layers, batch_size, self.hid_layers)
         if torch.cuda.is_available() and self.gpu:
             hid = hid.cuda()
         return Variable(hid, volatile=volatile)
