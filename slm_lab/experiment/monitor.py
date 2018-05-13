@@ -57,6 +57,7 @@ class DataSpace:
         self.swap_aeb_shape = self.aeb_shape[1], self.aeb_shape[0], self.aeb_shape[2]
 
         self.data_shape = self.swap_aeb_shape if self.to_swap else self.aeb_shape
+        self.data_depth = len(self.data_shape)
         self.data_type = object if self.data_name in ['state', 'action'] else np.float32
         self.data = None  # standard data in aeb_shape
         self.swap_data = None
@@ -106,8 +107,9 @@ class DataSpace:
             self.data = new_data
             self.swap_data = new_data.swapaxes(0, 1)
         self.data_history.append(self.data)
-        # NOTE only save last data if individual data is big
-        if self.data.size > 10 and len(self.data_history) > 2:
+        # NOTE only save last data if individual data is deep, e.g. image
+        # rank 2 is reserved for AE, then 1 for flat data
+        if self.data_depth > 3 and len(self.data_history) > 2:
             self.data_history[-2] = np.zeros_like(self.data)
         return self.data
 
