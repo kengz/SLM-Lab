@@ -8,7 +8,6 @@ from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import numpy as np
 import pydash as ps
-import sys
 import torch
 
 logger = logger.get_logger(__name__)

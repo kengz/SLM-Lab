@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-import sys
 
 
 def get_session_data(session_file):

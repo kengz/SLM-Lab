@@ -8,7 +8,6 @@ from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import numpy as np
 import pydash as ps
-import sys
 import torch
 
 logger = logger.get_logger(__name__)
@@ -58,7 +57,7 @@ class VanillaDQN(SARSA):
         '''Initialize the neural network used to learn the Q function from the spec'''
         self.body = self.agent.nanflat_body_a[0]  # single-body algo
         if 'Recurrent' in self.net_spec['type']:
-            raise ValueError('Recurrent networks not with DQN family of algorithms.')
+            raise ValueError('Recurrent networks does not work with DQN family of algorithms.')
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self, self.body)
         logger.info(f'Training on gpu: {self.net.gpu}')
@@ -102,7 +101,7 @@ class VanillaDQN(SARSA):
 
     @lab_api
     def sample(self):
-        '''Samples a batch from memory of size self.memory.batch_size'''
+        '''Samples a batch from memory of size self.memory_spec['batch_size']'''
         # TODO internalize batch_size to memory
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
@@ -188,7 +187,7 @@ class DQNBase(VanillaDQN):
         '''Initialize networks'''
         self.body = self.agent.nanflat_body_a[0]  # single-body algo
         if 'Recurrent' in self.net_spec['type']:
-            raise ValueError('Recurrent networks not with DQN family of algorithms.')
+            raise ValueError('Recurrent networks does not work with DQN family of algorithms.')
         memory_name = self.memory_spec['name']
         if 'Atari' in memory_name:
             # Make adjustments for Atari mode
@@ -219,7 +218,7 @@ class DQNBase(VanillaDQN):
         # Evaluate the action selection using the eval net
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         logger.debug2(f'Q next_states: {q_next_sts.size()}')
-        idx = torch.from_numpy(np.array(list(range(self.memory.batch_size))))
+        idx = torch.from_numpy(np.array(list(range(self.memory_spec['batch_size']))))
         if torch.cuda.is_available() and self.net.gpu:
             idx = idx.cuda()
         q_next_st_maxs = q_next_sts[idx, q_next_acts]
@@ -241,7 +240,7 @@ class DQNBase(VanillaDQN):
         if self.net.update_type == 'replace':
             if t % self.net.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
-                self.target_net = deepcopy(self.net)
+                self.target_net = net_util.load_params(self.target_net, net_util.flatten_params(self.net))
                 self.online_net = self.target_net
                 self.eval_net = self.target_net
         elif self.net.update_type == 'polyak':
@@ -251,9 +250,7 @@ class DQNBase(VanillaDQN):
             self.online_net = self.target_net
             self.eval_net = self.target_net
         else:
-            logger.error(
-                'Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
-            sys.exit()
+            raise ValueError('Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
 
     @lab_api
     def update(self):
@@ -377,7 +374,7 @@ class MultitaskDQN(DQN):
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         logger.debug2(f'Q next_states: {q_next_sts.size()}')
         logger.debug3(f'Q next_states: {q_next_sts}')
-        idx = torch.from_numpy(np.array(list(range(self.memory.batch_size))))
+        idx = torch.from_numpy(np.array(list(range(self.memory_spec['batch_size']))))
         if torch.cuda.is_available() and self.net.gpu:
             idx = idx.cuda()
         q_next_st_maxs = []
@@ -501,7 +498,7 @@ class MultiHeadDQN(MultitaskDQN):
         # Select q_next_st_maxs based on action selected in q_next_acts
         q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
         logger.debug3(f'Q next_states: {q_next_sts}')
-        idx = torch.from_numpy(np.array(list(range(self.memory.batch_size))))
+        idx = torch.from_numpy(np.array(list(range(self.memory_spec['batch_size']))))
         if torch.cuda.is_available() and self.net.gpu:
             idx = idx.cuda()
         q_next_st_maxs = []
@@ -568,15 +565,11 @@ class MultiHeadDQN(MultitaskDQN):
         t = space_clock.get('total_t')
         if self.net.update_type == 'replace':
             if t % self.net.update_frequency == 0:
-                logger.debug('Updating target_net by replacing')
+                self.target_net = net_util.load_params(self.target_net, net_util.flatten_params(self.net))
                 self.target_net = deepcopy(self.net)
                 self.online_net = self.target_net
                 self.eval_net = self.target_net
         elif self.net.update_type == 'polyak':
-            logger.error(
-                '"polyak" updating not supported yet for MultiHeadDQN, please use "replace" instead. Exiting.')
-            sys.exit()
+            raise NotImplementedError('"polyak" updating not supported yet for MultiHeadDQN, please use "replace" instead. Exiting.')
         else:
-            logger.error(
-                'Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
-            sys.exit()
+            raise ValueError('Unknown net.update_type. Should be "replace" or "polyak". Exiting.')

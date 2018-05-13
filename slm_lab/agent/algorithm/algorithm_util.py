@@ -11,7 +11,6 @@ import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.distributions import Categorical, Normal
-import sys
 
 logger = logger.get_logger(__name__)
 

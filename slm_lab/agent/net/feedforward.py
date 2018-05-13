@@ -259,8 +259,7 @@ class MLPHeterogenousHeads(MLPNet):
         '''
         Takes a single training step: one forward and one backwards pass
         '''
-        print("Error: Shouldn't be called on a net with heterogenous heads")
-        sys.exit()
+        raise ValueError('Should not be called on a net with heterogenous heads')
         return np.nan
 
     def wrap_eval(self, x):
