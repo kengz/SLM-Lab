@@ -1,6 +1,6 @@
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
-from slm_lab.lib import logger
+from slm_lab.lib import logger, util
 from torch.autograd import Variable
 from torch.nn import Module
 import torch
@@ -79,7 +79,7 @@ class RecurrentNet(Net, nn.Module):
         ])
         # Create net and initialize params
         self.in_dim = self.body.state_dim
-        self.out_dim = self.body.action_dim
+        self.out_dim = np.reshape(self.body.action_dim, -1)
         # Create net and initialize params
         # TODO recursive naming. avoid
         self.hidden_size = self.hid_layers[-1]

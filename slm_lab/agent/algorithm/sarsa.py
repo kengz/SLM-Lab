@@ -51,53 +51,19 @@ class SARSA(Algorithm):
     @lab_api
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
-        body = self.agent.nanflat_body_a[0]  # single-body algo
-        self.state_dim = body.state_dim  # dimension of the environment state, e.g. 4
-        self.action_dim = body.action_dim  # dimension of the environment actions, e.g. 2
-        net_spec = self.agent_spec['net']
-        memory_spec = self.agent_spec['memory']
-        net_kwargs = util.compact_dict(dict(
-            hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
-            optim_spec=ps.get(net_spec, 'optim'),
-            loss_spec=ps.get(net_spec, 'loss'),
-            clamp_grad=ps.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
-            gpu=ps.get(net_spec, 'gpu'),
-            decay_lr_factor=ps.get(net_spec, 'decay_lr_factor'),
-        ))
-        if net_spec['type'].find('Recurrent') != -1:
-            self.net = getattr(net, net_spec['type'])(
-                self.state_dim, net_spec['hid_layers'], self.action_dim, memory_spec['seq_len'], **net_kwargs)
-        else:
-            self.net = getattr(net, net_spec['type'])(
-                self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)
-        self.set_net_attributes()
-
-    def set_net_attributes(self):
-        '''Initializes additional parameters from the net spec. Called by init_nets'''
-        net_spec = self.agent_spec['net']
-        util.set_attr(self, net_spec, [
-            'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
-        ])
-        if not hasattr(self, 'gpu'):
-            self.gpu = False
-        logger.info(f'Training on gpu: {self.gpu}')
+        self.body = self.agent.nanflat_body_a[0]  # single-body algo
+        NetClass = getattr(net, self.net_spec['type'])
+        if 'Recurrent' in self.net_spec['type']:
+            self.net_spec.update(seq_len=self.memory_spec['seq_len'])
+        self.net = NetClass(self, self.body)
+        logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters.'''
-        algorithm_spec = self.agent_spec['algorithm']
-        net_spec = self.agent_spec['net']
-        self.action_policy = act_fns[algorithm_spec['action_policy']]
-        self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
-        self.set_other_algorithm_attributes()
-        self.nanflat_explore_var_a = [
-            self.explore_var_start] * self.agent.body_num
-
-    def set_other_algorithm_attributes(self):
-        '''Initializes additional parameters from the algorithm spec. Called by init_algorithm_params'''
-        algorithm_spec = self.agent_spec['algorithm']
-        util.set_attr(self, algorithm_spec, [
+        self.action_policy = act_fns[self.algorithm_spec['action_policy']]
+        self.action_policy_update = act_update_fns[self.algorithm_spec['action_policy_update']]
+        util.set_attr(self, self.algorithm_spec, [
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
@@ -106,17 +72,17 @@ class SARSA(Algorithm):
         ])
         self.to_train = 0
         self.set_memory_flag()
+        self.nanflat_explore_var_a = [self.explore_var_start] * self.agent.body_num
 
     def set_memory_flag(self):
         '''Flags if memory is episodic or discrete. This affects how self.sample() handles the batch it gets back from memory'''
-        body = self.agent.nanflat_body_a[0]
-        memory = body.memory.__class__.__name__
-        if (memory.find('OnPolicyReplay') != -1) or (memory.find('OnPolicyNStepReplay') != -1):
+        memory_name = self.memory_spec['name']
+        if any(name in memory_name for name in ['OnPolicyReplay', 'OnPolicyNStepReplay']):
             self.is_episodic = True
-        elif (memory.find('OnPolicyBatchReplay') != -1) or (memory.find('OnPolicyNStepBatchReplay') != -1):
+        elif any(name in memory_name for name in ['OnPolicyBatchReplay', 'OnPolicyNStepBatchReplay']):
             self.is_episodic = False
         else:
-            logger.warn(f'Error: Memory {memory} not recognized')
+            logger.warn(f'Error: Memory {memory_name} not recognized')
             raise NotImplementedError
 
     def compute_q_target_values(self, batch):
@@ -167,7 +133,7 @@ class SARSA(Algorithm):
                 next_acts = torch.zeros_like(acts)
                 next_acts[:-1] = acts[1:]
                 # Convert actions to one hot (both representations are needed for SARSA)
-                acts_onehot = util.convert_to_one_hot(acts, self.action_dim, self.net.gpu)
+                acts_onehot = util.convert_to_one_hot(acts, self.body.action_dim, self.net.gpu)
                 batch['actions_onehot'].append(acts_onehot)
                 batch['next_actions'].append(next_acts)
             # Flatten the batch to train all at once
@@ -179,7 +145,7 @@ class SARSA(Algorithm):
             if batch['states'].size(0) > 1:
                 batch['next_actions'] = torch.zeros_like(batch['actions'])
                 batch['next_actions'][:-1] = batch['actions'][1:]
-                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.action_dim, self.net.gpu)
+                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.body.action_dim, self.net.gpu)
                 batch_elems = ['states', 'actions', 'actions_onehot', 'rewards', 'dones', 'next_states', 'next_actions']
                 for k in batch_elems:
                     if batch[k].dim() == 1:

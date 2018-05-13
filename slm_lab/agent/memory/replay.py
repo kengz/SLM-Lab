@@ -47,8 +47,8 @@ class Replay(Memory):
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
-        states_shape = np.concatenate([[self.max_size], np.reshape(self.state_dim, (-1,))])
-        actions_shape = np.concatenate([[self.max_size], np.reshape(self.action_dim, (-1,))])
+        states_shape = np.concatenate([[self.max_size], np.reshape(self.state_dim, -1)])
+        actions_shape = np.concatenate([[self.max_size], np.reshape(self.action_dim, -1)])
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
         setattr(self, 'states', np.zeros(states_shape))
         setattr(self, 'actions', np.zeros(actions_shape, dtype=np.uint16))

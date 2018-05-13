@@ -2,7 +2,6 @@ from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
 from slm_lab.lib import logger, util
 from torch.autograd import Variable
-from torch.nn import Module
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -84,7 +83,7 @@ class ConvNet(Net, nn.Module):
         self.in_dim = list(self.body.state_dim[:-1])
         self.in_dim.insert(0, self.body.state_dim[-1])
         # Handle multiple types of out_dim (single and multi-headed)
-        self.out_dim = np.reshape(self.body.action_dim, (-1,))
+        self.out_dim = np.reshape(self.body.action_dim, -1)
         self.conv_layers = []
         self.conv_model = self.build_conv_layers(
             self.hid_layers[0], hid_layers_activation)
