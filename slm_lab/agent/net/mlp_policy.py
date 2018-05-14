@@ -10,8 +10,8 @@ class MLPPolicy(Net):
     adapted from OpenAI https://github.com/openai/baselines/blob/master/baselines/ppo1/mlp_policy.py
     '''
 
-    def __init__(self, algorithm, body, name=''):
-        super(MLPPolicy, self).__init__(algorithm, body)
+    def __init__(self, net_spec, algorithm, body, name=''):
+        super(MLPPolicy, self).__init__(net_spec, algorithm, body)
         util.set_attr(self, self.net_spec, [
             'hid_layers',
             'hid_layers_activation',

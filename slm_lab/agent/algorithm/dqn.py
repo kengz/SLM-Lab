@@ -62,7 +62,7 @@ class VanillaDQN(SARSA):
         if self.algorithm_spec['name'] == 'VanillaDQN':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_weight']), 'Network update not available for VanillaDQN; use DQN.'
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self, self.body)
+        self.net = NetClass(self.net_spec, self, self.body)
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
@@ -206,8 +206,8 @@ class DQNBase(VanillaDQN):
         if self.algorithm_spec['name'] == 'DQNBase':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_weight']), 'Network update not available for DQNBase; use DQN.'
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self, self.body)
-        self.target_net = NetClass(self, self.body)
+        self.net = NetClass(self.net_spec, self, self.body)
+        self.target_net = NetClass(self.net_spec, self, self.body)
         self.online_net = self.target_net
         self.eval_net = self.target_net
         logger.info(f'Training on gpu: {self.net.gpu}')
@@ -306,8 +306,8 @@ class MultitaskDQN(DQN):
         body.state_dim = sum(self.state_dims)
         body.action_dim = sum(self.action_dims)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self, body)
-        self.target_net = NetClass(self, body)
+        self.net = NetClass(self.net_spec, self, body)
+        self.target_net = NetClass(self.net_spec, self, body)
         self.online_net = self.target_net
         self.eval_net = self.target_net
         logger.info(f'Training on gpu: {self.net.gpu}')
@@ -413,8 +413,8 @@ class MultiHeadDQN(MultitaskDQN):
         # NOTE: Separate init from MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
         body_list = self.agent.nanflat_body_a
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self, body_list)
-        self.target_net = NetClass(self, body_list)
+        self.net = NetClass(self.net_spec, self, body_list)
+        self.target_net = NetClass(self.net_spec, self, body_list)
         self.online_net = self.target_net
         self.eval_net = self.target_net
         logger.info(f'Training on gpu: {self.net.gpu}')

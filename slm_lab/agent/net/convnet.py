@@ -21,7 +21,7 @@ class ConvNet(Net, nn.Module):
          3. self.out_layers
     '''
 
-    def __init__(self, algorithm, body):
+    def __init__(self, net_spec, algorithm, body):
         '''
         in_dim: dimension of the inputs
         hid_layers: tuple consisting of two elements. (conv_hid, flat_hid)
@@ -52,7 +52,7 @@ class ConvNet(Net, nn.Module):
                 decay_lr_factor=0.9)
         '''
         nn.Module.__init__(self)
-        super(ConvNet, self).__init__(algorithm, body)
+        super(ConvNet, self).__init__(net_spec, algorithm, body)
         # set default
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},

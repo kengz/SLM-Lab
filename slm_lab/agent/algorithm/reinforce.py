@@ -50,7 +50,7 @@ class Reinforce(Algorithm):
             if self.net_spec['type'] == 'MLPdefault':
                 self.net_spec['type'] = 'MLPHeterogenousTails'
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self, self.body)
+        self.net = NetClass(self.net_spec, self, self.body)
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api

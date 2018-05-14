@@ -14,7 +14,7 @@ class MLPNet(Net, nn.Module):
     Class for generating arbitrary sized feedforward neural network
     '''
 
-    def __init__(self, algorithm, body):
+    def __init__(self, net_spec, algorithm, body):
         '''
         net_spec:
         in_dim: dimension of the inputs
@@ -39,7 +39,7 @@ class MLPNet(Net, nn.Module):
                 decay_lr_factor=0.9)
         '''
         nn.Module.__init__(self)
-        super(MLPNet, self).__init__(algorithm, body)
+        super(MLPNet, self).__init__(net_spec, algorithm, body)
         # set default
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},
@@ -163,7 +163,7 @@ class MLPHeterogenousTails(MLPNet):
     Class for generating arbitrary sized feedforward neural network, with a heterogenous set of output tails that may correspond to different values. For example, the mean or std deviation of a continous policy, the state-value estimate, or the logits of a categorical action distribution
     '''
 
-    def __init__(self, algorithm, body):
+    def __init__(self, net_spec, algorithm, body):
         '''
         in_dim: dimension of the inputs
         hid_layers: list containing dimensions of the hidden layers
@@ -186,7 +186,7 @@ class MLPHeterogenousTails(MLPNet):
                 gpu=True,
                 decay_lr_factor=0.9)
         '''
-        Net.__init__(self, algorithm, body)
+        Net.__init__(self, net_spec, algorithm, body)
         # set default
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},
@@ -290,7 +290,7 @@ class MultiMLPNet(Net, nn.Module):
     Class for generating arbitrary sized feedforward neural network with multiple state and action heads, and a single shared body.
     '''
 
-    def __init__(self, algorithm, body_list):
+    def __init__(self, net_spec, algorithm, body_list):
         '''
         Multi state processing heads, single shared body, and multi action heads.
         There is one state and action head per environment
@@ -334,7 +334,7 @@ class MultiMLPNet(Net, nn.Module):
              decay_lr_factor=0.9)
         '''
         nn.Module.__init__(self)
-        Net.__init__(self, algorithm, body_list)
+        super(MultiMLPNet, self).__init__(net_spec, algorithm, body)
         # set default
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},
