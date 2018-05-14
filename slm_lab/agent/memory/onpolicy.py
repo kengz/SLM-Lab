@@ -69,7 +69,7 @@ class OnPolicyReplay(Memory):
         self.last_state = state
         '''Clear bodies state buffer for recurent nets'''
         if done:
-            self.body.state_buffer = []
+            self.body.state_buffer.clear()
 
     def add_experience(self, state, action, reward, next_state, done, priority=1):
         '''Interface helper method for update() to add experience to memory'''

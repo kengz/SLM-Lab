@@ -18,6 +18,7 @@ Agent components:
 - algorithm (with net, policy)
 - memory (per body)
 '''
+from collections import deque
 from slm_lab.agent import algorithm, memory
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -53,9 +54,18 @@ class Body:
 
         # every body has its own memory for ease of computation
         memory_spec = self.agent.agent_spec['memory']
-        MemoryClass = getattr(memory, memory_spec['name'])
+        memory_name = memory_spec['name']
+        MemoryClass = getattr(memory, memory_name)
         self.memory = MemoryClass(memory_spec, self.agent.algorithm, self)
-        self.state_buffer = []
+
+        # TODO move in to memory
+        if 'NStep' in memory_name or 'Stack' in memory_name:
+            self.state_buffer_len = self.agent.agent_spec['net']['seq_len']
+        elif 'Atari' in memory_name:
+            self.state_buffer_len = 4
+        else:
+            self.state_buffer_len = 0
+        self.state_buffer = deque(maxlen=self.state_buffer_len)
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
@@ -80,15 +90,6 @@ class Agent:
 
         AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
         self.algorithm = AlgorithmClass(self)
-
-        # TODO uhh handle internally to memory?
-        memory_name = agent_spec['memory']['name']
-        if 'NStep' in memory_name or 'Stack' in memory_name:
-            self.len_state_buffer = agent_spec['net']['seq_len']
-        elif 'Atari' in memory_name:
-            self.len_state_buffer = 4
-        else:
-            self.len_state_buffer = 0
 
     @lab_api
     def post_body_init(self):
@@ -120,10 +121,7 @@ class Agent:
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.update(action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
             # TODO also internalize to memory
-            if self.len_state_buffer > 0:
-                if len(body.state_buffer) == self.len_state_buffer:
-                    del body.state_buffer[0]
-                body.state_buffer.append(state_a[(e, b)])
+            body.state_buffer.append(state_a[(e, b)])
         loss_a = self.algorithm.train()
         loss_a = util.guard_data_a(self, loss_a, 'loss')
         explore_var_a = self.algorithm.update()

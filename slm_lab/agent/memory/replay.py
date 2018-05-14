@@ -1,3 +1,4 @@
+from collections import deque
 from copy import deepcopy
 from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import logger, util
@@ -187,7 +188,7 @@ class StackReplay(Replay):
         if done:
             '''Clear buffer so there are no experiences from previous states spilling over to new episodes'''
             self.clear_buffer()
-            self.body.state_buffer = []
+            self.body.state_buffer.clear()
 
 
 class Atari(Replay):
@@ -245,4 +246,4 @@ class Atari(Replay):
         if done:
             # Clear buffer so there are no experiences from previous states spilling over to new episodes
             self.clear_buffer()
-            self.body.state_buffer = []
+            self.body.state_buffer.clear()
