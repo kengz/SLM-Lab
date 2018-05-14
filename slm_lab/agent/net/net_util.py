@@ -87,7 +87,7 @@ def init_layers(layers, layer_type):
     biasinit = 0.01
     for layer in layers:
         classname = layer.__class__.__name__
-        if classname.find(layer_type) != -1:
+        if layer_type in classname:
             if layer_type == 'BatchNorm':
                 torch.nn.init.uniform(layer.weight.data)
                 torch.nn.init.constant(layer.bias.data, biasinit)

@@ -14,12 +14,12 @@ class TestNet:
     '''
 
     def init_dummy_input(self, net):
-        if net.__class__.__name__.find('RecurrentNet') != -1:
+        if 'RecurrentNet' in net.__class__.__name__:
             dummy_input = Variable(torch.ones(
                 2, net.seq_len, net.in_dim))
         elif type(net.in_dim) is int:
             dummy_input = Variable(torch.ones(2, net.in_dim))
-        elif net.__class__.__name__.find('MultiMLPNet') != -1:
+        elif 'MultiMLPNet' in net.__class__.__name__:
             dummy_input = []
             for indim in net.in_dim:
                 dummy_input.append(Variable(torch.ones(2, indim[0])))
@@ -30,11 +30,11 @@ class TestNet:
     def init_dummy_output(self, net):
         if type(net.out_dim) is int:
             dummy_output = Variable(torch.zeros((2, net.out_dim)))
-        elif net.__class__.__name__.find('MultiMLPNet') != -1:
+        elif 'MultiMLPNet' in net.__class__.__name__:
             dummy_output = []
             for outdim in net.out_dim:
                 dummy_output.append(Variable(torch.zeros((2, outdim[-1]))))
-        elif net.__class__.__name__.find('MLPHeterogenousTails') != -1 or len(net.out_dim) > 1:
+        elif 'MLPHeterogenousTails' in net.__class__.__name__ or len(net.out_dim) > 1:
             dummy_output = []
             for outdim in net.out_dim:
                 print(type(outdim), outdim)
@@ -45,10 +45,10 @@ class TestNet:
 
     def check_net_type(self, net):
         # Skipping test for 'MLPHeterogenousTails' because there is no training step function
-        if net.__class__.__name__.find('MLPHeterogenousTails') != -1:
+        if 'MLPHeterogenousTails' in net.__class__.__name__:
             return True
         # Skipping test for 'RecurrentNet' and 'ConvNet' with multiple output heads because training step not applicable
-        elif (net.__class__.__name__.find('RecurrentNet') != -1) or (net.__class__.__name__.find('ConvNet') != -1) and len(net.out_dim) > 1:
+    elif ('RecurrentNet' in net.__class__.__name__) or ('ConvNet' in net.__class__.__name__) and len(net.out_dim) > 1:
             return True
         else:
             return False
@@ -61,7 +61,7 @@ class TestNet:
         flag = True
         for i, param in enumerate(net.params):
             # If net is recurrent check that biases of the recurrent layer are zero
-            if net.__class__.__name__.find('Recurrent') != -1 and net.named_params[i][0].find('bias_') != -1:
+            if 'Recurrent' in net.__class__.__name__ and 'bias_' in net.named_params[i][0]:
                 print(net.named_params[i][0])
                 if torch.sum(torch.abs(param.data)) != 0:
                     print("FAIL: layer {}".format(i))
@@ -169,9 +169,9 @@ class TestNet:
         assert loss is None
 
     def check_multi_output(self, net):
-        if net.__class__.__name__.find('MultiMLPNet') != -1 or \
-           net.__class__.__name__.find('MLPHeterogenousTails') != -1 or \
-           (((net.__class__.__name__.find('RecurrentNet') != -1) or (net.__class__.__name__.find('ConvNet') != -1)) and len(net.out_dim) > 1):
+        if 'MultiMLPNet' in net.__class__.__name__ or \
+           'MLPHeterogenousTails' in net.__class__.__name__ or \
+           ((('RecurrentNet' in net.__class__.__name__) or ('ConvNet' in net.__class__.__name__)) and len(net.out_dim) > 1):
             return True
         else:
             return False

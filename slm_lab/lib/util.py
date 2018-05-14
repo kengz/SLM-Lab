@@ -767,7 +767,7 @@ def concat_episodes(batch):
     '''Concat episodic data into single tensors. Excludes data that isn't already a tensor'''
     for k in batch:
         classname = get_class_name(batch[k][0])
-        if classname.find('ndarray') != -1 or classname.find('list') != -1:
+        if 'ndarray' in classname or 'list' in classname:
             # print(f'Skipping {k}')
             pass
         else:
