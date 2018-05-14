@@ -188,7 +188,7 @@ class ConvNet(Net, nn.Module):
 
     def set_train_eval(self, train=True):
         '''Helper function to set model in training or evaluation mode'''
-        nets = [self.conv_model] + [self.dense_model] + self.out_layers
+        nets = [self.conv_model, self.dense_model] + self.out_layers
         for net in nets:
             if train:
                 net.train()

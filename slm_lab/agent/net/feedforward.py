@@ -215,8 +215,8 @@ class MLPHeterogenousTails(MLPNet):
         ])
         # Create net and initialize params
         self.in_dim = self.body.state_dim
+        # set this below to something like  self.body.action_dim = [self.body.action_dim] * 2
         self.out_dim = self.body.action_dim
-        # TODO out is [action_dim, action_dim]?
         self.layers = []
         # Init network body
         for i, layer in enumerate(self.hid_layers):

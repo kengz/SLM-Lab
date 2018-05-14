@@ -81,11 +81,9 @@ class RecurrentNet(Net, nn.Module):
         self.in_dim = self.body.state_dim
         self.out_dim = np.reshape(self.body.action_dim, -1).tolist()
         # Create net and initialize params
-        # TODO recursive naming. avoid
         self.hidden_size = self.hid_layers[-1]
         self.state_processing_layers = []
-        self.state_proc_model = self.build_state_proc_layers(
-            self.hid_layers[:-1], self.hid_layers_activation)
+        self.state_proc_model = self.build_state_proc_layers(self.hid_layers[:-1], self.hid_layers_activation)
         self.rnn_input_dim = self.hid_layers[-2] if len(self.hid_layers) > 1 else self.in_dim
         self.rnn = nn.GRU(
             input_size=self.rnn_input_dim,
@@ -96,7 +94,7 @@ class RecurrentNet(Net, nn.Module):
         self.out_layers = []
         for dim in self.out_dim:
             self.out_layers.append(nn.Linear(self.hidden_size, dim))
-        self.layers = [self.state_processing_layers] + [self.rnn] + [self.out_layers]
+        self.layers = [self.state_processing_layers, self.rnn, self.out_layers]
         self.num_hid_layers = None
         self.init_params()
         if torch.cuda.is_available() and self.gpu:
@@ -192,7 +190,7 @@ class RecurrentNet(Net, nn.Module):
 
     def set_train_eval(self, train=True):
         '''Helper function to set model in training or evaluation mode'''
-        nets = [self.state_proc_model] + [self.rnn] + self.out_layers
+        nets = [self.state_proc_model, self.rnn] + self.out_layers
         for net in nets:
             if train:
                 net.train()
