@@ -150,7 +150,7 @@
         "add_entropy": false,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
-        "lamda": 1.0,
+        "lam": 1.0,
         "num_step_returns": 100,
         "training_frequency": 1,
         "training_iters_per_batch": 4,

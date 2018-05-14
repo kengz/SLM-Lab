@@ -1,5 +1,5 @@
 {
-  "actor_critic_cartpole_lamda": {
+  "actor_critic_cartpole_lam": {
     "agent": [{
       "name": "ActorCritic",
       "algorithm": {
@@ -9,7 +9,7 @@
         "add_entropy": true,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
-        "lamda": 1.0,
+        "lam": 1.0,
         "num_step_returns": 10,
         "training_frequency": 1,
         "training_iters_per_batch": 4,
@@ -57,7 +57,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "lamda__uniform": [0.0, 1.0]
+          "lam__uniform": [0.0, 1.0]
         }
       }]
     }
@@ -72,7 +72,7 @@
         "add_entropy": true,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
-        "lamda": 1.0,
+        "lam": 1.0,
         "num_step_returns": 10,
         "training_frequency": 1,
         "training_iters_per_batch": 4,
@@ -135,7 +135,7 @@
         "add_entropy": true,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
-        "lamda": 1.0,
+        "lam": 1.0,
         "num_step_returns": 10,
         "training_frequency": 1,
         "training_iters_per_batch": 4,
@@ -198,7 +198,7 @@
         "add_entropy": true,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
-        "lamda": 1.0,
+        "lam": 1.0,
         "num_step_returns": 10,
         "training_frequency": 1,
         "training_iters_per_batch": 4,
@@ -261,7 +261,7 @@
         "add_entropy": true,
         "entropy_weight": 0.01,
         "continuous_action_clip": 2.0,
-        "lamda": 1.0,
+        "lam": 1.0,
         "num_step_returns": 10,
         "training_frequency": 1,
         "training_iters_per_batch": 4,

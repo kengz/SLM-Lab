@@ -47,7 +47,7 @@ class PPO(Algorithm):
             'ent_coef',
             'adam_epsilon',
             'gamma',
-            'lambda',
+            'lam',
             'horizon',
             'epoch',
             'lr',
@@ -206,6 +206,6 @@ class PPO(Algorithm):
         for t in reversed(range(T)):
             nonterminal = 1 - news[t + 1]
             delta = rews[t] + self.gamma * v_preds[t + 1] * nonterminal - v_preds[t]
-            gaelams[t] = last_gaelam = delta + self.gamma * self.lambda * nonterminal * last_gaelam
+            gaelams[t] = last_gaelam = delta + self.gamma * self.lam * nonterminal * last_gaelam
         assert not np.isnan(gaelams).any(), f'GAE has nan: {gaelams}'
         seg['tdlamrets'] = seg['advs'] + seg['v_preds']

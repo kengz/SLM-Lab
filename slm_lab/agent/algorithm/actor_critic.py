@@ -24,7 +24,7 @@ class ActorCritic(Reinforce):
         - entropy:      @param: 'algorithm.add_entropy' option to add entropy to policy during training to encourage exploration as outlined in "Asynchronous Methods for Deep Reinforcement Learning"
         - memory type:  @param: 'memory.name' batch (through OnPolicyBatchReplay memory class) or episodic through (OnPolicyReplay memory class)
         - return steps: @param: 'algorithm.num_step_returns' how many forward step returns to use when calculating the advantage target. Min = 0. Applied for standard advantage estimation. Not used for GAE.
-        - lamda:        @param: 'algorithm.lamda' controls the bias variance tradeoff when using GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
+        - lambda:        @param: 'algorithm.lam' controls the bias variance tradeoff when using GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
         - param sharing: @param: 'net.type' whether the actor and critic should share params (e.g. through 'MLPshared') or have separate params (e.g. through 'MLPseparate'). If param sharing is used then there is also the option to control the weight given to the policy and value components of the loss function through 'policy_loss_weight' and 'val_loss_weight'
     Algorithm - separate actor and critic:
         Repeat:
@@ -71,7 +71,7 @@ class ActorCritic(Reinforce):
             'training_frequency',
             'training_iters_per_batch',
             'use_GAE',
-            'lamda',
+            'lam',
             'num_step_returns',
             'policy_loss_weight',
             'val_loss_weight',
@@ -491,12 +491,12 @@ class ActorCritic(Reinforce):
         logger.debug3(f'Next state_vals: {next_state_vals}')
         logger.debug3(f'Dones: {dones}')
         logger.debug3(f'Deltas: {deltas}')
-        logger.debug3(f'Lamda: {self.lamda}, gamma: {self.gamma}')
+        logger.debug3(f'lam: {self.lam}, gamma: {self.gamma}')
         '''Then calculate GAE, the exponentially weighted average of the TD residuals'''
         advantage = []
         gae = 0
         for i in range(deltas.size(0) - 1, -1, -1):
-            gae = deltas[i] + self.gamma * self.lamda * gae
+            gae = deltas[i] + self.gamma * self.lam * gae
             advantage.insert(0, gae)
         advantage = torch.Tensor(advantage)
         if torch.cuda.is_available() and self.net.gpu:
