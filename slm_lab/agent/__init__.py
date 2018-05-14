@@ -53,7 +53,7 @@ class Body:
 
         # every body has its own memory for ease of computation
         MemoryClass = getattr(memory, ps.get(self.agent.agent_spec, 'memory.name'))
-        self.memory = MemoryClass(self)
+        self.memory = MemoryClass(self.agent.agent_spec['memory'], self)
         self.state_buffer = []
 
     def __str__(self):

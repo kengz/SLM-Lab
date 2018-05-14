@@ -14,7 +14,7 @@ class GAEOnPolicyReplay(Memory):
     adapted from OpenAI https://github.com/openai/baselines/blob/master/baselines/ppo1/pposgd_simple.py
     '''
 
-    def __init__(self, body):
+    def __init__(self, memory_spec, body):
         super(GAEOnPolicyReplay, self).__init__(body)
         util.set_attr(self, self.memory_spec, [
             'batch_size',
