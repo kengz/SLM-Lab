@@ -4,13 +4,10 @@ Functions used by more than one algorithm
 from copy import deepcopy
 from slm_lab.lib import logger, util
 from torch.autograd import Variable
-from torch.autograd import Variable
 from torch.distributions import Categorical, Normal
 import numpy as np
 import torch
 import torch.nn.functional as F
-from torch.autograd import Variable
-from torch.distributions import Categorical, Normal
 
 logger = logger.get_logger(__name__)
 
@@ -41,10 +38,10 @@ def create_torch_state(state, state_buf, gpu, state_seq=False, length=0, atari=F
         state_buffer = deepcopy(state_buf)  # Copy so as not to mutate running state buffer
         logger.debug3(f'length of state buffer: {length}')
         if len(state_buffer) < length:
-            PAD = np.zeros_like(state)
+            pad = np.zeros_like(state)
             while len(state_buffer) < length:
-                state_buffer.insert(0, PAD)
-        '''Preprocess the state if necessary'''
+                state_buffer.insert(0, pad)
+        # Preprocess the state if necessary
         if atari:
             logger.debug3(f'Preprocesssing the atari states')
             for _, s in enumerate(state_buffer):
@@ -62,12 +59,11 @@ def create_torch_state(state, state_buf, gpu, state_seq=False, length=0, atari=F
     else:
         torch_state = torch.from_numpy(state).float()
 
-    '''Optionally convert to cuda'''
+    # Optionally convert to cuda
     if torch.cuda.is_available() and gpu:
         torch_state = torch_state.cuda()
     torch_state = Variable(torch_state)
 
-    '''Logging'''
     logger.debug3(f'State size: {torch_state.size()}')
     logger.debug3(f'Original state: {state}')
     logger.debug3(f'State: {torch_state}')
@@ -196,8 +192,7 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, g
     torch_states = []
     for state in nanflat_state_a:
         state = state.astype('float')
-        torch_states.append(
-            torch.from_numpy(state).float().unsqueeze_(dim=0))
+        torch_states.append(torch.from_numpy(state).float().unsqueeze_(dim=0))
     if torch.cuda.is_available() and gpu:
         for idx, torch_state in enumerate(torch_states):
             torch_states[idx] = torch_state.cuda()
@@ -205,8 +200,7 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, g
         torch_states[idx] = Variable(torch_state)
     outs = net.wrap_eval(torch_states)
     out_with_temp = [torch.div(x, t) for x, t in zip(outs, nanflat_tau_a)]
-    logger.debug2(
-        f'taus: {nanflat_tau_a}, outs: {outs}, out_with_temp: {out_with_temp}')
+    logger.debug2(f'taus: {nanflat_tau_a}, outs: {outs}, out_with_temp: {out_with_temp}')
     nanflat_action_a = []
     for body, output in zip(nanflat_body_a, out_with_temp):
         probs = F.softmax(Variable(output.cpu()), dim=1).data.numpy()[0]
@@ -232,8 +226,7 @@ def act_with_softmax(algorithm, state, body, gpu):
     action = m.sample()
     logger.debug2(f'Network output: {out.data}')
     logger.debug2(f'Probability of actions: {probs.data}')
-    logger.debug(
-        f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
+    logger.debug(f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
     algorithm.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = - torch.sum(torch.mul(probs, torch.log(probs)))
@@ -257,8 +250,7 @@ def act_with_gaussian(algorithm, state, body, gpu):
     m = Normal(mu, sigma)
     action = m.sample()
     action = torch.clamp(action, -algorithm.continuous_action_clip, algorithm.continuous_action_clip)
-    logger.debug2(
-        f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
+    logger.debug2(f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
     algorithm.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = 0.5 * torch.log(2.0 * np.pi * np.e * sigma * sigma)
@@ -282,11 +274,9 @@ def update_linear_decay(cls, space_clock):
     epi = space_clock.get('epi')
     rise = cls.explore_var_end - cls.explore_var_start
     slope = rise / float(cls.explore_anneal_epi)
-    explore_var = max(
-        slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
+    explore_var = max(slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
     cls.nanflat_explore_var_a = [explore_var] * cls.agent.body_num
-    logger.debug3(
-        f'nanflat_explore_var_a: {cls.nanflat_explore_var_a[0]}')
+    logger.debug3(f'nanflat_explore_var_a: {cls.nanflat_explore_var_a[0]}')
     return cls.nanflat_explore_var_a
 
 
@@ -297,8 +287,7 @@ def update_multi_linear_decay(cls, _space_clock):
         epi = body.env.clock.get('epi')
         rise = cls.explore_var_end - cls.explore_var_start
         slope = rise / float(cls.explore_anneal_epi)
-        explore_var = max(
-            slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
+        explore_var = max(slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
         nanflat_explore_var_a.append(explore_var)
     cls.nanflat_explore_var_a = nanflat_explore_var_a
     logger.debug3(f'nanflat_explore_var_a: {cls.nanflat_explore_var_a}')

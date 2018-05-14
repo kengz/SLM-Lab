@@ -109,8 +109,7 @@ class SARSA(Algorithm):
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
-        batches = [body.memory.sample()
-                   for body in self.agent.nanflat_body_a]
+        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
         if self.body.memory.is_episodic:
             util.to_torch_nested_batch(batch, self.net.gpu)
@@ -175,7 +174,7 @@ class SARSA(Algorithm):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        ''' Selects and returns a discrete action for body using the action policy'''
+        '''Selects and returns a discrete action for body using the action policy'''
         return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx], self.net.gpu)
 
     def update_explore_var(self):

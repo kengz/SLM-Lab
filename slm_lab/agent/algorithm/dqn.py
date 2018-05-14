@@ -144,7 +144,7 @@ class VanillaDQN(SARSA):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        ''' Selects and returns a discrete action for body using the action policy'''
+        '''Selects and returns a discrete action for body using the action policy'''
         return super(VanillaDQN, self).body_act_discrete(body, state)
 
     def update_explore_var(self):
@@ -324,8 +324,7 @@ class MultitaskDQN(DQN):
             [batch_b['states'] for batch_b in batches], dim=1)
         combined_next_states = torch.cat(
             [batch_b['next_states'] for batch_b in batches], dim=1)
-        batch = {'states': combined_states,
-                 'next_states': combined_next_states}
+        batch = {'states': combined_states, 'next_states': combined_next_states}
         # use recursive packaging to carry sub data
         batch['batches'] = batches
         return batch
@@ -342,12 +341,10 @@ class MultitaskDQN(DQN):
         q_next_acts = []
         for body in self.agent.nanflat_body_a:
             end_idx = start_idx + body.action_dim
-            _val, q_next_act_b = torch.max(
-                q_next_st_acts[:, start_idx:end_idx], dim=1)
+            _val, q_next_act_b = torch.max(q_next_st_acts[:, start_idx:end_idx], dim=1)
             # Shift action so that they have the right indices in combined layer
             q_next_act_b += start_idx
-            logger.debug2(
-                f'Q next action for body {body.aeb}: {q_next_act_b.size()}')
+            logger.debug2(f'Q next action for body {body.aeb}: {q_next_act_b.size()}')
             logger.debug3(f'Q next action for body {body.aeb}: {q_next_act_b}')
             q_next_acts.append(q_next_act_b)
             start_idx = end_idx
@@ -372,10 +369,7 @@ class MultitaskDQN(DQN):
         for b, batch_b in enumerate(batches):
             q_targets_max_b = (batch_b['rewards'].data + self.gamma * torch.mul(
                 (1 - batch_b['dones'].data), q_next_st_maxs[b])).numpy()
-            q_targets_max_b = torch.from_numpy(
-                np.broadcast_to(
-                    q_targets_max_b,
-                    (q_targets_max_b.shape[0], self.action_dims[b])))
+            q_targets_max_b = torch.from_numpy(np.broadcast_to(q_targets_max_b, (q_targets_max_b.shape[0], self.action_dims[b])))
             if torch.cuda.is_available() and self.net.gpu:
                 q_targets_max_b = q_targets_max_b.cuda()
             q_targets_maxs.append(q_targets_max_b)
@@ -398,8 +392,7 @@ class MultitaskDQN(DQN):
 
     def act(self, state_a):
         '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
-        nanflat_action_a = self.action_policy(
-            self.agent.nanflat_body_a, state_a, self.net, self.nanflat_explore_var_a, self.net.gpu)
+        nanflat_action_a = self.action_policy(self.agent.nanflat_body_a, state_a, self.net, self.nanflat_explore_var_a, self.net.gpu)
         action_a = self.nanflat_to_data_a('action', nanflat_action_a)
         return action_a
 
@@ -438,8 +431,7 @@ class MultiHeadDQN(MultitaskDQN):
         # NOTE: q_sts, q_next_st_acts and q_next_sts are lists
         q_sts = self.net.wrap_eval(batch['states'])
         logger.debug3(f'Q sts: {q_sts}')
-        q_next_st_acts = self.online_net.wrap_eval(
-            batch['next_states'])
+        q_next_st_acts = self.online_net.wrap_eval(batch['next_states'])
         logger.debug3(f'Q next st act vals: {q_next_st_acts}')
         q_next_acts = []
         for i, q in enumerate(q_next_st_acts):
@@ -465,8 +457,7 @@ class MultiHeadDQN(MultitaskDQN):
         for b, batch_b in enumerate(batches):
             q_targets_max_b = batch_b['rewards'].data + self.gamma * torch.mul((1 - batch_b['dones'].data), q_next_st_maxs[b])
             q_targets_maxs.append(q_targets_max_b)
-            logger.debug2(
-                f'Batch {b}, Q targets max: {q_targets_max_b.size()}')
+            logger.debug2(f'Batch {b}, Q targets max: {q_targets_max_b.size()}')
         # As in the standard DQN we only want to train the network for the action selected
         # For all other actions we set the q_target = q_sts
         # So that the loss for these actions is 0

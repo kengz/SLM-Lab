@@ -263,8 +263,8 @@ def interp(scl, r):
     '''
     Replacement for colorlover.interp
     Interpolate a color scale "scl" to a new one with length "r"
-        Fun usage in IPython notebook:
-        HTML( to_html( to_hsl( interp( cl.scales['11']['qual']['Paired'], 5000 ) ) ) )
+    Fun usage in IPython notebook:
+    HTML( to_html( to_hsl( interp( cl.scales['11']['qual']['Paired'], 5000 ) ) ) )
     '''
     c = []
     SCL_FI = len(scl) - 1  # final index of color scale
@@ -277,14 +277,16 @@ def interp(scl, r):
     scl = cl.to_numeric(scl)
 
     def interp3(fraction, start, end):
-        ''' Interpolate between values of 2, 3-member tuples '''
+        '''Interpolate between values of 2, 3-member tuples'''
         def intp(f, s, e):
             return s + (e - s) * f
         return tuple([intp(fraction, start[i], end[i]) for i in range(3)])
 
     def rgb_to_hsl(rgb):
-        ''' Adapted from M Bostock's RGB to HSL converter in d3.js
-            https://github.com/mbostock/d3/blob/master/src/color/rgb.js '''
+        '''
+        Adapted from M Bostock's RGB to HSL converter in d3.js
+        https://github.com/mbostock/d3/blob/master/src/color/rgb.js
+        '''
         r, g, b = float(rgb[0]) / 255.0,\
             float(rgb[1]) / 255.0,\
             float(rgb[2]) / 255.0

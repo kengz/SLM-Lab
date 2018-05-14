@@ -106,8 +106,7 @@ class Reinforce(Algorithm):
             policy_loss.backward()
             if self.net.clamp_grad:
                 logger.debug("Clipping gradient...")
-                torch.nn.utils.clip_grad_norm(
-                    self.net.parameters(), self.net.clamp_grad_val)
+                torch.nn.utils.clip_grad_norm(self.net.parameters(), self.net.clamp_grad_val)
             logger.debug2(f'Gradient norms: {self.net.get_grad_norms()}')
             self.net.optim.step()
             self.to_train = 0
@@ -119,14 +118,15 @@ class Reinforce(Algorithm):
             return np.nan
 
     def get_policy_loss(self, batch):
-        '''Returns the policy loss for a batch of data.
-        For REINFORCE just rewards are passed in as the batch'''
+        '''
+        Returns the policy loss for a batch of data.
+        For REINFORCE just rewards are passed in as the batch
+        '''
         advantage = self.calc_advantage(batch)
         advantage = self.check_sizes(advantage)
         policy_loss = []
         for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
-            logger.debug3(
-                f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
+            logger.debug3(f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
             if self.add_entropy:
                 policy_loss.append(-log_prob * a - self.entropy_weight * e)
             else:
@@ -135,8 +135,10 @@ class Reinforce(Algorithm):
         return policy_loss
 
     def check_sizes(self, advantage):
-        '''Checks that log probs, advantage, and entropy all have the same size
-           Occassionally they do not, this is caused by first reward of an episode being nan. If they are not the same size, the function removes the elements of the log probs and entropy that correspond to nan rewards.'''
+        '''
+        Checks that log probs, advantage, and entropy all have the same size
+        Occassionally they do not, this is caused by first reward of an episode being nan. If they are not the same size, the function removes the elements of the log probs and entropy that correspond to nan rewards.
+        '''
         body = self.agent.nanflat_body_a[0]
         nan_idxs = body.memory.last_nan_idxs
         num_nans = sum(nan_idxs)
@@ -166,8 +168,7 @@ class Reinforce(Algorithm):
                 rewards.insert(0, big_r)
             rewards = torch.Tensor(rewards)
             logger.debug3(f'Rewards: {rewards}')
-            rewards = (rewards - rewards.mean()) / (
-                rewards.std() + np.finfo(np.float32).eps)
+            rewards = (rewards - rewards.mean()) / (rewards.std() + np.finfo(np.float32).eps)
             logger.debug3(f'Normalized rewards: {rewards}')
             advantage.append(rewards)
         advantage = torch.cat(advantage)
@@ -184,8 +185,9 @@ class Reinforce(Algorithm):
         return explore_var
 
     def get_actor_output(self, x, evaluate=True):
-        '''Returns the output of the policy, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.
-           Output will either be the logits for a categorical probability distribution over discrete actions (discrete action space) or the mean and std dev of the action policy (continuous action space)
+        '''
+        Returns the output of the policy, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.
+        Output will either be the logits for a categorical probability distribution over discrete actions (discrete action space) or the mean and std dev of the action policy (continuous action space)
         '''
         if evaluate:
             out = self.net.wrap_eval(x)

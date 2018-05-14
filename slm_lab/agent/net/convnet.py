@@ -120,20 +120,20 @@ class ConvNet(Net, nn.Module):
         logger.info(f'decay lr: {self.decay_lr_factor}')
 
     def get_conv_output_size(self):
-        '''Helper function to calculate the size of the
-           flattened features after the final convolutional layer'''
+        '''Helper function to calculate the size of the flattened features after the final convolutional layer'''
         x = Variable(torch.ones(1, *self.in_dim))
         x = self.conv_model(x)
         return x.numel()
 
     def build_conv_layers(self, conv_hid):
-        '''Builds all of the convolutional layers in the network.
-           These layers are turned into a Sequential model and stored
-           in self.conv_model.
-           The entire model consists of two parts:
-                1. self.conv_model
-                2. self.dense_model
-                3. self.out_layers'''
+        '''
+        Builds all of the convolutional layers in the network.
+        These layers are turned into a Sequential model and stored in self.conv_model.
+        The entire model consists of two parts:
+            1. self.conv_model
+            2. self.dense_model
+            3. self.out_layers
+        '''
         for i, layer in enumerate(conv_hid):
             self.conv_layers.append(nn.Conv2d(
                 conv_hid[i][0],
@@ -149,13 +149,14 @@ class ConvNet(Net, nn.Module):
         return nn.Sequential(*self.conv_layers)
 
     def build_flat_layers(self, flat_hid):
-        '''Builds all of the dense layers in the network.
-           These layers are turned into a Sequential model and stored
-           in self.dense_model.
-           The entire model consists of two parts:
-                1. self.conv_model
-                2. self.dense_model
-                3. self.out_layers'''
+        '''
+        Builds all of the dense layers in the network.
+        These layers are turned into a Sequential model and stored in self.dense_model.
+        The entire model consists of two parts:
+            1. self.conv_model
+            2. self.dense_model
+            3. self.out_layers
+        '''
         self.flat_dim = self.get_conv_output_size()
         for i, layer in enumerate(flat_hid):
             in_D = self.flat_dim if i == 0 else flat_hid[i - 1]
@@ -175,7 +176,7 @@ class ConvNet(Net, nn.Module):
         x = self.conv_model(x)
         x = x.view(-1, self.flat_dim)
         x = self.dense_model(x)
-        '''If only one head, return tensor, otherwise return list of outputs'''
+        # If only one head, return tensor, otherwise return list of outputs
         outs = []
         for layer in self.out_layers:
             out = layer(x)
@@ -195,9 +196,7 @@ class ConvNet(Net, nn.Module):
                 net.eval()
 
     def training_step(self, x, y):
-        '''
-        Takes a single training step: one forward and one backwards pass
-        '''
+        '''Takes a single training step: one forward and one backwards pass'''
         self.set_train_eval()
         self.optim.zero_grad()
         out = self(x)

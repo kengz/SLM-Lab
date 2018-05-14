@@ -119,13 +119,14 @@ class RecurrentNet(Net, nn.Module):
         logger.info(f'decay lr: {self.decay_lr_factor}')
 
     def build_state_proc_layers(self, state_processing_layers, hid_layers_activation):
-        '''Builds all of the state processing layers in the network.
-           These layers are turned into a Sequential model and stored
-           in self.state_proc_model.
-           The entire model consists of three parts:
-                1. self.state_proc_model
-                2. self.rnn
-                3. self.fc_out'''
+        '''
+        Builds all of the state processing layers in the network.
+        These layers are turned into a Sequential model and stored in self.state_proc_model.
+        The entire model consists of three parts:
+            1. self.state_proc_model
+            2. self.rnn
+            3. self.fc_out
+        '''
         for i, layer in enumerate(state_processing_layers):
             in_D = self.in_dim if i == 0 else state_processing_layers[i - 1]
             out_D = state_processing_layers[i]
@@ -140,9 +141,8 @@ class RecurrentNet(Net, nn.Module):
         return Variable(hid, volatile=volatile)
 
     def forward(self, x):
-        '''The feedforward step.
-        Input is batch_size x seq_len x state_dim'''
-        '''Unstack input to (batch_size x seq_len) x state_dim in order to transform all state inputs'''
+        '''The feedforward step. Input is batch_size x seq_len x state_dim'''
+        # Unstack input to (batch_size x seq_len) x state_dim in order to transform all state inputs
         batch_size = x.size(0)
         x = x.view(-1, self.in_dim)
         x = self.state_proc_model(x)
@@ -151,7 +151,7 @@ class RecurrentNet(Net, nn.Module):
         hid_0 = self.init_hidden(batch_size)
         _, final_hid = self.rnn(x, hid_0)
         final_hid.squeeze_(dim=0)
-        '''If only one head, return tensor, otherwise return list of outputs'''
+        # If only one head, return tensor, otherwise return list of outputs
         outs = []
         for layer in self.out_layers:
             out = layer(final_hid)
@@ -165,9 +165,7 @@ class RecurrentNet(Net, nn.Module):
             return outs
 
     def training_step(self, x, y):
-        '''
-        Takes a single training step: one forward and one backwards pass
-        '''
+        '''Takes a single training step: one forward and one backwards pass'''
         self.set_train_eval(train=True)
         self.optim.zero_grad()
         out = self(x)

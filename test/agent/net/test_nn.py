@@ -55,7 +55,7 @@ class TestNet:
 
     @pytest.mark.first
     def test_params_not_zero(self, test_nets):
-        ''' Checks that the parameters of the net are not zero except for GRU biases which should be zero.'''
+        '''Checks that the parameters of the net are not zero except for GRU biases which should be zero.'''
         net = test_nets[0]
         print(net)
         flag = True
@@ -64,13 +64,13 @@ class TestNet:
             if 'Recurrent' in net.__class__.__name__ and 'bias_' in net.named_params[i][0]:
                 print(net.named_params[i][0])
                 if torch.sum(torch.abs(param.data)) != 0:
-                    print("FAIL: layer {}".format(i))
+                    print('FAIL: layer {}'.format(i))
                     flag = False
             elif torch.sum(torch.abs(param.data)) < SMALL_NUM:
-                print("FAIL: layer {}".format(i))
+                print('FAIL: layer {}'.format(i))
                 flag = False
         if flag:
-            print("PASS")
+            print('PASS')
         assert flag is True
 
     @flaky(max_runs=10)
@@ -91,14 +91,14 @@ class TestNet:
         if before_params is not None:
             for b, a in zip(before_params, after_params):
                 if torch.sum(b.data) == torch.sum(a.data):
-                    print("Before gradient: {}".format(a.grad))
-                    print("After gradient (should not be None): {}".format(
+                    print('Before gradient: {}'.format(a.grad))
+                    print('After gradient (should not be None): {}'.format(
                         b.grad))
-                    print("FAIL layer {}".format(i))
+                    print('FAIL layer {}'.format(i))
                     flag = False
                     i += 1
         if flag:
-            print("PASS")
+            print('PASS')
         assert flag is True
 
     def test_fixed(self, test_nets):
@@ -121,16 +121,16 @@ class TestNet:
         if before_params is not None:
             for b, a in zip(before_params, after_params):
                 if torch.sum(b.data) != torch.sum(a.data):
-                    print("FAIL")
+                    print('FAIL')
                     flag = False
                     i += 1
         if flag:
-            print("PASS")
+            print('PASS')
         assert flag is True
 
     @flaky(max_runs=10)
     def test_gradient_size(self, test_nets):
-        ''' Checks for exploding and vanishing gradients '''
+        '''Checks for exploding and vanishing gradients'''
         net = test_nets[0]
         if self.check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
@@ -144,23 +144,23 @@ class TestNet:
         flag = True
         for p in net.params:
             if p.grad is None:
-                print("FAIL: no gradient")
+                print('FAIL: no gradient')
                 flag = False
             else:
                 if torch.sum(torch.abs(p.grad.data)) < SMALL_NUM:
-                    print("FAIL: tiny gradients: {}".format(
+                    print('FAIL: tiny gradients: {}'.format(
                         torch.sum(torch.abs(p.grad))))
                     flag = False
                 if torch.sum(torch.abs(p.grad.data)) > LARGE_NUM:
-                    print("FAIL: large gradients: {}".format(
+                    print('FAIL: large gradients: {}'.format(
                         torch.sum(torch.abs(p.grad))))
                     flag = False
         if flag:
-            print("PASS")
+            print('PASS')
         assert flag is True
 
     def test_loss_input(self, test_nets):
-        ''' Checks that the inputs to the loss function are correct '''
+        '''Checks that the inputs to the loss function are correct'''
         net = test_nets[0]
         loss = test_nets[1]
         # TODO e.g. loss is not CrossEntropy when output has one dimension
@@ -175,7 +175,7 @@ class TestNet:
             return False
 
     def test_output(self, test_nets):
-        ''' Checks that the output of the net is not zero or nan '''
+        '''Checks that the output of the net is not zero or nan'''
         net = test_nets[0]
         dummy_input = self.init_dummy_input(net)
         dummy_output = self.init_dummy_output(net)
@@ -188,13 +188,13 @@ class TestNet:
             zero_test = torch.sum(torch.abs(out.data))
             nan_test = np.isnan(torch.sum(out.data))
         if zero_test < SMALL_NUM:
-            print("FAIL")
+            print('FAIL')
             print(out)
             flag = False
         if nan_test:
-            print("FAIL")
+            print('FAIL')
             print(out)
             flag = False
         if flag:
-            print("PASS")
+            print('PASS')
         assert flag is True

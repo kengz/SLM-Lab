@@ -191,8 +191,10 @@ class StackReplay(Replay):
 
 
 class Atari(Replay):
-    '''Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
-       Otherwise the same as Replay memory'''
+    '''
+    Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
+    Otherwise the same as Replay memory
+    '''
 
     def __init__(self, memory_spec, algorithm, body):
         # TODO unify preprocessed state_dim into body
@@ -241,6 +243,6 @@ class Atari(Replay):
         self.last_state = state
         self.last_done = done
         if done:
-            '''Clear buffer so there are no experiences from previous states spilling over to new episodes'''
+            # Clear buffer so there are no experiences from previous states spilling over to new episodes
             self.clear_buffer()
             self.body.state_buffer = []

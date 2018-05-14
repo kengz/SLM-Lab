@@ -188,9 +188,9 @@ class ActorCritic(Reinforce):
         '''Trains the network when the actor and critic share parameters'''
         if self.to_train == 1:
             batch = self.sample()
-            '''Calculate policy loss (actor)'''
+            # Calculate policy loss (actor)
             policy_loss = self.get_policy_loss(batch)
-            '''Calculate state-value loss (critic)'''
+            # Calculate state-value loss (critic)
             target = self.get_target(batch, critic_specific=True)
             states = batch['states']
             if self.body.memory.is_episodic:
@@ -202,13 +202,13 @@ class ActorCritic(Reinforce):
             state_vals = self.get_critic_output(states, evaluate=False)
             assert state_vals.data.size() == y.data.size()
             val_loss = F.mse_loss(state_vals, y)
-            '''Combine losses and train'''
+            # Combine losses and train
             self.net.optim.zero_grad()
             total_loss = self.policy_loss_weight * policy_loss + self.val_loss_weight * val_loss
             loss = total_loss.data[0]
             total_loss.backward()
             if self.net.clamp_grad:
-                logger.debug("Clipping actorcritic gradient...")
+                logger.debug('Clipping actorcritic gradient...')
                 torch.nn.utils.clip_grad_norm(
                     self.net.params, self.net.clamp_grad_val)
             logger.debug2(f'Combined AC gradient norms: {self.net.get_grad_norms()}')
@@ -216,7 +216,7 @@ class ActorCritic(Reinforce):
             self.to_train = 0
             self.saved_log_probs = []
             self.entropy = []
-            logger.debug("Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}".format(
+            logger.debug('Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}'.format(
                 val_loss.data[0], abs(policy_loss.data[0]), loss
             ))
             return loss
@@ -231,7 +231,7 @@ class ActorCritic(Reinforce):
             critic_loss = self.train_critic(batch)
             actor_loss = self.train_actor(batch)
             total_loss = critic_loss + abs(actor_loss)
-            logger.debug("Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}".format(
+            logger.debug('Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}'.format(
                 critic_loss, abs(actor_loss), total_loss
             ))
             return total_loss
@@ -300,12 +300,13 @@ class ActorCritic(Reinforce):
         return loss
 
     def calc_advantage(self, batch):
-        ''' Calculates advantage = target - state_vals for each timestep
-            state_vals are the current estimate using the critic
-            Two options for calculating the advantage.
-                1. n_step forward returns as in "Asynchronous Methods for Deep Reinforcement Learning"
-                2. Generalized advantage estimation (GAE) as in "High-Dimensional Continuous Control Using Generalized Advantage Estimation"
-            Default is 1. To select GAE set use_GAE to true in the spec.
+        '''
+        Calculates advantage = target - state_vals for each timestep
+        state_vals are the current estimate using the critic
+        Two options for calculating the advantage.
+            1. n_step forward returns as in "Asynchronous Methods for Deep Reinforcement Learning"
+            2. Generalized advantage estimation (GAE) as in "High-Dimensional Continuous Control Using Generalized Advantage Estimation"
+        Default is 1. To select GAE set use_GAE to true in the spec.
         '''
         if self.body.memory.is_episodic:
             return self.calc_advantage_episodic(batch)
@@ -313,9 +314,11 @@ class ActorCritic(Reinforce):
             return self.calc_advantage_batch(batch)
 
     def calc_advantage_batch(self, batch):
-        '''Calculates advantage when memory is batch based.
-           target and state_vals are Tensors.
-           returns advantage as a single Tensor'''
+        '''
+        Calculates advantage when memory is batch based.
+        target and state_vals are Tensors.
+        returns advantage as a single Tensor
+        '''
         target = self.get_target(batch)
         state_vals = self.get_critic_output(batch['states']).squeeze_()
         advantage = target - state_vals
@@ -324,9 +327,11 @@ class ActorCritic(Reinforce):
         return advantage
 
     def calc_advantage_episodic(self, batch):
-        '''Calculates advantage when memory is batch based.
-           target and state_vals are lists containing tensors per episode.
-           returns advantage as a single tensor combined for all episodes'''
+        '''
+        Calculates advantage when memory is batch based.
+        target and state_vals are lists containing tensors per episode.
+        returns advantage as a single tensor combined for all episodes
+        '''
         target = self.get_target(batch)
         advantage = []
         states = batch['states']
@@ -340,18 +345,22 @@ class ActorCritic(Reinforce):
         return advantage
 
     def get_nstep_target(self, batch, critic_specific=False):
-        '''Estimates state-action value with n-step returns. Used as a target when training the critic and calculting the advantage. No critic specific target value for this method of calculating the advantage.
+        '''
+        Estimates state-action value with n-step returns. Used as a target when training the critic and calculting the advantage. No critic specific target value for this method of calculating the advantage.
         In the episodic case it returns a list containing targets per episode
-        In the batch case it returns a tensor containing the targets for the batch'''
+        In the batch case it returns a tensor containing the targets for the batch
+        '''
         if self.body.memory.is_episodic:
             return self.get_nstep_target_episodic(batch)
         else:
             return self.get_nstep_target_batch(batch)
 
     def get_gae_target(self, batch, critic_specific=False):
-        '''Estimates the state-action value using generalized advantage estimation. Used as a target when training the critic and calculting the advantage.
+        '''
+        Estimates the state-action value using generalized advantage estimation. Used as a target when training the critic and calculting the advantage.
         In the episodic case it returns a list containing targets per episode
-        In the batch case it returns a tensor containing the targets for the batch'''
+        In the batch case it returns a tensor containing the targets for the batch
+        '''
         if self.body.memory.is_episodic:
             return self.get_gae_target_episodic(batch, critic_specific=critic_specific)
         else:
@@ -363,13 +372,13 @@ class ActorCritic(Reinforce):
         next_state_vals = self.get_critic_output(batch['next_states']).squeeze_(dim=1)
         rewards = batch['rewards'].data
         (R, next_state_gammas) = self.get_R_ex_state_val_estimate(next_state_vals, rewards)
-        '''Complete for 0th step and add state-value estimate'''
+        # Complete for 0th step and add state-value estimate
         R = rewards + self.gamma * R
         next_state_gammas *= self.gamma
         logger.debug3(f'R: {R}')
         logger.debug3(f'next_state_gammas: {next_state_gammas}')
         logger.debug3(f'dones: {batch["dones"]}')
-        '''Calculate appropriate state value accounting for terminal states and number of time steps'''
+        # Calculate appropriate state value accounting for terminal states and number of time steps
         discounted_state_val_estimate = torch.mul(next_state_vals, next_state_gammas)
         discounted_state_val_estimate = torch.mul(discounted_state_val_estimate, 1 - batch['dones'].data)
         R += discounted_state_val_estimate
@@ -388,13 +397,13 @@ class ActorCritic(Reinforce):
             next_state_vals = self.get_critic_output(ns).squeeze_(dim=1)
             r = r.data
             (R, next_state_gammas) = self.get_R_ex_state_val_estimate(next_state_vals, r)
-            '''Complete for 0th step and add state-value estimate'''
+            # Complete for 0th step and add state-value estimate
             R = r + self.gamma * R
             next_state_gammas *= self.gamma
             logger.debug3(f'R: {R}')
             logger.debug3(f'next_state_gammas: {next_state_gammas}')
             logger.debug3(f'dones: {d}')
-            '''Calculate appropriate state value accounting for terminal states and number of time steps'''
+            # Calculate appropriate state value accounting for terminal states and number of time steps
             discounted_state_val_estimate = torch.mul(next_state_vals, next_state_gammas)
             discounted_state_val_estimate = torch.mul(discounted_state_val_estimate, 1 - d.data)
             if nts < next_state_vals.size(0):
@@ -434,12 +443,12 @@ class ActorCritic(Reinforce):
         '''Returns a tensor containing the estimate of the state-action values using generalized advantage estimation'''
         rewards = batch['rewards'].data
         if critic_specific:
-            logger.debug2(f'Using critic specific target')
-            '''Target is the discounted sum of returns for training the critic'''
+            logger.debug2('Using critic specific target')
+            # Target is the discounted sum of returns for training the critic
             target = self.get_gae_critic_target(rewards)
         else:
-            logger.debug2(f'Using actor specific target')
-            '''Target is the Generalized advantage estimate + current state-value estimate'''
+            logger.debug2('Using actor specific target')
+            # Target is the Generalized advantage estimate + current state-value estimate
             states = batch['states']
             next_states = batch['next_states']
             dones = batch['dones']
@@ -451,14 +460,14 @@ class ActorCritic(Reinforce):
         rewards = batch['rewards']
         targets = []
         if critic_specific:
-            logger.debug2(f'Using critic specific target')
-            '''Target is the discounted sum of returns for training the critic'''
+            logger.debug2('Using critic specific target')
+            # Target is the discounted sum of returns for training the critic
             for r in rewards:
                 t = self.get_gae_critic_target(r.data)
                 targets.append(t)
         else:
-            logger.debug2(f'Using actor specific target')
-            '''Target is the Generalized advantage estimate + current state-value estimate'''
+            logger.debug2('Using actor specific target')
+            # Target is the Generalized advantage estimate + current state-value estimate
             states = batch['states']
             next_states = batch['next_states']
             dones = batch['dones']
@@ -481,8 +490,10 @@ class ActorCritic(Reinforce):
         return target
 
     def get_gae_actor_target(self, rewards, states, next_states, dones):
-        '''Target is the Generalized advantage estimate + current state-value estimate'''
-        '''First calculate the 1 step bootstrapped estimate of the advantage. Also described as the TD residual of V with discount self.gamma (Sutton & Barto, 1998)'''
+        '''
+        Target is the Generalized advantage estimate + current state-value estimate
+        '''
+        # First calculate the 1 step bootstrapped estimate of the advantage. Also described as the TD residual of V with discount self.gamma (Sutton & Barto, 1998)
         next_state_vals = self.get_critic_output(next_states).squeeze_(dim=1)
         next_state_vals = torch.mul(next_state_vals, 1 - dones.data)
         state_vals = self.get_critic_output(states).squeeze_(dim=1)
@@ -492,7 +503,7 @@ class ActorCritic(Reinforce):
         logger.debug3(f'Dones: {dones}')
         logger.debug3(f'Deltas: {deltas}')
         logger.debug3(f'lam: {self.lam}, gamma: {self.gamma}')
-        '''Then calculate GAE, the exponentially weighted average of the TD residuals'''
+        # Then calculate GAE, the exponentially weighted average of the TD residuals
         advantage = []
         gae = 0
         for i in range(deltas.size(0) - 1, -1, -1):
@@ -501,7 +512,7 @@ class ActorCritic(Reinforce):
         advantage = torch.Tensor(advantage)
         if torch.cuda.is_available() and self.net.gpu:
             advantage = advantage.cuda()
-        '''Add state_vals so that calc_advantage() api is preserved'''
+        # Add state_vals so that calc_advantage() api is preserved
         target = advantage + state_vals
         logger.debug3(f'Advantage: {advantage}')
         logger.debug3(f'Target: {target}')
@@ -516,8 +527,9 @@ class ActorCritic(Reinforce):
             print(self.critic)
 
     def get_actor_output(self, x, evaluate=True):
-        '''Returns the output of the policy, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.
-           Output will either be the logits for a categorical probability distribution over discrete actions (discrete action space) or the mean and std dev of the action policy (continuous action space)
+        '''
+        Returns the output of the policy, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.
+        Output will either be the logits for a categorical probability distribution over discrete actions (discrete action space) or the mean and std dev of the action policy (continuous action space)
         '''
         if self.share_architecture:
             if evaluate:

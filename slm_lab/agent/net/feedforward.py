@@ -27,16 +27,16 @@ class MLPNet(Net, nn.Module):
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
         dict(
-                1000,
-                [512, 256, 128],
-                10,
-                hid_layers_activation='relu',
-                optim_spec={'name': 'Adam'},
-                loss_spec={'name': 'mse_loss'},
-                clamp_grad=True,
-                clamp_grad_val=2.0,
-                gpu=True,
-                decay_lr_factor=0.9)
+            1000,
+            [512, 256, 128],
+            10,
+            hid_layers_activation='relu',
+            optim_spec={'name': 'Adam'},
+            loss_spec={'name': 'mse_loss'},
+            clamp_grad=True,
+            clamp_grad_val=2.0,
+            gpu=True,
+            decay_lr_factor=0.9)
         '''
         nn.Module.__init__(self)
         super(MLPNet, self).__init__(net_spec, algorithm, body)
@@ -96,9 +96,7 @@ class MLPNet(Net, nn.Module):
         return self.model(x)
 
     def training_step(self, x, y):
-        '''
-        Takes a single training step: one forward and one backwards pass
-        '''
+        '''Takes a single training step: one forward and one backwards pass'''
         self.model.train()
         self.model.zero_grad()
         self.optim.zero_grad()
@@ -175,16 +173,16 @@ class MLPHeterogenousTails(MLPNet):
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
         dict(
-                1000,
-                [512, 256, 128],
-                [1, 1],
-                hid_layers_activation='relu',
-                optim_spec={'name': 'Adam'},
-                loss_spec={'name': 'mse_loss'},
-                clamp_grad=True,
-                clamp_grad_val=2.0,
-                gpu=True,
-                decay_lr_factor=0.9)
+            1000,
+            [512, 256, 128],
+            [1, 1],
+            hid_layers_activation='relu',
+            optim_spec={'name': 'Adam'},
+            loss_spec={'name': 'mse_loss'},
+            clamp_grad=True,
+            clamp_grad_val=2.0,
+            gpu=True,
+            decay_lr_factor=0.9)
         '''
         Net.__init__(self, net_spec, algorithm, body)
         # set default
@@ -321,7 +319,7 @@ class MultiMLPNet(Net, nn.Module):
         clamp_grad: whether to clamp the gradient
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
-        net = MLPNet(
+        net = dict(
             [[800, 200],[400, 200]],
              [100, 50, 25],
              [[10], [15]],
