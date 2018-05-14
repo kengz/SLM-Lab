@@ -1,3 +1,4 @@
+from copy import deepcopy
 from slm_lab.agent import net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, decay_learning_rate
 from slm_lab.agent.algorithm.reinforce import Reinforce
@@ -19,26 +20,12 @@ class ActorCritic(Reinforce):
     Original paper: "Asynchronous Methods for Deep Reinforcement Learning"
     https://arxiv.org/abs/1602.01783
     Algorithm specific training options:
-        - GAE:          @param: 'algorithm.use_GAE' option to use generalized advantage estimation
-                        introduced in "High-Dimensional Continuous Control Using Generalized Advantage
-                        Estimation https://arxiv.org/abs/1506.02438. The default option is to use n-step
-                        returns as desribed in "Asynchronous Methods for Deep Reinforcement Learning"
-        - entropy:      @param: 'algorithm.add_entropy' option to add entropy to policy during training to
-                        encourage exploration as outlined in "Asynchronous Methods for Deep Reinforcement
-                        Learning"
-        - memory type:  @param: 'memory.name' batch (through OnPolicyBatchReplay memory class) or episodic
-                        through (OnPolicyReplay memory class)
-        - return steps: @param: 'algorithm.num_step_returns' how many forward step returns to use when
-                        calculating the advantage target. Min = 0. Applied for standard advantage estimation.
-                        Not used for GAE.
-        - lamda:        @param: 'algorithm.lamda' controls the bias variance tradeoff when using GAE.
-                        Floating point value between 0 and 1. Lower values correspond to more bias,
-                        less variance. Higher values to more variance, less bias.
-        - param sharing: @param: 'net.type' whether the actor and critic should share params (e.g. through
-                        'MLPshared') or have separate params (e.g. through 'MLPseparate')
-                        If param sharing is used then there is also the option to control the weight
-                        given to the policy and value components of the loss function through
-                        'policy_loss_weight' and 'val_loss_weight'
+        - GAE:          @param: 'algorithm.use_GAE' option to use generalized advantage estimation introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. The default option is to use n-step returns as desribed in "Asynchronous Methods for Deep Reinforcement Learning"
+        - entropy:      @param: 'algorithm.add_entropy' option to add entropy to policy during training to encourage exploration as outlined in "Asynchronous Methods for Deep Reinforcement Learning"
+        - memory type:  @param: 'memory.name' batch (through OnPolicyBatchReplay memory class) or episodic through (OnPolicyReplay memory class)
+        - return steps: @param: 'algorithm.num_step_returns' how many forward step returns to use when calculating the advantage target. Min = 0. Applied for standard advantage estimation. Not used for GAE.
+        - lamda:        @param: 'algorithm.lamda' controls the bias variance tradeoff when using GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
+        - param sharing: @param: 'net.type' whether the actor and critic should share params (e.g. through 'MLPshared') or have separate params (e.g. through 'MLPseparate'). If param sharing is used then there is also the option to control the weight given to the policy and value components of the loss function through 'policy_loss_weight' and 'val_loss_weight'
     Algorithm - separate actor and critic:
         Repeat:
             1. Collect k examples
@@ -68,6 +55,109 @@ class ActorCritic(Reinforce):
         logger.info(util.self_desc(self))
 
     @lab_api
+    def init_nets(self):
+        '''
+        Initialize the neural networks used to learn the actor and critic from the spec
+        Below we automatically select an appropriate net based on two different conditions
+        1. If the action space is discrete or continuous action
+            - Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
+            - Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
+        2. If the actor and critic are separate or share weights
+            - If the networks share weights then the single network returns a list.
+            - Continuous action spaces: The return list contains 3 elements: The first element contains the mean output for the actor (policy), the second element the std dev of the policy, and the third element is the state-value estimated by the network.
+            - Discrete action spaces: The return list contains 2 element. The first element is a tensor containing the logits for a categorical probability distribution over the actions. The second element contains the state-value estimated by the network.
+        3. If the network type is feedforward, convolutional, or recurrent
+            - Feedforward and convolutional networks take a single state as input and require an OnPolicyReplay or OnPolicyBatchReplay memory
+            - Recurrent networks take n states as input and require an OnPolicyNStepReplay or OnPolicyNStepBatchReplay memory
+        '''
+        self.body = self.agent.nanflat_body_a[0]  # single-body algo
+        net_type = self.net_spec['type']
+        # options of net_type are {MLP, Conv, Recurrent} x {shared, separate}
+        if self.body.is_discrete:
+            if 'shared' in net_type:
+                self.share_architecture = True
+                self.body.action_dim = [self.body.action_dim, 1]
+            else:
+                self.share_architecture = False
+                assert 'separate' in net_type
+        else:
+            self.body.action_dim = [self.body.action_dim] * 2
+            if 'shared' in net_type:
+                self.share_architecture = True
+                self.body.action_dim.append(1)
+            else:
+                self.share_architecture = False
+                assert 'separate' in net_type
+
+        self.net_spec['type'] = net_type = net_type.replace('shared', 'Net').replace('separate', 'Net')
+        if 'MLP' in net_type and ps.is_list(self.body.action_dim) and len(self.body.action_dim) > 1:
+            self.net_spec['type'] = 'MLPHeterogenousTails'
+
+        actor_net_spec = self.net_spec.copy()
+        critic_net_spec = self.net_spec.copy()
+        for k in self.net_spec:
+            if 'actor_' in k:
+                actor_net_spec[k.replace('actor_', '')] = actor_net_spec.pop(k)
+                critic_net_spec.pop(k)
+            if 'critic_' in k:
+                critic_net_spec[k.replace('critic_', '')] = critic_net_spec.pop(k)
+                actor_net_spec.pop(k)
+
+        NetClass = getattr(net, self.net_spec['type'])
+        # properly set net_spec and action_dim for actor, critic nets
+        if self.share_architecture:
+            # net = actor_critic as one
+            self.net = NetClass(actor_net_spec, self, self.body)
+        else:
+            # main net = actor
+            self.net = NetClass(actor_net_spec, self, self.body)
+            critic_body = deepcopy(self.body)
+            critic_body.action_dim = 1  # space to init critic
+            if critic_net_spec['use_same_optim']:
+                self.critic = NetClass(actor_net_spec, self, critic_body)
+            else:
+                self.critic = NetClass(critic_net_spec, self, critic_body)
+        logger.info(f'Training on gpu: {self.net.gpu}')
+
+    @lab_api
+    def init_algorithm_params(self):
+        '''Initialize other algorithm parameters'''
+        if self.algorithm_spec['action_policy'] == 'default':
+            if self.body.is_discrete:
+                self.algorithm_spec['action_policy'] = 'softmax'
+            else:
+                self.algorithm_spec['action_policy'] = 'gaussian'
+        util.set_attr(self, self.algorithm_spec, [
+            'action_policy',
+            'gamma',  # the discount factor
+            'add_entropy',
+            'entropy_weight',
+            'continuous_action_clip',
+            'training_frequency',
+            'training_iters_per_batch',
+            'use_GAE',
+            'lamda',
+            'num_step_returns',
+            'policy_loss_weight',
+            'val_loss_weight',
+        ])
+        self.action_policy = act_fns[self.action_policy]
+        self.to_train = 0
+        # To save on a forward pass keep the log probs from each action
+        self.saved_log_probs = []
+        self.entropy = []
+        # Select appropriate function for calculating state-action-value estimate (target)
+        if self.use_GAE:
+            self.get_target = self.get_gae_target
+        else:
+            self.get_target = self.get_nstep_target
+        self.set_memory_flag()
+        self.to_train = 0
+        # To save on a forward pass keep the log probs and entropy from each action
+        self.saved_log_probs = []
+        self.entropy = []
+
+    @lab_api
     def body_act_discrete(self, body, state):
         return self.action_policy(self, state, body, self.net.gpu)
 
@@ -90,7 +180,7 @@ class ActorCritic(Reinforce):
     @lab_api
     def train(self):
         '''Trains the algorithm'''
-        if self.is_shared_architecture:
+        if self.share_architecture:
             return self.train_shared()
         else:
             return self.train_separate()
@@ -114,16 +204,16 @@ class ActorCritic(Reinforce):
             assert state_vals.data.size() == y.data.size()
             val_loss = F.mse_loss(state_vals, y)
             '''Combine losses and train'''
-            self.actorcritic.optim.zero_grad()
+            self.net.optim.zero_grad()
             total_loss = self.policy_loss_weight * policy_loss + self.val_loss_weight * val_loss
             loss = total_loss.data[0]
             total_loss.backward()
-            if self.actorcritic.clamp_grad:
+            if self.net.clamp_grad:
                 logger.debug("Clipping actorcritic gradient...")
                 torch.nn.utils.clip_grad_norm(
-                    self.actorcritic.params, self.actorcritic.clamp_grad_val)
-            logger.debug2(f'Combined AC gradient norms: {self.actorcritic.get_grad_norms()}')
-            self.actorcritic.optim.step()
+                    self.net.params, self.net.clamp_grad_val)
+            logger.debug2(f'Combined AC gradient norms: {self.net.get_grad_norms()}')
+            self.net.optim.step()
             self.to_train = 0
             self.saved_log_probs = []
             self.entropy = []
@@ -158,16 +248,16 @@ class ActorCritic(Reinforce):
 
     def train_actor(self, batch):
         '''Trains the actor when the actor and critic are separate networks'''
-        self.actor.optim.zero_grad()
+        self.net.optim.zero_grad()
         policy_loss = self.get_policy_loss(batch)
         loss = policy_loss.data[0]
         policy_loss.backward()
-        if self.actor.clamp_grad:
+        if self.net.clamp_grad:
             logger.debug("Clipping actor gradient...")
             torch.nn.utils.clip_grad_norm(
-                self.actor.params, self.actor.clamp_grad_val)
-        logger.debug(f'Actor gradient norms: {self.actor.get_grad_norms()}')
-        self.actor.optim.step()
+                self.net.params, self.net.clamp_grad_val)
+        logger.debug(f'Actor gradient norms: {self.net.get_grad_norms()}')
+        self.net.optim.step()
         self.to_train = 0
         self.saved_log_probs = []
         self.entropy = []
@@ -418,174 +508,6 @@ class ActorCritic(Reinforce):
         logger.debug3(f'Target: {target}')
         return target
 
-    def init_nets(self):
-        '''Initialize the neural networks used to learn the actor and critic from the spec'''
-        body = self.agent.nanflat_body_a[0]  # singleton algo
-        state_dim = body.state_dim
-        action_dim = body.action_dim
-        self.is_discrete = body.is_discrete
-        net_spec = self.agent_spec['net']
-        memory_spec = self.agent_spec['memory']
-        net_type = self.agent_spec['net']['type']
-        actor_kwargs = util.compact_dict(dict(
-            hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
-            optim_spec=ps.get(net_spec, 'actor_optim_spec'),
-            loss_spec=ps.get(net_spec, 'loss'),  # Note: Not used for training actor
-            clamp_grad=ps.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
-            gpu=ps.get(net_spec, 'gpu'),
-            decay_lr_factor=ps.get(net_spec, 'decay_lr_factor'),
-        ))
-        if self.agent_spec['net']['use_same_optim']:
-            logger.info('Using same optimizer for actor and critic')
-            critic_kwargs = actor_kwargs
-        else:
-            logger.info('Using different optimizer for actor and critic')
-            critic_kwargs = util.compact_dict(dict(
-                hid_layers_activation=ps.get(net_spec, 'hid_layers_activation'),
-                optim_spec=ps.get(net_spec, 'critic_optim_spec'),
-                loss_spec=ps.get(net_spec, 'loss'),
-                clamp_grad=ps.get(net_spec, 'clamp_grad'),
-                clamp_grad_val=ps.get(net_spec, 'clamp_grad_val'),
-                gpu=ps.get(net_spec, 'gpu'),
-                decay_lr_factor=ps.get(net_spec, 'decay_lr_factor'),
-            ))
-        '''
-         Below we automatically select an appropriate net based on two different conditions
-           1. If the action space is discrete or continuous action
-                   - Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
-                   - Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
-           2. If the actor and critic are separate or share weights
-                   - If the networks share weights then the single network returns a list.
-                        - Continuous action spaces: The return list contains 3 elements: The first element contains the mean output for the actor (policy), the second element the std dev of the policy, and the third element is the state-value estimated by the network.
-                        - Discrete action spaces: The return list contains 2 element. The first element is a tensor containing the logits for a categorical probability distribution over the actions. The second element contains the state-value estimated by the network.
-           3. If the network type is feedforward, convolutional, or recurrent
-                    - Feedforward and convolutional networks take a single state as input and require an OnPolicyReplay or OnPolicyBatchReplay memory
-                    - Recurrent networks take n states as input and require an OnPolicyNStepReplay or OnPolicyNStepBatchReplay memory
-        '''
-        if net_type == 'MLPseparate':
-            self.is_shared_architecture = False
-            self.is_recurrent = False
-            if self.is_discrete:
-                self.actor = getattr(net, 'MLPNet')(
-                    state_dim, net_spec['hid_layers'], action_dim, **actor_kwargs)
-                logger.info("Feedforward net, discrete action space, actor and critic are separate networks")
-            else:
-                self.actor = getattr(net, 'MLPHeterogenousTails')(
-                    state_dim, net_spec['hid_layers'], [action_dim, action_dim], **actor_kwargs)
-                logger.info("Feedforward net, continuous action space, actor and critic are separate networks")
-            self.critic = getattr(net, 'MLPNet')(
-                state_dim, net_spec['hid_layers'], 1, **critic_kwargs)
-        elif net_type == 'MLPshared':
-            self.is_shared_architecture = True
-            self.is_recurrent = False
-            if self.is_discrete:
-                self.actorcritic = getattr(net, 'MLPHeterogenousTails')(
-                    state_dim, net_spec['hid_layers'], [action_dim, 1], **actor_kwargs)
-                logger.info("Feedforward net, discrete action space, actor and critic combined into single network, sharing params")
-            else:
-                self.actorcritic = getattr(net, 'MLPHeterogenousTails')(
-                    state_dim, net_spec['hid_layers'], [action_dim, action_dim, 1], **actor_kwargs)
-                logger.info("Feedforward net, continuous action space, actor and critic combined into single network, sharing params")
-        elif net_type == 'Convseparate':
-            self.is_shared_architecture = False
-            self.is_recurrent = False
-            if self.is_discrete:
-                self.actor = getattr(net, 'ConvNet')(
-                    state_dim, net_spec['hid_layers'], action_dim, **actor_kwargs)
-                logger.info("Convolutional net, discrete action space, actor and critic are separate networks")
-            else:
-                self.actor = getattr(net, 'ConvNet')(
-                    state_dim, net_spec['hid_layers'], [action_dim, action_dim], **actor_kwargs)
-                logger.info("Convolutional net, continuous action space, actor and critic are separate networks")
-            self.critic = getattr(net, 'ConvNet')(
-                state_dim, net_spec['hid_layers'], 1, **critic_kwargs)
-        elif net_type == 'Convshared':
-            self.is_shared_architecture = True
-            self.is_recurrent = False
-            if self.is_discrete:
-                self.actorcritic = getattr(net, 'ConvNet')(
-                    state_dim, net_spec['hid_layers'], [action_dim, 1], **actor_kwargs)
-                logger.info("Convolutional net, discrete action space, actor and critic combined into single network, sharing params")
-            else:
-                self.actorcritic = getattr(net, 'ConvNet')(
-                    state_dim, net_spec['hid_layers'], [action_dim, action_dim, 1], **actor_kwargs)
-                logger.info("Convolutional net, continuous action space, actor and critic combined into single network, sharing params")
-        elif net_type == 'Recurrentseparate':
-            self.is_shared_architecture = False
-            self.is_recurrent = True
-            if self.is_discrete:
-                self.actor = getattr(net, 'RecurrentNet')(
-                    state_dim, net_spec['hid_layers'], action_dim, net_spec['seq_len'], **actor_kwargs)
-                logger.info("Recurrent net, discrete action space, actor and critic are separate networks")
-            else:
-                self.actor = getattr(net, 'RecurrentNet')(
-                    state_dim, net_spec['hid_layers'], [action_dim, action_dim], net_spec['seq_len'], **actor_kwargs)
-                logger.info("Recurrent net, continuous action space, actor and critic are separate networks")
-            self.critic = getattr(net, 'RecurrentNet')(
-                state_dim, net_spec['hid_layers'], 1, net_spec['seq_len'], **critic_kwargs)
-        elif net_type == 'Recurrentshared':
-            self.is_shared_architecture = True
-            self.is_recurrent = True
-            if self.is_discrete:
-                self.actorcritic = getattr(net, 'RecurrentNet')(
-                    state_dim, net_spec['hid_layers'], [action_dim, 1], net_spec['seq_len'], **actor_kwargs)
-                logger.info("Recurrent net, discrete action space, actor and critic combined into single network, sharing params")
-            else:
-                self.actorcritic = getattr(net, 'RecurrentNet')(
-                    state_dim, net_spec['hid_layers'], [action_dim, action_dim, 1], net_spec['seq_len'], **actor_kwargs)
-                logger.info("Recurrent net, continuous action space, actor and critic combined into single network, sharing params")
-        else:
-            logger.warn("Incorrect network type. Please use 'MLPshared', MLPseparate', Recurrentshared, or Recurrentseparate.")
-            raise NotImplementedError
-
-    def init_algorithm_params(self):
-        '''Initialize other algorithm parameters'''
-        net_spec = self.agent_spec['net']
-        self.set_action_fn()
-        util.set_attr(self, self.algorithm_spec, [
-            'gamma',
-            'add_entropy', 'entropy_weight',
-            'continuous_action_clip',
-            'lamda', 'num_step_returns',
-            'training_frequency', 'training_iters_per_batch',
-            'use_GAE',
-            'policy_loss_weight', 'val_loss_weight',
-
-        ])
-        util.set_attr(self, net_spec, [
-            'decay_lr_factor', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
-        ])
-        if not hasattr(self, 'gpu'):
-            self.net.gpu = False
-        logger.info(f'Training on gpu: {self.net.gpu}')
-        '''Select appropriate function for calculating state-action-value estimate (target)'''
-        self.get_target = self.get_nstep_target
-        if self.use_GAE:
-            self.get_target = self.get_gae_target
-        self.set_memory_flag()
-        '''To save on a forward pass keep the log probs and entropy from each action'''
-        self.saved_log_probs = []
-        self.entropy = []
-        self.to_train = 0
-
-    def set_action_fn(self):
-        '''Sets the function used to select actions. Automatically selects appropriate discrete or continuous action policy under default setting'''
-        body = self.agent.nanflat_body_a[0]
-        algorithm_spec = self.agent_spec['algorithm']
-        action_fn = algorithm_spec['action_policy']
-        if action_fn == 'default':
-            if self.is_discrete:
-                self.action_policy = act_fns['softmax']
-            else:
-                if body.action_dim > 1:
-                    logger.warn(f'Action dim: {body.action_dim}. Continuous multidimensional action space not supported yet. Contact author')
-                    raise NotImplementedError
-                else:
-                    self.action_policy = act_fns['gaussian']
-        else:
-            self.action_policy = act_fns[action_fn]
-
     def set_memory_flag(self):
         '''Flags if memory is episodic or discrete. This affects how the target and advantage functions are calculated'''
         body = self.agent.nanflat_body_a[0]
@@ -600,38 +522,38 @@ class ActorCritic(Reinforce):
 
     def print_nets(self):
         '''Prints networks to stdout'''
-        if self.is_shared_architecture:
-            print(self.actorcritic)
+        if self.share_architecture:
+            print(self.net)
         else:
-            print(self.actor)
+            print(self.net)
             print(self.critic)
 
     def get_actor_output(self, x, evaluate=True):
         '''Returns the output of the policy, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.
            Output will either be the logits for a categorical probability distribution over discrete actions (discrete action space) or the mean and std dev of the action policy (continuous action space)
         '''
-        if self.is_shared_architecture:
+        if self.share_architecture:
             if evaluate:
-                out = self.actorcritic.wrap_eval(x)
+                out = self.net.wrap_eval(x)
             else:
-                self.actorcritic.train()
-                out = self.actorcritic(x)
+                self.net.train()
+                out = self.net(x)
             return out[:-1]
         else:
             if evaluate:
-                return self.actor.wrap_eval(x)
+                return self.net.wrap_eval(x)
             else:
-                self.actor.train()
-                return self.actor(x)
+                self.net.train()
+                return self.net(x)
 
     def get_critic_output(self, x, evaluate=True):
         '''Returns the estimated state-value regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.'''
-        if self.is_shared_architecture:
+        if self.share_architecture:
             if evaluate:
-                out = self.actorcritic.wrap_eval(x)
+                out = self.net.wrap_eval(x)
             else:
-                self.actorcritic.train()
-                out = self.actorcritic(x)
+                self.net.train()
+                out = self.net(x)
             return out[-1]
         else:
             if evaluate:
@@ -641,7 +563,7 @@ class ActorCritic(Reinforce):
                 return self.critic(x)
 
     def update_learning_rate(self):
-        if self.is_shared_architecture:
-            decay_learning_rate(self, [self.actorcritic])
+        if self.share_architecture:
+            decay_learning_rate(self, [self.net])
         else:
-            decay_learning_rate(self, [self.actor, self.critic])
+            decay_learning_rate(self, [self.net, self.critic])
