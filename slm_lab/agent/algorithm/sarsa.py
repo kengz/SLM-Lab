@@ -75,7 +75,6 @@ class SARSA(Algorithm):
         self.to_train = 0
         self.nanflat_explore_var_a = [self.explore_var_start] * self.agent.body_num
 
-
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
         # Calculate the Q values of the current and next states

@@ -48,7 +48,7 @@ class TestNet:
         if 'MLPHeterogenousTails' in net.__class__.__name__:
             return True
         # Skipping test for 'RecurrentNet' and 'ConvNet' with multiple output heads because training step not applicable
-    elif ('RecurrentNet' in net.__class__.__name__) or ('ConvNet' in net.__class__.__name__) and len(net.out_dim) > 1:
+        elif any(k in net.__class__.__name__ for k in ('RecurrentNet', 'ConvNet')) and len(net.out_dim) > 1:
             return True
         else:
             return False
@@ -169,9 +169,7 @@ class TestNet:
         assert loss is None
 
     def check_multi_output(self, net):
-        if 'MultiMLPNet' in net.__class__.__name__ or \
-           'MLPHeterogenousTails' in net.__class__.__name__ or \
-           ((('RecurrentNet' in net.__class__.__name__) or ('ConvNet' in net.__class__.__name__)) and len(net.out_dim) > 1):
+        if any(k in net.__class__.__name__ for k in ('MultiMLPNet', 'MLPHeterogenousTails', 'RecurrentNet', 'ConvNet')) and len(net.out_dim) > 1:
             return True
         else:
             return False
