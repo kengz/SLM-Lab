@@ -15,16 +15,18 @@ class Random(Algorithm):
     @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
-        pass
-
-    @lab_api
-    def init_nets(self):
-        '''Initialize the neural network from the spec'''
-        pass
+        self.init_algorithm_params()
+        self.init_nets()
 
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
+        self.training_frequency = 1
+        self.to_train = 0
+
+    @lab_api
+    def init_nets(self):
+        '''Initialize the neural network from the spec'''
         pass
 
     @lab_api

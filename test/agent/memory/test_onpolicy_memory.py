@@ -34,6 +34,7 @@ class TestOnPolicyBatchMemory:
           a tuple containing three elements:
           (memory, batch_size, experiences)
     '''
+
     def test_memory_init(self, test_on_policy_batch_memory):
         memory = test_on_policy_batch_memory[0]
         assert memory_init_util(memory)
@@ -86,7 +87,6 @@ class TestOnPolicyBatchMemory:
             if i == batch_size:
                 break
             else:
-                assert memory.body.agent.algorithm.to_train == 0
                 memory.add_experience(*e)
         assert memory.body.agent.algorithm.to_train == 1
 
@@ -105,6 +105,7 @@ class TestOnPolicyMemory:
           a tuple containing three elements:
           (memory, batch_size, experiences)
     '''
+
     def test_memory_init(self, test_on_policy_episodic_memory):
         memory = test_on_policy_episodic_memory[0]
         assert memory_init_util(memory)

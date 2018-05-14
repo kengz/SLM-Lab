@@ -61,7 +61,8 @@ class TestMemory:
         experiences = test_memory[2]
         for e in experiences:
             memory.add_experience(*e)
-        batch = memory.sample(batch_size)
+        memory.batch_size = batch_size
+        batch = memory.sample()
         assert batch['states'].shape == (batch_size, memory.state_dim)
         assert batch['actions'].shape == (batch_size, memory.action_dim)
         assert batch['rewards'].shape == (batch_size, 1)
@@ -78,10 +79,11 @@ class TestMemory:
         experiences = test_memory[2]
         for e in experiences:
             memory.add_experience(*e)
-        _batch = memory.sample(batch_size)
+        memory.batch_size = batch_size
+        _batch = memory.sample()
         old_idx = deepcopy(memory.batch_idxs).tolist()
         for i in range(5):
-            _batch = memory.sample(batch_size)
+            _batch = memory.sample()
             new_idx = memory.batch_idxs.tolist()
             assert old_idx != new_idx
             old_idx = deepcopy(memory.batch_idxs).tolist()
