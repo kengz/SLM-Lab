@@ -8,7 +8,7 @@
         "ent_coef": 0.02,
         "adam_epsilon": 1e-5,
         "gamma": 0.99,
-        "lam": 0.95,
+        "lambda": 0.95,
         "horizon": 200,
         "epoch": 16,
         "lr": 0.001,
@@ -20,7 +20,7 @@
         "batch_size": 64
       },
       "net": {
-        "type": "MLPdefault",
+        "type": "MLPPolicy",
         "hid_layers": [64],
         "hid_layers_activation": "tanh"
       }
@@ -61,7 +61,7 @@
         "ent_coef": 0.02,
         "adam_epsilon": 1e-5,
         "gamma": 0.99,
-        "lam": 0.95,
+        "lambda": 0.95,
         "horizon": 200,
         "epoch": 16,
         "lr": 0.001,
@@ -73,7 +73,7 @@
         "batch_size": 64
       },
       "net": {
-        "type": "MLPdefault",
+        "type": "MLPPolicy",
         "hid_layers": [64],
         "hid_layers_activation": "tanh"
       }

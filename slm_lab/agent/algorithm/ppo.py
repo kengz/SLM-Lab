@@ -1,6 +1,6 @@
 from mpi4py import MPI
+from slm_lab.agent import net
 from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.agent.net.mlp_policy import MLPPolicy
 from slm_lab.lib import logger, math_util, tf_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -34,9 +34,6 @@ class PPO(Algorithm):
         # TODO fix access to info_space then set below
         tf_util.make_session(num_cpus=1).__enter__()
         # TODO close when done to clear
-        self.cur_lr_mult = 1.0
-        self.body = self.agent.nanflat_body_a[0]  # singleton algo
-        self.body.memory = self.body.memory
         self.init_algorithm_params()
         self.init_nets()
         logger.info(util.self_desc(self))
@@ -44,12 +41,13 @@ class PPO(Algorithm):
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
+        self.cur_lr_mult = 1.0
         util.set_attr(self, self.algorithm_spec, [
             'clip_eps',
             'ent_coef',
             'adam_epsilon',
             'gamma',
-            'lam',
+            'lambda',
             'horizon',
             'epoch',
             'lr',
@@ -73,8 +71,10 @@ class PPO(Algorithm):
 
         3. S = E[ entropy ]
         '''
-        self.pi = pi = MLPPolicy(self.net_spec, self, self.body, 'pi')
-        self.pi_old = pi_old = MLPPolicy(self.net_spec, self, self.body, 'pi_old')
+        self.body = self.agent.nanflat_body_a[0]  # singleton algo
+        NetClass = getattr(net, self.net_spec['type'])
+        self.pi = pi = NetClass(self.net_spec, self, self.body, 'pi')
+        self.pi_old = pi_old = NetClass(self.net_spec, self, self.body, 'pi_old')
         ob = pi.ob
         ac = pi.pdtype.sample_placeholder([None])
         # target advantage function
@@ -206,6 +206,6 @@ class PPO(Algorithm):
         for t in reversed(range(T)):
             nonterminal = 1 - news[t + 1]
             delta = rews[t] + self.gamma * v_preds[t + 1] * nonterminal - v_preds[t]
-            gaelams[t] = last_gaelam = delta + self.gamma * self.lam * nonterminal * last_gaelam
+            gaelams[t] = last_gaelam = delta + self.gamma * self.lambda * nonterminal * last_gaelam
         assert not np.isnan(gaelams).any(), f'GAE has nan: {gaelams}'
         seg['tdlamrets'] = seg['advs'] + seg['v_preds']
