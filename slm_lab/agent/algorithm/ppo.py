@@ -36,7 +36,7 @@ class PPO(Algorithm):
         # TODO close when done to clear
         self.cur_lr_mult = 1.0
         self.body = self.agent.nanflat_body_a[0]  # singleton algo
-        self.memory = self.body.memory
+        self.body.memory = self.body.memory
         self.init_algorithm_params()
         self.init_nets()
         logger.info(util.self_desc(self))
@@ -106,12 +106,12 @@ class PPO(Algorithm):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        action, self.memory.v_pred = self.pi.act(state)
+        action, self.body.memory.v_pred = self.pi.act(state)
         return action
 
     @lab_api
     def body_act_continuous(self, body, state):
-        action, self.memory.v_pred = self.pi.act(state)
+        action, self.body.memory.v_pred = self.pi.act(state)
         return action
 
     @lab_api
@@ -134,7 +134,7 @@ class PPO(Algorithm):
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
-        seg = self.memory.sample()
+        seg = self.body.memory.sample()
         return seg
 
     @lab_api
@@ -163,7 +163,7 @@ class PPO(Algorithm):
         # compute gradient
         for _i in range(self.epoch):
             losses = []
-            for batch in dataset.iterate_once(self.memory.batch_size):
+            for batch in dataset.iterate_once(self.body.memory.batch_size):
                 inputs = [batch[k] for k in ['obs', 'acs', 'adv_targets', 'v_targets']]
                 inputs.append(self.cur_lr_mult)
                 outputs = self.compute_loss_grad(*inputs)
@@ -175,7 +175,7 @@ class PPO(Algorithm):
 
         # compute losses
         losses = []
-        for batch in dataset.iterate_once(self.memory.batch_size):
+        for batch in dataset.iterate_once(self.body.memory.batch_size):
             inputs = [batch[k] for k in ['obs', 'acs', 'adv_targets', 'v_targets']]
             inputs.append(self.cur_lr_mult)
             new_losses = self.compute_losses(*inputs)

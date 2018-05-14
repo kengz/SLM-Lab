@@ -74,18 +74,7 @@ class SARSA(Algorithm):
         self.action_policy_update = act_update_fns[self.action_policy_update]
         self.to_train = 0
         self.nanflat_explore_var_a = [self.explore_var_start] * self.agent.body_num
-        self.set_memory_flag()
 
-    def set_memory_flag(self):
-        '''Flags if memory is episodic or discrete. This affects how self.sample() handles the batch it gets back from memory'''
-        # TODO move this into memory, make self-contained
-        memory_name = self.memory_spec['name']
-        if any(name in memory_name for name in ['OnPolicyReplay', 'OnPolicyNStepReplay']):
-            self.is_episodic = True
-        elif any(name in memory_name for name in ['OnPolicyBatchReplay', 'OnPolicyNStepBatchReplay']):
-            self.is_episodic = False
-        elif 'OnPolicy' in memory_name:
-            raise ValueError(f'Memory {memory_name} not recognized')
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
@@ -124,7 +113,7 @@ class SARSA(Algorithm):
         batches = [body.memory.sample()
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
-        if self.is_episodic:
+        if self.body.memory.is_episodic:
             util.to_torch_nested_batch(batch, self.net.gpu)
             # Add next action to batch
             batch['actions_onehot'] = []

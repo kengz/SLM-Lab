@@ -37,6 +37,7 @@ class OnPolicyReplay(Memory):
         # NOTE for OnPolicy replay, frequency = episode; for other classes below frequency = frames
         util.set_attr(self, self.agent_spec['algorithm'], ['training_frequency'])
         # Don't want total experiences reset when memory is
+        self.is_episodic = True
         self.total_experiences = 0
         self.last_nan_idxs = None
         self.nan_idxs = None
@@ -179,6 +180,10 @@ class OnPolicyBatchReplay(OnPolicyReplay):
     In contrast, OnPolicyReplay stores entire episodes and stores them in a nested structure. OnPolicyBatchReplay stores experiences in a flat structure.
     '''
 
+    def __init__(self, memory_spec, algorithm, body):
+        super(OnPolicyBatchReplay, self).__init__(memory_spec, algorithm, body)
+        self.is_episodic = False
+
     def add_experience(self, state, action, reward, next_state, done, priority=1):
         '''Interface helper method for update() to add experience to memory'''
         self.most_recent = [state, action, reward, next_state, done, priority]
@@ -219,6 +224,7 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
 
     def __init__(self, memory_spec, algorithm, body):
         super(OnPolicyNStepBatchReplay, self).__init__(memory_spec, algorithm, body)
+        self.is_episodic = False
         self.seq_len = self.agent_spec['net']['seq_len']
 
     def sample(self):

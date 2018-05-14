@@ -151,7 +151,6 @@ class ActorCritic(Reinforce):
             self.get_target = self.get_gae_target
         else:
             self.get_target = self.get_nstep_target
-        self.set_memory_flag()
         self.to_train = 0
         # To save on a forward pass keep the log probs and entropy from each action
         self.saved_log_probs = []
@@ -171,7 +170,7 @@ class ActorCritic(Reinforce):
         batches = [body.memory.sample()
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
-        if self.is_episodic:
+        if self.body.memory.is_episodic:
             util.to_torch_nested_batch(batch, self.net.gpu)
         else:
             util.to_torch_batch(batch, self.net.gpu)
@@ -194,7 +193,7 @@ class ActorCritic(Reinforce):
             '''Calculate state-value loss (critic)'''
             target = self.get_target(batch, critic_specific=True)
             states = batch['states']
-            if self.is_episodic:
+            if self.body.memory.is_episodic:
                 target = torch.cat(target)
                 states = torch.cat(states)
             if torch.cuda.is_available() and self.net.gpu:
@@ -241,7 +240,7 @@ class ActorCritic(Reinforce):
 
     def train_critic(self, batch):
         '''Trains the critic when the actor and critic are separate networks'''
-        if self.is_episodic:
+        if self.body.memory.is_episodic:
             return self.train_critic_episodic(batch)
         else:
             return self.train_critic_batch(batch)
@@ -308,7 +307,7 @@ class ActorCritic(Reinforce):
                 2. Generalized advantage estimation (GAE) as in "High-Dimensional Continuous Control Using Generalized Advantage Estimation"
             Default is 1. To select GAE set use_GAE to true in the spec.
         '''
-        if self.is_episodic:
+        if self.body.memory.is_episodic:
             return self.calc_advantage_episodic(batch)
         else:
             return self.calc_advantage_batch(batch)
@@ -344,7 +343,7 @@ class ActorCritic(Reinforce):
         '''Estimates state-action value with n-step returns. Used as a target when training the critic and calculting the advantage. No critic specific target value for this method of calculating the advantage.
         In the episodic case it returns a list containing targets per episode
         In the batch case it returns a tensor containing the targets for the batch'''
-        if self.is_episodic:
+        if self.body.memory.is_episodic:
             return self.get_nstep_target_episodic(batch)
         else:
             return self.get_nstep_target_batch(batch)
@@ -353,7 +352,7 @@ class ActorCritic(Reinforce):
         '''Estimates the state-action value using generalized advantage estimation. Used as a target when training the critic and calculting the advantage.
         In the episodic case it returns a list containing targets per episode
         In the batch case it returns a tensor containing the targets for the batch'''
-        if self.is_episodic:
+        if self.body.memory.is_episodic:
             return self.get_gae_target_episodic(batch, critic_specific=critic_specific)
         else:
             return self.get_gae_target_batch(batch, critic_specific=critic_specific)
@@ -507,18 +506,6 @@ class ActorCritic(Reinforce):
         logger.debug3(f'Advantage: {advantage}')
         logger.debug3(f'Target: {target}')
         return target
-
-    def set_memory_flag(self):
-        '''Flags if memory is episodic or discrete. This affects how the target and advantage functions are calculated'''
-        body = self.agent.nanflat_body_a[0]
-        memory = body.memory.__class__.__name__
-        if (memory.find('OnPolicyReplay') != -1) or (memory.find('OnPolicyNStepReplay') != -1):
-            self.is_episodic = True
-        elif (memory.find('OnPolicyBatchReplay') != -1) or (memory.find('OnPolicyNStepBatchReplay') != -1):
-            self.is_episodic = False
-        else:
-            logger.warn(f'Error: Memory {memory} not recognized')
-            raise NotImplementedError
 
     def print_nets(self):
         '''Prints networks to stdout'''
