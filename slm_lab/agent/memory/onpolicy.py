@@ -81,7 +81,7 @@ class OnPolicyReplay(Memory):
                 getattr(self, k).append(self.cur_epi_data[k])
             self.cur_epi_data = {k: [] for k in self.data_keys}
             # If agent has collected the desired number of episodes, it is ready to train
-            if len(self.states) == self.training_frequency:
+            if len(self.states) == self.body.agent.algorithm.training_frequency:
                 self.body.agent.algorithm.to_train = 1
         # Track memory size and num experiences
         self.true_size += 1
@@ -121,7 +121,7 @@ class OnPolicyNStepReplay(OnPolicyReplay):
 
     def __init__(self, body):
         super(OnPolicyNStepReplay, self).__init__(body)
-        self.seq_len = self.agent_spec['net'].seq_len
+        self.seq_len = self.agent_spec['net']['seq_len']
 
     def sample(self):
         '''
@@ -191,7 +191,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
             self.memory_warn_flag = False
         self.total_experiences += 1
         # Decide if agent is to train
-        if done or len(self.states) == self.training_frequency:
+        if done or len(self.states) == self.body.agent.algorithm.training_frequency:
             self.body.agent.algorithm.to_train = 1
 
     def sample(self):
@@ -219,7 +219,7 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
 
     def __init__(self, body):
         super(OnPolicyNStepBatchReplay, self).__init__(body)
-        self.seq_len = self.agent_spec['net'].seq_len
+        self.seq_len = self.agent_spec['net']['seq_len']
 
     def sample(self):
         '''

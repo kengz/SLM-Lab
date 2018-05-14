@@ -1,4 +1,3 @@
-from copy import deepcopy
 from slm_lab.agent import net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
 from slm_lab.agent.algorithm.base import Algorithm
@@ -79,6 +78,7 @@ class SARSA(Algorithm):
 
     def set_memory_flag(self):
         '''Flags if memory is episodic or discrete. This affects how self.sample() handles the batch it gets back from memory'''
+        # TODO move this into memory, make self-contained
         memory_name = self.memory_spec['name']
         if any(name in memory_name for name in ['OnPolicyReplay', 'OnPolicyNStepReplay']):
             self.is_episodic = True

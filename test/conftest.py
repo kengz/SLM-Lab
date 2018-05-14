@@ -2,7 +2,7 @@ from slm_lab.agent import AgentSpace, Body
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.net.recurrent import RecurrentNet
-from slm_lab.agent.net.feedforward import MLPNet, MultiMLPNet, MLPHeterogenousHeads
+from slm_lab.agent.net.feedforward import MLPNet, MultiMLPNet, MLPHeterogenousTails
 from slm_lab.env import EnvSpace
 # from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
@@ -146,7 +146,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
             'in_dim': 10, 'hid_layers': [5, 3],
             'out_dim':[2],
@@ -155,7 +155,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
             'in_dim': 10, 'hid_layers': [5, 3],
             'out_dim':[2, 1],
@@ -164,7 +164,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
             'in_dim': 10, 'hid_layers': [5, 3],
             'out_dim':[2, 5, 1],
@@ -173,7 +173,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
             'in_dim': 10, 'hid_layers': [10, 50, 5],
             'out_dim':[2, 5, 1],
@@ -182,7 +182,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
             'in_dim': 10, 'hid_layers': [],
             'out_dim':[5], 'hid_layers_activation': 'tanh',
@@ -190,7 +190,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
             'in_dim': 10, 'hid_layers': [],
             'out_dim':[5, 2], 'hid_layers_activation': 'tanh',
@@ -198,7 +198,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
             'in_dim': 10, 'hid_layers': [],
             'out_dim':[5, 2, 1], 'hid_layers_activation': 'tanh',

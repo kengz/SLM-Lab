@@ -1,4 +1,4 @@
-from slm_lab.agent import memory, net
+from slm_lab.agent import net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, decay_learning_rate
 from slm_lab.agent.algorithm.reinforce import Reinforce
 from slm_lab.agent.net import net_util
@@ -471,7 +471,7 @@ class ActorCritic(Reinforce):
                     state_dim, net_spec['hid_layers'], action_dim, **actor_kwargs)
                 logger.info("Feedforward net, discrete action space, actor and critic are separate networks")
             else:
-                self.actor = getattr(net, 'MLPHeterogenousHeads')(
+                self.actor = getattr(net, 'MLPHeterogenousTails')(
                     state_dim, net_spec['hid_layers'], [action_dim, action_dim], **actor_kwargs)
                 logger.info("Feedforward net, continuous action space, actor and critic are separate networks")
             self.critic = getattr(net, 'MLPNet')(
@@ -480,11 +480,11 @@ class ActorCritic(Reinforce):
             self.is_shared_architecture = True
             self.is_recurrent = False
             if self.is_discrete:
-                self.actorcritic = getattr(net, 'MLPHeterogenousHeads')(
+                self.actorcritic = getattr(net, 'MLPHeterogenousTails')(
                     state_dim, net_spec['hid_layers'], [action_dim, 1], **actor_kwargs)
                 logger.info("Feedforward net, discrete action space, actor and critic combined into single network, sharing params")
             else:
-                self.actorcritic = getattr(net, 'MLPHeterogenousHeads')(
+                self.actorcritic = getattr(net, 'MLPHeterogenousTails')(
                     state_dim, net_spec['hid_layers'], [action_dim, action_dim, 1], **actor_kwargs)
                 logger.info("Feedforward net, continuous action space, actor and critic combined into single network, sharing params")
         elif net_type == 'Convseparate':

@@ -158,9 +158,9 @@ class MLPNet(Net, nn.Module):
         self.optim = net_util.get_optim(self, self.optim_spec)
 
 
-class MLPHeterogenousHeads(MLPNet):
+class MLPHeterogenousTails(MLPNet):
     '''
-    Class for generating arbitrary sized feedforward neural network, with a heterogenous set of output heads that may correspond to different values. For example, the mean or std deviation of a continous policy, the state-value estimate, or the logits of a categorical action distribution
+    Class for generating arbitrary sized feedforward neural network, with a heterogenous set of output tails that may correspond to different values. For example, the mean or std deviation of a continous policy, the state-value estimate, or the logits of a categorical action distribution
     '''
 
     def __init__(self, algorithm, body):
@@ -218,6 +218,7 @@ class MLPHeterogenousHeads(MLPNet):
         # Create net and initialize params
         self.in_dim = self.body.state_dim
         self.out_dim = self.body.action_dim
+        # TODO out is [action_dim, action_dim]?
         self.layers = []
         # Init network body
         for i, layer in enumerate(self.hid_layers):
@@ -362,7 +363,7 @@ class MultiMLPNet(Net, nn.Module):
             'polyak_weight',
             'gpu',
         ])
-        assert len(self.hid_layers) == 3, 'Your hidden layers must specify [*heads], [body], [*tails]. If not, use MLPHeterogenousHeads'
+        assert len(self.hid_layers) == 3, 'Your hidden layers must specify [*heads], [body], [*tails]. If not, use MLPHeterogenousTails'
         self.head_hid_layers = self.hid_layers[0]
         self.body_hid_layers = self.hid_layers[1]
         self.tail_hid_layers = self.hid_layers[2]
