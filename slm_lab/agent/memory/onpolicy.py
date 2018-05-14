@@ -32,8 +32,8 @@ class OnPolicyReplay(Memory):
         - The memory is cleared automatically when a batch is given to the agent.
     '''
 
-    def __init__(self, memory_spec, body):
-        super(OnPolicyReplay, self).__init__(memory_spec, body)
+    def __init__(self, memory_spec, algorithm, body):
+        super(OnPolicyReplay, self).__init__(memory_spec, algorithm, body)
         # NOTE for OnPolicy replay, frequency = episode; for other classes below frequency = frames
         util.set_attr(self, self.agent_spec['algorithm'], ['training_frequency'])
         # Don't want total experiences reset when memory is
@@ -119,8 +119,8 @@ class OnPolicyNStepReplay(OnPolicyReplay):
     Experiences with less than `seq_len` previous examples are padded with a 0 valued state and action vector.
     '''
 
-    def __init__(self, memory_spec, body):
-        super(OnPolicyNStepReplay, self).__init__(memory_spec, body)
+    def __init__(self, memory_spec, algorithm, body):
+        super(OnPolicyNStepReplay, self).__init__(memory_spec, algorithm, body)
         self.seq_len = self.agent_spec['net']['seq_len']
 
     def sample(self):
@@ -217,8 +217,8 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
     Experiences with less than `seq_len` previous examples are padded with a 0 valued state and action vector.
     '''
 
-    def __init__(self, memory_spec, body):
-        super(OnPolicyNStepBatchReplay, self).__init__(memory_spec, body)
+    def __init__(self, memory_spec, algorithm, body):
+        super(OnPolicyNStepBatchReplay, self).__init__(memory_spec, algorithm, body)
         self.seq_len = self.agent_spec['net']['seq_len']
 
     def sample(self):

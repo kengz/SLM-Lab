@@ -52,8 +52,9 @@ class Body:
         self.is_discrete = self.env.is_discrete(self.a)
 
         # every body has its own memory for ease of computation
-        MemoryClass = getattr(memory, ps.get(self.agent.agent_spec, 'memory.name'))
-        self.memory = MemoryClass(self.agent.agent_spec['memory'], self)
+        memory_spec = self.agent.agent_spec['memory']
+        MemoryClass = getattr(memory, memory_spec['name'])
+        self.memory = MemoryClass(memory_spec, self.agent.algorithm, self)
         self.state_buffer = []
 
     def __str__(self):

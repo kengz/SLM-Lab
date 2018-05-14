@@ -32,8 +32,8 @@ class Replay(Memory):
     This allows for other implementations to sample based on the experience priorities
     '''
 
-    def __init__(self, memory_spec, body):
-        super(Replay, self).__init__(memory_spec, body)
+    def __init__(self, memory_spec, algorithm, body):
+        super(Replay, self).__init__(memory_spec, algorithm, body)
         util.set_attr(self, self.memory_spec, [
             'batch_size',
             'max_size',
@@ -138,8 +138,8 @@ class Replay(Memory):
 class StackReplay(Replay):
     '''Preprocesses an state to be the concatenation of the last n states. Otherwise the same as Replay memory'''
 
-    def __init__(self, memory_spec, body):
-        super(StackReplay, self).__init__(memory_spec, body)
+    def __init__(self, memory_spec, algorithm, body):
+        super(StackReplay, self).__init__(memory_spec, algorithm, body)
         self.stacked = True  # Memory stacks states
         util.set_attr(self, self.memory_spec, [
             'batch_size',
@@ -193,8 +193,8 @@ class Atari(Replay):
     '''Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
        Otherwise the same as Replay memory'''
 
-    def __init__(self, memory_spec, body):
-        super(Atari, self).__init__(memory_spec, body)
+    def __init__(self, memory_spec, algorithm, body):
+        super(Atari, self).__init__(memory_spec, algorithm, body)
         self.atari = True  # Memory is specialized for playing Atari games
 
     def reset_last_state(self, state):
