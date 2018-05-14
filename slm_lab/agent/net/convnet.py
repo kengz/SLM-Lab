@@ -2,6 +2,7 @@ from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
 from slm_lab.lib import logger, util
 from torch.autograd import Variable
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -89,13 +90,13 @@ class ConvNet(Net, nn.Module):
         self.in_dim = list(self.body.state_dim[:-1])
         self.in_dim.insert(0, self.body.state_dim[-1])
         # Handle multiple types of out_dim (single and multi-headed)
-        self.out_dim = np.reshape(self.body.action_dim, -1)
+        self.out_dim = np.reshape(self.body.action_dim, -1).tolist()
         self.conv_layers = []
         self.conv_model = self.build_conv_layers(
-            self.hid_layers[0], hid_layers_activation)
+            self.hid_layers[0])
         self.flat_layers = []
         self.dense_model = self.build_flat_layers(
-            self.hid_layers[1], hid_layers_activation)
+            self.hid_layers[1])
         self.out_layers = []
         in_D = self.hid_layers[1][-1] if len(self.hid_layers[1]) > 0 else self.flat_dim
         for dim in self.out_dim:
@@ -125,7 +126,7 @@ class ConvNet(Net, nn.Module):
         x = self.conv_model(x)
         return x.numel()
 
-    def build_conv_layers(self, conv_hid, hid_layers_activation):
+    def build_conv_layers(self, conv_hid):
         '''Builds all of the convolutional layers in the network.
            These layers are turned into a Sequential model and stored
            in self.conv_model.
@@ -141,13 +142,13 @@ class ConvNet(Net, nn.Module):
                 stride=conv_hid[i][3],
                 padding=conv_hid[i][4],
                 dilation=tuple(conv_hid[i][5])))
-            self.conv_layers.append(net_util.get_activation_fn(hid_layers_activation))
+            self.conv_layers.append(net_util.get_activation_fn(self.hid_layers_activation))
             # Don't include batch norm in the first layer
             if self.batch_norm and i != 0:
                 self.conv_layers.append(nn.BatchNorm2d(conv_hid[i][1]))
         return nn.Sequential(*self.conv_layers)
 
-    def build_flat_layers(self, flat_hid, hid_layers_activation):
+    def build_flat_layers(self, flat_hid):
         '''Builds all of the dense layers in the network.
            These layers are turned into a Sequential model and stored
            in self.dense_model.
@@ -160,7 +161,7 @@ class ConvNet(Net, nn.Module):
             in_D = self.flat_dim if i == 0 else flat_hid[i - 1]
             out_D = flat_hid[i]
             self.flat_layers.append(nn.Linear(in_D, out_D))
-            self.flat_layers.append(net_util.get_activation_fn(hid_layers_activation))
+            self.flat_layers.append(net_util.get_activation_fn(self.hid_layers_activation))
         return nn.Sequential(*self.flat_layers)
 
     def forward(self, x):

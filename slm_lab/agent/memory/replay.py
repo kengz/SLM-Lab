@@ -1,3 +1,4 @@
+from copy import deepcopy
 from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -194,7 +195,11 @@ class Atari(Replay):
        Otherwise the same as Replay memory'''
 
     def __init__(self, memory_spec, algorithm, body):
-        super(Atari, self).__init__(memory_spec, algorithm, body)
+        # TODO unify preprocessed state_dim into body
+        preprocess_body = deepcopy(body)
+        # stacked, shape 4 in last axis
+        preprocess_body.state_dim = (84, 84, 4)
+        super(Atari, self).__init__(memory_spec, algorithm, preprocess_body)
         self.atari = True  # Memory is specialized for playing Atari games
 
     def reset_last_state(self, state):
@@ -209,7 +214,6 @@ class Atari(Replay):
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
-        assert self.state_dim == (84, 84, 4)
         super(Atari, self).reset()
         self.state_buffer = []
         self.clear_buffer()
@@ -221,6 +225,8 @@ class Atari(Replay):
         state = util.transform_image(state)
         self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
+        # stacked, shape 4 in last axis
+        assert processed_state.shape == (84, 84, 4)
         return processed_state
 
     @lab_api
