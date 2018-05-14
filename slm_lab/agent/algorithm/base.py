@@ -25,8 +25,8 @@ class Algorithm(ABC):
     @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
-        self.init_nets()
         self.init_algorithm_params()
+        self.init_nets()
         raise NotImplementedError
 
     @abstractmethod

@@ -50,9 +50,46 @@ class ActorCritic(Reinforce):
     @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
-        self.init_nets()
         self.init_algorithm_params()
+        self.init_nets()
         logger.info(util.self_desc(self))
+
+    @lab_api
+    def init_algorithm_params(self):
+        '''Initialize other algorithm parameters'''
+        if self.algorithm_spec['action_policy'] == 'default':
+            if self.body.is_discrete:
+                self.algorithm_spec['action_policy'] = 'softmax'
+            else:
+                self.algorithm_spec['action_policy'] = 'gaussian'
+        util.set_attr(self, self.algorithm_spec, [
+            'action_policy',
+            'gamma',  # the discount factor
+            'add_entropy',
+            'entropy_weight',
+            'continuous_action_clip',
+            'training_frequency',
+            'training_iters_per_batch',
+            'use_GAE',
+            'lamda',
+            'num_step_returns',
+            'policy_loss_weight',
+            'val_loss_weight',
+        ])
+        self.action_policy = act_fns[self.action_policy]
+        self.to_train = 0
+        # To save on a forward pass keep the log probs from each action
+        self.saved_log_probs = []
+        self.entropy = []
+        # Select appropriate function for calculating state-action-value estimate (target)
+        if self.use_GAE:
+            self.get_target = self.get_gae_target
+        else:
+            self.get_target = self.get_nstep_target
+        self.to_train = 0
+        # To save on a forward pass keep the log probs and entropy from each action
+        self.saved_log_probs = []
+        self.entropy = []
 
     @lab_api
     def init_nets(self):
@@ -118,43 +155,6 @@ class ActorCritic(Reinforce):
             else:
                 self.critic = NetClass(critic_net_spec, self, critic_body)
         logger.info(f'Training on gpu: {self.net.gpu}')
-
-    @lab_api
-    def init_algorithm_params(self):
-        '''Initialize other algorithm parameters'''
-        if self.algorithm_spec['action_policy'] == 'default':
-            if self.body.is_discrete:
-                self.algorithm_spec['action_policy'] = 'softmax'
-            else:
-                self.algorithm_spec['action_policy'] = 'gaussian'
-        util.set_attr(self, self.algorithm_spec, [
-            'action_policy',
-            'gamma',  # the discount factor
-            'add_entropy',
-            'entropy_weight',
-            'continuous_action_clip',
-            'training_frequency',
-            'training_iters_per_batch',
-            'use_GAE',
-            'lamda',
-            'num_step_returns',
-            'policy_loss_weight',
-            'val_loss_weight',
-        ])
-        self.action_policy = act_fns[self.action_policy]
-        self.to_train = 0
-        # To save on a forward pass keep the log probs from each action
-        self.saved_log_probs = []
-        self.entropy = []
-        # Select appropriate function for calculating state-action-value estimate (target)
-        if self.use_GAE:
-            self.get_target = self.get_gae_target
-        else:
-            self.get_target = self.get_nstep_target
-        self.to_train = 0
-        # To save on a forward pass keep the log probs and entropy from each action
-        self.saved_log_probs = []
-        self.entropy = []
 
     @lab_api
     def body_act_discrete(self, body, state):

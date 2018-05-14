@@ -42,6 +42,22 @@ class PPO(Algorithm):
         logger.info(util.self_desc(self))
 
     @lab_api
+    def init_algorithm_params(self):
+        '''Initialize other algorithm parameters'''
+        util.set_attr(self, self.algorithm_spec, [
+            'clip_eps',
+            'ent_coef',
+            'adam_epsilon',
+            'gamma',
+            'lam',
+            'horizon',
+            'epoch',
+            'lr',
+            'max_frame',
+            'schedule',
+        ])
+
+    @lab_api
     def init_nets(self):
         '''
         Init policy network
@@ -113,23 +129,6 @@ class PPO(Algorithm):
     def body_act_continuous(self, body, state):
         action, self.body.memory.v_pred = self.pi.act(state)
         return action
-
-    @lab_api
-    def init_algorithm_params(self):
-        '''Initialize other algorithm parameters'''
-        algorithm_spec = self.agent_spec['algorithm']
-        util.set_attr(self, algorithm_spec, [
-            'clip_eps',
-            'ent_coef',
-            'adam_epsilon',
-            'gamma',
-            'lam',
-            'horizon',
-            'epoch',
-            'lr',
-            'max_frame',
-            'schedule',
-        ])
 
     @lab_api
     def sample(self):

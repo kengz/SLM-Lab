@@ -44,19 +44,9 @@ class SARSA(Algorithm):
             - State and action dimensions for an environment
             - Boolean var for if the action space is discrete
         '''
-        self.init_nets()
         self.init_algorithm_params()
+        self.init_nets()
         logger.info(util.self_desc(self))
-
-    @lab_api
-    def init_nets(self):
-        '''Initialize the neural network used to learn the Q function from the spec'''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
-        if 'Recurrent' in self.net_spec['type']:
-            self.net_spec.update(seq_len=self.net_spec['seq_len'])
-        NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, self.body)
-        logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
     def init_algorithm_params(self):
@@ -74,6 +64,16 @@ class SARSA(Algorithm):
         self.action_policy_update = act_update_fns[self.action_policy_update]
         self.to_train = 0
         self.nanflat_explore_var_a = [self.explore_var_start] * self.agent.body_num
+
+    @lab_api
+    def init_nets(self):
+        '''Initialize the neural network used to learn the Q function from the spec'''
+        self.body = self.agent.nanflat_body_a[0]  # single-body algo
+        if 'Recurrent' in self.net_spec['type']:
+            self.net_spec.update(seq_len=self.net_spec['seq_len'])
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self.net_spec, self, self.body)
+        logger.info(f'Training on gpu: {self.net.gpu}')
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
