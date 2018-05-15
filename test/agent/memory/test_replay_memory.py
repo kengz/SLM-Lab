@@ -17,10 +17,10 @@ class TestMemory:
     def test_memory_init(self, test_memory):
         memory = test_memory[0]
         assert memory.true_size == 0
-        assert memory.states.shape == (memory.max_size, memory.state_dim)
+        assert memory.states.shape == (memory.max_size, memory.body.state_dim)
         assert memory.actions.shape == (memory.max_size, memory.action_dim)
         assert memory.rewards.shape == (memory.max_size, 1)
-        assert memory.next_states.shape == (memory.max_size, memory.state_dim)
+        assert memory.next_states.shape == (memory.max_size, memory.body.state_dim)
         assert memory.dones.shape == (memory.max_size, 1)
         assert memory.priorities.shape == (memory.max_size, 1)
 
@@ -63,10 +63,10 @@ class TestMemory:
             memory.add_experience(*e)
         memory.batch_size = batch_size
         batch = memory.sample()
-        assert batch['states'].shape == (batch_size, memory.state_dim)
+        assert batch['states'].shape == (batch_size, memory.body.state_dim)
         assert batch['actions'].shape == (batch_size, memory.action_dim)
         assert batch['rewards'].shape == (batch_size, 1)
-        assert batch['next_states'].shape == (batch_size, memory.state_dim)
+        assert batch['next_states'].shape == (batch_size, memory.body.state_dim)
         assert batch['dones'].shape == (batch_size, 1)
         assert batch['priorities'].shape == (batch_size, 1)
 
