@@ -210,7 +210,7 @@
       }]
     }
   },
-  "dqn_cartpole_double_replace": {
+  "double_dqn_cartpole_replace": {
     "agent": [{
       "name": "DQN",
       "algorithm": {

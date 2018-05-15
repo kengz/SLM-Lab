@@ -78,7 +78,7 @@
       }]
     }
   },
-  "actor_critic_recurrent_spec": {
+  "actor_critic_cartpole_recurrent": {
     "agent": [{
       "name": "ActorCritic",
       "algorithm": {

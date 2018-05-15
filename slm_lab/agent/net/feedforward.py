@@ -332,7 +332,7 @@ class MultiMLPNet(Net, nn.Module):
              decay_lr_factor=0.9)
         '''
         nn.Module.__init__(self)
-        super(MultiMLPNet, self).__init__(net_spec, algorithm, body)
+        super(MultiMLPNet, self).__init__(net_spec, algorithm, body_list)
         # set default
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},
