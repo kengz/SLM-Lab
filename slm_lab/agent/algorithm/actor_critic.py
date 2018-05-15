@@ -50,6 +50,7 @@ class ActorCritic(Reinforce):
     @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
+        self.body = self.agent.nanflat_body_a[0]  # single-body algo
         self.init_algorithm_params()
         self.init_nets()
         logger.info(util.self_desc(self))
@@ -107,7 +108,6 @@ class ActorCritic(Reinforce):
             - Feedforward and convolutional networks take a single state as input and require an OnPolicyReplay or OnPolicyBatchReplay memory
             - Recurrent networks take n states as input and require an OnPolicyNStepReplay or OnPolicyNStepBatchReplay memory
         '''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
         net_type = self.net_spec['type']
         # options of net_type are {MLP, Conv, Recurrent} x {shared, separate}
         if self.body.is_discrete:

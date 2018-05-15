@@ -44,6 +44,7 @@ class SARSA(Algorithm):
             - State and action dimensions for an environment
             - Boolean var for if the action space is discrete
         '''
+        self.body = self.agent.nanflat_body_a[0]  # single-body algo
         self.init_algorithm_params()
         self.init_nets()
         logger.info(util.self_desc(self))
@@ -68,7 +69,6 @@ class SARSA(Algorithm):
     @lab_api
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
         if 'Recurrent' in self.net_spec['type']:
             self.net_spec.update(seq_len=self.net_spec['seq_len'])
         NetClass = getattr(net, self.net_spec['type'])

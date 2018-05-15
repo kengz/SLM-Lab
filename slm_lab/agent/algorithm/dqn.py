@@ -50,20 +50,8 @@ class VanillaDQN(SARSA):
             - State and action dimentions for an environment
             - Boolean var for if the action space is discrete
         '''
-        super(VanillaDQN, self).post_body_init()
-
-    @lab_api
-    def init_nets(self):
-        '''Initialize the neural network used to learn the Q function from the spec'''
         self.body = self.agent.nanflat_body_a[0]  # single-body algo
-        if 'Recurrent' in self.net_spec['type']:
-            raise ValueError('Recurrent networks does not work with DQN family of algorithms.')
-
-        if self.algorithm_spec['name'] == 'VanillaDQN':
-            assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_weight']), 'Network update not available for VanillaDQN; use DQN.'
-        NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, self.body)
-        logger.info(f'Training on gpu: {self.net.gpu}')
+        super(VanillaDQN, self).post_body_init()
 
     @lab_api
     def init_algorithm_params(self):
@@ -80,6 +68,18 @@ class VanillaDQN(SARSA):
             'training_min_timestep',  # how long before starting training
         ])
         super(VanillaDQN, self).init_algorithm_params()
+
+    @lab_api
+    def init_nets(self):
+        '''Initialize the neural network used to learn the Q function from the spec'''
+        if 'Recurrent' in self.net_spec['type']:
+            raise ValueError('Recurrent networks does not work with DQN family of algorithms.')
+
+        if self.algorithm_spec['name'] == 'VanillaDQN':
+            assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_weight']), 'Network update not available for VanillaDQN; use DQN.'
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self.net_spec, self, self.body)
+        logger.info(f'Training on gpu: {self.net.gpu}')
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
@@ -187,7 +187,6 @@ class DQNBase(VanillaDQN):
     @lab_api
     def init_nets(self):
         '''Initialize networks'''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
         if 'Recurrent' in self.net_spec['type']:
             raise ValueError('Recurrent networks does not work with DQN family of algorithms.')
         memory_name = self.memory_spec['name']

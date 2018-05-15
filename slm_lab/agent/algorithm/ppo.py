@@ -34,6 +34,7 @@ class PPO(Algorithm):
         # TODO fix access to info_space then set below
         tf_util.make_session(num_cpus=1).__enter__()
         # TODO close when done to clear
+        self.body = self.agent.nanflat_body_a[0]  # singleton algo
         self.init_algorithm_params()
         self.init_nets()
         logger.info(util.self_desc(self))
@@ -71,7 +72,6 @@ class PPO(Algorithm):
 
         3. S = E[ entropy ]
         '''
-        self.body = self.agent.nanflat_body_a[0]  # singleton algo
         NetClass = getattr(net, self.net_spec['type'])
         self.pi = pi = NetClass(self.net_spec, self, self.body, 'pi')
         self.pi_old = pi_old = NetClass(self.net_spec, self, self.body, 'pi_old')

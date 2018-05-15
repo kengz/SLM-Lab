@@ -29,6 +29,7 @@ class Reinforce(Algorithm):
     @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
+        self.body = self.agent.nanflat_body_a[0]  # single-body algo
         self.init_algorithm_params()
         self.init_nets()
         logger.info(util.self_desc(self))
@@ -59,8 +60,6 @@ class Reinforce(Algorithm):
     @lab_api
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
-
         # TODO below is weird. do it OpenAI-style
         # Below we automatically select an appropriate net for a discrete or continuous action space if the setting is of the form 'MLPdefault'. Otherwise the correct type of network is assumed to be specified in the spec.
         # Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
