@@ -92,11 +92,9 @@ class ConvNet(Net, nn.Module):
         # Handle multiple types of out_dim (single and multi-headed)
         self.out_dim = np.reshape(self.body.action_dim, -1).tolist()
         self.conv_layers = []
-        self.conv_model = self.build_conv_layers(
-            self.hid_layers[0])
+        self.conv_model = self.build_conv_layers(self.hid_layers[0])
         self.flat_layers = []
-        self.dense_model = self.build_flat_layers(
-            self.hid_layers[1])
+        self.dense_model = self.build_flat_layers(self.hid_layers[1])
         self.out_layers = []
         in_D = self.hid_layers[1][-1] if len(self.hid_layers[1]) > 0 else self.flat_dim
         for dim in self.out_dim:
