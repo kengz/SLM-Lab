@@ -1,27 +1,28 @@
+from collections import deque
 from datetime import datetime
+from functools import wraps
+from itertools import chain
+from scipy.misc import imsave
 from slm_lab import ROOT_DIR
+from sys import getsizeof, stderr
 from torch.autograd import Variable
 import collections
 import colorlover as cl
-from functools import wraps
+import cv2
 import json
 import math
 import multiprocessing as mp
 import numpy as np
-import scipy as sp
 import os
 import pandas as pd
+import pprint
 import pydash as ps
 import regex as re
+import scipy as sp
 import time
 import torch
 import ujson
 import yaml
-import pprint
-from scipy.misc import imsave
-from sys import getsizeof, stderr
-from itertools import chain
-from collections import deque
 try:
     from reprlib import repr
 except ImportError:
@@ -815,6 +816,12 @@ def transform_image(im):
     # imsave('atari_after.png', im)
     im = normalize_image(im)
     return im
+
+
+def debug_image(im):
+    '''Use this method to render image the agent sees; waits for a key press before continuing'''
+    cv2.imshow('image', im)
+    cv2.waitKey(0)
 
 
 def fn_timer(function):
