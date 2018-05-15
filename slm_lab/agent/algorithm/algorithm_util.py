@@ -79,10 +79,10 @@ def act_with_epsilon_greedy(body, state, net, epsilon, gpu):
     if epsilon > np.random.rand():
         action = np.random.randint(body.action_dim)
     else:
-        state_seq = body.agent.len_state_buffer > 0
-        logger.debug(f'Length state buffer: {body.agent.len_state_buffer}')
+        state_seq = body.memory.state_buffer.maxlen > 0
+        logger.debug(f'Length state buffer: {body.memory.state_buffer.maxlen}')
         atari, flatten = set_flags(body)
-        torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, body.agent.len_state_buffer, atari, flatten)
+        torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen, atari, flatten)
         out = net.wrap_eval(torch_state).squeeze_(dim=0)
         action = int(torch.max(out, dim=0)[1][0])
         logger.debug2(f'Outs {out} Action {action}')
@@ -147,10 +147,10 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
 
 
 def act_with_boltzmann(body, state, net, tau, gpu):
-    state_seq = body.agent.len_state_buffer > 0
-    logger.debug2(f'Length state buffer: {body.agent.len_state_buffer}')
+    state_seq = body.memory.state_buffer.maxlen > 0
+    logger.debug2(f'Length state buffer: {body.memory.state_buffer.maxlen}')
     atari, flatten = set_flags(body)
-    torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, body.agent.len_state_buffer, atari, flatten)
+    torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen, atari, flatten)
     out = net.wrap_eval(torch_state)
     out_with_temp = torch.div(out, tau).squeeze_(dim=0)
     probs = F.softmax(Variable(out_with_temp.cpu()), dim=0).data.numpy()
@@ -215,8 +215,8 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, g
 # Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
 def act_with_softmax(algorithm, state, body, gpu):
     '''Assumes actor network outputs one variable; the logits of a categorical probability distribution over the actions'''
-    state_seq = algorithm.agent.len_state_buffer > 0
-    torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, algorithm.agent.len_state_buffer)
+    state_seq = body.memory.state_buffer.maxlen > 0
+    torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen)
     out = algorithm.get_actor_output(torch_state, evaluate=False)
     if type(out) is list:
         out = out[0]
@@ -243,8 +243,8 @@ def act_with_softmax(algorithm, state, body, gpu):
 # Denny Britz has a very helpful implementation of an Actor Critic algorithm. This function is adapted from his approach. I highly recommend looking at his full implementation available here https://github.com/dennybritz/reinforcement-learning/blob/master/PolicyGradient/Continuous%20MountainCar%20Actor%20Critic%20Solution.ipynb
 def act_with_gaussian(algorithm, state, body, gpu):
     '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
-    state_seq = algorithm.agent.len_state_buffer > 0
-    torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, algorithm.agent.len_state_buffer)
+    state_seq = body.memory.state_buffer.maxlen > 0
+    torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen)
     [mu, sigma] = algorithm.get_actor_output(torch_state, evaluate=False)
     sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0
     m = Normal(mu, sigma)

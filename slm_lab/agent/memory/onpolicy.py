@@ -1,4 +1,4 @@
-from collections import Iterable
+from collections import Iterable, deque
 from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -36,6 +36,7 @@ class OnPolicyReplay(Memory):
         super(OnPolicyReplay, self).__init__(memory_spec, algorithm, body)
         # NOTE for OnPolicy replay, frequency = episode; for other classes below frequency = frames
         util.set_attr(self, self.agent_spec['algorithm'], ['training_frequency'])
+        self.state_buffer = deque(maxlen=0)  # for API consistency
         # Don't want total experiences reset when memory is
         self.is_episodic = True
         self.total_experiences = 0
@@ -56,6 +57,7 @@ class OnPolicyReplay(Memory):
         self.last_nan_idxs = self.nan_idxs
         self.nan_idxs = []
         self.memory_warn_flag = True
+        self.state_buffer.clear()
 
     @lab_api
     def update(self, action, reward, state, done):
@@ -67,9 +69,10 @@ class OnPolicyReplay(Memory):
             self.nan_idxs.append(1)
             logger.debug2(f'Nan reward')
         self.last_state = state
-        '''Clear bodies state buffer for recurent nets'''
+        self.state_buffer.append(state)
+        # Clear bodies state buffer for recurent nets
         if done:
-            self.body.state_buffer.clear()
+            self.state_buffer.clear()
 
     def add_experience(self, state, action, reward, next_state, done, priority=1):
         '''Interface helper method for update() to add experience to memory'''
@@ -123,6 +126,7 @@ class OnPolicyNStepReplay(OnPolicyReplay):
     def __init__(self, memory_spec, algorithm, body):
         super(OnPolicyNStepReplay, self).__init__(memory_spec, algorithm, body)
         self.seq_len = self.agent_spec['net']['seq_len']
+        self.state_buffer = deque(maxlen=self.seq_len)
 
     def sample(self):
         '''
@@ -226,6 +230,7 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
         super(OnPolicyNStepBatchReplay, self).__init__(memory_spec, algorithm, body)
         self.is_episodic = False
         self.seq_len = self.agent_spec['net']['seq_len']
+        self.state_buffer = deque(maxlen=self.seq_len)
 
     def sample(self):
         '''

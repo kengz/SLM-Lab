@@ -58,15 +58,6 @@ class Body:
         MemoryClass = getattr(memory, memory_name)
         self.memory = MemoryClass(memory_spec, self.agent.algorithm, self)
 
-        # TODO move in to memory
-        if 'NStep' in memory_name or 'Stack' in memory_name:
-            self.state_buffer_len = self.agent.agent_spec['net']['seq_len']
-        elif 'Atari' in memory_name:
-            self.state_buffer_len = 4
-        else:
-            self.state_buffer_len = 0
-        self.state_buffer = deque(maxlen=self.state_buffer_len)
-
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
 
@@ -120,8 +111,6 @@ class Agent:
         '''
         for (e, b), body in util.ndenumerate_nonan(self.body_a):
             body.memory.update(action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
-            # TODO also internalize to memory
-            body.state_buffer.append(state_a[(e, b)])
         loss_a = self.algorithm.train()
         loss_a = util.guard_data_a(self, loss_a, 'loss')
         explore_var_a = self.algorithm.update()

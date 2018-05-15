@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod, abstractproperty
+from collections import deque
 
 
 class Memory(ABC):
@@ -18,6 +19,7 @@ class Memory(ABC):
         self.body = body
         self.agent_spec = body.agent.agent_spec
         self.last_state = None
+        self.state_buffer = deque(maxlen=0)  # for API consistency
 
     def reset_last_state(self, state):
         '''Do reset of body memory per session during agent_space.reset() to set last_state'''

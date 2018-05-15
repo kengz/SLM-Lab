@@ -40,8 +40,7 @@ class Replay(Memory):
             'batch_size',
             'max_size',
         ])
-        self.state_dim = self.body.state_dim
-        self.action_dim = self.body.action_dim
+        self.state_buffer = deque(maxlen=0)  # for API consistency
         self.batch_idxs = None
         self.total_experiences = 0  # To track total experiences encountered even with forgetting
         self.stacked = False  # Memory does not stack states
@@ -52,8 +51,8 @@ class Replay(Memory):
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
-        states_shape = np.concatenate([[self.max_size], np.reshape(self.state_dim, -1)])
-        actions_shape = np.concatenate([[self.max_size], np.reshape(self.action_dim, -1)])
+        states_shape = np.concatenate([[self.max_size], np.reshape(self.body.state_dim, -1)])
+        actions_shape = np.concatenate([[self.max_size], np.reshape(self.body.action_dim, -1)])
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
         setattr(self, 'states', np.zeros(states_shape))
         setattr(self, 'actions', np.zeros(actions_shape, dtype=np.uint16))
@@ -68,7 +67,7 @@ class Replay(Memory):
     def update(self, action, reward, state, done):
         '''Interface method to update memory.
         Guard for nan rewards and last state from previous episode'''
-        if (not np.isnan(reward)) and (self.last_done != 1):
+        if self.last_done != 1:
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
         self.last_done = done
@@ -77,7 +76,6 @@ class Replay(Memory):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
-        logger.debug2(f'state: {state.shape}')
         self.states[self.head] = state
         # make action into one_hot
         if ps.is_iterable(action):
@@ -141,36 +139,30 @@ class StackReplay(Replay):
     '''Preprocesses an state to be the concatenation of the last n states. Otherwise the same as Replay memory'''
 
     def __init__(self, memory_spec, algorithm, body):
-        super(StackReplay, self).__init__(memory_spec, algorithm, body)
-        self.stacked = True  # Memory stacks states
         util.set_attr(self, self.memory_spec, [
             'batch_size',
             'max_size',
             'stack_len',  # num_stack_states
         ])
+        self.stacked = True  # Memory stacks states
+        body.state_dim = [body.state_dim] * self.stack_len
+        super(StackReplay, self).__init__(memory_spec, algorithm, body)
+        self.state_buffer = deque(maxlen=self.stack_len)
+        self.reset()
 
     def reset_last_state(self, state):
         '''Do reset of body memory per session during agent_space.reset() to set last_state'''
         self.last_state = self.preprocess_state(state)
 
-    def clear_buffer(self):
-        '''Clears the raw state buffer'''
-        self.state_buffer = []
-        for _ in range(self.stack_len - 1):
-            self.state_buffer.append(np.zeros((self.orig_state_dim)))
-
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
-        self.orig_state_dim = self.state_dim
-        self.state_dim = self.state_dim * self.stack_len
         super(StackReplay, self).reset()
-        self.state_buffer = []
-        self.clear_buffer()
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
 
     def preprocess_state(self, state):
         '''Transforms the raw state into format that is fed into the network'''
-        if len(self.state_buffer) == self.stack_len:
-            del self.state_buffer[0]
         self.state_buffer.append(state)
         processed_state = np.concatenate(self.state_buffer)
         return processed_state
@@ -181,14 +173,15 @@ class StackReplay(Replay):
         state = self.preprocess_state(state)
         logger.debug(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
         logger.debug2(f'state buffer: {self.state_buffer}, state: {state}')
-        if (not np.isnan(reward)) and (self.last_done != 1):
+        if self.last_done != 1:
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
         self.last_done = done
         if done:
-            '''Clear buffer so there are no experiences from previous states spilling over to new episodes'''
-            self.clear_buffer()
-            self.body.state_buffer.clear()
+            # Clear buffer so there are no experiences from previous states spilling over to new episodes
+            self.state_buffer.clear()
+            for _ in range(self.state_buffer.maxlen):
+                self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
 
 
 class Atari(Replay):
@@ -199,37 +192,31 @@ class Atari(Replay):
 
     def __init__(self, memory_spec, algorithm, body):
         # TODO unify preprocessed state_dim into body
-        preprocess_body = deepcopy(body)
-        # stacked, shape 4 in last axis
-        preprocess_body.state_dim = (84, 84, 4)
-        super(Atari, self).__init__(memory_spec, algorithm, preprocess_body)
         self.atari = True  # Memory is specialized for playing Atari games
+        self.stack_len = 4
+        body.state_dim = (84, 84, self.stack_len)  # greyscale downsized, stacked
+        super(Atari, self).__init__(memory_spec, algorithm, body)
+        self.state_buffer = deque(maxlen=self.stack_len)
+        self.reset()
 
     def reset_last_state(self, state):
         '''Do reset of body memory per session during agent_space.reset() to set last_state'''
         self.last_state = self.preprocess_state(state)
 
-    def clear_buffer(self):
-        '''Clears the raw state buffer'''
-        self.state_buffer = []
-        for _ in range(3):
-            self.state_buffer.append(np.zeros((84, 84)))
-
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
         super(Atari, self).reset()
-        self.state_buffer = []
-        self.clear_buffer()
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
 
     def preprocess_state(self, state):
         '''Transforms the raw state into format that is fed into the network'''
-        if len(self.state_buffer) == 4:
-            del self.state_buffer[0]
         state = util.transform_image(state)
         self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
         # stacked, shape 4 in last axis
-        assert processed_state.shape == (84, 84, 4)
+        assert processed_state.shape == self.body.state_dim
         return processed_state
 
     @lab_api
@@ -239,11 +226,12 @@ class Atari(Replay):
         state = self.preprocess_state(state)
         reward = max(-1, min(1, reward))
         logger.debug3(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
-        if (not np.isnan(reward)) and (self.last_done != 1):
+        if self.last_done != 1:
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
         self.last_done = done
         if done:
             # Clear buffer so there are no experiences from previous states spilling over to new episodes
-            self.clear_buffer()
-            self.body.state_buffer.clear()
+            self.state_buffer.clear()
+            for _ in range(self.state_buffer.maxlen):
+                self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))

@@ -1,3 +1,4 @@
+from collections import deque
 from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -21,6 +22,7 @@ class GAEOnPolicyReplay(Memory):
         ])
         util.set_attr(self, self.agent_spec['algorithm'], ['horizon'])
         self.v_pred = np.nan
+        self.state_buffer = deque(maxlen=0)  # for API consistency
         self.reset()
 
     def reset(self):
