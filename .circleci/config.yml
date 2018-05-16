@@ -111,7 +111,6 @@ jobs:
             chmod +x ./cc-test-reporter
             ./cc-test-reporter before-build
             source activate lab
-            pip install atari_py
             python setup.py test
             cat coverage.xml
             ./cc-test-reporter after-build -d -p ~/SLM-Lab --exit-code $?
