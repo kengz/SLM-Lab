@@ -189,19 +189,6 @@ class DQNBase(VanillaDQN):
         '''Initialize networks'''
         if 'Recurrent' in self.net_spec['type']:
             raise ValueError('Recurrent networks does not work with DQN family of algorithms.')
-        memory_name = self.memory_spec['name']
-        if 'Atari' in memory_name:
-            # Make adjustments for Atari mode
-            # TODO should be auto-set from preprocessor
-            self.body.state_dim = (84, 84, 4)
-            logger.debug3(f'State dim: {self.body.state_dim}')
-        elif 'Stack' in memory_name:
-            # Make adjustments for StackedReplay memory
-            if 'MLP' not in self.net_spec['type']:
-                raise ValueError('StackedReplay should only be used with MLPs, to stack states with ConvNets use Atari memory.')
-            self.body.state_dim = self.body.state_dim * self.memory_spec['stack_len']
-            logger.debug3(f'State dim: {self.body.state_dim}')
-
         if self.algorithm_spec['name'] == 'DQNBase':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_weight']), 'Network update not available for DQNBase; use DQN.'
         NetClass = getattr(net, self.net_spec['type'])
