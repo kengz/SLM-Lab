@@ -473,6 +473,7 @@ def override_dev_spec(spec):
 def override_test_spec(spec):
     for env_spec in spec['env']:
         env_spec['max_episode'] = 2
+        env_spec['max_timestep'] = 30
     spec['meta'] = {
         'max_session': 1,
         'max_trial': 2,
