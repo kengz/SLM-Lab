@@ -24,7 +24,7 @@ jobs:
           name: Install apt-get packages for lab
           command: |
             sudo apt-get update
-            sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6 libtcmalloc-minimal4
+            sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
           environment:
             LD_PRELOAD: /usr/lib/libtcmalloc_minimal.so.4
 
@@ -68,6 +68,7 @@ jobs:
             fi
             source activate lab
             conda env update -f environment.yml
+            pip install --no-binary numpy
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}
           paths:
@@ -107,7 +108,6 @@ jobs:
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
             ./cc-test-reporter before-build
-            export LD_PRELOAD="/usr/lib/libtcmalloc.so.4"
             source activate lab
             python setup.py test
             cat coverage.xml
