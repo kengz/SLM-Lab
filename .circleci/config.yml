@@ -68,6 +68,8 @@ jobs:
             fi
             source activate lab
             conda env update -f environment.yml
+            # hack to fix https://github.com/tensorflow/tensorflow/issues/6968
+            conda remove --force -y numpy
             pip install --no-binary numpy
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}
