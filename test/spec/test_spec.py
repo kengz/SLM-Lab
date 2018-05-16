@@ -36,6 +36,7 @@ def test_base_multi(spec_file, spec_name):
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('actor_critic.json', 'actor_critic_cartpole'),
     ('actor_critic.json', 'actor_critic_cartpole_recurrent'),
+    ('actor_critic.json', 'actor_critic_conv_breakout'),
 ])
 def test_actor_critic(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
@@ -61,7 +62,7 @@ def test_ppo(spec_file, spec_name):
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('reinforce.json', 'reinforce_cartpole'),
     ('reinforce.json', 'reinforce_cartpole_recurrent'),
-    # ('reinforce.json', 'reinforce_conv_breakout'),
+    ('reinforce.json', 'reinforce_conv_breakout'),
 ])
 def test_reinforce(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)

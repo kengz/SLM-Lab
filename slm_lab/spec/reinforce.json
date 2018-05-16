@@ -129,7 +129,7 @@
       }]
     }
   },
-  "reinforce_conv_test_spec": {
+  "reinforce_conv_breakout": {
     "agent": [{
       "name": "Reinforce",
       "algorithm": {

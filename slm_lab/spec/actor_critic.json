@@ -136,7 +136,7 @@
       "search": "RandomSearch"
     }
   },
-  "actor_critic_conv_test_spec": {
+  "actor_critic_conv_breakout": {
     "agent": [{
       "name": "ActorCritic",
       "algorithm": {
