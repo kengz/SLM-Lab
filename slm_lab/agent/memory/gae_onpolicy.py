@@ -27,7 +27,7 @@ class GAEOnPolicyReplay(Memory):
 
     def reset(self):
         # TODO make such reset visible and unify epi vs overall reset
-        # self.last_state is updated from Memory.reset_last_state
+        # self.last_state is updated from Memory.epi_reset
         self.total_t = 0
         self.done = False
         self.new = True  # is the start of epi, to set v=0
@@ -50,6 +50,10 @@ class GAEOnPolicyReplay(Memory):
 
     @lab_api
     def update(self, action, reward, state, done):
+        if np.isnan(reward):  # the start of episode
+            self.epi_reset(state)
+        else:
+            pass  # current memory design absorbs episodic interface
         self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
 

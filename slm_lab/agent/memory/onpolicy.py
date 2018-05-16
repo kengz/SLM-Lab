@@ -62,17 +62,15 @@ class OnPolicyReplay(Memory):
     @lab_api
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
-        if not np.isnan(reward):
-            self.add_experience(self.last_state, action, reward, state, done)
-            self.nan_idxs.append(0)
-        else:
+        if np.isnan(reward):
+            self.epi_reset(state)
             self.nan_idxs.append(1)
             logger.debug2(f'Nan reward')
+        else:
+            self.add_experience(self.last_state, action, reward, state, done)
+            self.nan_idxs.append(0)
         self.last_state = state
         self.state_buffer.append(state)
-        # Clear bodies state buffer for recurent nets
-        if done:
-            self.state_buffer.clear()
 
     def add_experience(self, state, action, reward, next_state, done, priority=1):
         '''Interface helper method for update() to add experience to memory'''

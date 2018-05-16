@@ -166,7 +166,6 @@ class OpenAIEnv:
             state = self.u_env.reset()
             state_e[(a, b)] = state
             done_e[(a, b)] = self.done
-            body.memory.reset_last_state(state)
         # TODO internalize render code
         if os.environ.get('lab_mode') == 'dev':
             self.u_env.render()
@@ -306,7 +305,6 @@ class UnityEnv:
             state = env_info_a.states[b]
             state_e[(a, b)] = state
             done_e[(a, b)] = self.done
-            body.memory.reset_last_state(state)
         return _reward_e, state_e, done_e
 
     @lab_api

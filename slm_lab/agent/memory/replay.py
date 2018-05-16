@@ -66,7 +66,9 @@ class Replay(Memory):
     def update(self, action, reward, state, done):
         '''Interface method to update memory.
         Guard for nan rewards and last state from previous episode'''
-        if not np.isnan(reward):  # not the start of episode
+        if np.isnan(reward):  # the start of episode
+            self.epi_reset(state)
+        else:
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
 
@@ -148,14 +150,16 @@ class StackReplay(Replay):
         self.state_buffer = deque(maxlen=self.stack_len)
         self.reset()
 
-    def reset_last_state(self, state):
-        '''Do reset of body memory per session during agent_space.reset() to set last_state'''
-        self.last_state = self.preprocess_state(state)
-
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
         super(StackReplay, self).reset()
         self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
+
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(StackReplay, self).epi_reset(state)
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
 
@@ -171,14 +175,11 @@ class StackReplay(Replay):
         state = self.preprocess_state(state)
         logger.debug(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
         logger.debug2(f'state buffer: {self.state_buffer}, state: {state}')
-        if not np.isnan(reward):  # not the start of episode
+        if np.isnan(reward):  # the start of episode
+            self.epi_reset(state)
+        else:
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
-        if done:
-            # Clear buffer so there are no experiences from previous states spilling over to new episodes
-            self.state_buffer.clear()
-            for _ in range(self.state_buffer.maxlen):
-                self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
 
 
 class Atari(Replay):
@@ -196,14 +197,16 @@ class Atari(Replay):
         self.state_buffer = deque(maxlen=self.stack_len)
         self.reset()
 
-    def reset_last_state(self, state):
-        '''Do reset of body memory per session during agent_space.reset() to set last_state'''
-        self.last_state = self.preprocess_state(state)
-
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
         super(Atari, self).reset()
         self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
+
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(Atari, self).epi_reset(state)
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
 
@@ -221,13 +224,11 @@ class Atari(Replay):
         '''Interface method to update memory'''
         logger.debug2(f'original reward: {reward}')
         state = self.preprocess_state(state)
-        reward = max(-1, min(1, reward))
+        if not np.isnan(reward):
+            reward = max(-1, min(1, reward))
         logger.debug3(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
-        if not np.isnan(reward):  # not the start of episode
+        if np.isnan(reward):  # the start of episode
+            self.epi_reset(state)
+        else:
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
-        if done:
-            # Clear buffer so there are no experiences from previous states spilling over to new episodes
-            self.state_buffer.clear()
-            for _ in range(self.state_buffer.maxlen):
-                self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
