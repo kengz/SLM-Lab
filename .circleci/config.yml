@@ -101,6 +101,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
       - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
+      - run: echo 'export LD_PRELOAD=/usr/lib/libtcmalloc_minimal.so.4' >> $BASH_ENV
       - run:
           name: Run Python tests
           command: |
