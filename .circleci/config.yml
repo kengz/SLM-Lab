@@ -107,7 +107,7 @@ jobs:
             # hack to fix https://github.com/tensorflow/tensorflow/issues/6968
             sudo apt-get install libtcmalloc-minimal4
             export LD_PRELOAD="/usr/lib/libtcmalloc_minimal.so.4"
-            pip install gym[atari]
+            pip install atari_py
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
             ./cc-test-reporter before-build
