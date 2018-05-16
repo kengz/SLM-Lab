@@ -4,7 +4,7 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
 test_args = [
-    '-n 0',
+    '-n 4',
     '--verbose',
     '--capture=sys',
     '--log-level=INFO',
