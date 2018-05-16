@@ -32,15 +32,6 @@ def test_spec():
     return spec
 
 
-# TODO properly use in tests
-# @pytest.fixture(scope='session')
-# def test_session(test_spec):
-#     trial = Trial(test_spec)
-#     session = trial.init_session()
-#     yield session
-#     session.close()
-
-
 @pytest.fixture(scope='session')
 def test_aeb_space(test_spec):
     global aeb_space
