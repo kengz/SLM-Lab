@@ -68,9 +68,6 @@ jobs:
             fi
             source activate lab
             conda env update -f environment.yml
-            # hack to fix https://github.com/tensorflow/tensorflow/issues/6968
-            conda remove --force -y numpy
-            pip install --no-binary numpy
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}
           paths:
@@ -107,6 +104,9 @@ jobs:
       - run:
           name: Run Python tests
           command: |
+            # hack to fix https://github.com/tensorflow/tensorflow/issues/6968
+            sudo apt-get install libtcmalloc-minimal4
+            export LD_PRELOAD="/usr/lib/libtcmalloc_minimal.so.4"
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
             ./cc-test-reporter before-build
