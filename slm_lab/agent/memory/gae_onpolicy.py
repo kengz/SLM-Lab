@@ -50,9 +50,8 @@ class GAEOnPolicyReplay(Memory):
 
     @lab_api
     def update(self, action, reward, state, done):
-        if np.isnan(reward):  # the start of episode
-            self.epi_reset(state)
-        else:
+        self.base_update(action, reward, state, done)
+        if not np.isnan(reward):  # not the start of episode
             pass  # current memory design absorbs episodic interface
         self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state

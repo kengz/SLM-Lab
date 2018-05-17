@@ -64,11 +64,9 @@ class Replay(Memory):
 
     @lab_api
     def update(self, action, reward, state, done):
-        '''Interface method to update memory.
-        Guard for nan rewards and last state from previous episode'''
-        if np.isnan(reward):  # the start of episode
-            self.epi_reset(state)
-        else:
+        '''Interface method to update memory.'''
+        self.base_update(action, reward, state, done)
+        if not np.isnan(reward):  # not the start of episode
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
 
@@ -175,9 +173,8 @@ class StackReplay(Replay):
         state = self.preprocess_state(state)
         logger.debug(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
         logger.debug2(f'state buffer: {self.state_buffer}, state: {state}')
-        if np.isnan(reward):  # the start of episode
-            self.epi_reset(state)
-        else:
+        self.base_update(action, reward, state, done)
+        if not np.isnan(reward):  # not the start of episode
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
 
@@ -222,13 +219,11 @@ class Atari(Replay):
     @lab_api
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
-        logger.debug2(f'original reward: {reward}')
         state = self.preprocess_state(state)
-        if not np.isnan(reward):
+        self.base_update(action, reward, state, done)
+        if not np.isnan(reward):  # not the start of episode
+            logger.debug2(f'original reward: {reward}')
             reward = max(-1, min(1, reward))
-        logger.debug3(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
-        if np.isnan(reward):  # the start of episode
-            self.epi_reset(state)
-        else:
+            logger.debug3(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state

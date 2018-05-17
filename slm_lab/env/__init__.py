@@ -369,8 +369,6 @@ class EnvSpace:
     def reset(self):
         logger.debug('EnvSpace.reset')
         _reward_v, state_v, done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
-        # TODO create on-the-fly data space from body instead of shoving into the core dataspace
-        self.total_reward_v = _reward_v.copy()  # for debugging
         for env in self.envs:
             _reward_e, state_e, done_e = env.reset()
             state_v[env.e, 0:len(state_e)] = state_e
@@ -390,8 +388,6 @@ class EnvSpace:
             state_v[e, 0:len(state_e)] = state_e
             done_v[e, 0:len(done_e)] = done_e
         reward_space, state_space, done_space = self.aeb_space.add(ENV_DATA_NAMES, [reward_v, state_v, done_v])
-        # TODO remove total_reward_v
-        self.total_reward_v += reward_v  # for debugging
         logger.debug(f'\nreward_space: {reward_space}\nstate_space: {state_space}\ndone_space: {done_space}')
         return reward_space, state_space, done_space
 
