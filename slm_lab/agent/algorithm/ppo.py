@@ -52,7 +52,7 @@ class PPO(Algorithm):
             'horizon',
             'epoch',
             'lr',
-            'max_frame',
+            'lr_anneal_epi',
             'schedule',
         ])
 
@@ -188,7 +188,7 @@ class PPO(Algorithm):
         if self.schedule == 'constant':
             self.cur_lr_mult = 1.0
         elif self.schedule == 'linear':
-            self.cur_lr_mult = max(1.0 - self.body.env.clock.get('total_t') / self.max_frame, 0.0)
+            self.cur_lr_mult = max(1.0 - self.body.env.clock.get('epi') / self.lr_anneal_epi, 0.0)
         else:
             raise NotImplementedError
 

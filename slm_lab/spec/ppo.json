@@ -12,7 +12,7 @@
         "horizon": 200,
         "epoch": 16,
         "lr": 0.001,
-        "max_frame": 1e5,
+        "lr_anneal_epi": 1000,
         "schedule": "linear"
       },
       "memory": {
