@@ -2,7 +2,7 @@ from slm_lab.agent import AgentSpace, Body
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.net.recurrent import RecurrentNet
-from slm_lab.agent.net.feedforward import MLPNet, MultiMLPNet, MLPHeterogenousTails
+from slm_lab.agent.net.mlp import MLPNet, MultiMLPNet, MLPHeterogenousTails
 from slm_lab.env import EnvSpace
 # from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
