@@ -105,7 +105,6 @@ class DataSpace:
         else:
             self.data = new_data
             self.swap_data = new_data.swapaxes(0, 1)
-        # NOTE do not save history if state data is deep, e.g. image
         if self.data_name == 'state' and len(self.data[(0, 0, 0)].shape) > 1:
             self.data_history.append(np.zeros_like(self.data))
         else:

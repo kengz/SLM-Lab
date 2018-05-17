@@ -8,14 +8,12 @@ import pytest
 def test_session(test_spec):
     session = Session(test_spec)
     session_data = session.run()
-    # TODO session data checker method
     assert isinstance(session_data, pd.DataFrame)
 
 
 def test_trial(test_spec):
     trial = Trial(test_spec)
     trial_data = trial.run()
-    # TODO trial data checker method
     assert isinstance(trial_data, pd.DataFrame)
 
 
@@ -29,5 +27,4 @@ def test_trial_demo():
 def test_experiment(test_spec):
     experiment = Experiment(test_spec)
     experiment_data = experiment.run()
-    # TODO experiment data checker method
     assert isinstance(experiment_data, pd.DataFrame)

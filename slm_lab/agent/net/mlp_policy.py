@@ -45,10 +45,8 @@ class MLPPolicy(Net):
             for i, hid_size in enumerate(self.hid_layers):
                 last_out = getattr(tf.nn, self.hid_layers_activation)(tf.layers.dense(
                     last_out, hid_size, name=f'fc_{i+1}', kernel_initializer=tf_util.normc_initializer(1.0)))
-            # TODO restore param gaussian_fixed_var=True
-            gaussian_fixed_var = True
             # continuous action output layer
-            if gaussian_fixed_var and not self.body.is_discrete:
+            if self.algorithm.gaussian_fixed_var and not self.body.is_discrete:
                 mean = tf.layers.dense(
                     last_out, self.pdtype.param_shape()[0] // 2, name='final', kernel_initializer=tf_util.normc_initializer(0.01))
                 logstd = tf.get_variable(

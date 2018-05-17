@@ -31,9 +31,7 @@ class PPO(Algorithm):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         self.comm = MPI.Comm.Clone(MPI.COMM_WORLD)
-        # TODO fix access to info_space then set below
-        tf_util.make_session(num_cpus=1).__enter__()
-        # TODO close when done to clear
+        tf_util.make_session(num_cpus=3).__enter__()
         self.body = self.agent.nanflat_body_a[0]  # singleton algo
         self.init_algorithm_params()
         self.init_nets()
@@ -48,6 +46,7 @@ class PPO(Algorithm):
             'ent_coef',
             'adam_epsilon',
             'gamma',
+            'gaussian_fixed_var',
             'lam',
             'horizon',
             'epoch',
