@@ -1,4 +1,283 @@
 {
+  "ActorCritic": {
+    "name": "ActorCritic",
+    "algorithm": {
+      "name": "ActorCritic",
+      "action_policy": "default",
+      "gamma": 0.99,
+      "add_entropy": false,
+      "entropy_weight": 0.01,
+      "continuous_action_clip": 2.0,
+      "training_frequency": 1,
+      "training_iters_per_batch": 8,
+      "use_GAE": true,
+      "lam": 1.0,
+      "num_step_returns": 100,
+      "policy_loss_weight": 1.0,
+      "val_loss_weight": 1.0
+    },
+    "memory": {
+      "name": "OnPolicyReplay"
+    },
+    "net": {
+      "type": "MLPseparate",
+      "hid_layers": [64],
+      "hid_layers_activation": "relu",
+      "use_same_optim": false,
+      "actor_optim_spec": {
+        "name": "Adam",
+        "lr": 0.02
+      },
+      "critic_optim_spec": {
+        "name": "Adam",
+        "lr": 0.02
+      },
+      "clamp_grad": false,
+      "clamp_grad_val": 1.0,
+      "decay_lr": true,
+      "decay_lr_factor": 0.9,
+      "decay_lr_frequency": 1000,
+      "decay_lr_min_timestep": 2000,
+      "gpu": false
+    }
+  },
+  "VanillaDQN": {
+    "name": "VanillaDQN",
+    "algorithm": {
+      "name": "VanillaDQN",
+      "action_policy": "boltzmann",
+      "action_policy_update": "linear_decay",
+      "explore_var_start": 1.5,
+      "explore_var_end": 0.3,
+      "explore_anneal_epi": 10,
+      "gamma": 0.999,
+      "training_epoch": 4,
+      "training_frequency": 10,
+      "training_iters_per_batch": 1,
+      "training_min_timestep": 10
+    },
+    "memory": {
+      "name": "Replay",
+      "batch_size": 32,
+      "max_size": 10000
+    },
+    "net": {
+      "type": "MLPNet",
+      "hid_layers": [64],
+      "hid_layers_activation": "sigmoid",
+      "optim_spec": {
+        "name": "Adam",
+        "lr": 0.02
+      },
+      "loss_spec": {
+        "name": "mse_loss"
+      },
+      "clamp_grad": false,
+      "clamp_grad_val": 1.0,
+      "decay_lr": true,
+      "decay_lr_factor": 0.9,
+      "decay_lr_frequency": 400,
+      "decay_lr_min_timestep": 1400,
+      "gpu": false
+    }
+  },
+  "DQN": {
+    "name": "DQN",
+    "algorithm": {
+      "name": "DQN",
+      "action_policy": "boltzmann",
+      "action_policy_update": "linear_decay",
+      "explore_var_start": 1.5,
+      "explore_var_end": 0.3,
+      "explore_anneal_epi": 10,
+      "gamma": 0.999,
+      "training_epoch": 4,
+      "training_frequency": 10,
+      "training_iters_per_batch": 1,
+      "training_min_timestep": 10
+    },
+    "memory": {
+      "name": "Replay",
+      "batch_size": 32,
+      "max_size": 10000
+    },
+    "net": {
+      "type": "MLPNet",
+      "hid_layers": [64],
+      "hid_layers_activation": "sigmoid",
+      "optim_spec": {
+        "name": "Adam",
+        "lr": 0.02
+      },
+      "loss_spec": {
+        "name": "mse_loss"
+      },
+      "clamp_grad": false,
+      "clamp_grad_val": 1.0,
+      "decay_lr": true,
+      "decay_lr_factor": 0.9,
+      "decay_lr_frequency": 400,
+      "decay_lr_min_timestep": 1400,
+      "update_type": "replace",
+      "update_frequency": 1,
+      "polyak_weight": 0.9,
+      "gpu": false
+    }
+  },
+  "DoubleDQN": {
+    "name": "DoubleDQN",
+    "algorithm": {
+      "name": "DoubleDQN",
+      "action_policy": "boltzmann",
+      "action_policy_update": "linear_decay",
+      "explore_var_start": 1.5,
+      "explore_var_end": 0.3,
+      "explore_anneal_epi": 10,
+      "gamma": 0.999,
+      "training_epoch": 4,
+      "training_frequency": 10,
+      "training_iters_per_batch": 1,
+      "training_min_timestep": 10
+    },
+    "memory": {
+      "name": "Replay",
+      "batch_size": 32,
+      "max_size": 10000
+    },
+    "net": {
+      "type": "MLPNet",
+      "hid_layers": [64],
+      "hid_layers_activation": "sigmoid",
+      "optim_spec": {
+        "name": "Adam",
+        "lr": 0.02
+      },
+      "loss_spec": {
+        "name": "mse_loss"
+      },
+      "clamp_grad": false,
+      "clamp_grad_val": 1.0,
+      "decay_lr": true,
+      "decay_lr_factor": 0.9,
+      "decay_lr_frequency": 400,
+      "decay_lr_min_timestep": 1400,
+      "update_type": "replace",
+      "update_frequency": 1,
+      "polyak_weight": 0.9,
+      "gpu": false
+    }
+  },
+  "MultitaskDQN": {
+    "name": "MultitaskDQN",
+    "algorithm": {
+      "name": "MultitaskDQN",
+      "action_policy": "multi_boltzmann",
+      "action_policy_update": "multi_linear_decay",
+      "explore_var_start": 1.5,
+      "explore_var_end": 0.3,
+      "explore_anneal_epi": 15,
+      "gamma": 0.999,
+      "training_epoch": 4,
+      "training_frequency": 10,
+      "training_iters_per_batch": 1,
+      "training_min_timestep": 10
+    },
+    "memory": {
+      "name": "Replay",
+      "batch_size": 32,
+      "max_size": 10000
+    },
+    "net": {
+      "type": "MLPNet",
+      "hid_layers": [64],
+      "hid_layers_activation": "sigmoid",
+      "optim_spec": {
+        "name": "Adam",
+        "lr": 0.02
+      },
+      "loss_spec": {
+        "name": "mse_loss"
+      },
+      "clamp_grad": false,
+      "clamp_grad_val": 1.0,
+      "decay_lr": true,
+      "decay_lr_factor": 0.9,
+      "decay_lr_frequency": 400,
+      "decay_lr_min_timestep": 1400,
+      "update_type": "replace",
+      "update_frequency": 1,
+      "polyak_weight": 0.9,
+      "gpu": false
+    }
+  },
+  "MultiHeadDQN": {
+    "name": "MultiHeadDQN",
+    "algorithm": {
+      "name": "MultiHeadDQN",
+      "action_policy": "multi_head_boltzmann",
+      "action_policy_update": "multi_linear_decay",
+      "explore_var_start": 1.5,
+      "explore_var_end": 0.3,
+      "explore_anneal_epi": 15,
+      "gamma": 0.999,
+      "training_epoch": 4,
+      "training_frequency": 10,
+      "training_iters_per_batch": 1,
+      "training_min_timestep": 10
+    },
+    "memory": {
+      "name": "Replay",
+      "batch_size": 32,
+      "max_size": 10000
+    },
+    "net": {
+      "type": "MultiMLPNet",
+      "hid_layers": [64],
+      "hid_layers_activation": "sigmoid",
+      "optim_spec": {
+        "name": "Adam",
+        "lr": 0.02
+      },
+      "loss_spec": {
+        "name": "mse_loss"
+      },
+      "clamp_grad": false,
+      "clamp_grad_val": 1.0,
+      "decay_lr": true,
+      "decay_lr_factor": 0.9,
+      "decay_lr_frequency": 400,
+      "decay_lr_min_timestep": 1400,
+      "update_type": "replace",
+      "update_frequency": 1,
+      "polyak_weight": 0.9,
+      "gpu": false
+    }
+  },
+  "PPO": {
+    "name": "PPO",
+    "algorithm": {
+      "name": "PPO",
+      "clip_eps": 0.20,
+      "ent_coef": 0.02,
+      "adam_epsilon": 1e-5,
+      "gamma": 0.99,
+      "lam": 0.95,
+      "horizon": 200,
+      "epoch": 16,
+      "lr": 0.001,
+      "max_frame": 1e5,
+      "schedule": "linear"
+    },
+    "memory": {
+      "name": "GAEOnPolicyReplay",
+      "batch_size": 64
+    },
+    "net": {
+      "type": "MLPPolicy",
+      "hid_layers": [64],
+      "hid_layers_activation": "tanh"
+    }
+  },
   "Random": {
     "name": "Random",
     "algorithm": {
@@ -39,250 +318,45 @@
       "clamp_grad": false,
       "clamp_grad_val": 1.0,
       "decay_lr": false,
+      "decay_lr_factor": 0.9,
       "decay_lr_frequency": 1000,
-      "decay_lr_min_timestep": 2000
+      "decay_lr_min_timestep": 2000,
+      "gpu": false
     }
   },
-  "ActorCritic": {
-    "name": "ActorCritic",
+  "SARSA": {
+    "name": "SARSA",
     "algorithm": {
-      "name": "ActorCritic",
-      "action_policy": "default",
-      "gamma": 0.99,
-      "add_entropy": false,
-      "entropy_weight": 0.01,
-      "continuous_action_clip": 2.0,
-      "lam": 1.0,
-      "num_step_returns": 100,
-      "training_frequency": 1,
-      "training_iters_per_batch": 8,
-      "use_GAE": true,
-      "policy_loss_weight": 1.0,
-      "val_loss_weight": 1.0
+      "name": "SARSA",
+      "action_policy": "epsilon_greedy",
+      "action_policy_update": "linear_decay",
+      "explore_var_start": 1.0,
+      "explore_var_end": 0.04,
+      "explore_anneal_epi": 100,
+      "gamma": 0.97,
+      "training_frequency": 32
     },
     "memory": {
-      "name": "OnPolicyReplay"
+      "name": "OnPolicyBatchReplay"
     },
     "net": {
-      "type": "MLPseparate",
+      "type": "MLPNet",
       "hid_layers": [64],
-      "hid_layers_activation": "relu",
-      "use_same_optim": false,
-      "actor_optim_spec": {
+      "hid_layers_activation": "sigmoid",
+      "optim_spec": {
         "name": "Adam",
-        "lr": 0.02
+        "lr": 0.01
       },
-      "critic_optim_spec": {
-        "name": "Adam",
-        "lr": 0.02
+      "loss_spec": {
+        "name": "mse_loss"
       },
       "clamp_grad": false,
       "clamp_grad_val": 1.0,
       "decay_lr": true,
+      "decay_lr_factor": 0.9,
       "decay_lr_frequency": 1000,
-      "decay_lr_min_timestep": 2000
-    }
-  },
-  "VanillaDQN": {
-    "name": "VanillaDQN",
-    "algorithm": {
-      "name": "VanillaDQN",
-      "action_policy": "boltzmann",
-      "action_policy_update": "linear_decay",
-      "explore_var_start": 1.5,
-      "explore_var_end": 0.3,
-      "explore_anneal_epi": 10,
-      "gamma": 0.999,
-      "training_epoch": 4,
-      "training_frequency": 10,
-      "training_iters_per_batch": 1,
-      "training_min_timestep": 10
-    },
-    "memory": {
-      "name": "Replay",
-      "batch_size": 32,
-      "max_size": 10000
-    },
-    "net": {
-      "type": "MLPNet",
-      "hid_layers": [64],
-      "hid_layers_activation": "sigmoid",
-      "optim_spec": {
-        "name": "Adam",
-        "lr": 0.02
-      },
-      "loss_spec": {
-        "name": "mse_loss"
-      },
-      "clamp_grad": false,
-      "clamp_grad_val": 1.0,
-      "decay_lr": true,
-      "decay_lr_frequency": 400,
-      "decay_lr_min_timestep": 1400
-    }
-  },
-  "DQN": {
-    "name": "DQN",
-    "algorithm": {
-      "name": "DQN",
-      "action_policy": "boltzmann",
-      "action_policy_update": "linear_decay",
-      "explore_var_start": 1.5,
-      "explore_var_end": 0.3,
-      "explore_anneal_epi": 10,
-      "gamma": 0.999,
-      "training_epoch": 4,
-      "training_frequency": 10,
-      "training_iters_per_batch": 1,
-      "training_min_timestep": 10
-    },
-    "memory": {
-      "name": "Replay",
-      "batch_size": 32,
-      "max_size": 10000
-    },
-    "net": {
-      "type": "MLPNet",
-      "hid_layers": [64],
-      "hid_layers_activation": "sigmoid",
-      "optim_spec": {
-        "name": "Adam",
-        "lr": 0.02
-      },
-      "loss_spec": {
-        "name": "mse_loss"
-      },
-      "clamp_grad": false,
-      "clamp_grad_val": 1.0,
-      "decay_lr": true,
-      "decay_lr_frequency": 400,
-      "decay_lr_min_timestep": 1400,
-      "update_type": "replace",
-      "update_frequency": 1,
-      "polyak_weight": 0.9
-    }
-  },
-  "DoubleDQN": {
-    "name": "DoubleDQN",
-    "algorithm": {
-      "name": "DoubleDQN",
-      "action_policy": "boltzmann",
-      "action_policy_update": "linear_decay",
-      "explore_var_start": 1.5,
-      "explore_var_end": 0.3,
-      "explore_anneal_epi": 10,
-      "gamma": 0.999,
-      "training_epoch": 4,
-      "training_frequency": 10,
-      "training_iters_per_batch": 1,
-      "training_min_timestep": 10
-    },
-    "memory": {
-      "name": "Replay",
-      "batch_size": 32,
-      "max_size": 10000
-    },
-    "net": {
-      "type": "MLPNet",
-      "hid_layers": [64],
-      "hid_layers_activation": "sigmoid",
-      "optim_spec": {
-        "name": "Adam",
-        "lr": 0.02
-      },
-      "loss_spec": {
-        "name": "mse_loss"
-      },
-      "clamp_grad": false,
-      "clamp_grad_val": 1.0,
-      "decay_lr": true,
-      "decay_lr_frequency": 400,
-      "decay_lr_min_timestep": 1400,
-      "update_type": "replace",
-      "update_frequency": 1,
-      "polyak_weight": 0.9
-    }
-  },
-  "MultitaskDQN": {
-    "name": "MultitaskDQN",
-    "algorithm": {
-      "name": "MultitaskDQN",
-      "action_policy": "multi_boltzmann",
-      "action_policy_update": "multi_linear_decay",
-      "explore_var_start": 1.5,
-      "explore_var_end": 0.3,
-      "explore_anneal_epi": 15,
-      "gamma": 0.999,
-      "training_epoch": 4,
-      "training_frequency": 10,
-      "training_iters_per_batch": 1,
-      "training_min_timestep": 10
-    },
-    "memory": {
-      "name": "Replay",
-      "batch_size": 32,
-      "max_size": 10000
-    },
-    "net": {
-      "type": "MLPNet",
-      "hid_layers": [64],
-      "hid_layers_activation": "sigmoid",
-      "optim_spec": {
-        "name": "Adam",
-        "lr": 0.02
-      },
-      "loss_spec": {
-        "name": "mse_loss"
-      },
-      "clamp_grad": false,
-      "clamp_grad_val": 1.0,
-      "decay_lr": true,
-      "decay_lr_frequency": 400,
-      "decay_lr_min_timestep": 1400,
-      "update_type": "replace",
-      "update_frequency": 1,
-      "polyak_weight": 0.9
-    }
-  },
-  "MultiHeadDQN": {
-    "name": "MultiHeadDQN",
-    "algorithm": {
-      "name": "MultiHeadDQN",
-      "action_policy": "multi_head_boltzmann",
-      "action_policy_update": "multi_linear_decay",
-      "explore_var_start": 1.5,
-      "explore_var_end": 0.3,
-      "explore_anneal_epi": 15,
-      "gamma": 0.999,
-      "training_epoch": 4,
-      "training_frequency": 10,
-      "training_iters_per_batch": 1,
-      "training_min_timestep": 10
-    },
-    "memory": {
-      "name": "Replay",
-      "batch_size": 32,
-      "max_size": 10000
-    },
-    "net": {
-      "type": "MultiMLPNet",
-      "hid_layers": [64],
-      "hid_layers_activation": "sigmoid",
-      "optim_spec": {
-        "name": "Adam",
-        "lr": 0.02
-      },
-      "loss_spec": {
-        "name": "mse_loss"
-      },
-      "clamp_grad": false,
-      "clamp_grad_val": 1.0,
-      "decay_lr": true,
-      "decay_lr_frequency": 400,
-      "decay_lr_min_timestep": 1400,
-      "update_type": "replace",
-      "update_frequency": 1,
-      "polyak_weight": 0.9
+      "decay_lr_min_timestep": 1000,
+      "gpu": false
     }
   }
 }
