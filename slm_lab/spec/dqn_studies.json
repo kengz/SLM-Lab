@@ -112,8 +112,8 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 2, 3, 5, 10],
-        },
+          "training_epoch__choice": [1, 2, 3, 5, 10]
+        }
       }]
     }
   },
@@ -171,8 +171,8 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_iters_per_batch__choice": [1, 2, 3, 5, 7, 10],
-        },
+          "training_iters_per_batch__choice": [1, 2, 3, 5, 7, 10]
+        }
       }]
     }
   },
@@ -230,8 +230,8 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "name__choice": ["DQN", "DoubleDQN"],
-        },
+          "name__choice": ["DQN", "DoubleDQN"]
+        }
       }]
     }
   },
@@ -289,8 +289,8 @@
     "search": {
       "agent": [{
         "net": {
-          "update_frequency__choice": [1, 10, 25, 50, 250, 500, 1000],
-        },
+          "update_frequency__choice": [1, 10, 25, 50, 250, 500, 1000]
+        }
       }]
     }
   },
@@ -348,9 +348,9 @@
     "search": {
       "agent": [{
         "net": {
-          "polyak_weight__choice": [1.0, 0.99, 0.95, 0.9, 0.8, 0.5],
-        },
+          "polyak_weight__choice": [1.0, 0.99, 0.95, 0.9, 0.8, 0.5]
+        }
       }]
     }
-  },
+  }
 }

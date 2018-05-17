@@ -29,7 +29,6 @@
           "lr": 0.02
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -102,7 +101,6 @@
           "lr": 0.02
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400
       }
@@ -170,7 +168,6 @@
           "lr": 0.02
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -240,7 +237,6 @@
           "lr": 0.02
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -303,7 +299,6 @@
           "lr": 0.02
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -369,7 +364,6 @@
           "lr": 0.02
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -436,7 +430,6 @@
           "lr": 0.02
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -497,7 +490,6 @@
           "lr": 0.02
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -554,7 +546,6 @@
           "lr": 0.02
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -614,7 +605,6 @@
           "name": "mse_loss"
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -671,7 +661,6 @@
           "name": "smooth_l1_loss"
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 5000,
         "decay_lr_min_timestep": 50000,
         "update_type": "replace",
@@ -694,7 +683,7 @@
       "max_trial": null,
       "search": "EvolutionarySearch",
       "max_generation": 4
-    },
+    }
   },
   "dqn_lunar_search": {
     "agent": [{
@@ -753,7 +742,7 @@
       "max_trial": 16,
       "search": "RandomSearch",
       "max_generation": 4,
-      "train_mode": true,
+      "train_mode": true
     },
     "search": {
       "agent": [{
@@ -762,9 +751,9 @@
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
           },
-          "update_frequency__choice": [500, 750, 1000],
-        },
+          "update_frequency__choice": [500, 750, 1000]
+        }
       }]
     }
-  },
+  }
 }

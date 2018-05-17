@@ -24,7 +24,6 @@
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -69,12 +68,11 @@
           "name": "RMSprop",
           "lr": 0.02
         },
-        "decay_lr": true,
-        "decay_lr_factor": 0.9,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000,
         "clamp_grad": true,
-        "clamp_grad_val": 25.0
+        "clamp_grad_val": 25.0,
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1000
       }
     }],
     "env": [{
@@ -117,7 +115,6 @@
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -162,7 +159,6 @@
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -207,7 +203,6 @@
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -252,7 +247,6 @@
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -318,7 +312,6 @@
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -384,7 +377,6 @@
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -436,7 +428,6 @@
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -488,7 +479,6 @@
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -540,7 +530,6 @@
           "lr": 0.1
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -607,7 +596,6 @@
           "lr": 0.1
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -674,7 +662,6 @@
           "lr": 0.1
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -741,7 +728,6 @@
           "lr": 0.1
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }

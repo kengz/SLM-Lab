@@ -7,6 +7,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -55,6 +56,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -78,10 +80,12 @@
     "agent": [{
       "name": "BaseMemory",
       "algorithm": {
-        "name": "Random"
+        "name": "Random",
+        "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5
       },
       "net": {}
@@ -109,8 +113,7 @@
         "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "max_size": 5
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
@@ -137,8 +140,7 @@
         "training_frequency": 4
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
-        "max_size": 5
+        "name": "OnPolicyBatchReplay"
       },
       "net": {}
     }],
@@ -165,6 +167,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -192,6 +195,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -202,6 +206,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -229,6 +234,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -260,6 +266,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -270,6 +277,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -301,6 +309,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -311,6 +320,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -342,6 +352,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -352,6 +363,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
@@ -383,6 +395,7 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 5000
       },
       "net": {}
