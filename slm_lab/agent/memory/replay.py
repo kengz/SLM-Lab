@@ -186,7 +186,6 @@ class Atari(Replay):
     '''
 
     def __init__(self, memory_spec, algorithm, body):
-        # TODO unify preprocessed state_dim into body
         self.atari = True  # Memory is specialized for playing Atari games
         self.stack_len = 4
         body.state_dim = (84, 84, self.stack_len)  # greyscale downsized, stacked

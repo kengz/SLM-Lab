@@ -26,8 +26,6 @@ class GAEOnPolicyReplay(Memory):
         self.reset()
 
     def reset(self):
-        # TODO make such reset visible and unify epi vs overall reset
-        # self.last_state is updated from Memory.epi_reset
         self.total_t = 0
         self.done = False
         self.new = True  # is the start of epi, to set v=0

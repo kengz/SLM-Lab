@@ -25,7 +25,6 @@ class Memory(ABC):
         self.last_state = None
         # for API consistency, reset to some max_len in your specific memory class
         self.state_buffer = deque(maxlen=0)
-        # TODO remove the heavy calculation in analysis
         # total_reward and its history over episodes
         self.total_reward = 0
         self.total_reward_h = []

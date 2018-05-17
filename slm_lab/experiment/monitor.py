@@ -215,18 +215,16 @@ class AEBSpace:
         from slm_lab.experiment import analysis
         # TODO simplify below
 
-        done_space = self.data_spaces['done']
         env_dones = []
         body_end_sessions = []
         for env in self.env_space.envs:
-            clock = env.clock
-            done = env.done or clock.get('t') > env.max_timestep
+            done = env.done or env.clock.get('t') > env.max_timestep
             env_dones.append(done)
             if done:
-                clock.tick('epi')
+                env.clock.tick('epi')
             else:
-                clock.tick('t')
-            env_end_session = clock.get('epi') > env.max_episode
+                env.clock.tick('t')
+            env_end_session = env.clock.get('epi') > env.max_episode
             body_end_sessions.append(env_end_session)
 
         env_early_stops = []
@@ -240,6 +238,7 @@ class AEBSpace:
                 if env_epi > max(analysis.MA_WINDOW, body.env.max_episode / 2):
                     aeb_fitness_sr = analysis.calc_aeb_fitness_sr(aeb_df, body.env.name)
                     strength = aeb_fitness_sr['strength']
+                    # TODO properly trigger early stop
                     # env_early_stop = strength < analysis.NOISE_WINDOW
                     env_early_stop = False
                 else:
