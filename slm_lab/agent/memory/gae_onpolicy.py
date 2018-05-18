@@ -1,5 +1,6 @@
+from collections import deque
 from slm_lab.agent.memory.base import Memory
-from slm_lab.lib import logger
+from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 
@@ -14,30 +15,26 @@ class GAEOnPolicyReplay(Memory):
     adapted from OpenAI https://github.com/openai/baselines/blob/master/baselines/ppo1/pposgd_simple.py
     '''
 
-    def __init__(self, body):
-        super(GAEOnPolicyReplay, self).__init__(body)
-        # TODO properly design sub specs
-
-        self.horizon = self.body.agent.spec['algorithm']['horizon']
-        # self.last_state = None
-        # self.v_pred = None
+    def __init__(self, memory_spec, algorithm, body):
+        super(GAEOnPolicyReplay, self).__init__(memory_spec, algorithm, body)
+        util.set_attr(self, self.memory_spec, [
+            'batch_size',
+        ])
+        util.set_attr(self, self.agent_spec['algorithm'], ['horizon'])
+        self.v_pred = np.nan
+        self.state_buffer = deque(maxlen=0)  # for API consistency
         self.reset()
 
-    def reset_last_state(self, state):
-        super(GAEOnPolicyReplay, self).reset_last_state(state)
-        # TODO merge this back to inits below
-
     def reset(self):
-        # self.last_state is updated from Memory.reset_last_state
         self.total_t = 0
         self.done = False
         self.new = True  # is the start of epi, to set v=0
 
         horizon = self.horizon
         # just for shape
-        sample_ob = self.body.env.observation_space.sample()
+        sample_ob = self.body.observation_space.sample()
         ob = np.zeros(shape=sample_ob.shape, dtype=sample_ob.dtype)
-        ac = self.body.env.action_space.sample()
+        ac = self.body.action_space.sample()
         self.obs = np.array([ob for _ in range(horizon)])
         self.acs = np.array([ac for _i in range(horizon)])
         self.v_preds = np.zeros(horizon, 'float32')
@@ -51,6 +48,9 @@ class GAEOnPolicyReplay(Memory):
 
     @lab_api
     def update(self, action, reward, state, done):
+        self.base_update(action, reward, state, done)
+        if not np.isnan(reward):  # not the start of episode
+            pass  # current memory design absorbs episodic interface
         self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
 

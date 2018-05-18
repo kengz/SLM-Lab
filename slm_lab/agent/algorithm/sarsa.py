@@ -1,4 +1,3 @@
-from copy import deepcopy
 from slm_lab.agent import net
 from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
 from slm_lab.agent.algorithm.base import Algorithm
@@ -7,15 +6,15 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from torch.autograd import Variable
 import numpy as np
-import pydash as _
-import sys
+import pydash as ps
 import torch
 
 logger = logger.get_logger(__name__)
 
 
 class SARSA(Algorithm):
-    '''Implementation of SARSA.
+    '''
+    Implementation of SARSA.
 
     Algorithm:
     Repeat:
@@ -39,86 +38,42 @@ class SARSA(Algorithm):
 
     @lab_api
     def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
+        '''
+        Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
             - Memory (holding experiences obtained by acting in the environment)
             - State and action dimensions for an environment
             - Boolean var for if the action space is discrete
         '''
+        self.body = self.agent.nanflat_body_a[0]  # single-body algo
+        self.init_algorithm_params()
         self.init_nets()
-        self.init_algo_params()
         logger.info(util.self_desc(self))
 
     @lab_api
-    def init_nets(self):
-        '''Initialize the neural network used to learn the Q function from the spec'''
-        body = self.agent.nanflat_body_a[0]  # single-body algo
-        self.state_dim = body.state_dim  # dimension of the environment state, e.g. 4
-        self.action_dim = body.action_dim  # dimension of the environment actions, e.g. 2
-        net_spec = self.agent.spec['net']
-        mem_spec = self.agent.spec['memory']
-        net_kwargs = util.compact_dict(dict(
-            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-            optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'),
-            clamp_grad=_.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-            gpu=_.get(net_spec, 'gpu'),
-            decay_lr=_.get(net_spec, 'decay_lr_factor'),
-        ))
-        if net_spec['type'].find('Recurrent') != -1:
-            self.net = getattr(net, net_spec['type'])(
-                self.state_dim, net_spec['hid_layers'], self.action_dim, mem_spec['length_history'], **net_kwargs)
-        else:
-            self.net = getattr(net, net_spec['type'])(
-                self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)
-        self.set_net_attributes()
-
-    def set_net_attributes(self):
-        '''Initializes additional parameters from the net spec. Called by init_nets'''
-        net_spec = self.agent.spec['net']
-        util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
-        ]))
-        if not hasattr(self, 'gpu'):
-            self.gpu = False
-        logger.info(f'Training on gpu: {self.gpu}')
-
-    @lab_api
-    def init_algo_params(self):
+    def init_algorithm_params(self):
         '''Initialize other algorithm parameters.'''
-        algorithm_spec = self.agent.spec['algorithm']
-        net_spec = self.agent.spec['net']
-        self.action_policy = act_fns[algorithm_spec['action_policy']]
-        self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
-        self.set_other_algo_attributes()
-        self.nanflat_explore_var_a = [
-            self.explore_var_start] * self.agent.body_num
-
-    def set_other_algo_attributes(self):
-        '''Initializes additional parameters from the algorithm spec. Called by init_algo_params'''
-        algorithm_spec = self.agent.spec['algorithm']
-        util.set_attr(self, _.pick(algorithm_spec, [
+        util.set_attr(self, self.algorithm_spec, [
+            'action_policy',
+            'action_policy_update',
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
-            'num_epis_to_collect',  # how many episodes to collect before training for episodic training
-        ]))
+        ])
+        self.action_policy = act_fns[self.action_policy]
+        self.action_policy_update = act_update_fns[self.action_policy_update]
         self.to_train = 0
-        self.set_memory_flag()
+        self.nanflat_explore_var_a = [self.explore_var_start] * self.agent.body_num
 
-    def set_memory_flag(self):
-        '''Flags if memory is episodic or discrete. This affects how self.sample() handles the batch it gets back from memory'''
-        body = self.agent.nanflat_body_a[0]
-        memory = body.memory.__class__.__name__
-        if (memory.find('OnPolicyReplay') != -1) or (memory.find('OnPolicyNStepReplay') != -1):
-            self.is_episodic = True
-        elif (memory.find('OnPolicyBatchReplay') != -1) or (memory.find('OnPolicyNStepBatchReplay') != -1):
-            self.is_episodic = False
-        else:
-            logger.warn(f'Error: Memory {memory} not recognized')
-            raise NotImplementedError
+    @lab_api
+    def init_nets(self):
+        '''Initialize the neural network used to learn the Q function from the spec'''
+        if 'Recurrent' in self.net_spec['type']:
+            self.net_spec.update(seq_len=self.net_spec['seq_len'])
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self.net_spec, self, self.body)
+        logger.info(f'Training on gpu: {self.net.gpu}')
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
@@ -129,7 +84,7 @@ class SARSA(Algorithm):
         logger.debug2(f'Q next states: {q_next_st.size()}')
         # Get the q value for the next action that was actually taken
         idx = torch.from_numpy(np.array(list(range(q_next_st.size(0)))))
-        if torch.cuda.is_available() and self.gpu:
+        if torch.cuda.is_available() and self.net.gpu:
             idx = idx.cuda()
         q_next_st_vals = q_next_st[idx, q_next_actions.squeeze_(1).data.long()]
         # Expand the dims so that q_next_st_vals can be broadcast
@@ -140,15 +95,13 @@ class SARSA(Algorithm):
         logger.debug3(f'Q next_states vals {q_next_st_vals}')
         logger.debug3(f'Dones {batch["dones"]}')
         # Compute q_targets using reward and Q value corresponding to the action taken in the next state if there is one. Make next state Q value 0 if the current state is done
-        q_targets_actual = batch['rewards'].data + self.gamma * \
-            torch.mul((1 - batch['dones'].data), q_next_st_vals)
+        q_targets_actual = batch['rewards'].data + self.gamma * torch.mul((1 - batch['dones'].data), q_next_st_vals)
         logger.debug2(f'Q targets actual: {q_targets_actual.size()}')
         logger.debug3(f'Q states {q_sts}')
         logger.debug3(f'Q targets actual: {q_targets_actual}')
         # We only want to train the network for the action selected in the current state
         # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
-        q_targets = torch.mul(q_targets_actual, batch['actions_onehot'].data) + \
-            torch.mul(q_sts, (1 - batch['actions_onehot'].data))
+        q_targets = torch.mul(q_targets_actual, batch['actions_onehot'].data) + torch.mul(q_sts, (1 - batch['actions_onehot'].data))
         logger.debug2(f'Q targets: {q_targets.size()}')
         logger.debug3(f'Q targets: {q_targets}')
         return q_targets
@@ -156,11 +109,10 @@ class SARSA(Algorithm):
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
-        batches = [body.memory.sample()
-                   for body in self.agent.nanflat_body_a]
+        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
-        if self.is_episodic:
-            util.to_torch_nested_batch(batch, self.gpu)
+        if self.body.memory.is_episodic:
+            util.to_torch_nested_batch(batch, self.net.gpu)
             # Add next action to batch
             batch['actions_onehot'] = []
             batch['next_actions'] = []
@@ -170,19 +122,19 @@ class SARSA(Algorithm):
                 next_acts = torch.zeros_like(acts)
                 next_acts[:-1] = acts[1:]
                 # Convert actions to one hot (both representations are needed for SARSA)
-                acts_onehot = util.convert_to_one_hot(acts, self.action_dim, self.gpu)
+                acts_onehot = util.convert_to_one_hot(acts, self.body.action_dim, self.net.gpu)
                 batch['actions_onehot'].append(acts_onehot)
                 batch['next_actions'].append(next_acts)
             # Flatten the batch to train all at once
             batch = util.concat_episodes(batch)
         else:
-            util.to_torch_batch(batch, self.gpu)
+            util.to_torch_batch(batch, self.net.gpu)
             # Batch only useful to train with if it has more than one element
             # Train function checks for this and skips training if batch is too small
             if batch['states'].size(0) > 1:
                 batch['next_actions'] = torch.zeros_like(batch['actions'])
                 batch['next_actions'][:-1] = batch['actions'][1:]
-                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.action_dim, self.gpu)
+                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.body.action_dim, self.net.gpu)
                 batch_elems = ['states', 'actions', 'actions_onehot', 'rewards', 'dones', 'next_states', 'next_actions']
                 for k in batch_elems:
                     if batch[k].dim() == 1:
@@ -196,8 +148,9 @@ class SARSA(Algorithm):
 
     @lab_api
     def train(self):
-        '''Completes one training step for the agent if it is time to train.
-           Otherwise this function does nothing.
+        '''
+        Completes one training step for the agent if it is time to train.
+        Otherwise this function does nothing.
         '''
         t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if self.to_train == 1:
@@ -208,7 +161,7 @@ class SARSA(Algorithm):
                 self.to_train = 0
                 return np.nan
             q_targets = self.compute_q_target_values(batch)
-            if torch.cuda.is_available() and self.gpu:
+            if torch.cuda.is_available() and self.net.gpu:
                 q_targets = q_targets.cuda()
             y = Variable(q_targets)
             loss = self.net.training_step(batch['states'], y)
@@ -221,8 +174,8 @@ class SARSA(Algorithm):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        ''' Selects and returns a discrete action for body using the action policy'''
-        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx], self.gpu)
+        '''Selects and returns a discrete action for body using the action policy'''
+        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx], self.net.gpu)
 
     def update_explore_var(self):
         '''Updates the explore variables'''

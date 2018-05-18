@@ -6,10 +6,10 @@
         "name": "Reinforce",
         "action_policy": "default",
         "gamma": 0.95,
-        "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
-        "continuous_action_clip": 2.0
+        "continuous_action_clip": 2.0,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -18,14 +18,11 @@
         "type": "MLPdefault",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "clamp_grad": false,
-        "clamp_grad_val": 1.0,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 2000
       }
@@ -51,8 +48,13 @@
           "gamma__uniform": [0.9, 0.9999]
         },
         "net": {
-          "hid_layers__choice": [[16], [64], [32, 16], [64, 32]],
-          "optim": {
+          "hid_layers__choice": [
+            [16],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }
@@ -66,27 +68,24 @@
         "name": "Reinforce",
         "action_policy": "default",
         "gamma": 0.95,
-        "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
-        "continuous_action_clip": 2.0
+        "continuous_action_clip": 2.0,
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyNStepReplay",
-        "length_history": 4
+        "name": "OnPolicyNStepReplay"
       },
       "net": {
         "type": "RecurrentNet",
         "hid_layers": [16],
         "hid_layers_activation": "relu",
-        "optim": {
+        "seq_len": 4,
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "clamp_grad": false,
-        "clamp_grad_val": 1.0,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 600
       }
@@ -111,45 +110,50 @@
           "gamma__uniform": [0.9, 0.9999]
         },
         "net": {
-          "hid_layers__choice": [[16], [32], [64]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }
       }]
     }
   },
-  "reinforce_conv_test_spec": {
+  "reinforce_conv_breakout": {
     "agent": [{
       "name": "Reinforce",
       "algorithm": {
         "name": "Reinforce",
         "action_policy": "default",
         "gamma": 0.95,
-        "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
-        "continuous_action_clip": 2.0
+        "continuous_action_clip": 2.0,
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
       },
       "net": {
         "type": "ConvNet",
-        "hid_layers": [[[3, 16, [5, 5], 2, 0, [1, 1]],
-                       [16, 32, [5, 5], 2, 0, [2, 2]],
-                       [32, 32, [5, 5], 2, 0, [2, 2]]],
-                       [128, 64]],
+        "hid_layers": [
+          [
+            [3, 16, [5, 5], 2, 0, [1, 1]],
+            [16, 32, [5, 5], 2, 0, [2, 2]],
+            [32, 32, [5, 5], 2, 0, [2, 2]]
+          ],
+          [128, 64]
+        ],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "clamp_grad": false,
-        "clamp_grad_val": 1.0,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 600
       }
@@ -176,27 +180,23 @@
         "name": "Reinforce",
         "action_policy": "default",
         "gamma": 0.95,
-        "num_epis_to_collect": 1,
         "add_entropy": false,
         "entropy_weight": 0.01,
-        "continuous_action_clip": 2.0
+        "continuous_action_clip": 2.0,
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "length_history": 4
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPdefault",
         "hid_layers": [16],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "clamp_grad": false,
-        "clamp_grad_val": 1.0,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 600
       }
@@ -221,9 +221,13 @@
           "gamma__uniform": [0.9, 0.9999]
         },
         "net": {
-          "hid_layers__choice": [[16], [32], [64]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"],
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
         }

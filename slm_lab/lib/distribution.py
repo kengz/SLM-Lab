@@ -270,8 +270,7 @@ class BernoulliPDType(PDType):
 
 
 # TODO add beta distribution
-def make_pdtype(env):
-    action_space = env.action_space
+def make_pdtype(action_space):
     if isinstance(action_space, spaces.Box):
         assert len(action_space.shape) == 1
         return DiagGaussianPDType(action_space.shape[0])

@@ -12,14 +12,21 @@ class Algorithm(ABC):
     '''
 
     def __init__(self, agent):
+        '''
+        @param {*} agent is the container for algorithm and related components, and interfaces with env.
+        '''
         self.agent = agent
+        self.agent_spec = agent.agent_spec
+        self.algorithm_spec = self.agent_spec['algorithm']
+        self.memory_spec = self.agent_spec['memory']
+        self.net_spec = self.agent_spec['net']
 
     @abstractmethod
     @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
+        self.init_algorithm_params()
         self.init_nets()
-        self.init_algo_params()
         raise NotImplementedError
 
     @abstractmethod
@@ -30,7 +37,7 @@ class Algorithm(ABC):
 
     @abstractmethod
     @lab_api
-    def init_algo_params(self):
+    def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         raise NotImplementedError
 

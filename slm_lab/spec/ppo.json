@@ -1,5 +1,5 @@
 {
-  "ppo_benchmark": {
+  "ppo_cartpole": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
@@ -8,19 +8,20 @@
         "ent_coef": 0.02,
         "adam_epsilon": 1e-5,
         "gamma": 0.99,
+        "gaussian_fixed_var": true,
         "lam": 0.95,
         "horizon": 200,
         "epoch": 16,
-        "batch_size": 64,
         "lr": 0.001,
-        "max_frame": 1e5,
+        "lr_anneal_epi": 1000,
         "schedule": "linear"
       },
       "memory": {
-        "name": "GAEOnPolicyReplay"
+        "name": "GAEOnPolicyReplay",
+        "batch_size": 64
       },
       "net": {
-        "type": "MLPdefault",
+        "type": "MLPPolicy",
         "hid_layers": [64],
         "hid_layers_activation": "tanh"
       }
@@ -28,7 +29,61 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 100
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 4,
+      "max_trial": null,
+      "search": "EvolutionarySearch",
+      "max_generation": 4,
+      "train_mode": true
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999]
+        },
+        "net": {
+          "hid_layers__choice": [[16], [64], [32, 16], [64, 32]]
+        }
+      }]
+    }
+  },
+  "ppo_2dball": {
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "clip_eps": 0.20,
+        "ent_coef": 0.02,
+        "adam_epsilon": 1e-5,
+        "gamma": 0.99,
+        "gaussian_fixed_var": true,
+        "lam": 0.95,
+        "horizon": 200,
+        "epoch": 16,
+        "lr": 0.001,
+        "max_frame": 1e5,
+        "schedule": "linear"
+      },
+      "memory": {
+        "name": "GAEOnPolicyReplay",
+        "batch_size": 64
+      },
+      "net": {
+        "type": "MLPPolicy",
+        "hid_layers": [64],
+        "hid_layers_activation": "tanh"
+      }
+    }],
+    "env": [{
+      "name": "2dball",
+      "max_timestep": 200,
+      "max_episode": 2
     }],
     "body": {
       "product": "outer",

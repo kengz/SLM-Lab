@@ -1,10 +1,10 @@
 from mpi4py import MPI
+from slm_lab.agent import net
 from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.agent.net.mlp_policy import MLPPolicy
 from slm_lab.lib import logger, math_util, tf_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import pydash as _
+import pydash as ps
 import tensorflow as tf
 
 logger = logger.get_logger(__name__)
@@ -31,15 +31,29 @@ class PPO(Algorithm):
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
         self.comm = MPI.Comm.Clone(MPI.COMM_WORLD)
-        # TODO fix access to info_space then set below
-        tf_util.make_session(num_cpus=1).__enter__()
-        # TODO close when done to clear
-        self.cur_lr_mult = 1.0
+        tf_util.make_session(num_cpus=3).__enter__()
         self.body = self.agent.nanflat_body_a[0]  # singleton algo
-        self.memory = self.body.memory
-        self.init_algo_params()
+        self.init_algorithm_params()
         self.init_nets()
         logger.info(util.self_desc(self))
+
+    @lab_api
+    def init_algorithm_params(self):
+        '''Initialize other algorithm parameters'''
+        self.cur_lr_mult = 1.0
+        util.set_attr(self, self.algorithm_spec, [
+            'clip_eps',
+            'ent_coef',
+            'adam_epsilon',
+            'gamma',
+            'gaussian_fixed_var',
+            'lam',
+            'horizon',
+            'epoch',
+            'lr',
+            'lr_anneal_epi',
+            'schedule',
+        ])
 
     @lab_api
     def init_nets(self):
@@ -57,8 +71,9 @@ class PPO(Algorithm):
 
         3. S = E[ entropy ]
         '''
-        self.pi = pi = MLPPolicy(self, 'pi')
-        self.pi_old = pi_old = MLPPolicy(self, 'pi_old')
+        NetClass = getattr(net, self.net_spec['type'])
+        self.pi = pi = NetClass(self.net_spec, self, self.body, 'pi')
+        self.pi_old = pi_old = NetClass(self.net_spec, self, self.body, 'pi_old')
         ob = pi.ob
         ac = pi.pdtype.sample_placeholder([None])
         # target advantage function
@@ -106,36 +121,18 @@ class PPO(Algorithm):
 
     @lab_api
     def body_act_discrete(self, body, state):
-        action, self.memory.v_pred = self.pi.act(state)
+        action, self.body.memory.v_pred = self.pi.act(state)
         return action
 
     @lab_api
     def body_act_continuous(self, body, state):
-        action, self.memory.v_pred = self.pi.act(state)
+        action, self.body.memory.v_pred = self.pi.act(state)
         return action
-
-    @lab_api
-    def init_algo_params(self):
-        '''Initialize other algorithm parameters'''
-        algorithm_spec = self.agent.spec['algorithm']
-        util.set_attr(self, _.pick(algorithm_spec, [
-            'clip_eps',
-            'ent_coef',
-            'adam_epsilon',
-            'gamma',
-            'lam',
-            'horizon',
-            'epoch',
-            'batch_size',
-            'lr',
-            'max_frame',
-            'schedule',
-        ]))
 
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
-        seg = self.memory.sample()
+        seg = self.body.memory.sample()
         return seg
 
     @lab_api
@@ -164,7 +161,7 @@ class PPO(Algorithm):
         # compute gradient
         for _i in range(self.epoch):
             losses = []
-            for batch in dataset.iterate_once(self.batch_size):
+            for batch in dataset.iterate_once(self.body.memory.batch_size):
                 inputs = [batch[k] for k in ['obs', 'acs', 'adv_targets', 'v_targets']]
                 inputs.append(self.cur_lr_mult)
                 outputs = self.compute_loss_grad(*inputs)
@@ -176,7 +173,7 @@ class PPO(Algorithm):
 
         # compute losses
         losses = []
-        for batch in dataset.iterate_once(self.batch_size):
+        for batch in dataset.iterate_once(self.body.memory.batch_size):
             inputs = [batch[k] for k in ['obs', 'acs', 'adv_targets', 'v_targets']]
             inputs.append(self.cur_lr_mult)
             new_losses = self.compute_losses(*inputs)
@@ -190,7 +187,7 @@ class PPO(Algorithm):
         if self.schedule == 'constant':
             self.cur_lr_mult = 1.0
         elif self.schedule == 'linear':
-            self.cur_lr_mult = max(1.0 - self.body.env.clock.get('total_t') / self.max_frame, 0.0)
+            self.cur_lr_mult = max(1.0 - self.body.env.clock.get('epi') / self.lr_anneal_epi, 0.0)
         else:
             raise NotImplementedError
 

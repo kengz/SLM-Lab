@@ -4,14 +4,10 @@ Functions used by more than one algorithm
 from copy import deepcopy
 from slm_lab.lib import logger, util
 from torch.autograd import Variable
-from torch.autograd import Variable
 from torch.distributions import Categorical, Normal
 import numpy as np
 import torch
 import torch.nn.functional as F
-from torch.autograd import Variable
-from torch.distributions import Categorical, Normal
-import sys
 
 logger = logger.get_logger(__name__)
 
@@ -42,10 +38,10 @@ def create_torch_state(state, state_buf, gpu, state_seq=False, length=0, atari=F
         state_buffer = deepcopy(state_buf)  # Copy so as not to mutate running state buffer
         logger.debug3(f'length of state buffer: {length}')
         if len(state_buffer) < length:
-            PAD = np.zeros_like(state)
+            pad = np.zeros_like(state)
             while len(state_buffer) < length:
-                state_buffer.insert(0, PAD)
-        '''Preprocess the state if necessary'''
+                state_buffer.insert(0, pad)
+        # Preprocess the state if necessary
         if atari:
             logger.debug3(f'Preprocesssing the atari states')
             for _, s in enumerate(state_buffer):
@@ -63,12 +59,11 @@ def create_torch_state(state, state_buf, gpu, state_seq=False, length=0, atari=F
     else:
         torch_state = torch.from_numpy(state).float()
 
-    '''Optionally convert to cuda'''
+    # Optionally convert to cuda
     if torch.cuda.is_available() and gpu:
         torch_state = torch_state.cuda()
     torch_state = Variable(torch_state)
 
-    '''Logging'''
     logger.debug3(f'State size: {torch_state.size()}')
     logger.debug3(f'Original state: {state}')
     logger.debug3(f'State: {torch_state}')
@@ -84,10 +79,10 @@ def act_with_epsilon_greedy(body, state, net, epsilon, gpu):
     if epsilon > np.random.rand():
         action = np.random.randint(body.action_dim)
     else:
-        state_seq = body.agent.len_state_buffer > 0
-        logger.debug(f'Length state buffer: {body.agent.len_state_buffer}')
+        state_seq = body.memory.state_buffer.maxlen > 0
+        logger.debug(f'Length state buffer: {body.memory.state_buffer.maxlen}')
         atari, flatten = set_flags(body)
-        torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, body.agent.len_state_buffer, atari, flatten)
+        torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen, atari, flatten)
         out = net.wrap_eval(torch_state).squeeze_(dim=0)
         action = int(torch.max(out, dim=0)[1][0])
         logger.debug2(f'Outs {out} Action {action}')
@@ -133,10 +128,10 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
         torch_states.append(
             torch.from_numpy(state).float().unsqueeze_(dim=0))
     if torch.cuda.is_available() and gpu:
-        for torch_state in torch_states:
-            torch_state = torch_state.cuda()
-    for torch_state in torch_states:
-        torch_state = Variable(torch_state)
+        for idx, torch_state in enumerate(torch_states):
+            torch_states[idx] = torch_state.cuda()
+    for idx, torch_state in enumerate(torch_states):
+        torch_states[idx] = Variable(torch_state)
     outs = net.wrap_eval(torch_states)
     for body, e, output in zip(nanflat_body_a, nanflat_epsilon_a, outs):
         logger.debug2(f'body: {body.aeb}, epsilon: {e}')
@@ -152,10 +147,10 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
 
 
 def act_with_boltzmann(body, state, net, tau, gpu):
-    state_seq = body.agent.len_state_buffer > 0
-    logger.debug2(f'Length state buffer: {body.agent.len_state_buffer}')
+    state_seq = body.memory.state_buffer.maxlen > 0
+    logger.debug2(f'Length state buffer: {body.memory.state_buffer.maxlen}')
     atari, flatten = set_flags(body)
-    torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, body.agent.len_state_buffer, atari, flatten)
+    torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen, atari, flatten)
     out = net.wrap_eval(torch_state)
     out_with_temp = torch.div(out, tau).squeeze_(dim=0)
     probs = F.softmax(Variable(out_with_temp.cpu()), dim=0).data.numpy()
@@ -197,17 +192,15 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, g
     torch_states = []
     for state in nanflat_state_a:
         state = state.astype('float')
-        torch_states.append(
-            torch.from_numpy(state).float().unsqueeze_(dim=0))
+        torch_states.append(torch.from_numpy(state).float().unsqueeze_(dim=0))
     if torch.cuda.is_available() and gpu:
-        for torch_state in torch_states:
-            torch_state = torch_state.cuda()
-    for torch_state in torch_states:
-        torch_state = Variable(torch_state)
+        for idx, torch_state in enumerate(torch_states):
+            torch_states[idx] = torch_state.cuda()
+    for idx, torch_state in enumerate(torch_states):
+        torch_states[idx] = Variable(torch_state)
     outs = net.wrap_eval(torch_states)
     out_with_temp = [torch.div(x, t) for x, t in zip(outs, nanflat_tau_a)]
-    logger.debug2(
-        f'taus: {nanflat_tau_a}, outs: {outs}, out_with_temp: {out_with_temp}')
+    logger.debug2(f'taus: {nanflat_tau_a}, outs: {outs}, out_with_temp: {out_with_temp}')
     nanflat_action_a = []
     for body, output in zip(nanflat_body_a, out_with_temp):
         probs = F.softmax(Variable(output.cpu()), dim=1).data.numpy()[0]
@@ -220,11 +213,11 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, g
 
 
 # Adapted from https://github.com/pytorch/examples/blob/master/reinforcement_learning/reinforce.py
-def act_with_softmax(algo, state, body, gpu):
+def act_with_softmax(algorithm, state, body, gpu):
     '''Assumes actor network outputs one variable; the logits of a categorical probability distribution over the actions'''
-    state_seq = algo.agent.len_state_buffer > 0
-    torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, algo.agent.len_state_buffer)
-    out = algo.get_actor_output(torch_state, evaluate=False)
+    state_seq = body.memory.state_buffer.maxlen > 0
+    torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen)
+    out = algorithm.get_actor_output(torch_state, evaluate=False)
     if type(out) is list:
         out = out[0]
     out.squeeze_(dim=0)
@@ -233,9 +226,8 @@ def act_with_softmax(algo, state, body, gpu):
     action = m.sample()
     logger.debug2(f'Network output: {out.data}')
     logger.debug2(f'Probability of actions: {probs.data}')
-    logger.debug(
-        f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
-    algo.saved_log_probs.append(m.log_prob(action))
+    logger.debug(f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
+    algorithm.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = - torch.sum(torch.mul(probs, torch.log(probs)))
     if np.isnan(H.data.cpu().numpy()):
@@ -244,23 +236,22 @@ def act_with_softmax(algo, state, body, gpu):
         if torch.cuda.is_available() and gpu:
             H = H.cuda()
         H = Variable(H)
-    algo.entropy.append(H)
+    algorithm.entropy.append(H)
     return action.data[0]
 
 
 # Denny Britz has a very helpful implementation of an Actor Critic algorithm. This function is adapted from his approach. I highly recommend looking at his full implementation available here https://github.com/dennybritz/reinforcement-learning/blob/master/PolicyGradient/Continuous%20MountainCar%20Actor%20Critic%20Solution.ipynb
-def act_with_gaussian(algo, state, body, gpu):
+def act_with_gaussian(algorithm, state, body, gpu):
     '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
-    state_seq = algo.agent.len_state_buffer > 0
-    torch_state = create_torch_state(state, body.state_buffer, gpu, state_seq, algo.agent.len_state_buffer)
-    [mu, sigma] = algo.get_actor_output(torch_state, evaluate=False)
+    state_seq = body.memory.state_buffer.maxlen > 0
+    torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen)
+    [mu, sigma] = algorithm.get_actor_output(torch_state, evaluate=False)
     sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0
     m = Normal(mu, sigma)
     action = m.sample()
-    action = torch.clamp(action, -algo.continuous_action_clip, algo.continuous_action_clip)
-    logger.debug2(
-        f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
-    algo.saved_log_probs.append(m.log_prob(action))
+    action = torch.clamp(action, -algorithm.continuous_action_clip, algorithm.continuous_action_clip)
+    logger.debug2(f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
+    algorithm.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = 0.5 * torch.log(2.0 * np.pi * np.e * sigma * sigma)
     if np.isnan(H.data.cpu().numpy()):
@@ -269,11 +260,11 @@ def act_with_gaussian(algo, state, body, gpu):
         if torch.cuda.is_available() and gpu:
             H = H.cuda()
         H = Variable(H)
-    algo.entropy.append(H)
+    algorithm.entropy.append(H)
     return action.data
 
 
-def act_with_multivariate_gaussian(algo, state, body, gpu):
+def act_with_multivariate_gaussian(algorithm, state, body, gpu):
     '''Assumes net outputs two tensors which contain the mean and std dev of a multivariate normal distribution'''
     raise NotImplementedError
     return np.nan
@@ -283,11 +274,9 @@ def update_linear_decay(cls, space_clock):
     epi = space_clock.get('epi')
     rise = cls.explore_var_end - cls.explore_var_start
     slope = rise / float(cls.explore_anneal_epi)
-    explore_var = max(
-        slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
+    explore_var = max(slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
     cls.nanflat_explore_var_a = [explore_var] * cls.agent.body_num
-    logger.debug3(
-        f'nanflat_explore_var_a: {cls.nanflat_explore_var_a[0]}')
+    logger.debug3(f'nanflat_explore_var_a: {cls.nanflat_explore_var_a[0]}')
     return cls.nanflat_explore_var_a
 
 
@@ -298,24 +287,23 @@ def update_multi_linear_decay(cls, _space_clock):
         epi = body.env.clock.get('epi')
         rise = cls.explore_var_end - cls.explore_var_start
         slope = rise / float(cls.explore_anneal_epi)
-        explore_var = max(
-            slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
+        explore_var = max(slope * (epi - 1) + cls.explore_var_start, cls.explore_var_end)
         nanflat_explore_var_a.append(explore_var)
     cls.nanflat_explore_var_a = nanflat_explore_var_a
     logger.debug3(f'nanflat_explore_var_a: {cls.nanflat_explore_var_a}')
     return cls.nanflat_explore_var_a
 
 
-def decay_learning_rate(algo, nets):
+def decay_learning_rate(algorithm, nets):
     '''
     Decay learning rate for each net by the decay method update_lr() defined in them.
     In the future, might add more flexible lr adjustment, like boosting and decaying on need.
     '''
-    space_clock = util.s_get(algo, 'aeb_space.clock')
+    space_clock = util.s_get(algorithm, 'aeb_space.clock')
     t = space_clock.get('total_t')
     epi = space_clock.get('epi')
-    if algo.decay_lr and t >= algo.decay_lr_min_timestep:
-        if t % algo.decay_lr_frequency == 0:
+    if algorithm.net.decay_lr and t >= algorithm.net.decay_lr_min_timestep:
+        if t % algorithm.net.decay_lr_frequency == 0:
             logger.info(f'Epi {epi}: Decaying learning rate...')
             for net in nets:
                 net.update_lr()

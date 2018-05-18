@@ -6,13 +6,12 @@ To be designed by human and evolution module, based on the curriculum and fitnes
 '''
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-from unityagents import UnityEnvironment
-from unityagents.brain import BrainParameters
+from unityagents import brain, UnityEnvironment
 import gym
 import logging
 import numpy as np
 import os
-import pydash as _
+import pydash as ps
 
 ENV_DATA_NAMES = ['reward', 'state', 'done']
 logger = logger.get_logger(__name__)
@@ -23,7 +22,7 @@ class Clock:
 
     def __init__(self, clock_speed=1):
         self.clock_speed = int(clock_speed)
-        self.ticks = 0
+        self.ticks = 0  # multiple ticks make a timestep; used for clock speed
         self.t = 0
         self.total_t = 0
         self.epi = 1
@@ -63,11 +62,11 @@ class BrainExt:
     def get_action_dim(self):
         return self.action_space_size
 
-    def get_observable(self):
-        '''What channels are observable: state, visual, sound, touch, etc.'''
+    def get_observable_types(self):
+        '''What channels are observable: state, image, sound, touch, etc.'''
         observable = {
             'state': self.state_space_size > 0,
-            'visual': self.number_observations > 0,
+            'image': self.number_observations > 0,
         }
         return observable
 
@@ -75,32 +74,34 @@ class BrainExt:
         '''Get observable dimensions'''
         observable_dim = {
             'state': self.state_space_size,
-            'visual': 'some np array shape, as opposed to what Arthur called size',
+            'image': 'some np array shape, as opposed to what Arthur called size',
         }
         return observable_dim
 
 
 # Extend Unity BrainParameters class at runtime to add BrainExt methods
-util.monkey_patch(BrainParameters, BrainExt)
+util.monkey_patch(brain.BrainParameters, BrainExt)
 
 
 class OpenAIEnv:
-    def __init__(self, spec, env_space, e=0):
-        self.spec = spec
-        util.set_attr(self, self.spec)
-        self.name = self.spec['name']
+    def __init__(self, env_spec, env_space, e=0):
+        self.env_spec = env_spec
         self.env_space = env_space
+        self.info_space = env_space.info_space
+        util.set_attr(self, self.env_spec)
+        self.name = self.env_spec['name']
         self.e = e
         self.body_e = None
         self.nanflat_body_e = None  # nanflatten version of bodies
         self.body_num = None
 
         self.u_env = gym.make(self.name)
-        self.observation_space = self.u_env.observation_space
-        self.action_space = self.u_env.action_space
+        # spaces for NN auto input/output inference
+        self.observation_spaces = [self.u_env.observation_space]
+        self.action_spaces = [self.u_env.action_space]
 
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
-        # TODO ensure clock_speed from spec
+        # TODO ensure clock_speed from env_spec
         self.clock_speed = 1
         self.clock = Clock(self.clock_speed)
         self.done = False
@@ -116,31 +117,46 @@ class OpenAIEnv:
 
     def is_discrete(self, a):
         '''Check if an agent (brain) is subject to discrete actions'''
-        return util.get_class_name(self.action_space) != 'Box'  # continuous
+        assert a == 0, 'OpenAI Gym supports only single body, use a=0'
+        return util.get_class_name(self.action_spaces[a]) != 'Box'  # continuous
 
     def get_action_dim(self, a):
         '''Get the action dim for an agent (brain) in env'''
-        if self.is_discrete(a=a):
-            if util.get_class_name(self.action_space) == 'MultiDiscrete':
-                # TODO not encountered yet, generalization needed
-                action_dim = self.action_space.nvec
-            else:
-                action_dim = self.action_space.n
+        assert a == 0, 'OpenAI Gym supports only single body, use a=0'
+        action_space = self.action_spaces[a]
+        if isinstance(action_space, gym.spaces.Box):
+            assert len(action_space.shape) == 1
+            action_dim = action_space.shape[0]
+        elif isinstance(action_space, (gym.spaces.Discrete, gym.spaces.MultiBinary)):
+            action_dim = action_space.n
+        elif isinstance(action_space, gym.spaces.MultiDiscrete):
+            action_dim = action_space.nvec
         else:
-            action_dim = self.action_space.shape[0]
+            raise ValueError('action_space not recognized')
         return action_dim
 
-    def get_observable(self, a):
-        '''Get the observable for an agent (brain) in env'''
-        # TODO detect if is pong from pixel
-        return {'state': True, 'visual': False}
+    def get_action_space(self, a):
+        assert a == 0, 'OpenAI Gym supports only single body, use a=0'
+        return self.action_spaces[a]
 
     def get_observable_dim(self, a):
         '''Get the observable dim for an agent (brain) in env'''
-        state_dim = self.observation_space.shape[0]
-        if (len(self.observation_space.shape) > 1):
-            state_dim = self.observation_space.shape
+        assert a == 0, 'OpenAI Gym supports only single body, use a=0'
+        state_dim = self.observation_spaces[a].shape
+        if len(state_dim) == 1:
+            state_dim = state_dim[0]
         return {'state': state_dim}
+
+    def get_observable_types(self, a):
+        '''Get the observable for an agent (brain) in env'''
+        if len(self.get_observable_dim(a)) >= 3:  # RGB
+            return {'state': False, 'image': True}
+        else:
+            return {'state': True, 'image': False}
+
+    def get_observation_space(self, a):
+        assert a == 0, 'OpenAI Gym supports only single body, use a=0'
+        return self.observation_spaces[a]
 
     @lab_api
     def reset(self):
@@ -150,7 +166,6 @@ class OpenAIEnv:
             state = self.u_env.reset()
             state_e[(a, b)] = state
             done_e[(a, b)] = self.done
-            body.memory.reset_last_state(state)
         # TODO internalize render code
         if os.environ.get('lab_mode') == 'dev':
             self.u_env.render()
@@ -188,28 +203,38 @@ class UnityEnv:
     Access Agents properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    def __init__(self, spec, env_space, e=0):
-        self.spec = spec
-        util.set_attr(self, self.spec)
-        self.name = self.spec['name']
+    def __init__(self, env_spec, env_space, e=0):
+        self.env_spec = env_spec
         self.env_space = env_space
+        self.info_space = env_space.info_space
         self.e = e
+        util.set_attr(self, self.env_spec)
+        self.name = self.env_spec['name']
         self.body_e = None
         self.nanflat_body_e = None  # nanflatten version of bodies
         self.body_num = None
 
-        worker_id = int(f'{os.getpid()}{self.e+int(_.unique_id())}'[-4:])
+        worker_id = int(f'{os.getpid()}{self.e+int(ps.unique_id())}'[-4:])
         self.u_env = UnityEnvironment(file_name=util.get_env_path(self.name), worker_id=worker_id)
-
-        # TODO no way to know range for unity env for now
-        self.observation_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(self.get_observable_dim(),))
-        if self.is_discrete():
-            self.action_space = gym.spaces.Box(low=0, high=self.get_action_dim(), shape=(1,))
-        else:
-            self.action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(1,))
+        # spaces for NN auto input/output inference
+        logger.warn('Unity environment observation_space and action_space are constructed with invalid range. Use only their shapes.')
+        self.observation_spaces = []
+        self.action_spaces = []
+        for a in range(len(self.u_env.brain_names)):
+            observation_shape = (self.get_observable_dim(a)['state'],)
+            if self.get_brain(a).state_space_type == 'discrete':
+                observation_space = gym.spaces.Box(low=0, high=1, shape=observation_shape, dtype=np.int32)
+            else:
+                observation_space = gym.spaces.Box(low=0.0, high=1.0, shape=observation_shape, dtype=np.float32)
+            self.observation_spaces.append(observation_space)
+            if self.is_discrete(a):
+                action_space = gym.spaces.Box(low=0, high=self.get_action_dim(a) - 1, shape=(1,), dtype=np.int32)
+            else:
+                action_space = gym.spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
+            self.action_spaces.append(action_space)
 
         # TODO experiment to find out optimal benchmarking max_timestep, set
-        # TODO ensure clock_speed from spec
+        # TODO ensure clock_speed from env_spec
         self.clock_speed = 1
         self.clock = Clock(self.clock_speed)
         self.done = False
@@ -226,6 +251,17 @@ class UnityEnv:
         body_num = util.count_nonan(self.body_e[a])
         assert u_agent_num == body_num, f'There must be a Unity agent for each body; a:{a}, e:{self.e}, agent_num: {u_agent_num} != body_num: {body_num}.'
 
+    def get_brain(self, a):
+        '''Get the unity-equivalent of agent, i.e. brain, to access its info'''
+        name_a = self.u_env.brain_names[a]
+        brain_a = self.u_env.brains[name_a]
+        return brain_a
+
+    def get_env_info(self, env_info_dict, a):
+        name_a = self.u_env.brain_names[a]
+        env_info_a = env_info_dict[name_a]
+        return env_info_a
+
     @lab_api
     def post_body_init(self):
         '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
@@ -236,12 +272,6 @@ class UnityEnv:
         self.check_u_brain_to_agent()
         logger.info(util.self_desc(self))
 
-    def get_brain(self, a):
-        '''Get the unity-equivalent of agent, i.e. brain, to access its info'''
-        name_a = self.u_env.brain_names[a]
-        brain_a = self.u_env.brains[name_a]
-        return brain_a
-
     def is_discrete(self, a):
         '''Check if an agent (brain) is subject to discrete actions'''
         return self.get_brain(a).is_discrete()
@@ -250,31 +280,31 @@ class UnityEnv:
         '''Get the action dim for an agent (brain) in env'''
         return self.get_brain(a).get_action_dim()
 
-    def get_observable(self, a):
-        '''Get the observable for an agent (brain) in env'''
-        return self.get_brain(a).get_observable()
+    def get_action_space(self, a):
+        return self.action_spaces[a]
 
     def get_observable_dim(self, a):
         '''Get the observable dim for an agent (brain) in env'''
         return self.get_brain(a).get_observable_dim()
 
-    def get_env_info(self, env_info_dict, a):
-        name_a = self.u_env.brain_names[a]
-        env_info_a = env_info_dict[name_a]
-        return env_info_a
+    def get_observable_types(self, a):
+        '''Get the observable for an agent (brain) in env'''
+        return self.get_brain(a).get_observable_types()
+
+    def get_observation_space(self, a):
+        return self.observation_spaces[a]
 
     @lab_api
     def reset(self):
         self.done = False
-        env_info_dict = self.u_env.reset(train_mode=(os.environ.get('lab_mode') != 'dev'), config=self.spec.get('unity'))
+        env_info_dict = self.u_env.reset(train_mode=(os.environ.get('lab_mode') != 'dev'), config=self.env_spec.get('unity'))
         _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)
             self.check_u_agent_to_body(env_info_a, a)
             state = env_info_a.states[b]
             state_e[(a, b)] = state
-            done_e[(a, b)] = done
-            body.memory.reset_last_state(state)
+            done_e[(a, b)] = self.done
         return _reward_e, state_e, done_e
 
     @lab_api
@@ -306,12 +336,13 @@ class EnvSpace:
 
     def __init__(self, spec, aeb_space):
         self.spec = spec
-        self.env_spec = spec['env']
         self.aeb_space = aeb_space
         aeb_space.env_space = self
+        self.env_spec = spec['env']
+        self.info_space = aeb_space.info_space
         self.envs = []
         for e, env_spec in enumerate(self.env_spec):
-            env_spec = _.merge(spec['meta'].copy(), env_spec)
+            env_spec = ps.merge(spec['meta'].copy(), env_spec)
             try:
                 env = OpenAIEnv(env_spec, self, e)
             except gym.error.Error:
@@ -330,7 +361,7 @@ class EnvSpace:
 
     def get_base_clock(self):
         '''Get the clock with the finest time unit, i.e. ticks the most cycles in a given time, or the highest clock_speed'''
-        fastest_env = _.max_by(self.envs, lambda env: env.clock_speed)
+        fastest_env = ps.max_by(self.envs, lambda env: env.clock_speed)
         clock = fastest_env.clock
         return clock
 
@@ -338,7 +369,6 @@ class EnvSpace:
     def reset(self):
         logger.debug('EnvSpace.reset')
         _reward_v, state_v, done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
-        self.total_reward_v = _reward_v.copy()  # for debugging
         for env in self.envs:
             _reward_e, state_e, done_e = env.reset()
             state_v[env.e, 0:len(state_e)] = state_e
@@ -347,7 +377,6 @@ class EnvSpace:
         logger.debug(f'\nstate_space: {state_space}')
         return _reward_space, state_space, done_space
 
-    # @util.fn_timer
     @lab_api
     def step(self, action_space):
         reward_v, state_v, done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
@@ -359,8 +388,6 @@ class EnvSpace:
             state_v[e, 0:len(state_e)] = state_e
             done_v[e, 0:len(done_e)] = done_e
         reward_space, state_space, done_space = self.aeb_space.add(ENV_DATA_NAMES, [reward_v, state_v, done_v])
-        self.total_reward_v += reward_v  # for debugging
-        logger.debug(f'\ntotal_reward_v: {self.total_reward_v}')
         logger.debug(f'\nreward_space: {reward_space}\nstate_space: {state_space}\ndone_space: {done_space}')
         return reward_space, state_space, done_space
 

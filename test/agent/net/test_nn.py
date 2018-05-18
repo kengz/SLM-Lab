@@ -14,12 +14,12 @@ class TestNet:
     '''
 
     def init_dummy_input(self, net):
-        if net.__class__.__name__.find('RecurrentNet') != -1:
+        if 'RecurrentNet' in net.__class__.__name__:
             dummy_input = Variable(torch.ones(
-                2, net.sequence_length, net.in_dim))
+                2, net.seq_len, net.in_dim))
         elif type(net.in_dim) is int:
             dummy_input = Variable(torch.ones(2, net.in_dim))
-        elif net.__class__.__name__.find('MultiMLPNet') != -1:
+        elif 'MultiMLPNet' in net.__class__.__name__:
             dummy_input = []
             for indim in net.in_dim:
                 dummy_input.append(Variable(torch.ones(2, indim[0])))
@@ -30,11 +30,11 @@ class TestNet:
     def init_dummy_output(self, net):
         if type(net.out_dim) is int:
             dummy_output = Variable(torch.zeros((2, net.out_dim)))
-        elif net.__class__.__name__.find('MultiMLPNet') != -1:
+        elif 'MultiMLPNet' in net.__class__.__name__:
             dummy_output = []
             for outdim in net.out_dim:
                 dummy_output.append(Variable(torch.zeros((2, outdim[-1]))))
-        elif net.__class__.__name__.find('MLPHeterogenousHeads') != -1 or len(net.out_dim) > 1:
+        elif 'MLPHeterogenousTails' in net.__class__.__name__ or len(net.out_dim) > 1:
             dummy_output = []
             for outdim in net.out_dim:
                 print(type(outdim), outdim)
@@ -44,33 +44,33 @@ class TestNet:
         return dummy_output
 
     def check_net_type(self, net):
-        # Skipping test for 'MLPHeterogenousHeads' because there is no training step function
-        if net.__class__.__name__.find('MLPHeterogenousHeads') != -1:
+        # Skipping test for 'MLPHeterogenousTails' because there is no training step function
+        if 'MLPHeterogenousTails' in net.__class__.__name__:
             return True
         # Skipping test for 'RecurrentNet' and 'ConvNet' with multiple output heads because training step not applicable
-        elif (net.__class__.__name__.find('RecurrentNet') != -1) or (net.__class__.__name__.find('ConvNet') != -1) and len(net.out_dim) > 1:
+        elif any(k in net.__class__.__name__ for k in ('RecurrentNet', 'ConvNet')) and len(net.out_dim) > 1:
             return True
         else:
             return False
 
     @pytest.mark.first
     def test_params_not_zero(self, test_nets):
-        ''' Checks that the parameters of the net are not zero except for GRU biases which should be zero.'''
+        '''Checks that the parameters of the net are not zero except for GRU biases which should be zero.'''
         net = test_nets[0]
         print(net)
         flag = True
         for i, param in enumerate(net.params):
             # If net is recurrent check that biases of the recurrent layer are zero
-            if net.__class__.__name__.find('Recurrent') != -1 and net.named_params[i][0].find('bias_') != -1:
+            if 'Recurrent' in net.__class__.__name__ and 'bias_' in net.named_params[i][0]:
                 print(net.named_params[i][0])
                 if torch.sum(torch.abs(param.data)) != 0:
-                    print("FAIL: layer {}".format(i))
+                    print('FAIL: layer {}'.format(i))
                     flag = False
             elif torch.sum(torch.abs(param.data)) < SMALL_NUM:
-                print("FAIL: layer {}".format(i))
+                print('FAIL: layer {}'.format(i))
                 flag = False
         if flag:
-            print("PASS")
+            print('PASS')
         assert flag is True
 
     @flaky(max_runs=10)
@@ -91,14 +91,14 @@ class TestNet:
         if before_params is not None:
             for b, a in zip(before_params, after_params):
                 if torch.sum(b.data) == torch.sum(a.data):
-                    print("Before gradient: {}".format(a.grad))
-                    print("After gradient (should not be None): {}".format(
+                    print('Before gradient: {}'.format(a.grad))
+                    print('After gradient (should not be None): {}'.format(
                         b.grad))
-                    print("FAIL layer {}".format(i))
+                    print('FAIL layer {}'.format(i))
                     flag = False
                     i += 1
         if flag:
-            print("PASS")
+            print('PASS')
         assert flag is True
 
     def test_fixed(self, test_nets):
@@ -121,16 +121,16 @@ class TestNet:
         if before_params is not None:
             for b, a in zip(before_params, after_params):
                 if torch.sum(b.data) != torch.sum(a.data):
-                    print("FAIL")
+                    print('FAIL')
                     flag = False
                     i += 1
         if flag:
-            print("PASS")
+            print('PASS')
         assert flag is True
 
     @flaky(max_runs=10)
     def test_gradient_size(self, test_nets):
-        ''' Checks for exploding and vanishing gradients '''
+        '''Checks for exploding and vanishing gradients'''
         net = test_nets[0]
         if self.check_net_type(net):  # Checks if test needs to be skipped for a particular net
             assert True is True
@@ -144,23 +144,23 @@ class TestNet:
         flag = True
         for p in net.params:
             if p.grad is None:
-                print("FAIL: no gradient")
+                print('FAIL: no gradient')
                 flag = False
             else:
                 if torch.sum(torch.abs(p.grad.data)) < SMALL_NUM:
-                    print("FAIL: tiny gradients: {}".format(
+                    print('FAIL: tiny gradients: {}'.format(
                         torch.sum(torch.abs(p.grad))))
                     flag = False
                 if torch.sum(torch.abs(p.grad.data)) > LARGE_NUM:
-                    print("FAIL: large gradients: {}".format(
+                    print('FAIL: large gradients: {}'.format(
                         torch.sum(torch.abs(p.grad))))
                     flag = False
         if flag:
-            print("PASS")
+            print('PASS')
         assert flag is True
 
     def test_loss_input(self, test_nets):
-        ''' Checks that the inputs to the loss function are correct '''
+        '''Checks that the inputs to the loss function are correct'''
         net = test_nets[0]
         loss = test_nets[1]
         # TODO e.g. loss is not CrossEntropy when output has one dimension
@@ -169,15 +169,13 @@ class TestNet:
         assert loss is None
 
     def check_multi_output(self, net):
-        if net.__class__.__name__.find('MultiMLPNet') != -1 or \
-           net.__class__.__name__.find('MLPHeterogenousHeads') != -1 or \
-           (((net.__class__.__name__.find('RecurrentNet') != -1) or (net.__class__.__name__.find('ConvNet') != -1)) and len(net.out_dim) > 1):
+        if any(k in net.__class__.__name__ for k in ('MultiMLPNet', 'MLPHeterogenousTails', 'RecurrentNet', 'ConvNet')) and len(net.out_dim) > 1:
             return True
         else:
             return False
 
     def test_output(self, test_nets):
-        ''' Checks that the output of the net is not zero or nan '''
+        '''Checks that the output of the net is not zero or nan'''
         net = test_nets[0]
         dummy_input = self.init_dummy_input(net)
         dummy_output = self.init_dummy_output(net)
@@ -190,13 +188,13 @@ class TestNet:
             zero_test = torch.sum(torch.abs(out.data))
             nan_test = np.isnan(torch.sum(out.data))
         if zero_test < SMALL_NUM:
-            print("FAIL")
+            print('FAIL')
             print(out)
             flag = False
         if nan_test:
-            print("FAIL")
+            print('FAIL')
             print(out)
             flag = False
         if flag:
-            print("PASS")
+            print('PASS')
         assert flag is True

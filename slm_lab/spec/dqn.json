@@ -17,19 +17,18 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -58,10 +57,82 @@
           "explore_anneal_epi__randint": [10, 60]
         },
         "net": {
-          "hid_layers__choice": [[16], [64], [32, 16], [64, 32]],
-          "optim": {
+          "hid_layers__choice": [
+            [16],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "optim_spec": {
             "lr__uniform": [0.001, 0.2]
           }
+        }
+      }]
+    }
+  },
+  "vanilla_dqn_cartpole": {
+    "agent": [{
+      "name": "VanillaDQN",
+      "algorithm": {
+        "name": "VanillaDQN",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.5,
+        "explore_var_end": 0.3,
+        "explore_anneal_epi": 10,
+        "gamma": 0.999,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_iters_per_batch": 1,
+        "training_min_timestep": 10
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "seq_len": 4,
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "decay_lr": true,
+        "decay_lr_frequency": 400,
+        "decay_lr_min_timestep": 1400
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 100
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 1,
+      "max_trial": 20,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_anneal_epi__randint": [10, 60],
+          "explore_var_start__uniform": [1.0, 5.0],
+          "explore_var_end__uniform": [0.1, 1.0]
+        },
+        "net": {
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64]
+          ],
+          "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }
@@ -84,20 +155,19 @@
       },
       "memory": {
         "name": "Replay",
-        "max_size": 10000,
-        "length_history": 4
+        "batch_size": 32,
+        "max_size": 10000
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "seq_len": 4,
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -127,13 +197,17 @@
           "explore_var_end__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers__choice": [[16], [32], [64]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
     }
   },
-  "dqn_cartpole_double_replace": {
+  "double_dqn_cartpole_replace": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -151,19 +225,18 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -188,10 +261,10 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "name__choice": ["DQN", "DoubleDQN"],
+          "name__choice": ["DQN", "DoubleDQN"]
         },
         "net": {
-          "update_type__choice": ["replace", "polyak"],
+          "update_type__choice": ["replace", "polyak"]
         }
       }]
     }
@@ -214,19 +287,18 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -262,7 +334,7 @@
         "action_policy_update": "multi_linear_decay",
         "explore_var_start": 1.5,
         "explore_var_end": 0.3,
-        "explore_anneal_epi": 15,
+        "explore_anneal_epi": 100,
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
@@ -271,19 +343,27 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
         "type": "MultiMLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          [
+            [32],
+            [32]
+          ],
+          [64],
+          [
+            []
+          ]
+        ],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -294,11 +374,11 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 50
+      "max_episode": 200
     }, {
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 50
+      "max_episode": 200
     }],
     "body": {
       "product": "outer",
@@ -328,19 +408,28 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
         "type": "MultiMLPNet",
-        "hid_layers": [64],
+        "hid_layers": [
+          [
+            [32],
+            [32]
+          ],
+          [64],
+          [
+            [32],
+            [32]
+          ]
+        ],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -389,19 +478,18 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -446,19 +534,18 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -503,22 +590,21 @@
       },
       "memory": {
         "name": "Replay",
+        "batch_size": 32,
         "max_size": 10000
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "loss": {
+        "loss_spec": {
           "name": "mse_loss"
         },
-        "batch_size": 16,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 400,
         "decay_lr_min_timestep": 1400,
         "update_type": "replace",
@@ -559,23 +645,22 @@
       },
       "memory": {
         "name": "StackReplay",
+        "batch_size": 32,
         "max_size": 100000,
-        "length_history": 4
+        "stack_len": 4
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.0002
         },
-        "loss": {
+        "loss_spec": {
           "name": "smooth_l1_loss"
         },
-        "batch_size": 32,
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 5000,
         "decay_lr_min_timestep": 50000,
         "update_type": "replace",
@@ -598,7 +683,7 @@
       "max_trial": null,
       "search": "EvolutionarySearch",
       "max_generation": 4
-    },
+    }
   },
   "dqn_lunar_search": {
     "agent": [{
@@ -618,21 +703,21 @@
       },
       "memory": {
         "name": "StackReplay",
+        "batch_size": 32,
         "max_size": 100000,
-        "length_history": 4
+        "stack_len": 4
       },
       "net": {
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.005
         },
-        "loss": {
+        "loss_spec": {
           "name": "mse_loss"
         },
-        "batch_size": 32,
         "decay_lr": true,
         "decay_lr_factor": 0.15,
         "decay_lr_frequency": 80000,
@@ -657,20 +742,18 @@
       "max_trial": 16,
       "search": "RandomSearch",
       "max_generation": 4,
-      "train_mode": true,
+      "train_mode": true
     },
     "search": {
       "agent": [{
-        "memory": {
-          "length_history__choice": [3, 4, 5]
-        },
         "net": {
-          "optim": {
+          "seq_len__choice": [3, 4, 5],
+          "optim_spec": {
             "lr__uniform": [0.001, 0.01]
           },
-          "update_frequency__choice": [500, 750, 1000],
-        },
+          "update_frequency__choice": [500, 750, 1000]
+        }
       }]
     }
-  },
+  }
 }

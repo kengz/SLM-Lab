@@ -10,8 +10,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -20,12 +19,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -56,27 +54,25 @@
         "explore_var_end": 0.1,
         "explore_anneal_epi": 20,
         "gamma": 0.97,
-        "training_frequency": 8,
-        "num_epis_to_collect": 1
+        "training_frequency": 8
       },
       "memory": {
-        "name": "OnPolicyNStepBatchReplay",
-        "length_history": 4
+        "name": "OnPolicyNStepBatchReplay"
       },
       "net": {
         "type": "RecurrentNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "seq_len": 4,
+        "optim_spec": {
           "name": "RMSprop",
           "lr": 0.02
         },
-        "decay_lr": true,
-        "decay_lr_factor": 0.9,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000,
         "clamp_grad": true,
-        "clamp_grad_val": 25.0
+        "clamp_grad_val": 25.0,
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 1000
       }
     }],
     "env": [{
@@ -105,8 +101,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -115,12 +110,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -151,8 +145,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 3
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -161,12 +154,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -197,8 +189,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 5
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -207,12 +198,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -243,8 +233,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.99,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -253,12 +242,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -284,10 +272,16 @@
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.3]
           },
-          "hid_layers__choice": [[16], [32], [64], [128], [64, 32]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64],
+            [128],
+            [64, 32]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
@@ -304,8 +298,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.99,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -314,12 +307,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -345,10 +337,16 @@
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.3]
           },
-          "hid_layers__choice": [[32], [64], [128], [256], [128, 64]],
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [128],
+            [256],
+            [128, 64]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
@@ -365,8 +363,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -375,12 +372,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -418,8 +414,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -428,12 +423,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -471,8 +465,7 @@
         "explore_var_end": 0.04,
         "explore_anneal_epi": 100,
         "gamma": 0.97,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -481,12 +474,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.2
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -508,7 +500,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "num_epis_to_collect__choice": [1, 2, 3, 4, 5, 10]
+          "training_frequency__choice": [1, 2, 3, 4, 5, 10]
         }
       }]
     }
@@ -524,8 +516,7 @@
         "explore_var_end": 0.005,
         "explore_anneal_epi": 100,
         "gamma": 0.999,
-        "training_frequency": 32,
-        "num_epis_to_collect": 3
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -534,12 +525,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.1
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -567,10 +557,15 @@
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.3]
           },
-          "hid_layers__choice": [[16], [32], [64], [64, 32]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64],
+            [64, 32]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
@@ -587,8 +582,7 @@
         "explore_var_end": 0.005,
         "explore_anneal_epi": 100,
         "gamma": 0.999,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -597,12 +591,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.1
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -625,15 +618,20 @@
       "agent": [{
         "algorithm": {
           "gamma__uniform": [0.9, 0.9999],
-          "num_epis_to_collect__choice": [1, 2, 3, 4, 5, 10],
+          "training_frequency__choice": [1, 2, 3, 4, 5, 10],
           "explore_var_end__uniform": [0.001, 0.1],
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.3]
           },
-          "hid_layers__choice": [[16], [32], [64], [64, 32]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64],
+            [64, 32]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
@@ -650,8 +648,7 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 100,
         "gamma": 0.999,
-        "training_frequency": 32,
-        "num_epis_to_collect": 3
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -660,12 +657,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.1
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -693,10 +689,15 @@
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.3]
           },
-          "hid_layers__choice": [[16], [32], [64], [64, 32]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64],
+            [64, 32]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]
@@ -713,8 +714,7 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 100,
         "gamma": 0.999,
-        "training_frequency": 32,
-        "num_epis_to_collect": 1
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -723,12 +723,11 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
-        "optim": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.1
         },
         "decay_lr": true,
-        "decay_lr_factor": 0.9,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000
       }
@@ -751,15 +750,20 @@
       "agent": [{
         "algorithm": {
           "gamma__uniform": [0.9, 0.9999],
-          "num_epis_to_collect__choice": [1, 2, 3, 4, 5, 10],
+          "training_frequency__choice": [1, 2, 3, 4, 5, 10],
           "explore_var_end__uniform": [0.3, 1.0],
           "explore_anneal_epi__choice": [10, 25, 50, 100]
         },
         "net": {
-          "optim": {
+          "optim_spec": {
             "lr__uniform": [0.001, 0.3]
           },
-          "hid_layers__choice": [[16], [32], [64], [64, 32]],
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64],
+            [64, 32]
+          ],
           "hid_layers_activation__choice": ["relu", "sigmoid"]
         }
       }]

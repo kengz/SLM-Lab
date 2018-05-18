@@ -3,7 +3,6 @@ import colorlog
 import logging
 import os
 import pandas as pd
-import pydash as _
 import sys
 import warnings
 
@@ -29,7 +28,6 @@ lab_logger.handlers = FixedList([sh])
 
 # this will trigger from Experiment init on reload(logger)
 if os.environ.get('PREPATH') is not None:
-    # mute the competing loggers
     warnings.filterwarnings('ignore', category=pd.io.pytables.PerformanceWarning)
 
     log_filepath = os.environ['PREPATH'] + '.log'

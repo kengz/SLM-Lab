@@ -1,7 +1,8 @@
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger
+from slm_lab.agent.net.base import Net
+from slm_lab.lib import logger, util
 from torch.autograd import Variable
-from torch.nn import Module
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -9,7 +10,7 @@ import torch.nn.functional as F
 logger = logger.get_logger(__name__)
 
 
-class ConvNet(nn.Module):
+class ConvNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized convolutional neural network,
     with optional batch normalization
@@ -21,18 +22,7 @@ class ConvNet(nn.Module):
          3. self.out_layers
     '''
 
-    def __init__(self,
-                 in_dim,
-                 hid_layers,
-                 out_dim,
-                 hid_layers_activation=None,
-                 optim_param=None,
-                 loss_param=None,
-                 clamp_grad=False,
-                 clamp_grad_val=1.0,
-                 batch_norm=True,
-                 gpu=False,
-                 decay_lr=0.9):
+    def __init__(self, net_spec, algorithm, body):
         '''
         in_dim: dimension of the inputs
         hid_layers: tuple consisting of two elements. (conv_hid, flat_hid)
@@ -44,8 +34,8 @@ class ConvNet(nn.Module):
             2. flat_hid: list of dense layers following the convolutional layers
         out_dim: dimension of the output for one output, otherwise a list containing the dimensions of the ouputs for a multi-headed network
         hid_layers_activation: activation function for the hidden layers
-        optim_param: parameters for initializing the optimizer
-        loss_param: measure of error between model predictions and correct outputs
+        optim_spec: parameters for initializing the optimizer
+        loss_spec: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
         batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
@@ -55,37 +45,63 @@ class ConvNet(nn.Module):
                 ([[3, 36, (5, 5), 1, 0, (2, 2)],[36, 128, (5, 5), 1, 0, (2, 2)]],[100]),
                 10,
                 hid_layers_activation='relu',
-                optim_param={'name': 'Adam'},
-                loss_param={'name': 'mse_loss'},
+                optim_spec={'name': 'Adam'},
+                loss_spec={'name': 'mse_loss'},
                 clamp_grad=False,
                 batch_norm=True,
                 gpu=True,
-                decay_lr=0.9)
+                decay_lr_factor=0.9)
         '''
-        super(ConvNet, self).__init__()
+        nn.Module.__init__(self)
+        super(ConvNet, self).__init__(net_spec, algorithm, body)
+        # set default
+        util.set_attr(self, dict(
+            optim_spec={'name': 'Adam'},
+            loss_spec={'name': 'mse_loss'},
+            batch_norm=True,
+            clamp_grad=False,
+            clamp_grad_val=1.0,
+            decay_lr_factor=0.9,
+            update_type='replace',
+            update_frequency=1,
+            polyak_weight=0.0,
+            gpu=False,
+        ))
+        util.set_attr(self, self.net_spec, [
+            'hid_layers',
+            'hid_layers_activation',
+            'optim_spec',
+            'loss_spec',
+            'batch_norm',
+            'clamp_grad',
+            'clamp_grad_val',
+            'decay_lr',
+            'decay_lr_factor',
+            'decay_lr_frequency',
+            'decay_lr_min_timestep',
+            'update_type',
+            'update_frequency',
+            'polyak_weight',
+            'gpu',
+        ])
         # Create net and initialize params
         # We need to transpose the dimensions for pytorch.
         # OpenAI gym provides images as W x H x C, pyTorch expects C x W x H
-        self.in_dim = list(in_dim[:-1])
-        self.in_dim.insert(0, in_dim[-1])
+        self.in_dim = list(self.body.state_dim[:-1])
+        self.in_dim.insert(0, self.body.state_dim[-1])
         # Handle multiple types of out_dim (single and multi-headed)
-        if type(out_dim) is int:
-            out_dim = [out_dim]
-        self.out_dim = out_dim
-        self.batch_norm = batch_norm
+        self.out_dim = np.reshape(self.body.action_dim, -1).tolist()
         self.conv_layers = []
-        self.conv_model = self.build_conv_layers(
-            hid_layers[0], hid_layers_activation)
+        self.conv_model = self.build_conv_layers(self.hid_layers[0])
         self.flat_layers = []
-        self.dense_model = self.build_flat_layers(
-            hid_layers[1], hid_layers_activation)
+        self.dense_model = self.build_flat_layers(self.hid_layers[1])
         self.out_layers = []
-        in_D = hid_layers[1][-1] if len(hid_layers[1]) > 0 else self.flat_dim
-        for dim in out_dim:
-            self.out_layers += [nn.Linear(in_D, dim)]
+        in_D = self.hid_layers[1][-1] if len(self.hid_layers[1]) > 0 else self.flat_dim
+        for dim in self.out_dim:
+            self.out_layers.append(nn.Linear(in_D, dim))
         self.num_hid_layers = len(self.conv_layers) + len(self.flat_layers)
         self.init_params()
-        if torch.cuda.is_available() and gpu:
+        if torch.cuda.is_available() and self.gpu:
             self.conv_model.cuda()
             self.dense_model.cuda()
             for l in self.out_layers:
@@ -95,61 +111,56 @@ class ConvNet(nn.Module):
             list(self.dense_model.parameters())
         for layer in self.out_layers:
             self.params.extend(list(layer.parameters()))
-        self.optim_param = optim_param
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
-        self.loss_fn = net_util.get_loss_fn(self, loss_param)
-        self.clamp_grad = clamp_grad
-        self.clamp_grad_val = clamp_grad_val
-        self.decay_lr = decay_lr
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
+        self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
-        logger.info(f'decay lr: {self.decay_lr}')
+        logger.info(f'decay lr: {self.decay_lr_factor}')
 
     def get_conv_output_size(self):
-        '''Helper function to calculate the size of the
-           flattened features after the final convolutional layer'''
+        '''Helper function to calculate the size of the flattened features after the final convolutional layer'''
         x = Variable(torch.ones(1, *self.in_dim))
         x = self.conv_model(x)
         return x.numel()
 
-    def build_conv_layers(self, conv_hid, hid_layers_activation):
-        '''Builds all of the convolutional layers in the network.
-           These layers are turned into a Sequential model and stored
-           in self.conv_model.
-           The entire model consists of two parts:
-                1. self.conv_model
-                2. self.dense_model
-                3. self.out_layers'''
+    def build_conv_layers(self, conv_hid):
+        '''
+        Builds all of the convolutional layers in the network.
+        These layers are turned into a Sequential model and stored in self.conv_model.
+        The entire model consists of two parts:
+            1. self.conv_model
+            2. self.dense_model
+            3. self.out_layers
+        '''
         for i, layer in enumerate(conv_hid):
-            self.conv_layers += [nn.Conv2d(
+            self.conv_layers.append(nn.Conv2d(
                 conv_hid[i][0],
                 conv_hid[i][1],
                 tuple(conv_hid[i][2]),
                 stride=conv_hid[i][3],
                 padding=conv_hid[i][4],
-                dilation=tuple(conv_hid[i][5]))]
-            self.conv_layers += [
-                net_util.get_activation_fn(hid_layers_activation)]
+                dilation=tuple(conv_hid[i][5])))
+            self.conv_layers.append(net_util.get_activation_fn(self.hid_layers_activation))
             # Don't include batch norm in the first layer
             if self.batch_norm and i != 0:
-                self.conv_layers += [nn.BatchNorm2d(conv_hid[i][1])]
+                self.conv_layers.append(nn.BatchNorm2d(conv_hid[i][1]))
         return nn.Sequential(*self.conv_layers)
 
-    def build_flat_layers(self, flat_hid, hid_layers_activation):
-        '''Builds all of the dense layers in the network.
-           These layers are turned into a Sequential model and stored
-           in self.dense_model.
-           The entire model consists of two parts:
-                1. self.conv_model
-                2. self.dense_model
-                3. self.out_layers'''
+    def build_flat_layers(self, flat_hid):
+        '''
+        Builds all of the dense layers in the network.
+        These layers are turned into a Sequential model and stored in self.dense_model.
+        The entire model consists of two parts:
+            1. self.conv_model
+            2. self.dense_model
+            3. self.out_layers
+        '''
         self.flat_dim = self.get_conv_output_size()
         for i, layer in enumerate(flat_hid):
             in_D = self.flat_dim if i == 0 else flat_hid[i - 1]
             out_D = flat_hid[i]
-            self.flat_layers += [nn.Linear(in_D, out_D)]
-            self.flat_layers += [
-                net_util.get_activation_fn(hid_layers_activation)]
+            self.flat_layers.append(nn.Linear(in_D, out_D))
+            self.flat_layers.append(net_util.get_activation_fn(self.hid_layers_activation))
         return nn.Sequential(*self.flat_layers)
 
     def forward(self, x):
@@ -163,7 +174,7 @@ class ConvNet(nn.Module):
         x = self.conv_model(x)
         x = x.view(-1, self.flat_dim)
         x = self.dense_model(x)
-        '''If only one head, return tensor, otherwise return list of outputs'''
+        # If only one head, return tensor, otherwise return list of outputs
         outs = []
         for layer in self.out_layers:
             out = layer(x)
@@ -175,7 +186,7 @@ class ConvNet(nn.Module):
 
     def set_train_eval(self, train=True):
         '''Helper function to set model in training or evaluation mode'''
-        nets = [self.conv_model] + [self.dense_model] + self.out_layers
+        nets = [self.conv_model, self.dense_model] + self.out_layers
         for net in nets:
             if train:
                 net.train()
@@ -183,9 +194,7 @@ class ConvNet(nn.Module):
                 net.eval()
 
     def training_step(self, x, y):
-        '''
-        Takes a single training step: one forward and one backwards pass
-        '''
+        '''Takes a single training step: one forward and one backwards pass'''
         self.set_train_eval()
         self.optim.zero_grad()
         out = self(x)
@@ -252,8 +261,6 @@ class ConvNet(nn.Module):
         return s
 
     def update_lr(self):
-        assert 'lr' in self.optim_param
-        old_lr = self.optim_param['lr']
-        self.optim_param['lr'] = old_lr * self.decay_lr
-        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_param["lr"]}')
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_param)
+        self.optim_spec['lr'] = old_lr * self.decay_lr
+        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
+        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)

@@ -4,7 +4,7 @@ from slm_lab.lib import util
 import numpy as np
 import os
 import pandas as pd
-import pydash as _
+import pydash as ps
 import pytest
 
 
@@ -24,11 +24,11 @@ def test_cast_df(test_df, test_list):
 
 
 def test_cast_list(test_list, test_str):
-    assert _.is_list(test_list)
-    assert _.is_list(util.cast_list(test_list))
+    assert ps.is_list(test_list)
+    assert ps.is_list(util.cast_list(test_list))
 
-    assert not _.is_list(test_str)
-    assert _.is_list(util.cast_list(test_str))
+    assert not ps.is_list(test_str)
+    assert ps.is_list(util.cast_list(test_str))
 
 
 @pytest.mark.parametrize('d,res_d', [
@@ -140,7 +140,7 @@ def test_get_fn_list():
 
 def test_get_ts():
     ts = util.get_ts()
-    assert _.is_string(ts)
+    assert ps.is_string(ts)
     assert util.RE_FILE_TS.match(ts)
 
 
@@ -194,9 +194,9 @@ def test_nonan_all(v, isall):
 
 def test_s_get(test_agent):
     spec = util.s_get(test_agent, 'aeb_space.spec')
-    assert _.is_dict(spec)
+    assert ps.is_dict(spec)
     spec = util.s_get(test_agent, 'aeb_space').spec
-    assert _.is_dict(spec)
+    assert ps.is_dict(spec)
 
 
 def test_set_attr():

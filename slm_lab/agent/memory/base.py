@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod, abstractproperty
+from collections import deque
+from slm_lab.lib import logger
+import numpy as np
 
 
 class Memory(ABC):
@@ -9,27 +12,64 @@ class Memory(ABC):
     Memory is singleton to each body for modularity, and there is no gains to do multi-body memory now. Shall be constructed when body_space is built.
     '''
 
-    def __init__(self, body):
+    def __init__(self, memory_spec, algorithm, body):
+        '''
+        @param {*} body is the unit that stores its experience in this memory. Each body has a distinct memory.
+        '''
+        self.memory_spec = memory_spec
+        self.algorithm = algorithm
         self.body = body
-        self.last_state = None
+        self.agent_spec = body.agent.agent_spec
 
-    def reset_last_state(self, state):
-        '''Do reset of body memory per session during agent_space.reset() to set last_state'''
-        self.last_state = state
+        # the basic variables for every memory
+        self.last_state = None
+        # for API consistency, reset to some max_len in your specific memory class
+        self.state_buffer = deque(maxlen=0)
+        # total_reward and its history over episodes
+        self.total_reward = 0
+        self.total_reward_h = []
+        self.avg_total_reward = 0
+        self.avg_total_reward_h = []
+        self.avg_window = 100
 
     @abstractmethod
     def reset(self):
-        '''Method specifically to reset the memory storage and related variables'''
+        '''Method to fully reset the memory storage and related variables'''
         raise NotImplementedError
+
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        self.last_state = state
+        self.state_buffer.clear()
+        self.total_reward = 0
+
+    def base_update(self, action, reward, state, done):
+        '''Method to do base memory update, like stats'''
+        if np.isnan(reward):  # the start of episode
+            self.epi_reset(state)
+            return
+
+        self.total_reward += reward
+        if done:
+            self.total_reward_h.append(self.total_reward)
+            self.avg_total_reward = np.mean(self.total_reward_h[-self.avg_window:])
+            self.avg_total_reward_h.append(self.avg_total_reward_h)
+
+            body = self.body
+            info_space = body.agent.info_space
+            env = body.env
+            clock = env.clock
+            msg = f'Trial {info_space.get("trial")} session {info_space.get("session")} env {env.e}, body {body.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, total_reward: {self.total_reward:.2f}, last-{self.avg_window}-epi avg: {self.avg_total_reward:.2f}'
+            logger.info(msg)
+        return
 
     @abstractmethod
     def update(self, action, reward, state, done):
         '''Implement memory update given the full info from the latest timestep. Hint: use self.last_state to construct SARS. NOTE: guard for np.nan reward and done when individual env resets.'''
+        self.base_update(action, reward, state, done)
         raise NotImplementedError
 
     @abstractmethod
     def sample(self):
         '''Implement memory sampling mechanism'''
         raise NotImplementedError
-
-    # TODO standardize sample method

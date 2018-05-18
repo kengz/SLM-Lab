@@ -5,7 +5,7 @@ Use `lab` as your Hydrogen kernel and run below interactively
 from IPython.display import Latex
 from slm_lab.lib import util, viz
 import pandas as pd
-import pydash as _
+import pydash as ps
 
 df = pd.DataFrame({
     'a': [0, 1, 2, 3, 4],
@@ -33,7 +33,7 @@ fig.layout['yaxis2'].update(fig1.layout['yaxis2'])
 fig.layout['yaxis1'].update(domain=[0.55, 1])
 fig.layout['yaxis3'].update(fig2.layout['yaxis'])
 fig.layout['yaxis3'].update(domain=[0, 0.45])
-fig.layout.update(_.pick(fig1.layout, ['legend']))
+fig.layout.update(ps.pick(fig1.layout, ['legend']))
 fig.layout.update(title='total_rewards vs time', width=500, height=400)
 viz.plot(fig)
 

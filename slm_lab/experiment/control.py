@@ -12,7 +12,7 @@ from slm_lab.lib import logger, util, viz
 import numpy as np
 import os
 import pandas as pd
-import pydash as _
+import pydash as ps
 import torch
 
 
@@ -21,7 +21,7 @@ def init_thread_vars(spec, info_space, unit):
     if info_space.get(unit) is None:
         info_space.tick(unit)
     if logger.to_init(spec, info_space):
-        os.environ['PREPATH'] = analysis.get_prepath(spec, info_space)
+        os.environ['PREPATH'] = util.get_prepath(spec, info_space)
         reload(logger)
 
 
@@ -66,7 +66,7 @@ class Session:
         Run all episodes, where each env can step and reset at its own clock_speed and timeline. Will terminate when all envs done running max_episode.
         '''
         _reward_space, state_space, _done_space = self.env_space.reset()
-        self.agent_space.reset(state_space)
+        _action_space = self.agent_space.reset(state_space)  # nan action at t=0 for bookkeeping in data_space
         while True:
             end_session = self.aeb_space.tick_clocks(self)
             if end_session:
@@ -111,7 +111,7 @@ class Trial:
         logger.info('Trial done, closing.')
 
     def run(self):
-        num_cpus = _.get(self.spec['meta'], 'resources.num_cpus', util.NUM_CPUS)
+        num_cpus = ps.get(self.spec['meta'], 'resources.num_cpus', util.NUM_CPUS)
         info_spaces = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')

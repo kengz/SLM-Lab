@@ -1,43 +1,40 @@
-import pydash as _
-import tensorflow as tf
+from slm_lab.agent.net.base import Net
 from slm_lab.lib import distribution, tf_util, util
+import pydash as ps
+import tensorflow as tf
 
 
-class MLPPolicy:
+class MLPPolicy(Net):
     '''
     Policy network
     adapted from OpenAI https://github.com/openai/baselines/blob/master/baselines/ppo1/mlp_policy.py
     '''
 
-    def __init__(self, algo, name=''):
-        # TODO fix scope using prepath name
-        scope = f'{util.get_ts()}_{name}'
+    def __init__(self, net_spec, algorithm, body, name=''):
+        super(MLPPolicy, self).__init__(net_spec, algorithm, body)
+        util.set_attr(self, self.net_spec, [
+            'hid_layers',
+            'hid_layers_activation',
+        ])
+        info_space = algorithm.agent.info_space
+        scope = util.get_prepath(algorithm.agent.agent_space.spec, info_space, unit='session').split('/')[-1] + '_' + name
         with tf.variable_scope(scope):
             self.scope = tf.get_variable_scope().name
-            self.algo = algo
-            self.body = algo.body  # default body for env
-
-            net_spec = algo.agent.spec['net']
-            util.set_attr(self, _.pick(net_spec, [
-                'hid_layers_activation', 'hid_layers'
-            ]))
             self._init()
 
     def _init(self):
-        self.pdtype = distribution.make_pdtype(self.body.env)
+        self.pdtype = distribution.make_pdtype(self.body.action_space)
 
         self.ob = tf_util.get_global_placeholder(
-            name='ob', dtype=tf.float32, shape=[None] + list(self.body.env.observation_space.shape))
+            name='ob', dtype=tf.float32, shape=[None] + list(self.body.observation_space.shape))
 
         with tf.variable_scope('ob_filter'):
-            self.ob_rms = tf_util.RunningMeanStd(shape=self.body.env.observation_space.shape, comm=self.algo.comm)
+            self.ob_rms = tf_util.RunningMeanStd(shape=self.body.observation_space.shape, comm=self.algorithm.comm)
 
         with tf.variable_scope('vf'):
-            obz = tf.clip_by_value(
-                (self.ob - self.ob_rms.mean) / self.ob_rms.std, -5.0, 5.0)
+            obz = tf.clip_by_value((self.ob - self.ob_rms.mean) / self.ob_rms.std, -5.0, 5.0)
             last_out = obz
             for i, hid_size in enumerate(self.hid_layers):
-                # TODO dont hard code activation
                 last_out = getattr(tf.nn, self.hid_layers_activation)(tf.layers.dense(
                     last_out, hid_size, name=f'fc_{i+1}', kernel_initializer=tf_util.normc_initializer(1.0)))
             self.v_pred = tf.layers.dense(
@@ -48,10 +45,8 @@ class MLPPolicy:
             for i, hid_size in enumerate(self.hid_layers):
                 last_out = getattr(tf.nn, self.hid_layers_activation)(tf.layers.dense(
                     last_out, hid_size, name=f'fc_{i+1}', kernel_initializer=tf_util.normc_initializer(1.0)))
-            # TODO restore param gaussian_fixed_var=True
-            gaussian_fixed_var = True
             # continuous action output layer
-            if gaussian_fixed_var and not self.body.env.is_discrete(a=0):
+            if self.algorithm.gaussian_fixed_var and not self.body.is_discrete:
                 mean = tf.layers.dense(
                     last_out, self.pdtype.param_shape()[0] // 2, name='final', kernel_initializer=tf_util.normc_initializer(0.01))
                 logstd = tf.get_variable(
