@@ -33,8 +33,8 @@ class RecurrentNet(Net, nn.Module):
         hid_layers_activation: activation function for the hidden layers
         optim_spec: parameters for initializing the optimizer
         loss_spec: measure of error between model predictions and correct output
-        clamp_grad: whether to clamp the gradient
-        clamp_grad_val: what value to clamp the gradient at
+        clip_grad: whether to clip the gradient
+        clip_grad_val: what value to clip the gradient at
         num_rnn_layers: number of recurrent layers
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
@@ -46,7 +46,7 @@ class RecurrentNet(Net, nn.Module):
             hid_layers_activation='relu',
             optim_spec={'name': 'Adam'},
             loss_spec={'name': 'mse_loss'},
-            clamp_grad=False,
+            clip_grad=False,
             gpu=True,
             decay_lr_factor=0.9)
         '''
@@ -57,8 +57,8 @@ class RecurrentNet(Net, nn.Module):
             num_rnn_layers=1,
             optim_spec={'name': 'Adam'},
             loss_spec={'name': 'mse_loss'},
-            clamp_grad=False,
-            clamp_grad_val=1.0,
+            clip_grad=False,
+            clip_grad_val=1.0,
             decay_lr_factor=0.9,
             gpu=False,
         ))
@@ -69,8 +69,8 @@ class RecurrentNet(Net, nn.Module):
             'seq_len',
             'optim_spec',
             'loss_spec',
-            'clamp_grad',
-            'clamp_grad_val',
+            'clip_grad',
+            'clip_grad_val',
             'decay_lr',
             'decay_lr_factor',
             'decay_lr_frequency',
@@ -169,10 +169,10 @@ class RecurrentNet(Net, nn.Module):
         out = self(x)
         loss = self.loss_fn(out, y)
         loss.backward()
-        if self.clamp_grad:
+        if self.clip_grad:
             logger.debug(f'Clipping gradient...')
             torch.nn.utils.clip_grad_norm(
-                self.params, self.clamp_grad_val)
+                self.params, self.clip_grad_val)
         self.optim.step()
         return loss
 

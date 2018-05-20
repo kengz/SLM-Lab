@@ -68,8 +68,8 @@
           "name": "RMSprop",
           "lr": 0.02
         },
-        "clamp_grad": true,
-        "clamp_grad_val": 25.0,
+        "clip_grad": true,
+        "clip_grad_val": 25.0,
         "decay_lr": true,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 1000

@@ -249,7 +249,7 @@ def act_with_gaussian(algorithm, state, body, gpu):
     sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0
     m = Normal(mu, sigma)
     action = m.sample()
-    action = torch.clamp(action, -algorithm.continuous_action_clip, algorithm.continuous_action_clip)
+    action = torch.clip(action, -algorithm.continuous_action_clip, algorithm.continuous_action_clip)
     logger.debug2(f'Action: {action.data.item()}, log prob: {m.log_prob(action).data.item()}')
     algorithm.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution

@@ -36,7 +36,7 @@ class ConvNet(Net, nn.Module):
         hid_layers_activation: activation function for the hidden layers
         optim_spec: parameters for initializing the optimizer
         loss_spec: measure of error between model predictions and correct outputs
-        clamp_grad: whether to clamp the gradient
+        clip_grad: whether to clip the gradient
         batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         @example:
@@ -47,7 +47,7 @@ class ConvNet(Net, nn.Module):
                 hid_layers_activation='relu',
                 optim_spec={'name': 'Adam'},
                 loss_spec={'name': 'mse_loss'},
-                clamp_grad=False,
+                clip_grad=False,
                 batch_norm=True,
                 gpu=True,
                 decay_lr_factor=0.9)
@@ -59,8 +59,8 @@ class ConvNet(Net, nn.Module):
             optim_spec={'name': 'Adam'},
             loss_spec={'name': 'mse_loss'},
             batch_norm=True,
-            clamp_grad=False,
-            clamp_grad_val=1.0,
+            clip_grad=False,
+            clip_grad_val=1.0,
             decay_lr_factor=0.9,
             update_type='replace',
             update_frequency=1,
@@ -73,8 +73,8 @@ class ConvNet(Net, nn.Module):
             'optim_spec',
             'loss_spec',
             'batch_norm',
-            'clamp_grad',
-            'clamp_grad_val',
+            'clip_grad',
+            'clip_grad_val',
             'decay_lr',
             'decay_lr_factor',
             'decay_lr_frequency',
@@ -200,12 +200,12 @@ class ConvNet(Net, nn.Module):
         out = self(x)
         loss = self.loss_fn(out, y)
         loss.backward()
-        if self.clamp_grad:
+        if self.clip_grad:
             logger.debug(f'Clipping gradient...')
             torch.nn.utils.clip_grad_norm(
-                self.conv_model.parameters(), self.clamp_grad_val)
+                self.conv_model.parameters(), self.clip_grad_val)
             torch.nn.utils.clip_grad_norm(
-                self.dense_model.parameters(), self.clamp_grad_val)
+                self.dense_model.parameters(), self.clip_grad_val)
         self.optim.step()
         return loss
 

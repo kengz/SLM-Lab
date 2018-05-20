@@ -118,8 +118,8 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "clamp_grad": false,
-        "clamp_grad_val": 1.0,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
         "decay_lr": false,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 2000
@@ -174,8 +174,8 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "clamp_grad": false,
-        "clamp_grad_val": 1.0,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
         "decay_lr": true,
         "decay_lr_frequency": 1000,
         "decay_lr_min_timestep": 2000

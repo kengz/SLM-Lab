@@ -21,8 +21,8 @@ class MLPNet(Net, nn.Module):
         hid_layers_activation: activation function for the hidden layers
         optim_spec: parameters for initializing the optimizer
         loss_spec: measure of error between model predictions and correct outputs
-        clamp_grad: whether to clamp the gradient
-        clamp_grad_val: the clamp value
+        clip_grad: whether to clip the gradient
+        clip_grad_val: the clip value
         decay_lr: whether to decay learning rate
         decay_lr_factor: the multiplicative decay factor
         decay_lr_frequency: how many total timesteps per decay
@@ -38,8 +38,8 @@ class MLPNet(Net, nn.Module):
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},
             loss_spec={'name': 'MSELoss'},
-            clamp_grad=False,
-            clamp_grad_val=1.0,
+            clip_grad=False,
+            clip_grad_val=1.0,
             decay_lr_factor=0.9,
             update_type='replace',
             update_frequency=1,
@@ -51,8 +51,8 @@ class MLPNet(Net, nn.Module):
             'hid_layers_activation',
             'optim_spec',
             'loss_spec',
-            'clamp_grad',
-            'clamp_grad_val',
+            'clip_grad',
+            'clip_grad_val',
             'decay_lr',
             'decay_lr_factor',
             'decay_lr_frequency',
@@ -99,9 +99,9 @@ class MLPNet(Net, nn.Module):
             out = self(x)
             loss = self.loss_fn(out, y)
         loss.backward()
-        if self.clamp_grad:
+        if self.clip_grad:
             logger.debug(f'Clipping gradient...')
-            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.clamp_grad_val)
+            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.clip_grad_val)
         self.optim.step()
         return loss
 
@@ -132,8 +132,8 @@ class MLPHeterogenousTails(MLPNet):
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},
             loss_spec={'name': 'mse_loss'},
-            clamp_grad=False,
-            clamp_grad_val=1.0,
+            clip_grad=False,
+            clip_grad_val=1.0,
             decay_lr_factor=0.9,
             update_type='replace',
             update_frequency=1,
@@ -145,8 +145,8 @@ class MLPHeterogenousTails(MLPNet):
             'hid_layers_activation',
             'optim_spec',
             'loss_spec',
-            'clamp_grad',
-            'clamp_grad_val',
+            'clip_grad',
+            'clip_grad_val',
             'decay_lr',
             'decay_lr_factor',
             'decay_lr_frequency',
@@ -261,8 +261,8 @@ class MultiMLPNet(Net, nn.Module):
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},
             loss_spec={'name': 'mse_loss'},
-            clamp_grad=False,
-            clamp_grad_val=1.0,
+            clip_grad=False,
+            clip_grad_val=1.0,
             decay_lr_factor=0.9,
             update_type='replace',
             update_frequency=1,
@@ -274,8 +274,8 @@ class MultiMLPNet(Net, nn.Module):
             'hid_layers_activation',
             'optim_spec',
             'loss_spec',
-            'clamp_grad',
-            'clamp_grad_val',
+            'clip_grad',
+            'clip_grad_val',
             'decay_lr',
             'decay_lr_factor',
             'decay_lr_frequency',
@@ -405,8 +405,8 @@ class MultiMLPNet(Net, nn.Module):
             total_loss += loss
             losses.append(loss)
         total_loss.backward()
-        if self.clamp_grad:
-            torch.nn.utils.clip_grad_norm(self.params, self.clamp_grad_val)
+        if self.clip_grad:
+            torch.nn.utils.clip_grad_norm(self.params, self.clip_grad_val)
         self.optim.step()
         nanflat_loss_a = [loss.data.item() for loss in losses]
         return nanflat_loss_a
