@@ -9,6 +9,17 @@ NN_LOWCASE_LOOKUP = {nn_name.lower(): nn_name for nn_name in nn.__dict__}
 logger = logger.get_logger(__name__)
 
 
+def build_sequential(dims, activation):
+    '''Build the Sequential model by interleaving nn.Linear and activation_fn'''
+    dim_pairs = list(zip(dims[:-1], dims[1:]))
+    layers = []
+    for in_d, out_d in dim_pairs:
+        layers.append(nn.Linear(in_d, out_d))
+        layers.append(get_activation_fn(activation)())
+    model = nn.Sequential(*layers)
+    return model
+
+
 def get_activation_fn(activation):
     '''Helper to generate activation function layers for net'''
     nn_name = NN_LOWCASE_LOOKUP.get(activation) or NN_LOWCASE_LOOKUP['relu']

@@ -63,16 +63,10 @@ class MLPNet(Net, nn.Module):
             'gpu',
         ])
 
-        layers = []
-        in_out_pairs = list(zip(
-            [self.body.state_dim] + self.hid_layers,
-            self.hid_layers + [self.body.action_dim]))
-        for in_d, out_d in in_out_pairs[:-1]:  # all but last
-            layers.append(nn.Linear(in_d, out_d))
-            layers.append(net_util.get_activation_fn(self.hid_layers_activation)())
-        # last layer no activation
-        layers.append(nn.Linear(*in_out_pairs[-1]))
-        self.model = nn.Sequential(*layers)
+        dims = [self.body.state_dim] + self.hid_layers
+        self.model = net_util.build_sequential(dims, self.hid_layers_activation)
+        # add last layer with no activation
+        self.add_module(str(len(self.model)), nn.Linear(dims[-1], self.body.action_dim))
         net_util.init_layers(self.modules())
         if torch.cuda.is_available() and self.gpu:
             for module in self.modules():
@@ -158,17 +152,10 @@ class MLPHeterogenousTails(MLPNet):
             'gpu',
         ])
 
-        layers = []
-        in_out_pairs = list(zip(
-            [self.body.state_dim] + self.hid_layers,
-            self.hid_layers + [self.body.action_dim]))
-        for in_d, out_d in in_out_pairs[:-1]:  # all but last
-            layers.append(nn.Linear(in_d, out_d))
-            layers.append(net_util.get_activation_fn(self.hid_layers_activation)())
-        self.model_body = nn.Sequential(*layers)
+        dims = [self.body.state_dim] + self.hid_layers
+        self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
         # multi-tail output layer
-        in_d, out_ds = in_out_pairs[-1]
-        self.model_tails = nn.ModuleList([nn.Linear(in_d, out_d) for out_d in out_ds])
+        self.model_tails = nn.ModuleList([nn.Linear(dims[-1], out_d) for out_d in self.body.action_dim])
         net_util.init_layers(self.modules())
         if torch.cuda.is_available() and self.gpu:
             for module in self.modules():
@@ -247,7 +234,7 @@ class MultiMLPNet(Net, nn.Module):
         # set default
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},
-            loss_spec={'name': 'mse_loss'},
+            loss_spec={'name': 'MSELoss'},
             clip_grad=False,
             clip_grad_val=1.0,
             decay_lr_factor=0.9,
@@ -281,7 +268,6 @@ class MultiMLPNet(Net, nn.Module):
         if len(self.tail_hid_layers) == 1:
             self.tail_hid_layers = self.tail_hid_layers * len(body_list)
 
-        # TODO move away from list-based construction API, too many things to keep track off and might drop the ball
         self.state_heads_layers = []
         self.state_heads_models = self.make_state_heads(body_list)
 
