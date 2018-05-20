@@ -64,15 +64,17 @@ class Reinforce(Algorithm):
         # Below we automatically select an appropriate net for a discrete or continuous action space if the setting is of the form 'MLPdefault'. Otherwise the correct type of network is assumed to be specified in the spec.
         # Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
         # Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
+        in_dim = self.body.state_dim
         if self.body.is_discrete:
+            out_dim = self.body.action_dim
             if self.net_spec['type'] == 'MLPdefault':
                 self.net_spec['type'] = 'MLPNet'
         else:
-            self.body.action_dim = [self.body.action_dim] * 2
+            out_dim = [self.body.action_dim, self.body.action_dim]
             if self.net_spec['type'] == 'MLPdefault':
                 self.net_spec['type'] = 'MLPHeterogenousTails'
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, self.body)
+        self.net = NetClass(self.net_spec, self, in_dim, out_dim)
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api

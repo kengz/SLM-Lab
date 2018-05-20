@@ -110,24 +110,28 @@ class ActorCritic(Reinforce):
         '''
         net_type = self.net_spec['type']
         # options of net_type are {MLP, Conv, Recurrent} x {shared, separate}
+        in_dim = self.body.state_dim
         if self.body.is_discrete:
             if 'shared' in net_type:
                 self.share_architecture = True
-                self.body.action_dim = [self.body.action_dim, 1]
+                out_dim = [self.body.action_dim, 1]
             else:
-                self.share_architecture = False
                 assert 'separate' in net_type
+                self.share_architecture = False
+                out_dim = self.body.action_dim
+                critic_out_dim = 1
         else:
-            self.body.action_dim = [self.body.action_dim] * 2
             if 'shared' in net_type:
                 self.share_architecture = True
-                self.body.action_dim.append(1)
+                out_dim = [self.body.action_dim, self.body.action_dim, 1]
             else:
-                self.share_architecture = False
                 assert 'separate' in net_type
+                self.share_architecture = False
+                out_dim = [self.body.action_dim, self.body.action_dim]
+                critic_out_dim = 1
 
         self.net_spec['type'] = net_type = net_type.replace('shared', 'Net').replace('separate', 'Net')
-        if 'MLP' in net_type and ps.is_list(self.body.action_dim) and len(self.body.action_dim) > 1:
+        if 'MLP' in net_type and ps.is_list(out_dim) and len(out_dim) > 1:
             self.net_spec['type'] = 'MLPHeterogenousTails'
 
         actor_net_spec = self.net_spec.copy()
@@ -144,16 +148,13 @@ class ActorCritic(Reinforce):
         # properly set net_spec and action_dim for actor, critic nets
         if self.share_architecture:
             # net = actor_critic as one
-            self.net = NetClass(actor_net_spec, self, self.body)
+            self.net = NetClass(actor_net_spec, self, in_dim, out_dim)
         else:
             # main net = actor
-            self.net = NetClass(actor_net_spec, self, self.body)
-            critic_body = deepcopy(self.body)
-            critic_body.action_dim = 1  # space to init critic
+            self.net = NetClass(actor_net_spec, self, in_dim, out_dim)
             if critic_net_spec['use_same_optim']:
-                self.critic = NetClass(actor_net_spec, self, critic_body)
-            else:
-                self.critic = NetClass(critic_net_spec, self, critic_body)
+                critic_net_spec = actor_net_spec
+            self.critic = NetClass(critic_net_spec, self, in_dim, critic_out_dim)
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
