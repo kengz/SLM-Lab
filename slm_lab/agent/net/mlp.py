@@ -66,7 +66,7 @@ class MLPNet(Net, nn.Module):
         dims = [self.body.state_dim] + self.hid_layers
         self.model = net_util.build_sequential(dims, self.hid_layers_activation)
         # add last layer with no activation
-        self.add_module(str(len(self.model)), nn.Linear(dims[-1], self.body.action_dim))
+        self.model.add_module(str(len(self.model)), nn.Linear(dims[-1], self.body.action_dim))
         net_util.init_layers(self.modules())
         if torch.cuda.is_available() and self.gpu:
             for module in self.modules():
@@ -86,8 +86,8 @@ class MLPNet(Net, nn.Module):
         Takes a single training step: one forward and one backwards pass
         More most RL usage, we have custom, often complication, loss functions. Compute its value and put it in a pytorch tensor then pass it in as loss
         '''
-        self.model.train()
-        self.model.zero_grad()
+        self.train()
+        self.zero_grad()
         self.optim.zero_grad()
         if loss is None:
             out = self(x)
@@ -173,24 +173,6 @@ class MLPHeterogenousTails(MLPNet):
         for model_tail in self.model_tails:
             outs.append(model_tail(x))
         return outs
-
-    def training_step(self, x=None, y=None, loss=None):
-        '''
-        Takes a single training step: one forward and one backwards pass
-        '''
-        assert loss is not None, 'Heterogenous head should have custom loss defined elsewhere as sum of losses from the multi-tails'
-        self.model_body.train()
-        self.model_tails.train()
-        self.model_body.zero_grad()
-        self.model_tails.zero_grad()
-        self.optim.zero_grad()
-        loss.backward()
-        if self.clip_grad:
-            logger.debug(f'Clipping gradient...')
-            torch.nn.utils.clip_grad_norm(self.model_body.parameters(), self.clip_grad_val)
-            torch.nn.utils.clip_grad_norm(self.model_tails.parameters(), self.clip_grad_val)
-        self.optim.step()
-        return loss
 
     def __str__(self):
         '''Overriding so that print() will print the whole network'''
