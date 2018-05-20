@@ -8,12 +8,15 @@ class Net(ABC):
     Mostly, implement just the abstract methods and properties.
     '''
 
-    def __init__(self, net_spec, algorithm, body):
+    def __init__(self, net_spec, algorithm, in_dim, out_dim):
         '''
+        @param {dict} net_spec is the spec for the net
         @param {*} algorithm is the module that uses network to act or train
-        @param {*} body has properties like observation_space, action_space and dim for constructing the input/output layers of network. This param could also be an array for hydra architecture.
+        @param {int|list} in_dim is the input dimension(s) for the network. Usually use in_dim=body.state_dim
+        @param {int|list} out_dim is the output dimension(s) for the network. Usually use out_dim=body.action_dim
         '''
         self.net_spec = net_spec
         self.algorithm = algorithm
-        self.body = body
+        self.in_dim = in_dim
+        self.out_dim = out_dim
         self.agent_spec = algorithm.agent.agent_spec

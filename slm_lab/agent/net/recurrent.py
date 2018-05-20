@@ -22,7 +22,7 @@ class RecurrentNet(Net, nn.Module):
          3. self.out_layers
     '''
 
-    def __init__(self, net_spec, algorithm, body):
+    def __init__(self, net_spec, algorithm, in_dim, out_dim):
         '''
         net_spec:
         hid_layers: list containing dimensions of the hidden layers. The last element of the list is should be the dimension of the hidden state for the recurrent layer. The other elements in the list are the dimensions of the MLP (if desired) which is to transform the state space.
@@ -42,8 +42,10 @@ class RecurrentNet(Net, nn.Module):
         polyak_weight: ratio of polyak weight update
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
+        # use generic multi-output for RNN
+        out_dim = np.reshape(out_dim, -1).tolist()
         nn.Module.__init__(self)
-        super(RecurrentNet, self).__init__(net_spec, algorithm, body)
+        super(RecurrentNet, self).__init__(net_spec, algorithm, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             num_rnn_layers=1,
@@ -70,7 +72,7 @@ class RecurrentNet(Net, nn.Module):
             'gpu',
         ])
 
-        dims = [self.body.state_dim] + self.hid_layers[:-1]
+        dims = [self.in_dim] + self.hid_layers[:-1]
         self.state_proc_model = net_util.build_sequential(dims, self.hid_layers_activation)
         # RNN layer
         self.rnn_input_dim = dims[-1]
@@ -81,13 +83,12 @@ class RecurrentNet(Net, nn.Module):
             num_layers=self.num_rnn_layers,
             batch_first=True)
         # tails
-        out_dim = np.reshape(self.body.action_dim, -1).tolist()
-        self.model_tails = nn.ModuleList([nn.Linear(self.rnn_hidden_size, out_d) for out_d in out_dim])
+        self.model_tails = nn.ModuleList([nn.Linear(self.rnn_hidden_size, out_d) for out_d in self.out_dim])
+
         net_util.init_layers(self.modules())
         if torch.cuda.is_available() and self.gpu:
             for module in self.modules():
                 module.cuda()
-
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         logger.info(f'loss fn: {self.loss_fn}')
@@ -103,7 +104,7 @@ class RecurrentNet(Net, nn.Module):
         '''The feedforward step. Input is batch_size x seq_len x state_dim'''
         # Unstack input to (batch_size x seq_len) x state_dim in order to transform all state inputs
         batch_size = x.size(0)
-        x = x.view(-1, self.body.state_dim)
+        x = x.view(-1, self.in_dim)
         x = self.state_proc_model(x)
         # Restack to batch_size x seq_len x rnn_input_dim
         x = x.view(-1, self.seq_len, self.rnn_input_dim)
@@ -155,5 +156,5 @@ class RecurrentNet(Net, nn.Module):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
         self.optim_spec['lr'] = old_lr * self.decay_lr_factor
-        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
+        logger.info(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)

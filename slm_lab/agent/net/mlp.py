@@ -111,7 +111,7 @@ class MLPNet(Net, nn.Module):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
         self.optim_spec['lr'] = old_lr * self.decay_lr_factor
-        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
+        logger.info(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)
 
 
