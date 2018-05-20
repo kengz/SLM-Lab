@@ -177,6 +177,7 @@ class MLPHeterogenousTails(MLPNet):
     def __str__(self):
         '''Overriding so that print() will print the whole network'''
         s = self.model_body.__str__()
+        s += '\nTail:'
         for model_tail in self.model_tails:
             s += '\n' + model_tail.__str__()
         return s
@@ -189,13 +190,13 @@ class MultiMLPNet(Net, nn.Module):
 
     def __init__(self, net_spec, algorithm, body_list):
         '''
-        Multi state processing heads, single shared body, and multi action heads.
-        There is one state and action head per environment
+        Multi state processing heads, single shared body, and multi action tails.
+        There is one state and action head per body/environment
         Example:
 
-          Action env 1     Action env 2
+          env 1 state       env 2 state
          _______|______    _______|______
-        |  Act head 1  |  |  Act head 2  |
+        |    head 1    |  |    head 2    |
         |______________|  |______________|
                 |                  |
                 |__________________|
@@ -206,10 +207,10 @@ class MultiMLPNet(Net, nn.Module):
                  ________|_______
                 |                |
          _______|______    ______|_______
-        | State head 1 |  | State head 2 |
+        |    tail 1    |  |    tail 2    |
         |______________|  |______________|
-
-        TODO add special in dim stuff
+                |                |
+           env 1 action      env 2 action
         '''
         nn.Module.__init__(self)
         super(MultiMLPNet, self).__init__(net_spec, algorithm, body_list)
@@ -250,167 +251,82 @@ class MultiMLPNet(Net, nn.Module):
         if len(self.tail_hid_layers) == 1:
             self.tail_hid_layers = self.tail_hid_layers * len(body_list)
 
-        self.state_heads_layers = []
-        self.state_heads_models = self.make_state_heads(body_list)
-
-        self.body_layers = []
-        self.body_model = self.make_shared_body(self.state_out_concat)
-
-        self.action_tails_layers = []
-        self.action_tails_models = self.make_action_tails(body_list)
-
-        self.init_params()
+        self.model_heads = self.build_model_heads(body_list)
+        heads_out_dim = np.sum([head[-1].out_features for head in self.model_heads])
+        dims = [heads_out_dim] + self.body_hid_layers
+        self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
+        self.model_tails = self.build_model_tails(body_list)
+        net_util.init_layers(self.modules())
         if torch.cuda.is_available() and self.gpu:
-            for l in self.state_heads_models:
-                l.cuda()
-            self.body_model.cuda()
-            for l in self.action_tails_models:
-                l.cuda()
-        # Init other net variables
-        self.params = []
-        for model in self.state_heads_models:
-            self.params.extend(list(model.parameters()))
-        self.params.extend(list(self.body_model.parameters()))
-        for model in self.action_tails_models:
-            self.params.extend(list(model.parameters()))
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
+            for module in self.modules():
+                module.cuda()
+
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
+        self.optim = net_util.get_optim(self, self.optim_spec)
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
-        logger.info(f'decay lr: {self.decay_lr_factor}')
 
-    def make_state_heads(self, body_list):
-        '''Creates each state head. These are stored as Sequential models in self.state_heads_models'''
-        assert len(self.head_hid_layers) == len(body_list), 'multihead head hid_params inconsistent with number of bodies'
-        # TODO use actual last layers instead of numbers to track interface to body
-        self.state_out_concat = 0
-        state_heads_models = []
+    def build_model_heads(self, body_list):
+        '''Build each model_head. These are stored as Sequential models in model_heads'''
+        assert len(self.head_hid_layers) == len(body_list), 'Hydra head hid_params inconsistent with number of bodies'
+        model_heads = nn.ModuleList()
         for body, hid_layers in zip(body_list, self.head_hid_layers):
-            layers = []
-            for i, layer in enumerate(hid_layers):
-                in_D = body.state_dim if i == 0 else hid_layers[i - 1]
-                out_D = hid_layers[i]
-                layers.append(nn.Linear(in_D, out_D))
-                layers.append(net_util.get_activation_fn(self.hid_layers_activation))
-            self.state_out_concat += hid_layers[-1]
-            self.state_heads_layers.append(layers)
-            state_heads_models.append(nn.Sequential(*layers))
-        return state_heads_models
+            dims = [body.state_dim] + hid_layers
+            model_head = net_util.build_sequential(dims, self.hid_layers_activation)
+            model_heads.append(model_head)
+        return model_heads
 
-    def make_shared_body(self, head_out_concat):
-        '''Creates the shared body of the network. Stored as a Sequential model in self.body_model'''
-        for i, layer in enumerate(self.body_hid_layers):
-            in_D = head_out_concat if i == 0 else self.body_hid_layers[i - 1]
-            out_D = layer
-            self.body_layers.append(nn.Linear(in_D, out_D))
-            self.body_layers.append(net_util.get_activation_fn(self.hid_layers_activation))
-        return nn.Sequential(*self.body_layers)
-
-    def make_action_tails(self, body_list):
-        '''Creates each action head. These are stored as Sequential models in self.action_tails_models'''
-        action_tails_models = []
+    def build_model_tails(self, body_list):
+        '''Build each model_tail. These are stored as Sequential models in model_tails'''
+        assert len(self.tail_hid_layers) == len(body_list), 'Hydra tail hid_params inconsistent with number of bodies'
+        model_tails = nn.ModuleList()
         for body, hid_layers in zip(body_list, self.tail_hid_layers):
-            layers = []
-            for i, layer in enumerate(hid_layers):
-                in_D = self.body_hid_layers[-1] if i == 0 else hid_layers[i - 1]
-                out_D = hid_layers[i]
-                layers.append(nn.Linear(in_D, out_D))
-                layers.append(net_util.get_activation_fn(self.hid_layers_activation))
-            # final output layer, no activation
-            in_D = self.body_hid_layers[-1] if len(hid_layers) == 0 else hid_layers[-1]
-            layers.append(nn.Linear(in_D, body.action_dim))
-            self.action_tails_layers.append(layers)
-            action_tails_models.append(nn.Sequential(*layers))
-        return action_tails_models
+            dims = hid_layers
+            model_tail = net_util.build_sequential(dims, self.hid_layers_activation)
+            model_tail.add_module(str(len(model_tail)), nn.Linear(dims[-1], body.action_dim))
+            model_tails.append(model_tail)
+        return model_tails
 
-    def forward(self, states):
+    def forward(self, xs):
         '''The feedforward step'''
-        state_outs = []
-        final_outs = []
-        for i, state in enumerate(states):
-            state_outs.append(self.state_heads_models[i](state))
-        state_outs = torch.cat(state_outs, dim=1)
-        body_out = self.body_model(state_outs)
-        for i, act_model in enumerate(self.action_tails_models):
-            final_outs.append(act_model(body_out))
-        return final_outs
+        head_xs = []
+        for model_head, x in zip(self.model_heads, xs):
+            head_xs.append(model_head(x))
+        head_xs = torch.cat(head_xs, dim=1)
+        body_x = self.body_model(head_xs)
+        outs = []
+        for model_tail in self.model_tails:
+            outs.append(model_tail(body_x))
+        return outs
 
-    def set_train_eval(self, train=True):
-        '''Helper function to set model in training or evaluation mode'''
-        nets = self.state_heads_models + self.action_tails_models
-        for net in nets:
-            if train:
-                net.train()
-                self.body_model.train()
-            else:
-                net.eval()
-                self.body_model.eval()
-
-    def training_step(self, x, y):
+    def training_step(self, xs=None, ys=None, loss=None):
         '''
         Takes a single training step: one forward and one backwards pass. Both x and y are lists of the same length, one x and y per environment
         '''
-        self.set_train_eval(True)
+        self.train()
+        self.zero_grad()
         self.optim.zero_grad()
-        outs = self(x)
-        total_loss = 0
-        losses = []
-        for i, out in enumerate(outs):
-            loss = self.loss_fn(out, y[i])
-            total_loss += loss
-            losses.append(loss)
+        if loss is None:
+            outs = self(xs)
+            total_loss = torch.tensor(0.0)
+            for out, y in zip(outs, ys):
+                loss = self.loss_fn(out, y)
+                total_loss += loss
         total_loss.backward()
         if self.clip_grad:
-            torch.nn.utils.clip_grad_norm(self.params, self.clip_grad_val)
+            logger.debug(f'Clipping gradient...')
+            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.clip_grad_val)
         self.optim.step()
-        nanflat_loss_a = [loss.data.item() for loss in losses]
-        return nanflat_loss_a
-
-    def wrap_eval(self, x):
-        '''
-        Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
-        '''
-        self.set_train_eval(False)
-        return [y.data for y in self(x)]
-
-    def init_params(self):
-        '''
-        Initializes all of the model's parameters using xavier uniform initialization.
-        Biases are all set to 0.01
-        '''
-        layers = []
-        for l in self.state_heads_layers:
-            layers.extend(l)
-        layers.extend(self.body_layers)
-        for l in self.action_tails_layers:
-            layers.extend(l)
-        net_util.init_layers(layers, 'Linear')
-
-    def gather_trainable_params(self):
-        '''
-        Gathers parameters that should be trained into a list returns: copy of a list of fixed params
-        '''
-        return [param.clone() for param in self.params]
-
-    def gather_fixed_params(self):
-        '''
-        Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
-        '''
-        return None
+        return total_loss
 
     def __str__(self):
         '''Overriding so that print() will print the whole network'''
-        s = ""
-        for net in self.state_heads_models:
+        s = 'Head'
+        for net in self.model_heads:
             s += net.__str__() + '\n'
+        s += '\nBody:\n'
         s += self.body_model.__str__()
-        for net in self.action_tails_models:
+        s += '\nTail:'
+        for net in self.model_tails:
             s += '\n' + net.__str__()
         return s
-
-    def update_lr(self):
-        assert 'lr' in self.optim_spec
-        old_lr = self.optim_spec['lr']
-        self.optim_spec['lr'] = old_lr * self.decay_lr_factor
-        logger.info(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
