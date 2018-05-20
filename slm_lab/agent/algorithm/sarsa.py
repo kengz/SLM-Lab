@@ -165,9 +165,9 @@ class SARSA(Algorithm):
                 q_targets = q_targets.cuda()
             y = Variable(q_targets)
             loss = self.net.training_step(batch['states'], y)
-            logger.debug(f'loss {loss.data[0]}')
+            logger.debug(f'loss {loss.data.item()}')
             self.to_train = 0
-            return loss.data[0]
+            return loss.data.item()
         else:
             logger.debug3('NOT training')
             return np.nan

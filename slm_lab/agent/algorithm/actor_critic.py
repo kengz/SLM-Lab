@@ -189,7 +189,7 @@ class ActorCritic(Reinforce):
         if self.to_train == 1:
             batch = self.sample()
             # Calculate policy loss (actor)
-            policy_loss = self.get_policy_loss(batch)
+            policy_loss = self.calc_policy_loss(batch)
             # Calculate state-value loss (critic)
             target = self.get_target(batch, critic_specific=True)
             states = batch['states']
@@ -205,19 +205,19 @@ class ActorCritic(Reinforce):
             # Combine losses and train
             self.net.optim.zero_grad()
             total_loss = self.policy_loss_weight * policy_loss + self.val_loss_weight * val_loss
-            loss = total_loss.data[0]
+            loss = total_loss.data.item()
             total_loss.backward()
             if self.net.clamp_grad:
                 logger.debug('Clipping actorcritic gradient...')
                 torch.nn.utils.clip_grad_norm(
                     self.net.params, self.net.clamp_grad_val)
-            logger.debug2(f'Combined AC gradient norms: {self.net.get_grad_norms()}')
+            logger.debug2(f'Combined AC gradient norms: {net_util.get_grad_norms(self.net)}')
             self.net.optim.step()
             self.to_train = 0
             self.saved_log_probs = []
             self.entropy = []
             logger.debug('Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}'.format(
-                val_loss.data[0], abs(policy_loss.data[0]), loss
+                val_loss.data.item(), abs(policy_loss.data.item()), loss
             ))
             return loss
         else:
@@ -248,14 +248,14 @@ class ActorCritic(Reinforce):
     def train_actor(self, batch):
         '''Trains the actor when the actor and critic are separate networks'''
         self.net.optim.zero_grad()
-        policy_loss = self.get_policy_loss(batch)
-        loss = policy_loss.data[0]
+        policy_loss = self.calc_policy_loss(batch)
+        loss = policy_loss.data.item()
         policy_loss.backward()
         if self.net.clamp_grad:
             logger.debug("Clipping actor gradient...")
             torch.nn.utils.clip_grad_norm(
                 self.net.params, self.net.clamp_grad_val)
-        logger.debug(f'Actor gradient norms: {self.net.get_grad_norms()}')
+        logger.debug(f'Actor gradient norms: {net_util.get_grad_norms(self.critic)}')
         self.net.optim.step()
         self.to_train = 0
         self.saved_log_probs = []
@@ -263,9 +263,9 @@ class ActorCritic(Reinforce):
         logger.debug(f'Policy loss: {loss}')
         return loss
 
-    def get_policy_loss(self, batch):
+    def calc_policy_loss(self, batch):
         '''Returns the policy loss for a batch of data.'''
-        return super(ActorCritic, self).get_policy_loss(batch)
+        return super(ActorCritic, self).calc_policy_loss(batch)
 
     def train_critic_batch(self, batch):
         '''Trains the critic using batches of data. Algorithm doesn't wait until episode has ended to train'''
@@ -275,8 +275,8 @@ class ActorCritic(Reinforce):
             if torch.cuda.is_available() and self.net.gpu:
                 target = target.cuda()
             y = Variable(target)
-            loss = self.critic.training_step(batch['states'], y).data[0]
-            logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
+            loss = self.critic.training_step(batch['states'], y).data.item()
+            logger.debug(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
         return loss
 
     def train_critic_episodic(self, batch):
@@ -295,8 +295,8 @@ class ActorCritic(Reinforce):
             if torch.cuda.is_available() and self.net.gpu:
                 target = target.cuda()
             y = Variable(target)
-            loss = self.critic.training_step(x, y).data[0]
-            logger.debug2(f'Critic grad norms: {self.critic.get_grad_norms()}')
+            loss = self.critic.training_step(x, y).data.item()
+            logger.debug2(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
         return loss
 
     def calc_advantage(self, batch):

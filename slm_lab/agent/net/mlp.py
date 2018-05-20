@@ -17,33 +17,27 @@ class MLPNet(Net, nn.Module):
     def __init__(self, net_spec, algorithm, body):
         '''
         net_spec:
-        in_dim: dimension of the inputs
         hid_layers: list containing dimensions of the hidden layers
-        out_dim: dimension of the ouputs
         hid_layers_activation: activation function for the hidden layers
         optim_spec: parameters for initializing the optimizer
         loss_spec: measure of error between model predictions and correct outputs
         clamp_grad: whether to clamp the gradient
+        clamp_grad_val: the clamp value
+        decay_lr: whether to decay learning rate
+        decay_lr_factor: the multiplicative decay factor
+        decay_lr_frequency: how many total timesteps per decay
+        decay_lr_min_timestep: minimum amount of total timesteps before starting decay
+        update_type: method to update network weights: 'replace' or 'polyak'
+        update_frequency: how many total timesteps per update
+        polyak_weight: ratio of polyak weight update
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
-        @example:
-        dict(
-            1000,
-            [512, 256, 128],
-            10,
-            hid_layers_activation='relu',
-            optim_spec={'name': 'Adam'},
-            loss_spec={'name': 'mse_loss'},
-            clamp_grad=True,
-            clamp_grad_val=2.0,
-            gpu=True,
-            decay_lr_factor=0.9)
         '''
         nn.Module.__init__(self)
         super(MLPNet, self).__init__(net_spec, algorithm, body)
         # set default
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},
-            loss_spec={'name': 'mse_loss'},
+            loss_spec={'name': 'MSELoss'},
             clamp_grad=False,
             clamp_grad_val=1.0,
             decay_lr_factor=0.9,
@@ -68,85 +62,56 @@ class MLPNet(Net, nn.Module):
             'polyak_weight',
             'gpu',
         ])
-        # Create net and initialize params
-        self.in_dim = self.body.state_dim
-        self.out_dim = self.body.action_dim
-        self.layers = []
-        for i, layer in enumerate(self.hid_layers):
-            in_D = self.in_dim if i == 0 else self.hid_layers[i - 1]
-            out_D = self.hid_layers[i]
-            self.layers.append(nn.Linear(in_D, out_D))
-            self.layers.append(net_util.get_activation_fn(self.hid_layers_activation))
-        in_D = self.hid_layers[-1] if len(self.hid_layers) > 0 else self.in_dim
-        self.layers.append(nn.Linear(in_D, self.out_dim))
-        self.model = nn.Sequential(*self.layers)
-        self.init_params()
+
+        layers = []
+        in_out_pairs = list(zip(
+            [self.body.state_dim] + self.hid_layers,
+            self.hid_layers + [self.body.action_dim]))
+        for in_d, out_d in in_out_pairs[:-1]:  # all but last
+            layers.append(nn.Linear(in_d, out_d))
+            layers.append(net_util.get_activation_fn(self.hid_layers_activation)())
+        # last layer no activation
+        layers.append(nn.Linear(*in_out_pairs[-1]))
+        self.model = nn.Sequential(*layers)
+        net_util.init_layers(self.model.modules())
         if torch.cuda.is_available() and self.gpu:
             self.model.cuda()
-        # Init other net variables
-        self.params = list(self.model.parameters())
-        self.optim = net_util.get_optim(self, self.optim_spec)
+
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
+        self.optim = net_util.get_optim(self, self.optim_spec)
+
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
-        logger.info(f'decay lr: {self.decay_lr_factor}')
 
     def forward(self, x):
         '''The feedforward step'''
         return self.model(x)
 
-    def training_step(self, x, y):
-        '''Takes a single training step: one forward and one backwards pass'''
+    def training_step(self, x=None, y=None, loss=None):
+        '''
+        Takes a single training step: one forward and one backwards pass
+        More most RL usage, we have custom, often complication, loss functions. Compute its value and put it in a pytorch tensor then pass it in as loss
+        '''
         self.model.train()
         self.model.zero_grad()
         self.optim.zero_grad()
-        out = self(x)
-        loss = self.loss_fn(out, y)
+        if loss is None:
+            out = self(x)
+            loss = self.loss_fn(out, y)
         loss.backward()
         if self.clamp_grad:
             logger.debug(f'Clipping gradient...')
-            torch.nn.utils.clip_grad_norm(
-                self.model.parameters(), self.clamp_grad_val)
+            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.clamp_grad_val)
         self.optim.step()
         return loss
 
     def wrap_eval(self, x):
         '''
-        Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
+        Completes one feedforward step, ensuring net is set to evaluation model
+        returns: network output given input x
         '''
         self.eval()
         return self(x).data
-
-    def init_params(self):
-        '''
-        Initializes all of the model's parameters using xavier uniform initialization.
-        Note: There appears to be unreproduceable behaviours in pyTorch for xavier init
-        Sometimes the trainable params tests pass (see nn_test.py), other times they dont.
-        Biases are all set to 0.01
-        '''
-        net_util.init_layers(self.layers, 'Linear')
-
-    def gather_trainable_params(self):
-        '''
-        Gathers parameters that should be trained into a list returns: copy of a list of fixed params
-        '''
-        return [param.clone() for param in self.params]
-
-    def gather_fixed_params(self):
-        '''
-        Gathers parameters that should be fixed into a list returns: copy of a list of fixed params
-        '''
-        return None
-
-    def get_grad_norms(self):
-        '''Returns a list of the norm of the gradients for all parameters'''
-        norms = []
-        for i, param in enumerate(self.params):
-            grad_norm = torch.norm(param.grad.data)
-            if grad_norm is None:
-                logger.info(f'Param with None grad: {param}, layer: {i}')
-            norms.append(grad_norm)
-        return norms
 
     def update_lr(self):
         assert 'lr' in self.optim_spec
@@ -162,28 +127,6 @@ class MLPHeterogenousTails(MLPNet):
     '''
 
     def __init__(self, net_spec, algorithm, body):
-        '''
-        in_dim: dimension of the inputs
-        hid_layers: list containing dimensions of the hidden layers
-        out_dim: list containing the dimensions of the ouputs
-        hid_layers_activation: activation function for the hidden layers
-        optim_spec: parameters for initializing the optimizer
-        loss_spec: measure of error between model predictions and correct outputs
-        clamp_grad: whether to clamp the gradient
-        gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
-        @example:
-        dict(
-            1000,
-            [512, 256, 128],
-            [1, 1],
-            hid_layers_activation='relu',
-            optim_spec={'name': 'Adam'},
-            loss_spec={'name': 'mse_loss'},
-            clamp_grad=True,
-            clamp_grad_val=2.0,
-            gpu=True,
-            decay_lr_factor=0.9)
-        '''
         Net.__init__(self, net_spec, algorithm, body)
         # set default
         util.set_attr(self, dict(
@@ -310,26 +253,7 @@ class MultiMLPNet(Net, nn.Module):
         | State head 1 |  | State head 2 |
         |______________|  |______________|
 
-        in_dim: list of lists containing dimensions of the state processing heads
-        hid_layers: list containing dimensions of the hidden layers
-        out_dim: list of lists containing dimensions of the ouputs
-        hid_layers_activation: activation function for the hidden layers
-        optim_spec: parameters for initializing the optimizer
-        loss_spec: measure of error between model predictions and correct outputs
-        clamp_grad: whether to clamp the gradient
-        gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
-        @example:
-        net = dict(
-            [[800, 200],[400, 200]],
-             [100, 50, 25],
-             [[10], [15]],
-             hid_layers_activation='relu',
-             optim_spec={'name': 'Adam'},
-             loss_spec={'name': 'mse_loss'},
-             clamp_grad=True,
-             clamp_grad_val2.0,
-             gpu=False,
-             decay_lr_factor=0.9)
+        TODO add special in dim stuff
         '''
         nn.Module.__init__(self)
         super(MultiMLPNet, self).__init__(net_spec, algorithm, body_list)
@@ -484,7 +408,7 @@ class MultiMLPNet(Net, nn.Module):
         if self.clamp_grad:
             torch.nn.utils.clip_grad_norm(self.params, self.clamp_grad_val)
         self.optim.step()
-        nanflat_loss_a = [loss.data[0] for loss in losses]
+        nanflat_loss_a = [loss.data.item() for loss in losses]
         return nanflat_loss_a
 
     def wrap_eval(self, x):

@@ -97,40 +97,32 @@ class Reinforce(Algorithm):
             logger.debug2(f'Training...')
             # We only care about the rewards from the batch
             rewards = self.sample()['rewards']
-            logger.debug3(f'Length first epi: {len(rewards[0])}')
-            logger.debug3(f'Len log probs: {len(self.saved_log_probs)}')
-            self.net.optim.zero_grad()
-            policy_loss = self.get_policy_loss(rewards)
-            loss = policy_loss.data[0]
-            policy_loss.backward()
-            if self.net.clamp_grad:
-                logger.debug("Clipping gradient...")
-                torch.nn.utils.clip_grad_norm(self.net.parameters(), self.net.clamp_grad_val)
-            logger.debug2(f'Gradient norms: {self.net.get_grad_norms()}')
-            self.net.optim.step()
+
+            loss = self.calc_policy_loss(rewards)
+            self.net.training_step(loss=loss)
+
             self.to_train = 0
             self.saved_log_probs = []
             self.entropy = []
             logger.debug(f'Policy loss: {loss}')
-            return loss
+            return loss.data.item()
         else:
             return np.nan
 
-    def get_policy_loss(self, batch):
+    def calc_policy_loss(self, batch):
         '''
         Returns the policy loss for a batch of data.
         For REINFORCE just rewards are passed in as the batch
         '''
         advantage = self.calc_advantage(batch)
         advantage = self.check_sizes(advantage)
-        policy_loss = []
+        policy_loss = torch.tensor(0.0)
         for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
-            logger.debug3(f'log prob: {log_prob.data[0]}, advantage: {a}, entropy: {e.data[0]}')
+            logger.debug3(f'log prob: {log_prob.data.item()}, advantage: {a}, entropy: {e.data.item()}')
             if self.add_entropy:
-                policy_loss.append(-log_prob * a - self.entropy_weight * e)
+                policy_loss += (-log_prob * a - self.entropy_weight * e)
             else:
-                policy_loss.append(-log_prob * a)
-        policy_loss = torch.cat(policy_loss).sum()
+                policy_loss += (-log_prob * a)
         return policy_loss
 
     def check_sizes(self, advantage):
@@ -160,16 +152,17 @@ class Reinforce(Algorithm):
         advantage = []
         logger.debug3(f'Raw rewards: {raw_rewards}')
         for epi_rewards in raw_rewards:
-            rewards = []
             big_r = 0
-            for r in epi_rewards[::-1]:
-                big_r = r + self.gamma * big_r
-                rewards.insert(0, big_r)
-            rewards = torch.Tensor(rewards)
-            logger.debug3(f'Rewards: {rewards}')
-            rewards = (rewards - rewards.mean()) / (rewards.std() + np.finfo(np.float32).eps)
-            logger.debug3(f'Normalized rewards: {rewards}')
-            advantage.append(rewards)
+            T = len(epi_rewards)
+            returns = np.empty(T, 'float32')
+            for t in reversed(range(T)):
+                big_r = epi_rewards[t] + self.gamma * big_r
+                returns[t] = big_r
+            logger.debug3(f'Rewards: {returns}')
+            returns = (returns - returns.mean()) / (returns.std() + 1e-08)
+            returns = torch.from_numpy(returns)
+            logger.debug3(f'Normalized returns: {returns}')
+            advantage.append(returns)
         advantage = torch.cat(advantage)
         return advantage
 

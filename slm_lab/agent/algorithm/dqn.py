@@ -132,7 +132,7 @@ class VanillaDQN(SARSA):
                         q_targets = q_targets.cuda()
                     y = Variable(q_targets)
                     loss = self.net.training_step(batch['states'], y)
-                    batch_loss += loss.data[0]
+                    batch_loss += loss.data.item()
                 batch_loss /= self.training_iters_per_batch
                 total_loss += batch_loss
             total_loss /= self.training_epoch
@@ -227,9 +227,9 @@ class DQNBase(VanillaDQN):
 
     def update_nets(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
-        t = space_clock.get('total_t')
+        total_t = space_clock.get('total_t')
         if self.net.update_type == 'replace':
-            if t % self.net.update_frequency == 0:
+            if total_t % self.net.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
                 self.target_net = net_util.load_params(self.target_net, net_util.flatten_params(self.net))
                 self.online_net = self.target_net
@@ -266,9 +266,9 @@ class DoubleDQN(DQN):
     def update_nets(self):
         res = super(DoubleDQN, self).update_nets()
         space_clock = util.s_get(self, 'aeb_space.clock')
-        t = space_clock.get('total_t')
+        total_t = space_clock.get('total_t')
         if self.net.update_type == 'replace':
-            if t % self.net.update_frequency == 0:
+            if total_t % self.net.update_frequency == 0:
                 self.online_net = self.net
                 self.eval_net = self.target_net
         elif self.net.update_type == 'polyak':
@@ -490,9 +490,9 @@ class MultiHeadDQN(MultitaskDQN):
     def update_nets(self):
         # NOTE: Once polyak updating for multi-headed networks is supported via updates to flatten_params and load_params then this can be removed
         space_clock = util.s_get(self, 'aeb_space.clock')
-        t = space_clock.get('total_t')
+        total_t = space_clock.get('total_t')
         if self.net.update_type == 'replace':
-            if t % self.net.update_frequency == 0:
+            if total_t % self.net.update_frequency == 0:
                 self.target_net = net_util.load_params(self.target_net, net_util.flatten_params(self.net))
                 self.online_net = self.target_net
                 self.eval_net = self.target_net
