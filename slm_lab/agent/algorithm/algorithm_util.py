@@ -218,8 +218,8 @@ def act_with_softmax(algorithm, state, body, gpu):
     state_seq = body.memory.state_buffer.maxlen > 0
     torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen)
     out = algorithm.get_actor_output(torch_state, evaluate=False)
-    if type(out) is list:
-        out = out[0]
+    # if type(out) is list:
+    #     out = out[0]
     out.squeeze_(dim=0)
     probs = F.softmax(out, dim=0)
     m = Categorical(probs)
@@ -245,11 +245,13 @@ def act_with_gaussian(algorithm, state, body, gpu):
     '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
     state_seq = body.memory.state_buffer.maxlen > 0
     torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen)
-    [mu, sigma] = algorithm.get_actor_output(torch_state, evaluate=False)
+    mu, sigma = algorithm.get_actor_output(torch_state, evaluate=False)
+    mu.squeeze_(dim=0)
+    sigma.squeeze_(dim=0)
     sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0
     m = Normal(mu, sigma)
     action = m.sample()
-    action = torch.clip(action, -algorithm.continuous_action_clip, algorithm.continuous_action_clip)
+    action = torch.clamp(action, -algorithm.continuous_action_clip, algorithm.continuous_action_clip)
     logger.debug2(f'Action: {action.data.item()}, log prob: {m.log_prob(action).data.item()}')
     algorithm.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution

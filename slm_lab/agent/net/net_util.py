@@ -31,15 +31,6 @@ def get_optim(cls, optim_spec):
     return optim
 
 
-# TODO why is this not covered by above?
-def get_optim_multinet(params, optim_spec):
-    '''Helper to parse optim param and construct optim for net'''
-    OptimClass = getattr(torch.optim, ps.get(optim_spec, 'name', 'Adam'))
-    optim_spec = ps.omit(optim_spec, 'name')
-    optim = OptimClass(params, **optim_spec)
-    return optim
-
-
 def init_gru_layer(layer):
     '''Initializes a GRU layer in with xavier_uniform initialization and 0 biases'''
     for layer_p in layer._all_weights:

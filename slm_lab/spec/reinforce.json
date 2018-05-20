@@ -233,5 +233,66 @@
         }
       }]
     }
+  },
+  "reinforce_pendulum": {
+    "agent": [{
+      "name": "Reinforce",
+      "algorithm": {
+        "name": "Reinforce",
+        "action_policy": "default",
+        "gamma": 0.95,
+        "add_entropy": false,
+        "entropy_weight": 0.01,
+        "continuous_action_clip": 2.0,
+        "training_frequency": 1
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPdefault",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "decay_lr": true,
+        "decay_lr_frequency": 1000,
+        "decay_lr_min_timestep": 600
+      }
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "max_timestep": null,
+      "max_episode": 500
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 1,
+      "max_trial": 40,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.9, 0.9999]
+        },
+        "net": {
+          "hid_layers__choice": [
+            [16],
+            [32],
+            [64]
+          ],
+          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.2]
+          }
+        }
+      }]
+    }
   }
 }

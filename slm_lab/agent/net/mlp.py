@@ -73,13 +73,13 @@ class MLPNet(Net, nn.Module):
         # last layer no activation
         layers.append(nn.Linear(*in_out_pairs[-1]))
         self.model = nn.Sequential(*layers)
-        net_util.init_layers(self.model.modules())
+        net_util.init_layers(self.modules())
         if torch.cuda.is_available() and self.gpu:
-            self.model.cuda()
+            for module in self.modules():
+                module.cuda()
 
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
 
@@ -111,7 +111,7 @@ class MLPNet(Net, nn.Module):
         returns: network output given input x
         '''
         self.eval()
-        return self(x).data
+        return self(x)
 
     def update_lr(self):
         assert 'lr' in self.optim_spec
@@ -127,11 +127,12 @@ class MLPHeterogenousTails(MLPNet):
     '''
 
     def __init__(self, net_spec, algorithm, body):
+        nn.Module.__init__(self)
         Net.__init__(self, net_spec, algorithm, body)
         # set default
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},
-            loss_spec={'name': 'mse_loss'},
+            loss_spec={'name': 'MSELoss'},
             clip_grad=False,
             clip_grad_val=1.0,
             decay_lr_factor=0.9,
@@ -156,74 +157,60 @@ class MLPHeterogenousTails(MLPNet):
             'polyak_weight',
             'gpu',
         ])
-        # Create net and initialize params
-        self.in_dim = self.body.state_dim
-        # set this below to something like  self.body.action_dim = [self.body.action_dim] * 2
-        self.out_dim = self.body.action_dim
-        self.layers = []
-        # Init network body
-        for i, layer in enumerate(self.hid_layers):
-            in_D = self.in_dim if i == 0 else self.hid_layers[i - 1]
-            out_D = self.hid_layers[i]
-            self.layers.append(nn.Linear(in_D, out_D))
-            self.layers.append(net_util.get_activation_fn(self.hid_layers_activation))
-        in_D = self.hid_layers[-1] if len(self.hid_layers) > 0 else self.in_dim
-        self.body = nn.Sequential(*self.layers)
-        # Init network output heads
-        self.out_layers = []
-        for i, dim in enumerate(self.out_dim):
-            self.out_layers.append(nn.Linear(in_D, dim))
-        self.layers.append(self.out_layers)
-        self.init_params()
+
+        layers = []
+        in_out_pairs = list(zip(
+            [self.body.state_dim] + self.hid_layers,
+            self.hid_layers + [self.body.action_dim]))
+        for in_d, out_d in in_out_pairs[:-1]:  # all but last
+            layers.append(nn.Linear(in_d, out_d))
+            layers.append(net_util.get_activation_fn(self.hid_layers_activation)())
+        self.model_body = nn.Sequential(*layers)
+        # multi-tail output layer
+        in_d, out_ds = in_out_pairs[-1]
+        self.model_tails = nn.ModuleList([nn.Linear(in_d, out_d) for out_d in out_ds])
+        net_util.init_layers(self.modules())
         if torch.cuda.is_available() and self.gpu:
-            self.body.cuda()
-            for l in self.out_layers:
-                l.cuda()
-        # Init other net variables
-        self.params = list(self.body.parameters())
-        for layer in self.out_layers:
-            self.params.extend(list(layer.parameters()))
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
+            for module in self.modules():
+                module.cuda()
+
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
+        self.optim = net_util.get_optim(self, self.optim_spec)
         logger.info(f'loss fn: {self.loss_fn}')
         logger.info(f'optimizer: {self.optim}')
-        logger.info(f'decay lr: {self.decay_lr_factor}')
 
     def forward(self, x):
         '''The feedforward step'''
-        x = self.body(x)
+        x = self.model_body(x)
         outs = []
-        for layer in self.out_layers:
-            outs.append(layer(x))
+        for model_tail in self.model_tails:
+            outs.append(model_tail(x))
         return outs
 
-    def training_step(self, x, y):
+    def training_step(self, x=None, y=None, loss=None):
         '''
         Takes a single training step: one forward and one backwards pass
         '''
-        raise ValueError('Should not be called on a net with heterogenous heads')
-        return np.nan
-
-    def wrap_eval(self, x):
-        '''
-        Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
-        '''
-        self.eval()
-        return [o.data for o in self(x)]
+        assert loss is not None, 'Heterogenous head should have custom loss defined elsewhere as sum of losses from the multi-tails'
+        self.model_body.train()
+        self.model_tails.train()
+        self.model_body.zero_grad()
+        self.model_tails.zero_grad()
+        self.optim.zero_grad()
+        loss.backward()
+        if self.clip_grad:
+            logger.debug(f'Clipping gradient...')
+            torch.nn.utils.clip_grad_norm(self.model_body.parameters(), self.clip_grad_val)
+            torch.nn.utils.clip_grad_norm(self.model_tails.parameters(), self.clip_grad_val)
+        self.optim.step()
+        return loss
 
     def __str__(self):
         '''Overriding so that print() will print the whole network'''
-        s = self.body.__str__()
-        for layer in self.out_layers:
-            s += '\n' + layer.__str__()
+        s = self.model_body.__str__()
+        for model_tail in self.model_tails:
+            s += '\n' + model_tail.__str__()
         return s
-
-    def update_lr(self):
-        assert 'lr' in self.optim_spec
-        old_lr = self.optim_spec['lr']
-        self.optim_spec['lr'] = old_lr * self.decay_lr_factor
-        logger.debug(f'Learning rate decayed from {old_lr} to {self.optim_spec["lr"]}')
-        self.optim = net_util.get_optim_multinet(self.params, self.optim_spec)
 
 
 class MultiMLPNet(Net, nn.Module):
