@@ -1,56 +1,94 @@
-from functools import partial
 import pydash as ps
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from slm_lab.lib import logger
 
+
+NN_LOWCASE_LOOKUP = {nn_name.lower(): nn_name for nn_name in nn.__dict__}
 logger = logger.get_logger(__name__)
 
 
 def get_activation_fn(activation):
     '''Helper to generate activation function layers for net'''
-    layer = None
-    if activation == 'sigmoid':
-        layer = nn.Sigmoid()
-    elif activation == 'lrelu':
-        layer = nn.LeakyReLU(negative_slope=0.05)
-    elif activation == 'tanh':
-        layer = nn.Tanh()
-    elif activation == 'relu':
-        layer = nn.ReLU()
-    else:
-        logger.debug("No activation fn or unrecognised activation fn")
-        layer = nn.ReLU()
-    return layer
+    nn_name = NN_LOWCASE_LOOKUP.get(activation) or NN_LOWCASE_LOOKUP['relu']
+    return getattr(nn, nn_name)
 
 
 def get_loss_fn(cls, loss_spec):
     '''Helper to parse loss param and construct loss_fn for net'''
-    loss_spec = loss_spec or {}
-    loss_fn = getattr(F, ps.get(loss_spec, 'name', 'mse_loss'))
+    LossClass = getattr(nn, loss_spec['name'])
     loss_spec = ps.omit(loss_spec, 'name')
-    if not ps.is_empty(loss_spec):
-        loss_fn = partial(loss_fn, **loss_spec)
+    loss_fn = LossClass(**loss_spec)
     return loss_fn
 
 
 def get_optim(cls, optim_spec):
     '''Helper to parse optim param and construct optim for net'''
-    optim_spec = optim_spec or {}
-    OptimClass = getattr(torch.optim, ps.get(optim_spec, 'name', 'Adam'))
+    OptimClass = getattr(torch.optim, optim_spec['name'])
     optim_spec = ps.omit(optim_spec, 'name')
     optim = OptimClass(cls.parameters(), **optim_spec)
     return optim
 
 
+# TODO why is this not covered by above?
 def get_optim_multinet(params, optim_spec):
     '''Helper to parse optim param and construct optim for net'''
-    optim_spec = optim_spec or {}
     OptimClass = getattr(torch.optim, ps.get(optim_spec, 'name', 'Adam'))
     optim_spec = ps.omit(optim_spec, 'name')
     optim = OptimClass(params, **optim_spec)
     return optim
+
+
+def init_gru_layer(layer):
+    '''Initializes a GRU layer in with xavier_uniform initialization and 0 biases'''
+    for layer_p in layer._all_weights:
+        for p in layer_p:
+            if 'weight' in p:
+                torch.nn.init.xavier_uniform(layer.__getattr__(p))
+            elif 'bias' in p:
+                torch.nn.init.constant(layer.__getattr__(p), 0.0)
+
+
+def init_layers(layers):
+    '''
+    Initializes all of the layers of type 'Linear', 'Conv', or GRU, using xavier uniform initialization for the weights and 0.01 for the biases, 0.0 for the biases of the GRU.
+    Initializes all layers of type 'BatchNorm' using uniform initialization for the weights and the same as above for the biases
+    '''
+    bias_init = 0.01
+    for layer in layers:
+        classname = layer.__class__.__name__
+        if 'BatchNorm' in classname:
+            torch.nn.init.uniform(layer.weight.data)
+            torch.nn.init.constant(layer.bias.data, bias_init)
+        elif 'GRU' in classname:
+            init_gru_layer(layer)
+        elif 'Linear' in classname:
+            torch.nn.init.xavier_uniform(layer.weight.data)
+            torch.nn.init.constant(layer.bias.data, bias_init)
+        else:
+            pass
+
+
+# params methods
+
+def copy_trainable_params(net):
+    return [param.clone() for param in net.parameters()]
+
+
+def copy_fixed_params(net):
+    return None
+
+
+def get_grad_norms(net):
+    '''Returns a list of the norm of the gradients for all parameters'''
+    norms = []
+    for i, param in enumerate(net.parameters()):
+        grad_norm = torch.norm(param.grad.data)
+        if grad_norm is None:
+            logger.info(f'Param with None grad: {param}, layer: {i}')
+        norms.append(grad_norm)
+    return norms
 
 
 def flatten_params(net):
@@ -67,32 +105,3 @@ def load_params(net, flattened):
         param.data.copy_(flattened[offset:offset + param.nelement()]).view(param.size())
         offset += param.nelement()
     return net
-
-
-def init_gru_layer(gru):
-    '''Initializes a GRU layer in with xavier_uniform initialization and 0 biases'''
-    for layer_p in gru._all_weights:
-        for p in layer_p:
-            if 'weight' in p:
-                torch.nn.init.xavier_uniform(gru.__getattr__(p))
-            elif 'bias' in p:
-                torch.nn.init.constant(gru.__getattr__(p), 0.0)
-
-
-def init_layers(layers, layer_type):
-    '''
-    Initializes all of the layers of type 'Linear', 'Conv', or GRU, using xavier uniform initialization for the weights and 0.01 for the biases, 0.0 for the biases of the GRU.
-    Initializes all layers of type 'BatchNorm' using uniform initialization for the weights and the same as above for the biases
-    '''
-    biasinit = 0.01
-    for layer in layers:
-        classname = layer.__class__.__name__
-        if layer_type in classname:
-            if layer_type == 'BatchNorm':
-                torch.nn.init.uniform(layer.weight.data)
-                torch.nn.init.constant(layer.bias.data, biasinit)
-            elif layer_type == 'GRU':
-                init_gru_layer(layer)
-            else:
-                torch.nn.init.xavier_uniform(layer.weight.data)
-                torch.nn.init.constant(layer.bias.data, biasinit)
