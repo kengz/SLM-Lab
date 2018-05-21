@@ -389,7 +389,7 @@ class MultitaskDQN(DQN):
         return action_a
 
 
-class MultiHeadDQN(MultitaskDQN):
+class HydraDQN(MultitaskDQN):
     '''Multi-task DQN with separate state and action processors per environment'''
 
     @lab_api

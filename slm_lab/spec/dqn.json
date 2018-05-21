@@ -325,11 +325,11 @@
       "search": "RandomSearch"
     }
   },
-  "multihead_dqn_cartpole": {
+  "hydra_dqn_cartpole": {
     "agent": [{
-      "name": "MultiHeadDQN",
+      "name": "HydraDQN",
       "algorithm": {
-        "name": "MultiHeadDQN",
+        "name": "HydraDQN",
         "action_policy": "multi_head_boltzmann",
         "action_policy_update": "multi_linear_decay",
         "explore_var_start": 1.5,
@@ -388,11 +388,11 @@
       "search": "RandomSearch"
     }
   },
-  "multihead_dqn_cartpole_x3": {
+  "hydra_dqn_cartpole_x3": {
     "agent": [{
-      "name": "MultiHeadDQN",
+      "name": "HydraDQN",
       "algorithm": {
-        "name": "MultiHeadDQN",
+        "name": "HydraDQN",
         "action_policy": "multi_head_boltzmann",
         "action_policy_update": "multi_linear_decay",
         "explore_var_start": 1.5,

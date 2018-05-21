@@ -210,10 +210,10 @@
       "gpu": false
     }
   },
-  "MultiHeadDQN": {
-    "name": "MultiHeadDQN",
+  "HydraDQN": {
+    "name": "HydraDQN",
     "algorithm": {
-      "name": "MultiHeadDQN",
+      "name": "HydraDQN",
       "action_policy": "multi_head_boltzmann",
       "action_policy_update": "multi_linear_decay",
       "explore_var_start": 1.5,
