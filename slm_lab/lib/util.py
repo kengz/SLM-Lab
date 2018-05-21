@@ -10,7 +10,7 @@ import colorlover as cl
 import cv2
 import json
 import math
-import multiprocessing as mp
+import torch.multiprocessing as mp
 import numpy as np
 import os
 import pandas as pd
