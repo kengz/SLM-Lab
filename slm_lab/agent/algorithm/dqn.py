@@ -288,11 +288,11 @@ class MultitaskDQN(DQN):
         self.action_dims = [body.action_dim for body in self.agent.nanflat_body_a]
         # NOTE use a virtual body with joined inputs
         body = deepcopy(self.agent.nanflat_body_a[0])
-        body.state_dim = sum(self.state_dims)
-        body.action_dim = sum(self.action_dims)
+        in_dim = sum(self.state_dims)
+        out_dim = sum(self.action_dims)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, body)
-        self.target_net = NetClass(self.net_spec, self, body)
+        self.net = NetClass(self.net_spec, self, in_dim, out_dim)
+        self.target_net = NetClass(self.net_spec, self, in_dim, out_dim)
         self.online_net = self.target_net
         self.eval_net = self.target_net
         logger.info(f'Training on gpu: {self.net.gpu}')
@@ -390,9 +390,11 @@ class MultiHeadDQN(MultitaskDQN):
         '''Initialize nets with multi-task dimensions, and set net params'''
         # NOTE: Separate init from MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
         body_list = self.agent.nanflat_body_a
+        in_dims = [body.state_dim for body in body_list]
+        out_dims = [body.action_dim for body in body_list]
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, body_list)
-        self.target_net = NetClass(self.net_spec, self, body_list)
+        self.net = NetClass(self.net_spec, self, in_dims, out_dims)
+        self.target_net = NetClass(self.net_spec, self, in_dims, out_dims)
         self.online_net = self.target_net
         self.eval_net = self.target_net
         logger.info(f'Training on gpu: {self.net.gpu}')

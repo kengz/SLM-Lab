@@ -62,13 +62,13 @@ def init_layers(layers):
     for layer in layers:
         classname = layer.__class__.__name__
         if 'BatchNorm' in classname:
-            torch.nn.init.uniform(layer.weight.data)
-            torch.nn.init.constant(layer.bias.data, bias_init)
+            torch.nn.init.uniform_(layer.weight.data)
+            torch.nn.init.constant_(layer.bias.data, bias_init)
         elif 'GRU' in classname:
             init_gru_layer(layer)
         elif 'Linear' in classname:
-            torch.nn.init.xavier_uniform(layer.weight.data)
-            torch.nn.init.constant(layer.bias.data, bias_init)
+            torch.nn.init.xavier_uniform_(layer.weight.data)
+            torch.nn.init.constant_(layer.bias.data, bias_init)
         else:
             pass
 

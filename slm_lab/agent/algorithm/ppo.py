@@ -11,6 +11,7 @@ logger = logger.get_logger(__name__)
 
 
 class PPO(Algorithm):
+    # NOTE marked for deprecation, pytorch replacement coming soon
     '''
     Implementation of PPO
     Original paper: "Proximal Policy Optimization Algorithms"
@@ -72,8 +73,9 @@ class PPO(Algorithm):
         3. S = E[ entropy ]
         '''
         NetClass = getattr(net, self.net_spec['type'])
-        self.pi = pi = NetClass(self.net_spec, self, self.body, 'pi')
-        self.pi_old = pi_old = NetClass(self.net_spec, self, self.body, 'pi_old')
+        in_dim, out_dim = self.body.state_dim, self.body.action_dim
+        self.pi = pi = NetClass(self.net_spec, self, in_dim, out_dim, 'pi')
+        self.pi_old = pi_old = NetClass(self.net_spec, self, in_dim, out_dim, 'pi_old')
         ob = pi.ob
         ac = pi.pdtype.sample_placeholder([None])
         # target advantage function

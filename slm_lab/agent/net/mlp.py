@@ -1,6 +1,7 @@
 from slm_lab.lib import logger, util
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -253,7 +254,7 @@ class MultiMLPNet(Net, nn.Module):
             self.tail_hid_layers = self.tail_hid_layers * len(self.out_dim)
 
         self.model_heads = self.build_model_heads(in_dim)
-        heads_out_dim = np.sum([head[-1].out_features for head in self.model_heads])
+        heads_out_dim = np.sum([head_hid_layers[-1] for head_hid_layers in self.head_hid_layers])
         dims = [heads_out_dim] + self.body_hid_layers
         self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
         self.model_tails = self.build_model_tails(out_dim)
