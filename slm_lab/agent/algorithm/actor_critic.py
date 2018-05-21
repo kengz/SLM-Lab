@@ -208,7 +208,7 @@ class ActorCritic(Reinforce):
                 logger.debug('Clipping actorcritic gradient...')
                 torch.nn.utils.clip_grad_norm(
                     self.net.params, self.net.clip_grad_val)
-            logger.debug2(f'Combined AC gradient norms: {net_util.get_grad_norms(self.net)}')
+            # logger.debug2(f'Combined AC gradient norms: {net_util.get_grad_norms(self.net)}')
             self.net.optim.step()
             self.to_train = 0
             self.saved_log_probs = []
@@ -252,7 +252,7 @@ class ActorCritic(Reinforce):
             logger.debug("Clipping actor gradient...")
             torch.nn.utils.clip_grad_norm(
                 self.net.params, self.net.clip_grad_val)
-        logger.debug(f'Actor gradient norms: {net_util.get_grad_norms(self.critic)}')
+        # logger.debug(f'Actor gradient norms: {net_util.get_grad_norms(self.critic)}')
         self.net.optim.step()
         self.to_train = 0
         self.saved_log_probs = []
@@ -273,7 +273,7 @@ class ActorCritic(Reinforce):
                 target = target.cuda()
             y = target.unsqueeze_(dim=-1)
             loss = self.critic.training_step(batch['states'], y)
-            logger.debug(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
+            # logger.debug(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
         return loss
 
     def train_critic_episodic(self, batch):
@@ -293,7 +293,7 @@ class ActorCritic(Reinforce):
                 target = target.cuda()
             y = target.unsqueeze_(dim=-1)
             loss = self.critic.training_step(x, y)
-            logger.debug2(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
+            # logger.debug2(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
         return loss
 
     def calc_advantage(self, batch):
