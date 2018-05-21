@@ -93,8 +93,8 @@ class MLPNet(Net, nn.Module):
             loss = self.loss_fn(out, y)
         loss.backward()
         if self.clip_grad:
-            logger.debug(f'Clipping gradient...')
-            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.clip_grad_val)
+            logger.debug(f'Clipping gradient')
+            torch.nn.utils.clip_grad_norm(self.parameters(), self.clip_grad_val)
         self.optim.step()
         return loss
 
@@ -315,8 +315,8 @@ class MultiMLPNet(Net, nn.Module):
                 total_loss += loss
         total_loss.backward()
         if self.clip_grad:
-            logger.debug(f'Clipping gradient...')
-            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.clip_grad_val)
+            logger.debug(f'Clipping gradient')
+            torch.nn.utils.clip_grad_norm(self.parameters(), self.clip_grad_val)
         self.optim.step()
         return total_loss
 

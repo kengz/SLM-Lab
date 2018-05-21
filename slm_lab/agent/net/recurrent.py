@@ -17,8 +17,8 @@ class RecurrentNet(Net, nn.Module):
     batch_size x seq_len x state_dim
     The entire model consists of three parts:
          1. self.state_proc_model
-         2. self.rnn
-         3. self.out_layers
+         2. self.rnn_model
+         3. self.model_tails
     '''
 
     def __init__(self, net_spec, algorithm, in_dim, out_dim):
@@ -76,7 +76,7 @@ class RecurrentNet(Net, nn.Module):
         # RNN layer
         self.rnn_input_dim = dims[-1]
         self.rnn_hidden_size = self.hid_layers[-1]
-        self.rnn = nn.GRU(
+        self.rnn_model = nn.GRU(
             input_size=self.rnn_input_dim,
             hidden_size=self.rnn_hidden_size,
             num_layers=self.num_rnn_layers,
@@ -108,7 +108,7 @@ class RecurrentNet(Net, nn.Module):
         # Restack to batch_size x seq_len x rnn_input_dim
         x = x.view(-1, self.seq_len, self.rnn_input_dim)
         hid_0 = self.init_hidden(batch_size)
-        _, final_hid = self.rnn(x, hid_0)
+        _, final_hid = self.rnn_model(x, hid_0)
         final_hid.squeeze_(dim=0)
         outs = []
         for model_tail in self.model_tails:
@@ -132,8 +132,8 @@ class RecurrentNet(Net, nn.Module):
             loss = self.loss_fn(out, y)
         loss.backward()
         if self.clip_grad:
-            logger.debug(f'Clipping gradient...')
-            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.clip_grad_val)
+            logger.debug(f'Clipping gradient')
+            torch.nn.utils.clip_grad_norm(self.parameters(), self.clip_grad_val)
         self.optim.step()
         return loss
 
@@ -146,7 +146,7 @@ class RecurrentNet(Net, nn.Module):
 
     def __str__(self):
         '''Overriding so that print() will print the whole network'''
-        s = self.state_proc_model.__str__() + '\n' + self.rnn.__str__()
+        s = self.state_proc_model.__str__() + '\n' + self.rnn_model.__str__()
         for model_tail in self.model_tails:
             s += '\n' + model_tail.__str__()
         return s

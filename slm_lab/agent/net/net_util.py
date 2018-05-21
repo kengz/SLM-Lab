@@ -15,7 +15,7 @@ def build_sequential(dims, activation):
     layers = []
     for in_d, out_d in dim_pairs:
         layers.append(nn.Linear(in_d, out_d))
-        layers.append(get_activation_fn(activation)())
+        layers.append(get_activation_fn(activation))
     model = nn.Sequential(*layers)
     return model
 
@@ -23,7 +23,8 @@ def build_sequential(dims, activation):
 def get_activation_fn(activation):
     '''Helper to generate activation function layers for net'''
     nn_name = NN_LOWCASE_LOOKUP.get(activation) or NN_LOWCASE_LOOKUP['relu']
-    return getattr(nn, nn_name)
+    ActivationClass = getattr(nn, nn_name)
+    return ActivationClass()
 
 
 def get_loss_fn(cls, loss_spec):
