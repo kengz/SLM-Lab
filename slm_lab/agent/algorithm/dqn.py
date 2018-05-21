@@ -472,7 +472,7 @@ class MultiHeadDQN(MultitaskDQN):
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
                     if torch.cuda.is_available() and self.net.gpu:
-                        q_targets = [q.cuda() for q in q_targets]
+                        q_targets = q_targets.cuda()
                     y = q_targets
                     losses = self.net.training_step(batch['states'], y)
                     logger.debug(f'losses {losses}')

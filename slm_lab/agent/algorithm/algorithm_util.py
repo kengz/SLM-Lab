@@ -82,7 +82,7 @@ def act_with_epsilon_greedy(body, state, net, epsilon, gpu):
         atari, flatten = set_flags(body)
         torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen, atari, flatten)
         out = net.wrap_eval(torch_state).squeeze_(dim=0)
-        action = int(torch.max(out, dim=0)[1][0])
+        action = torch.max(out, dim=0)[1].item()
         logger.debug2(f'Outs {out} Action {action}')
     return action
 
@@ -106,7 +106,7 @@ def multi_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_epsilon_
             if torch.cuda.is_available() and gpu:
                 torch_state = torch_state.cuda()
             out = net.wrap_eval(torch_state)
-            action = int(torch.max(out[start_idx: end_idx], dim=0)[1][0])
+            action = torch.max(out[start_idx: end_idx], dim=0)[1].item()
         nanflat_action_a.append(action)
         start_idx = end_idx
         logger.debug2(f'''
@@ -137,7 +137,7 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
             action = np.random.randint(body.action_dim)
         else:
             logger.debug2(f'Greedy action')
-            action = torch.max(output, dim=1)[1][0]
+            action = torch.max(output, dim=1)[1].item()
         nanflat_action_a.append(action)
         logger.debug2(f'epsilon: {e}, outputs: {output}, action: {action}')
     return nanflat_action_a

@@ -71,7 +71,7 @@ class SARSA(Algorithm):
         if 'Recurrent' in self.net_spec['type']:
             self.net_spec.update(seq_len=self.net_spec['seq_len'])
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, self.body)
+        self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     def compute_q_target_values(self, batch):
@@ -82,7 +82,7 @@ class SARSA(Algorithm):
         q_next_actions = batch['next_actions']
         logger.debug2(f'Q next states: {q_next_st.size()}')
         # Get the q value for the next action that was actually taken
-        idx = torch.from_numpy(np.array(list(range(q_next_st.size(0)))))
+        idx = torch.from_numpy(np.array(range(q_next_st.size(0))))
         if torch.cuda.is_available() and self.net.gpu:
             idx = idx.cuda()
         q_next_st_vals = q_next_st[idx, q_next_actions.squeeze_(1).data.long()]
@@ -103,6 +103,8 @@ class SARSA(Algorithm):
         q_targets = torch.mul(q_targets_actual, batch['actions_onehot'].data) + torch.mul(q_sts, (1 - batch['actions_onehot'].data))
         logger.debug2(f'Q targets: {q_targets.size()}')
         logger.debug3(f'Q targets: {q_targets}')
+        if torch.cuda.is_available() and self.net.gpu:
+            q_targets = q_targets.cuda()
         return q_targets
 
     @lab_api
@@ -151,24 +153,20 @@ class SARSA(Algorithm):
         Completes one training step for the agent if it is time to train.
         Otherwise this function does nothing.
         '''
-        t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if self.to_train == 1:
-            logger.debug3(f'Training at t: {t}')
             batch = self.sample()
             if batch['states'].size(0) < 2:
                 logger.info(f'Batch too small to train with, skipping...')
                 self.to_train = 0
                 return np.nan
-            q_targets = self.compute_q_target_values(batch)
-            if torch.cuda.is_available() and self.net.gpu:
-                q_targets = q_targets.cuda()
+            with torch.no_grad():
+                q_targets = self.compute_q_target_values(batch)
             y = q_targets
             loss = self.net.training_step(batch['states'], y)
-            logger.debug(f'loss {loss.item()}')
             self.to_train = 0
+            logger.debug(f'loss {loss.item()}')
             return loss.item()
         else:
-            logger.debug3('NOT training')
             return np.nan
 
     @lab_api
