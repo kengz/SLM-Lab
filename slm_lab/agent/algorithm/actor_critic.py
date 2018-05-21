@@ -317,9 +317,8 @@ class ActorCritic(Reinforce):
         returns advantage as a single Tensor
         '''
         target = self.get_target(batch)
-        state_vals = self.get_critic_output(batch['states']).squeeze_()
+        state_vals = self.get_critic_output(batch['states']).squeeze_(0)
         advantage = target - state_vals
-        advantage.squeeze_()
         logger.debug2(f'Advantage: {advantage.size()}')
         return advantage
 
