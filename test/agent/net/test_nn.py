@@ -17,7 +17,7 @@ class TestNet:
             dummy_input = torch.ones(2, net.seq_len, net.in_dim)
         elif type(net.in_dim) is int:
             dummy_input = torch.ones(2, net.in_dim)
-        elif 'MultiMLPNet' in net.__class__.__name__:
+        elif 'HydraMLPNet' in net.__class__.__name__:
             dummy_input = []
             for indim in net.in_dim:
                 dummy_input.append(torch.ones(2, indim[0]))
@@ -28,7 +28,7 @@ class TestNet:
     def init_dummy_output(self, net):
         if type(net.out_dim) is int:
             dummy_output = torch.zeros((2, net.out_dim))
-        elif 'MultiMLPNet' in net.__class__.__name__:
+        elif 'HydraMLPNet' in net.__class__.__name__:
             dummy_output = []
             for outdim in net.out_dim:
                 dummy_output.append(torch.zeros((2, outdim[-1])))
@@ -167,7 +167,7 @@ class TestNet:
         assert loss is None
 
     def check_multi_output(self, net):
-        if any(k in net.__class__.__name__ for k in ('MultiMLPNet', 'MLPHeterogenousTails', 'RecurrentNet', 'ConvNet')) and len(net.out_dim) > 1:
+        if any(k in net.__class__.__name__ for k in ('HydraMLPNet', 'MLPHeterogenousTails', 'RecurrentNet', 'ConvNet')) and len(net.out_dim) > 1:
             return True
         else:
             return False

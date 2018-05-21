@@ -184,7 +184,7 @@ class MLPHeterogenousTails(MLPNet):
         return s
 
 
-class MultiMLPNet(Net, nn.Module):
+class HydraMLPNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized feedforward neural network with multiple state and action heads, and a single shared body.
     '''
@@ -214,7 +214,7 @@ class MultiMLPNet(Net, nn.Module):
            env 1 action      env 2 action
         '''
         nn.Module.__init__(self)
-        super(MultiMLPNet, self).__init__(net_spec, algorithm, in_dim, out_dim)
+        super(HydraMLPNet, self).__init__(net_spec, algorithm, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             optim_spec={'name': 'Adam'},

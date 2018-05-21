@@ -2,7 +2,7 @@ from slm_lab.agent import AgentSpace, Body
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.net.recurrent import RecurrentNet
-from slm_lab.agent.net.mlp import MLPNet, MultiMLPNet, MLPHeterogenousTails
+from slm_lab.agent.net.mlp import MLPNet, HydraMLPNet, MLPHeterogenousTails
 from slm_lab.env import EnvSpace
 # from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
@@ -352,7 +352,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
             'hid_layers': [64],
@@ -364,7 +364,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
             'hid_layers': [],
@@ -376,7 +376,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
             'hid_layers': [],
@@ -388,7 +388,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10, 15], [8, 16]],
             'hid_layers': [],
@@ -400,7 +400,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10, 15], [8, 16]],
             'hid_layers': [32, 64],
@@ -412,7 +412,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10], [8, 16, 24]],
             'hid_layers': [32, 64],

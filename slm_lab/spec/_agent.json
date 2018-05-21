@@ -231,7 +231,7 @@
       "max_size": 10000
     },
     "net": {
-      "type": "MultiMLPNet",
+      "type": "HydraMLPNet",
       "hid_layers": [64],
       "hid_layers_activation": "sigmoid",
       "optim_spec": {
