@@ -1,7 +1,8 @@
-from slm_lab.lib import logger, util
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
+from slm_lab.lib import logger, util
 import numpy as np
+import pydash as ps
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -280,13 +281,17 @@ class MultiMLPNet(Net, nn.Module):
 
     def build_model_tails(self, out_dim):
         '''Build each model_tail. These are stored as Sequential models in model_tails'''
-        assert len(self.tail_hid_layers) == len(out_dim), 'Hydra tail hid_params inconsistent with number out dims'
         model_tails = nn.ModuleList()
-        for out_d, hid_layers in zip(out_dim, self.tail_hid_layers):
-            dims = hid_layers
-            model_tail = net_util.build_sequential(dims, self.hid_layers_activation)
-            model_tail.add_module(str(len(model_tail)), nn.Linear(dims[-1], out_d))
-            model_tails.append(model_tail)
+        if ps.is_empty(self.tail_hid_layers):
+            for out_d in out_dim:
+                model_tails.append(nn.Linear(self.body_hid_layers[-1], out_d))
+        else:
+            assert len(self.tail_hid_layers) == len(out_dim), 'Hydra tail hid_params inconsistent with number out dims'
+            for out_d, hid_layers in zip(out_dim, self.tail_hid_layers):
+                dims = hid_layers
+                model_tail = net_util.build_sequential(dims, self.hid_layers_activation)
+                model_tail.add_module(str(len(model_tail)), nn.Linear(dims[-1], out_d))
+                model_tails.append(model_tail)
         return model_tails
 
     def forward(self, xs):
@@ -295,7 +300,7 @@ class MultiMLPNet(Net, nn.Module):
         for model_head, x in zip(self.model_heads, xs):
             head_xs.append(model_head(x))
         head_xs = torch.cat(head_xs, dim=1)
-        body_x = self.body_model(head_xs)
+        body_x = self.model_body(head_xs)
         outs = []
         for model_tail in self.model_tails:
             outs.append(model_tail(body_x))
@@ -321,13 +326,28 @@ class MultiMLPNet(Net, nn.Module):
         self.optim.step()
         return total_loss
 
+    def wrap_eval(self, x):
+        '''
+        Completes one feedforward step, ensuring net is set to evaluation model
+        returns: network output given input x
+        '''
+        self.eval()
+        return self(x)
+
+    def update_lr(self):
+        assert 'lr' in self.optim_spec
+        old_lr = self.optim_spec['lr']
+        self.optim_spec['lr'] = old_lr * self.decay_lr_factor
+        logger.info(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
+        self.optim = net_util.get_optim(self, self.optim_spec)
+
     def __str__(self):
         '''Overriding so that print() will print the whole network'''
         s = 'Head'
         for net in self.model_heads:
             s += net.__str__() + '\n'
         s += '\nBody:\n'
-        s += self.body_model.__str__()
+        s += self.model_body.__str__()
         s += '\nTail:'
         for net in self.model_tails:
             s += '\n' + net.__str__()
