@@ -501,7 +501,6 @@ def read(data_path, **kwargs):
     - {.json} to dict, list
     - {.yml} to dict
     - {*} to str
-    - TODO {.h5} to model weights
     - TODO {db-query} to dict, DataFrame
     @param {str} data_path The data path to read from
     @returns {data} The read data in sensible format
@@ -668,7 +667,6 @@ def write(data, data_path):
     - {.json} from dict, list
     - {.yml} from dict
     - {*} from str(*)
-    - TODO {.h5} from model weights
     - TODO {db-query} from dict, DataFrame
     @param {*} data The data to write
     @param {str} data_path The data path to write to

@@ -73,6 +73,16 @@ def init_layers(layers):
             pass
 
 
+def save(net, model_path):
+    '''Save model weights to path'''
+    torch.save(net.state_dict(), model_path)
+
+
+def load(net, model_path):
+    '''Save model weights from a path into a net module'''
+    net.load_state_dict(torch.load(model_path))
+
+
 # params methods
 
 def copy_trainable_params(net):
