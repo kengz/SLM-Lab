@@ -226,7 +226,7 @@ def act_with_softmax(algorithm, state, body, gpu):
     action = m.sample()
     logger.debug2(f'Network output: {out.data}')
     logger.debug2(f'Probability of actions: {probs.data}')
-    logger.debug(f'Action: {action.data.item()}, log prob: {m.log_prob(action).data.item()}')
+    logger.debug(f'Action: {action.item()}, log prob: {m.log_prob(action).item()}')
     algorithm.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = - torch.sum(torch.mul(probs, torch.log(probs)))
@@ -237,7 +237,7 @@ def act_with_softmax(algorithm, state, body, gpu):
             H = H.cuda()
         H = Variable(H)
     algorithm.entropy.append(H)
-    return action.data.item()
+    return action.item()
 
 
 # Denny Britz has a very helpful implementation of an Actor Critic algorithm. This function is adapted from his approach. I highly recommend looking at his full implementation available here https://github.com/dennybritz/reinforcement-learning/blob/master/PolicyGradient/Continuous%20MountainCar%20Actor%20Critic%20Solution.ipynb
@@ -252,7 +252,7 @@ def act_with_gaussian(algorithm, state, body, gpu):
     m = Normal(mu, sigma)
     action = m.sample()
     action = torch.clamp(action, -algorithm.continuous_action_clip, algorithm.continuous_action_clip)
-    logger.debug2(f'Action: {action.data.item()}, log prob: {m.log_prob(action).data.item()}')
+    logger.debug2(f'Action: {action.item()}, log prob: {m.log_prob(action).item()}')
     algorithm.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = 0.5 * torch.log(2.0 * np.pi * np.e * sigma * sigma)

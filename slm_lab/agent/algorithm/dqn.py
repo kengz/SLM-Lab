@@ -132,7 +132,7 @@ class VanillaDQN(SARSA):
                         q_targets = q_targets.cuda()
                     y = Variable(q_targets)
                     loss = self.net.training_step(batch['states'], y)
-                    batch_loss += loss.data.item()
+                    batch_loss += loss.item()
                 batch_loss /= self.training_iters_per_batch
                 total_loss += batch_loss
             total_loss /= self.training_epoch

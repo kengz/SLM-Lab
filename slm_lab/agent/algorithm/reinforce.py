@@ -4,7 +4,6 @@ from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-from torch.autograd import Variable
 import numpy as np
 import torch
 import pydash as ps
@@ -107,7 +106,7 @@ class Reinforce(Algorithm):
             self.saved_log_probs = []
             self.entropy = []
             logger.debug(f'Policy loss: {loss}')
-            return loss.data.item()
+            return loss.item()
         else:
             return np.nan
 
@@ -120,7 +119,7 @@ class Reinforce(Algorithm):
         advantage = self.check_sizes(advantage)
         policy_loss = torch.tensor(0.0)
         for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
-            logger.debug3(f'log prob: {log_prob.data.item()}, advantage: {a}, entropy: {e.data.item()}')
+            logger.debug3(f'log prob: {log_prob.item()}, advantage: {a}, entropy: {e.item()}')
             if self.add_entropy:
                 policy_loss += (-log_prob * a - self.entropy_weight * e)
             else:
