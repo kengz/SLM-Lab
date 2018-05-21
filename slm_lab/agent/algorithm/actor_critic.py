@@ -5,7 +5,6 @@ from slm_lab.agent.algorithm.reinforce import Reinforce
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-from torch.autograd import Variable
 import torch.nn.functional as F
 import numpy as np
 import torch
@@ -87,10 +86,6 @@ class ActorCritic(Reinforce):
             self.get_target = self.get_gae_target
         else:
             self.get_target = self.get_nstep_target
-        self.to_train = 0
-        # To save on a forward pass keep the log probs and entropy from each action
-        self.saved_log_probs = []
-        self.entropy = []
 
     @lab_api
     def init_nets(self):
@@ -171,6 +166,7 @@ class ActorCritic(Reinforce):
         batches = [body.memory.sample()
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
+        # TODO call these from inside memory, always return torch batch
         if self.body.memory.is_episodic:
             util.to_torch_nested_batch(batch, self.net.gpu)
         else:
@@ -199,14 +195,14 @@ class ActorCritic(Reinforce):
                 states = torch.cat(states)
             if torch.cuda.is_available() and self.net.gpu:
                 target = target.cuda()
-            y = Variable(target.unsqueeze_(dim=-1))
+            y = target.unsqueeze_(dim=-1)
             state_vals = self.get_critic_output(states, evaluate=False)
             assert state_vals.data.size() == y.data.size()
             val_loss = F.mse_loss(state_vals, y)
             # Combine losses and train
             self.net.optim.zero_grad()
             total_loss = self.policy_loss_weight * policy_loss + self.val_loss_weight * val_loss
-            loss = total_loss.data.item()
+            loss = total_loss
             total_loss.backward()
             if self.net.clip_grad:
                 logger.debug('Clipping actorcritic gradient...')
@@ -218,9 +214,9 @@ class ActorCritic(Reinforce):
             self.saved_log_probs = []
             self.entropy = []
             logger.debug('Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}'.format(
-                val_loss.data.item(), abs(policy_loss.data.item()), loss
+                val_loss, abs(policy_loss), loss
             ))
-            return loss
+            return loss.item()
         else:
             return np.nan
 
@@ -235,7 +231,7 @@ class ActorCritic(Reinforce):
             logger.debug('Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}'.format(
                 critic_loss, abs(actor_loss), total_loss
             ))
-            return total_loss
+            return total_loss.item()
         else:
             return np.nan
 
@@ -250,7 +246,7 @@ class ActorCritic(Reinforce):
         '''Trains the actor when the actor and critic are separate networks'''
         self.net.optim.zero_grad()
         policy_loss = self.calc_policy_loss(batch)
-        loss = policy_loss.data.item()
+        loss = policy_loss
         policy_loss.backward()
         if self.net.clip_grad:
             logger.debug("Clipping actor gradient...")
@@ -275,8 +271,8 @@ class ActorCritic(Reinforce):
             target = self.get_target(batch, critic_specific=True)
             if torch.cuda.is_available() and self.net.gpu:
                 target = target.cuda()
-            y = Variable(target)
-            loss = self.critic.training_step(batch['states'], y).data.item()
+            y = target.unsqueeze_(dim=-1)
+            loss = self.critic.training_step(batch['states'], y)
             logger.debug(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
         return loss
 
@@ -295,8 +291,8 @@ class ActorCritic(Reinforce):
             logger.debug2(f'Combined states: {x.size()}')
             if torch.cuda.is_available() and self.net.gpu:
                 target = target.cuda()
-            y = Variable(target)
-            loss = self.critic.training_step(x, y).data.item()
+            y = target.unsqueeze_(dim=-1)
+            loss = self.critic.training_step(x, y)
             logger.debug2(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
         return loss
 

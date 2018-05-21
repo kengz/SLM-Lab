@@ -5,7 +5,6 @@ from itertools import chain
 from scipy.misc import imsave
 from slm_lab import ROOT_DIR
 from sys import getsizeof, stderr
-from torch.autograd import Variable
 import collections
 import colorlover as cl
 import cv2
@@ -727,30 +726,29 @@ def write_as_plain(data, data_path):
 
 
 def to_torch_batch(batch, gpu):
-    '''Mutate a batch (dict) to make its values from numpy into PyTorch Variable'''
+    '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
     for k in float_data_names:
         batch[k] = torch.from_numpy(batch[k].astype(np.float)).float()
         if torch.cuda.is_available() and gpu:
             batch[k] = batch[k].cuda()
-        batch[k] = Variable(batch[k])
     return batch
 
 
 def to_torch_nested_batch(batch, gpu):
-    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable.'''
+    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch tensor'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
     return to_torch_nested_batch_helper(batch, float_data_names, gpu)
 
 
 def to_torch_nested_batch_ex_rewards(batch, gpu):
-    '''Mutate a nested batch (dict of lists) to make its values (excluding rewards) from numpy into PyTorch Variable.'''
+    '''Mutate a nested batch (dict of lists) to make its values (excluding rewards) from numpy into PyTorch tensor.'''
     float_data_names = ['states', 'actions', 'dones', 'next_states']
     return to_torch_nested_batch_helper(batch, float_data_names, gpu)
 
 
 def to_torch_nested_batch_helper(batch, float_data_names, gpu):
-    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable. Excludes keys not included in float_data_names'''
+    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch tensor. Excludes keys not included in float_data_names'''
     for k in float_data_names:
         k_b = []
         for x in batch[k]:
@@ -758,7 +756,6 @@ def to_torch_nested_batch_helper(batch, float_data_names, gpu):
             tx = torch.from_numpy(nx).float()
             if torch.cuda.is_available() and gpu:
                 tx = tx.cuda()
-            tx = Variable(tx)
             k_b.append(tx)
         batch[k] = k_b
     return batch
@@ -785,7 +782,7 @@ def convert_to_one_hot(data, categories, gpu):
     data_onehot[idxs, data.data.long().cpu()] = 1
     if torch.cuda.is_available() and gpu:
         data_onehot = data_onehot.cuda()
-    return Variable(data_onehot)
+    return data_onehot
 
 
 def resize_image(im):

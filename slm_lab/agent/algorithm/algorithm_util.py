@@ -218,8 +218,8 @@ def act_with_softmax(algorithm, state, body, gpu):
     state_seq = body.memory.state_buffer.maxlen > 0
     torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen)
     out = algorithm.get_actor_output(torch_state, evaluate=False)
-    # if type(out) is list:
-    #     out = out[0]
+    if isinstance(out, list):  # guard multi-tails for cont action
+        out = out[0]
     out.squeeze_(dim=0)
     probs = F.softmax(out, dim=0)
     m = Categorical(probs)
