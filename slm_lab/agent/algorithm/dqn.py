@@ -100,6 +100,8 @@ class VanillaDQN(SARSA):
             # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
             q_targets = torch.mul(q_targets_max, batch['actions'].data) + torch.mul(q_sts, (1 - batch['actions'].data))
             logger.debug2(f'Q targets: {q_targets.size()}')
+            if torch.cuda.is_available() and self.net.gpu:
+                q_targets = q_targets.cuda()
             return q_targets
 
     @lab_api
@@ -119,17 +121,15 @@ class VanillaDQN(SARSA):
         For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
         Otherwise this function does nothing.
         '''
-        t = util.s_get(self, 'aeb_space.clock').get('total_t')
-        if (t > self.training_min_timestep and t % self.training_frequency == 0):
-            logger.debug3(f'Training at t: {t}')
+        total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
+        if (total_t > self.training_min_timestep and total_t % self.training_frequency == 0):
+            logger.debug3(f'Training at total_t: {total_t}')
             total_loss = 0.0
             for _b in range(self.training_epoch):
                 batch = self.sample()
                 batch_loss = 0.0
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
-                    if torch.cuda.is_available() and self.net.gpu:
-                        q_targets = q_targets.cuda()
                     y = q_targets
                     loss = self.net.training_step(batch['states'], y)
                     batch_loss += loss.item()
@@ -225,6 +225,8 @@ class DQNBase(VanillaDQN):
             # So that the loss for these actions is 0
             q_targets = torch.mul(q_targets_max, batch['actions'].data) + torch.mul(q_sts, (1 - batch['actions'].data))
             logger.debug2(f'Q targets: {q_targets.size()}')
+            if torch.cuda.is_available() and self.net.gpu:
+                q_targets = q_targets.cuda()
             return q_targets
 
     def update_nets(self):
@@ -376,6 +378,8 @@ class MultitaskDQN(DQN):
             q_targets = torch.mul(q_targets_maxs, combined_actions.data) + torch.mul(q_sts, (1 - combined_actions.data))
             logger.debug2(f'Q targets: {q_targets.size()}')
             logger.debug3(f'Q targets: {q_targets}')
+            if torch.cuda.is_available() and self.net.gpu:
+                q_targets = q_targets.cuda()
             return q_targets
 
     def act(self, state_a):
@@ -457,6 +461,9 @@ class MultiHeadDQN(MultitaskDQN):
                 q_targets_b = torch.mul(q_targets_maxs[b], batch_b['actions'].data) + torch.mul(q_sts[b], (1 - batch_b['actions'].data))
                 q_targets.append(q_targets_b)
                 logger.debug2(f'Batch {b}, Q targets: {q_targets_b.size()}')
+            if torch.cuda.is_available() and self.net.gpu:
+                for q_target in q_targets:
+                    q_target = q_target.cuda()
             return q_targets
 
     @lab_api
@@ -468,21 +475,19 @@ class MultiHeadDQN(MultitaskDQN):
         For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
         Otherwise this function does nothing.
         '''
-        t = util.s_get(self, 'aeb_space.clock').get('total_t')
-        if (t > self.training_min_timestep and t % self.training_frequency == 0):
-            logger.debug3(f'Training at t: {t}')
+        total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
+        if (total_t > self.training_min_timestep and total_t % self.training_frequency == 0):
+            logger.debug3(f'Training at total_t: {total_t}')
             nanflat_loss_a = np.zeros(self.agent.body_num)
             for _b in range(self.training_epoch):
                 batch_losses = np.zeros(self.agent.body_num)
                 batch = self.sample()
                 for _i in range(self.training_iters_per_batch):
                     q_targets = self.compute_q_target_values(batch)
-                    if torch.cuda.is_available() and self.net.gpu:
-                        q_targets = q_targets.cuda()
                     y = q_targets
                     losses = self.net.training_step(batch['states'], y)
                     logger.debug(f'losses {losses}')
-                    batch_losses += losses
+                    batch_losses += losses.item()
                 batch_losses /= self.training_iters_per_batch
                 nanflat_loss_a += batch_losses
             nanflat_loss_a /= self.training_epoch

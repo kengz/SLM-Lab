@@ -354,9 +354,7 @@
             [32]
           ],
           [64],
-          [
-            []
-          ]
+          []
         ],
         "hid_layers_activation": "sigmoid",
         "optim_spec": {
