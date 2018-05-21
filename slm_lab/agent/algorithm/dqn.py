@@ -496,17 +496,3 @@ class MultiHeadDQN(MultitaskDQN):
         else:
             logger.debug3('NOT training')
             return np.nan
-
-    def update_nets(self):
-        # NOTE: Once polyak updating for multi-headed networks is supported via updates to flatten_params and load_params then this can be removed
-        space_clock = util.s_get(self, 'aeb_space.clock')
-        total_t = space_clock.get('total_t')
-        if self.net.update_type == 'replace':
-            if total_t % self.net.update_frequency == 0:
-                self.target_net.load_state_dict(self.net.state_dict())
-                self.online_net = self.target_net
-                self.eval_net = self.target_net
-        elif self.net.update_type == 'polyak':
-            raise NotImplementedError('"polyak" updating not supported yet for MultiHeadDQN, please use "replace" instead. Exiting.')
-        else:
-            raise ValueError('Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
