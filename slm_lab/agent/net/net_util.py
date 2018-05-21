@@ -108,3 +108,16 @@ def load_params(net, flattened):
         param.data.copy_(flattened[offset:offset + param.nelement()]).view(param.size())
         offset += param.nelement()
     return net
+
+
+def polyak_update(src_net, tar_net, beta=0.5):
+    '''Polyak weight update to update a target tar_net'''
+    tar_params = tar_net.named_parameters()
+    src_params = src_net.named_parameters()
+    src_dict_params = dict(src_params)
+
+    for name, tar_param in tar_params:
+        if name in src_dict_params:
+            src_dict_params[name].data.copy_(beta * tar_param.data + (1 - beta) * src_dict_params[name].data)
+
+    tar_net.load_state_dict(src_dict_params)
