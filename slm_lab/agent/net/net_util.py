@@ -48,9 +48,9 @@ def init_gru_layer(layer):
     for layer_p in layer._all_weights:
         for p in layer_p:
             if 'weight' in p:
-                torch.nn.init.xavier_uniform(layer.__getattr__(p))
+                torch.nn.init.xavier_uniform_(layer.__getattr__(p))
             elif 'bias' in p:
-                torch.nn.init.constant(layer.__getattr__(p), 0.0)
+                torch.nn.init.constant_(layer.__getattr__(p), 0.0)
 
 
 def init_layers(layers):
