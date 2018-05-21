@@ -41,9 +41,9 @@ class Session:
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.random_seed = 100 * (info_space.get('trial') or 0) + self.index
-        torch.cuda.manual_seed_all(random_seed)
-        torch.manual_seed(random_seed)
-        np.random.seed(random_seed)
+        torch.cuda.manual_seed_all(self.random_seed)
+        torch.manual_seed(self.random_seed)
+        np.random.seed(self.random_seed)
         self.data = None
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
