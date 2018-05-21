@@ -1,7 +1,6 @@
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
 from slm_lab.lib import logger, util
-from torch.autograd import Variable
 import numpy as np
 import torch
 import torch.nn as nn
@@ -119,7 +118,7 @@ class ConvNet(Net, nn.Module):
 
     def get_conv_output_size(self):
         '''Helper function to calculate the size of the flattened features after the final convolutional layer'''
-        x = Variable(torch.ones(1, *self.in_dim))
+        x = torch.ones(1, *self.in_dim)
         x = self.conv_model(x)
         return x.numel()
 

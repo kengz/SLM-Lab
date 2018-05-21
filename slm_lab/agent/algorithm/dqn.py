@@ -5,7 +5,6 @@ from slm_lab.agent.algorithm.sarsa import SARSA
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-from torch.autograd import Variable
 import numpy as np
 import pydash as ps
 import torch
@@ -130,7 +129,7 @@ class VanillaDQN(SARSA):
                     q_targets = self.compute_q_target_values(batch)
                     if torch.cuda.is_available() and self.net.gpu:
                         q_targets = q_targets.cuda()
-                    y = Variable(q_targets)
+                    y = q_targets
                     loss = self.net.training_step(batch['states'], y)
                     batch_loss += loss.item()
                 batch_loss /= self.training_iters_per_batch
@@ -474,7 +473,7 @@ class MultiHeadDQN(MultitaskDQN):
                     q_targets = self.compute_q_target_values(batch)
                     if torch.cuda.is_available() and self.net.gpu:
                         q_targets = [q.cuda() for q in q_targets]
-                    y = [Variable(q) for q in q_targets]
+                    y = q_targets
                     losses = self.net.training_step(batch['states'], y)
                     logger.debug(f'losses {losses}')
                     batch_losses += losses

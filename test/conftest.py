@@ -8,7 +8,6 @@ from slm_lab.env import EnvSpace
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
-from torch.autograd import Variable
 import numpy as np
 import pandas as pd
 import pytest

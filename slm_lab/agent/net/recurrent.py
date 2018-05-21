@@ -1,7 +1,6 @@
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
 from slm_lab.lib import logger, util
-from torch.autograd import Variable
 import numpy as np
 import torch
 import torch.nn as nn

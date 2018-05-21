@@ -4,7 +4,6 @@ from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-from torch.autograd import Variable
 import numpy as np
 import pydash as ps
 import torch
@@ -163,7 +162,7 @@ class SARSA(Algorithm):
             q_targets = self.compute_q_target_values(batch)
             if torch.cuda.is_available() and self.net.gpu:
                 q_targets = q_targets.cuda()
-            y = Variable(q_targets)
+            y = q_targets
             loss = self.net.training_step(batch['states'], y)
             logger.debug(f'loss {loss.item()}')
             self.to_train = 0

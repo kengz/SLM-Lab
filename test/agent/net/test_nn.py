@@ -1,6 +1,5 @@
 import pytest
 from flaky import flaky
-from torch.autograd import Variable
 import numpy as np
 import torch
 SMALL_NUM = 0.000000001
@@ -15,32 +14,31 @@ class TestNet:
 
     def init_dummy_input(self, net):
         if 'RecurrentNet' in net.__class__.__name__:
-            dummy_input = Variable(torch.ones(
-                2, net.seq_len, net.in_dim))
+            dummy_input = torch.ones(2, net.seq_len, net.in_dim)
         elif type(net.in_dim) is int:
-            dummy_input = Variable(torch.ones(2, net.in_dim))
+            dummy_input = torch.ones(2, net.in_dim)
         elif 'MultiMLPNet' in net.__class__.__name__:
             dummy_input = []
             for indim in net.in_dim:
-                dummy_input.append(Variable(torch.ones(2, indim[0])))
+                dummy_input.append(torch.ones(2, indim[0]))
         else:
-            dummy_input = Variable(torch.ones(2, *net.in_dim))
+            dummy_input = torch.ones(2, *net.in_dim)
         return dummy_input
 
     def init_dummy_output(self, net):
         if type(net.out_dim) is int:
-            dummy_output = Variable(torch.zeros((2, net.out_dim)))
+            dummy_output = torch.zeros((2, net.out_dim))
         elif 'MultiMLPNet' in net.__class__.__name__:
             dummy_output = []
             for outdim in net.out_dim:
-                dummy_output.append(Variable(torch.zeros((2, outdim[-1]))))
+                dummy_output.append(torch.zeros((2, outdim[-1])))
         elif 'MLPHeterogenousTails' in net.__class__.__name__ or len(net.out_dim) > 1:
             dummy_output = []
             for outdim in net.out_dim:
                 print(type(outdim), outdim)
-                dummy_output.append(Variable(torch.zeros((2, outdim))))
+                dummy_output.append(torch.zeros((2, outdim)))
         else:
-            dummy_output = Variable(torch.zeros(2, net.out_dim[0]))
+            dummy_output = torch.zeros(2, net.out_dim[0])
         return dummy_output
 
     def check_net_type(self, net):
