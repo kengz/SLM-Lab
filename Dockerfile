@@ -1,3 +1,10 @@
+# run instructions:
+# build image: docker build -t slm_lab .
+# start container: docker run -name my_lab -dt slm_lab
+# enter container: docker exec -it my_lab bash
+# tag image: docker tag slm_lab keng/slm_lab
+# push image: docker push keng/slm_lab
+
 FROM tensorflow/tensorflow:1.8.0-py3
 
 LABEL maintainer="kengzwl@gmail.com"
