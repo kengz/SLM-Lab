@@ -3,7 +3,6 @@ Functions used by more than one algorithm
 '''
 from copy import deepcopy
 from slm_lab.lib import logger, util
-from torch.autograd import Variable
 from torch.distributions import Categorical, Normal
 import numpy as np
 import torch
@@ -62,7 +61,6 @@ def create_torch_state(state, state_buf, gpu, state_seq=False, length=0, atari=F
     # Optionally convert to cuda
     if torch.cuda.is_available() and gpu:
         torch_state = torch_state.cuda()
-    torch_state = Variable(torch_state)
 
     logger.debug3(f'State size: {torch_state.size()}')
     logger.debug3(f'Original state: {state}')
@@ -84,7 +82,7 @@ def act_with_epsilon_greedy(body, state, net, epsilon, gpu):
         atari, flatten = set_flags(body)
         torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen, atari, flatten)
         out = net.wrap_eval(torch_state).squeeze_(dim=0)
-        action = int(torch.max(out, dim=0)[1][0])
+        action = torch.max(out, dim=0)[1].item()
         logger.debug2(f'Outs {out} Action {action}')
     return action
 
@@ -107,9 +105,8 @@ def multi_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_epsilon_
             torch_state = torch.from_numpy(cat_state_a).float()
             if torch.cuda.is_available() and gpu:
                 torch_state = torch_state.cuda()
-            torch_state = Variable(torch_state)
             out = net.wrap_eval(torch_state)
-            action = int(torch.max(out[start_idx: end_idx], dim=0)[1][0])
+            action = torch.max(out[start_idx: end_idx], dim=0)[1].item()
         nanflat_action_a.append(action)
         start_idx = end_idx
         logger.debug2(f'''
@@ -131,7 +128,7 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
         for idx, torch_state in enumerate(torch_states):
             torch_states[idx] = torch_state.cuda()
     for idx, torch_state in enumerate(torch_states):
-        torch_states[idx] = Variable(torch_state)
+        torch_states[idx] = torch_state
     outs = net.wrap_eval(torch_states)
     for body, e, output in zip(nanflat_body_a, nanflat_epsilon_a, outs):
         logger.debug2(f'body: {body.aeb}, epsilon: {e}')
@@ -140,7 +137,7 @@ def multi_head_act_with_epsilon_greedy(nanflat_body_a, state_a, net, nanflat_eps
             action = np.random.randint(body.action_dim)
         else:
             logger.debug2(f'Greedy action')
-            action = torch.max(output, dim=1)[1][0]
+            action = torch.max(output, dim=1)[1].item()
         nanflat_action_a.append(action)
         logger.debug2(f'epsilon: {e}, outputs: {output}, action: {action}')
     return nanflat_action_a
@@ -153,7 +150,7 @@ def act_with_boltzmann(body, state, net, tau, gpu):
     torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen, atari, flatten)
     out = net.wrap_eval(torch_state)
     out_with_temp = torch.div(out, tau).squeeze_(dim=0)
-    probs = F.softmax(Variable(out_with_temp.cpu()), dim=0).data.numpy()
+    probs = F.softmax(out_with_temp.cpu(), dim=0).data.numpy()
     action = np.random.choice(list(range(body.action_dim)), p=probs)
     logger.debug2('out with temp: {}, prob: {}, action: {}'.format(out_with_temp, probs, action))
     return action
@@ -165,7 +162,6 @@ def multi_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, gpu):
     torch_state = torch.from_numpy(cat_state_a).float()
     if torch.cuda.is_available() and gpu:
         torch_state = torch_state.cuda()
-    torch_state = Variable(torch_state)
     out = net.wrap_eval(torch_state)
     nanflat_action_a = []
     start_idx = 0
@@ -177,7 +173,7 @@ def multi_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, gpu):
         tau: {tau}, out: {out},
         out select: {out[start_idx: end_idx]},
         out with temp: {out_with_temp}''')
-        probs = F.softmax(Variable(out_with_temp.cpu()), dim=0).data.numpy()
+        probs = F.softmax(out_with_temp.cpu(), dim=0).data.numpy()
         action = np.random.choice(list(range(body.action_dim)), p=probs)
         logger.debug3(f'''
         body: {body.aeb}, net idx: {start_idx}-{end_idx}
@@ -197,13 +193,13 @@ def multi_head_act_with_boltzmann(nanflat_body_a, state_a, net, nanflat_tau_a, g
         for idx, torch_state in enumerate(torch_states):
             torch_states[idx] = torch_state.cuda()
     for idx, torch_state in enumerate(torch_states):
-        torch_states[idx] = Variable(torch_state)
+        torch_states[idx] = torch_state
     outs = net.wrap_eval(torch_states)
     out_with_temp = [torch.div(x, t) for x, t in zip(outs, nanflat_tau_a)]
     logger.debug2(f'taus: {nanflat_tau_a}, outs: {outs}, out_with_temp: {out_with_temp}')
     nanflat_action_a = []
     for body, output in zip(nanflat_body_a, out_with_temp):
-        probs = F.softmax(Variable(output.cpu()), dim=1).data.numpy()[0]
+        probs = F.softmax(output.cpu(), dim=1).data.numpy()[0]
         action = np.random.choice(list(range(body.action_dim)), p=probs)
         logger.debug3(f'''
         body: {body.aeb}, output: {output},
@@ -218,7 +214,7 @@ def act_with_softmax(algorithm, state, body, gpu):
     state_seq = body.memory.state_buffer.maxlen > 0
     torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen)
     out = algorithm.get_actor_output(torch_state, evaluate=False)
-    if type(out) is list:
+    if isinstance(out, list):  # guard multi-tails for cont action
         out = out[0]
     out.squeeze_(dim=0)
     probs = F.softmax(out, dim=0)
@@ -226,7 +222,7 @@ def act_with_softmax(algorithm, state, body, gpu):
     action = m.sample()
     logger.debug2(f'Network output: {out.data}')
     logger.debug2(f'Probability of actions: {probs.data}')
-    logger.debug(f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
+    logger.debug(f'Action: {action.item()}, log prob: {m.log_prob(action).item()}')
     algorithm.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = - torch.sum(torch.mul(probs, torch.log(probs)))
@@ -235,9 +231,8 @@ def act_with_softmax(algorithm, state, body, gpu):
         H = torch.zeros(1)
         if torch.cuda.is_available() and gpu:
             H = H.cuda()
-        H = Variable(H)
     algorithm.entropy.append(H)
-    return action.data[0]
+    return action.item()
 
 
 # Denny Britz has a very helpful implementation of an Actor Critic algorithm. This function is adapted from his approach. I highly recommend looking at his full implementation available here https://github.com/dennybritz/reinforcement-learning/blob/master/PolicyGradient/Continuous%20MountainCar%20Actor%20Critic%20Solution.ipynb
@@ -245,12 +240,14 @@ def act_with_gaussian(algorithm, state, body, gpu):
     '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
     state_seq = body.memory.state_buffer.maxlen > 0
     torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen)
-    [mu, sigma] = algorithm.get_actor_output(torch_state, evaluate=False)
+    mu, sigma = algorithm.get_actor_output(torch_state, evaluate=False)
+    mu.squeeze_(dim=0)
+    sigma.squeeze_(dim=0)
     sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0
     m = Normal(mu, sigma)
     action = m.sample()
     action = torch.clamp(action, -algorithm.continuous_action_clip, algorithm.continuous_action_clip)
-    logger.debug2(f'Action: {action.data[0]}, log prob: {m.log_prob(action).data[0]}')
+    logger.debug2(f'Action: {action.item()}, log prob: {m.log_prob(action).item()}')
     algorithm.saved_log_probs.append(m.log_prob(action))
     # Calculate entropy of the distribution
     H = 0.5 * torch.log(2.0 * np.pi * np.e * sigma * sigma)
@@ -259,7 +256,6 @@ def act_with_gaussian(algorithm, state, body, gpu):
         H = torch.zeros(1)
         if torch.cuda.is_available() and gpu:
             H = H.cuda()
-        H = Variable(H)
     algorithm.entropy.append(H)
     return action.data
 

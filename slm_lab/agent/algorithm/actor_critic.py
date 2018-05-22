@@ -5,7 +5,6 @@ from slm_lab.agent.algorithm.reinforce import Reinforce
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-from torch.autograd import Variable
 import torch.nn.functional as F
 import numpy as np
 import torch
@@ -87,10 +86,6 @@ class ActorCritic(Reinforce):
             self.get_target = self.get_gae_target
         else:
             self.get_target = self.get_nstep_target
-        self.to_train = 0
-        # To save on a forward pass keep the log probs and entropy from each action
-        self.saved_log_probs = []
-        self.entropy = []
 
     @lab_api
     def init_nets(self):
@@ -110,24 +105,28 @@ class ActorCritic(Reinforce):
         '''
         net_type = self.net_spec['type']
         # options of net_type are {MLP, Conv, Recurrent} x {shared, separate}
+        in_dim = self.body.state_dim
         if self.body.is_discrete:
             if 'shared' in net_type:
                 self.share_architecture = True
-                self.body.action_dim = [self.body.action_dim, 1]
+                out_dim = [self.body.action_dim, 1]
             else:
-                self.share_architecture = False
                 assert 'separate' in net_type
+                self.share_architecture = False
+                out_dim = self.body.action_dim
+                critic_out_dim = 1
         else:
-            self.body.action_dim = [self.body.action_dim] * 2
             if 'shared' in net_type:
                 self.share_architecture = True
-                self.body.action_dim.append(1)
+                out_dim = [self.body.action_dim, self.body.action_dim, 1]
             else:
-                self.share_architecture = False
                 assert 'separate' in net_type
+                self.share_architecture = False
+                out_dim = [self.body.action_dim, self.body.action_dim]
+                critic_out_dim = 1
 
         self.net_spec['type'] = net_type = net_type.replace('shared', 'Net').replace('separate', 'Net')
-        if 'MLP' in net_type and ps.is_list(self.body.action_dim) and len(self.body.action_dim) > 1:
+        if 'MLP' in net_type and ps.is_list(out_dim) and len(out_dim) > 1:
             self.net_spec['type'] = 'MLPHeterogenousTails'
 
         actor_net_spec = self.net_spec.copy()
@@ -144,16 +143,13 @@ class ActorCritic(Reinforce):
         # properly set net_spec and action_dim for actor, critic nets
         if self.share_architecture:
             # net = actor_critic as one
-            self.net = NetClass(actor_net_spec, self, self.body)
+            self.net = NetClass(actor_net_spec, self, in_dim, out_dim)
         else:
             # main net = actor
-            self.net = NetClass(actor_net_spec, self, self.body)
-            critic_body = deepcopy(self.body)
-            critic_body.action_dim = 1  # space to init critic
+            self.net = NetClass(actor_net_spec, self, in_dim, out_dim)
             if critic_net_spec['use_same_optim']:
-                self.critic = NetClass(actor_net_spec, self, critic_body)
-            else:
-                self.critic = NetClass(critic_net_spec, self, critic_body)
+                critic_net_spec = actor_net_spec
+            self.critic = NetClass(critic_net_spec, self, in_dim, critic_out_dim)
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
@@ -170,6 +166,7 @@ class ActorCritic(Reinforce):
         batches = [body.memory.sample()
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_dict(batches)
+        # TODO call these from inside memory, always return torch batch
         if self.body.memory.is_episodic:
             util.to_torch_nested_batch(batch, self.net.gpu)
         else:
@@ -189,7 +186,7 @@ class ActorCritic(Reinforce):
         if self.to_train == 1:
             batch = self.sample()
             # Calculate policy loss (actor)
-            policy_loss = self.get_policy_loss(batch)
+            policy_loss = self.calc_policy_loss(batch)
             # Calculate state-value loss (critic)
             target = self.get_target(batch, critic_specific=True)
             states = batch['states']
@@ -198,28 +195,28 @@ class ActorCritic(Reinforce):
                 states = torch.cat(states)
             if torch.cuda.is_available() and self.net.gpu:
                 target = target.cuda()
-            y = Variable(target.unsqueeze_(dim=-1))
+            y = target.unsqueeze_(dim=-1)
             state_vals = self.get_critic_output(states, evaluate=False)
             assert state_vals.data.size() == y.data.size()
             val_loss = F.mse_loss(state_vals, y)
             # Combine losses and train
             self.net.optim.zero_grad()
             total_loss = self.policy_loss_weight * policy_loss + self.val_loss_weight * val_loss
-            loss = total_loss.data[0]
+            loss = total_loss
             total_loss.backward()
-            if self.net.clamp_grad:
+            if self.net.clip_grad:
                 logger.debug('Clipping actorcritic gradient...')
                 torch.nn.utils.clip_grad_norm(
-                    self.net.params, self.net.clamp_grad_val)
-            logger.debug2(f'Combined AC gradient norms: {self.net.get_grad_norms()}')
+                    self.net.params, self.net.clip_grad_val)
+            # logger.debug2(f'Combined AC gradient norms: {net_util.get_grad_norms(self.net)}')
             self.net.optim.step()
             self.to_train = 0
             self.saved_log_probs = []
             self.entropy = []
             logger.debug('Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}'.format(
-                val_loss.data[0], abs(policy_loss.data[0]), loss
+                val_loss, abs(policy_loss), loss
             ))
-            return loss
+            return loss.item()
         else:
             return np.nan
 
@@ -234,7 +231,7 @@ class ActorCritic(Reinforce):
             logger.debug('Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}'.format(
                 critic_loss, abs(actor_loss), total_loss
             ))
-            return total_loss
+            return total_loss.item()
         else:
             return np.nan
 
@@ -248,14 +245,14 @@ class ActorCritic(Reinforce):
     def train_actor(self, batch):
         '''Trains the actor when the actor and critic are separate networks'''
         self.net.optim.zero_grad()
-        policy_loss = self.get_policy_loss(batch)
-        loss = policy_loss.data[0]
+        policy_loss = self.calc_policy_loss(batch)
+        loss = policy_loss
         policy_loss.backward()
-        if self.net.clamp_grad:
+        if self.net.clip_grad:
             logger.debug("Clipping actor gradient...")
             torch.nn.utils.clip_grad_norm(
-                self.net.params, self.net.clamp_grad_val)
-        logger.debug(f'Actor gradient norms: {self.net.get_grad_norms()}')
+                self.net.params, self.net.clip_grad_val)
+        # logger.debug(f'Actor gradient norms: {net_util.get_grad_norms(self.critic)}')
         self.net.optim.step()
         self.to_train = 0
         self.saved_log_probs = []
@@ -263,9 +260,9 @@ class ActorCritic(Reinforce):
         logger.debug(f'Policy loss: {loss}')
         return loss
 
-    def get_policy_loss(self, batch):
+    def calc_policy_loss(self, batch):
         '''Returns the policy loss for a batch of data.'''
-        return super(ActorCritic, self).get_policy_loss(batch)
+        return super(ActorCritic, self).calc_policy_loss(batch)
 
     def train_critic_batch(self, batch):
         '''Trains the critic using batches of data. Algorithm doesn't wait until episode has ended to train'''
@@ -274,9 +271,9 @@ class ActorCritic(Reinforce):
             target = self.get_target(batch, critic_specific=True)
             if torch.cuda.is_available() and self.net.gpu:
                 target = target.cuda()
-            y = Variable(target)
-            loss = self.critic.training_step(batch['states'], y).data[0]
-            logger.debug(f'Critic grad norms: {self.critic.get_grad_norms()}')
+            y = target.unsqueeze_(dim=-1)
+            loss = self.critic.training_step(batch['states'], y)
+            # logger.debug(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
         return loss
 
     def train_critic_episodic(self, batch):
@@ -294,9 +291,9 @@ class ActorCritic(Reinforce):
             logger.debug2(f'Combined states: {x.size()}')
             if torch.cuda.is_available() and self.net.gpu:
                 target = target.cuda()
-            y = Variable(target)
-            loss = self.critic.training_step(x, y).data[0]
-            logger.debug2(f'Critic grad norms: {self.critic.get_grad_norms()}')
+            y = target.unsqueeze_(dim=-1)
+            loss = self.critic.training_step(x, y)
+            # logger.debug2(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
         return loss
 
     def calc_advantage(self, batch):
@@ -320,9 +317,8 @@ class ActorCritic(Reinforce):
         returns advantage as a single Tensor
         '''
         target = self.get_target(batch)
-        state_vals = self.get_critic_output(batch['states']).squeeze_()
+        state_vals = self.get_critic_output(batch['states']).squeeze_(0)
         advantage = target - state_vals
-        advantage.squeeze_()
         logger.debug2(f'Advantage: {advantage.size()}')
         return advantage
 
@@ -483,7 +479,7 @@ class ActorCritic(Reinforce):
         for i in range(rewards.size(0) - 1, -1, -1):
             big_r = rewards[i] + self.gamma * big_r
             target.insert(0, big_r)
-        target = torch.Tensor(target)
+        target = torch.tensor(target)
         if torch.cuda.is_available() and self.net.gpu:
             target = target.cuda()
         logger.debug3(f'Target: {target}')
@@ -509,7 +505,7 @@ class ActorCritic(Reinforce):
         for i in range(deltas.size(0) - 1, -1, -1):
             gae = deltas[i] + self.gamma * self.lam * gae
             advantage.insert(0, gae)
-        advantage = torch.Tensor(advantage)
+        advantage = torch.tensor(advantage)
         if torch.cuda.is_available() and self.net.gpu:
             advantage = advantage.cuda()
         # Add state_vals so that calc_advantage() api is preserved

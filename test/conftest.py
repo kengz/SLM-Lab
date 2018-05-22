@@ -2,13 +2,12 @@ from slm_lab.agent import AgentSpace, Body
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.net.recurrent import RecurrentNet
-from slm_lab.agent.net.mlp import MLPNet, MultiMLPNet, MLPHeterogenousTails
+from slm_lab.agent.net.mlp import MLPNet, HydraMLPNet, MLPHeterogenousTails
 from slm_lab.env import EnvSpace
 # from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
-from torch.autograd import Variable
 import numpy as np
 import pandas as pd
 import pytest
@@ -205,7 +204,7 @@ def test_multiline_str():
             'out_dim': 10,
             'optim_spec':{'name': 'Adam'},
             'loss_spec': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'clip_grad': False,
             'batch_norm': False,
         },
         None,
@@ -220,7 +219,7 @@ def test_multiline_str():
             'out_dim': 10,
             'optim_spec':{'name': 'Adam'},
             'loss_spec': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'clip_grad': False,
             'batch_norm': False,
         },
         None,
@@ -235,7 +234,7 @@ def test_multiline_str():
             'out_dim': 10,
             'optim_spec': {'name': 'Adam'},
             'loss_spec': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'clip_grad': False,
             'batch_norm': True,
         },
         None,
@@ -251,7 +250,7 @@ def test_multiline_str():
             'out_dim': 10,
             'optim_spec':{'name': 'Adam'},
             'loss_spec': {'name': 'mse_loss'},
-            'clamp_grad': True,
+            'clip_grad': True,
             'batch_norm': False,
         },
         None,
@@ -267,7 +266,7 @@ def test_multiline_str():
             'out_dim': 10,
             'optim_spec':{'name': 'Adam'},
             'loss_spec': {'name': 'mse_loss'},
-            'clamp_grad': True,
+            'clip_grad': True,
             'batch_norm': True,
         },
         None,
@@ -283,7 +282,7 @@ def test_multiline_str():
             'out_dim': 10,
             'optim_spec':{'name': 'Adam'},
             'loss_spec': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'clip_grad': False,
             'batch_norm': False,
         },
         None,
@@ -299,7 +298,7 @@ def test_multiline_str():
             'out_dim': 10,
             'optim_spec':{'name': 'Adam'},
             'loss_spec': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'clip_grad': False,
             'batch_norm': True,
         },
         None,
@@ -315,7 +314,7 @@ def test_multiline_str():
             'out_dim': [10],
             'optim_spec':{'name': 'Adam'},
             'loss_spec': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'clip_grad': False,
             'batch_norm': True,
         },
         None,
@@ -331,7 +330,7 @@ def test_multiline_str():
             'out_dim': [10, 5],
             'optim_spec':{'name': 'Adam'},
             'loss_spec': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'clip_grad': False,
             'batch_norm': True,
         },
         None,
@@ -347,13 +346,13 @@ def test_multiline_str():
             'out_dim': [10, 5, 1],
             'optim_spec':{'name': 'Adam'},
             'loss_spec': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'clip_grad': False,
             'batch_norm': True,
         },
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
             'hid_layers': [64],
@@ -365,7 +364,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
             'hid_layers': [],
@@ -377,7 +376,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
             'hid_layers': [],
@@ -389,7 +388,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10, 15], [8, 16]],
             'hid_layers': [],
@@ -401,7 +400,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10, 15], [8, 16]],
             'hid_layers': [32, 64],
@@ -413,7 +412,7 @@ def test_multiline_str():
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10], [8, 16, 24]],
             'hid_layers': [32, 64],

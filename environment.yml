@@ -13,7 +13,7 @@ dependencies:
 - flaky=3.4.0=py_0
 - hdf5=1.10.1=1
 - ipykernel=4.7.0=py36_0
-- numpy=1.14.0=py36_blas_openblas_200
+- numpy=1.14.3=py36_blas_openblas_200
 - openblas=0.2.20=7
 - mpi4py=2.0.0
 - openpyxl=2.5.0b1=py36_0
@@ -39,8 +39,8 @@ dependencies:
 - urllib3=1.22=py36_0
 - wheel=0.30.0=py36_2
 - xlrd=1.1.0=py_2
-- pytorch=0.3.0
-- torchvision=0.2.0
+- pytorch=0.4.0
+- torchvision=0.2.1
 - libgcc
 - pip:
   - cloudpickle==0.5.2
@@ -56,6 +56,4 @@ dependencies:
   - ray==0.3.1
   - redis==2.10.6
   - tensorflow==1.7.0
-  - theano==1.0.1
-  - torch==0.3.0.post4
   - unityagents==0.2.0

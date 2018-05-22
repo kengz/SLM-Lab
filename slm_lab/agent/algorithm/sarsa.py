@@ -4,7 +4,6 @@ from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-from torch.autograd import Variable
 import numpy as np
 import pydash as ps
 import torch
@@ -72,39 +71,42 @@ class SARSA(Algorithm):
         if 'Recurrent' in self.net_spec['type']:
             self.net_spec.update(seq_len=self.net_spec['seq_len'])
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, self.body)
+        self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
-        # Calculate the Q values of the current and next states
-        q_sts = self.net.wrap_eval(batch['states'])
-        q_next_st = self.net.wrap_eval(batch['next_states'])
-        q_next_actions = batch['next_actions']
-        logger.debug2(f'Q next states: {q_next_st.size()}')
-        # Get the q value for the next action that was actually taken
-        idx = torch.from_numpy(np.array(list(range(q_next_st.size(0)))))
-        if torch.cuda.is_available() and self.net.gpu:
-            idx = idx.cuda()
-        q_next_st_vals = q_next_st[idx, q_next_actions.squeeze_(1).data.long()]
-        # Expand the dims so that q_next_st_vals can be broadcast
-        q_next_st_vals.unsqueeze_(1)
-        logger.debug2(f'Q next_states vals {q_next_st_vals.size()}')
-        logger.debug3(f'Q next_states {q_next_st}')
-        logger.debug3(f'Q next actions {q_next_actions}')
-        logger.debug3(f'Q next_states vals {q_next_st_vals}')
-        logger.debug3(f'Dones {batch["dones"]}')
-        # Compute q_targets using reward and Q value corresponding to the action taken in the next state if there is one. Make next state Q value 0 if the current state is done
-        q_targets_actual = batch['rewards'].data + self.gamma * torch.mul((1 - batch['dones'].data), q_next_st_vals)
-        logger.debug2(f'Q targets actual: {q_targets_actual.size()}')
-        logger.debug3(f'Q states {q_sts}')
-        logger.debug3(f'Q targets actual: {q_targets_actual}')
-        # We only want to train the network for the action selected in the current state
-        # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
-        q_targets = torch.mul(q_targets_actual, batch['actions_onehot'].data) + torch.mul(q_sts, (1 - batch['actions_onehot'].data))
-        logger.debug2(f'Q targets: {q_targets.size()}')
-        logger.debug3(f'Q targets: {q_targets}')
-        return q_targets
+        with torch.no_grad():
+            # Calculate the Q values of the current and next states
+            q_sts = self.net.wrap_eval(batch['states'])
+            q_next_st = self.net.wrap_eval(batch['next_states'])
+            q_next_actions = batch['next_actions']
+            logger.debug2(f'Q next states: {q_next_st.size()}')
+            # Get the q value for the next action that was actually taken
+            idx = torch.from_numpy(np.array(range(q_next_st.size(0))))
+            if torch.cuda.is_available() and self.net.gpu:
+                idx = idx.cuda()
+            q_next_st_vals = q_next_st[idx, q_next_actions.squeeze_(1).data.long()]
+            # Expand the dims so that q_next_st_vals can be broadcast
+            q_next_st_vals.unsqueeze_(1)
+            logger.debug2(f'Q next_states vals {q_next_st_vals.size()}')
+            logger.debug3(f'Q next_states {q_next_st}')
+            logger.debug3(f'Q next actions {q_next_actions}')
+            logger.debug3(f'Q next_states vals {q_next_st_vals}')
+            logger.debug3(f'Dones {batch["dones"]}')
+            # Compute q_targets using reward and Q value corresponding to the action taken in the next state if there is one. Make next state Q value 0 if the current state is done
+            q_targets_actual = batch['rewards'].data + self.gamma * torch.mul((1 - batch['dones'].data), q_next_st_vals)
+            logger.debug2(f'Q targets actual: {q_targets_actual.size()}')
+            logger.debug3(f'Q states {q_sts}')
+            logger.debug3(f'Q targets actual: {q_targets_actual}')
+            # We only want to train the network for the action selected in the current state
+            # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
+            q_targets = torch.mul(q_targets_actual, batch['actions_onehot'].data) + torch.mul(q_sts, (1 - batch['actions_onehot'].data))
+            logger.debug2(f'Q targets: {q_targets.size()}')
+            logger.debug3(f'Q targets: {q_targets}')
+            if torch.cuda.is_available() and self.net.gpu:
+                q_targets = q_targets.cuda()
+            return q_targets
 
     @lab_api
     def sample(self):
@@ -152,24 +154,19 @@ class SARSA(Algorithm):
         Completes one training step for the agent if it is time to train.
         Otherwise this function does nothing.
         '''
-        t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if self.to_train == 1:
-            logger.debug3(f'Training at t: {t}')
             batch = self.sample()
             if batch['states'].size(0) < 2:
                 logger.info(f'Batch too small to train with, skipping...')
                 self.to_train = 0
                 return np.nan
             q_targets = self.compute_q_target_values(batch)
-            if torch.cuda.is_available() and self.net.gpu:
-                q_targets = q_targets.cuda()
-            y = Variable(q_targets)
+            y = q_targets
             loss = self.net.training_step(batch['states'], y)
-            logger.debug(f'loss {loss.data[0]}')
             self.to_train = 0
-            return loss.data[0]
+            logger.debug(f'loss {loss.item()}')
+            return loss.item()
         else:
-            logger.debug3('NOT training')
             return np.nan
 
     @lab_api
