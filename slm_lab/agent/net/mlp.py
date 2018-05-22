@@ -75,8 +75,9 @@ class MLPNet(Net, nn.Module):
                 module.cuda()
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        logger.info(f'loss fn: {self.loss_fn}')
-        logger.info(f'optimizer: {self.optim}')
+
+    def __str__(self):
+        return super(MLPNet, self).__str__() + f'\noptim: {self.optim}'
 
     def forward(self, x):
         '''The feedforward step'''
@@ -164,8 +165,6 @@ class MLPHeterogenousTails(MLPNet):
                 module.cuda()
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        logger.info(f'loss fn: {self.loss_fn}')
-        logger.info(f'optimizer: {self.optim}')
 
     def forward(self, x):
         '''The feedforward step'''
@@ -174,14 +173,6 @@ class MLPHeterogenousTails(MLPNet):
         for model_tail in self.model_tails:
             outs.append(model_tail(x))
         return outs
-
-    def __str__(self):
-        '''Overriding so that print() will print the whole network'''
-        s = self.model_body.__str__()
-        s += '\nTail:'
-        for model_tail in self.model_tails:
-            s += '\n' + model_tail.__str__()
-        return s
 
 
 class HydraMLPNet(Net, nn.Module):
@@ -266,8 +257,9 @@ class HydraMLPNet(Net, nn.Module):
                 module.cuda()
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        logger.info(f'loss fn: {self.loss_fn}')
-        logger.info(f'optimizer: {self.optim}')
+
+    def __str__(self):
+        return super(HydraMLPNet, self).__str__() + f'\noptim: {self.optim}'
 
     def build_model_heads(self, in_dim):
         '''Build each model_head. These are stored as Sequential models in model_heads'''
@@ -340,15 +332,3 @@ class HydraMLPNet(Net, nn.Module):
         self.optim_spec['lr'] = old_lr * self.decay_lr_factor
         logger.info(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)
-
-    def __str__(self):
-        '''Overriding so that print() will print the whole network'''
-        s = 'Head'
-        for net in self.model_heads:
-            s += net.__str__() + '\n'
-        s += '\nBody:\n'
-        s += self.model_body.__str__()
-        s += '\nTail:'
-        for net in self.model_tails:
-            s += '\n' + net.__str__()
-        return s

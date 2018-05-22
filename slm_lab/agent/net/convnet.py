@@ -99,8 +99,9 @@ class ConvNet(Net, nn.Module):
                 module.cuda()
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        logger.info(f'loss fn: {self.loss_fn}')
-        logger.info(f'optimizer: {self.optim}')
+
+    def __str__(self):
+        return super(ConvNet, self).__str__() + f'\noptim: {self.optim}'
 
     def get_conv_output_size(self):
         '''Helper function to calculate the size of the flattened features after the final convolutional layer'''
@@ -178,13 +179,6 @@ class ConvNet(Net, nn.Module):
         '''
         self.eval()
         return self(x)
-
-    def __str__(self):
-        '''Overriding so that print() will print the whole network'''
-        s = self.conv_model.__str__() + '\n' + self.dense_model.__str__()
-        for model_tail in self.model_tails:
-            s += '\n' + model_tail.__str__()
-        return s
 
     def update_lr(self):
         assert 'lr' in self.optim_spec
