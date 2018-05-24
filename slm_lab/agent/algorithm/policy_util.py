@@ -97,3 +97,42 @@ def boltzmann(state, algorithm, body):
     pdparam /= tau
     action, action_pd = sample_action_pd(ActionPD, pdparam, body)
     return action, action_pd
+
+
+# action policy update methods
+
+def linear_decay(algoritm, body):
+    '''Simple linear decay with annealing'''
+    epi = body.env.clock.get('epi')
+    rise = algorithm.explore_var_end - algorithm.explore_var_start
+    slope = rise / float(algorithm.explore_anneal_epi)
+    explore_var = max(slope * (epi - 1) + algorithm.explore_var_start, algorithm.explore_var_end)
+    body.explore_var = explore_var
+    return explore_var
+
+
+def rate_decay(algoritm, body):
+    epi = body.env.clock.get('epi')
+    epi_per_decay = algorithm.explore_anneal_epi / 20.
+    decay_step = epi / epi_per_decay
+    explore_var = max(0.9 ^ decay_step * body.explore_var, algorithm.explore_var_end)
+    body.explore_var = explore_var
+    return explore_var
+
+
+def periodic_decay(algorithm, body):
+    '''
+    linearly decaying sinusoid
+    plot this graph to see the pattern
+    suppose sinusoidal decay, explore_var_start =1, explore_var_end = 0.2, stop after 60 unscaled x steps
+    then we get 0.2+0.5*(1-0.2)(1 + cos x)*(1-x/60)
+    '''
+    epi = body.env.clock.get('epi')
+    unscaled_x = 60.
+    epi_per_decay = algorithm.explore_anneal_epi / unscaled_x
+    x = epi / epi_per_decay
+    unit = (algorithm.explore_var_start - algorithm.explore_var_end)
+    explore_var = algorithm.explore_var_end * 0.5 * unit * (1 + np.cos(x) * (1 - x / unscaled_x))
+    explore_var = max(explore_var, algorithm.explore_var_end)
+    body.explore_var = explore_var
+    return explore_var
