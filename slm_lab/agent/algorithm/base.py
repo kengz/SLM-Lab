@@ -31,14 +31,22 @@ class Algorithm(ABC):
 
     @abstractmethod
     @lab_api
-    def init_nets(self):
-        '''Initialize the neural network from the spec'''
+    def init_algorithm_params(self):
+        '''Initialize other algorithm parameters'''
         raise NotImplementedError
 
     @abstractmethod
     @lab_api
-    def init_algorithm_params(self):
-        '''Initialize other algorithm parameters'''
+    def init_nets(self):
+        '''Initialize the neural network from the spec'''
+        raise NotImplementedError
+
+    @lab_api
+    def calc_pdparam(self, x, evaluate=True):
+        '''
+        To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
+        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
+        '''
         raise NotImplementedError
 
     @lab_api

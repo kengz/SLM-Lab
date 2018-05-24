@@ -21,8 +21,8 @@ class Random(Algorithm):
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
-        self.training_frequency = 1
         self.to_train = 0
+        self.training_frequency = 1
 
     @lab_api
     def init_nets(self):
@@ -32,13 +32,13 @@ class Random(Algorithm):
     @lab_api
     def body_act_discrete(self, body, state):
         '''Random discrete action'''
-        action = np.random.randint(body.action_dim)
+        action = body.action_space.sample()
         return action
 
     @lab_api
     def body_act_continuous(self, body, state):
         '''Random continuous action'''
-        action = np.random.randn(body.action_dim)
+        action = body.action_space.sample()
         return action
 
     @lab_api

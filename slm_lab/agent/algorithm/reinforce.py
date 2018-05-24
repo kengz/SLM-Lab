@@ -178,14 +178,14 @@ class Reinforce(Algorithm):
         explore_var = np.nan
         return explore_var
 
-    def get_actor_output(self, x, evaluate=True):
+    @lab_api
+    def calc_pdparam(self, x, evaluate=True):
         '''
-        Returns the output of the policy, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.
-        Output will either be the logits for a categorical probability distribution over discrete actions (discrete action space) or the mean and std dev of the action policy (continuous action space)
+        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
         if evaluate:
-            out = self.net.wrap_eval(x)
+            pdparam = self.net.wrap_eval(x)
         else:
             self.net.train()
-            out = self.net(x)
-        return out
+            pdparam = self.net(x)
+        return pdparam

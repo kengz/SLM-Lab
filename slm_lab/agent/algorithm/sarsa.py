@@ -60,9 +60,9 @@ class SARSA(Algorithm):
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
         ])
+        self.to_train = 0
         self.action_policy = act_fns[self.action_policy]
         self.action_policy_update = act_update_fns[self.action_policy_update]
-        self.to_train = 0
         self.nanflat_explore_var_a = [self.explore_var_start] * self.agent.body_num
 
     @lab_api
@@ -73,6 +73,26 @@ class SARSA(Algorithm):
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
         logger.info(f'Training on gpu: {self.net.gpu}')
+
+    @lab_api
+    def calc_pdparam(self, x, evaluate=True):
+        '''
+        To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
+        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
+        '''
+        # TODO implement
+        raise NotImplementedError
+        if evaluate:
+            pdparam = self.net.wrap_eval(x)
+        else:
+            self.net.train()
+            pdparam = self.net(x)
+        return pdparam
+
+    @lab_api
+    def body_act_discrete(self, body, state):
+        '''Selects and returns a discrete action for body using the action policy'''
+        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx], self.net.gpu)
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
@@ -168,11 +188,6 @@ class SARSA(Algorithm):
             return loss.item()
         else:
             return np.nan
-
-    @lab_api
-    def body_act_discrete(self, body, state):
-        '''Selects and returns a discrete action for body using the action policy'''
-        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx], self.net.gpu)
 
     def update_explore_var(self):
         '''Updates the explore variables'''

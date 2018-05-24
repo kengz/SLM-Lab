@@ -213,7 +213,7 @@ def act_with_softmax(algorithm, state, body, gpu):
     '''Assumes actor network outputs one variable; the logits of a categorical probability distribution over the actions'''
     state_seq = body.memory.state_buffer.maxlen > 0
     torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen)
-    out = algorithm.get_actor_output(torch_state, evaluate=False)
+    out = algorithm.calc_pdparam(torch_state, evaluate=False)
     if isinstance(out, list):  # guard multi-tails for cont action
         out = out[0]
     out.squeeze_(dim=0)
@@ -240,7 +240,7 @@ def act_with_gaussian(algorithm, state, body, gpu):
     '''Assumes net outputs two variables; the mean and std dev of a normal distribution'''
     state_seq = body.memory.state_buffer.maxlen > 0
     torch_state = create_torch_state(state, body.memory.state_buffer, gpu, state_seq, body.memory.state_buffer.maxlen)
-    mu, sigma = algorithm.get_actor_output(torch_state, evaluate=False)
+    mu, sigma = algorithm.calc_pdparam(torch_state, evaluate=False)
     mu.squeeze_(dim=0)
     sigma.squeeze_(dim=0)
     sigma = F.softplus(sigma) + 1e-5  # Ensures sigma > 0

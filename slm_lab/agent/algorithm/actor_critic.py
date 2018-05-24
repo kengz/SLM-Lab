@@ -76,8 +76,8 @@ class ActorCritic(Reinforce):
             'policy_loss_weight',
             'val_loss_weight',
         ])
-        self.action_policy = act_fns[self.action_policy]
         self.to_train = 0
+        self.action_policy = act_fns[self.action_policy]
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
         self.entropy = []
@@ -514,32 +514,20 @@ class ActorCritic(Reinforce):
         logger.debug3(f'Target: {target}')
         return target
 
-    def print_nets(self):
-        '''Prints networks to stdout'''
-        if self.share_architecture:
-            print(self.net)
-        else:
-            print(self.net)
-            print(self.critic)
-
-    def get_actor_output(self, x, evaluate=True):
+    @lab_api
+    def calc_pdparam(self, x, evaluate=True):
         '''
-        Returns the output of the policy, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.
-        Output will either be the logits for a categorical probability distribution over discrete actions (discrete action space) or the mean and std dev of the action policy (continuous action space)
+        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
-        if self.share_architecture:
-            if evaluate:
-                out = self.net.wrap_eval(x)
-            else:
-                self.net.train()
-                out = self.net(x)
-            return out[:-1]
+        if evaluate:
+            pdparam = self.net.wrap_eval(x)
         else:
-            if evaluate:
-                return self.net.wrap_eval(x)
-            else:
-                self.net.train()
-                return self.net(x)
+            self.net.train()
+            pdparam = self.net(x)
+        if self.share_architecture:
+            return pdparam[:-1]
+        else:
+            return pdparam
 
     def get_critic_output(self, x, evaluate=True):
         '''Returns the estimated state-value regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.'''
