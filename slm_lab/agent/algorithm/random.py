@@ -30,14 +30,8 @@ class Random(Algorithm):
         pass
 
     @lab_api
-    def body_act_discrete(self, body, state):
-        '''Random discrete action'''
-        action = body.action_space.sample()
-        return action
-
-    @lab_api
-    def body_act_continuous(self, body, state):
-        '''Random continuous action'''
+    def body_act(self, body, state):
+        '''Random action'''
         action = body.action_space.sample()
         return action
 

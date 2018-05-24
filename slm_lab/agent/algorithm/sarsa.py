@@ -90,9 +90,11 @@ class SARSA(Algorithm):
         return pdparam
 
     @lab_api
-    def body_act_discrete(self, body, state):
-        '''Selects and returns a discrete action for body using the action policy'''
-        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx], self.net.gpu)
+    def body_act(self, body, state):
+        '''Note, SARSA is discrete-only'''
+        action, action_pd = self.action_policy(state, self, body)
+        # TODO update logprob if has
+        return action
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''

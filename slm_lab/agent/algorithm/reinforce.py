@@ -78,12 +78,10 @@ class Reinforce(Algorithm):
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
-    def body_act_discrete(self, body, state):
-        return self.action_policy(self, state, body, self.net.gpu)
-
-    @lab_api
-    def body_act_continuous(self, body, state):
-        return self.action_policy(self, state, body, self.net.gpu)
+    def body_act(self, body, state):
+        action, action_pd = self.action_policy(state, self, body)
+        # TODO update logprob if has
+        return action
 
     @lab_api
     def sample(self):

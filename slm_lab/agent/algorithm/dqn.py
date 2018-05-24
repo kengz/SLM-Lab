@@ -143,9 +143,9 @@ class VanillaDQN(SARSA):
             return np.nan
 
     @lab_api
-    def body_act_discrete(self, body, state):
+    def body_act(self, body, state):
         '''Selects and returns a discrete action for body using the action policy'''
-        return super(VanillaDQN, self).body_act_discrete(body, state)
+        return super(VanillaDQN, self).body_act(body, state)
 
     def update_explore_var(self):
         '''Updates the explore variables'''
