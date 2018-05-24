@@ -1,5 +1,6 @@
 from copy import deepcopy
 from slm_lab.agent import net
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.algorithm_util import act_fns, decay_learning_rate
 from slm_lab.agent.algorithm.reinforce import Reinforce
 from slm_lab.agent.net import net_util
@@ -57,13 +58,11 @@ class ActorCritic(Reinforce):
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
-        if self.algorithm_spec['action_policy'] == 'default':
-            if self.body.is_discrete:
-                self.algorithm_spec['action_policy'] = 'softmax'
-            else:
-                self.algorithm_spec['action_policy'] = 'gaussian'
         util.set_attr(self, self.algorithm_spec, [
             'action_policy',
+            # theoretically, AC does not have policy update; but in this implementation we have such option
+            'action_policy_update',
+            'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
             'gamma',  # the discount factor
             'add_entropy',
             'entropy_weight',
@@ -77,10 +76,13 @@ class ActorCritic(Reinforce):
             'val_loss_weight',
         ])
         self.to_train = 0
-        self.action_policy = act_fns[self.action_policy]
+        self.action_policy = getattr(policy_util, self.action_policy)
+        self.action_policy_update = act_update_fns[self.action_policy_update]
+        for body in self.agent.nanflat_body_a:
+            body.explore_var = self.explore_var_start
+        self.entropy = []
         # To save on a forward pass keep the log probs from each action
         self.saved_log_probs = []
-        self.entropy = []
         # Select appropriate function for calculating state-action-value estimate (target)
         if self.use_GAE:
             self.get_target = self.get_gae_target

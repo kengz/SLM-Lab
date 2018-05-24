@@ -54,6 +54,9 @@ class Body:
         self.action_type = util.get_action_type(self.action_space)
         self.action_pdtype = self.agent.agent_spec['algorithm'].get('action_pdtype', policy_util.ACTION_PDS[self.action_type][0])
         self.is_discrete = self.env.is_discrete(self.a)
+        # for action policy exploration, so be set in algo during init_algorithm_params()
+        self.explore_var = np.nan
+
 
         # every body has its own memory for ease of computation
         memory_spec = self.agent.agent_spec['memory']

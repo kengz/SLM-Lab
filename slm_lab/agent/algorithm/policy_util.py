@@ -80,7 +80,7 @@ def default(state, algorithm, body):
 
 def epsilon_greedy(state, algorithm, body):
     '''Epsilon-greedy policy: with probability epsilon, do random action, otherwise do default sampling.'''
-    epsilon = algorithm.nanflat_explore_var_a[body.nanflat_a_idx]
+    epsilon = body.explore_var
     if epsilon > np.random.rand():
         action_pd = None
         return body.action_space.sample(), action_pd
@@ -92,7 +92,7 @@ def boltzmann(state, algorithm, body):
     '''
     Boltzmann policy: adjust pdparam with temperature tau; the higher the more randomness/noise in action.
     '''
-    tau = algorithm.nanflat_explore_var_a[body.nanflat_a_idx]
+    tau = body.explore_var
     ActionPD, pdparam, body = init_action_pd(state, algorithm, body)
     pdparam /= tau
     action, action_pd = sample_action_pd(ActionPD, pdparam, body)

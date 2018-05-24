@@ -1,4 +1,5 @@
 from slm_lab.agent import net
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
@@ -61,9 +62,10 @@ class SARSA(Algorithm):
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
         ])
         self.to_train = 0
-        self.action_policy = act_fns[self.action_policy]
+        self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = act_update_fns[self.action_policy_update]
-        self.nanflat_explore_var_a = [self.explore_var_start] * self.agent.body_num
+        for body in self.agent.nanflat_body_a:
+            body.explore_var = self.explore_var_start
 
     @lab_api
     def init_nets(self):
@@ -193,6 +195,7 @@ class SARSA(Algorithm):
 
     def update_explore_var(self):
         '''Updates the explore variables'''
+        # TODO call on body, and all other algos
         space_clock = util.s_get(self, 'aeb_space.clock')
         nanflat_explore_var_a = self.action_policy_update(self, space_clock)
         explore_var_a = self.nanflat_to_data_a(
