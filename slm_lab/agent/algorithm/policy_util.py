@@ -101,38 +101,54 @@ def boltzmann(state, algorithm, body):
 
 # action policy update methods
 
-def linear_decay(algoritm, body):
+def _linear_decay(start_val, end_val, anneal_step, step):
     '''Simple linear decay with annealing'''
+    rise = end_val - start_val
+    slope = rise / anneal_step
+    val = max(slope * (step - 1) + start_val, end_val)
+    return val
+
+
+def _rate_decay(start_val, end_val, anneal_step, step, decay_rate=0.9, frequency=20.):
+    '''Compounding rate decay that anneals in 20 decay iterations until anneal_step'''
+    step_per_decay = anneal_step / frequency
+    decay_step = step / step_per_decay
+    val = max(decay_rate ^ decay_step * start_val, end_val)
+    return val
+
+
+def _periodic_decay(start_val, end_val, anneal_step, step, frequency=60.):
+    '''
+    Linearly decaying sinusoid that decays in roughly 10 iterations until explore_anneal_epi
+    Plot the equation below to see the pattern
+    suppose sinusoidal decay, start_val = 1, end_val = 0.2, stop after 60 unscaled x steps
+    then we get 0.2+0.5*(1-0.2)(1 + cos x)*(1-x/60)
+    '''
+    x_freq = frequency
+    step_per_decay = anneal_step / x_freq
+    x = step / step_per_decay
+    unit = start_val - end_val
+    val = end_val * 0.5 * unit * (1 + np.cos(x) * (1 - x / x_freq))
+    val = max(val, end_val)
+    return val
+
+
+def linear_decay(algoritm, body):
+    '''Apply linear decay to explore_var'''
     epi = body.env.clock.get('epi')
-    rise = algorithm.explore_var_end - algorithm.explore_var_start
-    slope = rise / float(algorithm.explore_anneal_epi)
-    explore_var = max(slope * (epi - 1) + algorithm.explore_var_start, algorithm.explore_var_end)
-    body.explore_var = explore_var
-    return explore_var
+    body.explore_var = _linear_decay(algorithm.explore_var_start, algorithm.explore_var_end, algoritm.explore_anneal_epi, epi)
+    return body.explore_var
 
 
 def rate_decay(algoritm, body):
+    '''Apply _rate_decay to explore_var'''
     epi = body.env.clock.get('epi')
-    epi_per_decay = algorithm.explore_anneal_epi / 20.
-    decay_step = epi / epi_per_decay
-    explore_var = max(0.9 ^ decay_step * body.explore_var, algorithm.explore_var_end)
-    body.explore_var = explore_var
-    return explore_var
+    body.explore_var = _rate_decay(algorithm.explore_var_start, algorithm.explore_var_end, algoritm.explore_anneal_epi, epi)
+    return body.explore_var
 
 
 def periodic_decay(algorithm, body):
-    '''
-    linearly decaying sinusoid
-    plot this graph to see the pattern
-    suppose sinusoidal decay, explore_var_start =1, explore_var_end = 0.2, stop after 60 unscaled x steps
-    then we get 0.2+0.5*(1-0.2)(1 + cos x)*(1-x/60)
-    '''
+    '''Apply _periodic_decay to explore_var'''
     epi = body.env.clock.get('epi')
-    unscaled_x = 60.
-    epi_per_decay = algorithm.explore_anneal_epi / unscaled_x
-    x = epi / epi_per_decay
-    unit = (algorithm.explore_var_start - algorithm.explore_var_end)
-    explore_var = algorithm.explore_var_end * 0.5 * unit * (1 + np.cos(x) * (1 - x / unscaled_x))
-    explore_var = max(explore_var, algorithm.explore_var_end)
-    body.explore_var = explore_var
-    return explore_var
+    body.explore_var = _periodic_decay(algorithm.explore_var_start, algorithm.explore_var_end, algoritm.explore_anneal_epi, epi)
+    return body.explore_var

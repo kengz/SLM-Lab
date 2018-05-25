@@ -296,10 +296,10 @@ def decay_learning_rate(algorithm, nets):
     In the future, might add more flexible lr adjustment, like boosting and decaying on need.
     '''
     space_clock = util.s_get(algorithm, 'aeb_space.clock')
-    t = space_clock.get('total_t')
+    total_t = space_clock.get('total_t')
     epi = space_clock.get('epi')
-    if algorithm.net.decay_lr and t >= algorithm.net.decay_lr_min_timestep:
-        if t % algorithm.net.decay_lr_frequency == 0:
+    if algorithm.net.decay_lr and total_t >= algorithm.net.decay_lr_min_timestep:
+        if total_t % algorithm.net.decay_lr_frequency == 0:
             logger.info(f'Epi {epi}: Decaying learning rate...')
             for net in nets:
                 net.update_lr()
