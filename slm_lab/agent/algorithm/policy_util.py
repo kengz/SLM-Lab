@@ -103,7 +103,7 @@ def epsilon_greedy(state, algorithm, body):
     '''Epsilon-greedy policy: with probability epsilon, do random action, otherwise do default sampling.'''
     epsilon = body.explore_var
     if epsilon > np.random.rand():
-        action_pd = None
+        action_pd = distributions.Uniform(low=torch.from_numpy(body.action_space.low), high=torch.from_numpy(body.action_space.high))
         return body.action_space.sample(), action_pd
     else:
         return default()
