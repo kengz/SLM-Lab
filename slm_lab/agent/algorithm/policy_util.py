@@ -99,14 +99,21 @@ def default(state, algorithm, body):
     return action, action_pd
 
 
+def random(state, algorithm, body):
+    '''Random action sampling that returns the same data format as default(), but without forward pass. Uses gym.space.sample()'''
+    action_pd = distributions.Uniform(low=torch.from_numpy(np.array(body.action_space.low)).float(), high=torch.from_numpy(np.array(body.action_space.high)).float())
+    sample = body.action_space.sample()
+    action = torch.tensor(sample, dtype=torch.float)
+    return action, action_pd
+
+
 def epsilon_greedy(state, algorithm, body):
     '''Epsilon-greedy policy: with probability epsilon, do random action, otherwise do default sampling.'''
     epsilon = body.explore_var
     if epsilon > np.random.rand():
-        action_pd = distributions.Uniform(low=torch.from_numpy(body.action_space.low), high=torch.from_numpy(body.action_space.high))
-        return body.action_space.sample(), action_pd
+        return random(state, algorithm, body)
     else:
-        return default()
+        return default(state, algorithm, body)
 
 
 def boltzmann(state, algorithm, body):
