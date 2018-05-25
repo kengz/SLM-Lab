@@ -56,6 +56,7 @@ class VanillaDQN(SARSA):
     def init_algorithm_params(self):
         # set default
         util.set_attr(self, dict(
+            action_pdtype='Argmax',
             action_policy='epsilon_greedy',
             action_policy_update='linear_decay',
             explore_var_start=1.0,

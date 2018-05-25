@@ -28,14 +28,35 @@ logger = logger.get_logger(__name__)
 ACTION_PDS = {
     'continuous': ['Normal', 'Beta', 'Gumbel', 'LogNormal'],
     'multi_continuous': ['MultivariateNormal'],
-    'discrete': ['Categorical'],
+    'discrete': ['Categorical', 'Argmax'],
     # TODO create MultiCategorical class by extending
     # 'multi_discrete': ['MultiCategorical'],
     'multi_binary': ['Bernoulli'],
 }
 
 
+class Argmax(distributions.Categorical):
+    '''Special distribution class for argmax sampling: always return the argmax of probs or logits'''
+
+    def __init__(self, probs=None, logits=None, validate_args=None):
+        if probs is not None:
+            new_probs = torch.zeros_like(probs, dtype=torch.float)
+            new_prob[torch.argmax(probs, dim=0)] = 1.0
+            probs = new_probs
+        elif logits is not None:
+            new_logits = torch.full_like(logits, -1e8, dtype=torch.float)
+            max_idx = torch.argmax(logits, dim=0)
+            new_logits[max_idx] = logits[max_idx]
+            logits = new_logits
+
+        super(Argmax, self).__init__(probs=probs, logits=logits, validate_args=validate_args)
+
+
+setattr(distributions, 'Argmax', Argmax)
+
+
 # base methods
+
 
 def init_action_pd(state, algorithm, body):
     '''

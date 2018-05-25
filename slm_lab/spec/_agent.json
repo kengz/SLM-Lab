@@ -3,6 +3,7 @@
     "name": "ActorCritic",
     "algorithm": {
       "name": "ActorCritic",
+      "action_pdtype": "default",
       "action_policy": "default",
       "action_policy_update": "no_update",
       "explore_var_start": null,
@@ -49,6 +50,7 @@
     "name": "VanillaDQN",
     "algorithm": {
       "name": "VanillaDQN",
+      "action_pdtype": "Argmax",
       "action_policy": "boltzmann",
       "action_policy_update": "linear_decay",
       "explore_var_start": 1.5,
@@ -89,6 +91,7 @@
     "name": "DQN",
     "algorithm": {
       "name": "DQN",
+      "action_pdtype": "Argmax",
       "action_policy": "boltzmann",
       "action_policy_update": "linear_decay",
       "explore_var_start": 1.5,
@@ -132,6 +135,7 @@
     "name": "DoubleDQN",
     "algorithm": {
       "name": "DoubleDQN",
+      "action_pdtype": "Argmax",
       "action_policy": "boltzmann",
       "action_policy_update": "linear_decay",
       "explore_var_start": 1.5,
@@ -175,6 +179,7 @@
     "name": "MultitaskDQN",
     "algorithm": {
       "name": "MultitaskDQN",
+      "action_pdtype": "Argmax",
       "action_policy": "multi_boltzmann",
       "action_policy_update": "multi_linear_decay",
       "explore_var_start": 1.5,
@@ -218,6 +223,7 @@
     "name": "HydraDQN",
     "algorithm": {
       "name": "HydraDQN",
+      "action_pdtype": "Argmax",
       "action_policy": "multi_head_boltzmann",
       "action_policy_update": "multi_linear_decay",
       "explore_var_start": 1.5,
@@ -298,6 +304,7 @@
     "name": "Reinforce",
     "algorithm": {
       "name": "Reinforce",
+      "action_pdtype": "default",
       "action_policy": "default",
       "action_policy_update": "no_update",
       "explore_var_start": null,
@@ -336,6 +343,7 @@
     "name": "SARSA",
     "algorithm": {
       "name": "SARSA",
+      "action_pdtype": "default",
       "action_policy": "epsilon_greedy",
       "action_policy_update": "linear_decay",
       "explore_var_start": 1.0,

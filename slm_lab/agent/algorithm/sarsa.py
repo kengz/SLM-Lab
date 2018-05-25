@@ -54,11 +54,12 @@ class SARSA(Algorithm):
         '''Initialize other algorithm parameters.'''
         # set default
         util.set_attr(self, dict(
+            action_pdtype='default',
             action_policy='default',
             action_policy_update='no_update',
-            explore_var_start=None,
-            explore_var_end=None,
-            explore_anneal_epi=None,
+            explore_var_start=np.nan,
+            explore_var_end=np.nan,
+            explore_anneal_epi=np.nan,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_policy',
