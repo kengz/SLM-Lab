@@ -75,6 +75,7 @@ class SARSA(Algorithm):
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
         for body in self.agent.nanflat_body_a:
             body.explore_var = self.explore_var_start
+        self.saved_log_probs = []
 
     @lab_api
     def init_nets(self):
@@ -104,8 +105,9 @@ class SARSA(Algorithm):
     def body_act(self, body, state):
         '''Note, SARSA is discrete-only'''
         action, action_pd = self.action_policy(state, self, body)
-        # TODO update logprob if has
-        return action
+        with torch.no_grad():
+            self.saved_log_probs.append(action_pd.log_prob(action).numpy())
+        return action.numpy()
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''

@@ -80,13 +80,13 @@ def init_action_pd(state, algorithm, body):
 def sample_action_pd(ActionPD, pdparam, body):
     '''
     This uses the outputs from init_action_pd and an optionally augmented pdparam to construct a action_pd for sampling action
-    @returns {numpy_data, distribution} action, action_pd A sampled action, and the prob. dist. used for sampling to enable calculations like kl, entropy, etc. later.
+    @returns {tensor, distribution} action, action_pd A sampled action, and the prob. dist. used for sampling to enable calculations like kl, entropy, etc. later.
     '''
     if body.is_discrete:
         action_pd = ActionPD(logits=pdparam)
     else:
         action_pd = ActionPD(*pdparam)
-    action = action_pd.sample().numpy()
+    action = action_pd.sample()
     return action, action_pd
 
 

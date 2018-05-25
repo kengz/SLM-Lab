@@ -90,8 +90,9 @@ class Reinforce(Algorithm):
     @lab_api
     def body_act(self, body, state):
         action, action_pd = self.action_policy(state, self, body)
-        # TODO update logprob if has
-        return action
+        with torch.no_grad():
+            self.saved_log_probs.append(action_pd.log_prob(action).numpy())
+        return action.numpy()
 
     @lab_api
     def sample(self):
