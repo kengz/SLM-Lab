@@ -99,7 +99,8 @@ def boltzmann(state, algorithm, body):
     return action, action_pd
 
 
-# action policy update methods
+# generic rate decay methods
+
 
 def _linear_decay(start_val, end_val, anneal_step, step):
     '''Simple linear decay with annealing'''
@@ -131,6 +132,13 @@ def _periodic_decay(start_val, end_val, anneal_step, step, frequency=60.):
     val = end_val * 0.5 * unit * (1 + np.cos(x) * (1 - x / x_freq))
     val = max(val, end_val)
     return val
+
+
+# action policy update methods
+
+def no_update(algorithm, body):
+    '''No update, but exists for API consistency'''
+    return body.explore_var
 
 
 def linear_decay(algoritm, body):

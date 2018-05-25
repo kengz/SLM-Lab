@@ -54,6 +54,14 @@ class VanillaDQN(SARSA):
 
     @lab_api
     def init_algorithm_params(self):
+        # set default
+        util.set_attr(self, dict(
+            action_policy='epsilon_greedy',
+            action_policy_update='linear_decay',
+            explore_var_start=1.0,
+            explore_var_end=0.1,
+            explore_anneal_epi=100,
+        ))
         util.set_attr(self, self.algorithm_spec, [
             'action_policy',
             'action_policy_update',

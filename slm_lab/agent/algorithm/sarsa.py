@@ -52,6 +52,14 @@ class SARSA(Algorithm):
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters.'''
+        # set default
+        util.set_attr(self, dict(
+            action_policy='default',
+            action_policy_update='no_update',
+            explore_var_start=None,
+            explore_var_end=None,
+            explore_anneal_epi=None,
+        ))
         util.set_attr(self, self.algorithm_spec, [
             'action_policy',
             'action_policy_update',
@@ -63,7 +71,7 @@ class SARSA(Algorithm):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.action_policy_update = act_update_fns[self.action_policy_update]
+        self.action_policy_update = getattr(policy_util, self.action_policy_update)
         for body in self.agent.nanflat_body_a:
             body.explore_var = self.explore_var_start
 
@@ -193,15 +201,6 @@ class SARSA(Algorithm):
         else:
             return np.nan
 
-    def update_explore_var(self):
-        '''Updates the explore variables'''
-        # TODO call on body, and all other algos
-        space_clock = util.s_get(self, 'aeb_space.clock')
-        nanflat_explore_var_a = self.action_policy_update(self, space_clock)
-        explore_var_a = self.nanflat_to_data_a(
-            'explore_var', nanflat_explore_var_a)
-        return explore_var_a
-
     def update_learning_rate(self):
         decay_learning_rate(self, [self.net])
 
@@ -209,4 +208,6 @@ class SARSA(Algorithm):
     def update(self):
         '''Update the agent after training'''
         self.update_learning_rate()
-        return self.update_explore_var()
+        explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
+        explore_var = np.nansum(explore_vars)
+        return explore_var
