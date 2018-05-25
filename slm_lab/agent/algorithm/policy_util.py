@@ -73,7 +73,7 @@ def init_action_pd(state, algorithm, body):
     state = torch.from_numpy(state).float().unsqueeze_(dim=0)
     if torch.cuda.is_available() and algorithm.net_spec['gpu']:
         state = state.cuda()
-    pdparam = algorithm.calc_pdparam(state).squeeze_(dim=0)
+    pdparam = algorithm.calc_pdparam(state, evaluate=False).squeeze_(dim=0)
     return ActionPD, pdparam, body
 
 

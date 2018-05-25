@@ -104,13 +104,14 @@ class SARSA(Algorithm):
     @lab_api
     def body_act(self, body, state):
         '''Note, SARSA is discrete-only'''
-        with torch.no_grad():
-            action, action_pd = self.action_policy(state, self, body)
-            self.saved_log_probs.append(action_pd.log_prob(action).numpy())
+        action, action_pd = self.action_policy(state, self, body)
+        self.entropy.append(action_pd.entropy())
+        self.saved_log_probs.append(action_pd.log_prob(action))
         return action.numpy()
 
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
+        # TODO recheck if no_grad is proper; also use calc_pdparam
         with torch.no_grad():
             # Calculate the Q values of the current and next states
             q_sts = self.net.wrap_eval(batch['states'])
