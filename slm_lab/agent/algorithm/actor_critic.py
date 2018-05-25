@@ -161,6 +161,21 @@ class ActorCritic(Reinforce):
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
+    def calc_pdparam(self, x, evaluate=True):
+        '''
+        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
+        '''
+        if evaluate:
+            pdparam = self.net.wrap_eval(x)
+        else:
+            self.net.train()
+            pdparam = self.net(x)
+        if self.share_architecture:
+            return pdparam[:-1]
+        else:
+            return pdparam
+
+    @lab_api
     def body_act(self, body, state):
         action, action_pd = self.action_policy(state, self, body)
         body.entropies.append(action_pd.entropy())
@@ -520,21 +535,6 @@ class ActorCritic(Reinforce):
         logger.debug3(f'Advantage: {advantage}')
         logger.debug3(f'Target: {target}')
         return target
-
-    @lab_api
-    def calc_pdparam(self, x, evaluate=True):
-        '''
-        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
-        '''
-        if evaluate:
-            pdparam = self.net.wrap_eval(x)
-        else:
-            self.net.train()
-            pdparam = self.net(x)
-        if self.share_architecture:
-            return pdparam[:-1]
-        else:
-            return pdparam
 
     def get_critic_output(self, x, evaluate=True):
         '''Returns the estimated state-value regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.'''

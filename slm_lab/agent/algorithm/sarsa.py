@@ -91,8 +91,6 @@ class SARSA(Algorithm):
         To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
-        # TODO implement
-        raise NotImplementedError
         if evaluate:
             pdparam = self.net.wrap_eval(x)
         else:

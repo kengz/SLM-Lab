@@ -85,6 +85,18 @@ class Reinforce(Algorithm):
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
+    def calc_pdparam(self, x, evaluate=True):
+        '''
+        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
+        '''
+        if evaluate:
+            pdparam = self.net.wrap_eval(x)
+        else:
+            self.net.train()
+            pdparam = self.net(x)
+        return pdparam
+
+    @lab_api
     def body_act(self, body, state):
         action, action_pd = self.action_policy(state, self, body)
         body.entropies.append(action_pd.entropy())
@@ -183,15 +195,3 @@ class Reinforce(Algorithm):
         explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
         explore_var = np.nansum(explore_vars)
         return explore_var
-
-    @lab_api
-    def calc_pdparam(self, x, evaluate=True):
-        '''
-        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
-        '''
-        if evaluate:
-            pdparam = self.net.wrap_eval(x)
-        else:
-            self.net.train()
-            pdparam = self.net(x)
-        return pdparam
