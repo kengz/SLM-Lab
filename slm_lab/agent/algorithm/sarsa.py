@@ -104,8 +104,8 @@ class SARSA(Algorithm):
     @lab_api
     def body_act(self, body, state):
         '''Note, SARSA is discrete-only'''
-        action, action_pd = self.action_policy(state, self, body)
         with torch.no_grad():
+            action, action_pd = self.action_policy(state, self, body)
             self.saved_log_probs.append(action_pd.log_prob(action).numpy())
         return action.numpy()
 
