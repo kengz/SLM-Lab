@@ -62,9 +62,6 @@ class Reinforce(Algorithm):
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
         for body in self.agent.nanflat_body_a:
             body.explore_var = self.explore_var_start
-        self.entropy = []
-        # To save on a forward pass keep the log probs from each action
-        self.saved_log_probs = []
 
     @lab_api
     def init_nets(self):
@@ -90,8 +87,8 @@ class Reinforce(Algorithm):
     @lab_api
     def body_act(self, body, state):
         action, action_pd = self.action_policy(state, self, body)
-        self.entropy.append(action_pd.entropy())
-        self.saved_log_probs.append(action_pd.log_prob(action))
+        body.entropies.append(action_pd.entropy())
+        body.log_probs.append(action_pd.log_prob(action))
         return action.numpy()
 
     @lab_api
@@ -113,8 +110,8 @@ class Reinforce(Algorithm):
             self.net.training_step(loss=loss)
 
             self.to_train = 0
-            self.saved_log_probs = []
-            self.entropy = []
+            self.body.log_probs = []
+            self.body.entropies = []
             logger.debug(f'Policy loss: {loss}')
             return loss.item()
         else:
@@ -128,7 +125,7 @@ class Reinforce(Algorithm):
         advantage = self.calc_advantage(batch)
         advantage = self.check_sizes(advantage)
         policy_loss = torch.tensor(0.0)
-        for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
+        for log_prob, a, e in zip(self.body.log_probs, advantage, self.body.entropies):
             logger.debug3(f'log prob: {log_prob.item()}, advantage: {a}, entropy: {e.item()}')
             if self.add_entropy:
                 policy_loss += (-log_prob * a - self.entropy_weight * e)
@@ -141,21 +138,21 @@ class Reinforce(Algorithm):
         Checks that log probs, advantage, and entropy all have the same size
         Occassionally they do not, this is caused by first reward of an episode being nan. If they are not the same size, the function removes the elements of the log probs and entropy that correspond to nan rewards.
         '''
-        body = self.agent.nanflat_body_a[0]
+        body = self.body
         nan_idxs = body.memory.last_nan_idxs
         num_nans = sum(nan_idxs)
-        assert len(nan_idxs) == len(self.saved_log_probs)
-        assert len(nan_idxs) == len(self.entropy)
+        assert len(nan_idxs) == len(body.log_probs)
+        assert len(nan_idxs) == len(body.entropies)
         assert len(nan_idxs) - num_nans == advantage.size(0)
         logger.debug2(f'{num_nans} nans encountered when gathering data')
         if num_nans != 0:
             idxs = [x for x in range(len(nan_idxs)) if nan_idxs[x] == 1]
             logger.debug3(f'Nan indexes: {idxs}')
             for idx in idxs[::-1]:
-                del self.saved_log_probs[idx]
-                del self.entropy[idx]
-        assert len(self.saved_log_probs) == advantage.size(0)
-        assert len(self.entropy) == advantage.size(0)
+                del body.log_probs[idx]
+                del body.entropies[idx]
+        assert len(body.log_probs) == advantage.size(0)
+        assert len(body.entropies) == advantage.size(0)
         return advantage
 
     def calc_advantage(self, raw_rewards):

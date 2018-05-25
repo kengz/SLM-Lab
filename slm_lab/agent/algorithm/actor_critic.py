@@ -89,9 +89,6 @@ class ActorCritic(Reinforce):
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
         for body in self.agent.nanflat_body_a:
             body.explore_var = self.explore_var_start
-        self.entropy = []
-        # To save on a forward pass keep the log probs from each action
-        self.saved_log_probs = []
         # Select appropriate function for calculating state-action-value estimate (target)
         if self.use_GAE:
             self.get_target = self.get_gae_target
@@ -166,8 +163,8 @@ class ActorCritic(Reinforce):
     @lab_api
     def body_act(self, body, state):
         action, action_pd = self.action_policy(state, self, body)
-        self.entropy.append(action_pd.entropy())
-        self.saved_log_probs.append(action_pd.log_prob(action))
+        body.entropies.append(action_pd.entropy())
+        body.log_probs.append(action_pd.log_prob(action))
         return action.numpy()
 
     @lab_api
@@ -221,8 +218,8 @@ class ActorCritic(Reinforce):
             # logger.debug2(f'Combined AC gradient norms: {net_util.get_grad_norms(self.net)}')
             self.net.optim.step()
             self.to_train = 0
-            self.saved_log_probs = []
-            self.entropy = []
+            self.body.log_probs = []
+            self.body.entropies = []
             logger.debug('Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}'.format(
                 val_loss, abs(policy_loss), loss
             ))
@@ -265,8 +262,8 @@ class ActorCritic(Reinforce):
         # logger.debug(f'Actor gradient norms: {net_util.get_grad_norms(self.critic)}')
         self.net.optim.step()
         self.to_train = 0
-        self.saved_log_probs = []
-        self.entropy = []
+        self.body.entropies = []
+        self.body.log_probs = []
         logger.debug(f'Policy loss: {loss}')
         return loss
 
