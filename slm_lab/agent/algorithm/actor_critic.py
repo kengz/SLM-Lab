@@ -180,7 +180,10 @@ class ActorCritic(Reinforce):
         action, action_pd = self.action_policy(state, self, body)
         body.entropies.append(action_pd.entropy())
         body.log_probs.append(action_pd.log_prob(action))
-        return action.numpy()
+        if len(action.size()) == 0:  # scalar
+            return action.numpy().astype(body.action_space.dtype)
+        else:
+            return action.numpy()
 
     @lab_api
     def sample(self):
