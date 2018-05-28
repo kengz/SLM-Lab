@@ -327,13 +327,11 @@ class MultitaskDQN(DQN):
             state = state.cuda()
         pdparam = self.calc_pdparam(state, evaluate=False)
         # use multi-policy. note arg change
-        action_a, action_a_pd = self.action_policy(pdparam, self, body_list)
-        ent = action_a_pd.entropy()
-        for idx, entropy in enumerate(action_a_pd.entropy()):
-            body_list[idx].entropies.append(entropy)
-        for idx, log_prob in enumerate(action_a_pd.log_prob(action_a)):
-            body_list[idx].log_probs.append(log_prob)
-
+        action_a, action_pd_a = self.action_policy(pdparam, self, body_list)
+        for idx, body in enumerate(body_list):
+            action_pd = action_pd_a[idx]
+            body.entropies.append(action_pd.entropy())
+            body.log_probs.append(action_pd.log_prob(action_a[idx].float()))
         return action_a.numpy()
 
     @lab_api

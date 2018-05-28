@@ -185,23 +185,73 @@ def boltzmann(state, algorithm, body):
     return action, action_pd
 
 
-def multi_boltzmann(pdparam, algorithm, body_list):
+# multi-body policy with a single forward pass to calc pdparam
+
+def multi_default(pdparam, algorithm, body_list):
     '''
-    Multi-body Boltzmann policy: apply boltzmann policy body-wise
+    Apply default policy body-wise
     Note, for efficiency, do a single forward pass to calculate pdparam, then call this policy like:
     @example
 
     pdparam = self.calc_pdparam(state, evaluate=False)
-    action_a, action_a_pd = self.action_policy(pdparam, self, body_list)
+    action_a, action_pd_a = self.action_policy(pdparam, self, body_list)
     '''
-    ActionPD = getattr(distributions, body_list[0].action_pdtype)
     # assert pdparam has been chunked
     assert len(pdparam.size()) > 1 and len(pdparam) == len(body_list)
-    taus = torch.tensor([[body.explore_var] for body in body_list], dtype=torch.float)
-    pdparam /= taus
-    action_a_pd = ActionPD(logits=pdparam)
-    action_a = action_a_pd.sample().unsqueeze_(dim=1)
-    return action_a, action_a_pd
+    action_list, action_pd_a = [], []
+    for idx, sub_pdparam in enumerate(pdparam):
+        body = body_list[idx]
+        ActionPD = getattr(distributions, body.action_pdtype)
+        action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
+        action_list.append(action)
+        action_pd_a.append(action_pd)
+    action_a = torch.tensor(action_list).unsqueeze_(dim=1)
+    return action_a, action_pd_a
+
+
+def multi_random(pdparam, algorithm, body_list):
+    '''Apply random policy body-wise.'''
+    action_list, action_pd_a = [], []
+    for idx, body in body_list:
+        action, action_pd = random(None, algorithm, body)
+        action_list.append(action)
+        action_pd_a.append(action_pd)
+    action_a = torch.tensor(action_list).unsqueeze_(dim=1)
+    return action_a, action_pd_a
+
+
+def multi_epsilon_greedy(pdparam, algorithm, body_list):
+    '''Apply epsilon-greedy policy body-wise'''
+    assert len(pdparam.size()) > 1 and len(pdparam) == len(body_list)
+    action_list, action_pd_a = [], []
+    for idx, sub_pdparam in enumerate(pdparam):
+        body = body_list[idx]
+        epsilon = body.explore_var
+        if epsilon > np.random.rand():
+            action, action_pd = random(None, algorithm, body)
+        else:
+            ActionPD = getattr(distributions, body.action_pdtype)
+            action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
+        action_list.append(action)
+        action_pd_a.append(action_pd)
+    action_a = torch.tensor(action_list).unsqueeze_(dim=1)
+    return action_a, action_pd_a
+
+
+def multi_boltzmann(pdparam, algorithm, body_list):
+    '''Apply Boltzmann policy body-wise'''
+    assert len(pdparam.size()) > 1 and len(pdparam) == len(body_list)
+    action_list, action_pd_a = [], []
+    for idx, sub_pdparam in enumerate(pdparam):
+        body = body_list[idx]
+        tau = body.explore_var
+        sub_pdparam /= tau
+        ActionPD = getattr(distributions, body.action_pdtype)
+        action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
+        action_list.append(action)
+        action_pd_a.append(action_pd)
+    action_a = torch.tensor(action_list).unsqueeze_(dim=1)
+    return action_a, action_pd_a
 
 
 # generic rate decay methods
