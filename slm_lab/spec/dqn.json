@@ -600,7 +600,7 @@
           "lr": 0.02
         },
         "loss_spec": {
-          "name": "mse_loss"
+          "name": "MSELoss"
         },
         "decay_lr": true,
         "decay_lr_frequency": 400,
@@ -656,7 +656,7 @@
           "lr": 0.0002
         },
         "loss_spec": {
-          "name": "smooth_l1_loss"
+          "name": "SmoothL1Loss"
         },
         "decay_lr": true,
         "decay_lr_frequency": 5000,
@@ -714,7 +714,7 @@
           "lr": 0.005
         },
         "loss_spec": {
-          "name": "mse_loss"
+          "name": "MSELoss"
         },
         "decay_lr": true,
         "decay_lr_factor": 0.15,

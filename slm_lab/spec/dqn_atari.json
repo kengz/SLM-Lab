@@ -40,7 +40,7 @@
           "centered": true
         },
         "loss_spec": {
-          "name": "smooth_l1_loss"
+          "name": "SmoothL1Loss"
         },
         "batch_norm": false,
         "decay_lr": false,

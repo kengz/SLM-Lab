@@ -76,7 +76,7 @@
         "lr": 0.02
       },
       "loss_spec": {
-        "name": "mse_loss"
+        "name": "MSELoss"
       },
       "clip_grad": false,
       "clip_grad_val": 1.0,
@@ -117,7 +117,7 @@
         "lr": 0.02
       },
       "loss_spec": {
-        "name": "mse_loss"
+        "name": "MSELoss"
       },
       "clip_grad": false,
       "clip_grad_val": 1.0,
@@ -161,7 +161,7 @@
         "lr": 0.02
       },
       "loss_spec": {
-        "name": "mse_loss"
+        "name": "MSELoss"
       },
       "clip_grad": false,
       "clip_grad_val": 1.0,
@@ -205,7 +205,7 @@
         "lr": 0.02
       },
       "loss_spec": {
-        "name": "mse_loss"
+        "name": "MSELoss"
       },
       "clip_grad": false,
       "clip_grad_val": 1.0,
@@ -249,7 +249,7 @@
         "lr": 0.02
       },
       "loss_spec": {
-        "name": "mse_loss"
+        "name": "MSELoss"
       },
       "clip_grad": false,
       "clip_grad_val": 1.0,
@@ -328,7 +328,7 @@
         "lr": 0.01
       },
       "loss_spec": {
-        "name": "mse_loss"
+        "name": "MSELoss"
       },
       "clip_grad": false,
       "clip_grad_val": 1.0,
@@ -364,7 +364,7 @@
         "lr": 0.01
       },
       "loss_spec": {
-        "name": "mse_loss"
+        "name": "MSELoss"
       },
       "clip_grad": false,
       "clip_grad_val": 1.0,
