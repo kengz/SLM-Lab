@@ -296,7 +296,7 @@ class HydraMLPNet(Net, nn.Module):
         outs = []
         for model_tail in self.model_tails:
             outs.append(model_tail(body_x))
-        return outs
+        return torch.cat(outs)
 
     def training_step(self, xs=None, ys=None, loss=None):
         '''

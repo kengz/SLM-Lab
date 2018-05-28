@@ -327,8 +327,8 @@ class MultitaskDQN(DQN):
             state = state.cuda()
         pdparam = self.calc_pdparam(state, evaluate=False)
         # use multi-policy. note arg change
-        action_a, action_pd_a = self.action_policy(pdparam, self, body_list)
-        for idx, body in enumerate(body_list):
+        action_a, action_pd_a = self.action_policy(pdparam, self, self.body_list)
+        for idx, body in enumerate(self.body_list):
             action_pd = action_pd_a[idx]
             body.entropies.append(action_pd.entropy())
             body.log_probs.append(action_pd.log_prob(action_a[idx].float()))
@@ -423,15 +423,24 @@ class HydraDQN(MultitaskDQN):
     def init_nets(self):
         '''Initialize nets with multi-task dimensions, and set net params'''
         # NOTE: Separate init from MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
-        body_list = self.agent.nanflat_body_a
-        in_dims = [body.state_dim for body in body_list]
-        out_dims = [body.action_dim for body in body_list]
+        self.body_list = self.agent.nanflat_body_a
+        self.state_dims = in_dims = [body.state_dim for body in self.body_list]
+        self.action_dims = out_dims = [body.action_dim for body in self.body_list]
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, in_dims, out_dims)
         self.target_net = NetClass(self.net_spec, self, in_dims, out_dims)
         self.online_net = self.target_net
         self.eval_net = self.target_net
         logger.info(f'Training on gpu: {self.net.gpu}')
+
+    @lab_api
+    def calc_pdparam(self, x, evaluate=True):
+        '''
+        Calculate pdparams for multi-action by chunking the network logits output
+        '''
+        x = torch.cat(torch.split(x, self.state_dims, dim=1)).unsqueeze_(dim=1)
+        pdparam = SARSA.calc_pdparam(self, x, evaluate=evaluate)
+        return pdparam
 
     @lab_api
     def sample(self):
@@ -457,22 +466,20 @@ class HydraDQN(MultitaskDQN):
             logger.debug3(f'Q next st act vals: {q_next_st_acts}')
             q_next_acts = []
             for i, q in enumerate(q_next_st_acts):
-                _val, q_next_act_b = torch.max(q, dim=1)
+                _val, q_next_act_b = torch.max(q, dim=0)
                 logger.debug3(f'Q next action for body {i}: {q_next_act_b}')
                 q_next_acts.append(q_next_act_b)
+            q_next_acts = torch.tensor(q_next_acts)
             # Select q_next_st_maxs based on action selected in q_next_acts
             q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
             logger.debug3(f'Q next_states: {q_next_sts}')
-            idx = torch.from_numpy(np.array(list(range(self.memory_spec['batch_size']))))
-            if torch.cuda.is_available() and self.net.gpu:
-                idx = idx.cuda()
             q_next_st_maxs = []
             for q_next_st_val_b, q_next_act_b in zip(q_next_sts, q_next_acts):
-                q_next_st_max_b = q_next_st_val_b[idx, q_next_act_b]
-                q_next_st_max_b.unsqueeze_(1)
+                q_next_st_max_b = q_next_st_val_b[q_next_act_b]
                 logger.debug2(f'Q next_states max {q_next_st_max_b.size()}')
                 logger.debug3(f'Q next_states max {q_next_st_max_b}')
                 q_next_st_maxs.append(q_next_st_max_b)
+            q_next_st_maxs = torch.tensor(q_next_st_maxs)
             # Compute q_targets per environment using reward and estimated best Q value from the next state if there is one
             # Make future reward 0 if the current state is done
             q_targets_maxs = []
@@ -480,6 +487,7 @@ class HydraDQN(MultitaskDQN):
                 q_targets_max_b = batch_b['rewards'].data + self.gamma * torch.mul((1 - batch_b['dones'].data), q_next_st_maxs[b])
                 q_targets_maxs.append(q_targets_max_b)
                 logger.debug2(f'Batch {b}, Q targets max: {q_targets_max_b.size()}')
+            q_targets_maxs = torch.cat(q_targets_maxs)
             # As in the standard DQN we only want to train the network for the action selected
             # For all other actions we set the q_target = q_sts
             # So that the loss for these actions is 0
@@ -488,9 +496,9 @@ class HydraDQN(MultitaskDQN):
                 q_targets_b = torch.mul(q_targets_maxs[b], batch_b['actions'].data) + torch.mul(q_sts[b], (1 - batch_b['actions'].data))
                 q_targets.append(q_targets_b)
                 logger.debug2(f'Batch {b}, Q targets: {q_targets_b.size()}')
+            q_targets = torch.cat(q_targets)
             if torch.cuda.is_available() and self.net.gpu:
-                for q_target in q_targets:
-                    q_target = q_target.cuda()
+                q_targets = q_targets.cuda()
             return q_targets
 
     @lab_api
