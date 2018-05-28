@@ -314,41 +314,27 @@ class MultitaskDQN(DQN):
         pdparam = torch.stack(torch.split(flat_pdparam, self.action_dims))
         return pdparam
 
-    # def body_act(self, body, state):
-    #     '''Note, SARSA is discrete-only'''
-    #     action, action_pd = self.action_policy(state, self, body)
-    #     body.entropies.append(action_pd.entropy())
-    #     body.log_probs.append(action_pd.log_prob(action))
-    #     if len(action.size()) == 0:  # scalar
-    #         return action.numpy().astype(body.action_space.dtype)
-    #     else:
-    #         return action.numpy()
-
     @lab_api
     def act(self, state_a):
         '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
+        body_list = self.agent.nanflat_body_a
         # TODO tmp correction. state_a has 1 dim too deep
         new_data = [s[0] for s in state_a]
         state_a = np.array(new_data, dtype=np.float).flatten()
+
         state = torch.from_numpy(state_a).float().unsqueeze_(dim=0)
         if torch.cuda.is_available() and self.net_spec['gpu']:
             state = state.cuda()
         pdparam = self.calc_pdparam(state, evaluate=False)
-        # logger.info('pdparam')
-        # logger.info(pdparam)
-        # do some division for pdparam
-        ActionPD = policy_util.MultiCategorical
-        action_pd = ActionPD(logits=pdparam)
-        action_a = action_pd.sample().unsqueeze_(dim=1).numpy()
-        # print('action_a')
-        # print(action_a)
+        # use multi-policy. note arg change
+        action_a, action_a_pd = self.action_policy(pdparam, self, body_list)
+        ent = action_a_pd.entropy()
+        for idx, entropy in enumerate(action_a_pd.entropy()):
+            body_list[idx].entropies.append(entropy)
+        for idx, log_prob in enumerate(action_a_pd.log_prob(action_a)):
+            body_list[idx].log_probs.append(log_prob)
 
-        # raise NotImplementedError
-
-        # TODO update to policy util and pdparam
-        # nanflat_action_a = self.action_policy(self.agent.nanflat_body_a, state_a, self.net, self.nanflat_explore_var_a, self.net.gpu)
-        # action_a = self.nanflat_to_data_a('action', nanflat_action_a)
-        return action_a
+        return action_a.numpy()
 
     @lab_api
     def sample(self):

@@ -274,6 +274,7 @@
       "name": "MultitaskDQN",
       "algorithm": {
         "name": "MultitaskDQN",
+        "action_pdtype": "MultiCategorical",
         "action_policy": "multi_boltzmann",
         "action_policy_update": "multi_linear_decay",
         "explore_var_start": 1.5,

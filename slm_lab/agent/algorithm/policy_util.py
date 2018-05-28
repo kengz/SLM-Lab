@@ -185,6 +185,25 @@ def boltzmann(state, algorithm, body):
     return action, action_pd
 
 
+def multi_boltzmann(pdparam, algorithm, body_list):
+    '''
+    Multi-body Boltzmann policy: apply boltzmann policy body-wise
+    Note, for efficiency, do a single forward pass to calculate pdparam, then call this policy like:
+    @example
+
+    pdparam = self.calc_pdparam(state, evaluate=False)
+    action_a, action_a_pd = self.action_policy(pdparam, self, body_list)
+    '''
+    ActionPD = getattr(distributions, body_list[0].action_pdtype)
+    # assert pdparam has been chunked
+    assert len(pdparam.size()) > 1 and len(pdparam) == len(body_list)
+    taus = torch.tensor([[body.explore_var] for body in body_list], dtype=torch.float)
+    pdparam /= taus
+    action_a_pd = ActionPD(logits=pdparam)
+    action_a = action_a_pd.sample().unsqueeze_(dim=1)
+    return action_a, action_a_pd
+
+
 # generic rate decay methods
 
 
