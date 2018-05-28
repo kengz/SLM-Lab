@@ -65,7 +65,7 @@ class MultiCategorical(distributions.Categorical):
 
         for sub_probs, sub_logits in zip(probs, logits):
             categorical = distributions.Categorical(probs=sub_probs, logits=sub_logits, validate_args=validate_args)
-            categoricals.append(categorical)
+            self.categoricals.append(categorical)
 
     @property
     def logits(self):
@@ -113,8 +113,6 @@ def try_preprocess(state, algorithm, body):
         state = body.memory.preprocess_state(state)
     # as float, and always as minibatch for net input
     state = torch.from_numpy(state).float().unsqueeze_(dim=0)
-    if torch.cuda.is_available() and algorithm.net_spec['gpu']:
-        state = state.cuda()
     return state
 
 
