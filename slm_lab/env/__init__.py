@@ -252,8 +252,8 @@ class UnityEnv:
                 action_space = gym.spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
             self.action_spaces.append(action_space)
         for observation_space, action_space in zip(self.observation_spaces, self.action_spaces):
-            set_gym_space_attr(self.u_env.observation_space)
-            set_gym_space_attr(self.u_env.action_space)
+            set_gym_space_attr(observation_space)
+            set_gym_space_attr(action_space)
 
         # TODO experiment to find out optimal benchmarking max_timestep, set
         # TODO ensure clock_speed from env_spec
