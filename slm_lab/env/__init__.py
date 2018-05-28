@@ -247,7 +247,7 @@ class UnityEnv:
                 observation_space = gym.spaces.Box(low=0.0, high=1.0, shape=observation_shape, dtype=np.float32)
             self.observation_spaces.append(observation_space)
             if self.is_discrete(a):
-                action_space = gym.spaces.Box(low=0, high=self.get_action_dim(a) - 1, shape=(1,), dtype=np.int32)
+                action_space = gym.spaces.Discrete(self.get_action_dim(a))
             else:
                 action_space = gym.spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
             self.action_spaces.append(action_space)
