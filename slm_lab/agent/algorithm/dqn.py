@@ -294,8 +294,9 @@ class MultitaskDQN(DQN):
     @lab_api
     def init_nets(self):
         '''Initialize nets with multi-task dimensions, and set net params'''
-        self.state_dims = [body.state_dim for body in self.agent.nanflat_body_a]
-        self.action_dims = [body.action_dim for body in self.agent.nanflat_body_a]
+        self.body_list = self.agent.nanflat_body_a
+        self.state_dims = [body.state_dim for body in self.body_list]
+        self.action_dims = [body.action_dim for body in self.body_list]
         in_dim = sum(self.state_dims)
         out_dim = sum(self.action_dims)
         NetClass = getattr(net, self.net_spec['type'])
@@ -310,14 +311,13 @@ class MultitaskDQN(DQN):
         '''
         Calculate pdparams for multi-action by chunking the network logits output
         '''
-        flat_pdparam = super(MultitaskDQN, self).calc_pdparam(x, evaluate=evaluate).squeeze_(dim=0)
-        pdparam = torch.stack(torch.split(flat_pdparam, self.action_dims))
+        pdparam = super(MultitaskDQN, self).calc_pdparam(x, evaluate=evaluate)
+        pdparam = torch.cat(torch.split(pdparam, self.action_dims, dim=1))
         return pdparam
 
     @lab_api
     def act(self, state_a):
         '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
-        body_list = self.agent.nanflat_body_a
         # TODO tmp correction. state_a has 1 dim too deep
         new_data = [s[0] for s in state_a]
         state_a = np.array(new_data, dtype=np.float).flatten()

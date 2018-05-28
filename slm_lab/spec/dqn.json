@@ -331,8 +331,8 @@
       "name": "HydraDQN",
       "algorithm": {
         "name": "HydraDQN",
-        "action_policy": "multi_head_boltzmann",
-        "action_policy_update": "multi_linear_decay",
+        "action_policy": "multi_boltzmann",
+        "action_policy_update": "linear_decay",
         "explore_var_start": 1.5,
         "explore_var_end": 0.3,
         "explore_anneal_epi": 100,
@@ -394,8 +394,8 @@
       "name": "HydraDQN",
       "algorithm": {
         "name": "HydraDQN",
-        "action_policy": "multi_head_boltzmann",
-        "action_policy_update": "multi_linear_decay",
+        "action_policy": "multi_boltzmann",
+        "action_policy_update": "linear_decay",
         "explore_var_start": 1.5,
         "explore_var_end": 0.3,
         "explore_anneal_epi": 15,
