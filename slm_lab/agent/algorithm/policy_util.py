@@ -36,7 +36,10 @@ ACTION_PDS = {
 
 
 class Argmax(distributions.Categorical):
-    '''Special distribution class for argmax sampling: always return the argmax of probs or logits'''
+    '''
+    Special distribution class for argmax sampling, where probability is always 1 for the argmax.
+    NOTE although argmax is not a sampling distribution, this implementation is for API consistency.
+    '''
 
     def __init__(self, probs=None, logits=None, validate_args=None):
         if probs is not None:
