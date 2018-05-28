@@ -18,10 +18,7 @@ from torch import distributions
 import numpy as np
 import torch
 
-
 logger = logger.get_logger(__name__)
-
-# TODO rename, also mandate definition on all algo and network usage
 
 
 # probability distributions constraints for different action types; the first in the list is the default
@@ -29,8 +26,7 @@ ACTION_PDS = {
     'continuous': ['Normal', 'Beta', 'Gumbel', 'LogNormal'],
     'multi_continuous': ['MultivariateNormal'],
     'discrete': ['Categorical', 'Argmax'],
-    # TODO create MultiCategorical class by extending
-    # 'multi_discrete': ['MultiCategorical'],
+    'multi_discrete': ['MultiCategorical'],
     'multi_binary': ['Bernoulli'],
 }
 
@@ -55,7 +51,57 @@ class Argmax(distributions.Categorical):
         super(Argmax, self).__init__(probs=probs, logits=logits, validate_args=validate_args)
 
 
+class MultiCategorical(distributions.Categorical):
+    '''MultiCategorical as collection of Categoricals'''
+
+    def __init__(self, probs=None, logits=None, validate_args=None):
+        self.categoricals = []
+        if probs is None:
+            probs = [None] * len(logits)
+        elif logits is None:
+            logits = [None] * len(probs)
+        else:
+            raise ValueError('Either probs or logits must be None')
+
+        for sub_probs, sub_logits in zip(probs, logits):
+            categorical = distributions.Categorical(probs=sub_probs, logits=sub_logits, validate_args=validate_args)
+            categoricals.append(categorical)
+
+    @property
+    def logits(self):
+        return torch.tensor([cat.logits for cat in self.categoricals])
+
+    @property
+    def probs(self):
+        return torch.tensor([cat.probs for cat in self.categoricals])
+
+    @property
+    def param_shape(self):
+        return torch.tensor([cat.param_shape for cat in self.categoricals])
+
+    @property
+    def mean(self):
+        return torch.tensor([cat.mean for cat in self.categoricals])
+
+    @property
+    def variance(self):
+        return torch.tensor([cat.variance for cat in self.categoricals])
+
+    def sample(self, sample_shape=torch.Size()):
+        return torch.tensor([cat.sample(sample_shape=sample_shape) for cat in self.categoricals])
+
+    def log_prob(self, value):
+        return torch.tensor([cat.log_prob(value[idx]) for idx, cat in enumerate(self.categoricals)])
+
+    def entropy(self):
+        return torch.tensor([cat.entropy() for cat in self.categoricals])
+
+    def enumerate_support(self):
+        return torch.tensor([cat.enumerate_support() for cat in self.categoricals])
+
+
 setattr(distributions, 'Argmax', Argmax)
+setattr(distributions, 'MultiCategorical', MultiCategorical)
 
 
 # base methods
