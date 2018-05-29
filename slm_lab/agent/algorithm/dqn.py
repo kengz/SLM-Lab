@@ -180,7 +180,7 @@ class DQNBase(VanillaDQN):
     net: instance of an slm_lab/agent/net
     memory: instance of an slm_lab/agent/memory
     batch_size: how many examples from memory to sample at each training step
-    action_policy: function (from algorithm_util.py) that determines how to select actions
+    action_policy: function (from policy_util.py) that determines how to select actions
     gamma: Real number in range [0, 1]. Determines how much to discount the future
     state_dim: dimension of the state space
     action_dim: dimensions of the action space
