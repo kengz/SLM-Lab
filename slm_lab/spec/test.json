@@ -28,9 +28,9 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 400,
-        "decay_lr_min_timestep": 1400,
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 400,
+        "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0.9
@@ -75,9 +75,9 @@
           "name": "Adam",
           "lr": 0.27
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -114,15 +114,15 @@
         "type": "MLPdefault",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
         "optim_spec": {
           "name": "Adam",
           "lr": 0.01
         },
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
-        "decay_lr": false,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 2000
+        "lr_decay": "no_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 2000
       }
     }],
     "env": [{
@@ -165,6 +165,8 @@
         "type": "MLPseparate",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -174,11 +176,9 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 2000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 2000
       }
     }],
     "env": [{

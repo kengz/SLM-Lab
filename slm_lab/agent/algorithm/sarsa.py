@@ -1,8 +1,6 @@
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import policy_util
-from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
 from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -205,13 +203,11 @@ class SARSA(Algorithm):
         else:
             return np.nan
 
-    def update_learning_rate(self):
-        decay_learning_rate(self, [self.net])
-
     @lab_api
     def update(self):
         '''Update the agent after training'''
-        self.update_learning_rate()
+        for net in [self.net]:
+            net.update_lr()
         explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
         explore_var = np.nansum(explore_vars)
         return explore_var

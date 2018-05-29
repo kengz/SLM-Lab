@@ -1,8 +1,9 @@
+from slm_lab.agent.algorithm import policy_util
+from slm_lab.lib import logger, util
 import pydash as ps
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from slm_lab.lib import logger
 
 
 NN_LOWCASE_LOOKUP = {nn_name.lower(): nn_name for nn_name in nn.__dict__}
@@ -81,6 +82,47 @@ def save(net, model_path):
 def load(net, model_path):
     '''Save model weights from a path into a net module'''
     net.load_state_dict(torch.load(model_path))
+
+
+# lr decay methods
+
+
+def no_decay(net):
+    '''No update'''
+    return net.optim_spec['lr']
+
+
+def fn_decay_lr(net, fn):
+    '''
+    Decay learning rate for net module, only returns the new lr for user to set to appropriate nets
+    In the future, might add more flexible lr adjustment, like boosting and decaying on need.
+    '''
+    space_clock = util.s_get(net.algorithm, 'aeb_space.clock')
+    total_t = space_clock.get('total_t')
+    net_spec = net.net_spec
+    start_val, end_val = net.optim_spec['lr'], 1e-6
+    anneal_total_t = max(10e6, 60 * net_spec['lr_decay_frequency'])
+
+    if total_t >= net_spec['lr_decay_min_timestep'] and total_t % net_spec['lr_decay_frequency'] == 0:
+        new_lr = fn(start_val, end_val, anneal_total_t, total_t)
+        return new_lr
+    else:
+        return no_decay(net)
+
+
+def linear_decay(net):
+    '''Apply linear decay to lr'''
+    return fn_decay_lr(net, policy_util._linear_decay)
+
+
+def rate_decay(net):
+    '''Apply _rate_decay to lr'''
+    return fn_decay_lr(net, policy_util._rate_decay)
+
+
+def periodic_decay(net):
+    '''Apply _periodic_decay to lr'''
+    return fn_decay_lr(net, policy_util._periodic_decay)
 
 
 # params methods

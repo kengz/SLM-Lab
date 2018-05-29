@@ -23,9 +23,9 @@
           "name": "Adam",
           "lr": 0.2
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -64,15 +64,15 @@
         "hid_layers": [64],
         "hid_layers_activation": "sigmoid",
         "seq_len": 4,
+        "clip_grad": true,
+        "clip_grad_val": 25.0,
         "optim_spec": {
           "name": "RMSprop",
           "lr": 0.02
         },
-        "clip_grad": true,
-        "clip_grad_val": 25.0,
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -114,9 +114,9 @@
           "name": "Adam",
           "lr": 0.2
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -158,9 +158,9 @@
           "name": "Adam",
           "lr": 0.2
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -202,9 +202,9 @@
           "name": "Adam",
           "lr": 0.2
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -246,9 +246,9 @@
           "name": "Adam",
           "lr": 0.2
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -311,9 +311,9 @@
           "name": "Adam",
           "lr": 0.2
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -376,9 +376,9 @@
           "name": "Adam",
           "lr": 0.2
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -427,9 +427,9 @@
           "name": "Adam",
           "lr": 0.2
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -478,9 +478,9 @@
           "name": "Adam",
           "lr": 0.2
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -529,9 +529,9 @@
           "name": "Adam",
           "lr": 0.1
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -595,9 +595,9 @@
           "name": "Adam",
           "lr": 0.1
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -661,9 +661,9 @@
           "name": "Adam",
           "lr": 0.1
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{
@@ -727,9 +727,9 @@
           "name": "Adam",
           "lr": 0.1
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1000
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000
       }
     }],
     "env": [{

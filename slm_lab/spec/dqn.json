@@ -28,9 +28,9 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 400,
-        "decay_lr_min_timestep": 1400,
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 400,
+        "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0.9
@@ -100,9 +100,9 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 400,
-        "decay_lr_min_timestep": 1400
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 400,
+        "lr_decay_min_timestep": 1400
       }
     }],
     "env": [{
@@ -167,9 +167,9 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 400,
-        "decay_lr_min_timestep": 1400,
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 400,
+        "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0.9
@@ -236,9 +236,9 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 400,
-        "decay_lr_min_timestep": 1400,
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 400,
+        "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 25,
         "polyak_weight": 0.9
@@ -299,9 +299,9 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1400,
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0
@@ -362,9 +362,9 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1400,
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0
@@ -428,9 +428,9 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1400,
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0
@@ -488,9 +488,9 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1400,
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0
@@ -544,9 +544,9 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "decay_lr": true,
-        "decay_lr_frequency": 1000,
-        "decay_lr_min_timestep": 1400,
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0
@@ -596,16 +596,16 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
+        "loss_spec": {
+          "name": "MSELoss"
+        },
         "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "decay_lr": true,
-        "decay_lr_frequency": 400,
-        "decay_lr_min_timestep": 1400,
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 400,
+        "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_weight": 0
@@ -652,16 +652,16 @@
         "type": "MLPNet",
         "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
         "optim_spec": {
           "name": "Adam",
           "lr": 0.0002
         },
-        "loss_spec": {
-          "name": "SmoothL1Loss"
-        },
-        "decay_lr": true,
-        "decay_lr_frequency": 5000,
-        "decay_lr_min_timestep": 50000,
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 5000,
+        "lr_decay_min_timestep": 50000,
         "update_type": "replace",
         "update_frequency": 500,
         "polyak_weight": 0.9,
@@ -710,17 +710,16 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "sigmoid",
+        "loss_spec": {
+          "name": "MSELoss"
+        },
         "optim_spec": {
           "name": "Adam",
           "lr": 0.005
         },
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "decay_lr": true,
-        "decay_lr_factor": 0.15,
-        "decay_lr_frequency": 80000,
-        "decay_lr_min_timestep": 80000,
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 80000,
+        "lr_decay_min_timestep": 80000,
         "update_type": "replace",
         "update_frequency": 600,
         "polyak_weight": 0.993,

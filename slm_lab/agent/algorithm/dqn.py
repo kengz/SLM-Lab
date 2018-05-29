@@ -1,6 +1,5 @@
 from copy import deepcopy
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.sarsa import SARSA
 from slm_lab.agent.net import net_util
@@ -156,9 +155,6 @@ class VanillaDQN(SARSA):
     def body_act(self, body, state):
         '''Selects and returns a discrete action for body using the action policy'''
         return super(VanillaDQN, self).body_act(body, state)
-
-    def update_learning_rate(self):
-        super(VanillaDQN, self).update_learning_rate()
 
     @lab_api
     def update(self):
