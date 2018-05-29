@@ -43,6 +43,8 @@ dependencies:
 - torchvision=0.2.1
 - libgcc
 - pip:
+  - atari-py==0.1.1
+  - box2d-kengz==2.3.3
   - cloudpickle==0.5.2
   - colorlover==0.2.1
   - deap==1.2.2
