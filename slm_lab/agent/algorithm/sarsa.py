@@ -209,5 +209,5 @@ class SARSA(Algorithm):
         for net in [self.net]:
             net.update_lr()
         explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
-        explore_var = np.nansum(explore_vars)
-        return explore_var
+        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
+        return explore_var_a
