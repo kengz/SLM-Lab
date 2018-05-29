@@ -300,22 +300,23 @@ def no_update(algorithm, body):
     return body.explore_var
 
 
+def fn_decay_explore_var(algorithm, body, fn):
+    '''Apply a function to decay explore_var'''
+    epi = body.env.clock.get('epi')
+    body.explore_var = fn(algorithm.explore_var_start, algorithm.explore_var_end, algorithm.explore_anneal_epi, epi)
+    return body.explore_var
+
+
 def linear_decay(algorithm, body):
     '''Apply linear decay to explore_var'''
-    epi = body.env.clock.get('epi')
-    body.explore_var = _linear_decay(algorithm.explore_var_start, algorithm.explore_var_end, algorithm.explore_anneal_epi, epi)
-    return body.explore_var
+    return fn_decay_explore_var(algorithm, body, _linear_decay)
 
 
 def rate_decay(algorithm, body):
     '''Apply _rate_decay to explore_var'''
-    epi = body.env.clock.get('epi')
-    body.explore_var = _rate_decay(algorithm.explore_var_start, algorithm.explore_var_end, algorithm.explore_anneal_epi, epi)
-    return body.explore_var
+    return fn_decay_explore_var(algorithm, body, _rate_decay)
 
 
 def periodic_decay(algorithm, body):
     '''Apply _periodic_decay to explore_var'''
-    epi = body.env.clock.get('epi')
-    body.explore_var = _periodic_decay(algorithm.explore_var_start, algorithm.explore_var_end, algorithm.explore_anneal_epi, epi)
-    return body.explore_var
+    return fn_decay_explore_var(algorithm, body, _periodic_decay)
