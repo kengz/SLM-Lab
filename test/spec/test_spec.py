@@ -47,7 +47,7 @@ def test_actor_critic(spec_file, spec_name):
     ('dqn.json', 'double_dqn_cartpole_replace'),
     ('dqn.json', 'multitask_dqn_cartpole'),
     ('dqn.json', 'hydra_dqn_cartpole'),
-    ('dqn_atari.json', 'dqn_breakout'),
+    # ('dqn_atari.json', 'dqn_breakout'),
 ])
 def test_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)

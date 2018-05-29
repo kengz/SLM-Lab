@@ -60,8 +60,8 @@ class Body:
         self.explore_var = np.nan
 
         # diagnostics variables from action_policy prob. dist.
-        self.entropies = [] # check exploration
-        self.log_probs = [] # calculate loss
+        self.entropies = []  # check exploration
+        self.log_probs = []  # calculate loss
         self.kls = []  # to compare old and new nets
 
         # every body has its own memory for ease of computation
