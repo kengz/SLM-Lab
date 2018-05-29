@@ -273,7 +273,7 @@ def _rate_decay(start_val, end_val, anneal_step, step, decay_rate=0.9, frequency
     '''Compounding rate decay that anneals in 20 decay iterations until anneal_step'''
     step_per_decay = anneal_step / frequency
     decay_step = step / step_per_decay
-    val = max(decay_rate ^ decay_step * start_val, end_val)
+    val = max(np.power(decay_rate, decay_step) * start_val, end_val)
     return val
 
 
