@@ -74,16 +74,6 @@ def init_layers(layers):
             pass
 
 
-def save(net, model_path):
-    '''Save model weights to path'''
-    torch.save(net.state_dict(), model_path)
-
-
-def load(net, model_path):
-    '''Save model weights from a path into a net module'''
-    net.load_state_dict(torch.load(model_path))
-
-
 # lr decay methods
 
 
@@ -160,6 +150,21 @@ def load_params(net, flattened):
         param.data.copy_(flattened[offset:offset + param.nelement()]).view(param.size())
         offset += param.nelement()
     return net
+
+
+def save(net, model_path):
+    '''Save model weights to path'''
+    torch.save(net.state_dict(), model_path)
+
+
+def load(net, model_path):
+    '''Save model weights from a path into a net module'''
+    net.load_state_dict(torch.load(model_path))
+
+
+def copy(src_net, tar_net):
+    '''Copy model weights from src to target'''
+    tar_net.load_state_dict(src_net.state_dict())
 
 
 def polyak_update(src_net, tar_net, beta=0.5):
