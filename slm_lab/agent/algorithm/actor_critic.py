@@ -292,10 +292,11 @@ class ActorCritic(Reinforce):
         '''Trains the critic using batches of data. Algorithm doesn't wait until episode has ended to train'''
         loss = 0
         for _i in range(self.training_iters_per_batch):
-            target = self.get_target(batch, critic_specific=True)
-            if torch.cuda.is_available() and self.net.gpu:
-                target = target.cuda()
-            y = target.unsqueeze_(dim=-1)
+            with torch.no_grad():
+                target = self.get_target(batch, critic_specific=True)
+                if torch.cuda.is_available() and self.net.gpu:
+                    target = target.cuda()
+                y = target.unsqueeze_(dim=-1)
             loss = self.critic.training_step(batch['states'], y)
             # logger.debug(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
         return loss
@@ -304,18 +305,19 @@ class ActorCritic(Reinforce):
         '''Trains the critic using entire episodes of data. Algorithm waits until episode has ended to train'''
         loss = 0
         for _i in range(self.training_iters_per_batch):
-            target = self.get_target(batch, critic_specific=True)
-            target = torch.cat(target)
-            logger.debug2(f'Combined size: {target.size()}')
-            x = []
-            for state in batch['states']:
-                x.append(state)
-                logger.debug2(f'states: {state.size()}')
-            x = torch.cat(x, dim=0)
-            logger.debug2(f'Combined states: {x.size()}')
-            if torch.cuda.is_available() and self.net.gpu:
-                target = target.cuda()
-            y = target.unsqueeze_(dim=-1)
+            with torch.no_grad():
+                target = self.get_target(batch, critic_specific=True)
+                target = torch.cat(target)
+                logger.debug2(f'Combined size: {target.size()}')
+                x = []
+                for state in batch['states']:
+                    x.append(state)
+                    logger.debug2(f'states: {state.size()}')
+                x = torch.cat(x, dim=0)
+                logger.debug2(f'Combined states: {x.size()}')
+                if torch.cuda.is_available() and self.net.gpu:
+                    target = target.cuda()
+                y = target.unsqueeze_(dim=-1)
             loss = self.critic.training_step(x, y)
             # logger.debug2(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
         return loss

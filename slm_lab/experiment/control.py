@@ -105,7 +105,7 @@ class Trial:
         logger.info(f'Initialized trial {self.index}')
 
     def init_session_and_run(self, info_space):
-        session = Session(self.spec, info_space)
+        session = Session(self.spec.copy(), info_space)
         session_data = session.run()
         return session_data
 
