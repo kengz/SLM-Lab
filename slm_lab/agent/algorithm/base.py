@@ -31,35 +31,29 @@ class Algorithm(ABC):
 
     @abstractmethod
     @lab_api
-    def init_nets(self):
-        '''Initialize the neural network from the spec'''
-        raise NotImplementedError
-
-    @abstractmethod
-    @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         raise NotImplementedError
 
+    @abstractmethod
     @lab_api
-    def body_act_discrete(self, body, state):
-        '''Implement atomic discrete action, or throw NotImplementedError. E.g. fetch action from net given body info.'''
+    def init_nets(self):
+        '''Initialize the neural network from the spec'''
         raise NotImplementedError
-        return action
 
     @lab_api
-    def body_act_continuous(self, body, state):
-        '''Implement atomic continuous action, or throw NotImplementedError. E.g. fetch action from net given body info.'''
+    def calc_pdparam(self, x, evaluate=True):
+        '''
+        To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
+        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
+        '''
         raise NotImplementedError
-        return action
 
     @lab_api
     def body_act(self, body, state):
         '''Standard atomic body_act method. Atomic body logic should be implemented in submethods.'''
-        if body.is_discrete:
-            return self.body_act_discrete(body, state)
-        else:
-            return self.body_act_continuous(body, state)
+        raise NotImplementedError
+        return action
 
     @lab_api
     def act(self, state_a):

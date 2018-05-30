@@ -1,7 +1,6 @@
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -51,6 +50,15 @@ class SARSA(Algorithm):
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters.'''
+        # set default
+        util.set_attr(self, dict(
+            action_pdtype='default',
+            action_policy='default',
+            action_policy_update='no_update',
+            explore_var_start=np.nan,
+            explore_var_end=np.nan,
+            explore_anneal_epi=np.nan,
+        ))
         util.set_attr(self, self.algorithm_spec, [
             'action_policy',
             'action_policy_update',
@@ -60,10 +68,11 @@ class SARSA(Algorithm):
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
         ])
-        self.action_policy = act_fns[self.action_policy]
-        self.action_policy_update = act_update_fns[self.action_policy_update]
         self.to_train = 0
-        self.nanflat_explore_var_a = [self.explore_var_start] * self.agent.body_num
+        self.action_policy = getattr(policy_util, self.action_policy)
+        self.action_policy_update = getattr(policy_util, self.action_policy_update)
+        for body in self.agent.nanflat_body_a:
+            body.explore_var = self.explore_var_start
 
     @lab_api
     def init_nets(self):
@@ -74,39 +83,62 @@ class SARSA(Algorithm):
         self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
         logger.info(f'Training on gpu: {self.net.gpu}')
 
+    @lab_api
+    def calc_pdparam(self, x, evaluate=True):
+        '''
+        To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
+        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
+        '''
+        if evaluate:
+            pdparam = self.net.wrap_eval(x)
+        else:
+            self.net.train()
+            pdparam = self.net(x)
+        return pdparam
+
+    @lab_api
+    def body_act(self, body, state):
+        '''Note, SARSA is discrete-only'''
+        action, action_pd = self.action_policy(state, self, body)
+        body.entropies.append(action_pd.entropy())
+        body.log_probs.append(action_pd.log_prob(action.float()))
+        if len(action.size()) == 0:  # scalar
+            return action.numpy().astype(body.action_space.dtype)
+        else:
+            return action.numpy()
+
     def compute_q_target_values(self, batch):
         '''Computes the target Q values for a batch of experiences'''
-        with torch.no_grad():
-            # Calculate the Q values of the current and next states
-            q_sts = self.net.wrap_eval(batch['states'])
-            q_next_st = self.net.wrap_eval(batch['next_states'])
-            q_next_actions = batch['next_actions']
-            logger.debug2(f'Q next states: {q_next_st.size()}')
-            # Get the q value for the next action that was actually taken
-            idx = torch.from_numpy(np.array(range(q_next_st.size(0))))
-            if torch.cuda.is_available() and self.net.gpu:
-                idx = idx.cuda()
-            q_next_st_vals = q_next_st[idx, q_next_actions.squeeze_(1).data.long()]
-            # Expand the dims so that q_next_st_vals can be broadcast
-            q_next_st_vals.unsqueeze_(1)
-            logger.debug2(f'Q next_states vals {q_next_st_vals.size()}')
-            logger.debug3(f'Q next_states {q_next_st}')
-            logger.debug3(f'Q next actions {q_next_actions}')
-            logger.debug3(f'Q next_states vals {q_next_st_vals}')
-            logger.debug3(f'Dones {batch["dones"]}')
-            # Compute q_targets using reward and Q value corresponding to the action taken in the next state if there is one. Make next state Q value 0 if the current state is done
-            q_targets_actual = batch['rewards'].data + self.gamma * torch.mul((1 - batch['dones'].data), q_next_st_vals)
-            logger.debug2(f'Q targets actual: {q_targets_actual.size()}')
-            logger.debug3(f'Q states {q_sts}')
-            logger.debug3(f'Q targets actual: {q_targets_actual}')
-            # We only want to train the network for the action selected in the current state
-            # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
-            q_targets = torch.mul(q_targets_actual, batch['actions_onehot'].data) + torch.mul(q_sts, (1 - batch['actions_onehot'].data))
-            logger.debug2(f'Q targets: {q_targets.size()}')
-            logger.debug3(f'Q targets: {q_targets}')
-            if torch.cuda.is_available() and self.net.gpu:
-                q_targets = q_targets.cuda()
-            return q_targets
+        # Calculate the Q values of the current and next states
+        q_sts = self.net.wrap_eval(batch['states'])
+        q_next_st = self.net.wrap_eval(batch['next_states'])
+        q_next_actions = batch['next_actions']
+        logger.debug2(f'Q next states: {q_next_st.size()}')
+        # Get the q value for the next action that was actually taken
+        idx = torch.from_numpy(np.array(range(q_next_st.size(0))))
+        if torch.cuda.is_available() and self.net.gpu:
+            idx = idx.cuda()
+        q_next_st_vals = q_next_st[idx, q_next_actions.squeeze_(1).data.long()]
+        # Expand the dims so that q_next_st_vals can be broadcast
+        q_next_st_vals.unsqueeze_(1)
+        logger.debug2(f'Q next_states vals {q_next_st_vals.size()}')
+        logger.debug3(f'Q next_states {q_next_st}')
+        logger.debug3(f'Q next actions {q_next_actions}')
+        logger.debug3(f'Q next_states vals {q_next_st_vals}')
+        logger.debug3(f'Dones {batch["dones"]}')
+        # Compute q_targets using reward and Q value corresponding to the action taken in the next state if there is one. Make next state Q value 0 if the current state is done
+        q_targets_actual = batch['rewards'].data + self.gamma * torch.mul((1 - batch['dones'].data), q_next_st_vals)
+        logger.debug2(f'Q targets actual: {q_targets_actual.size()}')
+        logger.debug3(f'Q states {q_sts}')
+        logger.debug3(f'Q targets actual: {q_targets_actual}')
+        # We only want to train the network for the action selected in the current state
+        # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
+        q_targets = torch.mul(q_targets_actual, batch['actions_onehot'].data) + torch.mul(q_sts, (1 - batch['actions_onehot'].data))
+        logger.debug2(f'Q targets: {q_targets.size()}')
+        logger.debug3(f'Q targets: {q_targets}')
+        if torch.cuda.is_available() and self.net.gpu:
+            q_targets = q_targets.cuda()
+        return q_targets
 
     @lab_api
     def sample(self):
@@ -160,8 +192,9 @@ class SARSA(Algorithm):
                 logger.info(f'Batch too small to train with, skipping...')
                 self.to_train = 0
                 return np.nan
-            q_targets = self.compute_q_target_values(batch)
-            y = q_targets
+            with torch.no_grad():
+                q_targets = self.compute_q_target_values(batch)
+                y = q_targets
             loss = self.net.training_step(batch['states'], y)
             self.to_train = 0
             logger.debug(f'loss {loss.item()}')
@@ -170,23 +203,10 @@ class SARSA(Algorithm):
             return np.nan
 
     @lab_api
-    def body_act_discrete(self, body, state):
-        '''Selects and returns a discrete action for body using the action policy'''
-        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx], self.net.gpu)
-
-    def update_explore_var(self):
-        '''Updates the explore variables'''
-        space_clock = util.s_get(self, 'aeb_space.clock')
-        nanflat_explore_var_a = self.action_policy_update(self, space_clock)
-        explore_var_a = self.nanflat_to_data_a(
-            'explore_var', nanflat_explore_var_a)
-        return explore_var_a
-
-    def update_learning_rate(self):
-        decay_learning_rate(self, [self.net])
-
-    @lab_api
     def update(self):
         '''Update the agent after training'''
-        self.update_learning_rate()
-        return self.update_explore_var()
+        for net in [self.net]:
+            net.update_lr()
+        explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
+        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
+        return explore_var_a

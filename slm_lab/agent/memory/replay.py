@@ -130,7 +130,7 @@ class Replay(Memory):
         '''Prints size of all of the memory arrays'''
         for k in self.data_keys:
             d = getattr(self, k)
-            logger.info(f'MEMORY: {k} :shape: {d.shape}, dtype: {d.dtype}, size: {util.memory_size(d)}MB')
+            logger.info(f'Memory for body {self.body.aeb}: {k} :shape: {d.shape}, dtype: {d.dtype}, size: {util.memory_size(d)}MB')
 
 
 class StackReplay(Replay):
@@ -157,6 +157,7 @@ class StackReplay(Replay):
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
+        state = self.preprocess_state(state)
         super(StackReplay, self).epi_reset(state)
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
@@ -202,6 +203,7 @@ class Atari(Replay):
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
+        state = self.preprocess_state(state)
         super(Atari, self).epi_reset(state)
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
@@ -223,6 +225,6 @@ class Atari(Replay):
         if not np.isnan(reward):  # not the start of episode
             logger.debug2(f'original reward: {reward}')
             reward = max(-1, min(1, reward))
-            logger.debug3(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
+            logger.info(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state

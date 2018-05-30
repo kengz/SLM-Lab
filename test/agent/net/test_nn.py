@@ -81,8 +81,9 @@ class TestNet:
             return
         flag = True
         before_params = net_util.copy_trainable_params(net)
-        dummy_input = self.init_dummy_input(net)
-        dummy_output = self.init_dummy_output(net)
+        with torch.no_grad():
+            dummy_input = self.init_dummy_input(net)
+            dummy_output = self.init_dummy_output(net)
         loss = net.training_step(dummy_input, dummy_output)
         after_params = net_util.copy_trainable_params(net)
         i = 0

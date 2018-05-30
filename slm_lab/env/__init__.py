@@ -83,6 +83,23 @@ class BrainExt:
 util.monkey_patch(brain.BrainParameters, BrainExt)
 
 
+def set_gym_space_attr(gym_space):
+    '''Set missing gym space attributes for standardization'''
+    if isinstance(gym_space, gym.spaces.Box):
+        pass
+    elif isinstance(gym_space, gym.spaces.Discrete):
+        setattr(gym_space, 'low', 0)
+        setattr(gym_space, 'high', gym_space.n)
+    elif isinstance(gym_space, gym.spaces.MultiBinary):
+        setattr(gym_space, 'low', np.full(gym_space.n, 0))
+        setattr(gym_space, 'high', np.full(gym_space.n, 2))
+    elif isinstance(gym_space, gym.spaces.MultiDiscrete):
+        setattr(gym_space, 'low', np.zeros_like(nvec))
+        setattr(gym_space, 'high', np.array(gym_space.nvec))
+    else:
+        raise ValueError('gym_space not recognized')
+
+
 class OpenAIEnv:
     def __init__(self, env_spec, env_space, e=0):
         self.env_spec = env_spec
@@ -97,7 +114,9 @@ class OpenAIEnv:
 
         self.u_env = gym.make(self.name)
         # spaces for NN auto input/output inference
+        set_gym_space_attr(self.u_env.observation_space)
         self.observation_spaces = [self.u_env.observation_space]
+        set_gym_space_attr(self.u_env.action_space)
         self.action_spaces = [self.u_env.action_space]
 
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
@@ -228,10 +247,13 @@ class UnityEnv:
                 observation_space = gym.spaces.Box(low=0.0, high=1.0, shape=observation_shape, dtype=np.float32)
             self.observation_spaces.append(observation_space)
             if self.is_discrete(a):
-                action_space = gym.spaces.Box(low=0, high=self.get_action_dim(a) - 1, shape=(1,), dtype=np.int32)
+                action_space = gym.spaces.Discrete(self.get_action_dim(a))
             else:
                 action_space = gym.spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
             self.action_spaces.append(action_space)
+        for observation_space, action_space in zip(self.observation_spaces, self.action_spaces):
+            set_gym_space_attr(observation_space)
+            set_gym_space_attr(action_space)
 
         # TODO experiment to find out optimal benchmarking max_timestep, set
         # TODO ensure clock_speed from env_spec

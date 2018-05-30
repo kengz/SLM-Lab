@@ -3,7 +3,12 @@
     "name": "ActorCritic",
     "algorithm": {
       "name": "ActorCritic",
+      "action_pdtype": "default",
       "action_policy": "default",
+      "action_policy_update": "no_update",
+      "explore_var_start": null,
+      "explore_var_end": null,
+      "explore_anneal_epi": null,
       "gamma": 0.99,
       "add_entropy": false,
       "entropy_weight": 0.01,
@@ -23,6 +28,8 @@
       "type": "MLPseparate",
       "hid_layers": [64],
       "hid_layers_activation": "relu",
+      "clip_grad": false,
+      "clip_grad_val": 1.0,
       "use_same_optim": false,
       "actor_optim_spec": {
         "name": "Adam",
@@ -32,12 +39,9 @@
         "name": "Adam",
         "lr": 0.02
       },
-      "clip_grad": false,
-      "clip_grad_val": 1.0,
-      "decay_lr": true,
-      "decay_lr_factor": 0.9,
-      "decay_lr_frequency": 1000,
-      "decay_lr_min_timestep": 2000,
+      "lr_decay": "rate_decay",
+      "lr_decay_frequency": 1000,
+      "lr_decay_min_timestep": 2000,
       "gpu": false
     }
   },
@@ -45,6 +49,7 @@
     "name": "VanillaDQN",
     "algorithm": {
       "name": "VanillaDQN",
+      "action_pdtype": "Argmax",
       "action_policy": "boltzmann",
       "action_policy_update": "linear_decay",
       "explore_var_start": 1.5,
@@ -65,19 +70,18 @@
       "type": "MLPNet",
       "hid_layers": [64],
       "hid_layers_activation": "sigmoid",
+      "clip_grad": false,
+      "clip_grad_val": 1.0,
+      "loss_spec": {
+        "name": "MSELoss"
+      },
       "optim_spec": {
         "name": "Adam",
         "lr": 0.02
       },
-      "loss_spec": {
-        "name": "mse_loss"
-      },
-      "clip_grad": false,
-      "clip_grad_val": 1.0,
-      "decay_lr": true,
-      "decay_lr_factor": 0.9,
-      "decay_lr_frequency": 400,
-      "decay_lr_min_timestep": 1400,
+      "lr_decay": "rate_decay",
+      "lr_decay_frequency": 400,
+      "lr_decay_min_timestep": 1400,
       "gpu": false
     }
   },
@@ -85,6 +89,7 @@
     "name": "DQN",
     "algorithm": {
       "name": "DQN",
+      "action_pdtype": "Argmax",
       "action_policy": "boltzmann",
       "action_policy_update": "linear_decay",
       "explore_var_start": 1.5,
@@ -105,19 +110,18 @@
       "type": "MLPNet",
       "hid_layers": [64],
       "hid_layers_activation": "sigmoid",
+      "clip_grad": false,
+      "clip_grad_val": 1.0,
+      "loss_spec": {
+        "name": "MSELoss"
+      },
       "optim_spec": {
         "name": "Adam",
         "lr": 0.02
       },
-      "loss_spec": {
-        "name": "mse_loss"
-      },
-      "clip_grad": false,
-      "clip_grad_val": 1.0,
-      "decay_lr": true,
-      "decay_lr_factor": 0.9,
-      "decay_lr_frequency": 400,
-      "decay_lr_min_timestep": 1400,
+      "lr_decay": "rate_decay",
+      "lr_decay_frequency": 400,
+      "lr_decay_min_timestep": 1400,
       "update_type": "replace",
       "update_frequency": 1,
       "polyak_weight": 0.9,
@@ -128,6 +132,7 @@
     "name": "DoubleDQN",
     "algorithm": {
       "name": "DoubleDQN",
+      "action_pdtype": "Argmax",
       "action_policy": "boltzmann",
       "action_policy_update": "linear_decay",
       "explore_var_start": 1.5,
@@ -148,19 +153,18 @@
       "type": "MLPNet",
       "hid_layers": [64],
       "hid_layers_activation": "sigmoid",
+      "clip_grad": false,
+      "clip_grad_val": 1.0,
+      "loss_spec": {
+        "name": "MSELoss"
+      },
       "optim_spec": {
         "name": "Adam",
         "lr": 0.02
       },
-      "loss_spec": {
-        "name": "mse_loss"
-      },
-      "clip_grad": false,
-      "clip_grad_val": 1.0,
-      "decay_lr": true,
-      "decay_lr_factor": 0.9,
-      "decay_lr_frequency": 400,
-      "decay_lr_min_timestep": 1400,
+      "lr_decay": "rate_decay",
+      "lr_decay_frequency": 400,
+      "lr_decay_min_timestep": 1400,
       "update_type": "replace",
       "update_frequency": 1,
       "polyak_weight": 0.9,
@@ -171,8 +175,9 @@
     "name": "MultitaskDQN",
     "algorithm": {
       "name": "MultitaskDQN",
+      "action_pdtype": "Argmax",
       "action_policy": "multi_boltzmann",
-      "action_policy_update": "multi_linear_decay",
+      "action_policy_update": "linear_decay",
       "explore_var_start": 1.5,
       "explore_var_end": 0.3,
       "explore_anneal_epi": 15,
@@ -191,19 +196,18 @@
       "type": "MLPNet",
       "hid_layers": [64],
       "hid_layers_activation": "sigmoid",
+      "clip_grad": false,
+      "clip_grad_val": 1.0,
+      "loss_spec": {
+        "name": "MSELoss"
+      },
       "optim_spec": {
         "name": "Adam",
         "lr": 0.02
       },
-      "loss_spec": {
-        "name": "mse_loss"
-      },
-      "clip_grad": false,
-      "clip_grad_val": 1.0,
-      "decay_lr": true,
-      "decay_lr_factor": 0.9,
-      "decay_lr_frequency": 400,
-      "decay_lr_min_timestep": 1400,
+      "lr_decay": "rate_decay",
+      "lr_decay_frequency": 400,
+      "lr_decay_min_timestep": 1400,
       "update_type": "replace",
       "update_frequency": 1,
       "polyak_weight": 0.9,
@@ -214,8 +218,9 @@
     "name": "HydraDQN",
     "algorithm": {
       "name": "HydraDQN",
-      "action_policy": "multi_head_boltzmann",
-      "action_policy_update": "multi_linear_decay",
+      "action_pdtype": "Argmax",
+      "action_policy": "multi_boltzmann",
+      "action_policy_update": "linear_decay",
       "explore_var_start": 1.5,
       "explore_var_end": 0.3,
       "explore_anneal_epi": 15,
@@ -234,19 +239,18 @@
       "type": "HydraMLPNet",
       "hid_layers": [64],
       "hid_layers_activation": "sigmoid",
+      "clip_grad": false,
+      "clip_grad_val": 1.0,
+      "loss_spec": {
+        "name": "MSELoss"
+      },
       "optim_spec": {
         "name": "Adam",
         "lr": 0.02
       },
-      "loss_spec": {
-        "name": "mse_loss"
-      },
-      "clip_grad": false,
-      "clip_grad_val": 1.0,
-      "decay_lr": true,
-      "decay_lr_factor": 0.9,
-      "decay_lr_frequency": 400,
-      "decay_lr_min_timestep": 1400,
+      "lr_decay": "rate_decay",
+      "lr_decay_frequency": 400,
+      "lr_decay_min_timestep": 1400,
       "update_type": "replace",
       "update_frequency": 1,
       "polyak_weight": 0.9,
@@ -294,7 +298,12 @@
     "name": "Reinforce",
     "algorithm": {
       "name": "Reinforce",
+      "action_pdtype": "default",
       "action_policy": "default",
+      "action_policy_update": "no_update",
+      "explore_var_start": null,
+      "explore_var_end": null,
+      "explore_anneal_epi": null,
       "gamma": 0.95,
       "add_entropy": false,
       "entropy_weight": 0.01,
@@ -308,19 +317,18 @@
       "type": "MLPdefault",
       "hid_layers": [32],
       "hid_layers_activation": "relu",
+      "clip_grad": false,
+      "clip_grad_val": 1.0,
+      "loss_spec": {
+        "name": "MSELoss"
+      },
       "optim_spec": {
         "name": "Adam",
         "lr": 0.01
       },
-      "loss_spec": {
-        "name": "mse_loss"
-      },
-      "clip_grad": false,
-      "clip_grad_val": 1.0,
-      "decay_lr": false,
-      "decay_lr_factor": 0.9,
-      "decay_lr_frequency": 1000,
-      "decay_lr_min_timestep": 2000,
+      "lr_decay": "no_decay",
+      "lr_decay_frequency": 1000,
+      "lr_decay_min_timestep": 2000,
       "gpu": false
     }
   },
@@ -328,6 +336,7 @@
     "name": "SARSA",
     "algorithm": {
       "name": "SARSA",
+      "action_pdtype": "default",
       "action_policy": "epsilon_greedy",
       "action_policy_update": "linear_decay",
       "explore_var_start": 1.0,
@@ -343,19 +352,18 @@
       "type": "MLPNet",
       "hid_layers": [64],
       "hid_layers_activation": "sigmoid",
+      "clip_grad": false,
+      "clip_grad_val": 1.0,
+      "loss_spec": {
+        "name": "MSELoss"
+      },
       "optim_spec": {
         "name": "Adam",
         "lr": 0.01
       },
-      "loss_spec": {
-        "name": "mse_loss"
-      },
-      "clip_grad": false,
-      "clip_grad_val": 1.0,
-      "decay_lr": true,
-      "decay_lr_factor": 0.9,
-      "decay_lr_frequency": 1000,
-      "decay_lr_min_timestep": 1000,
+      "lr_decay": "rate_decay",
+      "lr_decay_frequency": 1000,
+      "lr_decay_min_timestep": 1000,
       "gpu": false
     }
   }

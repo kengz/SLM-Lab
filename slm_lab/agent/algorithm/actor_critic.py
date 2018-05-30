@@ -1,6 +1,6 @@
 from copy import deepcopy
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns, decay_learning_rate
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.reinforce import Reinforce
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
@@ -57,13 +57,20 @@ class ActorCritic(Reinforce):
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
-        if self.algorithm_spec['action_policy'] == 'default':
-            if self.body.is_discrete:
-                self.algorithm_spec['action_policy'] = 'softmax'
-            else:
-                self.algorithm_spec['action_policy'] = 'gaussian'
+        # set default
+        util.set_attr(self, dict(
+            action_pdtype='default',
+            action_policy='default',
+            action_policy_update='no_update',
+            explore_var_start=np.nan,
+            explore_var_end=np.nan,
+            explore_anneal_epi=np.nan,
+        ))
         util.set_attr(self, self.algorithm_spec, [
             'action_policy',
+            # theoretically, AC does not have policy update; but in this implementation we have such option
+            'action_policy_update',
+            'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
             'gamma',  # the discount factor
             'add_entropy',
             'entropy_weight',
@@ -76,11 +83,11 @@ class ActorCritic(Reinforce):
             'policy_loss_weight',
             'val_loss_weight',
         ])
-        self.action_policy = act_fns[self.action_policy]
         self.to_train = 0
-        # To save on a forward pass keep the log probs from each action
-        self.saved_log_probs = []
-        self.entropy = []
+        self.action_policy = getattr(policy_util, self.action_policy)
+        self.action_policy_update = getattr(policy_util, self.action_policy_update)
+        for body in self.agent.nanflat_body_a:
+            body.explore_var = self.explore_var_start
         # Select appropriate function for calculating state-action-value estimate (target)
         if self.use_GAE:
             self.get_target = self.get_gae_target
@@ -153,12 +160,29 @@ class ActorCritic(Reinforce):
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
-    def body_act_discrete(self, body, state):
-        return self.action_policy(self, state, body, self.net.gpu)
+    def calc_pdparam(self, x, evaluate=True):
+        '''
+        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
+        '''
+        if evaluate:
+            pdparam = self.net.wrap_eval(x)
+        else:
+            self.net.train()
+            pdparam = self.net(x)
+        if self.share_architecture:
+            return pdparam[:-1]
+        else:
+            return pdparam
 
     @lab_api
-    def body_act_continuous(self, body, state):
-        return self.action_policy(self, state, body, self.net.gpu)
+    def body_act(self, body, state):
+        action, action_pd = self.action_policy(state, self, body)
+        body.entropies.append(action_pd.entropy())
+        body.log_probs.append(action_pd.log_prob(action.float()))
+        if len(action.size()) == 0:  # scalar
+            return action.numpy().astype(body.action_space.dtype)
+        else:
+            return action.numpy()
 
     @lab_api
     def sample(self):
@@ -211,8 +235,8 @@ class ActorCritic(Reinforce):
             # logger.debug2(f'Combined AC gradient norms: {net_util.get_grad_norms(self.net)}')
             self.net.optim.step()
             self.to_train = 0
-            self.saved_log_probs = []
-            self.entropy = []
+            self.body.log_probs = []
+            self.body.entropies = []
             logger.debug('Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}'.format(
                 val_loss, abs(policy_loss), loss
             ))
@@ -255,8 +279,8 @@ class ActorCritic(Reinforce):
         # logger.debug(f'Actor gradient norms: {net_util.get_grad_norms(self.critic)}')
         self.net.optim.step()
         self.to_train = 0
-        self.saved_log_probs = []
-        self.entropy = []
+        self.body.entropies = []
+        self.body.log_probs = []
         logger.debug(f'Policy loss: {loss}')
         return loss
 
@@ -268,10 +292,11 @@ class ActorCritic(Reinforce):
         '''Trains the critic using batches of data. Algorithm doesn't wait until episode has ended to train'''
         loss = 0
         for _i in range(self.training_iters_per_batch):
-            target = self.get_target(batch, critic_specific=True)
-            if torch.cuda.is_available() and self.net.gpu:
-                target = target.cuda()
-            y = target.unsqueeze_(dim=-1)
+            with torch.no_grad():
+                target = self.get_target(batch, critic_specific=True)
+                if torch.cuda.is_available() and self.net.gpu:
+                    target = target.cuda()
+                y = target.unsqueeze_(dim=-1)
             loss = self.critic.training_step(batch['states'], y)
             # logger.debug(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
         return loss
@@ -280,18 +305,19 @@ class ActorCritic(Reinforce):
         '''Trains the critic using entire episodes of data. Algorithm waits until episode has ended to train'''
         loss = 0
         for _i in range(self.training_iters_per_batch):
-            target = self.get_target(batch, critic_specific=True)
-            target = torch.cat(target)
-            logger.debug2(f'Combined size: {target.size()}')
-            x = []
-            for state in batch['states']:
-                x.append(state)
-                logger.debug2(f'states: {state.size()}')
-            x = torch.cat(x, dim=0)
-            logger.debug2(f'Combined states: {x.size()}')
-            if torch.cuda.is_available() and self.net.gpu:
-                target = target.cuda()
-            y = target.unsqueeze_(dim=-1)
+            with torch.no_grad():
+                target = self.get_target(batch, critic_specific=True)
+                target = torch.cat(target)
+                logger.debug2(f'Combined size: {target.size()}')
+                x = []
+                for state in batch['states']:
+                    x.append(state)
+                    logger.debug2(f'states: {state.size()}')
+                x = torch.cat(x, dim=0)
+                logger.debug2(f'Combined states: {x.size()}')
+                if torch.cuda.is_available() and self.net.gpu:
+                    target = target.cuda()
+                y = target.unsqueeze_(dim=-1)
             loss = self.critic.training_step(x, y)
             # logger.debug2(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
         return loss
@@ -514,33 +540,6 @@ class ActorCritic(Reinforce):
         logger.debug3(f'Target: {target}')
         return target
 
-    def print_nets(self):
-        '''Prints networks to stdout'''
-        if self.share_architecture:
-            print(self.net)
-        else:
-            print(self.net)
-            print(self.critic)
-
-    def get_actor_output(self, x, evaluate=True):
-        '''
-        Returns the output of the policy, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.
-        Output will either be the logits for a categorical probability distribution over discrete actions (discrete action space) or the mean and std dev of the action policy (continuous action space)
-        '''
-        if self.share_architecture:
-            if evaluate:
-                out = self.net.wrap_eval(x)
-            else:
-                self.net.train()
-                out = self.net(x)
-            return out[:-1]
-        else:
-            if evaluate:
-                return self.net.wrap_eval(x)
-            else:
-                self.net.train()
-                return self.net(x)
-
     def get_critic_output(self, x, evaluate=True):
         '''Returns the estimated state-value regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.'''
         if self.share_architecture:
@@ -557,8 +556,11 @@ class ActorCritic(Reinforce):
                 self.critic.train()
                 return self.critic(x)
 
-    def update_learning_rate(self):
-        if self.share_architecture:
-            decay_learning_rate(self, [self.net])
-        else:
-            decay_learning_rate(self, [self.net, self.critic])
+    @lab_api
+    def update(self):
+        nets = [self.net] if self.share_architecture else [self.net, self.critic]
+        for net in nets:
+            net.update_lr()
+        explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
+        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
+        return explore_var_a

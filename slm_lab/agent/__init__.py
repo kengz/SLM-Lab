@@ -20,6 +20,7 @@ Agent components:
 '''
 from collections import deque
 from slm_lab.agent import algorithm, memory
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -50,7 +51,18 @@ class Body:
         self.observation_space = self.env.get_observation_space(self.a)
         self.action_dim = self.env.get_action_dim(self.a)
         self.action_space = self.env.get_action_space(self.a)
+        self.action_type = util.get_action_type(self.action_space)
+        self.action_pdtype = self.agent.agent_spec['algorithm'].get('action_pdtype')
+        if self.action_pdtype in (None, 'default'):
+            self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
         self.is_discrete = self.env.is_discrete(self.a)
+        # for action policy exploration, so be set in algo during init_algorithm_params()
+        self.explore_var = np.nan
+
+        # diagnostics variables from action_policy prob. dist.
+        self.entropies = []  # check exploration
+        self.log_probs = []  # calculate loss
+        self.kls = []  # to compare old and new nets
 
         # every body has its own memory for ease of computation
         memory_spec = self.agent.agent_spec['memory']

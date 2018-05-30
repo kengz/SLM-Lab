@@ -31,6 +31,9 @@
           [512]
         ],
         "hid_layers_activation": "relu",
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
         "optim_spec": {
           "name": "RMSprop",
           "lr": 0.00025,
@@ -39,13 +42,10 @@
           "momentum": 0.0,
           "centered": true
         },
-        "loss_spec": {
-          "name": "smooth_l1_loss"
-        },
         "batch_norm": false,
-        "decay_lr": false,
-        "decay_lr_frequency": 400,
-        "decay_lr_min_timestep": 1400,
+        "lr_decay": "no_decay",
+        "lr_decay_frequency": 400,
+        "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 10000,
         "polyak_weight": 0.9,

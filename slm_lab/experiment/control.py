@@ -37,7 +37,7 @@ class Session:
     def __init__(self, spec, info_space=None):
         info_space = info_space or InfoSpace()
         init_thread_vars(spec, info_space, unit='session')
-        self.spec = spec
+        self.spec = deepcopy(spec)
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.random_seed = 100 * (info_space.get('trial') or 0) + self.index

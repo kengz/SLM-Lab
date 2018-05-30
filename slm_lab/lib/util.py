@@ -1,6 +1,7 @@
 from collections import deque
 from datetime import datetime
 from functools import wraps
+from gym import spaces
 from itertools import chain
 from scipy.misc import imsave
 from slm_lab import ROOT_DIR
@@ -10,7 +11,6 @@ import colorlover as cl
 import cv2
 import json
 import math
-import torch.multiprocessing as mp
 import numpy as np
 import os
 import pandas as pd
@@ -20,6 +20,7 @@ import regex as re
 import scipy as sp
 import time
 import torch
+import torch.multiprocessing as mp
 import ujson
 import yaml
 try:
@@ -166,6 +167,25 @@ def gen_isnan(v):
         return np.isnan(v).all()
     except Exception:
         return v is None
+
+
+def get_action_type(action_space):
+    '''Method to get the action type to choose prob. dist. to sample actions from NN logits output'''
+    if isinstance(action_space, spaces.Box):
+        shape = action_space.shape
+        assert len(shape) == 1
+        if shape[0] == 1:
+            return 'continuous'
+        else:
+            return 'multi_continuous'
+    elif isinstance(action_space, spaces.Discrete):
+        return 'discrete'
+    elif isinstance(action_space, spaces.MultiDiscrete):
+        return 'multi_discrete'
+    elif isinstance(action_space, spaces.MultiBinary):
+        return 'multi_binary'
+    else:
+        raise NotImplementedError
 
 
 def get_df_aeb_list(session_df):

@@ -121,9 +121,28 @@ class OnPolicyNStepReplay(OnPolicyReplay):
     '''
 
     def __init__(self, memory_spec, algorithm, body):
+        self.seq_len = algorithm.net_spec['seq_len']
         super(OnPolicyNStepReplay, self).__init__(memory_spec, algorithm, body)
-        self.seq_len = self.agent_spec['net']['seq_len']
         self.state_buffer = deque(maxlen=self.seq_len)
+
+    def reset(self):
+        '''Initializes the memory arrays, size and head pointer'''
+        super(OnPolicyNStepReplay, self).reset()
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim))
+
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(OnPolicyNStepReplay, self).epi_reset(state)
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim))
+
+    def preprocess_state(self, state):
+        '''Transforms the raw state into format that is fed into the network'''
+        self.state_buffer.append(state)
+        processed_state = np.concatenate(self.state_buffer)
+        return processed_state
 
     def sample(self):
         '''
@@ -224,10 +243,29 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
     '''
 
     def __init__(self, memory_spec, algorithm, body):
-        super(OnPolicyNStepBatchReplay, self).__init__(memory_spec, algorithm, body)
         self.is_episodic = False
-        self.seq_len = self.agent_spec['net']['seq_len']
+        self.seq_len = algorithm.net_spec['seq_len']
+        super(OnPolicyNStepBatchReplay, self).__init__(memory_spec, algorithm, body)
         self.state_buffer = deque(maxlen=self.seq_len)
+
+    def reset(self):
+        '''Initializes the memory arrays, size and head pointer'''
+        super(OnPolicyNStepBatchReplay, self).reset()
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim))
+
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(OnPolicyNStepBatchReplay, self).epi_reset(state)
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim))
+
+    def preprocess_state(self, state):
+        '''Transforms the raw state into format that is fed into the network'''
+        self.state_buffer.append(state)
+        processed_state = np.concatenate(self.state_buffer)
+        return processed_state
 
     def sample(self):
         '''

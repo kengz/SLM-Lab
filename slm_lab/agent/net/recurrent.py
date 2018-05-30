@@ -28,14 +28,13 @@ class RecurrentNet(Net, nn.Module):
         hid_layers_activation: activation function for the hidden layers
         num_rnn_layers: number of recurrent layers
         seq_len: length of the history of being passed to the net
-        optim_spec: parameters for initializing the optimizer
-        loss_spec: measure of error between model predictions and correct outputs
         clip_grad: whether to clip the gradient
         clip_grad_val: the clip value
-        decay_lr: whether to decay learning rate
-        decay_lr_factor: the multiplicative decay factor
-        decay_lr_frequency: how many total timesteps per decay
-        decay_lr_min_timestep: minimum amount of total timesteps before starting decay
+        loss_spec: measure of error between model predictions and correct outputs
+        optim_spec: parameters for initializing the optimizer
+        lr_decay: function to decay learning rate
+        lr_decay_frequency: how many total timesteps per decay
+        lr_decay_min_timestep: minimum amount of total timesteps before starting decay
         update_type: method to update network weights: 'replace' or 'polyak'
         update_frequency: how many total timesteps per update
         polyak_weight: ratio of polyak weight update
@@ -48,11 +47,11 @@ class RecurrentNet(Net, nn.Module):
         # set default
         util.set_attr(self, dict(
             num_rnn_layers=1,
-            optim_spec={'name': 'Adam'},
-            loss_spec={'name': 'MSELoss'},
             clip_grad=False,
             clip_grad_val=1.0,
-            decay_lr_factor=0.9,
+            loss_spec={'name': 'MSELoss'},
+            optim_spec={'name': 'Adam'},
+            lr_decay='no_decay',
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
@@ -60,14 +59,13 @@ class RecurrentNet(Net, nn.Module):
             'hid_layers_activation',
             'num_rnn_layers',
             'seq_len',
-            'optim_spec',
-            'loss_spec',
             'clip_grad',
             'clip_grad_val',
-            'decay_lr',
-            'decay_lr_factor',
-            'decay_lr_frequency',
-            'decay_lr_min_timestep',
+            'loss_spec',
+            'optim_spec',
+            'lr_decay',
+            'lr_decay_frequency',
+            'lr_decay_min_timestep',
             'gpu',
         ])
 
@@ -90,8 +88,10 @@ class RecurrentNet(Net, nn.Module):
                 module.cuda()
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        logger.info(f'loss fn: {self.loss_fn}')
-        logger.info(f'optimizer: {self.optim}')
+        self.lr_decay = getattr(net_util, self.lr_decay)
+
+    def __str__(self):
+        return super(RecurrentNet, self).__str__() + f'\noptim: {self.optim}'
 
     def init_hidden(self, batch_size):
         hid = torch.zeros(self.num_rnn_layers, batch_size, self.rnn_hidden_size)
@@ -144,16 +144,12 @@ class RecurrentNet(Net, nn.Module):
         self.eval()
         return self(x)
 
-    def __str__(self):
-        '''Overriding so that print() will print the whole network'''
-        s = self.state_proc_model.__str__() + '\n' + self.rnn_model.__str__()
-        for model_tail in self.model_tails:
-            s += '\n' + model_tail.__str__()
-        return s
-
     def update_lr(self):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
-        self.optim_spec['lr'] = old_lr * self.decay_lr_factor
+        new_lr = self.lr_decay(self)
+        if new_lr == old_lr:
+            return
+        self.optim_spec['lr'] = new_lr
         logger.info(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)

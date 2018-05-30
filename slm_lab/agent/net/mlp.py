@@ -20,14 +20,13 @@ class MLPNet(Net, nn.Module):
         net_spec:
         hid_layers: list containing dimensions of the hidden layers
         hid_layers_activation: activation function for the hidden layers
-        optim_spec: parameters for initializing the optimizer
-        loss_spec: measure of error between model predictions and correct outputs
         clip_grad: whether to clip the gradient
         clip_grad_val: the clip value
-        decay_lr: whether to decay learning rate
-        decay_lr_factor: the multiplicative decay factor
-        decay_lr_frequency: how many total timesteps per decay
-        decay_lr_min_timestep: minimum amount of total timesteps before starting decay
+        loss_spec: measure of error between model predictions and correct outputs
+        optim_spec: parameters for initializing the optimizer
+        lr_decay: function to decay learning rate
+        lr_decay_frequency: how many total timesteps per decay
+        lr_decay_min_timestep: minimum amount of total timesteps before starting decay
         update_type: method to update network weights: 'replace' or 'polyak'
         update_frequency: how many total timesteps per update
         polyak_weight: ratio of polyak weight update
@@ -37,11 +36,11 @@ class MLPNet(Net, nn.Module):
         super(MLPNet, self).__init__(net_spec, algorithm, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            optim_spec={'name': 'Adam'},
-            loss_spec={'name': 'MSELoss'},
             clip_grad=False,
             clip_grad_val=1.0,
-            decay_lr_factor=0.9,
+            loss_spec={'name': 'MSELoss'},
+            optim_spec={'name': 'Adam'},
+            lr_decay='no_decay',
             update_type='replace',
             update_frequency=1,
             polyak_weight=0.0,
@@ -50,14 +49,13 @@ class MLPNet(Net, nn.Module):
         util.set_attr(self, self.net_spec, [
             'hid_layers',
             'hid_layers_activation',
-            'optim_spec',
-            'loss_spec',
             'clip_grad',
             'clip_grad_val',
-            'decay_lr',
-            'decay_lr_factor',
-            'decay_lr_frequency',
-            'decay_lr_min_timestep',
+            'loss_spec',
+            'optim_spec',
+            'lr_decay',
+            'lr_decay_frequency',
+            'lr_decay_min_timestep',
             'update_type',
             'update_frequency',
             'polyak_weight',
@@ -75,8 +73,10 @@ class MLPNet(Net, nn.Module):
                 module.cuda()
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        logger.info(f'loss fn: {self.loss_fn}')
-        logger.info(f'optimizer: {self.optim}')
+        self.lr_decay = getattr(net_util, self.lr_decay)
+
+    def __str__(self):
+        return super(MLPNet, self).__str__() + f'\noptim: {self.optim}'
 
     def forward(self, x):
         '''The feedforward step'''
@@ -111,7 +111,10 @@ class MLPNet(Net, nn.Module):
     def update_lr(self):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
-        self.optim_spec['lr'] = old_lr * self.decay_lr_factor
+        new_lr = self.lr_decay(self)
+        if new_lr == old_lr:
+            return
+        self.optim_spec['lr'] = new_lr
         logger.info(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)
 
@@ -126,11 +129,11 @@ class MLPHeterogenousTails(MLPNet):
         Net.__init__(self, net_spec, algorithm, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            optim_spec={'name': 'Adam'},
-            loss_spec={'name': 'MSELoss'},
             clip_grad=False,
             clip_grad_val=1.0,
-            decay_lr_factor=0.9,
+            loss_spec={'name': 'MSELoss'},
+            optim_spec={'name': 'Adam'},
+            lr_decay='no_decay',
             update_type='replace',
             update_frequency=1,
             polyak_weight=0.0,
@@ -139,14 +142,13 @@ class MLPHeterogenousTails(MLPNet):
         util.set_attr(self, self.net_spec, [
             'hid_layers',
             'hid_layers_activation',
-            'optim_spec',
-            'loss_spec',
             'clip_grad',
             'clip_grad_val',
-            'decay_lr',
-            'decay_lr_factor',
-            'decay_lr_frequency',
-            'decay_lr_min_timestep',
+            'loss_spec',
+            'optim_spec',
+            'lr_decay',
+            'lr_decay_frequency',
+            'lr_decay_min_timestep',
             'update_type',
             'update_frequency',
             'polyak_weight',
@@ -164,8 +166,7 @@ class MLPHeterogenousTails(MLPNet):
                 module.cuda()
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        logger.info(f'loss fn: {self.loss_fn}')
-        logger.info(f'optimizer: {self.optim}')
+        self.lr_decay = getattr(net_util, self.lr_decay)
 
     def forward(self, x):
         '''The feedforward step'''
@@ -174,14 +175,6 @@ class MLPHeterogenousTails(MLPNet):
         for model_tail in self.model_tails:
             outs.append(model_tail(x))
         return outs
-
-    def __str__(self):
-        '''Overriding so that print() will print the whole network'''
-        s = self.model_body.__str__()
-        s += '\nTail:'
-        for model_tail in self.model_tails:
-            s += '\n' + model_tail.__str__()
-        return s
 
 
 class HydraMLPNet(Net, nn.Module):
@@ -217,11 +210,11 @@ class HydraMLPNet(Net, nn.Module):
         super(HydraMLPNet, self).__init__(net_spec, algorithm, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            optim_spec={'name': 'Adam'},
-            loss_spec={'name': 'MSELoss'},
             clip_grad=False,
             clip_grad_val=1.0,
-            decay_lr_factor=0.9,
+            loss_spec={'name': 'MSELoss'},
+            optim_spec={'name': 'Adam'},
+            lr_decay='no_decay',
             update_type='replace',
             update_frequency=1,
             polyak_weight=0.0,
@@ -230,14 +223,13 @@ class HydraMLPNet(Net, nn.Module):
         util.set_attr(self, self.net_spec, [
             'hid_layers',
             'hid_layers_activation',
-            'optim_spec',
-            'loss_spec',
             'clip_grad',
             'clip_grad_val',
-            'decay_lr',
-            'decay_lr_factor',
-            'decay_lr_frequency',
-            'decay_lr_min_timestep',
+            'loss_spec',
+            'optim_spec',
+            'lr_decay',
+            'lr_decay_frequency',
+            'lr_decay_min_timestep',
             'update_type',
             'update_frequency',
             'polyak_weight',
@@ -266,8 +258,10 @@ class HydraMLPNet(Net, nn.Module):
                 module.cuda()
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        logger.info(f'loss fn: {self.loss_fn}')
-        logger.info(f'optimizer: {self.optim}')
+        self.lr_decay = getattr(net_util, self.lr_decay)
+
+    def __str__(self):
+        return super(HydraMLPNet, self).__str__() + f'\noptim: {self.optim}'
 
     def build_model_heads(self, in_dim):
         '''Build each model_head. These are stored as Sequential models in model_heads'''
@@ -304,7 +298,7 @@ class HydraMLPNet(Net, nn.Module):
         outs = []
         for model_tail in self.model_tails:
             outs.append(model_tail(body_x))
-        return outs
+        return torch.cat(outs)
 
     def training_step(self, xs=None, ys=None, loss=None):
         '''
@@ -337,18 +331,9 @@ class HydraMLPNet(Net, nn.Module):
     def update_lr(self):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
-        self.optim_spec['lr'] = old_lr * self.decay_lr_factor
+        new_lr = self.lr_decay(self)
+        if new_lr == old_lr:
+            return
+        self.optim_spec['lr'] = new_lr
         logger.info(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)
-
-    def __str__(self):
-        '''Overriding so that print() will print the whole network'''
-        s = 'Head'
-        for net in self.model_heads:
-            s += net.__str__() + '\n'
-        s += '\nBody:\n'
-        s += self.model_body.__str__()
-        s += '\nTail:'
-        for net in self.model_tails:
-            s += '\n' + net.__str__()
-        return s

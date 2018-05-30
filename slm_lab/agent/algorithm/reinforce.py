@@ -1,7 +1,6 @@
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns, decay_learning_rate
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -36,25 +35,31 @@ class Reinforce(Algorithm):
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
-        # TODO below is weird. do it OpenAI-style
-        if self.algorithm_spec['action_policy'] == 'default':
-            if self.body.is_discrete:
-                self.algorithm_spec['action_policy'] = 'softmax'
-            else:
-                self.algorithm_spec['action_policy'] = 'gaussian'
+        # set default
+        util.set_attr(self, dict(
+            action_pdtype='default',
+            action_policy='default',
+            action_policy_update='no_update',
+            explore_var_start=np.nan,
+            explore_var_end=np.nan,
+            explore_anneal_epi=np.nan,
+        ))
         util.set_attr(self, self.algorithm_spec, [
             'action_policy',
+            # theoretically, REINFORCE does not have policy update; but in this implementation we have such option
+            'action_policy_update',
+            'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
             'gamma',  # the discount factor
             'add_entropy',
             'entropy_weight',
             'continuous_action_clip',
             'training_frequency',
         ])
-        self.action_policy = act_fns[self.action_policy]
         self.to_train = 0
-        # To save on a forward pass keep the log probs from each action
-        self.saved_log_probs = []
-        self.entropy = []
+        self.action_policy = getattr(policy_util, self.action_policy)
+        self.action_policy_update = getattr(policy_util, self.action_policy_update)
+        for body in self.agent.nanflat_body_a:
+            body.explore_var = self.explore_var_start
 
     @lab_api
     def init_nets(self):
@@ -78,12 +83,26 @@ class Reinforce(Algorithm):
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
-    def body_act_discrete(self, body, state):
-        return self.action_policy(self, state, body, self.net.gpu)
+    def calc_pdparam(self, x, evaluate=True):
+        '''
+        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
+        '''
+        if evaluate:
+            pdparam = self.net.wrap_eval(x)
+        else:
+            self.net.train()
+            pdparam = self.net(x)
+        return pdparam
 
     @lab_api
-    def body_act_continuous(self, body, state):
-        return self.action_policy(self, state, body, self.net.gpu)
+    def body_act(self, body, state):
+        action, action_pd = self.action_policy(state, self, body)
+        body.entropies.append(action_pd.entropy())
+        body.log_probs.append(action_pd.log_prob(action.float()))
+        if len(action.size()) == 0:  # scalar
+            return action.numpy().astype(body.action_space.dtype)
+        else:
+            return action.numpy()
 
     @lab_api
     def sample(self):
@@ -104,8 +123,8 @@ class Reinforce(Algorithm):
             self.net.training_step(loss=loss)
 
             self.to_train = 0
-            self.saved_log_probs = []
-            self.entropy = []
+            self.body.log_probs = []
+            self.body.entropies = []
             logger.debug(f'Policy loss: {loss}')
             return loss.item()
         else:
@@ -119,7 +138,7 @@ class Reinforce(Algorithm):
         advantage = self.calc_advantage(batch)
         advantage = self.check_sizes(advantage)
         policy_loss = torch.tensor(0.0)
-        for log_prob, a, e in zip(self.saved_log_probs, advantage, self.entropy):
+        for log_prob, a, e in zip(self.body.log_probs, advantage, self.body.entropies):
             logger.debug3(f'log prob: {log_prob.item()}, advantage: {a}, entropy: {e.item()}')
             if self.add_entropy:
                 policy_loss += (-log_prob * a - self.entropy_weight * e)
@@ -132,21 +151,21 @@ class Reinforce(Algorithm):
         Checks that log probs, advantage, and entropy all have the same size
         Occassionally they do not, this is caused by first reward of an episode being nan. If they are not the same size, the function removes the elements of the log probs and entropy that correspond to nan rewards.
         '''
-        body = self.agent.nanflat_body_a[0]
+        body = self.body
         nan_idxs = body.memory.last_nan_idxs
         num_nans = sum(nan_idxs)
-        assert len(nan_idxs) == len(self.saved_log_probs)
-        assert len(nan_idxs) == len(self.entropy)
+        assert len(nan_idxs) == len(body.log_probs)
+        assert len(nan_idxs) == len(body.entropies)
         assert len(nan_idxs) - num_nans == advantage.size(0)
         logger.debug2(f'{num_nans} nans encountered when gathering data')
         if num_nans != 0:
             idxs = [x for x in range(len(nan_idxs)) if nan_idxs[x] == 1]
             logger.debug3(f'Nan indexes: {idxs}')
             for idx in idxs[::-1]:
-                del self.saved_log_probs[idx]
-                del self.entropy[idx]
-        assert len(self.saved_log_probs) == advantage.size(0)
-        assert len(self.entropy) == advantage.size(0)
+                del body.log_probs[idx]
+                del body.entropies[idx]
+        assert len(body.log_probs) == advantage.size(0)
+        assert len(body.entropies) == advantage.size(0)
         return advantage
 
     def calc_advantage(self, raw_rewards):
@@ -168,24 +187,10 @@ class Reinforce(Algorithm):
         advantage = torch.cat(advantage)
         return advantage
 
-    def update_learning_rate(self):
-        decay_learning_rate(self, [self.net])
-
     @lab_api
     def update(self):
-        self.update_learning_rate()
-        '''No update needed to explore var'''
-        explore_var = np.nan
-        return explore_var
-
-    def get_actor_output(self, x, evaluate=True):
-        '''
-        Returns the output of the policy, regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.
-        Output will either be the logits for a categorical probability distribution over discrete actions (discrete action space) or the mean and std dev of the action policy (continuous action space)
-        '''
-        if evaluate:
-            out = self.net.wrap_eval(x)
-        else:
-            self.net.train()
-            out = self.net(x)
-        return out
+        for net in [self.net]:
+            net.update_lr()
+        explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
+        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
+        return explore_var_a

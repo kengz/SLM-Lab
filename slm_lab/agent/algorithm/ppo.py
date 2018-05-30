@@ -122,12 +122,7 @@ class PPO(Algorithm):
         self.adam.sync()
 
     @lab_api
-    def body_act_discrete(self, body, state):
-        action, self.body.memory.v_pred = self.pi.act(state)
-        return action
-
-    @lab_api
-    def body_act_continuous(self, body, state):
+    def body_act(self, body, state):
         action, self.body.memory.v_pred = self.pi.act(state)
         return action
 
