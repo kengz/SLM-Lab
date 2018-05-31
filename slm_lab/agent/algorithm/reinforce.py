@@ -173,12 +173,12 @@ class Reinforce(Algorithm):
         advantage = []
         logger.debug3(f'Raw rewards: {raw_rewards}')
         for epi_rewards in raw_rewards:
-            big_r = 0
+            future_ret = 0.0
             T = len(epi_rewards)
             returns = np.empty(T, 'float32')
             for t in reversed(range(T)):
-                big_r = epi_rewards[t] + self.gamma * big_r
-                returns[t] = big_r
+                future_ret = epi_rewards[t] + self.gamma * future_ret
+                returns[t] = future_ret
             logger.debug3(f'Rewards: {returns}')
             returns = (returns - returns.mean()) / (returns.std() + 1e-08)
             returns = torch.from_numpy(returns)
