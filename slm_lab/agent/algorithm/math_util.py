@@ -1,7 +1,7 @@
 '''
-Methods and calculations used by algorithms
-All calculations for training shall have a standard API that takes in `batch`,
-which is a dict containing keys to any data type you wish, e.g. {rewards: np.array([...])}
+Calculations used by algorithms
+All calculations for training shall have a standard API that takes in `batch` from algorithm.sample() method.
+`batch` is a dict containing keys to any data type you wish, e.g. {rewards: np.array([...])}
 '''
 from slm_lab.lib import logger
 import numpy as np
