@@ -1,27 +1,29 @@
 '''
 Methods and calculations used by algorithms
+All calculations for training shall have a standard API that takes in `batch`,
+which is a dict containing keys to any data type you wish, e.g. {rewards: np.array([...])}
 '''
 from slm_lab.lib import logger
 import numpy as np
 import torch
+import pydash as ps
 
 # Policy Gradient calc
 
 # TODO standardize arg with full sampled info
 
 
-def calc_batch_adv(batch_rewards):
-    '''apply below to batch_rewards'''
-    batch_advs = []
-    for epi_rewards in batch_rewards:
-        advs = calc_adv(epi_rewards)
-        batch_advs.append(advs)
+def calc_batch_adv(batch):
+    '''Calculate the advantage for a batch of data containing list of epi_rewards'''
+    batch_rewards = batch['rewards']
+    assert ps.is_list(batch_rewards)
+    batch_advs = [calc_adv(epi_rewards) for epi_rewards in batch_rewards]
     batch_advs = torch.cat(batch_advs)
     return batch_advs
 
 
 def calc_adv(epi_rewards):
-    '''Calculate plain advantage with simple reward baseline'''
+    '''Base method to calculate plain advantage with simple reward baseline'''
     T = len(epi_rewards)
     advs = np.empty(T, 'float32')
     future_ret = 0.0

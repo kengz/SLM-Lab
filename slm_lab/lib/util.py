@@ -3,10 +3,8 @@ from datetime import datetime
 from functools import wraps
 from gym import spaces
 from itertools import chain
-from scipy.misc import imsave
 from slm_lab import ROOT_DIR
 from sys import getsizeof, stderr
-import collections
 import colorlover as cl
 import cv2
 import json
@@ -14,7 +12,6 @@ import math
 import numpy as np
 import os
 import pandas as pd
-import pprint
 import pydash as ps
 import regex as re
 import scipy as sp
