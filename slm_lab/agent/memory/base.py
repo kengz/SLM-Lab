@@ -41,6 +41,7 @@ class Memory(ABC):
         '''Method to reset at new episode'''
         self.last_state = state
         self.state_buffer.clear()
+        self.body.epi_reset()
         self.total_reward = 0
 
     def base_update(self, action, reward, state, done):

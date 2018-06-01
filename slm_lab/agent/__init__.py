@@ -70,6 +70,16 @@ class Body:
         MemoryClass = getattr(memory, memory_name)
         self.memory = MemoryClass(memory_spec, self.agent.algorithm, self)
 
+    def epi_reset(self):
+        '''
+        Agent will still produce action (and the action stat) at terminal step and feed to env.step() at t=0. Remove them at epi_reset.
+        This method is called automatically at base memory.epi_reset().
+        '''
+        assert self.env.clock.get('t') == 0
+        action_stats = [self.entropies, self.log_probs, self.kls]
+        for action_stat in action_stats:
+            action_stat.clear()
+
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
 
