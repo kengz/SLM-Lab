@@ -1,5 +1,5 @@
 from slm_lab.agent import net
-from slm_lab.agent.algorithm import policy_util
+from slm_lab.agent.algorithm import math_util, policy_util
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -118,8 +118,8 @@ class Reinforce(Algorithm):
         if self.to_train == 1:
             logger.debug2(f'Training...')
             # We only care about the rewards from the batch
-            rewards = self.sample()['rewards']
-            loss = self.calc_policy_loss(rewards)
+            batch = self.sample()
+            loss = self.calc_policy_loss(batch)
             self.net.training_step(loss=loss)
 
             self.to_train = 0
@@ -135,7 +135,7 @@ class Reinforce(Algorithm):
         Returns the policy loss for a batch of data.
         For REINFORCE just rewards are passed in as the batch
         '''
-        advantage = self.calc_advantage(batch)
+        advantage = math_util.calc_batch_adv(batch, self.gamma)
         advantage = self.check_sizes(advantage)
         policy_loss = torch.tensor(0.0)
         for log_prob, a, e in zip(self.body.log_probs, advantage, self.body.entropies):
@@ -166,25 +166,6 @@ class Reinforce(Algorithm):
                 del body.entropies[idx]
         assert len(body.log_probs) == advantage.size(0)
         assert len(body.entropies) == advantage.size(0)
-        return advantage
-
-    def calc_advantage(self, raw_rewards):
-        '''Returns the advantage for each action'''
-        advantage = []
-        logger.debug3(f'Raw rewards: {raw_rewards}')
-        for epi_rewards in raw_rewards:
-            future_ret = 0.0
-            T = len(epi_rewards)
-            returns = np.empty(T, 'float32')
-            for t in reversed(range(T)):
-                future_ret = epi_rewards[t] + self.gamma * future_ret
-                returns[t] = future_ret
-            logger.debug3(f'Rewards: {returns}')
-            returns = (returns - returns.mean()) / (returns.std() + 1e-08)
-            returns = torch.from_numpy(returns)
-            logger.debug3(f'Normalized returns: {returns}')
-            advantage.append(returns)
-        advantage = torch.cat(advantage)
         return advantage
 
     @lab_api
