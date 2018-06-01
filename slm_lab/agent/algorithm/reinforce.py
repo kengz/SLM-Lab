@@ -116,12 +116,10 @@ class Reinforce(Algorithm):
     @lab_api
     def train(self):
         if self.to_train == 1:
-            logger.debug2(f'Training...')
-            # We only care about the rewards from the batch
             batch = self.sample()
             loss = self.calc_policy_loss(batch)
             self.net.training_step(loss=loss)
-
+            # reset
             self.to_train = 0
             self.body.log_probs = []
             self.body.entropies = []
@@ -131,42 +129,16 @@ class Reinforce(Algorithm):
             return np.nan
 
     def calc_policy_loss(self, batch):
-        '''
-        Returns the policy loss for a batch of data.
-        For REINFORCE just rewards are passed in as the batch
-        '''
-        advantage = math_util.calc_batch_adv(batch, self.gamma)
-        advantage = self.check_sizes(advantage)
+        '''Calculate the policy loss for a batch of data.'''
+        advs = math_util.calc_batch_adv(batch, self.gamma)
+        assert len(self.body.log_probs) == advs.size(0), f'{len(self.body.log_probs)} vs {advs.size(0)}'
         policy_loss = torch.tensor(0.0)
-        for log_prob, a, e in zip(self.body.log_probs, advantage, self.body.entropies):
-            logger.debug3(f'log prob: {log_prob.item()}, advantage: {a}, entropy: {e.item()}')
+        for logp, adv, ent in zip(self.body.log_probs, advs, self.body.entropies):
             if self.add_entropy:
-                policy_loss += (-log_prob * a - self.entropy_weight * e)
+                policy_loss += (-logp * adv - self.entropy_weight * ent)
             else:
-                policy_loss += (-log_prob * a)
+                policy_loss += (-logp * adv)
         return policy_loss
-
-    def check_sizes(self, advantage):
-        '''
-        Checks that log probs, advantage, and entropy all have the same size
-        Occassionally they do not, this is caused by first reward of an episode being nan. If they are not the same size, the function removes the elements of the log probs and entropy that correspond to nan rewards.
-        '''
-        body = self.body
-        nan_idxs = body.memory.last_nan_idxs
-        num_nans = sum(nan_idxs)
-        assert len(nan_idxs) == len(body.log_probs)
-        assert len(nan_idxs) == len(body.entropies)
-        assert len(nan_idxs) - num_nans == advantage.size(0)
-        logger.debug2(f'{num_nans} nans encountered when gathering data')
-        if num_nans != 0:
-            idxs = [x for x in range(len(nan_idxs)) if nan_idxs[x] == 1]
-            logger.debug3(f'Nan indexes: {idxs}')
-            for idx in idxs[::-1]:
-                del body.log_probs[idx]
-                del body.entropies[idx]
-        assert len(body.log_probs) == advantage.size(0)
-        assert len(body.entropies) == advantage.size(0)
-        return advantage
 
     @lab_api
     def update(self):

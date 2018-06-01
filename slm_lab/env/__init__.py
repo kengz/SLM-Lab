@@ -196,7 +196,7 @@ class OpenAIEnv:
     def step(self, action_e):
         assert len(action_e) == 1, 'OpenAI Gym supports only single body'
         # TODO implement clock_speed: step only if self.clock.to_step()
-        if self.done:
+        if self.done: # t will actually be 0
             return self.reset()
         action = action_e[(0, 0)]
         (state, reward, done, _info) = self.u_env.step(action)
