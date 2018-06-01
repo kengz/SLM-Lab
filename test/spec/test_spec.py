@@ -53,11 +53,11 @@ def test_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('ppo.json', 'ppo_cartpole'),
-])
-def test_ppo(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
+# @pytest.mark.parametrize('spec_file,spec_name', [
+#     ('ppo.json', 'ppo_cartpole'),
+# ])
+# def test_ppo(spec_file, spec_name):
+#     run_trial_test(spec_file, spec_name)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
