@@ -78,7 +78,9 @@ class Body:
         assert self.env.clock.get('t') == 0
         action_stats = [self.entropies, self.log_probs, self.kls]
         for action_stat in action_stats:
-            action_stat.clear()
+            # use pop instead of clear for cross-epi training
+            if len(action_stat) > 0:
+                action_stat.pop()
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
