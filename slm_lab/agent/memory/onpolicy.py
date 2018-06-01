@@ -16,8 +16,8 @@ class OnPolicyReplay(Memory):
     An experience consists of
         - state: representation of a state
         - action: action taken.
-                - One hot encoding (discrete)
-                - Real numbers representing mean on action dist (continuous)
+            - One hot encoding (discrete)
+            - Real numbers representing mean on action dist (continuous)
         - reward: scalar value
         - next state: representation of next state (should be same as state)
         - done: 0 / 1 representing if the current state is the last in an episode
@@ -93,13 +93,13 @@ class OnPolicyReplay(Memory):
         Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are nested lists of the corresponding sampled elements. Elements are nested into episodes
         e.g.
-            batch = {
-                'states'      : [[s_epi1],[s_epi2],...],
-                'actions'     : [[a_epi1],[a_epi2],...],
-                'rewards'     : [[r_epi1],[r_epi2],...],
-                'next_states' : [[ns_epi1],[ns_epi2],...],
-                'dones'       : [[d_epi1],[d_epi2],...],
-                'priorities'  : [[p_epi1],[p_epi2],...]}
+        batch = {
+            'states'     : [[s_epi1], [s_epi2], ...],
+            'actions'    : [[a_epi1], [a_epi2], ...],
+            'rewards'    : [[r_epi1], [r_epi2], ...],
+            'next_states': [[ns_epi1], [ns_epi2], ...],
+            'dones'      : [[d_epi1], [d_epi2], ...],
+            'priorities' : [[p_epi1], [p_epi2], ...]}
         '''
         batch = {k: getattr(self, k) for k in self.data_keys}
         self.reset()
@@ -143,44 +143,46 @@ class OnPolicyNStepReplay(OnPolicyReplay):
         Keys are the names of the different elements of an experience. Values are nested lists of the corresponding sampled elements. Elements are nested into episodes
         states and next_states have are further nested into sequences containing the previous `seq_len` - 1 relevant states
         e.g.
-            batch = {
-                'states'      : [[[0,...,s0],[0,..,s0,s1],...,[s(k-lh),...,s(k-1),sk]],
-                                  [[0,...,s0],[0,..,s0,s1],...,[s(k-lh),...,s(k-1),sk]],
-                                  ...,]
-                'actions'     : [[a_epi1],[a_epi2],...],
-                'rewards'     : [[r_epi1],[r_epi2],...],
-                'next_states' : [[[0,...,ns0],[0,..,ns0,ns1],...,[ns(k-lh),...,ns(k-1),nsk]],
-                                  [[0,...,ns0],[0,..,ns0,ns1],...,[ns(k-lh),...,ns(k-1),nsk]],
-                                  ...,]
-                'dones'       : [[d_epi1],[d_epi2],...],
-                'priorities'  : [[p_epi1],[p_epi2],...]}
+        let s_seq_0 be [0, ..., s0] (zero-padded), s_seq_k be [s_{k-seq_len}, ..., s_k], so the states are nested for passing into RNN.
+        batch = {
+            'states'    : [
+                [s_seq_0, s_seq_1, ..., s_seq_k]_epi_1,
+                [s_seq_0, s_seq_1, ..., s_seq_k]_epi_2,
+                ...]
+            'actions'   : [[a_epi1], [a_epi2], ...],
+            'rewards'   : [[r_epi1], [r_epi2], ...],
+            'next_states: [
+                [ns_seq_0, ns_seq_1, ..., ns_seq_k]_epi_1,
+                [ns_seq_0, ns_seq_1, ..., ns_seq_k]_epi_2,
+                ...]
+            'dones'     : [[d_epi1], [d_epi2], ...],
+            'priorities': [[p_epi1], [p_epi2], ...]}
         '''
         batch = {}
-        batch['states'] = self.add_history(self.states)
+        batch['states'] = self.build_seqs(self.states)
         batch['actions'] = self.actions
         batch['rewards'] = self.rewards
-        batch['next_states'] = self.add_history(self.next_states)
+        batch['next_states'] = self.build_seqs(self.next_states)
         batch['dones'] = self.dones
         batch['priorities'] = self.priorities
         self.reset()
         return batch
 
-    def add_history(self, data):
-        '''Adds previous self.seq_len steps to data'''
-        all_epi_data_with_history = []
-        for epi in data:
-            data_with_history = []
-            pad_data = copy.deepcopy(epi)
-            PAD = np.zeros_like(epi[0])
+    def build_seqs(self, data):
+        '''Construct the epi-nested-seq data for sampling'''
+        all_epi_data_seq = []
+        for epi_data in data:
+            data_seq = []
+            # make [0, ..., *epi_data]
+            padded_epi_data = copy.deepcopy(epi_data)
+            padding = np.zeros_like(epi_data[0])
             for i in range(self.seq_len - 1):
-                pad_data.insert(0, PAD)
-            for i in range(len(epi)):
-                if i == len(epi) - 1:
-                    data_with_history.append(pad_data[i:])
-                else:
-                    data_with_history.append(pad_data[i:i + self.seq_len])
-            all_epi_data_with_history.append(data_with_history)
-        return all_epi_data_with_history
+                padded_epi_data.insert(0, padding)
+            # slide seqs and build for one epi
+            for i in range(len(epi_data)):
+                data_seq.append(padded_epi_data[i:i + self.seq_len])
+            all_epi_data_seq.append(data_seq)
+        return all_epi_data_seq
 
 
 class OnPolicyBatchReplay(OnPolicyReplay):
@@ -216,13 +218,13 @@ class OnPolicyBatchReplay(OnPolicyReplay):
         Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are a list of the corresponding sampled elements
         e.g.
-            batch = {
-                'states'      : states,
-                'actions'     : actions,
-                'rewards'     : rewards,
-                'next_states' : next_states,
-                'dones'       : dones,
-                'priorities'  : priorities}
+        batch = {
+            'states'      : [states],
+            'actions'     : [actions],
+            'rewards'     : [rewards],
+            'next_states' : [next_states],
+            'dones'       : [dones],
+            'priorities'  : [priorities]}
         '''
         return super(OnPolicyBatchReplay, self).sample()
 
@@ -263,36 +265,36 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
         Returns all the examples from memory in a single batch
         Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are a list of the corresponding sampled elements.
-        States and actions are lists of lists where each sublist corresponds to the kth - seq_len (lh) to kth state or action.
+        states and next_states have are further nested into sequences containing the previous `seq_len` - 1 relevant states
         e.g.
-            batch = {
-                'states'      : [[0,...,s0],[0,..,s0,s1],...,[s(k-lh),...,s(k-1),sk]],
-                'actions'     : actions,
-                'rewards'     : rewards,
-                'next_states' : [[0,...,ns0],[0,..,ns0,ns1],...,[ns(k-lh),...,ns(k-1),nsk]],
-                'dones'       : dones,
-                'priorities'  : priorities}
+        let s_seq_0 be [0, ..., s0] (zero-padded), s_seq_k be [s_{k-seq_len}, ..., s_k], so the states are nested for passing into RNN.
+        batch = {
+            'states'     : [[s_seq_0, s_seq_1, ..., s_seq_k]],
+            'actions'    : actions,
+            'rewards'    : rewards,
+            'next_states': [[ns_seq_0, ns_seq_1, ..., ns_seq_k]],
+            'dones'      : dones,
+            'priorities' : priorities}
         '''
         batch = {}
-        batch['states'] = self.add_history(self.states)
+        batch['states'] = self.build_seqs(self.states)
         batch['actions'] = self.actions
         batch['rewards'] = self.rewards
-        batch['next_states'] = self.add_history(self.next_states)
+        batch['next_states'] = self.build_seqs(self.next_states)
         batch['dones'] = self.dones
         batch['priorities'] = self.priorities
         self.reset()
         return batch
 
-    def add_history(self, data):
-        '''Adds previous self.seq_len steps to data'''
-        data_with_history = []
-        pad_data = copy.deepcopy(data)
-        PAD = np.zeros_like(data[0])
+    def build_seqs(self, data):
+        '''Construct the seq data for sampling'''
+        data_seq = []
+        # make [0, ..., *data]
+        padded_data = copy.deepcopy(data)
+        padding = np.zeros_like(data[0])
         for i in range(self.seq_len - 1):
-            pad_data.insert(0, PAD)
+            padded_data.insert(0, padding)
+        # slide seqs and build for one epi
         for i in range(len(data)):
-            if i == len(data) - 1:
-                data_with_history.append(pad_data[i:])
-            else:
-                data_with_history.append(pad_data[i:i + self.seq_len])
-        return data_with_history
+            data_seq.append(padded_data[i:i + self.seq_len])
+        return data_seq
