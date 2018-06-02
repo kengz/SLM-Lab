@@ -44,7 +44,6 @@ def calc_adv(rewards, gamma):
     for t in reversed(range(T)):
         future_ret = rewards[t] + gamma * future_ret
         advs[t] = future_ret
-    advs = (advs - advs.mean()) / (advs.std() + 1e-08)
     return advs
 
 
