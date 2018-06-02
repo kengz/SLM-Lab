@@ -116,7 +116,7 @@ class VanillaDQN(SARSA):
     def sample(self):
         '''Samples a batch from memory of size self.memory_spec['batch_size']'''
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        batch = util.concat_dict(batches)
+        batch = util.concat_batches(batches)
         util.to_torch_batch(batch, self.net.gpu)
         return batch
 

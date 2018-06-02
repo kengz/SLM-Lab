@@ -144,7 +144,7 @@ class SARSA(Algorithm):
     def sample(self):
         '''Samples a batch from memory'''
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        batch = util.concat_dict(batches)
+        batch = util.concat_batches(batches)
         if self.body.memory.is_episodic:
             util.to_torch_nested_batch(batch, self.net.gpu)
             # Add next action to batch

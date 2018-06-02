@@ -126,7 +126,7 @@ class PPO(ActorCritic):
         '''Samples a batch from memory'''
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         # TODO if just want raw rewards, skip conversion to torch batch
-        batch = util.concat_dict(batches)
+        batch = util.concat_batches(batches)
         batch = util.to_torch_nested_batch_ex_rewards(batch, self.net.gpu)
         return batch
 

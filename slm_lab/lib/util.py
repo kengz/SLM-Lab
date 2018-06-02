@@ -82,13 +82,13 @@ def compact_dict(d):
     return {k: v for k, v in d.items() if not gen_isnan(v)}
 
 
-def concat_dict(d_list):
-    '''Concatenate all the dicts by their array values'''
-    cat_dict = {}
-    for k in d_list[0]:
-        arr = np.concatenate([d[k] for d in d_list])
-        cat_dict[k] = arr
-    return cat_dict
+def concat_batches(batches):
+    '''
+    Concat batch objects from body.memory.sample() into one batch
+    {k: arr1} + {k: arr2} = {k: arr1 + arr2}
+    '''
+    concat_batch = {k: np.concatenate([batch[k] for batch in batches]) for k in batches[0]}
+    return concat_batch
 
 
 def count_nonan(arr):
