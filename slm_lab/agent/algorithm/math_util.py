@@ -36,7 +36,10 @@ def calc_batch_adv(batch, gamma):
 
 
 def calc_adv(rewards, gamma):
-    '''Base method to calculate plain advantage with simple reward baseline'''
+    '''
+    Base method to calculate plain advantage with simple reward baseline
+    NOTE for standardization trick, do it out of here
+    '''
     T = len(rewards)
     assert not np.any(np.isnan(rewards))
     advs = np.empty(T, 'float32')
@@ -47,24 +50,25 @@ def calc_adv(rewards, gamma):
     return advs
 
 
-def calc_gae_and_v_tar(batch, gamma, lam):
-    '''Calculate GAE and v_targets given a batch of trajectory. See http://www.breloff.com/DeepRL-OnlineGAE/ for clear example.'''
-    # TODO ensure proper horizon we do don't need not_done. sample till one step before done
-    rewards = batch['rewards']
-    v_preds = batch['v_preds']
+def calc_gaes_v_targets(rewards, v_preds, next_v_preds, gamma, lam):
+    '''
+    Calculate GAE and v_targets.
+    See http://www.breloff.com/DeepRL-OnlineGAE/ for clear example.
+    v_preds are values predicted for current states
+    next_v_preds are values predicted for next states
+    NOTE for standardization trick, do it out of here
+    '''
     T = len(rewards)
     assert not np.any(np.isnan(rewards))
     assert T == len(v_preds)
-    v_preds = np.append(v_preds, batch['next_v_pred'])
-    advs = np.empty(T, 'float32')
-    future_adv = 0.0
+    gaes = np.empty(T, 'float32')
+    future_gae = 0.0
     for t in reversed(range(T)):
-        delta = rewards[t] + gamma * v_preds[t + 1] - v_preds[t]
-        advs[t] = future_adv = delta + gamma * lam * future_adv
-    assert not np.isnan(advs).any(), f'GAE has nan: {gaes}'
-    batch['v_targets'] = advs + batch['v_preds']
-    seg['advs'] = advs
-    return batch
+        delta = rewards[t] + gamma * next_v_preds[t] - v_preds[t]
+        gaes[t] = future_gae = delta + gamma * lam * future_gae
+    assert not np.isnan(gaes).any(), f'GAE has nan: {gaes}'
+    v_targets = gaes + v_preds
+    return gaes, v_targets
 
 
 # Q-learning calc
