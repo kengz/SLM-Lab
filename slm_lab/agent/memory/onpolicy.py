@@ -219,12 +219,12 @@ class OnPolicyBatchReplay(OnPolicyReplay):
         Keys are the names of the different elements of an experience. Values are a list of the corresponding sampled elements
         e.g.
         batch = {
-            'states'      : [states],
-            'actions'     : [actions],
-            'rewards'     : [rewards],
-            'next_states' : [next_states],
-            'dones'       : [dones],
-            'priorities'  : [priorities]}
+            'states'     : states,
+            'actions'    : actions,
+            'rewards'    : rewards,
+            'next_states': next_states,
+            'dones'      : dones,
+            'priorities' : priorities}
         '''
         return super(OnPolicyBatchReplay, self).sample()
 

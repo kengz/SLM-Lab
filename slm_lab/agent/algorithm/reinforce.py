@@ -108,7 +108,6 @@ class Reinforce(Algorithm):
     def sample(self):
         '''Samples a batch from memory'''
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        # TODO unify plain batch vs epi-nested batch
         batch = util.concat_batches(batches)
         return batch
 
@@ -130,8 +129,12 @@ class Reinforce(Algorithm):
     def calc_policy_loss(self, batch):
         '''Calculate the policy loss for a batch of data.'''
         advs = math_util.calc_batch_adv(batch, self.gamma)
-        assert len(self.body.log_probs) == advs.size(0), f'{len(self.body.log_probs)} vs {advs.size(0)}'
+        assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
+        advs = torch.from_numpy(advs)
         policy_loss = torch.tensor(0.0)
+        if torch.cuda.is_available() and self.net.gpu:
+            advs = advs.cuda()
+            policy_loss = policy_loss.cuda()
         for logp, adv, ent in zip(self.body.log_probs, advs, self.body.entropies):
             if self.add_entropy:
                 policy_loss += (-logp * adv - self.entropy_weight * ent)

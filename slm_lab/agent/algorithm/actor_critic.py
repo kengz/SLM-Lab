@@ -190,11 +190,6 @@ class ActorCritic(Reinforce):
         batches = [body.memory.sample()
                    for body in self.agent.nanflat_body_a]
         batch = util.concat_batches(batches)
-        # TODO call these from inside memory, always return torch batch
-        if self.body.memory.is_episodic:
-            util.to_torch_nested_batch(batch, self.net.gpu)
-        else:
-            util.to_torch_batch(batch, self.net.gpu)
         return batch
 
     @lab_api
