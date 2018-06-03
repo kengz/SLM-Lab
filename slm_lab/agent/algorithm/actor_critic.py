@@ -372,7 +372,7 @@ class ActorCritic(Reinforce):
 
     def calc_gae_v_targets(self, batch):
         '''State-value target is the discounted sum of returns (simple advantage) for training the critic'''
-        v_targets = math_util.calc_advs(batch, self.gamma)
+        v_targets = math_util.calc_returns(batch, self.gamma)
         if torch.cuda.is_available() and self.net.gpu:
             v_targets = v_targets.cuda()
         return v_targets

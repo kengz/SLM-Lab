@@ -13,7 +13,7 @@ import pydash as ps
 # TODO standardize arg with full sampled info
 
 
-def calc_advs(batch, gamma):
+def calc_returns(batch, gamma):
     '''
     Base method to calculate plain advantage with simple reward baseline
     NOTE for standardization trick, do it out of here
@@ -21,13 +21,13 @@ def calc_advs(batch, gamma):
     rewards = batch['rewards']
     T = len(rewards)
     assert not np.any(np.isnan(rewards))
-    advs = np.empty(T, 'float32')
+    rets = np.empty(T, 'float32')
     future_ret = 0.0
     for t in reversed(range(T)):
         future_ret = rewards[t] + gamma * future_ret
-        advs[t] = future_ret
-    advs = torch.from_numpy(advs).float()
-    return advs
+        rets[t] = future_ret
+    rets = torch.from_numpy(rets).float()
+    return rets
 
 
 def calc_gaes(rewards, v_preds, next_v_preds, gamma, lam):
