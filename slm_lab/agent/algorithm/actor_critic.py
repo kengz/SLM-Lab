@@ -91,10 +91,10 @@ class ActorCritic(Reinforce):
         # Select appropriate function for calculating state-action-value estimate (target)
         if self.use_GAE:
             self.calc_v_targets = self.calc_gae_v_targets
-            self.calc_advs = self.calc_gae_advs
+            self.calc_adv_targets = self.calc_gae_adv_targets
         else:
             self.calc_v_targets = self.get_nstep_target
-            self.calc_advs = self.get_nstep_target
+            self.calc_adv_targets = self.get_nstep_target
 
     @lab_api
     def init_nets(self):
@@ -283,7 +283,7 @@ class ActorCritic(Reinforce):
 
     def calc_policy_loss(self, batch):
         '''Returns the policy loss for a batch of data.'''
-        advs = self.calc_advs(batch)
+        advs = self.api_calc_advs(batch)
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
         policy_loss = torch.tensor(0.0)
         if torch.cuda.is_available() and self.net.gpu:
@@ -308,7 +308,7 @@ class ActorCritic(Reinforce):
         return val_loss
 
     # This was an API method to override REINFORCE's
-    def calc_advs(self, batch):
+    def api_calc_advs(self, batch):
         '''
         Calculates advantage = target - state_vals for each timestep
         state_vals are the current estimate using the critic
@@ -317,12 +317,9 @@ class ActorCritic(Reinforce):
             2. Generalized advantage estimation (GAE) as in "High-Dimensional Continuous Control Using Generalized Advantage Estimation"
         Default is 1. To select GAE set use_GAE to true in the spec.
         '''
-        v_targets = self.calc_v_targets(batch)
-        state_vals = self.calc_v(batch['states']).squeeze_(0)
-        # TODO WTF? why dont just calc adv? save another forward pass
-        advantage = v_targets - state_vals
+        advs = self.calc_adv_targets(batch)
         logger.debug2(f'Advantage: {advantage.size()}')
-        return advantage
+        return advs
 
     def get_nstep_target(self, batch):
         '''
@@ -380,7 +377,7 @@ class ActorCritic(Reinforce):
             v_targets = v_targets.cuda()
         return v_targets
 
-    def calc_gae_advs(self, batch):
+    def calc_gae_adv_targets(self, batch):
         '''State-value target is the Generalized advantage estimate + current state-value estimate'''
         v_preds = self.calc_v(batch['states'])
         # calc next_state boundary value and concat with above for efficiency
@@ -389,10 +386,15 @@ class ActorCritic(Reinforce):
         # ensure val for next_state is 0 at done
         next_v_preds = next_v_preds * (1 - batch['dones'])
 
-        gaes, v_targets = math_util.calc_gaes_v_targets(batch['rewards'], v_preds, next_v_preds, self.gamma, self.lam)
+        # v_targets = gae_targets + v_preds
+        adv_targets = math_util.calc_gaes(batch['rewards'], v_preds, next_v_preds, self.gamma, self.lam)
+        v_targets = adv_targets + v_preds
         if torch.cuda.is_available() and self.net.gpu:
+            adv_targets = adv_targets.cuda()
             v_targets = v_targets.cuda()
-        return v_targets
+        # TODO standardize something outside
+        # adv_targets = (adv_targets - adv_targets.mean()) / adv_targets.std()
+        return adv_targets, v_targets
 
     @lab_api
     def update(self):

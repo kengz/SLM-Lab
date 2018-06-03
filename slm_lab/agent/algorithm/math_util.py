@@ -30,9 +30,9 @@ def calc_advs(batch, gamma):
     return advs
 
 
-def calc_gaes_v_targets(rewards, v_preds, next_v_preds, gamma, lam):
+def calc_gaes(rewards, v_preds, next_v_preds, gamma, lam):
     '''
-    Calculate GAE and v_targets.
+    Calculate GAE
     See http://www.breloff.com/DeepRL-OnlineGAE/ for clear example.
     v_preds are values predicted for current states
     next_v_preds are values predicted for next states
@@ -48,8 +48,7 @@ def calc_gaes_v_targets(rewards, v_preds, next_v_preds, gamma, lam):
         gaes[t] = future_gae = delta + gamma * lam * future_gae
     assert not np.isnan(gaes).any(), f'GAE has nan: {gaes}'
     gaes = torch.from_numpy(gaes).float()
-    v_targets = gaes + v_preds
-    return gaes, v_targets
+    return gaes
 
 
 # Q-learning calc
