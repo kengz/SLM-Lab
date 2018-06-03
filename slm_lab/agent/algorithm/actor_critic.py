@@ -1,6 +1,6 @@
 from copy import deepcopy
 from slm_lab.agent import net
-from slm_lab.agent.algorithm import policy_util
+from slm_lab.agent.algorithm import math_util, policy_util
 from slm_lab.agent.algorithm.reinforce import Reinforce
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
@@ -184,13 +184,15 @@ class ActorCritic(Reinforce):
             else:
                 self.net.train()
                 out = self.net(x)
-            return out[-1]
+            v = out[-1].squeeze_(dim=1)
         else:
             if evaluate:
-                return self.critic.wrap_eval(x)
+                out = self.critic.wrap_eval(x)
             else:
                 self.critic.train()
-                return self.critic(x)
+                out = self.critic(x)
+            v = out.squeeze_(dim=1)
+        return v
 
     @lab_api
     def body_act(self, body, state):
@@ -207,6 +209,7 @@ class ActorCritic(Reinforce):
         '''Samples a batch from memory'''
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_batches(batches)
+        batch = util.to_torch_batch(batch, self.net.gpu)
         return batch
 
     @lab_api
