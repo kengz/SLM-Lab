@@ -174,9 +174,9 @@ class ActorCritic(Reinforce):
         else:
             return pdparam
 
-    def calc_critic_v(self, x, evaluate=True):
+    def calc_v(self, x, evaluate=True):
         '''
-        Forward-pass to return the estimated state-value from critic.
+        Forward-pass to calculate the predicted state-value from critic.
         '''
         if self.share_architecture:
             if evaluate:
@@ -218,90 +218,78 @@ class ActorCritic(Reinforce):
             return self.train_separate()
 
     def train_shared(self):
-        '''Trains the network when the actor and critic share parameters'''
+        '''
+        Trains the network when the actor and critic share parameters
+        loss = self.policy_loss_weight * policy_loss + self.val_loss_weight * val_loss
+        '''
         if self.to_train == 1:
             batch = self.sample()
-            # Calculate policy loss (actor)
-            policy_loss = self.calc_policy_loss(batch)
-            # Calculate state-value loss (critic)
-            target = self.get_target(batch, critic_specific=True)
-            states = batch['states']
-            if torch.cuda.is_available() and self.net.gpu:
-                target = target.cuda()
-            y = target.unsqueeze_(dim=-1)
-            state_vals = self.calc_critic_v(states, evaluate=False)
-            assert state_vals.data.size() == y.data.size()
-            val_loss = F.mse_loss(state_vals, y)
-            # Combine losses and train
-            self.net.optim.zero_grad()
-            total_loss = self.policy_loss_weight * policy_loss + self.val_loss_weight * val_loss
-            loss = total_loss
-            total_loss.backward()
-            if self.net.clip_grad:
-                logger.debug('Clipping actorcritic gradient...')
-                torch.nn.utils.clip_grad_norm(
-                    self.net.params, self.net.clip_grad_val)
-            # logger.debug2(f'Combined AC gradient norms: {net_util.get_grad_norms(self.net)}')
-            self.net.optim.step()
+            policy_loss = self.calc_policy_loss(batch)  # from actor
+            val_loss = self.calc_val_loss(batch)  # from critic
+            loss = self.policy_loss_weight * policy_loss + self.val_loss_weight * val_loss
+            self.net.training_step(loss=loss)
+            # reset
             self.to_train = 0
             self.body.log_probs = []
             self.body.entropies = []
-            logger.debug('Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}'.format(
-                val_loss, abs(policy_loss), loss
-            ))
+            logger.debug(f'Critic value loss: {val_loss:.2f}, Actor policy loss: {abs(policy_loss):.2f}, Total loss: {loss:.2f}')
             return loss.item()
         else:
             return np.nan
 
     def train_separate(self):
-        '''Trains the network when the actor and critic are separate networks'''
+        '''
+        Trains the network when the actor and critic are separate networks
+        loss = val_loss + abs(policy_loss)
+        '''
         if self.to_train == 1:
             batch = self.sample()
-            logger.debug3(f'Batch states: {batch["states"]}')
-            critic_loss = self.train_critic(batch)
-            actor_loss = self.train_actor(batch)
-            total_loss = critic_loss + abs(actor_loss)
-            logger.debug('Losses: Critic: {:.2f}, Actor: {:.2f}, Total: {:.2f}'.format(
-                critic_loss, abs(actor_loss), total_loss
-            ))
-            return total_loss.item()
+            val_loss = self.train_critic(batch)
+            policy_loss = self.train_actor(batch)
+            loss = val_loss + abs(policy_loss)
+            # reset
+            self.to_train = 0
+            self.body.entropies = []
+            self.body.log_probs = []
+            logger.debug(f'Losses: Critic: {val_loss:.2f}, Actor: {abs(policy_loss):.2f}, Total: {loss:.2f}')
+            return loss.item()
         else:
             return np.nan
 
     def train_critic(self, batch):
         '''Trains the critic when the actor and critic are separate networks'''
-        loss = 0
-        for _i in range(self.training_iters_per_batch):
+        val_loss = torch.tensor(0.0)
+        # TODO also why iter is only used here?
+        for _ in range(self.training_iters_per_batch):
             with torch.no_grad():
-                target = self.get_target(batch, critic_specific=True)
+                v_targets = self.get_target(batch, critic_specific=True)
                 if torch.cuda.is_available() and self.net.gpu:
-                    target = target.cuda()
-                y = target.unsqueeze_(dim=-1)
-            loss = self.critic.training_step(batch['states'], y)
-            # logger.debug(f'Critic grad norms: {net_util.get_grad_norms(self.critic)}')
-        return loss
+                    v_targets = v_targets.cuda()
+                v_targets.unsqueeze_(dim=-1)
+            val_loss = self.critic.training_step(batch['states'], v_targets)
+        return val_loss
 
     def train_actor(self, batch):
         '''Trains the actor when the actor and critic are separate networks'''
-        self.net.optim.zero_grad()
         policy_loss = self.calc_policy_loss(batch)
-        loss = policy_loss
-        policy_loss.backward()
-        if self.net.clip_grad:
-            logger.debug("Clipping actor gradient...")
-            torch.nn.utils.clip_grad_norm(
-                self.net.params, self.net.clip_grad_val)
-        # logger.debug(f'Actor gradient norms: {net_util.get_grad_norms(self.critic)}')
-        self.net.optim.step()
-        self.to_train = 0
-        self.body.entropies = []
-        self.body.log_probs = []
-        logger.debug(f'Policy loss: {loss}')
-        return loss
+        self.net.training_step(loss=loss)
+        logger.debug(f'Policy loss: {policy_loss}')
+        return policy_loss
 
     def calc_policy_loss(self, batch):
         '''Returns the policy loss for a batch of data.'''
         return super(ActorCritic, self).calc_policy_loss(batch)
+
+    def calc_val_loss(self, batch):
+        '''Calculate the state-value loss from critic network'''
+        v_targets = self.get_target(batch, critic_specific=True)
+        if torch.cuda.is_available() and self.net.gpu:
+            v_targets = v_targets.cuda()
+        v_targets.unsqueeze_(dim=-1)
+        v_preds = self.calc_v(batch['states'], evaluate=False)
+        assert v_preds.size() == v_targets.size()
+        val_loss = self.critic.loss_fn(v_preds, v_targets)
+        return val_loss
 
     # This was an API method to override REINFORCE's
     def calc_advantage(self, batch):
@@ -314,7 +302,7 @@ class ActorCritic(Reinforce):
         Default is 1. To select GAE set use_GAE to true in the spec.
         '''
         target = self.get_target(batch)
-        state_vals = self.calc_critic_v(batch['states']).squeeze_(0)
+        state_vals = self.calc_v(batch['states']).squeeze_(0)
         advantage = target - state_vals
         logger.debug2(f'Advantage: {advantage.size()}')
         return advantage
@@ -326,7 +314,7 @@ class ActorCritic(Reinforce):
         In the batch case it returns a tensor containing the targets for the batch
         '''
         nts = self.num_step_returns
-        next_state_vals = self.calc_critic_v(batch['next_states']).squeeze_(dim=1)
+        next_state_vals = self.calc_v(batch['next_states']).squeeze_(dim=1)
         rewards = batch['rewards']
         (R, next_state_gammas) = self.get_R_ex_state_val_estimate(next_state_vals, rewards)
         # Complete for 0th step and add state-value estimate
@@ -390,9 +378,9 @@ class ActorCritic(Reinforce):
 
     def calc_gae_actor_v_targets(self, rewards, states, next_states, dones):
         '''State-value target is the Generalized advantage estimate + current state-value estimate'''
-        v_preds = self.calc_critic_v(states).squeeze_(dim=1).numpy()
+        v_preds = self.calc_v(states).squeeze_(dim=1).numpy()
         # calc next_state boundary value and concat with above for efficiency
-        next_v_pred_tail = self.calc_critic_v(next_states[-1:]).squeeze_(dim=1).numpy()
+        next_v_pred_tail = self.calc_v(next_states[-1:]).squeeze_(dim=1).numpy()
         next_v_preds = numpy.concatenate([v_preds[1:], next_v_pred_tail])
         # ensure val for next_state is 0 at done
         next_v_preds *= (1 - dones)
