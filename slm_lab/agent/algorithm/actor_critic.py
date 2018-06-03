@@ -77,7 +77,7 @@ class ActorCritic(Reinforce):
             'continuous_action_clip',
             'training_frequency',
             'training_iters_per_batch',
-            'use_GAE',
+            'use_gae',
             'lam',
             'num_step_returns',
             'policy_loss_coef',
@@ -89,7 +89,7 @@ class ActorCritic(Reinforce):
         for body in self.agent.nanflat_body_a:
             body.explore_var = self.explore_var_start
         # Select appropriate methods to calculate adv_targets and v_targets for training
-        if self.use_GAE:
+        if self.use_gae:
             self.calc_advs_v_targets = self.calc_gae_advs_v_targets
         else:
             self.calc_advs_v_targets = self.calc_nstep_advs_v_targets

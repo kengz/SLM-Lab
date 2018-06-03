@@ -11,7 +11,7 @@
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_iters_per_batch": 4,
-        "use_GAE": true,
+        "use_gae": true,
         "lam": 0.74,
         "num_step_returns": 10,
         "policy_loss_coef": 1.0,
