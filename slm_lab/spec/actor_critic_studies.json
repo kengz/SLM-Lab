@@ -14,8 +14,8 @@
         "use_GAE": true,
         "lam": 1.0,
         "num_step_returns": 10,
-        "policy_loss_weight": 1.0,
-        "val_loss_weight": 1.0
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -75,8 +75,8 @@
         "use_GAE": true,
         "lam": 1.0,
         "num_step_returns": 10,
-        "policy_loss_weight": 1.0,
-        "val_loss_weight": 1.0
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -136,8 +136,8 @@
         "use_GAE": true,
         "lam": 1.0,
         "num_step_returns": 10,
-        "policy_loss_weight": 1.0,
-        "val_loss_weight": 1.0
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -197,8 +197,8 @@
         "use_GAE": true,
         "lam": 1.0,
         "num_step_returns": 10,
-        "policy_loss_weight": 1.0,
-        "val_loss_weight": 1.0
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -238,7 +238,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "val_loss_weight__uniform": [0.1, 2.0]
+          "val_loss_coef__uniform": [0.1, 2.0]
         }
       }]
     }
@@ -258,8 +258,8 @@
         "use_GAE": true,
         "lam": 1.0,
         "num_step_returns": 10,
-        "policy_loss_weight": 1.0,
-        "val_loss_weight": 1.0
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0
       },
       "memory": {
         "name": "OnPolicyReplay"

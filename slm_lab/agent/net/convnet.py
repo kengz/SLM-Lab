@@ -42,7 +42,7 @@ class ConvNet(Net, nn.Module):
         lr_decay_min_timestep: minimum amount of total timesteps before starting decay
         update_type: method to update network weights: 'replace' or 'polyak'
         update_frequency: how many total timesteps per update
-        polyak_weight: ratio of polyak weight update
+        polyak_coef: ratio of polyak weight update
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
         # OpenAI gym provides images as W x H x C, pyTorch expects C x W x H
@@ -61,7 +61,7 @@ class ConvNet(Net, nn.Module):
             lr_decay='no_decay',
             update_type='replace',
             update_frequency=1,
-            polyak_weight=0.0,
+            polyak_coef=0.0,
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
@@ -77,7 +77,7 @@ class ConvNet(Net, nn.Module):
             'lr_decay_min_timestep',
             'update_type',
             'update_frequency',
-            'polyak_weight',
+            'polyak_coef',
             'gpu',
         ])
 

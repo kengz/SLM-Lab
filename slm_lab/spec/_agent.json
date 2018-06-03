@@ -18,8 +18,8 @@
       "use_GAE": true,
       "lam": 1.0,
       "num_step_returns": 100,
-      "policy_loss_weight": 1.0,
-      "val_loss_weight": 1.0
+      "policy_loss_coef": 1.0,
+      "val_loss_coef": 1.0
     },
     "memory": {
       "name": "OnPolicyReplay"
@@ -124,7 +124,7 @@
       "lr_decay_min_timestep": 1400,
       "update_type": "replace",
       "update_frequency": 1,
-      "polyak_weight": 0.9,
+      "polyak_coef": 0.9,
       "gpu": false
     }
   },
@@ -167,7 +167,7 @@
       "lr_decay_min_timestep": 1400,
       "update_type": "replace",
       "update_frequency": 1,
-      "polyak_weight": 0.9,
+      "polyak_coef": 0.9,
       "gpu": false
     }
   },
@@ -210,7 +210,7 @@
       "lr_decay_min_timestep": 1400,
       "update_type": "replace",
       "update_frequency": 1,
-      "polyak_weight": 0.9,
+      "polyak_coef": 0.9,
       "gpu": false
     }
   },
@@ -253,7 +253,7 @@
       "lr_decay_min_timestep": 1400,
       "update_type": "replace",
       "update_frequency": 1,
-      "polyak_weight": 0.9,
+      "polyak_coef": 0.9,
       "gpu": false
     }
   },

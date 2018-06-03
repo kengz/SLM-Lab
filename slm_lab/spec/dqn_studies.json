@@ -33,7 +33,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0.9
+        "polyak_coef": 0.9
       }
     }],
     "env": [{
@@ -92,7 +92,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0.9
+        "polyak_coef": 0.9
       }
     }],
     "env": [{
@@ -151,7 +151,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0.9
+        "polyak_coef": 0.9
       }
     }],
     "env": [{
@@ -210,7 +210,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0.9
+        "polyak_coef": 0.9
       }
     }],
     "env": [{
@@ -269,7 +269,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 250,
-        "polyak_weight": 0.9
+        "polyak_coef": 0.9
       }
     }],
     "env": [{
@@ -328,7 +328,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_weight": 0.9
+        "polyak_coef": 0.9
       }
     }],
     "env": [{
@@ -348,7 +348,7 @@
     "search": {
       "agent": [{
         "net": {
-          "polyak_weight__choice": [1.0, 0.99, 0.95, 0.9, 0.8, 0.5]
+          "polyak_coef__choice": [1.0, 0.99, 0.95, 0.9, 0.8, 0.5]
         }
       }]
     }

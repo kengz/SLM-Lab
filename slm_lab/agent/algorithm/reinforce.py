@@ -51,7 +51,7 @@ class Reinforce(Algorithm):
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
             'gamma',  # the discount factor
             'add_entropy',
-            'entropy_weight',
+            'entropy_coef',
             'continuous_action_clip',
             'training_frequency',
         ])
@@ -139,7 +139,7 @@ class Reinforce(Algorithm):
             policy_loss = policy_loss.cuda()
         for logp, adv, ent in zip(self.body.log_probs, advs, self.body.entropies):
             if self.add_entropy:
-                policy_loss += (-logp * adv - self.entropy_weight * ent)
+                policy_loss += (-logp * adv - self.entropy_coef * ent)
             else:
                 policy_loss += (-logp * adv)
         return policy_loss

@@ -33,7 +33,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0.9
+        "polyak_coef": 0.9
       }
     }],
     "env": [{
@@ -172,7 +172,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0.9
+        "polyak_coef": 0.9
       }
     }],
     "env": [{
@@ -241,7 +241,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 25,
-        "polyak_weight": 0.9
+        "polyak_coef": 0.9
       }
     }],
     "env": [{
@@ -304,7 +304,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0
+        "polyak_coef": 0
       }
     }],
     "env": [{
@@ -367,7 +367,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0
+        "polyak_coef": 0
       }
     }],
     "env": [{
@@ -433,7 +433,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0
+        "polyak_coef": 0
       }
     }],
     "env": [{
@@ -493,7 +493,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0
+        "polyak_coef": 0
       }
     }],
     "env": [{
@@ -549,7 +549,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0
+        "polyak_coef": 0
       }
     }],
     "env": [{
@@ -608,7 +608,7 @@
         "lr_decay_min_timestep": 1400,
         "update_type": "replace",
         "update_frequency": 1,
-        "polyak_weight": 0
+        "polyak_coef": 0
       }
     }],
     "env": [{
@@ -664,7 +664,7 @@
         "lr_decay_min_timestep": 50000,
         "update_type": "replace",
         "update_frequency": 500,
-        "polyak_weight": 0.9,
+        "polyak_coef": 0.9,
         "gpu": true
       }
     }],
@@ -722,7 +722,7 @@
         "lr_decay_min_timestep": 80000,
         "update_type": "replace",
         "update_frequency": 600,
-        "polyak_weight": 0.993,
+        "polyak_coef": 0.993,
         "gpu": false
       }
     }],

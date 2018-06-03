@@ -14,8 +14,8 @@
         "use_GAE": true,
         "lam": 0.74,
         "num_step_returns": 10,
-        "policy_loss_weight": 1.0,
-        "val_loss_weight": 1.0
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0
       },
       "memory": {
         "name": "OnPolicyReplay"

@@ -158,7 +158,7 @@ class PPO(ActorCritic):
         for log_prob, a, e in zip(self.body.log_probs, advantage, self.body.entropies):
             logger.debug3(f'log prob: {log_prob.item()}, advantage: {a}, entropy: {e.item()}')
             if self.add_entropy:
-                policy_loss += (-log_prob * a - self.entropy_weight * e)
+                policy_loss += (-log_prob * a - self.entropy_coef * e)
             else:
                 policy_loss += (-log_prob * a)
         return policy_loss

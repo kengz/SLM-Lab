@@ -84,7 +84,7 @@ class VanillaDQN(SARSA):
             raise ValueError('Recurrent networks does not work with DQN family of algorithms.')
 
         if self.algorithm_spec['name'] == 'VanillaDQN':
-            assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_weight']), 'Network update not available for VanillaDQN; use DQN.'
+            assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for VanillaDQN; use DQN.'
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
         logger.info(f'Training on gpu: {self.net.gpu}')
@@ -192,7 +192,7 @@ class DQNBase(VanillaDQN):
         if 'Recurrent' in self.net_spec['type']:
             raise ValueError('Recurrent networks does not work with DQN family of algorithms.')
         if self.algorithm_spec['name'] == 'DQNBase':
-            assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_weight']), 'Network update not available for DQNBase; use DQN.'
+            assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for DQNBase; use DQN.'
         in_dim, out_dim = self.body.state_dim, self.body.action_dim
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, in_dim, out_dim)
@@ -241,7 +241,7 @@ class DQNBase(VanillaDQN):
                 self.eval_net = self.target_net
         elif self.net.update_type == 'polyak':
             logger.debug('Updating net by averaging')
-            net_util.polyak_update(self.net, self.target_net, self.net.polyak_weight)
+            net_util.polyak_update(self.net, self.target_net, self.net.polyak_coef)
             self.online_net = self.target_net
             self.eval_net = self.target_net
         else:

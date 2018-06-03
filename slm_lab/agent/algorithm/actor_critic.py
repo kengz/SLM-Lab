@@ -24,7 +24,7 @@ class ActorCritic(Reinforce):
         - memory type:  @param: 'memory.name' batch (through OnPolicyBatchReplay memory class) or episodic through (OnPolicyReplay memory class)
         - return steps: @param: 'algorithm.num_step_returns' how many forward step returns to use when calculating the advantage target. Min = 0. Applied for standard advantage estimation. Not used for GAE.
         - lambda:        @param: 'algorithm.lam' controls the bias variance tradeoff when using GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
-        - param sharing: @param: 'net.type' whether the actor and critic should share params (e.g. through 'MLPshared') or have separate params (e.g. through 'MLPseparate'). If param sharing is used then there is also the option to control the weight given to the policy and value components of the loss function through 'policy_loss_weight' and 'val_loss_weight'
+        - param sharing: @param: 'net.type' whether the actor and critic should share params (e.g. through 'MLPshared') or have separate params (e.g. through 'MLPseparate'). If param sharing is used then there is also the option to control the weight given to the policy and value components of the loss function through 'policy_loss_coef' and 'val_loss_coef'
     Algorithm - separate actor and critic:
         Repeat:
             1. Collect k examples
@@ -73,15 +73,15 @@ class ActorCritic(Reinforce):
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
             'gamma',  # the discount factor
             'add_entropy',
-            'entropy_weight',
+            'entropy_coef',
             'continuous_action_clip',
             'training_frequency',
             'training_iters_per_batch',
             'use_GAE',
             'lam',
             'num_step_returns',
-            'policy_loss_weight',
-            'val_loss_weight',
+            'policy_loss_coef',
+            'val_loss_coef',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -223,13 +223,13 @@ class ActorCritic(Reinforce):
     def train_shared(self):
         '''
         Trains the network when the actor and critic share parameters
-        loss = self.policy_loss_weight * policy_loss + self.val_loss_weight * val_loss
+        loss = self.policy_loss_coef * policy_loss + self.val_loss_coef * val_loss
         '''
         if self.to_train == 1:
             batch = self.sample()
             policy_loss = self.calc_policy_loss(batch)  # from actor
             val_loss = self.calc_val_loss(batch)  # from critic
-            loss = self.policy_loss_weight * policy_loss + self.val_loss_weight * val_loss
+            loss = self.policy_loss_coef * policy_loss + self.val_loss_coef * val_loss
             self.net.training_step(loss=loss)
             # reset
             self.to_train = 0
@@ -275,13 +275,24 @@ class ActorCritic(Reinforce):
     def train_actor(self, batch):
         '''Trains the actor when the actor and critic are separate networks'''
         policy_loss = self.calc_policy_loss(batch)
-        self.net.training_step(loss=loss)
+        self.net.training_step(loss=policy_loss)
         logger.debug(f'Policy loss: {policy_loss}')
         return policy_loss
 
     def calc_policy_loss(self, batch):
         '''Returns the policy loss for a batch of data.'''
-        return super(ActorCritic, self).calc_policy_loss(batch)
+        advs = self.calc_batch_adv(batch)
+        assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
+        policy_loss = torch.tensor(0.0)
+        if torch.cuda.is_available() and self.net.gpu:
+            advs = advs.cuda()
+            policy_loss = policy_loss.cuda()
+        for logp, adv, ent in zip(self.body.log_probs, advs, self.body.entropies):
+            if self.add_entropy:
+                policy_loss += (-logp * adv - self.entropy_coef * ent)
+            else:
+                policy_loss += (-logp * adv)
+        return policy_loss
 
     def calc_val_loss(self, batch):
         '''Calculate the state-value loss from critic network'''
@@ -295,7 +306,7 @@ class ActorCritic(Reinforce):
         return val_loss
 
     # This was an API method to override REINFORCE's
-    def calc_advantage(self, batch):
+    def calc_batch_adv(self, batch):
         '''
         Calculates advantage = target - state_vals for each timestep
         state_vals are the current estimate using the critic
@@ -365,32 +376,29 @@ class ActorCritic(Reinforce):
         '''
         if critic_specific:
             logger.debug2('Using critic specific target')
-            v_targets = self.calc_gae_critic_v_targets(batch['rewards'])
+            v_targets = self.calc_gae_critic_v_targets(batch)
         else:
             logger.debug2('Using actor specific target')
             v_targets = self.calc_gae_actor_v_targets(batch['rewards'], batch['states'], batch['next_states'], batch['dones'])
         return v_targets
 
-    def calc_gae_critic_v_targets(self, rewards):
+    def calc_gae_critic_v_targets(self, batch):
         '''State-value target is the discounted sum of returns (simple advantage) for training the critic'''
-        target = math_util.calc_adv(rewards, self.gamma)
-        target = torch.from_numpy(target)
+        target = math_util.calc_batch_adv(batch, self.gamma)
         if torch.cuda.is_available() and self.net.gpu:
             target = target.cuda()
         return target
 
     def calc_gae_actor_v_targets(self, rewards, states, next_states, dones):
         '''State-value target is the Generalized advantage estimate + current state-value estimate'''
-        v_preds = self.calc_v(states).squeeze_(dim=1).numpy()
+        v_preds = self.calc_v(states)
         # calc next_state boundary value and concat with above for efficiency
-        next_v_pred_tail = self.calc_v(next_states[-1:]).squeeze_(dim=1).numpy()
-        next_v_preds = numpy.concatenate([v_preds[1:], next_v_pred_tail])
+        next_v_pred_tail = self.calc_v(next_states[-1:])
+        next_v_preds = torch.cat([v_preds[1:], next_v_pred_tail], dim=0)
         # ensure val for next_state is 0 at done
-        next_v_preds *= (1 - dones)
+        next_v_preds = next_v_preds * (1 - dones)
 
         gaes, v_targets = math_util.calc_gaes_v_targets(rewards, v_preds, next_v_preds, self.gamma, self.lam)
-        gaes = torch.from_numpy(gaes)
-        v_targets = torch.from_numpy(v_targets)
         if torch.cuda.is_available() and self.net.gpu:
             v_targets = v_targets.cuda()
         return v_targets
