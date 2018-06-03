@@ -13,18 +13,12 @@ import pydash as ps
 # TODO standardize arg with full sampled info
 
 
-def calc_batch_adv(batch, gamma):
-    '''Calculate the advantage for a batch of data containing list of epi_rewards'''
-    batch_rewards = batch['rewards']
-    batch_advs = calc_adv(batch_rewards, gamma)
-    return batch_advs
-
-
-def calc_adv(rewards, gamma):
+def calc_advs(batch, gamma):
     '''
     Base method to calculate plain advantage with simple reward baseline
     NOTE for standardization trick, do it out of here
     '''
+    rewards = batch['rewards']
     T = len(rewards)
     assert not np.any(np.isnan(rewards))
     advs = np.empty(T, 'float32')

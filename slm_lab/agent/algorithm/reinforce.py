@@ -129,7 +129,7 @@ class Reinforce(Algorithm):
 
     def calc_policy_loss(self, batch):
         '''Calculate the policy loss for a batch of data.'''
-        advs = math_util.calc_batch_adv(batch, self.gamma)
+        advs = math_util.calc_advs(batch, self.gamma)
         # advantage standardization trick
         advs = (advs - advs.mean()) / (advs.std() + 1e-08)
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'

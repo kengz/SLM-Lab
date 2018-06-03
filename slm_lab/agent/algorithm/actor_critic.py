@@ -281,7 +281,7 @@ class ActorCritic(Reinforce):
 
     def calc_policy_loss(self, batch):
         '''Returns the policy loss for a batch of data.'''
-        advs = self.calc_batch_adv(batch)
+        advs = self.calc_advs(batch)
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
         policy_loss = torch.tensor(0.0)
         if torch.cuda.is_available() and self.net.gpu:
@@ -306,7 +306,7 @@ class ActorCritic(Reinforce):
         return val_loss
 
     # This was an API method to override REINFORCE's
-    def calc_batch_adv(self, batch):
+    def calc_advs(self, batch):
         '''
         Calculates advantage = target - state_vals for each timestep
         state_vals are the current estimate using the critic
@@ -384,7 +384,7 @@ class ActorCritic(Reinforce):
 
     def calc_gae_critic_v_targets(self, batch):
         '''State-value target is the discounted sum of returns (simple advantage) for training the critic'''
-        target = math_util.calc_batch_adv(batch, self.gamma)
+        target = math_util.calc_advs(batch, self.gamma)
         if torch.cuda.is_available() and self.net.gpu:
             target = target.cuda()
         return target
