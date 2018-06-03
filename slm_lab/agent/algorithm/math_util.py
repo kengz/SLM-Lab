@@ -32,6 +32,18 @@ def calc_returns(batch, gamma):
     return rets
 
 
+def calc_nstep_returns(batch, gamma, n):
+    '''
+    Calculate the n-step returns for advantage
+    i.e. sum discounted rewards up till step n (0 to n-1 that is) for each timestep t
+    '''
+    rets = calc_returns(batch, gamma)
+    # subtract by offsetting n-steps
+    tail_rets = torch.cat([rets[n:], torch.zeros((n,))])
+    nstep_rets = rets - tail_rets
+    return nstep_rets
+
+
 def calc_gaes(rewards, v_preds, next_v_preds, gamma, lam):
     '''
     Calculate GAE
