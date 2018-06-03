@@ -300,7 +300,7 @@ class ActorCritic(Reinforce):
 
     def calc_val_loss(self, batch, v_targets):
         '''Calculate the critic's value loss'''
-        v_targets.unsqueeze_(dim=-1)
+        v_targets = v_targets.unsqueeze(dim=-1)
         v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze_(dim=-1)
         assert v_preds.size() == v_targets.size()
         val_loss = self.net.loss_fn(v_preds, v_targets)
