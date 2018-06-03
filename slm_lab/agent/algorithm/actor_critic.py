@@ -93,8 +93,8 @@ class ActorCritic(Reinforce):
             self.calc_v_targets = self.calc_gae_v_targets
             self.calc_adv_targets = self.calc_gae_adv_targets
         else:
-            self.calc_v_targets = self.get_nstep_target
-            self.calc_adv_targets = self.get_nstep_target
+            self.calc_v_targets = self.calc_nstep_adv_target
+            self.calc_adv_targets = self.calc_nstep_adv_target
 
     @lab_api
     def init_nets(self):
@@ -321,54 +321,14 @@ class ActorCritic(Reinforce):
         logger.debug2(f'Advantage: {advantage.size()}')
         return advs
 
-    def get_nstep_target(self, batch):
+    def calc_nstep_adv_target(self, batch):
         '''
-        Estimates state-action value with n-step returns. Used as a target when training the critic and calculting the advantage. No critic specific target value for this method of calculating the advantage.
-        In the episodic case it returns a list containing targets per episode
-        In the batch case it returns a tensor containing the targets for the batch
+        N-step returns advantage = nstep_returns - v_pred
+        See n-step advantage under http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_5_actor_critic_pdf.pdf
         '''
-        nts = self.num_step_returns
-        next_state_vals = self.calc_v(batch['next_states']).squeeze_(dim=1)
-        rewards = batch['rewards']
-        (R, next_state_gammas) = self.get_R_ex_state_val_estimate(next_state_vals, rewards)
-        # Complete for 0th step and add state-value estimate
-        R = rewards + self.gamma * R
-        next_state_gammas *= self.gamma
-        logger.debug3(f'R: {R}')
-        logger.debug3(f'next_state_gammas: {next_state_gammas}')
-        logger.debug3(f'dones: {batch["dones"]}')
-        # Calculate appropriate state value accounting for terminal states and number of time steps
-        discounted_state_val_estimate = torch.mul(next_state_vals, next_state_gammas)
-        discounted_state_val_estimate = torch.mul(discounted_state_val_estimate, 1 - batch['dones'])
-        R += discounted_state_val_estimate
-        logger.debug3(f'discounted_state_val_estimate: {discounted_state_val_estimate}')
-        logger.debug3(f'R: {R}')
-        return R
-
-    def get_R_ex_state_val_estimate(self, next_state_vals, rewards):
-        nts = self.num_step_returns
-        R = torch.zeros_like(next_state_vals)
-        curr_reward_step = torch.zeros_like(next_state_vals)
-        next_state_gammas = torch.zeros_like(next_state_vals)
-        if nts >= next_state_vals.size(0):
-            logger.debug2(f'Num step returns {self.num_step_returns} greater than length batch {next_state_vals.size(0)}. Updating to batch length')
-            nts = next_state_vals.size(0) - 1
-        if nts == 0:
-            next_state_gammas.fill_(1.0)
-        else:
-            j = -nts
-            next_state_gammas[:j] = 1.0
-        for i in range(nts, 0, -1):
-            logger.debug(f'i: {i}, j: {j}')
-            curr_reward_step[:j] = rewards[i:]
-            next_state_gammas[:j] *= self.gamma
-            R = curr_reward_step + self.gamma * R
-            next_state_gammas[j] = 1.0
-            j += 1
-            logger.debug3(f'curr_reward_step: {curr_reward_step}')
-            logger.debug3(f'next_state_gammas: {next_state_gammas}')
-            logger.debug3(f'R: {R}')
-        return (R, next_state_gammas)
+        v_preds = self.calc_v(batch['states']).squsqueeze_(dim=1)
+        nstep_returns = math_util.calc_nstep_returns(batch, self.gamma, self.num_step_returns, v_preds)
+        nstep_advs = nstep_returns - v_preds
 
     def calc_gae_v_targets(self, batch):
         '''State-value target is the discounted sum of returns (simple advantage) for training the critic'''

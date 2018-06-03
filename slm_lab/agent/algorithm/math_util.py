@@ -32,15 +32,35 @@ def calc_returns(batch, gamma):
     return rets
 
 
-def calc_nstep_returns(batch, gamma, n):
+def calc_gammas(batch, gamma):
+    '''Calculate the gammas to the right power for multiplication with rewards'''
+    news = torch.cat([torch.ones((1,)), batch['dones'][:-1]])
+    gammas = torch.empty_like(news)
+    cur_gamma = 1.0
+    for t, new in enumerate(news):
+        cur_gamma = new * 1.0 + (1 - new) * cur_gamma * gamma
+        gammas[t] = cur_gamma
+    return gammas
+
+
+def calc_nstep_returns(batch, gamma, n, v_preds):
     '''
     Calculate the n-step returns for advantage
-    i.e. sum discounted rewards up till step n (0 to n-1 that is) for each timestep t
+    see n-step return in: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
+    i.e. for each timestep t:
+        sum discounted rewards up till step n (0 to n-1 that is),
+        then add v_pred for n as final term
     '''
     rets = calc_returns(batch, gamma)
-    # subtract by offsetting n-steps
+    # to subtract by offsetting n-steps
     tail_rets = torch.cat([rets[n:], torch.zeros((n,))])
-    nstep_rets = rets - tail_rets
+
+    # to add back the subtracted with v_pred at n
+    gammas = calc_gammas(batch, gamma)
+    final_terms = gammas * v_preds
+    final_terms = torch.cat([final_terms[n:], torch.zeros((n,))])
+
+    nstep_rets = rets - tail_rets + final_terms
     return nstep_rets
 
 
