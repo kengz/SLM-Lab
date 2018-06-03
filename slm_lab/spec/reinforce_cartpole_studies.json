@@ -7,7 +7,7 @@
         "action_policy": "default",
         "gamma": 0.98,
         "add_entropy": false,
-        "entropy_weight": 0.01,
+        "entropy_coef": 0.01,
         "continuous_action_clip": 2.0,
         "training_frequency": 1
       },
@@ -57,7 +57,7 @@
         "action_policy": "default",
         "gamma": 0.98,
         "add_entropy": false,
-        "entropy_weight": 0.01,
+        "entropy_coef": 0.01,
         "continuous_action_clip": 2.0,
         "training_frequency": 1
       },
@@ -109,7 +109,7 @@
         "action_policy": "default",
         "gamma": 0.98,
         "add_entropy": true,
-        "entropy_weight": 0.01,
+        "entropy_coef": 0.01,
         "continuous_action_clip": 2.0,
         "training_frequency": 1
       },
@@ -146,7 +146,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_weight__uniform": [0.0, 1.0]
+          "entropy_coef__uniform": [0.0, 1.0]
         }
       }]
     }

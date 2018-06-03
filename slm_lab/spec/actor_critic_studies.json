@@ -7,7 +7,7 @@
         "action_policy": "default",
         "gamma": 0.91,
         "add_entropy": true,
-        "entropy_weight": 0.01,
+        "entropy_coef": 0.01,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_iters_per_batch": 4,
@@ -68,7 +68,7 @@
         "action_policy": "default",
         "gamma": 0.91,
         "add_entropy": true,
-        "entropy_weight": 0.01,
+        "entropy_coef": 0.01,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_iters_per_batch": 4,
@@ -129,7 +129,7 @@
         "action_policy": "default",
         "gamma": 0.91,
         "add_entropy": true,
-        "entropy_weight": 0.01,
+        "entropy_coef": 0.01,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_iters_per_batch": 4,
@@ -177,7 +177,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_weight__uniform": [0.0, 1.0]
+          "entropy_coef__uniform": [0.0, 1.0]
         }
       }]
     }
@@ -190,7 +190,7 @@
         "action_policy": "default",
         "gamma": 0.91,
         "add_entropy": true,
-        "entropy_weight": 0.01,
+        "entropy_coef": 0.01,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_iters_per_batch": 4,
@@ -251,7 +251,7 @@
         "action_policy": "default",
         "gamma": 0.91,
         "add_entropy": true,
-        "entropy_weight": 0.01,
+        "entropy_coef": 0.01,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_iters_per_batch": 4,
