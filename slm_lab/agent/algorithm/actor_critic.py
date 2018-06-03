@@ -90,7 +90,7 @@ class ActorCritic(Reinforce):
             body.explore_var = self.explore_var_start
         # Select appropriate function for calculating state-action-value estimate (target)
         if self.use_GAE:
-            self.get_target = self.get_gae_target
+            self.get_target = self.calc_gae_v_targets
         else:
             self.get_target = self.get_nstep_target
 
@@ -326,6 +326,7 @@ class ActorCritic(Reinforce):
             2. Generalized advantage estimation (GAE) as in "High-Dimensional Continuous Control Using Generalized Advantage Estimation"
         Default is 1. To select GAE set use_GAE to true in the spec.
         '''
+        # TODO retire using math_util
         if self.body.memory.is_episodic:
             return self.calc_advantage_episodic(batch)
         else:
@@ -372,17 +373,6 @@ class ActorCritic(Reinforce):
         else:
             return self.get_nstep_target_batch(batch)
 
-    def get_gae_target(self, batch, critic_specific=False):
-        '''
-        Estimates the state-action value using generalized advantage estimation. Used as a target when training the critic and calculting the advantage.
-        In the episodic case it returns a list containing targets per episode
-        In the batch case it returns a tensor containing the targets for the batch
-        '''
-        if self.body.memory.is_episodic:
-            return self.get_gae_target_episodic(batch, critic_specific=critic_specific)
-        else:
-            return self.get_gae_v_target_batch(batch, critic_specific=critic_specific)
-
     def get_nstep_target_batch(self, batch):
         '''Returns a tensor containing the estimate of the state-action values using n-step returns'''
         nts = self.num_step_returns
@@ -402,34 +392,6 @@ class ActorCritic(Reinforce):
         logger.debug3(f'discounted_state_val_estimate: {discounted_state_val_estimate}')
         logger.debug3(f'R: {R}')
         return R
-
-    def get_nstep_target_episodic(self, batch):
-        '''Returns a list of tensors containing the estimate of the state-action values per batch using n-step returns'''
-        nts = self.num_step_returns
-        targets = []
-        dones = batch['dones']
-        next_states = batch['next_states']
-        rewards = batch['rewards']
-        for d, ns, r in zip(dones, next_states, rewards):
-            next_state_vals = self.get_critic_output(ns).squeeze_(dim=1)
-            r = r.data
-            (R, next_state_gammas) = self.get_R_ex_state_val_estimate(next_state_vals, r)
-            # Complete for 0th step and add state-value estimate
-            R = r + self.gamma * R
-            next_state_gammas *= self.gamma
-            logger.debug3(f'R: {R}')
-            logger.debug3(f'next_state_gammas: {next_state_gammas}')
-            logger.debug3(f'dones: {d}')
-            # Calculate appropriate state value accounting for terminal states and number of time steps
-            discounted_state_val_estimate = torch.mul(next_state_vals, next_state_gammas)
-            discounted_state_val_estimate = torch.mul(discounted_state_val_estimate, 1 - d.data)
-            if nts < next_state_vals.size(0):
-                logger.debug2(f'N step returns less than episode length, adding boostrap')
-                R += discounted_state_val_estimate
-            logger.debug3(f'discounted_state_val_estimate: {discounted_state_val_estimate}')
-            logger.debug3(f'R: {R}')
-            targets.append(R)
-        return targets
 
     def get_R_ex_state_val_estimate(self, next_state_vals, rewards):
         nts = self.num_step_returns
@@ -456,37 +418,17 @@ class ActorCritic(Reinforce):
             logger.debug3(f'R: {R}')
         return (R, next_state_gammas)
 
-    def get_gae_v_target_batch(self, batch, critic_specific):
-        '''Returns a tensor containing the estimate of the state-action values using generalized advantage estimation'''
+    def calc_gae_v_targets(self, batch, critic_specific=False):
+        '''
+        Estimates the state-action value using generalized advantage estimation. Used as a target when training the critic and calculting the advantage.
+        '''
         if critic_specific:
             logger.debug2('Using critic specific target')
-            target = self.calc_gae_critic_v_targets(batch['rewards'])
+            v_targets = self.calc_gae_critic_v_targets(batch['rewards'])
         else:
             logger.debug2('Using actor specific target')
-            target = self.calc_gae_actor_v_targets(batch['rewards'], batch['states'], batch['next_states'], batch['dones'])
-        return target
-
-    def get_gae_target_episodic(self, batch, critic_specific):
-        # TODO unify this with batch method
-        '''Returns a list of tensors containing the estimate of the state-action values per batch using generalized advantage estimation'''
-        rewards = batch['rewards']
-        targets = []
-        if critic_specific:
-            logger.debug2('Using critic specific target')
-            # Target is the discounted sum of returns for training the critic
-            for r in rewards:
-                t = self.calc_gae_critic_v_targets(r)
-                targets.append(t)
-        else:
-            logger.debug2('Using actor specific target')
-            # Target is the Generalized advantage estimate + current state-value estimate
-            states = batch['states']
-            next_states = batch['next_states']
-            dones = batch['dones']
-            for r, s, ns, d in zip(rewards, states, next_states, dones):
-                t = self.calc_gae_actor_v_targets(r, s, ns, d)
-                targets.append(t)
-        return targets
+            v_targets = self.calc_gae_actor_v_targets(batch['rewards'], batch['states'], batch['next_states'], batch['dones'])
+        return v_targets
 
     def calc_gae_critic_v_targets(self, rewards):
         '''State-value target is the discounted sum of returns (simple advantage) for training the critic'''
