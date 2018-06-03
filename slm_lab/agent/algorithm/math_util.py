@@ -3,7 +3,7 @@ Calculations used by algorithms
 All calculations for training shall have a standard API that takes in `batch` from algorithm.sample() method and return np array for calculation.
 `batch` is a dict containing keys to any data type you wish, e.g. {rewards: np.array([...])}
 '''
-from slm_lab.lib import logger
+from slm_lab.lib import logger, util
 import numpy as np
 import torch
 import pydash as ps
@@ -13,25 +13,10 @@ import pydash as ps
 # TODO standardize arg with full sampled info
 
 
-def is_episodic(batch):
-    '''
-    Check if batch is episodic or is plain
-    episodic: {k: [[*data_epi1], [*data_epi2], ...]}
-    plain: {k: [*data]}
-    '''
-    dones = batch['dones']  # the most reliable, scalar
-    # if depth > 1, is nested, then is episodic
-    return len(dones.shape) > 1
-
-
 def calc_batch_adv(batch, gamma):
     '''Calculate the advantage for a batch of data containing list of epi_rewards'''
     batch_rewards = batch['rewards']
-    if is_episodic(batch):
-        batch_advs = [calc_adv(epi_rewards, gamma) for epi_rewards in batch_rewards]
-        batch_advs = torch.cat(batch_advs)
-    else:
-        batch_advs = calc_adv(batch_rewards, gamma)
+    batch_advs = calc_adv(batch_rewards, gamma)
     return batch_advs
 
 

@@ -85,9 +85,19 @@ def compact_dict(d):
 def concat_batches(batches):
     '''
     Concat batch objects from body.memory.sample() into one batch
+    Also concat any nested epi sub-batches into flat batch
     {k: arr1} + {k: arr2} = {k: arr1 + arr2}
     '''
-    concat_batch = {k: np.concatenate([batch[k] for batch in batches]) for k in batches[0]}
+    episodic = is_episodic(batches[0])
+    concat_batch = {}
+    for k in batches[0]:
+        datas = []
+        for batch in batches:
+            data = batch[k]
+            if episodic:  # make into plain batch instead of nested
+                data = np.concatenate(data)
+            datas.append(data)
+        concat_batch[k] = np.concatenate(datas)
     return concat_batch
 
 
@@ -345,6 +355,17 @@ def interp(scl, r):
         c.append('hsl' + str(hsl))
 
     return cl.to_hsl(c)
+
+
+def is_episodic(batch):
+    '''
+    Check if batch is episodic or is plain
+    episodic: {k: [[*data_epi1], [*data_epi2], ...]}
+    plain: {k: [*data]}
+    '''
+    dones = batch['dones']  # the most reliable, scalar
+    # if is nested, then is episodic
+    return isinstance(dones[0], (list, np.ndarray, torch.Tensor))
 
 
 def is_jupyter():
