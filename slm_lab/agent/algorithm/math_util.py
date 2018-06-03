@@ -10,21 +10,23 @@ import pydash as ps
 
 # Policy Gradient calc
 
-# TODO standardize arg with full sampled info
+# advantage functions
 
 
 def calc_returns(batch, gamma):
     '''
-    Base method to calculate plain advantage with simple reward baseline
-    NOTE for standardization trick, do it out of here
+    Calculate the simple returns (full rollout) for advantage
+    i.e. sum discounted rewards up till termination
     '''
     rewards = batch['rewards']
+    # handle epi-end, to not sum past current episode
+    not_dones = 1 - batch['dones']
     T = len(rewards)
     assert not np.any(np.isnan(rewards))
     rets = np.empty(T, 'float32')
     future_ret = 0.0
     for t in reversed(range(T)):
-        future_ret = rewards[t] + gamma * future_ret
+        future_ret = rewards[t] + gamma * future_ret * not_dones[t]
         rets[t] = future_ret
     rets = torch.from_numpy(rets).float()
     return rets
