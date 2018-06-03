@@ -109,6 +109,7 @@ class Reinforce(Algorithm):
         '''Samples a batch from memory'''
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_batches(batches)
+        batch = util.to_torch_batch(batch, self.net.gpu)
         return batch
 
     @lab_api
@@ -132,7 +133,6 @@ class Reinforce(Algorithm):
         # advantage standardization trick
         advs = (advs - advs.mean()) / (advs.std() + 1e-08)
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
-        advs = torch.from_numpy(advs)
         policy_loss = torch.tensor(0.0)
         if torch.cuda.is_available() and self.net.gpu:
             advs = advs.cuda()

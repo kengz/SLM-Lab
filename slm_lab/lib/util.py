@@ -742,14 +742,14 @@ def write_as_plain(data, data_path):
 
 def to_torch_batch(batch, gpu):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
-    float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
-    for k in float_data_names:
-        batch[k] = torch.from_numpy(batch[k].astype(np.float)).float()
+    for k in batch:
+        batch[k] = torch.from_numpy(batch[k]).float()
         if torch.cuda.is_available() and gpu:
             batch[k] = batch[k].cuda()
     return batch
 
 
+# TODO retire
 def to_torch_nested_batch(batch, gpu):
     '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch tensor'''
     float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']

@@ -21,7 +21,7 @@ def is_episodic(batch):
     '''
     dones = batch['dones']  # the most reliable, scalar
     # if depth > 1, is nested, then is episodic
-    return len(np.shape(dones)) > 1
+    return len(dones.shape) > 1
 
 
 def calc_batch_adv(batch, gamma):
@@ -29,7 +29,7 @@ def calc_batch_adv(batch, gamma):
     batch_rewards = batch['rewards']
     if is_episodic(batch):
         batch_advs = [calc_adv(epi_rewards, gamma) for epi_rewards in batch_rewards]
-        batch_advs = np.concatenate(batch_advs)
+        batch_advs = torch.cat(batch_advs)
     else:
         batch_advs = calc_adv(batch_rewards, gamma)
     return batch_advs
@@ -47,6 +47,7 @@ def calc_adv(rewards, gamma):
     for t in reversed(range(T)):
         future_ret = rewards[t] + gamma * future_ret
         advs[t] = future_ret
+    advs = torch.from_numpy(advs).float()
     return advs
 
 
@@ -67,6 +68,7 @@ def calc_gaes_v_targets(rewards, v_preds, next_v_preds, gamma, lam):
         delta = rewards[t] + gamma * next_v_preds[t] - v_preds[t]
         gaes[t] = future_gae = delta + gamma * lam * future_gae
     assert not np.isnan(gaes).any(), f'GAE has nan: {gaes}'
+    gaes = torch.from_numpy(gaes).float()
     v_targets = gaes + v_preds
     return gaes, v_targets
 

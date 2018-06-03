@@ -85,7 +85,7 @@ class MLPNet(Net, nn.Module):
     def training_step(self, x=None, y=None, loss=None):
         '''
         Takes a single training step: one forward and one backwards pass
-        More most RL usage, we have custom, often complication, loss functions. Compute its value and put it in a pytorch tensor then pass it in as loss
+        More most RL usage, we have custom, often complicated, loss functions. Compute its value and put it in a pytorch tensor then pass it in as loss
         '''
         self.train()
         self.zero_grad()
