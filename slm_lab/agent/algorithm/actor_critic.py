@@ -90,9 +90,11 @@ class ActorCritic(Reinforce):
             body.explore_var = self.explore_var_start
         # Select appropriate function for calculating state-action-value estimate (target)
         if self.use_GAE:
-            self.get_target = self.calc_gae_v_targets
+            self.calc_v_targets = self.calc_gae_v_targets
+            self.calc_advs = self.calc_gae_advs
         else:
-            self.get_target = self.get_nstep_target
+            self.calc_v_targets = self.get_nstep_target
+            self.calc_advs = self.get_nstep_target
 
     @lab_api
     def init_nets(self):
@@ -265,7 +267,7 @@ class ActorCritic(Reinforce):
         # TODO also why iter is only used here?
         for _ in range(self.training_iters_per_batch):
             with torch.no_grad():
-                v_targets = self.get_target(batch, critic_specific=True)
+                v_targets = self.calc_v_targets(batch)
                 if torch.cuda.is_available() and self.net.gpu:
                     v_targets = v_targets.cuda()
                 v_targets.unsqueeze_(dim=-1)
@@ -296,7 +298,7 @@ class ActorCritic(Reinforce):
 
     def calc_val_loss(self, batch):
         '''Calculate the state-value loss from critic network'''
-        v_targets = self.get_target(batch, critic_specific=True)
+        v_targets = self.calc_v_targets(batch)
         if torch.cuda.is_available() and self.net.gpu:
             v_targets = v_targets.cuda()
         v_targets.unsqueeze_(dim=-1)
@@ -315,13 +317,14 @@ class ActorCritic(Reinforce):
             2. Generalized advantage estimation (GAE) as in "High-Dimensional Continuous Control Using Generalized Advantage Estimation"
         Default is 1. To select GAE set use_GAE to true in the spec.
         '''
-        target = self.get_target(batch)
+        v_targets = self.calc_v_targets(batch)
         state_vals = self.calc_v(batch['states']).squeeze_(0)
-        advantage = target - state_vals
+        # TODO WTF? why dont just calc adv? save another forward pass
+        advantage = v_targets - state_vals
         logger.debug2(f'Advantage: {advantage.size()}')
         return advantage
 
-    def get_nstep_target(self, batch, critic_specific=False):
+    def get_nstep_target(self, batch):
         '''
         Estimates state-action value with n-step returns. Used as a target when training the critic and calculting the advantage. No critic specific target value for this method of calculating the advantage.
         In the episodic case it returns a list containing targets per episode
@@ -370,35 +373,23 @@ class ActorCritic(Reinforce):
             logger.debug3(f'R: {R}')
         return (R, next_state_gammas)
 
-    def calc_gae_v_targets(self, batch, critic_specific=False):
-        '''
-        Estimates the state-action value using generalized advantage estimation. Used as a target when training the critic and calculting the advantage.
-        '''
-        if critic_specific:
-            logger.debug2('Using critic specific target')
-            v_targets = self.calc_gae_critic_v_targets(batch)
-        else:
-            logger.debug2('Using actor specific target')
-            v_targets = self.calc_gae_actor_v_targets(batch['rewards'], batch['states'], batch['next_states'], batch['dones'])
+    def calc_gae_v_targets(self, batch):
+        '''State-value target is the discounted sum of returns (simple advantage) for training the critic'''
+        v_targets = math_util.calc_advs(batch, self.gamma)
+        if torch.cuda.is_available() and self.net.gpu:
+            v_targets = v_targets.cuda()
         return v_targets
 
-    def calc_gae_critic_v_targets(self, batch):
-        '''State-value target is the discounted sum of returns (simple advantage) for training the critic'''
-        target = math_util.calc_advs(batch, self.gamma)
-        if torch.cuda.is_available() and self.net.gpu:
-            target = target.cuda()
-        return target
-
-    def calc_gae_actor_v_targets(self, rewards, states, next_states, dones):
+    def calc_gae_advs(self, batch):
         '''State-value target is the Generalized advantage estimate + current state-value estimate'''
-        v_preds = self.calc_v(states)
+        v_preds = self.calc_v(batch['states'])
         # calc next_state boundary value and concat with above for efficiency
-        next_v_pred_tail = self.calc_v(next_states[-1:])
+        next_v_pred_tail = self.calc_v(batch['next_states'][-1:])
         next_v_preds = torch.cat([v_preds[1:], next_v_pred_tail], dim=0)
         # ensure val for next_state is 0 at done
-        next_v_preds = next_v_preds * (1 - dones)
+        next_v_preds = next_v_preds * (1 - batch['dones'])
 
-        gaes, v_targets = math_util.calc_gaes_v_targets(rewards, v_preds, next_v_preds, self.gamma, self.lam)
+        gaes, v_targets = math_util.calc_gaes_v_targets(batch['rewards'], v_preds, next_v_preds, self.gamma, self.lam)
         if torch.cuda.is_available() and self.net.gpu:
             v_targets = v_targets.cuda()
         return v_targets
