@@ -19,10 +19,10 @@ def calc_returns(batch, gamma):
     i.e. sum discounted rewards up till termination
     '''
     rewards = batch['rewards']
+    assert not np.any(np.isnan(rewards))
     # handle epi-end, to not sum past current episode
     not_dones = 1 - batch['dones']
     T = len(rewards)
-    assert not np.any(np.isnan(rewards))
     rets = np.empty(T, 'float32')
     future_ret = 0.0
     for t in reversed(range(T)):
@@ -52,15 +52,17 @@ def calc_nstep_returns(batch, gamma, n, v_preds):
         then add v_pred for n as final term
     '''
     rets = calc_returns(batch, gamma)
+    rets_len = len(rets)
     # to subtract by offsetting n-steps
-    tail_rets = torch.cat([rets[n:], torch.zeros((n,))])
+    tail_rets = torch.cat([rets[n:], torch.zeros((n,))])[:rets_len]
 
     # to add back the subtracted with v_pred at n
     gammas = calc_gammas(batch, gamma)
     final_terms = gammas * v_preds
-    final_terms = torch.cat([final_terms[n:], torch.zeros((n,))])
+    final_terms = torch.cat([final_terms[n:], torch.zeros((n,))])[:rets_len]
 
     nstep_rets = rets - tail_rets + final_terms
+    assert not np.isnan(nstep_rets).any(), f'N-step returns has nan: {nstep_rets}'
     return nstep_rets
 
 

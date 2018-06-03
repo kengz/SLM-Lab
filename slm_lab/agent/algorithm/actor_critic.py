@@ -334,7 +334,7 @@ class ActorCritic(Reinforce):
         Used for training with N-step (not GAE)
         Returns 2-tuple for API-consistency with GAE
         '''
-        v_preds = self.calc_v(batch['states']).squeeze_(dim=1)
+        v_preds = self.calc_v(batch['states'])
         nstep_returns = math_util.calc_nstep_returns(batch, self.gamma, self.num_step_returns, v_preds)
         nstep_advs = nstep_returns - v_preds
         if torch.cuda.is_available() and self.net.gpu:
