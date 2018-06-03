@@ -100,7 +100,7 @@ class Reinforce(Algorithm):
         body.entropies.append(action_pd.entropy())
         body.log_probs.append(action_pd.log_prob(action.float()))
         if len(action.size()) == 0:  # scalar
-            return action.numpy().astype(body.action_space.dtype)
+            return action.numpy().astype(body.action_space.dtype).item()
         else:
             return action.numpy()
 
