@@ -174,7 +174,7 @@ class MLPHeterogenousTails(MLPNet):
         outs = []
         for model_tail in self.model_tails:
             outs.append(model_tail(x))
-        return outs
+        return torch.cat(outs, dim=1)
 
 
 class HydraMLPNet(Net, nn.Module):
@@ -298,7 +298,7 @@ class HydraMLPNet(Net, nn.Module):
         outs = []
         for model_tail in self.model_tails:
             outs.append(model_tail(body_x))
-        return torch.cat(outs)
+        return torch.cat(outs, dim=1)
 
     def training_step(self, xs=None, ys=None, loss=None):
         '''

@@ -170,7 +170,8 @@ class ActorCritic(Reinforce):
             self.net.train()
             pdparam = self.net(x)
         if self.share_architecture:
-            return pdparam[:-1]
+            # MLPHeterogenousTails, get front
+            return pdparam[:, :-1]
         else:
             return pdparam
 
@@ -184,7 +185,8 @@ class ActorCritic(Reinforce):
             else:
                 self.net.train()
                 out = self.net(x)
-            v = out[-1].squeeze_(dim=1)
+            # MLPHeterogenousTails, get last
+            v = out[:, -1:].squeeze_(dim=1)
         else:
             if evaluate:
                 out = self.critic.wrap_eval(x)
