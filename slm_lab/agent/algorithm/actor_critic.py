@@ -88,12 +88,11 @@ class ActorCritic(Reinforce):
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
         for body in self.agent.nanflat_body_a:
             body.explore_var = self.explore_var_start
-        # Select appropriate methods to calculate v_targets and adv_targets for training
+        # Select appropriate methods to calculate adv_targets and v_targets for training
         if self.use_GAE:
-            self.calc_v_targets = self.calc_gae_v_targets
-            self.calc_adv_targets = self.calc_gae_adv_targets
+            self.calc_advs_v_targets = self.calc_gae_advs_v_targets
         else:
-            self.calc_v_targets = self.calc_adv_targets = self.calc_nstep_adv_targets
+            self.calc_advs_v_targets = self.calc_nstep_advs_v_targets
 
     @lab_api
     def init_nets(self):
@@ -228,15 +227,17 @@ class ActorCritic(Reinforce):
         '''
         if self.to_train == 1:
             batch = self.sample()
-            policy_loss = self.calc_policy_loss(batch)  # from actor
-            val_loss = self.calc_val_loss(batch)  # from critic
+            with torch.no_grad():
+                advs, v_targets = self.calc_advs_v_targets(batch)
+            policy_loss = self.calc_policy_loss(advs)  # from actor
+            val_loss = self.calc_val_loss(batch, v_targets)  # from critic
             loss = self.policy_loss_coef * policy_loss + self.val_loss_coef * val_loss
             self.net.training_step(loss=loss)
             # reset
             self.to_train = 0
             self.body.log_probs = []
             self.body.entropies = []
-            logger.debug(f'Critic value loss: {val_loss:.2f}, Actor policy loss: {abs(policy_loss):.2f}, Total loss: {loss:.2f}')
+            logger.debug(f'Total loss: {loss:.2f}')
             return loss.item()
         else:
             return np.nan
@@ -247,94 +248,67 @@ class ActorCritic(Reinforce):
         loss = val_loss + abs(policy_loss)
         '''
         if self.to_train == 1:
+            # TODO restore here and above
+            # for _ in range(self.training_iters_per_batch):
             batch = self.sample()
-            val_loss = self.train_critic(batch)
-            policy_loss = self.train_actor(batch)
+            with torch.no_grad():
+                advs, v_targets = self.calc_advs_v_targets(batch)
+            policy_loss = self.train_actor(advs)
+            val_loss = self.train_critic(batch, v_targets)
             loss = val_loss + abs(policy_loss)
             # reset
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Losses: Critic: {val_loss:.2f}, Actor: {abs(policy_loss):.2f}, Total: {loss:.2f}')
+            logger.debug(f'Total: {loss:.2f}')
             return loss.item()
         else:
             return np.nan
 
-    def train_critic(self, batch):
-        '''Trains the critic when the actor and critic are separate networks'''
-        val_loss = torch.tensor(0.0)
-        # TODO also why iter is only used here?
-        for _ in range(self.training_iters_per_batch):
-            with torch.no_grad():
-                v_targets = self.calc_v_targets(batch)
-                if torch.cuda.is_available() and self.net.gpu:
-                    v_targets = v_targets.cuda()
-                v_targets.unsqueeze_(dim=-1)
-            val_loss = self.critic.training_step(batch['states'], v_targets)
-        return val_loss
-
-    def train_actor(self, batch):
+    def train_actor(self, advs):
         '''Trains the actor when the actor and critic are separate networks'''
-        policy_loss = self.calc_policy_loss(batch)
+        policy_loss = self.calc_policy_loss(advs)
         self.net.training_step(loss=policy_loss)
-        logger.debug(f'Policy loss: {policy_loss}')
         return policy_loss
 
-    def calc_policy_loss(self, batch):
-        '''Returns the policy loss for a batch of data.'''
-        advs = self.calc_adv_targets(batch)
+    def train_critic(self, batch, v_targets):
+        '''Trains the critic when the actor and critic are separate networks'''
+        val_loss = self.calc_val_loss(batch, v_targets)
+        self.critic.training_step(loss=val_loss)
+        return val_loss
+
+    def calc_policy_loss(self, advs):
+        '''Calculate the actor's policy loss'''
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
         policy_loss = torch.tensor(0.0)
         if torch.cuda.is_available() and self.net.gpu:
-            advs = advs.cuda()
             policy_loss = policy_loss.cuda()
         for logp, adv, ent in zip(self.body.log_probs, advs, self.body.entropies):
             if self.add_entropy:
                 policy_loss += (-logp * adv - self.entropy_coef * ent)
             else:
                 policy_loss += (-logp * adv)
+        logger.debug(f'Actor policy loss: {policy_loss:.2f}')
         return policy_loss
 
-    def calc_val_loss(self, batch):
-        '''Calculate the state-value loss from critic network'''
-        v_targets = self.calc_v_targets(batch)
-        if torch.cuda.is_available() and self.net.gpu:
-            v_targets = v_targets.cuda()
+    def calc_val_loss(self, batch, v_targets):
+        '''Calculate the critic's value loss'''
         v_targets.unsqueeze_(dim=-1)
-        v_preds = self.calc_v(batch['states'], evaluate=False)
+        v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze_(dim=-1)
         assert v_preds.size() == v_targets.size()
-        val_loss = self.critic.loss_fn(v_preds, v_targets)
+        val_loss = self.net.loss_fn(v_preds, v_targets)
+        if torch.cuda.is_available() and self.net.gpu:
+            val_loss = val_loss.cuda()
+        logger.debug(f'Critic value loss: {val_loss:.2f}')
         return val_loss
 
-    def calc_nstep_adv_targets(self, batch):
+    def calc_gae_advs_v_targets(self, batch):
         '''
-        Calculate N-step returns advantage = nstep_returns - v_pred
-        See n-step advantage under http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_5_actor_critic_pdf.pdf
-        This is used to train both actor and critic
-        '''
-        v_preds = self.calc_v(batch['states']).squeeze_(dim=1)
-        nstep_returns = math_util.calc_nstep_returns(batch, self.gamma, self.num_step_returns, v_preds)
-        nstep_advs = nstep_returns - v_preds
-        return nstep_advs
-
-    def calc_gae_v_targets(self, batch):
-        '''
-        Calculate the v_targets with is just the plain returns
-        Used for training critic with GAE
-        '''
-        # TODO retire this for below
-        v_targets = math_util.calc_returns(batch, self.gamma)
-        if torch.cuda.is_available() and self.net.gpu:
-            v_targets = v_targets.cuda()
-        return v_targets
-
-    def calc_gae_adv_targets(self, batch):
-        '''
-        Calculate the GAE advantage and v_targets for training
+        Calculate the GAE advantages and value targets for training actor and critic respectively
         adv_targets = GAE (see math_util method)
         v_targets = adv_targets + v_preds
         before output, adv_targets is standardized (so v_targets used the unstandardized version)
-        Used for training actor with GAE
+        Used for training with GAE
         '''
         v_preds = self.calc_v(batch['states'])
         # calc next_state boundary value and concat with above for efficiency
@@ -351,6 +325,21 @@ class ActorCritic(Reinforce):
             v_targets = v_targets.cuda()
         # standardization trick
         adv_targets = (adv_targets - adv_targets.mean()) / adv_targets.std()
+        return adv_targets, v_targets
+
+    def calc_nstep_advs_v_targets(self, batch):
+        '''
+        Calculate N-step returns advantage = nstep_returns - v_pred
+        See n-step advantage under http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_5_actor_critic_pdf.pdf
+        Used for training with N-step (not GAE)
+        Returns 2-tuple for API-consistency with GAE
+        '''
+        v_preds = self.calc_v(batch['states']).squeeze_(dim=1)
+        nstep_returns = math_util.calc_nstep_returns(batch, self.gamma, self.num_step_returns, v_preds)
+        nstep_advs = nstep_returns - v_preds
+        if torch.cuda.is_available() and self.net.gpu:
+            nstep_advs = nstep_advs.cuda()
+        adv_targets = v_targets = nstep_advs
         return adv_targets, v_targets
 
     @lab_api
