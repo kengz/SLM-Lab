@@ -88,13 +88,12 @@ class ActorCritic(Reinforce):
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
         for body in self.agent.nanflat_body_a:
             body.explore_var = self.explore_var_start
-        # Select appropriate function for calculating state-action-value estimate (target)
+        # Select appropriate methods to calculate v_targets and adv_targets for training
         if self.use_GAE:
             self.calc_v_targets = self.calc_gae_v_targets
             self.calc_adv_targets = self.calc_gae_adv_targets
         else:
-            self.calc_v_targets = self.calc_nstep_adv_target
-            self.calc_adv_targets = self.calc_nstep_adv_target
+            self.calc_v_targets = self.calc_adv_targets = self.calc_nstep_adv_targets
 
     @lab_api
     def init_nets(self):
@@ -283,7 +282,7 @@ class ActorCritic(Reinforce):
 
     def calc_policy_loss(self, batch):
         '''Returns the policy loss for a batch of data.'''
-        advs = self.api_calc_advs(batch)
+        advs = self.calc_adv_targets(batch)
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
         policy_loss = torch.tensor(0.0)
         if torch.cuda.is_available() and self.net.gpu:
@@ -307,38 +306,36 @@ class ActorCritic(Reinforce):
         val_loss = self.critic.loss_fn(v_preds, v_targets)
         return val_loss
 
-    # This was an API method to override REINFORCE's
-    def api_calc_advs(self, batch):
+    def calc_nstep_adv_targets(self, batch):
         '''
-        Calculates advantage = target - state_vals for each timestep
-        state_vals are the current estimate using the critic
-        Two options for calculating the advantage.
-            1. n_step forward returns as in "Asynchronous Methods for Deep Reinforcement Learning"
-            2. Generalized advantage estimation (GAE) as in "High-Dimensional Continuous Control Using Generalized Advantage Estimation"
-        Default is 1. To select GAE set use_GAE to true in the spec.
-        '''
-        advs = self.calc_adv_targets(batch)
-        logger.debug2(f'Advantage: {advantage.size()}')
-        return advs
-
-    def calc_nstep_adv_target(self, batch):
-        '''
-        N-step returns advantage = nstep_returns - v_pred
+        Calculate N-step returns advantage = nstep_returns - v_pred
         See n-step advantage under http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_5_actor_critic_pdf.pdf
+        This is used to train both actor and critic
         '''
-        v_preds = self.calc_v(batch['states']).squsqueeze_(dim=1)
+        v_preds = self.calc_v(batch['states']).squeeze_(dim=1)
         nstep_returns = math_util.calc_nstep_returns(batch, self.gamma, self.num_step_returns, v_preds)
         nstep_advs = nstep_returns - v_preds
+        return nstep_advs
 
     def calc_gae_v_targets(self, batch):
-        '''State-value target is the discounted sum of returns (simple advantage) for training the critic'''
+        '''
+        Calculate the v_targets with is just the plain returns
+        Used for training critic with GAE
+        '''
+        # TODO retire this for below
         v_targets = math_util.calc_returns(batch, self.gamma)
         if torch.cuda.is_available() and self.net.gpu:
             v_targets = v_targets.cuda()
         return v_targets
 
     def calc_gae_adv_targets(self, batch):
-        '''State-value target is the Generalized advantage estimate + current state-value estimate'''
+        '''
+        Calculate the GAE advantage and v_targets for training
+        adv_targets = GAE (see math_util method)
+        v_targets = adv_targets + v_preds
+        before output, adv_targets is standardized (so v_targets used the unstandardized version)
+        Used for training actor with GAE
+        '''
         v_preds = self.calc_v(batch['states'])
         # calc next_state boundary value and concat with above for efficiency
         next_v_pred_tail = self.calc_v(batch['next_states'][-1:])
@@ -352,8 +349,8 @@ class ActorCritic(Reinforce):
         if torch.cuda.is_available() and self.net.gpu:
             adv_targets = adv_targets.cuda()
             v_targets = v_targets.cuda()
-        # TODO standardize something outside
-        # adv_targets = (adv_targets - adv_targets.mean()) / adv_targets.std()
+        # standardization trick
+        adv_targets = (adv_targets - adv_targets.mean()) / adv_targets.std()
         return adv_targets, v_targets
 
     @lab_api
