@@ -174,6 +174,24 @@ class ActorCritic(Reinforce):
         else:
             return pdparam
 
+    def calc_critic_v(self, x, evaluate=True):
+        '''
+        Forward-pass to return the estimated state-value from critic.
+        '''
+        if self.share_architecture:
+            if evaluate:
+                out = self.net.wrap_eval(x)
+            else:
+                self.net.train()
+                out = self.net(x)
+            return out[-1]
+        else:
+            if evaluate:
+                return self.critic.wrap_eval(x)
+            else:
+                self.critic.train()
+                return self.critic(x)
+
     @lab_api
     def body_act(self, body, state):
         action, action_pd = self.action_policy(state, self, body)
@@ -211,7 +229,7 @@ class ActorCritic(Reinforce):
             if torch.cuda.is_available() and self.net.gpu:
                 target = target.cuda()
             y = target.unsqueeze_(dim=-1)
-            state_vals = self.get_critic_output(states, evaluate=False)
+            state_vals = self.calc_critic_v(states, evaluate=False)
             assert state_vals.data.size() == y.data.size()
             val_loss = F.mse_loss(state_vals, y)
             # Combine losses and train
@@ -296,7 +314,7 @@ class ActorCritic(Reinforce):
         Default is 1. To select GAE set use_GAE to true in the spec.
         '''
         target = self.get_target(batch)
-        state_vals = self.get_critic_output(batch['states']).squeeze_(0)
+        state_vals = self.calc_critic_v(batch['states']).squeeze_(0)
         advantage = target - state_vals
         logger.debug2(f'Advantage: {advantage.size()}')
         return advantage
@@ -308,7 +326,7 @@ class ActorCritic(Reinforce):
         In the batch case it returns a tensor containing the targets for the batch
         '''
         nts = self.num_step_returns
-        next_state_vals = self.get_critic_output(batch['next_states']).squeeze_(dim=1)
+        next_state_vals = self.calc_critic_v(batch['next_states']).squeeze_(dim=1)
         rewards = batch['rewards']
         (R, next_state_gammas) = self.get_R_ex_state_val_estimate(next_state_vals, rewards)
         # Complete for 0th step and add state-value estimate
@@ -372,9 +390,9 @@ class ActorCritic(Reinforce):
 
     def calc_gae_actor_v_targets(self, rewards, states, next_states, dones):
         '''State-value target is the Generalized advantage estimate + current state-value estimate'''
-        v_preds = self.get_critic_output(states).squeeze_(dim=1).numpy()
+        v_preds = self.calc_critic_v(states).squeeze_(dim=1).numpy()
         # calc next_state boundary value and concat with above for efficiency
-        next_v_pred_tail = self.get_critic_output(next_states[-1:]).squeeze_(dim=1).numpy()
+        next_v_pred_tail = self.calc_critic_v(next_states[-1:]).squeeze_(dim=1).numpy()
         next_v_preds = numpy.concatenate([v_preds[1:], next_v_pred_tail])
         # ensure val for next_state is 0 at done
         next_v_preds *= (1 - dones)
@@ -385,22 +403,6 @@ class ActorCritic(Reinforce):
         if torch.cuda.is_available() and self.net.gpu:
             v_targets = v_targets.cuda()
         return v_targets
-
-    def get_critic_output(self, x, evaluate=True):
-        '''Returns the estimated state-value regardless of the underlying network structure. This makes it easier to handle AC algorithms with shared or distinct params.'''
-        if self.share_architecture:
-            if evaluate:
-                out = self.net.wrap_eval(x)
-            else:
-                self.net.train()
-                out = self.net(x)
-            return out[-1]
-        else:
-            if evaluate:
-                return self.critic.wrap_eval(x)
-            else:
-                self.critic.train()
-                return self.critic(x)
 
     @lab_api
     def update(self):
