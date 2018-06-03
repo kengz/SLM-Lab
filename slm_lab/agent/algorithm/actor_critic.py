@@ -18,13 +18,13 @@ class ActorCritic(Reinforce):
     Implementation of single threaded Advantage Actor Critic
     Original paper: "Asynchronous Methods for Deep Reinforcement Learning"
     https://arxiv.org/abs/1602.01783
-    Algorithm specific training options:
-        - GAE:          @param: 'algorithm.use_GAE' option to use generalized advantage estimation introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. The default option is to use n-step returns as desribed in "Asynchronous Methods for Deep Reinforcement Learning"
-        - entropy:      @param: 'algorithm.add_entropy' option to add entropy to policy during training to encourage exploration as outlined in "Asynchronous Methods for Deep Reinforcement Learning"
-        - memory type:  @param: 'memory.name' batch (through OnPolicyBatchReplay memory class) or episodic through (OnPolicyReplay memory class)
-        - return steps: @param: 'algorithm.num_step_returns' how many forward step returns to use when calculating the advantage target. Min = 0. Applied for standard advantage estimation. Not used for GAE.
-        - lambda:        @param: 'algorithm.lam' controls the bias variance tradeoff when using GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
-        - param sharing: @param: 'net.type' whether the actor and critic should share params (e.g. through 'MLPshared') or have separate params (e.g. through 'MLPseparate'). If param sharing is used then there is also the option to control the weight given to the policy and value components of the loss function through 'policy_loss_coef' and 'val_loss_coef'
+    Algorithm specific spec param:
+    use_gae: If false, use the default n-step returns from "Asynchronous Methods for Deep Reinforcement Learning". Then the algorithm stays as AC. If True, use generalized advantage estimation (GAE) introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. The algorithm becomes A2C.
+    add_entropy: option to add entropy to policy during training to encourage exploration as outlined in "Asynchronous Methods for Deep Reinforcement Learning"
+    memory.name: batch (through OnPolicyBatchReplay memory class) or episodic through (OnPolicyReplay memory class)
+    num_step_returns: if use_gae is false, this specifies the number of steps used for the N-step returns method.
+    lam: is use_gae, this lambda controls the bias variance tradeoff for GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
+    net.type: whether the actor and critic should share params (e.g. through 'MLPshared') or have separate params (e.g. through 'MLPseparate'). If param sharing is used then there is also the option to control the weight given to the policy and value components of the loss function through 'policy_loss_coef' and 'val_loss_coef'
     Algorithm - separate actor and critic:
         Repeat:
             1. Collect k examples
@@ -250,13 +250,11 @@ class ActorCritic(Reinforce):
         loss = val_loss + abs(policy_loss)
         '''
         if self.to_train == 1:
-            # TODO restore here and above
-            # for _ in range(self.training_iters_per_batch):
             batch = self.sample()
             with torch.no_grad():
                 advs, v_targets = self.calc_advs_v_targets(batch)
             policy_loss = self.train_actor(advs)
-            val_loss = self.train_critic(batch, v_targets)
+            val_loss = self.train_critic(batch)
             loss = val_loss + abs(policy_loss)
             # reset
             self.to_train = 0
@@ -273,10 +271,17 @@ class ActorCritic(Reinforce):
         self.net.training_step(loss=policy_loss)
         return policy_loss
 
-    def train_critic(self, batch, v_targets):
+    def train_critic(self, batch):
         '''Trains the critic when the actor and critic are separate networks'''
-        val_loss = self.calc_val_loss(batch, v_targets)
-        self.critic.training_step(loss=val_loss)
+        total_val_loss = torch.tensor(0.0)
+        # training iters only applicable to separate critic network
+        for _ in range(self.training_iters_per_batch):
+            with torch.no_grad():
+                _advs, v_targets = self.calc_advs_v_targets(batch)
+            val_loss = self.calc_val_loss(batch, v_targets)
+            self.critic.training_step(loss=val_loss)
+            total_val_loss += val_loss
+        val_loss = total_val_loss.mean()
         return val_loss
 
     def calc_policy_loss(self, advs):
