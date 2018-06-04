@@ -365,7 +365,7 @@ def is_episodic(batch):
     '''
     dones = batch['dones']  # the most reliable, scalar
     # if is nested, then is episodic
-    return isinstance(dones[0], (list, np.ndarray, torch.Tensor))
+    return isinstance(dones[0], (list, np.ndarray))
 
 
 def is_jupyter():
@@ -764,7 +764,7 @@ def write_as_plain(data, data_path):
 def to_torch_batch(batch, gpu):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
     for k in batch:
-        batch[k] = torch.from_numpy(batch[k]).float()
+        batch[k] = torch.from_numpy(batch[k].astype('float32')).float()
         if torch.cuda.is_available() and gpu:
             batch[k] = batch[k].cuda()
     return batch

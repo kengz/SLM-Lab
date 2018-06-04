@@ -51,14 +51,16 @@ class Replay(Memory):
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
         states_shape = np.concatenate([[self.max_size], np.reshape(self.body.state_dim, -1)])
+        # TODO dont use one hot, will break for cont action
+        # NOTE action is stored as one-hot now
         actions_shape = np.concatenate([[self.max_size], np.reshape(self.body.action_dim, -1)])
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
         setattr(self, 'states', np.zeros(states_shape))
         setattr(self, 'actions', np.zeros(actions_shape, dtype=np.uint16))
-        setattr(self, 'rewards', np.zeros((self.max_size, 1)))
+        setattr(self, 'rewards', np.zeros((self.max_size,)))
         setattr(self, 'next_states', np.zeros(states_shape))
-        setattr(self, 'dones', np.zeros((self.max_size, 1), dtype=np.uint8))
-        setattr(self, 'priorities', np.zeros((self.max_size, 1)))
+        setattr(self, 'dones', np.zeros((self.max_size,), dtype=np.uint8))
+        setattr(self, 'priorities', np.zeros((self.max_size,)))
         self.true_size = 0
         self.head = -1  # Index of most recent experience
 
