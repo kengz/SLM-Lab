@@ -145,39 +145,22 @@ class SARSA(Algorithm):
         '''Samples a batch from memory'''
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_batches(batches)
-        if self.body.memory.is_episodic:
-            util.to_torch_nested_batch(batch, self.net.gpu)
-            # Add next action to batch
-            batch['actions_onehot'] = []
-            batch['next_actions'] = []
-            for acts in batch['actions']:
-                # The next actions are the actions shifted by one time step
-                # For episodic training is does not matter that the action in the last state is set to zero since there is no corresponding next state. The Q target is just the reward received in the terminal state.
-                next_acts = torch.zeros_like(acts)
-                next_acts[:-1] = acts[1:]
-                # Convert actions to one hot (both representations are needed for SARSA)
-                acts_onehot = util.convert_to_one_hot(acts, self.body.action_dim, self.net.gpu)
-                batch['actions_onehot'].append(acts_onehot)
-                batch['next_actions'].append(next_acts)
-            # Flatten the batch to train all at once
-            batch = util.concat_episodes(batch)
-        else:
-            util.to_torch_batch(batch, self.net.gpu)
-            # Batch only useful to train with if it has more than one element
-            # Train function checks for this and skips training if batch is too small
-            if batch['states'].size(0) > 1:
-                batch['next_actions'] = torch.zeros_like(batch['actions'])
-                batch['next_actions'][:-1] = batch['actions'][1:]
-                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.body.action_dim, self.net.gpu)
-                batch_elems = ['states', 'actions', 'actions_onehot', 'rewards', 'dones', 'next_states', 'next_actions']
+        util.to_torch_batch(batch, self.net.gpu)
+        # Batch only useful to train with if it has more than one element
+        # Train function checks for this and skips training if batch is too small
+        if batch['states'].size(0) > 1:
+            batch['next_actions'] = torch.zeros_like(batch['actions'])
+            batch['next_actions'][:-1] = batch['actions'][1:]
+            batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.body.action_dim, self.net.gpu)
+            batch_elems = ['states', 'actions', 'actions_onehot', 'rewards', 'dones', 'next_states', 'next_actions']
+            for k in batch_elems:
+                if batch[k].dim() == 1:
+                    batch[k].unsqueeze_(1)
+            # If the last experience in the batch is not terminal the batch has to be shortened by one element since the algorithm does not yet have access to the next action taken for the final experience
+            if batch['dones'].data[-1].int().eq_(0).cpu().numpy()[0]:
+                logger.debug(f'Popping last element')
                 for k in batch_elems:
-                    if batch[k].dim() == 1:
-                        batch[k].unsqueeze_(1)
-                # If the last experience in the batch is not terminal the batch has to be shortened by one element since the algorithm does not yet have access to the next action taken for the final experience
-                if batch['dones'].data[-1].int().eq_(0).cpu().numpy()[0]:
-                    logger.debug(f'Popping last element')
-                    for k in batch_elems:
-                        batch[k] = batch[k][:-1]
+                    batch[k] = batch[k][:-1]
         return batch
 
     @lab_api
