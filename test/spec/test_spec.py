@@ -36,6 +36,7 @@ def test_base_multi(spec_file, spec_name):
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ac.json', 'ac_cartpole'),
     ('ac.json', 'ac_shared_cartpole'),
+    ('ac.json', 'ac_batch_cartpole'),
     ('ac.json', 'ac_recurrent_cartpole'),
     # ('ac.json', 'ac_conv_breakout'),
 ])
@@ -45,8 +46,9 @@ def test_actor_critic(spec_file, spec_name):
 
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('a2c.json', 'a2c_cartpole'),
-    ('a2c.json', 'a2c_recurrent_cartpole'),
     ('a2c.json', 'a2c_shared_cartpole'),
+    ('a2c.json', 'a2c_batch_cartpole'),
+    ('a2c.json', 'a2c_recurrent_cartpole'),
     # ('a2c.json', 'a2c_conv_breakout'),
 ])
 def test_a2c(spec_file, spec_name):
