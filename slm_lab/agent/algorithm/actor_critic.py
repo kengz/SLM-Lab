@@ -2,10 +2,8 @@ from copy import deepcopy
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import math_util, policy_util
 from slm_lab.agent.algorithm.reinforce import Reinforce
-from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-import torch.nn.functional as F
 import numpy as np
 import torch
 import pydash as ps
