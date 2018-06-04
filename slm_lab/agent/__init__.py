@@ -56,6 +56,8 @@ class Body:
         if self.action_pdtype in (None, 'default'):
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
         self.is_discrete = self.env.is_discrete(self.a)
+
+        self.loss = np.nan  # training losses
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
 
@@ -137,6 +139,8 @@ class Agent:
             body.memory.update(action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
         loss_a = self.algorithm.train()
         loss_a = util.guard_data_a(self, loss_a, 'loss')
+        for (e, b), body in util.ndenumerate_nonan(self.body_a):
+            body.loss = loss_a[(e, b)]
         explore_var_a = self.algorithm.update()
         explore_var_a = util.guard_data_a(self, explore_var_a, 'explore_var')
         return loss_a, explore_var_a

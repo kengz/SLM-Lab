@@ -62,7 +62,7 @@ class Memory(ABC):
             info_space = body.agent.info_space
             env = body.env
             clock = env.clock
-            msg = f'Trial {info_space.get("trial")} session {info_space.get("session")} env {env.e}, body {body.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, total_reward: {self.total_reward:.2f}, last-{self.avg_window}-epi avg: {self.avg_total_reward:.2f}'
+            msg = f'Trial {info_space.get("trial")} session {info_space.get("session")} env {env.e}, body {body.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {body.loss:.2f}, total_reward: {self.total_reward:.2f}, last-{self.avg_window}-epi avg: {self.avg_total_reward:.2f}'
             logger.info(msg)
         return
 
