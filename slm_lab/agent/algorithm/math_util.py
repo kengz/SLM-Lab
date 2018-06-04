@@ -8,8 +8,9 @@ import numpy as np
 import torch
 import pydash as ps
 
-# Policy Gradient calc
+logger = logger.get_logger(__name__)
 
+# Policy Gradient calc
 # advantage functions
 
 

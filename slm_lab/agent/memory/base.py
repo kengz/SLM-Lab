@@ -3,6 +3,8 @@ from collections import deque
 from slm_lab.lib import logger
 import numpy as np
 
+logger = logger.get_logger(__name__)
+
 
 class Memory(ABC):
     '''

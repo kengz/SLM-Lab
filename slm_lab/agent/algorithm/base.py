@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod, abstractproperty
-from slm_lab.lib import util
+from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+
+logger = logger.get_logger(__name__)
 
 
 class Algorithm(ABC):
