@@ -627,8 +627,8 @@ def self_desc(cls):
     desc_list = [f'{get_class_name(cls)}:']
     for k, v in get_class_attr(cls).items():
         if k == 'spec':
-            continue
-        if ps.is_dict(v) or ps.is_dict(ps.head(v)):
+            desc_v = v['name']
+        elif ps.is_dict(v) or ps.is_dict(ps.head(v)):
             desc_v = to_json(v)
         else:
             desc_v = v
