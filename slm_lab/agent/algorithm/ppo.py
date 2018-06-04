@@ -1,6 +1,6 @@
 from copy import deepcopy
 from slm_lab.agent import net
-from slm_lab.agent.algorithm import policy_util
+from slm_lab.agent.algorithm import math_util, policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -14,6 +14,7 @@ logger = logger.get_logger(__name__)
 class PPO(ActorCritic):
     '''
     Implementation of PPO
+    This is actually just ActorCritic with a custom loss function
     Original paper: "Proximal Policy Optimization Algorithms"
     https://arxiv.org/pdf/1707.06347.pdf
 
@@ -76,6 +77,29 @@ class PPO(ActorCritic):
             self.old_net = deepcopy(self.net)
             self.old_critic = deepcopy(self.critic)
 
+    def calc_log_probs(self, batch, use_old_net=False):
+        '''Helper method to calculate log_probs with the option to swith net'''
+        if use_old_net:
+            # temporarily swap to do calc
+            self.tmp_net = self.net
+            self.net = self.old_net
+        states, actions = batch['states'], batch['actions']
+        # get ActionPD
+        ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0], self, self.body)
+        # construct log_probs for each state-action
+        pdparams = self.calc_pdparam(states)
+        log_probs = []
+        for idx, pdparam in enumerate(pdparams):
+            _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam, self.body)
+            log_prob = action_pd.log_prob(actions[idx])
+            log_probs.append(log_prob)
+        log_probs = torch.tensor(log_probs)
+        if use_old_net:
+            # swap back
+            self.old_net = self.net
+            self.net = self.tmp_net
+        return log_probs
+
     def calc_loss(self, batch):
         '''
         The PPO loss function (subscript t is omitted)
@@ -89,125 +113,30 @@ class PPO(ActorCritic):
 
         3. S = E[ entropy ]
         '''
-        # target advantage function
-        adv_target = None # computed advs, then standardized
-        # empirical return
-        v_target = None # tdlamrets
-        # learning rate multiplier for schedule
-        # lr_mult = tf.placeholder(name='lr_mult', dtype=tf.float32, shape=[])
-        # annealed clipping param epsilon for L^CLIP
-        # do linear decay with same annealing as lr
-        clip_eps = self.clip_eps * lr_mult
+        adv_targets, v_targets = self.calc_gae_advs_v_targets(batch)
+        # TODO outline params
+        # TODO decay by some annealing param
+        # clip_eps = self.clip_eps * lr_mult
 
         # L^CLIP
-        # the log probs are saved in body. though make another one for old log_prob
-        # probably good to recalculate per batch action due to shuffling or replay data
-        # recalculate per batch, or save during body_act
-        ratio = tf.exp(pi.pd.logp(ac) - pi_old.pd.logp(ac))
-        sur_1 = ratio * adv_target
-        sur_2 = tf.clip_by_value(ratio, 1.0 - clip_eps, 1.0 + clip_eps) * adv_target
+        # body already keeps track of it. so just reuse
+        log_probs = torch.tensor(self.body.log_probs)
+        old_log_probs = self.calc_log_probs(batch, use_old_net=True)
+        assert log_probs.shape == old_log_probs.shape
+        ratios = torch.exp(log_probs - old_log_probs)
+        sur_1 = ratios * adv_targets
+        sur_2 = tf.clip_by_value(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * adv_targets
         # flip sign because need to maximize
-        loss_clip = -tf.reduce_mean(tf.minimum(sur_1, sur_2))
+        clip_loss = -torch.mean(torch.min(sur_1, sur_2))
 
         # L^VF
-        loss_vf = tf.losses.mean_squared_error(v_target, pi.v_pred)
+        val_loss = self.calc_val_loss(batch, v_targets)  # from critic
 
-        # S entropy bonus, some variables for diagnosis
-        kl_mean = tf.reduce_mean(pi_old.pd.kl(pi.pd))
-        # same per batch
-        ent_mean = tf.reduce_mean(pi.pd.entropy())
+        # S entropy bonusdiagnosis
+        ent_mean = torch.mean(torch.tensor(self.bodies.entropies))
         ent_penalty = -self.ent_coef * ent_mean
-
-        loss = loss_clip + loss_vf + ent_penalty
+        loss = clip_loss + val_loss + ent_penalty
         return loss
 
-    @lab_api
-    def sample(self):
-        '''Samples a batch from memory'''
-        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        # TODO if just want raw rewards, skip conversion to torch batch
-        batch = util.concat_batches(batches)
-        batch = util.to_torch_nested_batch_ex_rewards(batch, self.net.gpu)
-        return batch
-
-    @lab_api
-    def train(self):
-        if self.to_train == 1:
-            logger.debug2(f'Training...')
-            # We only care about the rewards from the batch
-            rewards = self.sample()['rewards']
-            loss = self.calc_policy_loss(rewards)
-            self.net.training_step(loss=loss)
-
-            self.to_train = 0
-            self.body.log_probs = []
-            self.body.entropies = []
-            logger.debug(f'Policy loss: {loss}')
-            return loss.item()
-        else:
-            return np.nan
-
-    def calc_policy_loss(self, batch):
-        '''
-        Returns the policy loss for a batch of data.
-        For REINFORCE just rewards are passed in as the batch
-        '''
-        advantage = self.calc_advantage(batch)
-        advantage = self.check_sizes(advantage)
-        policy_loss = torch.tensor(0.0)
-        for log_prob, a, e in zip(self.body.log_probs, advantage, self.body.entropies):
-            logger.debug3(f'log prob: {log_prob.item()}, advantage: {a}, entropy: {e.item()}')
-            if self.add_entropy:
-                policy_loss += (-log_prob * a - self.entropy_coef * e)
-            else:
-                policy_loss += (-log_prob * a)
-        return policy_loss
-
-    def check_sizes(self, advantage):
-        '''
-        Checks that log probs, advantage, and entropy all have the same size
-        Occassionally they do not, this is caused by first reward of an episode being nan. If they are not the same size, the function removes the elements of the log probs and entropy that correspond to nan rewards.
-        '''
-        body = self.body
-        nan_idxs = body.memory.last_nan_idxs
-        num_nans = sum(nan_idxs)
-        assert len(nan_idxs) == len(body.log_probs)
-        assert len(nan_idxs) == len(body.entropies)
-        assert len(nan_idxs) - num_nans == advantage.size(0)
-        logger.debug2(f'{num_nans} nans encountered when gathering data')
-        if num_nans != 0:
-            idxs = [x for x in range(len(nan_idxs)) if nan_idxs[x] == 1]
-            logger.debug3(f'Nan indexes: {idxs}')
-            for idx in idxs[::-1]:
-                del body.log_probs[idx]
-                del body.entropies[idx]
-        assert len(body.log_probs) == advantage.size(0)
-        assert len(body.entropies) == advantage.size(0)
-        return advantage
-
-    def calc_advantage(self, raw_rewards):
-        '''Returns the advantage for each action'''
-        advantage = []
-        logger.debug3(f'Raw rewards: {raw_rewards}')
-        for epi_rewards in raw_rewards:
-            big_r = 0
-            T = len(epi_rewards)
-            returns = np.empty(T, 'float32')
-            for t in reversed(range(T)):
-                big_r = epi_rewards[t] + self.gamma * big_r
-                returns[t] = big_r
-            logger.debug3(f'Rewards: {returns}')
-            returns = (returns - returns.mean()) / (returns.std() + 1e-08)
-            returns = torch.from_numpy(returns)
-            logger.debug3(f'Normalized returns: {returns}')
-            advantage.append(returns)
-        advantage = torch.cat(advantage)
-        return advantage
-
-    @lab_api
-    def update(self):
-        for net in [self.net]:
-            net.update_lr()
-        explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
-        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
-        return explore_var_a
+    # TODO define training methods, use 1 loss
+    # TODO define old-new net update post-training
