@@ -132,7 +132,11 @@ class Reinforce(Algorithm):
         # use simple returns as advs
         advs = math_util.calc_returns(batch, self.gamma)
         # advantage standardization trick
-        advs = (advs - advs.mean()) / (advs.std() + 1e-08)
+        # guard nan std by setting to 0 and add small const
+        adv_std = advs.std()
+        adv_std[adv_std != adv_std] = 0
+        adv_std += 1e-08
+        advs = (advs - advs.mean()) / adv_std
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
         policy_loss = torch.tensor(0.0)
         if torch.cuda.is_available() and self.net.gpu:
