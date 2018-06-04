@@ -55,11 +55,10 @@ class PPO(ActorCritic):
             # theoretically, PPO does not have policy update; but in this implementation we have such option
             'action_policy_update',
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
-            'clip_eps',
-            'entropy_coef',
-            'epoch',
             'gamma',
             'lam',
+            'clip_eps',
+            'entropy_coef',
             'training_frequency',  # horizon
             'training_epoch',  # epoch
         ])

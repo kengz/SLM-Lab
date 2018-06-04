@@ -70,16 +70,16 @@ class ActorCritic(Reinforce):
             'action_policy_update',
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
             'gamma',  # the discount factor
-            'add_entropy',
-            'entropy_coef',
-            'continuous_action_clip',
-            'training_frequency',
-            'training_epoch',
             'use_gae',
             'lam',
             'num_step_returns',
             'policy_loss_coef',
             'val_loss_coef',
+            'add_entropy',
+            'entropy_coef',
+            'continuous_action_clip',
+            'training_frequency',
+            'training_epoch',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)

@@ -10,10 +10,10 @@
         "explore_var_start": null,
         "explore_var_end": null,
         "explore_anneal_epi": null,
-        "clip_eps": 0.10,
-        "entropy_coef": 0.02,
         "gamma": 0.99,
         "lam": 1.0,
+        "clip_eps": 0.10,
+        "entropy_coef": 0.02,
         "training_frequency": 1,
         "training_epoch": 8
       },
