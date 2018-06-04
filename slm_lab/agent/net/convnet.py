@@ -145,7 +145,7 @@ class ConvNet(Net, nn.Module):
             x.unsqueeze_(dim=0)
         elif x.dim() == 4:
             x = x.permute(0, 3, 1, 2)
-            logger.debug(f'x: {x.size()}')
+            logger.debug(f'x: {x.shape}')
         x = self.conv_model(x)
         x = x.view(-1, self.conv_out_dim)
         x = self.dense_model(x)

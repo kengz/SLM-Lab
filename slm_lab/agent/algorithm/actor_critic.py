@@ -199,7 +199,7 @@ class ActorCritic(Reinforce):
         action, action_pd = self.action_policy(state, self, body)
         body.entropies.append(action_pd.entropy())
         body.log_probs.append(action_pd.log_prob(action.float()))
-        if len(action.size()) == 0:  # scalar
+        if len(action.shape) == 0:  # scalar
             return action.numpy().astype(body.action_space.dtype).item()
         else:
             return action.numpy()
@@ -300,7 +300,7 @@ class ActorCritic(Reinforce):
         '''Calculate the critic's value loss'''
         v_targets = v_targets.unsqueeze(dim=-1)
         v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze_(dim=-1)
-        assert v_preds.size() == v_targets.size()
+        assert v_preds.shape == v_targets.shape
         val_loss = self.net.loss_fn(v_preds, v_targets)
         if torch.cuda.is_available() and self.net.gpu:
             val_loss = val_loss.cuda()

@@ -198,7 +198,7 @@ def multi_default(pdparam, algorithm, body_list):
     '''
     pdparam.squeeze_(dim=0)
     # assert pdparam has been chunked
-    assert len(pdparam.size()) > 1 and len(pdparam) == len(body_list)
+    assert len(pdparam.shape) > 1 and len(pdparam) == len(body_list)
     action_list, action_pd_a = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
@@ -225,7 +225,7 @@ def multi_random(pdparam, algorithm, body_list):
 def multi_epsilon_greedy(pdparam, algorithm, body_list):
     '''Apply epsilon-greedy policy body-wise'''
     pdparam.squeeze_(dim=0)
-    assert len(pdparam.size()) > 1 and len(pdparam) == len(body_list)
+    assert len(pdparam.shape) > 1 and len(pdparam) == len(body_list)
     action_list, action_pd_a = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
@@ -244,7 +244,7 @@ def multi_epsilon_greedy(pdparam, algorithm, body_list):
 def multi_boltzmann(pdparam, algorithm, body_list):
     '''Apply Boltzmann policy body-wise'''
     pdparam.squeeze_(dim=0)
-    assert len(pdparam.size()) > 1 and len(pdparam) == len(body_list)
+    assert len(pdparam.shape) > 1 and len(pdparam) == len(body_list)
     action_list, action_pd_a = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
