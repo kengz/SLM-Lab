@@ -2,6 +2,7 @@ from copy import deepcopy
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import math_util, policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
+from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -55,11 +56,12 @@ class PPO(ActorCritic):
             'action_policy_update',
             'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
             'clip_eps',
-            'ent_coef',
+            'entropy_coef',
             'epoch',
             'gamma',
-            'horizon',
             'lam',
+            'training_frequency',  # horizon
+            'training_iters_per_batch',  # epoch
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -85,8 +87,9 @@ class PPO(ActorCritic):
             self.net = self.old_net
         states, actions = batch['states'], batch['actions']
         # get ActionPD
-        ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0], self, self.body)
+        ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].numpy(), self, self.body)
         # construct log_probs for each state-action
+        ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].numpy(), self, self.body)
         pdparams = self.calc_pdparam(states)
         log_probs = []
         for idx, pdparam in enumerate(pdparams):
@@ -113,19 +116,20 @@ class PPO(ActorCritic):
 
         3. S = E[ entropy ]
         '''
-        adv_targets, v_targets = self.calc_gae_advs_v_targets(batch)
-        # TODO outline params
-        # TODO decay by some annealing param
-        # clip_eps = self.clip_eps * lr_mult
+        with torch.no_grad():
+            adv_targets, v_targets = self.calc_gae_advs_v_targets(batch)
+        # TODO decay by some annealing param. use the policy_util method and put in update
+        clip_eps = self.clip_eps
 
         # L^CLIP
         # body already keeps track of it. so just reuse
         log_probs = torch.tensor(self.body.log_probs)
         old_log_probs = self.calc_log_probs(batch, use_old_net=True)
+        assert adv_targets.shape == old_log_probs.shape
         assert log_probs.shape == old_log_probs.shape
         ratios = torch.exp(log_probs - old_log_probs)
         sur_1 = ratios * adv_targets
-        sur_2 = tf.clip_by_value(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * adv_targets
+        sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * adv_targets
         # flip sign because need to maximize
         clip_loss = -torch.mean(torch.min(sur_1, sur_2))
 
@@ -133,10 +137,55 @@ class PPO(ActorCritic):
         val_loss = self.calc_val_loss(batch, v_targets)  # from critic
 
         # S entropy bonusdiagnosis
-        ent_mean = torch.mean(torch.tensor(self.bodies.entropies))
-        ent_penalty = -self.ent_coef * ent_mean
+        ent_mean = torch.mean(torch.tensor(self.body.entropies))
+        ent_penalty = -self.entropy_coef * ent_mean
         loss = clip_loss + val_loss + ent_penalty
         return loss
 
-    # TODO define training methods, use 1 loss
-    # TODO define old-new net update post-training
+    def train_shared(self):
+        '''
+        Trains the network when the actor and critic share parameters
+        '''
+        if self.to_train == 1:
+            batch = self.sample()
+            total_loss = torch.tensor(0.0)
+            for _ in range(self.training_iters_per_batch):
+                loss = self.calc_loss(batch)
+                self.net.training_step(loss=loss)
+                total_loss += loss
+            loss = total_loss.mean()
+            net_util.copy(self.net, self.old_net)
+            # reset
+            self.to_train = 0
+            self.body.log_probs = []
+            self.body.entropies = []
+            logger.debug(f'Loss: {loss:.2f}')
+            return loss.item()
+        else:
+            return np.nan
+
+    def train_separate(self):
+        '''
+        Trains the network when the actor and critic share parameters
+        '''
+        if self.to_train == 1:
+            batch = self.sample()
+            total_loss = torch.tensor(0.0)
+            for _ in range(self.training_iters_per_batch):
+                # TODO double pass inefficient
+                loss = self.calc_loss(batch)
+                self.net.training_step(loss=loss)
+                loss = self.calc_loss(batch)
+                self.critic.training_step(loss=loss)
+                total_loss += loss
+            loss = total_loss.mean()
+            net_util.copy(self.net, self.old_net)
+            net_util.copy(self.critic, self.old_critic)
+            # reset
+            self.to_train = 0
+            self.body.log_probs = []
+            self.body.entropies = []
+            logger.debug(f'Loss: {loss:.2f}')
+            return loss.item()
+        else:
+            return np.nan
