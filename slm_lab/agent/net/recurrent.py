@@ -130,6 +130,7 @@ class RecurrentNet(Net, nn.Module):
         if loss is None:
             out = self(x)
             loss = self.loss_fn(out, y)
+        assert not torch.isnan(loss).any()
         loss.backward()
         if self.clip_grad:
             logger.debug(f'Clipping gradient')

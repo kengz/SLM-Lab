@@ -93,6 +93,7 @@ class MLPNet(Net, nn.Module):
         if loss is None:
             out = self(x)
             loss = self.loss_fn(out, y)
+        assert not torch.isnan(loss).any()
         loss.backward()
         if self.clip_grad:
             logger.debug(f'Clipping gradient')
@@ -313,6 +314,7 @@ class HydraMLPNet(Net, nn.Module):
             for out, y in zip(outs, ys):
                 loss = self.loss_fn(out, y)
                 total_loss += loss
+        assert not torch.isnan(total_loss).any()
         total_loss.backward()
         if self.clip_grad:
             logger.debug(f'Clipping gradient')
