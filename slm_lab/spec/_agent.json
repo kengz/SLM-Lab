@@ -14,7 +14,7 @@
       "entropy_coef": 0.01,
       "continuous_action_clip": 2.0,
       "training_frequency": 1,
-      "training_iters_per_batch": 8,
+      "training_epoch": 8,
       "use_gae": true,
       "lam": 1.0,
       "num_step_returns": 100,
@@ -58,7 +58,7 @@
       "gamma": 0.999,
       "training_epoch": 4,
       "training_frequency": 10,
-      "training_iters_per_batch": 1,
+      "training_epoch": 1,
       "training_min_timestep": 10
     },
     "memory": {
@@ -98,7 +98,7 @@
       "gamma": 0.999,
       "training_epoch": 4,
       "training_frequency": 10,
-      "training_iters_per_batch": 1,
+      "training_epoch": 1,
       "training_min_timestep": 10
     },
     "memory": {
@@ -141,7 +141,7 @@
       "gamma": 0.999,
       "training_epoch": 4,
       "training_frequency": 10,
-      "training_iters_per_batch": 1,
+      "training_epoch": 1,
       "training_min_timestep": 10
     },
     "memory": {
@@ -184,7 +184,7 @@
       "gamma": 0.999,
       "training_epoch": 4,
       "training_frequency": 10,
-      "training_iters_per_batch": 1,
+      "training_epoch": 1,
       "training_min_timestep": 10
     },
     "memory": {
@@ -227,7 +227,7 @@
       "gamma": 0.999,
       "training_epoch": 4,
       "training_frequency": 10,
-      "training_iters_per_batch": 1,
+      "training_epoch": 1,
       "training_min_timestep": 10
     },
     "memory": {

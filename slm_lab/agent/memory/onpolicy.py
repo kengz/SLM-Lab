@@ -75,6 +75,7 @@ class OnPolicyReplay(Memory):
                 getattr(self, k).append(self.cur_epi_data[k])
             self.cur_epi_data = {k: [] for k in self.data_keys}
             # If agent has collected the desired number of episodes, it is ready to train
+            # length is num of epis due to nested structure
             if len(self.states) == self.body.agent.algorithm.training_frequency:
                 self.body.agent.algorithm.to_train = 1
         # Track memory size and num experiences

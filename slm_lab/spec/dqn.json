@@ -12,7 +12,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -83,7 +83,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -150,7 +150,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -220,7 +220,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -283,7 +283,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -339,7 +339,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -402,7 +402,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -472,7 +472,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -528,7 +528,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -584,7 +584,7 @@
         "gamma": 0.999,
         "training_epoch": 1,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 0
       },
       "memory": {
@@ -639,7 +639,7 @@
         "gamma": 0.99,
         "training_epoch": 5,
         "training_frequency": 1,
-        "training_iters_per_batch": 3,
+        "training_epoch": 3,
         "training_min_timestep": 1000
       },
       "memory": {
@@ -697,7 +697,7 @@
         "gamma": 0.99,
         "training_epoch": 5,
         "training_frequency": 1,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 1000
       },
       "memory": {

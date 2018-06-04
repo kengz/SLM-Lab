@@ -74,7 +74,7 @@ class ActorCritic(Reinforce):
             'entropy_coef',
             'continuous_action_clip',
             'training_frequency',
-            'training_iters_per_batch',
+            'training_epoch',
             'use_gae',
             'lam',
             'num_step_returns',
@@ -273,7 +273,7 @@ class ActorCritic(Reinforce):
         '''Trains the critic when the actor and critic are separate networks'''
         total_val_loss = torch.tensor(0.0)
         # training iters only applicable to separate critic network
-        for _ in range(self.training_iters_per_batch):
+        for _ in range(self.training_epoch):
             with torch.no_grad():
                 _advs, v_targets = self.calc_advs_v_targets(batch)
             val_loss = self.calc_val_loss(batch, v_targets)

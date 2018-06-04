@@ -15,7 +15,7 @@
         "gamma": 0.99,
         "lam": 1.0,
         "training_frequency": 1,
-        "training_iters_per_batch": 8
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"

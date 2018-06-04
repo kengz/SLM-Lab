@@ -12,7 +12,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -71,7 +71,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -130,7 +130,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -171,7 +171,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_iters_per_batch__choice": [1, 2, 3, 5, 7, 10]
+          "training_epoch__choice": [1, 2, 3, 5, 7, 10]
         }
       }]
     }
@@ -189,7 +189,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -248,7 +248,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {
@@ -307,7 +307,7 @@
         "gamma": 0.999,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_iters_per_batch": 1,
+        "training_epoch": 1,
         "training_min_timestep": 10
       },
       "memory": {

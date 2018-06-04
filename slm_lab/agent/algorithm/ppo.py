@@ -61,7 +61,7 @@ class PPO(ActorCritic):
             'gamma',
             'lam',
             'training_frequency',  # horizon
-            'training_iters_per_batch',  # epoch
+            'training_epoch',  # epoch
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -149,7 +149,7 @@ class PPO(ActorCritic):
         if self.to_train == 1:
             batch = self.sample()
             total_loss = torch.tensor(0.0)
-            for _ in range(self.training_iters_per_batch):
+            for _ in range(self.training_epoch):
                 loss = self.calc_loss(batch)
                 self.net.training_step(loss=loss)
                 total_loss += loss
@@ -171,7 +171,7 @@ class PPO(ActorCritic):
         if self.to_train == 1:
             batch = self.sample()
             total_loss = torch.tensor(0.0)
-            for _ in range(self.training_iters_per_batch):
+            for _ in range(self.training_epoch):
                 # TODO double pass inefficient
                 loss = self.calc_loss(batch)
                 self.net.training_step(loss=loss)

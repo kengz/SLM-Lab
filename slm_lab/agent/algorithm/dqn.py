@@ -72,7 +72,7 @@ class VanillaDQN(SARSA):
             'gamma',  # the discount factor
             'training_epoch',  # how many batches to train each time
             'training_frequency',  # how often to train (once a few timesteps)
-            'training_iters_per_batch',  # how many times to train each batch
+            'training_epoch',  # how many times to train each batch
             'training_min_timestep',  # how long before starting training
         ])
         super(VanillaDQN, self).init_algorithm_params()
