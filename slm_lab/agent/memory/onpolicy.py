@@ -15,9 +15,7 @@ class OnPolicyReplay(Memory):
 
     An experience consists of
         - state: representation of a state
-        - action: action taken.
-            - One hot encoding (discrete)
-            - Real numbers representing mean on action dist (continuous)
+        - action: action taken
         - reward: scalar value
         - next state: representation of next state (should be same as state)
         - done: 0 / 1 representing if the current state is the last in an episode
