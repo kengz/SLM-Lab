@@ -135,7 +135,7 @@ class PPO(ActorCritic):
         # L^VF
         val_loss = self.calc_val_loss(batch, v_targets)  # from critic
 
-        # S entropy bonusdiagnosis
+        # S entropy bonus
         ent_mean = torch.mean(torch.tensor(self.body.entropies))
         ent_penalty = -self.entropy_coef * ent_mean
         loss = clip_loss + val_loss + ent_penalty
