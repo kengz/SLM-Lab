@@ -209,6 +209,14 @@ class AEBSpace:
         else:
             return [self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v)]
 
+    def body_done_log(self, body):
+        '''Log the summary for a body when it is done'''
+        env = body.env
+        clock = env.clock
+        memory = body.memory
+        msg = f'Trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e}, body {body.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {body.loss:.2f}, total_reward: {memory.total_reward:.2f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.2f}'
+        logger.info(msg)
+
     def tick_clocks(self, session):
         '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''
         from slm_lab.experiment import analysis
@@ -220,6 +228,8 @@ class AEBSpace:
             done = env.done or env.clock.get('t') > env.max_timestep
             env_dones.append(done)
             if done:
+                for body in env.nanflat_body_e:
+                    self.body_done_log(body)
                 env.clock.tick('epi')
             else:
                 env.clock.tick('t')
