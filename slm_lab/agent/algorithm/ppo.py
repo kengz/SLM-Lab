@@ -61,7 +61,7 @@ class PPO(ActorCritic):
             'clip_eps',
             'entropy_coef',
             'training_frequency',  # horizon
-            'training_epoch',  # epoch
+            'training_epoch',
         ])
         # use the same annealing epi as lr
         self.clip_eps_anneal_epi = self.net_spec['lr_decay_min_timestep'] + self.net_spec['lr_decay_frequency'] * 20
@@ -125,11 +125,10 @@ class PPO(ActorCritic):
             adv_targets, v_targets = self.calc_gae_advs_v_targets(batch)
 
         # L^CLIP
-        # body already keeps track of it. so just reuse
-        log_probs = torch.tensor(self.body.log_probs)
+        log_probs = self.calc_log_probs(batch, use_old_net=False)
         old_log_probs = self.calc_log_probs(batch, use_old_net=True)
-        assert adv_targets.shape == old_log_probs.shape
         assert log_probs.shape == old_log_probs.shape
+        assert adv_targets.shape == log_probs.shape
         ratios = torch.exp(log_probs - old_log_probs)
         sur_1 = ratios * adv_targets
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * adv_targets
