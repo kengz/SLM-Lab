@@ -1,4 +1,5 @@
 from copy import deepcopy
+from functools import partial
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import math_util, policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
@@ -171,10 +172,12 @@ class PPO(ActorCritic):
             batch = self.sample()
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
-                # TODO double pass inefficient
                 loss = self.calc_loss(batch)
+                # to reuse loss for critic
+                loss.backward = partial(loss.backward, retain_graph=True)
                 self.net.training_step(loss=loss)
-                loss = self.calc_loss(batch)
+                # critic.optim.step using the same loss
+                loss.backward = partial(loss.backward, retain_graph=False)
                 self.critic.training_step(loss=loss)
                 total_loss += loss
             loss = total_loss.mean()
