@@ -63,6 +63,8 @@ class PPO(ActorCritic):
             'training_frequency',  # horizon
             'training_epoch',  # epoch
         ])
+        # use the same annealing epi as lr
+        self.clip_eps_anneal_epi = self.net_spec['lr_decay_min_timestep'] + self.net_spec['lr_decay_frequency'] * 20
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
@@ -116,10 +118,11 @@ class PPO(ActorCritic):
 
         3. S = E[ entropy ]
         '''
+        # decay clip_eps by episode
+        clip_eps = policy_util._linear_decay(self.clip_eps, 0.1 * self.clip_eps, self.clip_eps_anneal_epi, self.body.env.clock.get('epi'))
+
         with torch.no_grad():
             adv_targets, v_targets = self.calc_gae_advs_v_targets(batch)
-        # TODO decay by some annealing param. use the policy_util method and put in update
-        clip_eps = self.clip_eps
 
         # L^CLIP
         # body already keeps track of it. so just reuse
