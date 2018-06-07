@@ -123,20 +123,16 @@ class VanillaDQN(SARSA):
         '''
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (total_t > self.training_min_timestep and total_t % self.training_frequency == 0):
-            total_loss = 0.0
-            for _b in range(self.training_epoch):
+            total_loss = torch.tensor(0.0)
+            for _ in range(self.training_epoch):
                 batch = self.sample()
-                batch_loss = 0.0
-                for _i in range(self.training_epoch):
-                    with torch.no_grad():
-                        q_targets = self.calc_q_targets(batch)
-                    loss = self.net.training_step(batch['states'], q_targets)
-                    batch_loss += loss.item()
-                batch_loss /= self.training_epoch
-                total_loss += batch_loss
-            total_loss /= self.training_epoch
-            logger.debug(f'Total loss: {total_loss}')
-            return total_loss
+                with torch.no_grad():
+                    q_targets = self.calc_q_targets(batch)
+                loss = self.net.training_step(batch['states'], q_targets)
+                total_loss += loss
+            loss = total_loss / self.training_epoch
+            logger.debug(f'Loss: {loss}')
+            return loss.item()
         else:
             return np.nan
 
@@ -425,21 +421,15 @@ class HydraDQN(MultitaskDQN):
         '''
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (total_t > self.training_min_timestep and total_t % self.training_frequency == 0):
-            nanflat_loss_a = np.zeros(self.agent.body_num)
-            # TODO double epoch? one was iter per batch
-            for _b in range(self.training_epoch):
-                batch_loss = np.zeros(self.agent.body_num)
+            total_loss = torch.tensor(0.0)
+            for _ in range(self.training_epoch):
                 batch = self.sample()
-                for _i in range(self.training_epoch):
-                    with torch.no_grad():
-                        q_targets = self.calc_q_targets(batch)
-                    loss = self.net.training_step(batch['states'], q_targets)
-                    logger.debug(f'Loss: {loss}')
-                    batch_loss += loss.item()
-                batch_loss /= self.training_epoch
-                nanflat_loss_a += batch_loss
-            nanflat_loss_a /= self.training_epoch
-            loss_a = self.nanflat_to_data_a('loss', nanflat_loss_a)
-            return loss_a
+                with torch.no_grad():
+                    q_targets = self.calc_q_targets(batch)
+                loss = self.net.training_step(batch['states'], q_targets)
+                total_loss += loss
+            loss = total_loss / self.training_epoch
+            logger.debug(f'Loss: {loss}')
+            return loss.item()
         else:
             return np.nan

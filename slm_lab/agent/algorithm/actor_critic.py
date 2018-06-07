@@ -279,7 +279,7 @@ class ActorCritic(Reinforce):
             val_loss = self.calc_val_loss(batch, v_targets)
             self.critic.training_step(loss=val_loss)
             total_val_loss += val_loss
-        val_loss = total_val_loss.mean()
+        val_loss = total_val_loss / self.training_epoch
         return val_loss
 
     def calc_policy_loss(self, advs):
