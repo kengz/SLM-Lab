@@ -132,9 +132,10 @@ class VanillaDQN(SARSA):
                 total_loss += loss
             loss = total_loss / self.training_epoch
             logger.debug(f'Loss: {loss}')
-            return loss.item()
+            self.last_loss = loss.item()
         else:
-            return np.nan
+            self.last_loss = np.nan
+        return self.last_loss
 
     @lab_api
     def body_act(self, body, state):
@@ -430,6 +431,7 @@ class HydraDQN(MultitaskDQN):
                 total_loss += loss
             loss = total_loss / self.training_epoch
             logger.debug(f'Loss: {loss}')
-            return loss.item()
+            self.last_loss = loss.item()
         else:
-            return np.nan
+            self.last_loss = np.nan
+        return self.last_loss

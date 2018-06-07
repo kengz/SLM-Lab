@@ -171,19 +171,16 @@ class SARSA(Algorithm):
         '''
         if self.to_train == 1:
             batch = self.sample()
-            if batch['states'].size(0) < 2:
-                logger.info(f'Batch too small to train with, skipping...')
-                self.to_train = 0
-                return np.nan
             with torch.no_grad():
                 q_targets = self.compute_q_target_values(batch)
                 y = q_targets
             loss = self.net.training_step(batch['states'], y)
             self.to_train = 0
             logger.debug(f'loss {loss.item()}')
-            return loss.item()
+            self.last_loss = loss.item()
         else:
-            return np.nan
+            self.last_loss = np.nan
+        return self.last_loss
 
     @lab_api
     def update(self):

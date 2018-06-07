@@ -238,9 +238,10 @@ class ActorCritic(Reinforce):
             self.body.log_probs = []
             self.body.entropies = []
             logger.debug(f'Total loss: {loss:.2f}')
-            return loss.item()
+            self.last_loss = loss.item()
         else:
-            return np.nan
+            self.last_loss = np.nan
+        return self.last_loss
 
     def train_separate(self):
         '''
@@ -259,9 +260,10 @@ class ActorCritic(Reinforce):
             self.body.entropies = []
             self.body.log_probs = []
             logger.debug(f'Total loss: {loss:.2f}')
-            return loss.item()
+            self.last_loss = loss.item()
         else:
-            return np.nan
+            self.last_loss = np.nan
+        return self.last_loss
 
     def train_actor(self, advs):
         '''Trains the actor when the actor and critic are separate networks'''
