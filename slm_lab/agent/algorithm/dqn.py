@@ -89,25 +89,16 @@ class VanillaDQN(SARSA):
         self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
         logger.info(f'Training on gpu: {self.net.gpu}')
 
-    def compute_q_target_values(self, batch):
+    def compute_q_targets(self, batch):
         '''Computes the target Q values for a batch of experiences'''
-        # Calculate the Q values of the current and next states
-        q_sts = self.net.wrap_eval(batch['states'])
-        q_next_st = self.net.wrap_eval(batch['next_states'])
-        logger.debug2(f'Q next states: {q_next_st.shape}')
-        # Get the max for each next state
-        q_next_st_max, _ = torch.max(q_next_st, dim=1)
-        # Expand the dims so that q_next_st_max can be broadcast
-        logger.debug2(f'Q next_states max {q_next_st_max.shape}')
-        # Compute q_targets using reward and estimated best Q value from the next state if there is one
-        # Make future reward 0 if the current state is done
-        q_targets_max = batch['rewards'].data + self.gamma * torch.mul((1 - batch['dones'].data), q_next_st_max)
-        q_targets_max.unsqueeze_(1)
-        logger.debug2(f'Q targets max: {q_targets_max.shape}')
-        # We only want to train the network for the action selected in the current state
-        # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
-        q_targets = torch.mul(q_targets_max, batch['actions'].data) + torch.mul(q_sts, (1 - batch['actions'].data))
-        logger.debug2(f'Q targets: {q_targets.shape}')
+        q_preds = self.net.wrap_eval(batch['states'])
+        next_q_preds = self.net.wrap_eval(batch['next_states'])
+        # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
+        max_next_q_preds, _ = torch.max(next_q_preds, dim=1)
+        max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
+        max_q_targets.unsqueeze_(1)
+        # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
+        q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
         return q_targets
@@ -138,7 +129,7 @@ class VanillaDQN(SARSA):
                 batch_loss = 0.0
                 for _i in range(self.training_epoch):
                     with torch.no_grad():
-                        q_targets = self.compute_q_target_values(batch)
+                        q_targets = self.compute_q_targets(batch)
                         y = q_targets
                     loss = self.net.training_step(batch['states'], y)
                     batch_loss += loss.item()
@@ -201,31 +192,20 @@ class DQNBase(VanillaDQN):
         self.eval_net = self.target_net
         logger.info(f'Training on gpu: {self.net.gpu}')
 
-    def compute_q_target_values(self, batch):
+    def compute_q_targets(self, batch):
         '''Computes the target Q values for a batch of experiences. Note that the net references may differ based on algorithm.'''
-        q_sts = self.net.wrap_eval(batch['states'])
+        q_preds = self.net.wrap_eval(batch['states'])
         # Use online_net to select actions in next state
-        q_next_st_acts = self.online_net.wrap_eval(batch['next_states'])
-        _val, q_next_acts = torch.max(q_next_st_acts, dim=1)
-        logger.debug2(f'Q next action: {q_next_acts.shape}')
-        # Select q_next_st_maxs based on action selected in q_next_acts
-        # Evaluate the action selection using the eval net
-        q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
-        logger.debug2(f'Q next_states: {q_next_sts.shape}')
-        idx = torch.from_numpy(np.array(list(range(self.memory_spec['batch_size']))))
-        if torch.cuda.is_available() and self.net.gpu:
-            idx = idx.cuda()
-        q_next_st_maxs = q_next_sts[idx, q_next_acts]
-        logger.debug2(f'Q next_states max {q_next_st_maxs.shape}')
-        # Compute final q_target using reward and estimated best Q value from the next state if there is one. Make next state Q value 0 if the current state is done
-        q_targets_max = batch['rewards'].data + self.gamma * torch.mul((1 - batch['dones'].data), q_next_st_maxs)
-        q_targets_max.unsqueeze_(1)
-        logger.debug2(f'Q targets max: {q_targets_max.shape}')
-        # We only want to train the network for the action selected
-        # For all other actions we set the q_target = q_sts
-        # So that the loss for these actions is 0
-        q_targets = torch.mul(q_targets_max, batch['actions'].data) + torch.mul(q_sts, (1 - batch['actions'].data))
-        logger.debug2(f'Q targets: {q_targets.shape}')
+        online_next_q_preds = self.online_net.wrap_eval(batch['next_states'])
+        # Use eval_net to calculate next_q_preds for actions chosen by online_net
+        next_q_preds = self.eval_net.wrap_eval(batch['next_states'])
+        # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
+        _, action_idxs = torch.max(online_next_q_preds, dim=1)
+        max_next_q_preds = next_q_preds[range(self.memory_spec['batch_size']), action_idxs]
+        max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
+        max_q_targets.unsqueeze_(1)
+        # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
+        q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
         return q_targets
