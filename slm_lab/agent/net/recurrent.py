@@ -113,10 +113,7 @@ class RecurrentNet(Net, nn.Module):
         outs = []
         for model_tail in self.model_tails:
             outs.append(model_tail(final_hid))
-        logger.debug3(f'Network input: {x.shape}')
-        logger.debug3(f'Network input: {x.data}')
-        logger.debug3(f'Network output: {outs}')
-        # If only one head, return tensor, otherwise return list of outputs
+        # return tensor if single tail, else list of tail tensors
         if len(outs) == 1:
             return outs[0]
         else:

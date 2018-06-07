@@ -145,13 +145,13 @@ class ConvNet(Net, nn.Module):
             x.unsqueeze_(dim=0)
         elif x.dim() == 4:
             x = x.permute(0, 3, 1, 2)
-            logger.debug(f'x: {x.shape}')
         x = self.conv_model(x)
         x = x.view(-1, self.conv_out_dim)
         x = self.dense_model(x)
         outs = []
         for model_tail in self.model_tails:
             outs.append(model_tail(x))
+        # return tensor if single tail, else list of tail tensors
         if len(outs) == 1:
             return outs[0]
         else:
