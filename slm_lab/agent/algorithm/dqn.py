@@ -98,11 +98,11 @@ class VanillaDQN(SARSA):
         # Get the max for each next state
         q_next_st_max, _ = torch.max(q_next_st, dim=1)
         # Expand the dims so that q_next_st_max can be broadcast
-        q_next_st_max.unsqueeze_(1)
         logger.debug2(f'Q next_states max {q_next_st_max.shape}')
         # Compute q_targets using reward and estimated best Q value from the next state if there is one
         # Make future reward 0 if the current state is done
         q_targets_max = batch['rewards'].data + self.gamma * torch.mul((1 - batch['dones'].data), q_next_st_max)
+        q_targets_max.unsqueeze_(1)
         logger.debug2(f'Q targets max: {q_targets_max.shape}')
         # We only want to train the network for the action selected in the current state
         # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
@@ -216,10 +216,10 @@ class DQNBase(VanillaDQN):
         if torch.cuda.is_available() and self.net.gpu:
             idx = idx.cuda()
         q_next_st_maxs = q_next_sts[idx, q_next_acts]
-        q_next_st_maxs.unsqueeze_(1)
         logger.debug2(f'Q next_states max {q_next_st_maxs.shape}')
         # Compute final q_target using reward and estimated best Q value from the next state if there is one. Make next state Q value 0 if the current state is done
         q_targets_max = batch['rewards'].data + self.gamma * torch.mul((1 - batch['dones'].data), q_next_st_maxs)
+        q_targets_max.unsqueeze_(1)
         logger.debug2(f'Q targets max: {q_targets_max.shape}')
         # We only want to train the network for the action selected
         # For all other actions we set the q_target = q_sts
