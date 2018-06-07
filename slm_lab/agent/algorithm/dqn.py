@@ -101,7 +101,6 @@ class VanillaDQN(SARSA):
         q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
-        # TODO the equivalent to calc q-loss, ... we can calc loss here directly. this is going aroudn the circle and wasting 1 forward pass
         return q_targets
 
     @lab_api
