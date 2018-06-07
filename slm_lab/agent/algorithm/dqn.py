@@ -122,7 +122,6 @@ class VanillaDQN(SARSA):
         '''
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (total_t > self.training_min_timestep and total_t % self.training_frequency == 0):
-            logger.debug3(f'Training at total_t: {total_t}')
             total_loss = 0.0
             for _b in range(self.training_epoch):
                 batch = self.sample()
@@ -139,7 +138,6 @@ class VanillaDQN(SARSA):
             logger.debug(f'total_loss {total_loss}')
             return total_loss
         else:
-            logger.debug3('NOT training')
             return np.nan
 
     @lab_api
@@ -201,7 +199,8 @@ class DQNBase(VanillaDQN):
         next_q_preds = self.eval_net.wrap_eval(batch['next_states'])
         # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
         _, action_idxs = torch.max(online_next_q_preds, dim=1)
-        max_next_q_preds = next_q_preds[range(self.memory_spec['batch_size']), action_idxs]
+        batch_size = len(batch['dones'])
+        max_next_q_preds = next_q_preds[range(batch_size), action_idxs]
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
         max_q_targets.unsqueeze_(1)
         # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
@@ -323,11 +322,11 @@ class MultitaskDQN(DQN):
             [body_batch['next_states'] for body_batch in batches], dim=1)
         batch = {'states': combined_states, 'next_states': combined_next_states}
         # retain body-batches for body-wise q_targets calc
-        batch['batches'] = batches
+        batch['body_batches'] = batches
         return batch
 
     def compute_q_targets(self, batch):
-        batches = batch['batches']
+        '''Compute the target Q values for multitask network by iterating through the slices corresponding to bodies, and computing the singleton function'''
         q_preds = self.net.wrap_eval(batch['states'])
         # Use online_net to select actions in next state
         online_next_q_preds = self.online_net.wrap_eval(
@@ -336,13 +335,14 @@ class MultitaskDQN(DQN):
         start_idx = 0
         multi_q_targets = []
         # iterate over body, use slice with proper idx offset
-        for b, body_batch in enumerate(batches):
+        for b, body_batch in enumerate(batch['body_batches']):
             body = self.agent.nanflat_body_a[b]
             end_idx = start_idx + body.action_dim
             _, action_idxs = torch.max(online_next_q_preds[:, start_idx:end_idx], dim=1)
             # Offset action index properly
             action_idxs += start_idx
-            max_next_q_preds = next_q_preds[range(self.memory_spec['batch_size']), action_idxs]
+            batch_size = len(body_batch['dones'])
+            max_next_q_preds = next_q_preds[range(batch_size), action_idxs]
             max_q_targets = body_batch['rewards'] + self.gamma * (1 - body_batch['dones']) * max_next_q_preds
             max_q_targets.unsqueeze_(1)
             q_targets = (max_q_targets * body_batch['actions']) + (q_preds[:, start_idx:end_idx] * (1 - body_batch['actions']))
@@ -384,58 +384,34 @@ class HydraDQN(MultitaskDQN):
     def sample(self):
         '''Samples one batch per environment'''
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        # Package data into pytorch variables
-        for batch_b in batches:
-            util.to_torch_batch(batch_b, self.net.gpu)
         batch = {'states': [], 'next_states': []}
-        for b in batches:
-            batch['states'].append(b['states'])
-            batch['next_states'].append(b['next_states'])
-        batch['batches'] = batches
+        for body_batch in batches:
+            util.to_torch_batch(body_batch, self.net.gpu)
+            batch['states'].append(body_batch['states'])
+            batch['next_states'].append(body_batch['next_states'])
+        # retain body-batches for body-wise q_targets calc
+        batch['body_batches'] = batches
         return batch
 
-    def compute_q_target_values(self, batch):
-        batches = batch['batches']
-        # NOTE: q_sts, q_next_st_acts and q_next_sts are lists
-        q_sts = self.net.wrap_eval(batch['states'])
-        logger.debug3(f'Q sts: {q_sts}')
-        q_next_st_acts = self.online_net.wrap_eval(batch['next_states'])
-        logger.debug3(f'Q next st act vals: {q_next_st_acts}')
-        q_next_acts = []
-        for i, q in enumerate(q_next_st_acts):
-            _val, q_next_act_b = torch.max(q, dim=0)
-            logger.debug3(f'Q next action for body {i}: {q_next_act_b}')
-            q_next_acts.append(q_next_act_b)
-        q_next_acts = torch.tensor(q_next_acts)
-        # Select q_next_st_maxs based on action selected in q_next_acts
-        q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
-        logger.debug3(f'Q next_states: {q_next_sts}')
-        q_next_st_maxs = []
-        for q_next_st_val_b, q_next_act_b in zip(q_next_sts, q_next_acts):
-            q_next_st_max_b = q_next_st_val_b[q_next_act_b]
-            logger.debug2(f'Q next_states max {q_next_st_max_b.shape}')
-            logger.debug3(f'Q next_states max {q_next_st_max_b}')
-            q_next_st_maxs.append(q_next_st_max_b)
-        q_next_st_maxs = torch.tensor(q_next_st_maxs)
-        # Compute q_targets per environment using reward and estimated best Q value from the next state if there is one
-        # Make future reward 0 if the current state is done
-        q_targets_maxs = []
-        for b, batch_b in enumerate(batches):
-            q_targets_max_b = batch_b['rewards'].data + self.gamma * torch.mul((1 - batch_b['dones'].data), q_next_st_maxs[b])
-            q_targets_maxs.append(q_targets_max_b)
-            logger.debug2(f'Batch {b}, Q targets max: {q_targets_max_b.shape}')
-        q_targets_maxs = torch.cat(q_targets_maxs)
-        # As in the standard DQN we only want to train the network for the action selected
-        # For all other actions we set the q_target = q_sts
-        # So that the loss for these actions is 0
-        q_targets = []
-        for b, batch_b in enumerate(batches):
-            q_targets_b = torch.mul(q_targets_maxs[b], batch_b['actions'].data) + torch.mul(q_sts[b], (1 - batch_b['actions'].data))
-            q_targets.append(q_targets_b)
-            logger.debug2(f'Batch {b}, Q targets: {q_targets_b.shape}')
-        q_targets = torch.cat(q_targets)
-        if torch.cuda.is_available() and self.net.gpu:
-            q_targets = q_targets.cuda()
+    def compute_q_targets(self, batch):
+        '''Compute the target Q values for hydra network by iterating through the tails corresponding to bodies, and computing the singleton function'''
+        q_preds = self.net.wrap_eval(batch['states'])
+        online_next_q_preds = self.online_net.wrap_eval(batch['next_states'])
+        next_q_preds = self.eval_net.wrap_eval(batch['next_states'])
+        multi_q_targets = []
+        # iterate over body, use proper output tail
+        for b, body_batch in enumerate(batch['body_batches']):
+            _, action_idxs = torch.max(online_next_q_preds[b], dim=1)
+            batch_size = len(body_batch['dones'])
+            max_next_q_preds = next_q_preds[b][range(batch_size), action_idxs]
+            max_q_targets = body_batch['rewards'] + self.gamma * (1 - body_batch['dones']) * max_next_q_preds
+            max_q_targets.unsqueeze_(1)
+            q_targets = (max_q_targets * body_batch['actions']) + (q_preds[b] * (1 - body_batch['actions']))
+            if torch.cuda.is_available() and self.net.gpu:
+                q_targets = q_targets.cuda()
+            multi_q_targets.append(q_targets)
+        # return as list for compatibility with net output in training_step
+        q_targets = multi_q_targets
         return q_targets
 
     @lab_api
@@ -449,14 +425,13 @@ class HydraDQN(MultitaskDQN):
         '''
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (total_t > self.training_min_timestep and total_t % self.training_frequency == 0):
-            logger.debug3(f'Training at total_t: {total_t}')
             nanflat_loss_a = np.zeros(self.agent.body_num)
             for _b in range(self.training_epoch):
                 batch_losses = np.zeros(self.agent.body_num)
                 batch = self.sample()
                 for _i in range(self.training_epoch):
                     with torch.no_grad():
-                        q_targets = self.compute_q_target_values(batch)
+                        q_targets = self.compute_q_targets(batch)
                         y = q_targets
                     losses = self.net.training_step(batch['states'], y)
                     logger.debug(f'losses {losses}')
@@ -467,5 +442,4 @@ class HydraDQN(MultitaskDQN):
             loss_a = self.nanflat_to_data_a('loss', nanflat_loss_a)
             return loss_a
         else:
-            logger.debug3('NOT training')
             return np.nan
