@@ -314,77 +314,41 @@ class MultitaskDQN(DQN):
         # NOTE the purpose of multi-body is to parallelize and get more batch_sizes
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         # Package data into pytorch variables
-        for batch_b in batches:
-            util.to_torch_batch(batch_b, self.net.gpu)
+        for body_batch in batches:
+            util.to_torch_batch(body_batch, self.net.gpu)
         # Concat state
         combined_states = torch.cat(
-            [batch_b['states'] for batch_b in batches], dim=1)
+            [body_batch['states'] for body_batch in batches], dim=1)
         combined_next_states = torch.cat(
-            [batch_b['next_states'] for batch_b in batches], dim=1)
+            [body_batch['next_states'] for body_batch in batches], dim=1)
         batch = {'states': combined_states, 'next_states': combined_next_states}
-        # use recursive packaging to carry sub data
+        # retain body-batches for body-wise q_targets calc
         batch['batches'] = batches
         return batch
 
-    def compute_q_target_values(self, batch):
+    def compute_q_targets(self, batch):
         batches = batch['batches']
-        q_sts = self.net.wrap_eval(batch['states'])
-        logger.debug3(f'Q sts: {q_sts}')
-        # TODO parametrize usage of eval or target_net
-        q_next_st_acts = self.online_net.wrap_eval(
+        q_preds = self.net.wrap_eval(batch['states'])
+        # Use online_net to select actions in next state
+        online_next_q_preds = self.online_net.wrap_eval(
             batch['next_states'])
-        logger.debug3(f'Q next st act vals: {q_next_st_acts}')
+        next_q_preds = self.eval_net.wrap_eval(batch['next_states'])
         start_idx = 0
-        q_next_acts = []
-        for body in self.agent.nanflat_body_a:
+        multi_q_targets = []
+        # iterate over body, use slice with proper idx offset
+        for b, body_batch in enumerate(batches):
+            body = self.agent.nanflat_body_a[b]
             end_idx = start_idx + body.action_dim
-            _val, q_next_act_b = torch.max(q_next_st_acts[:, start_idx:end_idx], dim=1)
-            # Shift action so that they have the right indices in combined layer
-            q_next_act_b += start_idx
-            logger.debug2(f'Q next action for body {body.aeb}: {q_next_act_b.shape}')
-            logger.debug3(f'Q next action for body {body.aeb}: {q_next_act_b}')
-            q_next_acts.append(q_next_act_b)
+            _, action_idxs = torch.max(online_next_q_preds[:, start_idx:end_idx], dim=1)
+            # Offset action index properly
+            action_idxs += start_idx
+            max_next_q_preds = next_q_preds[range(self.memory_spec['batch_size']), action_idxs]
+            max_q_targets = body_batch['rewards'] + self.gamma * (1 - body_batch['dones']) * max_next_q_preds
+            max_q_targets.unsqueeze_(1)
+            q_targets = (max_q_targets * body_batch['actions']) + (q_preds[:, start_idx:end_idx] * (1 - body_batch['actions']))
+            multi_q_targets.append(q_targets)
             start_idx = end_idx
-
-        # Select q_next_st_maxs based on action selected in q_next_acts
-        q_next_sts = self.eval_net.wrap_eval(batch['next_states'])
-        logger.debug2(f'Q next_states: {q_next_sts.shape}')
-        logger.debug3(f'Q next_states: {q_next_sts}')
-        idx = torch.from_numpy(np.array(list(range(self.memory_spec['batch_size']))))
-        if torch.cuda.is_available() and self.net.gpu:
-            idx = idx.cuda()
-        q_next_st_maxs = []
-        for q_next_act_b in q_next_acts:
-            q_next_st_max_b = q_next_sts[idx, q_next_act_b]
-            q_next_st_max_b.unsqueeze_(1)
-            logger.debug2(f'Q next_states max {q_next_st_max_b.shape}')
-            logger.debug3(f'Q next_states max {q_next_st_max_b}')
-            q_next_st_maxs.append(q_next_st_max_b)
-
-        # Compute final q_target using reward and estimated best Q value from the next state if there is one. Make future reward 0 if the current state is done. Do it individually first, then combine. Each individual target should automatically expand to the dimension of the relevant action space
-        q_targets_maxs = []
-        for b, batch_b in enumerate(batches):
-            q_targets_max_b = (batch_b['rewards'].data + self.gamma * torch.mul(
-                (1 - batch_b['dones'].data), q_next_st_maxs[b])).numpy()
-            q_targets_max_b = torch.from_numpy(np.broadcast_to(q_targets_max_b, (q_targets_max_b.shape[0], self.action_dims[b])))
-            if torch.cuda.is_available() and self.net.gpu:
-                q_targets_max_b = q_targets_max_b.cuda()
-            q_targets_maxs.append(q_targets_max_b)
-            logger.debug2(f'Q targets max: {q_targets_max_b.shape}')
-        q_targets_maxs = torch.cat(q_targets_maxs, dim=1)
-        logger.debug2(f'Q targets maxes: {q_targets_maxs.shape}')
-        logger.debug3(f'Q targets maxes: {q_targets_maxs}')
-        # Also concat actions - each batch should have only two non zero dimensions
-        actions = [batch_b['actions'] for batch_b in batches]
-        combined_actions = torch.cat(actions, dim=1)
-        logger.debug2(f'combined_actions: {combined_actions.shape}')
-        logger.debug3(f'combined_actions: {combined_actions}')
-        # We only want to train the network for the action selected
-        # For all other actions we set the q_target = q_sts
-        # So that the loss for these actions is 0
-        q_targets = torch.mul(q_targets_maxs, combined_actions.data) + torch.mul(q_sts, (1 - combined_actions.data))
-        logger.debug2(f'Q targets: {q_targets.shape}')
-        logger.debug3(f'Q targets: {q_targets}')
+        q_targets = torch.cat(multi_q_targets, dim=1)
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
         return q_targets
