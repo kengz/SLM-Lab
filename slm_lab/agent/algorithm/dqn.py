@@ -89,7 +89,7 @@ class VanillaDQN(SARSA):
         self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
         logger.info(f'Training on gpu: {self.net.gpu}')
 
-    def compute_q_targets(self, batch):
+    def calc_q_targets(self, batch):
         '''Computes the target Q values for a batch of experiences'''
         q_preds = self.net.wrap_eval(batch['states'])
         next_q_preds = self.net.wrap_eval(batch['next_states'])
@@ -101,6 +101,7 @@ class VanillaDQN(SARSA):
         q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
+        # TODO the equivalent to calc q-loss, ... we can calc loss here directly. this is going aroudn the circle and wasting 1 forward pass
         return q_targets
 
     @lab_api
@@ -128,14 +129,13 @@ class VanillaDQN(SARSA):
                 batch_loss = 0.0
                 for _i in range(self.training_epoch):
                     with torch.no_grad():
-                        q_targets = self.compute_q_targets(batch)
-                        y = q_targets
-                    loss = self.net.training_step(batch['states'], y)
+                        q_targets = self.calc_q_targets(batch)
+                    loss = self.net.training_step(batch['states'], q_targets)
                     batch_loss += loss.item()
                 batch_loss /= self.training_epoch
                 total_loss += batch_loss
             total_loss /= self.training_epoch
-            logger.debug(f'total_loss {total_loss}')
+            logger.debug(f'Total loss: {total_loss}')
             return total_loss
         else:
             return np.nan
@@ -190,7 +190,7 @@ class DQNBase(VanillaDQN):
         self.eval_net = self.target_net
         logger.info(f'Training on gpu: {self.net.gpu}')
 
-    def compute_q_targets(self, batch):
+    def calc_q_targets(self, batch):
         '''Computes the target Q values for a batch of experiences. Note that the net references may differ based on algorithm.'''
         q_preds = self.net.wrap_eval(batch['states'])
         # Use online_net to select actions in next state
@@ -325,7 +325,7 @@ class MultitaskDQN(DQN):
         batch['body_batches'] = batches
         return batch
 
-    def compute_q_targets(self, batch):
+    def calc_q_targets(self, batch):
         '''Compute the target Q values for multitask network by iterating through the slices corresponding to bodies, and computing the singleton function'''
         q_preds = self.net.wrap_eval(batch['states'])
         # Use online_net to select actions in next state
@@ -393,7 +393,7 @@ class HydraDQN(MultitaskDQN):
         batch['body_batches'] = batches
         return batch
 
-    def compute_q_targets(self, batch):
+    def calc_q_targets(self, batch):
         '''Compute the target Q values for hydra network by iterating through the tails corresponding to bodies, and computing the singleton function'''
         q_preds = self.net.wrap_eval(batch['states'])
         online_next_q_preds = self.online_net.wrap_eval(batch['next_states'])
@@ -426,18 +426,18 @@ class HydraDQN(MultitaskDQN):
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if (total_t > self.training_min_timestep and total_t % self.training_frequency == 0):
             nanflat_loss_a = np.zeros(self.agent.body_num)
+            # TODO double epoch? one was iter per batch
             for _b in range(self.training_epoch):
-                batch_losses = np.zeros(self.agent.body_num)
+                batch_loss = np.zeros(self.agent.body_num)
                 batch = self.sample()
                 for _i in range(self.training_epoch):
                     with torch.no_grad():
-                        q_targets = self.compute_q_targets(batch)
-                        y = q_targets
-                    losses = self.net.training_step(batch['states'], y)
-                    logger.debug(f'losses {losses}')
-                    batch_losses += losses.item()
-                batch_losses /= self.training_epoch
-                nanflat_loss_a += batch_losses
+                        q_targets = self.calc_q_targets(batch)
+                    loss = self.net.training_step(batch['states'], q_targets)
+                    logger.debug(f'Loss: {loss}')
+                    batch_loss += loss.item()
+                batch_loss /= self.training_epoch
+                nanflat_loss_a += batch_loss
             nanflat_loss_a /= self.training_epoch
             loss_a = self.nanflat_to_data_a('loss', nanflat_loss_a)
             return loss_a

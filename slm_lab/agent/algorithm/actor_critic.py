@@ -258,7 +258,7 @@ class ActorCritic(Reinforce):
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Total: {loss:.2f}')
+            logger.debug(f'Total loss: {loss:.2f}')
             return loss.item()
         else:
             return np.nan
