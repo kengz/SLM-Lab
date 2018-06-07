@@ -122,7 +122,8 @@ class VanillaDQN(SARSA):
         Otherwise this function does nothing.
         '''
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
-        if (total_t > self.training_min_timestep and total_t % self.training_frequency == 0):
+        self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
+        if self.to_train == 1:
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
                 batch = self.sample()
@@ -131,6 +132,10 @@ class VanillaDQN(SARSA):
                 loss = self.net.training_step(batch['states'], q_targets)
                 total_loss += loss
             loss = total_loss / self.training_epoch
+            # reset
+            self.to_train = 0
+            self.body.log_probs = []
+            self.body.entropies = []
             logger.debug(f'Loss: {loss}')
             self.last_loss = loss.item()
         else:
@@ -421,7 +426,8 @@ class HydraDQN(MultitaskDQN):
         Otherwise this function does nothing.
         '''
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
-        if (total_t > self.training_min_timestep and total_t % self.training_frequency == 0):
+        self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
+        if self.to_train == 1:
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
                 batch = self.sample()
@@ -430,6 +436,10 @@ class HydraDQN(MultitaskDQN):
                 loss = self.net.training_step(batch['states'], q_targets)
                 total_loss += loss
             loss = total_loss / self.training_epoch
+            # reset
+            self.to_train = 0
+            self.body.log_probs = []
+            self.body.entropies = []
             logger.debug(f'Loss: {loss}')
             self.last_loss = loss.item()
         else:
