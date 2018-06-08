@@ -761,12 +761,9 @@ def write_as_plain(data, data_path):
     return data_path
 
 
-def to_one_hot(data, max_val, gpu):
+def to_one_hot(data, max_val):
     '''Convert an int list of data into one-hot vectors'''
-    one_hot = torch.eye(max_val)[data]
-    if torch.cuda.is_available() and gpu:
-        one_hot = one_hot.cuda()
-    return one_hot
+    return np.eye(max_val)[data]
 
 
 def to_torch_batch(batch, gpu):
