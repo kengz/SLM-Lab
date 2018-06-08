@@ -80,6 +80,7 @@ class VanillaDQN(SARSA):
     @lab_api
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
+        # TODO unban for DRQN
         if 'Recurrent' in self.net_spec['type']:
             raise ValueError('Recurrent networks does not work with DQN family of algorithms.')
 
@@ -102,6 +103,11 @@ class VanillaDQN(SARSA):
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
         return q_targets
+
+    @lab_api
+    def body_act(self, body, state):
+        '''Selects and returns a discrete action for body using the action policy'''
+        return super(VanillaDQN, self).body_act(body, state)
 
     @lab_api
     def sample(self):
@@ -144,11 +150,6 @@ class VanillaDQN(SARSA):
             logger.debug(f'Loss: {loss}')
             self.last_loss = loss.item()
         return self.last_loss
-
-    @lab_api
-    def body_act(self, body, state):
-        '''Selects and returns a discrete action for body using the action policy'''
-        return super(VanillaDQN, self).body_act(body, state)
 
     @lab_api
     def update(self):
@@ -215,8 +216,7 @@ class DQNBase(VanillaDQN):
         return q_targets
 
     def update_nets(self):
-        space_clock = util.s_get(self, 'aeb_space.clock')
-        total_t = space_clock.get('total_t')
+        total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if self.net.update_type == 'replace':
             if total_t % self.net.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
@@ -253,8 +253,7 @@ class DoubleDQN(DQN):
 
     def update_nets(self):
         res = super(DoubleDQN, self).update_nets()
-        space_clock = util.s_get(self, 'aeb_space.clock')
-        total_t = space_clock.get('total_t')
+        total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         if self.net.update_type == 'replace':
             if total_t % self.net.update_frequency == 0:
                 self.online_net = self.net
@@ -267,6 +266,7 @@ class DoubleDQN(DQN):
 class MultitaskDQN(DQN):
     '''
     Simplest Multi-task DQN implementation.
+    Multitask is for parallelizing bodies in the same env to get more data
     States and action dimensions are concatenated, and a single shared network is reponsible for processing concatenated states, and generating one action per environment from a single output layer.
     '''
 
