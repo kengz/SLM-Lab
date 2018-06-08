@@ -83,7 +83,7 @@ class Replay(Memory):
         self.total_experiences += 1
 
     @lab_api
-    def sample(self, latest=False):
+    def sample(self):
         '''
         Returns a batch of batch_size samples.
         Batch is stored as a dict.
@@ -97,12 +97,8 @@ class Replay(Memory):
             'dones'      : dones,
             'priorities' : priorities}
         '''
-        # TODO if latest, return unused. implement
-        if latest:
-            raise NotImplementedError
-        batch_idxs = self.sample_idxs(self.batch_size)
-        self.batch_idxs = batch_idxs
-        batch = {k: getattr(self, k)[batch_idxs] for k in self.data_keys}
+        self.batch_idxs = self.sample_idxs(self.batch_size)
+        batch = {k: getattr(self, k)[self.batch_idxs] for k in self.data_keys}
         return batch
 
     def sample_idxs(self, batch_size):
