@@ -15,9 +15,7 @@ class Replay(Memory):
 
     An experience consists of
         - state: representation of a state
-        - action: action taken.
-                - One hot encoding (discrete)
-                - Real numbers representing mean on action dist (continuous)
+        - action: action taken
         - reward: scalar value
         - next state: representation of next state (should be same as state)
         - done: 0 / 1 representing if the current state is the last in an episode
@@ -51,12 +49,9 @@ class Replay(Memory):
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
         states_shape = np.concatenate([[self.max_size], np.reshape(self.body.state_dim, -1)])
-        # TODO dont use one hot, will break for cont action
-        # NOTE action is stored as one-hot now
-        actions_shape = np.concatenate([[self.max_size], np.reshape(self.body.action_dim, -1)])
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
         setattr(self, 'states', np.zeros(states_shape))
-        setattr(self, 'actions', np.zeros(actions_shape, dtype=np.uint16))
+        setattr(self, 'actions', np.zeros((self.max_size,), dtype=self.body.action_space.dtype))
         setattr(self, 'rewards', np.zeros((self.max_size,)))
         setattr(self, 'next_states', np.zeros(states_shape))
         setattr(self, 'dones', np.zeros((self.max_size,), dtype=np.uint8))
@@ -77,13 +72,7 @@ class Replay(Memory):
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
         self.states[self.head] = state
-        # make action into one_hot
-        if ps.is_iterable(action):
-            # non-singular action
-            # self.actions[self.head] = one hot of multi-action (matrix) on a 3rd axis, to be implement
-            raise NotImplementedError
-        else:
-            self.actions[self.head][action] = 1
+        self.actions[self.head] = action
         self.rewards[self.head] = reward
         self.next_states[self.head] = next_state
         self.dones[self.head] = done
@@ -100,12 +89,13 @@ class Replay(Memory):
         Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are an array of the corresponding sampled elements
         e.g.
-            batch = {'states'      : states,
-                     'actions'     : actions,
-                     'rewards'     : rewards,
-                     'next_states' : next_states,
-                     'dones'       : dones,
-                     'priorities'  : priorities}
+        batch = {
+            'states'     : states,
+            'actions'    : actions,
+            'rewards'    : rewards,
+            'next_states': next_states,
+            'dones'      : dones,
+            'priorities' : priorities}
         '''
         # TODO if latest, return unused. implement
         if latest:
