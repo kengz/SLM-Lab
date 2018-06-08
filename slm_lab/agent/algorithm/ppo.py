@@ -163,8 +163,6 @@ class PPO(ActorCritic):
             self.body.entropies = []
             logger.debug(f'Loss: {loss:.2f}')
             self.last_loss = loss.item()
-        else:
-            self.last_loss = np.nan
         return self.last_loss
 
     def train_separate(self):
@@ -192,6 +190,4 @@ class PPO(ActorCritic):
             self.body.entropies = []
             logger.debug(f'Loss: {loss:.2f}')
             self.last_loss = loss.item()
-        else:
-            self.last_loss = np.nan
         return self.last_loss

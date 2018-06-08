@@ -178,8 +178,6 @@ class SARSA(Algorithm):
             self.to_train = 0
             logger.debug(f'loss {loss.item()}')
             self.last_loss = loss.item()
-        else:
-            self.last_loss = np.nan
         return self.last_loss
 
     @lab_api

@@ -143,8 +143,6 @@ class VanillaDQN(SARSA):
             self.body.entropies = []
             logger.debug(f'Loss: {loss}')
             self.last_loss = loss.item()
-        else:
-            self.last_loss = np.nan
         return self.last_loss
 
     @lab_api
@@ -460,6 +458,4 @@ class HydraDQN(MultitaskDQN):
             self.body.entropies = []
             logger.debug(f'Loss: {loss}')
             self.last_loss = loss.item()
-        else:
-            self.last_loss = np.nan
         return self.last_loss
