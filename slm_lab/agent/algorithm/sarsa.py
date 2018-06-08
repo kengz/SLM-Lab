@@ -151,7 +151,7 @@ class SARSA(Algorithm):
         if batch['states'].size(0) > 1:
             batch['next_actions'] = torch.zeros_like(batch['actions'])
             batch['next_actions'][:-1] = batch['actions'][1:]
-            batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.body.action_dim, self.net.gpu)
+            batch['actions_onehot'] = util.to_one_hot(batch['actions'], self.body.action_space.high, self.net.gpu)
             batch_elems = ['states', 'actions', 'actions_onehot', 'rewards', 'dones', 'next_states', 'next_actions']
             for k in batch_elems:
                 if batch[k].dim() == 1:

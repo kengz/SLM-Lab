@@ -84,7 +84,7 @@ def compact_dict(d):
 
 def concat_batches(batches):
     '''
-    Concat batch objects from body.memory.sample() into one batch
+    Concat batch objects from body.memory.sample() into one batch, when all bodies experience similar envs
     Also concat any nested epi sub-batches into flat batch
     {k: arr1} + {k: arr2} = {k: arr1 + arr2}
     '''
@@ -761,6 +761,14 @@ def write_as_plain(data, data_path):
     return data_path
 
 
+def to_one_hot(data, max_val, gpu):
+    '''Convert an int list of data into one-hot vectors'''
+    one_hot = torch.eye(max_val)[data]
+    if torch.cuda.is_available() and gpu:
+        one_hot = one_hot.cuda()
+    return one_hot
+
+
 def to_torch_batch(batch, gpu):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
     for k in batch:
@@ -809,16 +817,6 @@ def concat_episodes(batch):
             if batch[k].dim() == 1:
                 batch[k].unsqueeze_(1)
     return batch
-
-
-def convert_to_one_hot(data, categories, gpu):
-    '''Converts categorical data to one hot representation'''
-    data_onehot = torch.zeros(data.size(0), categories)
-    idxs = torch.from_numpy(np.array(list(range(data.size(0)))))
-    data_onehot[idxs, data.data.long().cpu()] = 1
-    if torch.cuda.is_available() and gpu:
-        data_onehot = data_onehot.cuda()
-    return data_onehot
 
 
 def resize_image(im):

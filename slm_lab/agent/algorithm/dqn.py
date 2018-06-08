@@ -111,7 +111,7 @@ class VanillaDQN(SARSA):
             body_batch = body.memory.sample()
             # one-hot actions to calc q_targets
             if body.is_discrete:
-                body_batch['actions'] = body.memory.to_one_hot_actions(body_batch['actions'])
+                body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high, self.net.gpu)
             batches.append(body_batch)
         batch = util.concat_batches(batches)
         batch = util.to_torch_batch(batch, self.net.gpu)
@@ -326,7 +326,7 @@ class MultitaskDQN(DQN):
             body_batch = body.memory.sample()
             # one-hot actions to calc q_targets
             if body.is_discrete:
-                body_batch['actions'] = body.memory.to_one_hot_actions(body_batch['actions'])
+                body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high, self.net.gpu)
             body_batch = util.to_torch_batch(body_batch, self.net.gpu)
             batches.append(body_batch)
         # Concat states at dim=1 for feedforward
@@ -401,7 +401,7 @@ class HydraDQN(MultitaskDQN):
             body_batch = body.memory.sample()
             # one-hot actions to calc q_targets
             if body.is_discrete:
-                body_batch['actions'] = body.memory.to_one_hot_actions(body_batch['actions'])
+                body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high, self.net.gpu)
             body_batch = util.to_torch_batch(body_batch, self.net.gpu)
             batches.append(body_batch)
         # collect per body for feedforward to hydra heads
