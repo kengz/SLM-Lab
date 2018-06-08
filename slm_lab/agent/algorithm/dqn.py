@@ -106,7 +106,13 @@ class VanillaDQN(SARSA):
     @lab_api
     def sample(self):
         '''Samples a batch from memory of size self.memory_spec['batch_size']'''
-        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
+        batches = []
+        for body in self.agent.nanflat_body_a:
+            body_batch = body.memory.sample()
+            # one-hot actions to calc q_targets
+            if body.is_discrete:
+                body_batch['actions'] = body.memory.to_one_hot_actions(body_batch['actions'])
+            batches.append(body_batch)
         batch = util.concat_batches(batches)
         batch = util.to_torch_batch(batch, self.net.gpu)
         return batch
@@ -311,17 +317,23 @@ class MultitaskDQN(DQN):
 
     @lab_api
     def sample(self):
-        # NOTE the purpose of multi-body is to parallelize and get more batch_sizes
-        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        # Package data into pytorch variables
-        for body_batch in batches:
+        '''
+        Samples a batch from memory.
+        Note that multitask's bodies are parallelized copies with similar envs, just to get more batch sizes
+        '''
+        batches = []
+        for body in self.agent.nanflat_body_a:
+            body_batch = body.memory.sample()
+            # one-hot actions to calc q_targets
+            if body.is_discrete:
+                body_batch['actions'] = body.memory.to_one_hot_actions(body_batch['actions'])
             body_batch = util.to_torch_batch(body_batch, self.net.gpu)
-        # Concat state
-        combined_states = torch.cat(
-            [body_batch['states'] for body_batch in batches], dim=1)
-        combined_next_states = torch.cat(
-            [body_batch['next_states'] for body_batch in batches], dim=1)
-        batch = {'states': combined_states, 'next_states': combined_next_states}
+            batches.append(body_batch)
+        # Concat states at dim=1 for feedforward
+        batch = {
+            'states': torch.cat([body_batch['states'] for body_batch in batches], dim=1),
+            'next_states': torch.cat([body_batch['next_states'] for body_batch in batches], dim=1),
+        }
         # retain body-batches for body-wise q_targets calc
         batch['body_batches'] = batches
         return batch
@@ -383,13 +395,20 @@ class HydraDQN(MultitaskDQN):
 
     @lab_api
     def sample(self):
-        '''Samples one batch per environment'''
-        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        batch = {'states': [], 'next_states': []}
-        for body_batch in batches:
+        '''Samples a batch per body, which may experience different environment'''
+        batches = []
+        for body in self.agent.nanflat_body_a:
+            body_batch = body.memory.sample()
+            # one-hot actions to calc q_targets
+            if body.is_discrete:
+                body_batch['actions'] = body.memory.to_one_hot_actions(body_batch['actions'])
             body_batch = util.to_torch_batch(body_batch, self.net.gpu)
-            batch['states'].append(body_batch['states'])
-            batch['next_states'].append(body_batch['next_states'])
+            batches.append(body_batch)
+        # collect per body for feedforward to hydra heads
+        batch = {
+            'states': [body_batch['states'] for body_batch in batches],
+            'next_states': [body_batch['next_states'] for body_batch in batches],
+        }
         # retain body-batches for body-wise q_targets calc
         batch['body_batches'] = batches
         return batch
