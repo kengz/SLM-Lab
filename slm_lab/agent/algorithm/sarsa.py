@@ -145,7 +145,7 @@ class SARSA(Algorithm):
         '''Samples a batch from memory'''
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_batches(batches)
-        util.to_torch_batch(batch, self.net.gpu)
+        batch = util.to_torch_batch(batch, self.net.gpu)
         # Batch only useful to train with if it has more than one element
         # Train function checks for this and skips training if batch is too small
         if batch['states'].size(0) > 1:

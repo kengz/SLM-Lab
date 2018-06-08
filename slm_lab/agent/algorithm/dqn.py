@@ -108,7 +108,7 @@ class VanillaDQN(SARSA):
         '''Samples a batch from memory of size self.memory_spec['batch_size']'''
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_batches(batches)
-        util.to_torch_batch(batch, self.net.gpu)
+        batch = util.to_torch_batch(batch, self.net.gpu)
         return batch
 
     @lab_api
@@ -315,7 +315,7 @@ class MultitaskDQN(DQN):
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         # Package data into pytorch variables
         for body_batch in batches:
-            util.to_torch_batch(body_batch, self.net.gpu)
+            body_batch = util.to_torch_batch(body_batch, self.net.gpu)
         # Concat state
         combined_states = torch.cat(
             [body_batch['states'] for body_batch in batches], dim=1)
@@ -387,7 +387,7 @@ class HydraDQN(MultitaskDQN):
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = {'states': [], 'next_states': []}
         for body_batch in batches:
-            util.to_torch_batch(body_batch, self.net.gpu)
+            body_batch = util.to_torch_batch(body_batch, self.net.gpu)
             batch['states'].append(body_batch['states'])
             batch['next_states'].append(body_batch['next_states'])
         # retain body-batches for body-wise q_targets calc
