@@ -297,12 +297,13 @@ class MultitaskDQN(DQN):
     @lab_api
     def act(self, state_a):
         '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
-        # TODO tmp correction. state_a has 1 dim too deep
-        new_data = [s[0] for s in state_a]
-        state_a = np.array(new_data, dtype=np.float).flatten()
-
-        state = torch.from_numpy(state_a).float().unsqueeze_(dim=0)
-        if torch.cuda.is_available() and self.net_spec['gpu']:
+        # gather and flatten
+        states = []
+        for (e, b), body in util.ndenumerate_nonan(self.agent.body_a):
+            state = state_a[(e, b)]
+            states.append(state)
+        state = torch.tensor(states).view(-1).unsqueeze_(0).float()
+        if torch.cuda.is_available() and self.net.gpu:
             state = state.cuda()
         pdparam = self.calc_pdparam(state, evaluate=False)
         # use multi-policy. note arg change
