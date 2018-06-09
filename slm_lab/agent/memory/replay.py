@@ -125,7 +125,7 @@ class StackReplay(Replay):
     '''Preprocesses an state to be the concatenation of the last n states. Otherwise the same as Replay memory'''
 
     def __init__(self, memory_spec, algorithm, body):
-        util.set_attr(self, self.memory_spec, [
+        util.set_attr(self, memory_spec, [
             'batch_size',
             'max_size',
             'stack_len',  # num_stack_states
