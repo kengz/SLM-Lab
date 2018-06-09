@@ -52,6 +52,9 @@ class RecurrentNet(Net, nn.Module):
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},
             lr_decay='no_decay',
+            update_type='replace',
+            update_frequency=1,
+            polyak_coef=0.0,
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
@@ -66,6 +69,9 @@ class RecurrentNet(Net, nn.Module):
             'lr_decay',
             'lr_decay_frequency',
             'lr_decay_min_timestep',
+            'update_type',
+            'update_frequency',
+            'polyak_coef',
             'gpu',
         ])
 
