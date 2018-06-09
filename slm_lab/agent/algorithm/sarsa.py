@@ -135,6 +135,7 @@ class SARSA(Algorithm):
                 body_batch['one_hot_actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
             batches.append(body_batch)
         batch = util.concat_batches(batches)
+        # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['dones'])
         batch['next_actions'] = np.zeros_like(batch['actions'])
         batch['next_actions'][:-1] = batch['actions'][1:]
         batch = util.to_torch_batch(batch, self.net.gpu)
