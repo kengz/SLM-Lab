@@ -131,7 +131,6 @@ class StackReplay(Replay):
             'stack_len',  # num_stack_states
         ])
         self.stacked = True  # Memory stacks states
-        body.state_dim = [body.state_dim] * self.stack_len
         super(StackReplay, self).__init__(memory_spec, algorithm, body)
         self.state_buffer = deque(maxlen=self.stack_len)
         self.reset()
@@ -139,21 +138,25 @@ class StackReplay(Replay):
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
         super(StackReplay, self).reset()
+        # override state shape for concat
+        states_shape = np.concatenate([[self.max_size], np.reshape([self.body.state_dim] * self.stack_len, -1)])
+        setattr(self, 'states', np.zeros(states_shape))
+        setattr(self, 'next_states', np.zeros(states_shape))
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
+            self.state_buffer.append(np.zeros(self.body.state_dim))
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
         state = self.preprocess_state(state)
         super(StackReplay, self).epi_reset(state)
         for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
+            self.state_buffer.append(np.zeros(self.body.state_dim))
 
     def preprocess_state(self, state):
         '''Transforms the raw state into format that is fed into the network'''
         self.state_buffer.append(state)
-        processed_state = np.concatenate(self.state_buffer)
+        processed_state = np.stack(self.state_buffer)
         return processed_state
 
     @lab_api
