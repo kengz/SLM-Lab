@@ -132,7 +132,7 @@ class OnPolicyNStepReplay(OnPolicyReplay):
     def preprocess_state(self, state):
         '''Transforms the raw state into format that is fed into the network'''
         self.state_buffer.append(state)
-        processed_state = np.concatenate(self.state_buffer)
+        processed_state = np.stack(self.state_buffer)
         return processed_state
 
     def sample(self):
@@ -256,7 +256,7 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
     def preprocess_state(self, state):
         '''Transforms the raw state into format that is fed into the network'''
         self.state_buffer.append(state)
-        processed_state = np.concatenate(self.state_buffer)
+        processed_state = np.stack(self.state_buffer)
         return processed_state
 
     def sample(self):
