@@ -763,7 +763,7 @@ def write_as_plain(data, data_path):
 
 def to_one_hot(data, max_val):
     '''Convert an int list of data into one-hot vectors'''
-    return np.eye(max_val)[data]
+    return np.eye(max_val)[np.array(data)]
 
 
 def to_torch_batch(batch, gpu):
