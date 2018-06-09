@@ -18,7 +18,7 @@ class TestMemory:
         memory = test_memory[0]
         assert memory.true_size == 0
         assert memory.states.shape == (memory.max_size, memory.body.state_dim)
-        assert memory.actions.shape == (memory.max_size, memory.body.action_dim)
+        assert memory.actions.shape == (memory.max_size,)
         assert memory.rewards.shape == (memory.max_size,)
         assert memory.next_states.shape == (memory.max_size, memory.body.state_dim)
         assert memory.dones.shape == (memory.max_size,)
@@ -35,7 +35,7 @@ class TestMemory:
         assert memory.head == 0
         # Handle states and actions with multiple dimensions
         assert np.array_equal(memory.states[memory.head], exp[0])
-        assert memory.actions[memory.head][exp[1]] == exp[1]
+        assert memory.actions[memory.head] == exp[1]
         assert memory.rewards[memory.head] == exp[2]
         assert np.array_equal(memory.next_states[memory.head], exp[3])
         assert memory.dones[memory.head] == exp[4]
@@ -64,7 +64,7 @@ class TestMemory:
         memory.batch_size = batch_size
         batch = memory.sample()
         assert batch['states'].shape == (batch_size, memory.body.state_dim)
-        assert batch['actions'].shape == (batch_size, memory.body.action_dim)
+        assert batch['actions'].shape == (batch_size,)
         assert batch['rewards'].shape == (batch_size,)
         assert batch['next_states'].shape == (batch_size, memory.body.state_dim)
         assert batch['dones'].shape == (batch_size,)
