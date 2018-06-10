@@ -139,7 +139,7 @@ class StackReplay(Replay):
         '''Initializes the memory arrays, size and head pointer'''
         super(StackReplay, self).reset()
         # override state shape for concat
-        states_shape = np.concatenate([[self.max_size], np.reshape([self.body.state_dim] * self.stack_len, -1)])
+        states_shape = np.concatenate([[self.max_size], np.reshape([self.stack_len, self.body.state_dim], -1)])
         setattr(self, 'states', np.zeros(states_shape))
         setattr(self, 'next_states', np.zeros(states_shape))
         self.state_buffer.clear()
