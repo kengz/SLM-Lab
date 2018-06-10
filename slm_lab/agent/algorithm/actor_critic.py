@@ -106,7 +106,7 @@ class ActorCritic(Reinforce):
             - Discrete action spaces: The return list contains 2 element. The first element is a tensor containing the logits for a categorical probability distribution over the actions. The second element contains the state-value estimated by the network.
         3. If the network type is feedforward, convolutional, or recurrent
             - Feedforward and convolutional networks take a single state as input and require an OnPolicyReplay or OnPolicyBatchReplay memory
-            - Recurrent networks take n states as input and require an OnPolicyNStepReplay or OnPolicyNStepBatchReplay memory
+            - Recurrent networks take n states as input and require an OnPolicySeqReplay or OnPolicySeqBatchReplay memory
         '''
         net_type = self.net_spec['type']
         # options of net_type are {MLP, Conv, Recurrent} x {shared, separate}

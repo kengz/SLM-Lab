@@ -105,7 +105,7 @@ class OnPolicyReplay(Memory):
         return batch
 
 
-class OnPolicyNStepReplay(OnPolicyReplay):
+class OnPolicySeqReplay(OnPolicyReplay):
     '''
     Same as OnPolicyReplay Memory but returns the last `seq_len` states and next_states for input to a recurrent network.
     Experiences with less than `seq_len` previous examples are padded with a 0 valued state and action vector.
@@ -113,19 +113,19 @@ class OnPolicyNStepReplay(OnPolicyReplay):
 
     def __init__(self, memory_spec, algorithm, body):
         self.seq_len = algorithm.net_spec['seq_len']
-        super(OnPolicyNStepReplay, self).__init__(memory_spec, algorithm, body)
+        super(OnPolicySeqReplay, self).__init__(memory_spec, algorithm, body)
         self.state_buffer = deque(maxlen=self.seq_len)
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
-        super(OnPolicyNStepReplay, self).reset()
+        super(OnPolicySeqReplay, self).reset()
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
-        super(OnPolicyNStepReplay, self).epi_reset(state)
+        super(OnPolicySeqReplay, self).epi_reset(state)
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
@@ -228,7 +228,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
         return super(OnPolicyBatchReplay, self).sample()
 
 
-class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
+class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
     '''
     Same as OnPolicyBatchReplay Memory but returns the last `seq_len` states and next_states for input to a recurrent network.
     Experiences with less than `seq_len` previous examples are padded with a 0 valued state and action vector.
@@ -237,19 +237,19 @@ class OnPolicyNStepBatchReplay(OnPolicyBatchReplay):
     def __init__(self, memory_spec, algorithm, body):
         self.is_episodic = False
         self.seq_len = algorithm.net_spec['seq_len']
-        super(OnPolicyNStepBatchReplay, self).__init__(memory_spec, algorithm, body)
+        super(OnPolicySeqBatchReplay, self).__init__(memory_spec, algorithm, body)
         self.state_buffer = deque(maxlen=self.seq_len)
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
-        super(OnPolicyNStepBatchReplay, self).reset()
+        super(OnPolicySeqBatchReplay, self).reset()
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
-        super(OnPolicyNStepBatchReplay, self).epi_reset(state)
+        super(OnPolicySeqBatchReplay, self).epi_reset(state)
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 

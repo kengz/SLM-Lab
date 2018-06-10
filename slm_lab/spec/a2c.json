@@ -269,7 +269,7 @@
         "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyNStepBatchReplay"
+        "name": "OnPolicySeqBatchReplay"
       },
       "net": {
         "type": "Recurrentseparate",

@@ -74,7 +74,7 @@
         "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyNStepReplay"
+        "name": "OnPolicySeqReplay"
       },
       "net": {
         "type": "RecurrentNet",
