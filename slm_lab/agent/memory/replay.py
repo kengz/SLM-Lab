@@ -148,7 +148,6 @@ class StackReplay(Replay):
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
-        state = self.preprocess_state(state)
         super(StackReplay, self).epi_reset(state)
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
@@ -194,7 +193,6 @@ class Atari(Replay):
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
-        state = self.preprocess_state(state)
         super(Atari, self).epi_reset(state)
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
