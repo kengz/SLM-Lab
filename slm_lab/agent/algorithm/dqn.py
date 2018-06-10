@@ -80,10 +80,6 @@ class VanillaDQN(SARSA):
     @lab_api
     def init_nets(self):
         '''Initialize the neural network used to learn the Q function from the spec'''
-        # TODO unban for DRQN
-        if 'Recurrent' in self.net_spec['type']:
-            raise ValueError('Recurrent networks does not work with DQN family of algorithms.')
-
         if self.algorithm_spec['name'] == 'VanillaDQN':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for VanillaDQN; use DQN.'
         NetClass = getattr(net, self.net_spec['type'])
@@ -184,8 +180,6 @@ class DQNBase(VanillaDQN):
     @lab_api
     def init_nets(self):
         '''Initialize networks'''
-        if 'Recurrent' in self.net_spec['type']:
-            raise ValueError('Recurrent networks does not work with DQN family of algorithms.')
         if self.algorithm_spec['name'] == 'DQNBase':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for DQNBase; use DQN.'
         in_dim, out_dim = self.body.state_dim, self.body.action_dim
