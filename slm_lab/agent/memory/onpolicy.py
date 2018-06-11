@@ -29,6 +29,11 @@ class OnPolicyReplay(Memory):
         - Experiences are nested into episodes. In Replay experiences are flat, and episode is not tracked
         - The entire memory constitues a batch. In Replay batches are sampled from memory.
         - The memory is cleared automatically when a batch is given to the agent.
+
+    e.g. memory_spec
+    "memory": {
+        "name": "OnPolicyReplay"
+    }
     '''
 
     def __init__(self, memory_spec, algorithm, body):
@@ -112,6 +117,12 @@ class OnPolicySeqReplay(OnPolicyReplay):
     '''
     Same as OnPolicyReplay Memory but returns the last `seq_len` states and next_states for input to a recurrent network.
     Experiences with less than `seq_len` previous examples are padded with a 0 valued state and action vector.
+
+    e.g. memory_spec
+    "memory": {
+        "name": "OnPolicySeqReplay"
+    }
+    * seq_len provided by net_spec
     '''
 
     def __init__(self, memory_spec, algorithm, body):
@@ -181,6 +192,12 @@ class OnPolicyBatchReplay(OnPolicyReplay):
     The memory does not have a fixed size. Instead the memory stores data from N experiences, where N is determined by the user. After N experiences or if an episode has ended, all of the examples are returned to the agent to learn from.
 
     In contrast, OnPolicyReplay stores entire episodes and stores them in a nested structure. OnPolicyBatchReplay stores experiences in a flat structure.
+
+    e.g. memory_spec
+    "memory": {
+        "name": "OnPolicyBatchReplay"
+    }
+    * batch_size is training_frequency provided by algorithm_spec
     '''
 
     def __init__(self, memory_spec, algorithm, body):
@@ -222,6 +239,13 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
     '''
     Same as OnPolicyBatchReplay Memory but returns the last `seq_len` states and next_states for input to a recurrent network.
     Experiences with less than `seq_len` previous examples are padded with a 0 valued state and action vector.
+
+    e.g. memory_spec
+    "memory": {
+        "name": "OnPolicySeqBatchReplay"
+    }
+    * seq_len provided by net_spec
+    * batch_size is training_frequency provided by algorithm_spec
     '''
 
     def __init__(self, memory_spec, algorithm, body):

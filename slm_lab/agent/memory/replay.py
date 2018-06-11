@@ -30,6 +30,13 @@ class Replay(Memory):
 
     All experiences have a priority of 1.
     This allows for other implementations to sample based on the experience priorities
+
+    e.g. memory_spec
+    "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000
+    }
     '''
 
     def __init__(self, memory_spec, algorithm, body):
@@ -124,7 +131,17 @@ class Replay(Memory):
 
 
 class SeqReplay(Replay):
-    '''Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as Replay memory'''
+    '''
+    Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as Replay memory
+
+    e.g. memory_spec
+    "memory": {
+        "name": "SeqReplay",
+        "batch_size": 32,
+        "max_size": 10000
+    }
+    * seq_len provided by net_spec
+    '''
 
     def __init__(self, memory_spec, algorithm, body):
         util.set_attr(self, memory_spec, [
@@ -167,7 +184,17 @@ class SeqReplay(Replay):
 
 
 class StackReplay(Replay):
-    '''Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as Replay memory'''
+    '''
+    Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as Replay memory
+
+    e.g. memory_spec
+    "memory": {
+        "name": "SeqReplay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "stack_len": 4
+    }
+    '''
 
     def __init__(self, memory_spec, algorithm, body):
         util.set_attr(self, memory_spec, [
@@ -197,6 +224,14 @@ class Atari(Replay):
     '''
     Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
     Otherwise the same as Replay memory
+
+    e.g. memory_spec
+    "memory": {
+        "name": "Atari",
+        "batch_size": 32,
+        "max_size": 250000,
+        "stack_len": 4
+    }
     '''
 
     def __init__(self, memory_spec, algorithm, body):
