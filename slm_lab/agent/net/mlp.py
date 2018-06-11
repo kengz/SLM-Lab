@@ -35,7 +35,7 @@ class MLPNet(Net, nn.Module):
         e.g. net_spec
         "net": {
             "type": "MLPNet",
-            "hid_layers": [64],
+            "hid_layers": [32],
             "hid_layers_activation": "relu",
             "clip_grad": false,
             "clip_grad_val": 1.0,
@@ -150,7 +150,7 @@ class MLPHeterogenousTails(MLPNet):
     e.g. net_spec
     "net": {
         "type": "MLPHeterogenousTails",
-        "hid_layers": [64],
+        "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
