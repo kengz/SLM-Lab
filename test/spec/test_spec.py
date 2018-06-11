@@ -15,6 +15,42 @@ def run_trial_test(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
+    ('benchmark_cartpole.json', 'reinforce_mlp_cartpole'),
+    ('benchmark_cartpole.json', 'reinforce_recurrent_cartpole'),
+    ('benchmark_cartpole.json', 'ac_mlp_shared_cartpole'),
+    ('benchmark_cartpole.json', 'ac_mlp_separate_cartpole'),
+    ('benchmark_cartpole.json', 'ac_rnn_shared_cartpole'),
+    ('benchmark_cartpole.json', 'ac_rnn_separate_cartpole'),
+    ('benchmark_cartpole.json', 'a2c_mlp_shared_cartpole'),
+    ('benchmark_cartpole.json', 'a2c_mlp_separate_cartpole'),
+    ('benchmark_cartpole.json', 'a2c_rnn_shared_cartpole'),
+    ('benchmark_cartpole.json', 'a2c_rnn_separate_cartpole'),
+    ('benchmark_cartpole.json', 'ppo_mlp_shared_cartpole'),
+    ('benchmark_cartpole.json', 'ppo_mlp_separate_cartpole'),
+    ('benchmark_cartpole.json', 'ppo_rnn_shared_cartpole'),
+    ('benchmark_cartpole.json', 'ppo_rnn_separate_cartpole'),
+    ('benchmark_cartpole.json', 'sarsa_mlp_boltzmann_cartpole'),
+    ('benchmark_cartpole.json', 'sarsa_mlp_epsilon_greedy_cartpole'),
+    ('benchmark_cartpole.json', 'sarsa_rnn_boltzmann_cartpole'),
+    ('benchmark_cartpole.json', 'sarsa_rnn_epsilon_greedy_cartpole'),
+    ('benchmark_cartpole.json', 'dqn_boltzmann_cartpole'),
+    ('benchmark_cartpole.json', 'dqn_epsilon_greedy_cartpole'),
+    ('benchmark_cartpole.json', 'ddqn_boltzmann_cartpole'),
+    ('benchmark_cartpole.json', 'ddqn_epsilon_greedy_cartpole'),
+    ('benchmark_cartpole.json', 'drqn_boltzmann_cartpole'),
+    ('benchmark_cartpole.json', 'drqn_epsilon_greedy_cartpole'),
+    ('benchmark_cartpole.json', 'ddrqn_boltzmann_cartpole'),
+    ('benchmark_cartpole.json', 'ddrqn_epsilon_greedy_cartpole'),
+    ('benchmark_cartpole.json', 'multitask_dqn_boltzmann_cartpole'),
+    ('benchmark_cartpole.json', 'multitask_dqn_epsilon_greedy_cartpole'),
+    ('benchmark_cartpole.json', 'hydra_dqn_boltzmann_cartpole'),
+    ('benchmark_cartpole.json', 'hydra_dqn_epsilon_greedy_cartpole'),
+])
+def test_all(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
     ('base.json', 'base_case'),
     ('base.json', 'base_case_openai'),
     ('random.json', 'random_cartpole'),
