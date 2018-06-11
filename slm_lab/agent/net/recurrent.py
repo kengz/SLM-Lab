@@ -16,9 +16,34 @@ class RecurrentNet(Net, nn.Module):
     Assumes that a single input example is organized into a 3D tensor
     batch_size x seq_len x state_dim
     The entire model consists of three parts:
-         1. self.state_proc_model
-         2. self.rnn_model
-         3. self.model_tails
+        1. self.state_proc_model
+        2. self.rnn_model
+        3. self.model_tails
+
+    e.g. net_spec
+    "net": {
+        "type": "RecurrentNet",
+        "hid_layers": [32],
+        "hid_layers_activation": "relu",
+        "num_rnn_layers": 1,
+        "seq_len": 4,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 500,
+        "lr_decay_min_timestep": 1000,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
+        "gpu": true
+    }
     '''
 
     def __init__(self, net_spec, algorithm, in_dim, out_dim):

@@ -31,6 +31,29 @@ class MLPNet(Net, nn.Module):
         update_frequency: how many total timesteps per update
         polyak_coef: ratio of polyak weight update
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
+
+        e.g. net_spec
+        "net": {
+            "type": "MLPNet",
+            "hid_layers": [64],
+            "hid_layers_activation": "sigmoid",
+            "clip_grad": false,
+            "clip_grad_val": 1.0,
+            "loss_spec": {
+              "name": "MSELoss"
+            },
+            "optim_spec": {
+              "name": "Adam",
+              "lr": 0.02
+            },
+            "lr_decay": "rate_decay",
+            "lr_decay_frequency": 500,
+            "lr_decay_min_timestep": 1000,
+            "update_type": "replace",
+            "update_frequency": 1,
+            "polyak_coef": 0.9,
+            "gpu": true
+        }
         '''
         nn.Module.__init__(self)
         super(MLPNet, self).__init__(net_spec, algorithm, in_dim, out_dim)
@@ -123,6 +146,29 @@ class MLPNet(Net, nn.Module):
 class MLPHeterogenousTails(MLPNet):
     '''
     Class for generating arbitrary sized feedforward neural network, with a heterogenous set of output tails that may correspond to different values. For example, the mean or std deviation of a continous policy, the state-value estimate, or the logits of a categorical action distribution
+
+    e.g. net_spec
+    "net": {
+        "type": "MLPHeterogenousTails",
+        "hid_layers": [64],
+        "hid_layers_activation": "sigmoid",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 500,
+        "lr_decay_min_timestep": 1000,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
+        "gpu": true
+    }
     '''
 
     def __init__(self, net_spec, algorithm, in_dim, out_dim):
@@ -181,6 +227,33 @@ class MLPHeterogenousTails(MLPNet):
 class HydraMLPNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized feedforward neural network with multiple state and action heads, and a single shared body.
+
+    e.g. net_spec
+    "net": {
+        "type": "HydraMLPNet",
+        "hid_layers": [
+            [[32],[32]], # 2 heads with hidden layers
+            [64], # body
+            [] # tail, no hidden layers
+        ],
+        "hid_layers_activation": "sigmoid",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 500,
+        "lr_decay_min_timestep": 1000,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
+        "gpu": true
+    }
     '''
 
     def __init__(self, net_spec, algorithm, in_dim, out_dim):

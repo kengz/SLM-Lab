@@ -16,9 +16,44 @@ class ConvNet(Net, nn.Module):
 
     Assumes that a single input example is organized into a 3D tensor.
     The entire model consists of three parts:
-         1. self.conv_model
-         2. self.dense_model
-         3. self.out_layers
+        1. self.conv_model
+        2. self.dense_model
+        3. self.out_layers
+
+    e.g. net_spec
+    "net": {
+        "type": "ConvNet",
+        "hid_layers": [
+          [
+            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [32, 64, [4, 4], 2, 0, [1, 1]],
+            [64, 64, [3, 3], 1, 0, [1, 1]]
+          ],
+          [512]
+        ],
+        "hid_layers_activation": "relu",
+        "batch_norm": false,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "RMSprop",
+          "lr": 0.00025,
+          "alpha": 0.95,
+          "eps": 0.01,
+          "momentum": 0.0,
+          "centered": true
+        },
+        "lr_decay": "no_decay",
+        "lr_decay_frequency": 400,
+        "lr_decay_min_timestep": 1400,
+        "update_type": "replace",
+        "update_frequency": 10000,
+        "polyak_coef": 0.9,
+        "gpu": true
+    }
     '''
 
     def __init__(self, net_spec, algorithm, in_dim, out_dim):
