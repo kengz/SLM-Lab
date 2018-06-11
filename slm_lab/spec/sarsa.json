@@ -61,8 +61,9 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [64],
+        "hid_layers": [],
         "hid_layers_activation": "sigmoid",
+        "rnn_hidden_size": 32,
         "seq_len": 4,
         "clip_grad": true,
         "clip_grad_val": 25.0,

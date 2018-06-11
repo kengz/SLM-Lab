@@ -78,8 +78,10 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [16],
+        "hid_layers": [],
         "hid_layers_activation": "relu",
+        "rnn_hidden_size": 16,
+        "rnn_num_layers": 1,
         "seq_len": 4,
         "optim_spec": {
           "name": "Adam",

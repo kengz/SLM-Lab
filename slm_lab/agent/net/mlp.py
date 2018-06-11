@@ -36,7 +36,7 @@ class MLPNet(Net, nn.Module):
         "net": {
             "type": "MLPNet",
             "hid_layers": [64],
-            "hid_layers_activation": "sigmoid",
+            "hid_layers_activation": "relu",
             "clip_grad": false,
             "clip_grad_val": 1.0,
             "loss_spec": {
@@ -151,7 +151,7 @@ class MLPHeterogenousTails(MLPNet):
     "net": {
         "type": "MLPHeterogenousTails",
         "hid_layers": [64],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -236,7 +236,7 @@ class HydraMLPNet(Net, nn.Module):
             [64], # body
             [] # tail, no hidden layers
         ],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {

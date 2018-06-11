@@ -273,9 +273,10 @@
       },
       "net": {
         "type": "Recurrentseparate",
-        "hid_layers": [64],
+        "hid_layers": [],
         "hid_layers_activation": "relu",
-        "num_rnn_layers": 1,
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
         "clip_grad_val": 1.0,

@@ -23,9 +23,10 @@ class RecurrentNet(Net, nn.Module):
     e.g. net_spec
     "net": {
         "type": "RecurrentNet",
-        "hid_layers": [32],
+        "hid_layers": [],
         "hid_layers_activation": "relu",
-        "num_rnn_layers": 1,
+        "rnn_hidden_size": 32,
+        "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -50,8 +51,9 @@ class RecurrentNet(Net, nn.Module):
         '''
         net_spec:
         hid_layers: list containing dimensions of the hidden layers. The last element of the list is should be the dimension of the hidden state for the recurrent layer. The other elements in the list are the dimensions of the MLP (if desired) which is to transform the state space.
-        hid_layers_activation: activation function for the hidden layers
-        num_rnn_layers: number of recurrent layers
+        hid_layers_activation: activation function for the state_proc hidden layers
+        rnn_hidden_size: rnn hidden_size
+        rnn_num_layers: number of recurrent layers
         seq_len: length of the history of being passed to the net
         clip_grad: whether to clip the gradient
         clip_grad_val: the clip value
@@ -71,7 +73,7 @@ class RecurrentNet(Net, nn.Module):
         super(RecurrentNet, self).__init__(net_spec, algorithm, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            num_rnn_layers=1,
+            rnn_num_layers=1,
             clip_grad=False,
             clip_grad_val=1.0,
             loss_spec={'name': 'MSELoss'},
@@ -85,7 +87,8 @@ class RecurrentNet(Net, nn.Module):
         util.set_attr(self, self.net_spec, [
             'hid_layers',
             'hid_layers_activation',
-            'num_rnn_layers',
+            'rnn_hidden_size',
+            'rnn_num_layers',
             'seq_len',
             'clip_grad',
             'clip_grad_val',
@@ -99,17 +102,18 @@ class RecurrentNet(Net, nn.Module):
             'polyak_coef',
             'gpu',
         ])
+        # state processing model
+        state_proc_dims = [self.in_dim] + self.hid_layers
+        self.state_proc_model = net_util.build_sequential(state_proc_dims, self.hid_layers_activation)
 
-        dims = [self.in_dim] + self.hid_layers[:-1]
-        self.state_proc_model = net_util.build_sequential(dims, self.hid_layers_activation)
-        # RNN layer
-        self.rnn_input_dim = dims[-1]
-        self.rnn_hidden_size = self.hid_layers[-1]
+        # RNN model
+        self.rnn_input_dim = state_proc_dims[-1]
         self.rnn_model = nn.GRU(
             input_size=self.rnn_input_dim,
             hidden_size=self.rnn_hidden_size,
-            num_layers=self.num_rnn_layers,
+            num_layers=self.rnn_num_layers,
             batch_first=True)
+
         # tails
         self.model_tails = nn.ModuleList([nn.Linear(self.rnn_hidden_size, out_d) for out_d in self.out_dim])
 
@@ -125,7 +129,7 @@ class RecurrentNet(Net, nn.Module):
         return super(RecurrentNet, self).__str__() + f'\noptim: {self.optim}'
 
     def init_hidden(self, batch_size):
-        hid = torch.zeros(self.num_rnn_layers, batch_size, self.rnn_hidden_size)
+        hid = torch.zeros(self.rnn_num_layers, batch_size, self.rnn_hidden_size)
         if torch.cuda.is_available() and self.gpu:
             hid = hid.cuda()
         return hid
