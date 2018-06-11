@@ -41,7 +41,6 @@ class Replay(Memory):
         self.state_buffer = deque(maxlen=0)  # for API consistency
         self.batch_idxs = None
         self.total_experiences = 0  # To track total experiences encountered even with forgetting
-        self.stacked = False  # Memory does not stack states
         self.atari = False  # Memory is not specialised for Atari games
         self.reset()
         self.print_memory_info()
@@ -121,25 +120,24 @@ class Replay(Memory):
             logger.info(f'Memory for body {self.body.aeb}: {k} :shape: {d.shape}, dtype: {d.dtype}, size: {util.memory_size(d)}MB')
 
 
-class StackReplay(Replay):
-    '''Preprocesses an state to be the concatenation of the last n states. Otherwise the same as Replay memory'''
+class SeqReplay(Replay):
+    '''Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as Replay memory'''
 
     def __init__(self, memory_spec, algorithm, body):
         util.set_attr(self, memory_spec, [
             'batch_size',
             'max_size',
-            'stack_len',  # num_stack_states
         ])
-        self.stacked = True  # Memory stacks states
-        super(StackReplay, self).__init__(memory_spec, algorithm, body)
-        self.state_buffer = deque(maxlen=self.stack_len)
+        self.seq_len = algorithm.net_spec['seq_len']
+        super(SeqReplay, self).__init__(memory_spec, algorithm, body)
+        self.state_buffer = deque(maxlen=self.seq_len)
         self.reset()
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
-        super(StackReplay, self).reset()
+        super(SeqReplay, self).reset()
         # override state shape for concat
-        states_shape = np.concatenate([[self.max_size], np.reshape([self.stack_len, self.body.state_dim], -1)])
+        states_shape = np.concatenate([[self.max_size], np.reshape([self.seq_len, self.body.state_dim], -1)])
         setattr(self, 'states', np.zeros(states_shape))
         setattr(self, 'next_states', np.zeros(states_shape))
         self.state_buffer.clear()
@@ -148,7 +146,7 @@ class StackReplay(Replay):
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
-        super(StackReplay, self).epi_reset(state)
+        super(SeqReplay, self).epi_reset(state)
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
