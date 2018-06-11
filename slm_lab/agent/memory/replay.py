@@ -202,7 +202,7 @@ class StackReplay(Replay):
             'max_size',
             'stack_len',  # num_stack_states
         ])
-        body.state_dim = (body.state_dim * self.stack_len)  # flattened stacked input
+        body.state_dim = body.state_dim * self.stack_len  # flattened stacked input
         super(StackReplay, self).__init__(memory_spec, algorithm, body)
         self.state_buffer = deque(maxlen=self.stack_len)
         self.reset()
@@ -256,6 +256,7 @@ class AtariReplay(Replay):
     def epi_reset(self, state):
         '''Method to reset at new episode'''
         super(AtariReplay, self).epi_reset(self.preprocess_state(state, append=False))
+        self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
 
