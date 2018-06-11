@@ -16,9 +16,10 @@
         "training_min_timestep": 1000
       },
       "memory": {
-        "name": "Atari",
+        "name": "AtariReplay",
         "batch_size": 32,
-        "max_size": 250000
+        "max_size": 250000,
+        "stack_len": 4
       },
       "net": {
         "type": "ConvNet",
