@@ -144,6 +144,10 @@ class SeqReplay(Replay):
         setattr(self, 'states', np.zeros(states_shape))
         setattr(self, 'next_states', np.zeros(states_shape))
 
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(SeqReplay, self).epi_reset(self.preprocess_state(state))
+
     def preprocess_state(self, state):
         '''Transforms the raw state into format that is fed into the network'''
         self.state_buffer.append(state)
@@ -173,6 +177,10 @@ class StackReplay(Replay):
         super(StackReplay, self).__init__(memory_spec, algorithm, body)
         self.state_buffer = deque(maxlen=self.stack_len)
         self.reset()
+
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(StackReplay, self).epi_reset(self.preprocess_state(state))
 
     def preprocess_state(self, state):
         '''Transforms the raw state into format that is fed into the network'''
@@ -208,7 +216,7 @@ class Atari(Replay):
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
-        super(Atari, self).epi_reset(state)
+        super(Atari, self).epi_reset(self.preprocess_state(state))
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
 
