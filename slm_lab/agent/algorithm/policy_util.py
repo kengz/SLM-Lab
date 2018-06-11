@@ -107,16 +107,16 @@ setattr(distributions, 'MultiCategorical', MultiCategorical)
 # base methods
 
 
-def try_preprocess(state, algorithm, body):
+def try_preprocess(state, algorithm, body, append=True):
     '''Try calling preprocess as implemented in body's memory to use for net input'''
     if hasattr(body.memory, 'preprocess_state'):
-        state = body.memory.preprocess_state(state)
+        state = body.memory.preprocess_state(state, append=append)
     # as float, and always as minibatch for net input
     state = torch.from_numpy(state).float().unsqueeze_(dim=0)
     return state
 
 
-def init_action_pd(state, algorithm, body):
+def init_action_pd(state, algorithm, body, append=True):
     '''
     Build the proper action prob. dist. to use for action sampling.
     state is passed through algorithm's net via calc_pdparam, which the algorithm must implement using its proper net.
@@ -128,7 +128,7 @@ def init_action_pd(state, algorithm, body):
     assert body.action_pdtype in pdtypes, f'Pdtype {body.action_pdtype} is not compatible/supported with action_type {body.action_type}. Options are: {ACTION_PDS[body.action_type]}'
     ActionPD = getattr(distributions, body.action_pdtype)
 
-    state = try_preprocess(state, algorithm, body)
+    state = try_preprocess(state, algorithm, body, append=append)
     if torch.cuda.is_available() and algorithm.net_spec['gpu']:
         state = state.cuda()
     pdparam = algorithm.calc_pdparam(state, evaluate=False).squeeze_(dim=0)

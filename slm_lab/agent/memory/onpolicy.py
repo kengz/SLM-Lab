@@ -130,9 +130,10 @@ class OnPolicySeqReplay(OnPolicyReplay):
         super(OnPolicySeqReplay, self).__init__(memory_spec, algorithm, body)
         self.state_buffer = deque(maxlen=self.seq_len)
 
-    def preprocess_state(self, state):
+    def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
-        self.state_buffer.append(state)
+        if append:
+            self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer)
         return processed_state
 
@@ -261,9 +262,10 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
-    def preprocess_state(self, state):
+    def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
-        self.state_buffer.append(state)
+        if append:
+            self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer)
         return processed_state
 
