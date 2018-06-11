@@ -51,7 +51,10 @@ class OnPolicyReplay(Memory):
         self.cur_epi_data = {k: [] for k in self.data_keys}
         self.most_recent = [None] * len(self.data_keys)
         self.true_size = 0  # Size of the current memory
+
         self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim))
 
     @lab_api
     def update(self, action, reward, state, done):
@@ -115,19 +118,6 @@ class OnPolicySeqReplay(OnPolicyReplay):
         self.seq_len = algorithm.net_spec['seq_len']
         super(OnPolicySeqReplay, self).__init__(memory_spec, algorithm, body)
         self.state_buffer = deque(maxlen=self.seq_len)
-
-    def reset(self):
-        '''Initializes the memory arrays, size and head pointer'''
-        super(OnPolicySeqReplay, self).reset()
-        self.state_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim))
-
-    def epi_reset(self, state):
-        '''Method to reset at new episode'''
-        super(OnPolicySeqReplay, self).epi_reset(state)
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim))
 
     def preprocess_state(self, state):
         '''Transforms the raw state into format that is fed into the network'''
@@ -244,12 +234,6 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
         '''Initializes the memory arrays, size and head pointer'''
         super(OnPolicySeqBatchReplay, self).reset()
         self.state_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim))
-
-    def epi_reset(self, state):
-        '''Method to reset at new episode'''
-        super(OnPolicySeqBatchReplay, self).epi_reset(state)
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 

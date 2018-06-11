@@ -42,9 +42,11 @@ class Memory(ABC):
     def epi_reset(self, state):
         '''Method to reset at new episode'''
         self.last_state = state
-        self.state_buffer.clear()
         self.body.epi_reset()
         self.total_reward = 0
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim))
 
     def base_update(self, action, reward, state, done):
         '''Method to do base memory update, like stats'''
