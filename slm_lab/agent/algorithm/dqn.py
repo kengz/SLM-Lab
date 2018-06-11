@@ -30,16 +30,22 @@ class VanillaDQN(SARSA):
 
     For more information on Q-Learning see Sergey Levine's lectures 6 and 7 from CS294-112 Fall 2017
     https://www.youtube.com/playlist?list=PLkFD6_40KJIznC9CDbVTjAF2oyt8_VAe3
-    '''
 
-    def __init__(self, agent):
-        '''
-        After initialization VanillaDQN has an attribute self.agent which contains a reference to the entire Agent acting in the environment.
-        Agent components:
-            - algorithm (with a net: neural network function approximator, and a policy: how to act in the environment). One algorithm per agent, shared across all bodies of the agent
-            - memory (one per body)
-        '''
-        super(VanillaDQN, self).__init__(agent)
+    e.g. algorithm_spec
+    "algorithm": {
+        "name": "VanillaDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 10,
+        "gamma": 0.99,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_min_timestep": 10
+    }
+    '''
 
     @lab_api
     def post_body_init(self):
@@ -64,15 +70,17 @@ class VanillaDQN(SARSA):
             explore_anneal_epi=100,
         ))
         util.set_attr(self, self.algorithm_spec, [
+            'action_pdtype',
             'action_policy',
             'action_policy_update',
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
-            'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
+            'explore_var_start',
+            'explore_var_end',
+            'explore_anneal_epi',
             'gamma',  # the discount factor
             'training_epoch',  # how many batches to train each time
             'training_frequency',  # how often to train (once a few timesteps)
-            'training_epoch',  # how many times to train each batch
             'training_min_timestep',  # how long before starting training
         ])
         super(VanillaDQN, self).init_algorithm_params()
@@ -167,14 +175,6 @@ class DQNBase(VanillaDQN):
     It also allows for different nets to be used to select the action in the next state and to evaluate the value of that action through self.online_net and self.eval_net. This can help reduce the tendency of DQN's to overestimate the value of the Q-function. Following this approach leads to the DoubleDQN algorithm.
 
     Setting all nets to self.net reduces to the VanillaDQN case.
-
-    net: instance of an slm_lab/agent/net
-    memory: instance of an slm_lab/agent/memory
-    batch_size: how many examples from memory to sample at each training step
-    action_policy: function (from policy_util.py) that determines how to select actions
-    gamma: Real number in range [0, 1]. Determines how much to discount the future
-    state_dim: dimension of the state space
-    action_dim: dimensions of the action space
     '''
 
     @lab_api
@@ -233,12 +233,48 @@ class DQNBase(VanillaDQN):
 
 
 class DQN(DQNBase):
+    '''
+    DQN class
+
+    e.g. algorithm_spec
+    "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 10,
+        "gamma": 0.99,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_min_timestep": 10
+    }
+    '''
     @lab_api
     def init_nets(self):
         super(DQN, self).init_nets()
 
 
 class DoubleDQN(DQN):
+    '''
+    Double-DQN (DDQN) class
+
+    e.g. algorithm_spec
+    "algorithm": {
+        "name": "DDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 10,
+        "gamma": 0.99,
+        "training_epoch": 4,
+        "training_frequency": 10,
+        "training_min_timestep": 10
+    }
+    '''
     @lab_api
     def init_nets(self):
         super(DoubleDQN, self).init_nets()

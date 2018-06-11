@@ -22,6 +22,22 @@ class Reinforce(Algorithm):
         2. Sum all the values above.
         3. Calculate the gradient of this value with respect to all of the parameters of the network
         4. Update the network parameters using the gradient
+
+    e.g. algorithm_spec:
+    "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.99,
+        "add_entropy": false,
+        "entropy_coef": 0.01,
+        "continuous_action_clip": 2.0,
+        "training_frequency": 1
+    }
     '''
 
     @lab_api
@@ -45,10 +61,13 @@ class Reinforce(Algorithm):
             explore_anneal_epi=np.nan,
         ))
         util.set_attr(self, self.algorithm_spec, [
+            'action_pdtype',
             'action_policy',
             # theoretically, REINFORCE does not have policy update; but in this implementation we have such option
             'action_policy_update',
-            'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
+            'explore_var_start',
+            'explore_var_end',
+            'explore_anneal_epi',
             'gamma',  # the discount factor
             'add_entropy',
             'entropy_coef',

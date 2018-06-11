@@ -42,6 +42,28 @@ class ActorCritic(Reinforce):
             7. Compute the total loss by summing the value and policy lossses
             8. Calculate the gradient of the parameters of shared network with respect to the total loss
             9. Update the shared network parameters using the gradient
+
+    e.g. algorithm_spec
+    "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.99,
+        "add_entropy": false,
+        "entropy_coef": 0.01,
+        "use_gae": false,
+        "lam": 1.0,
+        "num_step_returns": 100,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "continuous_action_clip": 2.0,
+        "training_frequency": 1,
+        "training_epoch": 8
+    }
     '''
 
     @lab_api
@@ -65,18 +87,21 @@ class ActorCritic(Reinforce):
             explore_anneal_epi=np.nan,
         ))
         util.set_attr(self, self.algorithm_spec, [
+            'action_pdtype',
             'action_policy',
             # theoretically, AC does not have policy update; but in this implementation we have such option
             'action_policy_update',
-            'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
+            'explore_var_start',
+            'explore_var_end',
+            'explore_anneal_epi',
             'gamma',  # the discount factor
+            'add_entropy',
+            'entropy_coef',
             'use_gae',
             'lam',
             'num_step_returns',
             'policy_loss_coef',
             'val_loss_coef',
-            'add_entropy',
-            'entropy_coef',
             'continuous_action_clip',
             'training_frequency',
             'training_epoch',

@@ -29,6 +29,23 @@ class PPO(ActorCritic):
         end for
         optimize surrogate L wrt theta, with K epochs and minibatch size M <= NT
     end for
+
+    e.g. algorithm_spec
+    "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.99,
+        "lam": 1.0,
+        "clip_eps": 0.10,
+        "entropy_coef": 0.02,
+        "training_frequency": 1,
+        "training_epoch": 8
+    }
     '''
 
     @lab_api
@@ -52,10 +69,13 @@ class PPO(ActorCritic):
             explore_anneal_epi=np.nan,
         ))
         util.set_attr(self, self.algorithm_spec, [
+            'action_pdtype',
             'action_policy',
             # theoretically, PPO does not have policy update; but in this implementation we have such option
             'action_policy_update',
-            'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
+            'explore_var_start',
+            'explore_var_end',
+            'explore_anneal_epi',
             'gamma',
             'lam',
             'clip_eps',

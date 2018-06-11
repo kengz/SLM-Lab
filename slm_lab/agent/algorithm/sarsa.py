@@ -23,16 +23,20 @@ class SARSA(Algorithm):
                 x_t = Q(s_t, a_t)
         5. Calculate L(x, y) where L is a regression loss (eg. mse)
         6. Calculate the gradient of L with respect to all the parameters in the network and update the network parameters using the gradient
-    '''
 
-    def __init__(self, agent):
-        '''
-        After initialization SARSA has an attribute self.agent which contains a reference to the entire Agent acting in the environment.
-        Agent components:
-            - algorithm (with a net: neural network function approximator, and a policy: how to act in the environment). One algorithm per agent, shared across all bodies of the agent
-            - memory (one per body)
-        '''
-        super(SARSA, self).__init__(agent)
+    e.g. algorithm_spec
+    "algorithm": {
+        "name": "SARSA",
+        "action_pdtype": "default",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.5,
+        "explore_var_end": 0.3,
+        "explore_anneal_epi": 10,
+        "gamma": 0.99,
+        "training_frequency": 10
+    }
+    '''
 
     @lab_api
     def post_body_init(self):
@@ -60,11 +64,14 @@ class SARSA(Algorithm):
             explore_anneal_epi=np.nan,
         ))
         util.set_attr(self, self.algorithm_spec, [
+            'action_pdtype',
             'action_policy',
             'action_policy_update',
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
-            'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
+            'explore_var_start',
+            'explore_var_end',
+            'explore_anneal_epi',
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
         ])
