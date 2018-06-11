@@ -41,7 +41,6 @@ class Replay(Memory):
         self.state_buffer = deque(maxlen=0)  # for API consistency
         self.batch_idxs = None
         self.total_experiences = 0  # To track total experiences encountered even with forgetting
-        self.atari = False  # Memory is not specialised for Atari games
         self.reset()
         self.print_memory_info()
 
@@ -57,6 +56,10 @@ class Replay(Memory):
         setattr(self, 'priorities', np.zeros((self.max_size,)))
         self.true_size = 0
         self.head = -1  # Index of most recent experience
+
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim))
 
     @lab_api
     def update(self, action, reward, state, done):
@@ -140,15 +143,6 @@ class SeqReplay(Replay):
         states_shape = np.concatenate([[self.max_size], np.reshape([self.seq_len, self.body.state_dim], -1)])
         setattr(self, 'states', np.zeros(states_shape))
         setattr(self, 'next_states', np.zeros(states_shape))
-        self.state_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim))
-
-    def epi_reset(self, state):
-        '''Method to reset at new episode'''
-        super(SeqReplay, self).epi_reset(state)
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim))
 
     def preprocess_state(self, state):
         '''Transforms the raw state into format that is fed into the network'''
@@ -160,12 +154,31 @@ class SeqReplay(Replay):
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
         state = self.preprocess_state(state)
-        logger.debug(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
-        logger.debug2(f'state buffer: {self.state_buffer}, state: {state}')
         self.base_update(action, reward, state, done)
         if not np.isnan(reward):  # not the start of episode
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
+
+
+class StackReplay(Replay):
+    '''Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as Replay memory'''
+
+    def __init__(self, memory_spec, algorithm, body):
+        util.set_attr(self, memory_spec, [
+            'batch_size',
+            'max_size',
+            'stack_len',  # num_stack_states
+        ])
+        body.state_dim = (body.state_dim * self.stack_len)  # flattened stacked input
+        super(StackReplay, self).__init__(memory_spec, algorithm, body)
+        self.state_buffer = deque(maxlen=self.stack_len)
+        self.reset()
+
+    def preprocess_state(self, state):
+        '''Transforms the raw state into format that is fed into the network'''
+        self.state_buffer.append(state)
+        processed_state = np.concatenate(self.state_buffer)
+        return processed_state
 
 
 class Atari(Replay):
@@ -176,7 +189,11 @@ class Atari(Replay):
 
     def __init__(self, memory_spec, algorithm, body):
         self.atari = True  # Memory is specialized for playing Atari games
-        self.stack_len = 4
+        util.set_attr(self, memory_spec, [
+            'batch_size',
+            'max_size',
+            'stack_len',  # num_stack_states
+        ])
         body.state_dim = (84, 84, self.stack_len)  # greyscale downsized, stacked
         super(Atari, self).__init__(memory_spec, algorithm, body)
         self.state_buffer = deque(maxlen=self.stack_len)
@@ -200,7 +217,6 @@ class Atari(Replay):
         state = util.transform_image(state)
         self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
-        # stacked, shape 4 in last axis
         assert processed_state.shape == self.body.state_dim
         return processed_state
 
@@ -211,7 +227,8 @@ class Atari(Replay):
         self.base_update(action, reward, state, done)
         if not np.isnan(reward):  # not the start of episode
             logger.debug2(f'original reward: {reward}')
-            reward = max(-1, min(1, reward))
+            if not np.isnan(reward):
+                reward = max(-1, min(1, reward))
             logger.info(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
