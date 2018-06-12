@@ -638,9 +638,9 @@
         "explore_anneal_epi": 175,
         "gamma": 0.99,
         "training_epoch": 5,
-        "training_frequency": 1,
+        "training_frequency": 50,
         "training_epoch": 3,
-        "training_min_timestep": 1000
+        "training_min_timestep": 100
       },
       "memory": {
         "name": "StackReplay",
@@ -682,76 +682,6 @@
       "max_trial": null,
       "search": "EvolutionarySearch",
       "max_generation": 4
-    }
-  },
-  "dqn_lunar_search": {
-    "agent": [{
-      "name": "DQN",
-      "algorithm": {
-        "name": "DQN",
-        "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 150,
-        "gamma": 0.99,
-        "training_epoch": 5,
-        "training_frequency": 1,
-        "training_epoch": 1,
-        "training_min_timestep": 1000
-      },
-      "memory": {
-        "name": "StackReplay",
-        "batch_size": 32,
-        "max_size": 100000,
-        "stack_len": 4
-      },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [400, 200],
-        "hid_layers_activation": "sigmoid",
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.005
-        },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 80000,
-        "update_type": "replace",
-        "update_frequency": 600,
-        "polyak_coef": 0.993,
-        "gpu": false
-      }
-    }],
-    "env": [{
-      "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 600
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "max_session": 1,
-      "max_trial": 16,
-      "search": "RandomSearch",
-      "max_generation": 4,
-      "train_mode": true
-    },
-    "search": {
-      "agent": [{
-        "net": {
-          "seq_len__choice": [3, 4, 5],
-          "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          },
-          "update_frequency__choice": [500, 750, 1000]
-        }
-      }]
     }
   }
 }
