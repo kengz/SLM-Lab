@@ -693,6 +693,20 @@ def to_json(d, indent=2):
     return json.dumps(d, indent=indent, cls=LabJsonEncoder)
 
 
+def to_one_hot(data, max_val):
+    '''Convert an int list of data into one-hot vectors'''
+    return np.eye(max_val)[np.array(data)]
+
+
+def to_torch_batch(batch, gpu):
+    '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
+    for k in batch:
+        batch[k] = torch.from_numpy(batch[k].astype('float32')).float()
+        if torch.cuda.is_available() and gpu:
+            batch[k] = batch[k].cuda()
+    return batch
+
+
 def to_tuple_list(l):
     '''Returns a copy of the list with its elements as tuples'''
     return [tuple(row) for row in l]
@@ -759,61 +773,6 @@ def write_as_plain(data, data_path):
         open_file.write(str(data))
     open_file.close()
     return data_path
-
-
-def to_one_hot(data, max_val):
-    '''Convert an int list of data into one-hot vectors'''
-    return np.eye(max_val)[np.array(data)]
-
-
-def to_torch_batch(batch, gpu):
-    '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
-    for k in batch:
-        batch[k] = torch.from_numpy(batch[k].astype('float32')).float()
-        if torch.cuda.is_available() and gpu:
-            batch[k] = batch[k].cuda()
-    return batch
-
-
-# TODO retire
-def to_torch_nested_batch(batch, gpu):
-    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch tensor'''
-    float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
-    return to_torch_nested_batch_helper(batch, float_data_names, gpu)
-
-
-def to_torch_nested_batch_ex_rewards(batch, gpu):
-    '''Mutate a nested batch (dict of lists) to make its values (excluding rewards) from numpy into PyTorch tensor.'''
-    float_data_names = ['states', 'actions', 'dones', 'next_states']
-    return to_torch_nested_batch_helper(batch, float_data_names, gpu)
-
-
-def to_torch_nested_batch_helper(batch, float_data_names, gpu):
-    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch tensor. Excludes keys not included in float_data_names'''
-    for k in float_data_names:
-        k_b = []
-        for x in batch[k]:
-            nx = np.asarray(x).astype(np.float)
-            tx = torch.from_numpy(nx).float()
-            if torch.cuda.is_available() and gpu:
-                tx = tx.cuda()
-            k_b.append(tx)
-        batch[k] = k_b
-    return batch
-
-
-def concat_episodes(batch):
-    '''Concat episodic data into single tensors. Excludes data that isn't already a tensor'''
-    for k in batch:
-        classname = get_class_name(batch[k][0])
-        if 'ndarray' in classname or 'list' in classname:
-            # print(f'Skipping {k}')
-            pass
-        else:
-            batch[k] = torch.cat(batch[k], dim=0)
-            if batch[k].dim() == 1:
-                batch[k].unsqueeze_(1)
-    return batch
 
 
 def resize_image(im):
