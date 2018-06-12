@@ -117,7 +117,7 @@ def test_ddqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI'), reason="CI has not enough RAM")
+@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI has not enough RAM")
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('dqn.json', 'dqn_boltzmann_breakout'),
     ('dqn.json', 'dqn_epsilon_greedy_breakout'),
