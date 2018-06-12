@@ -107,8 +107,8 @@ def test_dqn(spec_file, spec_name):
     ('ddqn.json', 'ddqn_epsilon_greedy_cartpole'),
     ('ddqn.json', 'ddrqn_boltzmann_cartpole'),
     ('ddqn.json', 'ddrqn_epsilon_greedy_cartpole'),
-    # ('ddqn.json', 'ddqn_boltzmann_breakout'),
-    # ('ddqn.json', 'ddqn_epsilon_greedy_breakout'),
+    ('ddqn.json', 'ddqn_boltzmann_breakout'),
+    ('ddqn.json', 'ddqn_epsilon_greedy_breakout'),
 ])
 def test_ddqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)

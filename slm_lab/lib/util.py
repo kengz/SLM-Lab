@@ -507,8 +507,8 @@ def override_dev_spec(spec):
 
 def override_test_spec(spec):
     for env_spec in spec['env']:
-        env_spec['max_episode'] = 2
-        env_spec['max_timestep'] = 30
+        env_spec['max_episode'] = 3
+        env_spec['max_timestep'] = 100
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
     return spec
