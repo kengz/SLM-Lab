@@ -1,6 +1,7 @@
 from slm_lab.experiment.control import Trial, Session
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+import os
 import pandas as pd
 import pytest
 
@@ -96,8 +97,8 @@ def test_sarsa(spec_file, spec_name):
     ('dqn.json', 'dqn_epsilon_greedy_cartpole'),
     ('dqn.json', 'drqn_boltzmann_cartpole'),
     ('dqn.json', 'drqn_epsilon_greedy_cartpole'),
-    ('dqn.json', 'dqn_boltzmann_breakout'),
-    ('dqn.json', 'dqn_epsilon_greedy_breakout'),
+    # ('dqn.json', 'dqn_boltzmann_breakout'),
+    # ('dqn.json', 'dqn_epsilon_greedy_breakout'),
     ('dqn.json', 'dqn_stack_epsilon_greedy_lunar'),
 ])
 def test_dqn(spec_file, spec_name):
@@ -109,10 +110,21 @@ def test_dqn(spec_file, spec_name):
     ('ddqn.json', 'ddqn_epsilon_greedy_cartpole'),
     ('ddqn.json', 'ddrqn_boltzmann_cartpole'),
     ('ddqn.json', 'ddrqn_epsilon_greedy_cartpole'),
+    # ('ddqn.json', 'ddqn_boltzmann_breakout'),
+    # ('ddqn.json', 'ddqn_epsilon_greedy_breakout'),
+])
+def test_ddqn(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.skipif(os.environ.get('CI'), reason="CI has not enough RAM")
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('dqn.json', 'dqn_boltzmann_breakout'),
+    ('dqn.json', 'dqn_epsilon_greedy_breakout'),
     ('ddqn.json', 'ddqn_boltzmann_breakout'),
     ('ddqn.json', 'ddqn_epsilon_greedy_breakout'),
 ])
-def test_ddqn(spec_file, spec_name):
+def test_dqn_breakout(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
