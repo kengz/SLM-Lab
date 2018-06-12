@@ -80,11 +80,12 @@ def test_ac(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('a2c.json', 'a2c_cartpole'),
-    ('a2c.json', 'a2c_shared_cartpole'),
-    ('a2c.json', 'a2c_batch_cartpole'),
-    ('a2c.json', 'a2c_recurrent_cartpole'),
-    # ('a2c.json', 'a2c_conv_breakout'),
+    ('a2c.json', 'a2c_mlp_shared_cartpole'),
+    ('a2c.json', 'a2c_mlp_separate_cartpole'),
+    ('a2c.json', 'a2c_rnn_shared_cartpole'),
+    ('a2c.json', 'a2c_rnn_separate_cartpole'),
+    ('a2c.json', 'a2c_conv_shared_breakout'),
+    ('a2c.json', 'a2c_conv_separate_breakout'),
 ])
 def test_a2c(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)

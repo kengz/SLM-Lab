@@ -373,6 +373,7 @@
         "batch_norm": false,
         "clip_grad": false,
         "clip_grad_val": 1.0,
+        "use_same_optim": false,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
@@ -442,6 +443,7 @@
         "batch_norm": false,
         "clip_grad": false,
         "clip_grad_val": 1.0,
+        "use_same_optim": false,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
