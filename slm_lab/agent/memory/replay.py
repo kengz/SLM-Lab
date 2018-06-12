@@ -287,6 +287,6 @@ class AtariReplay(StackReplay):
             logger.debug2(f'original reward: {reward}')
             if not np.isnan(reward):
                 reward = max(-1, min(1, reward))
-            logger.info(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
+            logger.debug(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
