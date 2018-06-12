@@ -93,6 +93,7 @@ def test_sarsa(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
+    ('dqn.json', 'vanilla_dqn_cartpole'),
     ('dqn.json', 'dqn_boltzmann_cartpole'),
     ('dqn.json', 'dqn_epsilon_greedy_cartpole'),
     ('dqn.json', 'drqn_boltzmann_cartpole'),
