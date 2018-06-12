@@ -15,10 +15,7 @@ def run_trial_test(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('benchmark_cartpole.json', 'sarsa_mlp_boltzmann_cartpole'),
-    ('benchmark_cartpole.json', 'sarsa_mlp_epsilon_greedy_cartpole'),
-    ('benchmark_cartpole.json', 'sarsa_rnn_boltzmann_cartpole'),
-    ('benchmark_cartpole.json', 'sarsa_rnn_epsilon_greedy_cartpole'),
+
     ('benchmark_cartpole.json', 'dqn_boltzmann_cartpole'),
     ('benchmark_cartpole.json', 'dqn_epsilon_greedy_cartpole'),
     ('benchmark_cartpole.json', 'ddqn_boltzmann_cartpole'),
@@ -70,6 +67,7 @@ def test_reinforce(spec_file, spec_name):
     ('ac.json', 'ac_rnn_shared_cartpole'),
     ('ac.json', 'ac_rnn_separate_cartpole'),
     ('ac.json', 'ac_conv_shared_breakout'),
+    ('ac.json', 'ac_conv_separate_breakout'),
 ])
 def test_ac(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
@@ -100,6 +98,18 @@ def test_ppo(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
+    ('sarsa.json', 'sarsa_mlp_boltzmann_cartpole'),
+    ('sarsa.json', 'sarsa_mlp_epsilon_greedy_cartpole'),
+    ('sarsa.json', 'sarsa_rnn_boltzmann_cartpole'),
+    ('sarsa.json', 'sarsa_rnn_epsilon_greedy_cartpole'),
+    ('sarsa.json', 'sarsa_conv_boltzmann_breakout'),
+    ('sarsa.json', 'sarsa_conv_epsilon_greedy_breakout'),
+])
+def test_sarsa(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
     ('dqn.json', 'dqn_cartpole'),
     ('dqn.json', 'double_dqn_cartpole_replace'),
     ('dqn.json', 'multitask_dqn_cartpole'),
@@ -107,13 +117,4 @@ def test_ppo(spec_file, spec_name):
     # ('dqn_atari.json', 'dqn_breakout'),
 ])
 def test_dqn(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('sarsa.json', 'sarsa_cartpole'),
-    ('sarsa.json', 'sarsa_cartpole_recurrent'),
-    ('sarsa.json', 'sarsa_cartpole_episodic'),
-])
-def test_sarsa(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
