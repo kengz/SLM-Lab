@@ -15,10 +15,6 @@ def run_trial_test(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('benchmark_cartpole.json', 'ppo_mlp_shared_cartpole'),
-    ('benchmark_cartpole.json', 'ppo_mlp_separate_cartpole'),
-    ('benchmark_cartpole.json', 'ppo_rnn_shared_cartpole'),
-    ('benchmark_cartpole.json', 'ppo_rnn_separate_cartpole'),
     ('benchmark_cartpole.json', 'sarsa_mlp_boltzmann_cartpole'),
     ('benchmark_cartpole.json', 'sarsa_mlp_epsilon_greedy_cartpole'),
     ('benchmark_cartpole.json', 'sarsa_rnn_boltzmann_cartpole'),
@@ -92,6 +88,18 @@ def test_a2c(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
+    ('ppo.json', 'ppo_mlp_shared_cartpole'),
+    ('ppo.json', 'ppo_mlp_separate_cartpole'),
+    ('ppo.json', 'ppo_rnn_shared_cartpole'),
+    ('ppo.json', 'ppo_rnn_separate_cartpole'),
+    ('ppo.json', 'ppo_conv_shared_breakout'),
+    ('ppo.json', 'ppo_conv_separate_breakout'),
+])
+def test_ppo(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
     ('dqn.json', 'dqn_cartpole'),
     ('dqn.json', 'double_dqn_cartpole_replace'),
     ('dqn.json', 'multitask_dqn_cartpole'),
@@ -99,16 +107,6 @@ def test_a2c(spec_file, spec_name):
     # ('dqn_atari.json', 'dqn_breakout'),
 ])
 def test_dqn(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('ppo.json', 'ppo_cartpole'),
-    # ('ppo.json', 'ppo_shared_cartpole'),
-    # ('ppo.json', 'ppo_batch_cartpole'),
-    # ('ppo.json', 'ppo_recurrent_cartpole'),
-])
-def test_ppo(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
