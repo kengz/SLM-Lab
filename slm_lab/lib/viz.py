@@ -30,7 +30,7 @@ def plot(*args, **kwargs):
 
 
 def save_image(figure, filepath=None):
-    if os.environ.get('lab_mode') == 'dev':
+    if os.environ.get('lab_mode') == 'dev' or os.environ.get('PY_ENV') == 'test':
         return
     if filepath is None:
         filepath = f'{PLOT_FILEDIR}/{ps.get(figure, "layout.title")}.png'
