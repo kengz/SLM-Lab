@@ -16,10 +16,6 @@ def run_trial_test(spec_file, spec_name):
 
 @pytest.mark.parametrize('spec_file,spec_name', [
 
-    ('benchmark_cartpole.json', 'ddqn_boltzmann_cartpole'),
-    ('benchmark_cartpole.json', 'ddqn_epsilon_greedy_cartpole'),
-    ('benchmark_cartpole.json', 'ddrqn_boltzmann_cartpole'),
-    ('benchmark_cartpole.json', 'ddrqn_epsilon_greedy_cartpole'),
     ('benchmark_cartpole.json', 'multitask_dqn_boltzmann_cartpole'),
     ('benchmark_cartpole.json', 'multitask_dqn_epsilon_greedy_cartpole'),
     ('benchmark_cartpole.json', 'hydra_dqn_boltzmann_cartpole'),
@@ -114,4 +110,16 @@ def test_sarsa(spec_file, spec_name):
     ('dqn.json', 'dqn_epsilon_greedy_breakout'),
 ])
 def test_dqn(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('ddqn.json', 'ddqn_boltzmann_cartpole'),
+    ('ddqn.json', 'ddqn_epsilon_greedy_cartpole'),
+    ('ddqn.json', 'ddrqn_boltzmann_cartpole'),
+    ('ddqn.json', 'ddrqn_epsilon_greedy_cartpole'),
+    # ('ddqn.json', 'ddqn_boltzmann_breakout'),
+    # ('ddqn.json', 'ddqn_epsilon_greedy_breakout'),
+])
+def test_ddqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
