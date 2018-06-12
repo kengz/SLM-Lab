@@ -15,16 +15,6 @@ def run_trial_test(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('benchmark_cartpole.json', 'reinforce_mlp_cartpole'),
-    ('benchmark_cartpole.json', 'reinforce_recurrent_cartpole'),
-    ('benchmark_cartpole.json', 'ac_mlp_shared_cartpole'),
-    ('benchmark_cartpole.json', 'ac_mlp_separate_cartpole'),
-    ('benchmark_cartpole.json', 'ac_rnn_shared_cartpole'),
-    ('benchmark_cartpole.json', 'ac_rnn_separate_cartpole'),
-    ('benchmark_cartpole.json', 'a2c_mlp_shared_cartpole'),
-    ('benchmark_cartpole.json', 'a2c_mlp_separate_cartpole'),
-    ('benchmark_cartpole.json', 'a2c_rnn_shared_cartpole'),
-    ('benchmark_cartpole.json', 'a2c_rnn_separate_cartpole'),
     ('benchmark_cartpole.json', 'ppo_mlp_shared_cartpole'),
     ('benchmark_cartpole.json', 'ppo_mlp_separate_cartpole'),
     ('benchmark_cartpole.json', 'ppo_rnn_shared_cartpole'),
@@ -79,13 +69,13 @@ def test_reinforce(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('ac.json', 'ac_cartpole'),
-    ('ac.json', 'ac_shared_cartpole'),
-    ('ac.json', 'ac_batch_cartpole'),
-    ('ac.json', 'ac_recurrent_cartpole'),
-    # ('ac.json', 'ac_conv_breakout'),
+    ('ac.json', 'ac_mlp_shared_cartpole'),
+    ('ac.json', 'ac_mlp_separate_cartpole'),
+    ('ac.json', 'ac_rnn_shared_cartpole'),
+    ('ac.json', 'ac_rnn_separate_cartpole'),
+    ('ac.json', 'ac_conv_shared_breakout'),
 ])
-def test_actor_critic(spec_file, spec_name):
+def test_ac(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
