@@ -11,9 +11,8 @@
         "explore_anneal_epi": 2500,
         "gamma": 0.99,
         "training_epoch": 1,
-        "training_frequency": 1,
-        "training_epoch": 1,
-        "training_min_timestep": 1000
+        "training_frequency": 100,
+        "training_min_timestep": 100
       },
       "memory": {
         "name": "AtariReplay",

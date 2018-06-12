@@ -123,7 +123,7 @@ class ConvNet(Net, nn.Module):
         # fc layer from flattened conv
         self.dense_model = self.build_dense_layers(self.dense_hid_layers)
         # tails
-        tail_in_dim = self.dense_hid_layers[-1] if len(self.dense_hid_layers) > 1 else self.conv_out_dim
+        tail_in_dim = self.dense_hid_layers[-1] if len(self.dense_hid_layers) > 0 else self.conv_out_dim
         self.model_tails = nn.ModuleList([nn.Linear(tail_in_dim, out_d) for out_d in self.out_dim])
 
         net_util.init_layers(self.modules())
