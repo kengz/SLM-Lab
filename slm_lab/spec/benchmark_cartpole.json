@@ -70,7 +70,7 @@
       }]
     }
   },
-  "reinforce_recurrent_cartpole": {
+  "reinforce_rnn_cartpole": {
     "agent": [{
       "name": "Reinforce",
       "algorithm": {

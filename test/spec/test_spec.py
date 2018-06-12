@@ -70,6 +70,15 @@ def test_base_multi(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
+    ('reinforce.json', 'reinforce_mlp_cartpole'),
+    ('reinforce.json', 'reinforce_rnn_cartpole'),
+    ('reinforce.json', 'reinforce_conv_breakout'),
+])
+def test_reinforce(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
     ('ac.json', 'ac_cartpole'),
     ('ac.json', 'ac_shared_cartpole'),
     ('ac.json', 'ac_batch_cartpole'),
@@ -109,15 +118,6 @@ def test_dqn(spec_file, spec_name):
     # ('ppo.json', 'ppo_recurrent_cartpole'),
 ])
 def test_ppo(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('reinforce.json', 'reinforce_cartpole'),
-    ('reinforce.json', 'reinforce_cartpole_recurrent'),
-    # ('reinforce.json', 'reinforce_conv_breakout'),
-])
-def test_reinforce(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
