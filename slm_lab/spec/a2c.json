@@ -26,7 +26,7 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPseparate",
+        "type": "MLPNetSeparate",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -108,7 +108,7 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPshared",
+        "type": "MLPNetShared",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -190,7 +190,7 @@
         "name": "OnPolicyBatchReplay"
       },
       "net": {
-        "type": "MLPseparate",
+        "type": "MLPNetSeparate",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -272,7 +272,7 @@
         "name": "OnPolicySeqBatchReplay"
       },
       "net": {
-        "type": "Recurrentseparate",
+        "type": "RecurrentNetSeparate",
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,

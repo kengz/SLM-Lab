@@ -21,7 +21,7 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPseparate",
+        "type": "MLPNetSeparate",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad": false,

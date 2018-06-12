@@ -22,7 +22,7 @@ class ActorCritic(Reinforce):
     memory.name: batch (through OnPolicyBatchReplay memory class) or episodic through (OnPolicyReplay memory class)
     num_step_returns: if use_gae is false, this specifies the number of steps used for the N-step returns method.
     lam: is use_gae, this lambda controls the bias variance tradeoff for GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
-    net.type: whether the actor and critic should share params (e.g. through 'MLPshared') or have separate params (e.g. through 'MLPseparate'). If param sharing is used then there is also the option to control the weight given to the policy and value components of the loss function through 'policy_loss_coef' and 'val_loss_coef'
+    net.type: whether the actor and critic should share params (e.g. through 'MLPNetShared') or have separate params (e.g. through 'MLPNetSeparate'). If param sharing is used then there is also the option to control the weight given to the policy and value components of the loss function through 'policy_loss_coef' and 'val_loss_coef'
     Algorithm - separate actor and critic:
         Repeat:
             1. Collect k examples
@@ -134,28 +134,28 @@ class ActorCritic(Reinforce):
             - Recurrent networks take n states as input and require an OnPolicySeqReplay or OnPolicySeqBatchReplay memory
         '''
         net_type = self.net_spec['type']
-        # options of net_type are {MLP, Conv, Recurrent} x {shared, separate}
+        # options of net_type are {MLPNet, ConvNet, RecurrentNet} x {Shared, Separate}
         in_dim = self.body.state_dim
         if self.body.is_discrete:
-            if 'shared' in net_type:
+            if 'Shared' in net_type:
                 self.share_architecture = True
                 out_dim = [self.body.action_dim, 1]
             else:
-                assert 'separate' in net_type
+                assert 'Separate' in net_type
                 self.share_architecture = False
                 out_dim = self.body.action_dim
                 critic_out_dim = 1
         else:
-            if 'shared' in net_type:
+            if 'Shared' in net_type:
                 self.share_architecture = True
                 out_dim = [self.body.action_dim, self.body.action_dim, 1]
             else:
-                assert 'separate' in net_type
+                assert 'Separate' in net_type
                 self.share_architecture = False
                 out_dim = [self.body.action_dim, self.body.action_dim]
                 critic_out_dim = 1
 
-        self.net_spec['type'] = net_type = net_type.replace('shared', 'Net').replace('separate', 'Net')
+        self.net_spec['type'] = net_type = net_type.replace('Shared', '').replace('Separate', '')
         if 'MLP' in net_type and ps.is_list(out_dim) and len(out_dim) > 1:
             self.net_spec['type'] = 'MLPHeterogenousTails'
 

@@ -171,7 +171,7 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPshared",
+        "type": "MLPNetShared",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -253,7 +253,7 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPseparate",
+        "type": "MLPNetSeparate",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -335,7 +335,7 @@
         "name": "OnPolicySeqReplay"
       },
       "net": {
-        "type": "Recurrentshared",
+        "type": "RecurrentNetShared",
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
@@ -420,7 +420,7 @@
         "name": "OnPolicySeqReplay"
       },
       "net": {
-        "type": "Recurrentseparate",
+        "type": "RecurrentNetSeparate",
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
@@ -505,7 +505,7 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPshared",
+        "type": "MLPNetShared",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -587,7 +587,7 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPseparate",
+        "type": "MLPNetSeparate",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -669,7 +669,7 @@
         "name": "OnPolicySeqReplay"
       },
       "net": {
-        "type": "Recurrentshared",
+        "type": "RecurrentNetShared",
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
@@ -754,7 +754,7 @@
         "name": "OnPolicySeqReplay"
       },
       "net": {
-        "type": "Recurrentseparate",
+        "type": "RecurrentNetSeparate",
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
@@ -834,7 +834,7 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPshared",
+        "type": "MLPNetShared",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -911,7 +911,7 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPseparate",
+        "type": "MLPNetSeparate",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -988,7 +988,7 @@
         "name": "OnPolicySeqReplay"
       },
       "net": {
-        "type": "Recurrentshared",
+        "type": "RecurrentNetShared",
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
@@ -1068,7 +1068,7 @@
         "name": "OnPolicySeqReplay"
       },
       "net": {
-        "type": "Recurrentseparate",
+        "type": "RecurrentNetSeparate",
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
