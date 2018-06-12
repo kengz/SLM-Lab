@@ -15,17 +15,6 @@ def run_trial_test(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-
-    ('benchmark_cartpole.json', 'multitask_dqn_boltzmann_cartpole'),
-    ('benchmark_cartpole.json', 'multitask_dqn_epsilon_greedy_cartpole'),
-    ('benchmark_cartpole.json', 'hydra_dqn_boltzmann_cartpole'),
-    ('benchmark_cartpole.json', 'hydra_dqn_epsilon_greedy_cartpole'),
-])
-def test_all(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-@pytest.mark.parametrize('spec_file,spec_name', [
     ('base.json', 'base_case'),
     ('base.json', 'base_case_openai'),
     ('random.json', 'random_cartpole'),
@@ -122,4 +111,20 @@ def test_dqn(spec_file, spec_name):
     # ('ddqn.json', 'ddqn_epsilon_greedy_breakout'),
 ])
 def test_ddqn(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('multitask_dqn.json', 'multitask_dqn_boltzmann_cartpole'),
+    ('multitask_dqn.json', 'multitask_dqn_epsilon_greedy_cartpole'),
+])
+def test_multitask_dqn(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('hydra_dqn.json', 'hydra_dqn_boltzmann_cartpole'),
+    ('hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole'),
+])
+def test_multitask_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
