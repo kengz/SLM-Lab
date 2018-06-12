@@ -385,8 +385,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "dqn_epsilon_greedy_breakout": {
@@ -457,8 +456,66 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
+    }
+  },
+  "dqn_stack_epsilon_greedy_lunar": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.08,
+        "explore_anneal_epi": 175,
+        "gamma": 0.99,
+        "training_epoch": 5,
+        "training_frequency": 50,
+        "training_min_timestep": 100
+      },
+      "memory": {
+        "name": "StackReplay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "stack_len": 4
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.0002
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 5000,
+        "lr_decay_min_timestep": 50000,
+        "update_type": "replace",
+        "update_frequency": 500,
+        "polyak_coef": 0.9,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 600
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 1,
+      "max_trial": 1,
+      "search": "RandomSearch"
     }
   }
 }

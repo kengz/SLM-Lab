@@ -385,8 +385,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   },
   "ddqn_epsilon_greedy_breakout": {
@@ -457,8 +456,7 @@
     "meta": {
       "max_session": 1,
       "max_trial": 1,
-      "search": "RandomSearch",
-      "train_mode": true
+      "search": "RandomSearch"
     }
   }
 }

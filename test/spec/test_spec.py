@@ -98,6 +98,7 @@ def test_sarsa(spec_file, spec_name):
     ('dqn.json', 'drqn_epsilon_greedy_cartpole'),
     ('dqn.json', 'dqn_boltzmann_breakout'),
     ('dqn.json', 'dqn_epsilon_greedy_breakout'),
+    ('dqn.json', 'dqn_stack_epsilon_greedy_lunar'),
 ])
 def test_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
