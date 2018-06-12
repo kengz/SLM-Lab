@@ -202,14 +202,26 @@ class StackReplay(Replay):
             'max_size',
             'stack_len',  # num_stack_states
         ])
-        body.state_dim = body.state_dim * self.stack_len  # flattened stacked input
+        self.raw_state_dim = deepcopy(body.state_dim)  # used for state_buffer
+        body.state_dim = body.state_dim * self.stack_len  # modify to use for net init for flattened stacked input
         super(StackReplay, self).__init__(memory_spec, algorithm, body)
         self.state_buffer = deque(maxlen=self.stack_len)
         self.reset()
 
+    def reset(self):
+        '''Initializes the memory arrays, size and head pointer'''
+        super(StackReplay, self).reset()
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
+
     def epi_reset(self, state):
         '''Method to reset at new episode'''
         super(StackReplay, self).epi_reset(self.preprocess_state(state, append=False))
+        # reappend buffer with custom shape
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
@@ -219,8 +231,17 @@ class StackReplay(Replay):
         processed_state = np.concatenate(self.state_buffer)
         return processed_state
 
+    @lab_api
+    def update(self, action, reward, state, done):
+        '''Interface method to update memory'''
+        self.base_update(action, reward, state, done)
+        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
+        if not np.isnan(reward):  # not the start of episode
+            self.add_experience(self.last_state, action, reward, state, done)
+        self.last_state = state
 
-class AtariReplay(Replay):
+
+class AtariReplay(StackReplay):
     '''
     Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
     Otherwise the same as Replay memory
@@ -241,24 +262,11 @@ class AtariReplay(Replay):
             'max_size',
             'stack_len',  # num_stack_states
         ])
-        body.state_dim = (84, 84, self.stack_len)  # greyscale downsized, stacked
-        super(AtariReplay, self).__init__(memory_spec, algorithm, body)
+        self.raw_state_dim = (84, 84)
+        body.state_dim = self.raw_state_dim + (self.stack_len,)  # greyscale downsized, stacked
+        Replay.__init__(self, memory_spec, algorithm, body)
         self.state_buffer = deque(maxlen=self.stack_len)
         self.reset()
-
-    def reset(self):
-        '''Initializes the memory arrays, size and head pointer'''
-        super(AtariReplay, self).reset()
-        self.state_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
-
-    def epi_reset(self, state):
-        '''Method to reset at new episode'''
-        super(AtariReplay, self).epi_reset(self.preprocess_state(state, append=False))
-        self.state_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim[:-1]))
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
