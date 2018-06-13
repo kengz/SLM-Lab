@@ -11,6 +11,7 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 20,
         "gamma": 0.99,
+        "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 32,
         "training_min_timestep": 10
@@ -89,6 +90,7 @@
         "explore_var_end": 0.1,
         "explore_anneal_epi": 20,
         "gamma": 0.99,
+        "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 32,
         "training_min_timestep": 10
@@ -167,6 +169,7 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 20,
         "gamma": 0.99,
+        "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 32,
         "training_min_timestep": 10
@@ -248,6 +251,7 @@
         "explore_var_end": 0.1,
         "explore_anneal_epi": 20,
         "gamma": 0.99,
+        "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 32,
         "training_min_timestep": 10
@@ -329,6 +333,7 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 20,
         "gamma": 0.99,
+        "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 100,
         "training_min_timestep": 100
@@ -400,6 +405,7 @@
         "explore_var_end": 0.1,
         "explore_anneal_epi": 20,
         "gamma": 0.99,
+        "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 100,
         "training_min_timestep": 100
