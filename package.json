@@ -4,17 +4,17 @@
   "description": "A research framework for Deep Reinforcement Learning using Unity, OpenAI Gym, PyTorch, Tensorflow.",
   "main": "index.js",
   "scripts": {
-    "start": "python run_lab.py",
-    "debug": "LOG_LEVEL=DEBUG python run_lab.py",
-    "debug2": "LOG_LEVEL=DEBUG2 python run_lab.py",
-    "debug3": "LOG_LEVEL=DEBUG3 python run_lab.py",
+    "start": "python3 run_lab.py",
+    "debug": "LOG_LEVEL=DEBUG python3 run_lab.py",
+    "debug2": "LOG_LEVEL=DEBUG2 python3 run_lab.py",
+    "debug3": "LOG_LEVEL=DEBUG3 python3 run_lab.py",
     "watch": "if pgrep grunt >/dev/null 2>&1; then echo 'Grunt file watch-sync already running'; else node_modules/grunt/bin/grunt; fi",
-    "analyze": "python -c 'import sys; from slm_lab.experiment import analysis; analysis.retro_analyze(sys.argv[1])'",
+    "analyze": "python3 -c 'import sys; from slm_lab.experiment import analysis; analysis.retro_analyze(sys.argv[1])'",
     "reset": "rm -rf data/* .cache __pycache__ */__pycache__ *egg-info .pytest* htmlcov .coverage* *.xml",
     "kill": "pkill -f slm-env; pkill -f ipykernel; pkill -f run_lab.py; ray stop;",
     "update": "conda env update -f environment.yml; yarn install;",
     "export-env": "conda env export > environment.yml",
-    "test": "python setup.py test"
+    "test": "python3 setup.py test"
   },
   "repository": "https://github.com/kengz/SLM-Lab.git",
   "author": "kengz <kengzwl@gmail.com>, lgraesser",
