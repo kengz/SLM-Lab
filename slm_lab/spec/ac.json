@@ -1,9 +1,9 @@
 {
-  "ppo_mlp_shared_cartpole": {
+  "ac_mlp_shared_cartpole": {
     "agent": [{
-      "name": "PPO",
+      "name": "ActorCritic",
       "algorithm": {
-        "name": "PPO",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -11,9 +11,14 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
+        "use_gae": false,
         "lam": 1.0,
-        "clip_eps": 0.10,
+        "num_step_returns": 100,
+        "add_entropy": false,
         "entropy_coef": 0.01,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_epoch": 8
       },
@@ -76,11 +81,11 @@
       }]
     }
   },
-  "ppo_mlp_separate_cartpole": {
+  "ac_mlp_separate_cartpole": {
     "agent": [{
-      "name": "PPO",
+      "name": "ActorCritic",
       "algorithm": {
-        "name": "PPO",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -88,9 +93,14 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
+        "use_gae": false,
         "lam": 1.0,
-        "clip_eps": 0.10,
+        "num_step_returns": 100,
+        "add_entropy": false,
         "entropy_coef": 0.01,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_epoch": 8
       },
@@ -153,11 +163,11 @@
       }]
     }
   },
-  "ppo_rnn_shared_cartpole": {
+  "ac_rnn_shared_cartpole": {
     "agent": [{
-      "name": "PPO",
+      "name": "ActorCritic",
       "algorithm": {
-        "name": "PPO",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -165,9 +175,14 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
+        "use_gae": false,
         "lam": 1.0,
-        "clip_eps": 0.10,
+        "num_step_returns": 100,
+        "add_entropy": false,
         "entropy_coef": 0.01,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_epoch": 8
       },
@@ -233,11 +248,11 @@
       }]
     }
   },
-  "ppo_rnn_separate_cartpole": {
+  "ac_rnn_separate_cartpole": {
     "agent": [{
-      "name": "PPO",
+      "name": "ActorCritic",
       "algorithm": {
-        "name": "PPO",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -245,9 +260,14 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
+        "use_gae": false,
         "lam": 1.0,
-        "clip_eps": 0.10,
+        "num_step_returns": 100,
+        "add_entropy": false,
         "entropy_coef": 0.01,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_epoch": 8
       },
@@ -313,11 +333,11 @@
       }]
     }
   },
-  "ppo_conv_shared_breakout": {
+  "ac_conv_shared_breakout": {
     "agent": [{
-      "name": "PPO",
+      "name": "ActorCritic",
       "algorithm": {
-        "name": "PPO",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -325,9 +345,14 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
+        "use_gae": false,
         "lam": 1.0,
-        "clip_eps": 0.10,
+        "num_step_returns": 100,
+        "add_entropy": false,
         "entropy_coef": 0.01,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_epoch": 8
       },
@@ -357,8 +382,8 @@
           "lr": 0.01
         },
         "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 600,
         "gpu": true
       }
     }],
@@ -378,11 +403,11 @@
       "max_generation": null
     }
   },
-  "ppo_conv_separate_breakout": {
+  "ac_conv_separate_breakout": {
     "agent": [{
-      "name": "PPO",
+      "name": "ActorCritic",
       "algorithm": {
-        "name": "PPO",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -390,9 +415,14 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
+        "use_gae": false,
         "lam": 1.0,
-        "clip_eps": 0.10,
+        "num_step_returns": 100,
+        "add_entropy": false,
         "entropy_coef": 0.01,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_epoch": 8
       },
@@ -422,8 +452,8 @@
           "lr": 0.01
         },
         "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 600,
         "gpu": true
       }
     }],

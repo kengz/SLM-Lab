@@ -1,6 +1,7 @@
 from slm_lab.experiment.control import Trial, Session
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+import os
 import pandas as pd
 import pytest
 
@@ -33,36 +34,10 @@ def test_base_multi(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
+# NOTE mute conv tests for onpolicy memory because there is no preprocessor yet and images will be very large
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('actor_critic.json', 'actor_critic_cartpole'),
-    ('actor_critic.json', 'actor_critic_cartpole_recurrent'),
-    # ('actor_critic.json', 'actor_critic_conv_breakout'),
-])
-def test_actor_critic(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('dqn.json', 'dqn_cartpole'),
-    ('dqn.json', 'double_dqn_cartpole_replace'),
-    ('dqn.json', 'multitask_dqn_cartpole'),
-    ('dqn.json', 'hydra_dqn_cartpole'),
-    # ('dqn_atari.json', 'dqn_breakout'),
-])
-def test_dqn(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('ppo.json', 'ppo_cartpole'),
-])
-def test_ppo(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('reinforce.json', 'reinforce_cartpole'),
-    ('reinforce.json', 'reinforce_cartpole_recurrent'),
+    ('reinforce.json', 'reinforce_mlp_cartpole'),
+    ('reinforce.json', 'reinforce_rnn_cartpole'),
     # ('reinforce.json', 'reinforce_conv_breakout'),
 ])
 def test_reinforce(spec_file, spec_name):
@@ -70,9 +45,101 @@ def test_reinforce(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('sarsa.json', 'sarsa_cartpole'),
-    ('sarsa.json', 'sarsa_cartpole_recurrent'),
-    ('sarsa.json', 'sarsa_cartpole_episodic'),
+    ('ac.json', 'ac_mlp_shared_cartpole'),
+    ('ac.json', 'ac_mlp_separate_cartpole'),
+    ('ac.json', 'ac_rnn_shared_cartpole'),
+    ('ac.json', 'ac_rnn_separate_cartpole'),
+    # ('ac.json', 'ac_conv_shared_breakout'),
+    # ('ac.json', 'ac_conv_separate_breakout'),
+])
+def test_ac(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('a2c.json', 'a2c_mlp_shared_cartpole'),
+    ('a2c.json', 'a2c_mlp_separate_cartpole'),
+    ('a2c.json', 'a2c_rnn_shared_cartpole'),
+    ('a2c.json', 'a2c_rnn_separate_cartpole'),
+    # ('a2c.json', 'a2c_conv_shared_breakout'),
+    # ('a2c.json', 'a2c_conv_separate_breakout'),
+])
+def test_a2c(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('ppo.json', 'ppo_mlp_shared_cartpole'),
+    ('ppo.json', 'ppo_mlp_separate_cartpole'),
+    ('ppo.json', 'ppo_rnn_shared_cartpole'),
+    ('ppo.json', 'ppo_rnn_separate_cartpole'),
+    # ('ppo.json', 'ppo_conv_shared_breakout'),
+    # ('ppo.json', 'ppo_conv_separate_breakout'),
+])
+def test_ppo(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('sarsa.json', 'sarsa_mlp_boltzmann_cartpole'),
+    ('sarsa.json', 'sarsa_mlp_epsilon_greedy_cartpole'),
+    ('sarsa.json', 'sarsa_rnn_boltzmann_cartpole'),
+    ('sarsa.json', 'sarsa_rnn_epsilon_greedy_cartpole'),
+    # ('sarsa.json', 'sarsa_conv_boltzmann_breakout'),
+    # ('sarsa.json', 'sarsa_conv_epsilon_greedy_breakout'),
 ])
 def test_sarsa(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('dqn.json', 'vanilla_dqn_cartpole'),
+    ('dqn.json', 'dqn_boltzmann_cartpole'),
+    ('dqn.json', 'dqn_epsilon_greedy_cartpole'),
+    ('dqn.json', 'drqn_boltzmann_cartpole'),
+    ('dqn.json', 'drqn_epsilon_greedy_cartpole'),
+    # ('dqn.json', 'dqn_boltzmann_breakout'),
+    # ('dqn.json', 'dqn_epsilon_greedy_breakout'),
+    ('dqn.json', 'dqn_stack_epsilon_greedy_lunar'),
+])
+def test_dqn(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('ddqn.json', 'ddqn_boltzmann_cartpole'),
+    ('ddqn.json', 'ddqn_epsilon_greedy_cartpole'),
+    ('ddqn.json', 'ddrqn_boltzmann_cartpole'),
+    ('ddqn.json', 'ddrqn_epsilon_greedy_cartpole'),
+    # ('ddqn.json', 'ddqn_boltzmann_breakout'),
+    # ('ddqn.json', 'ddqn_epsilon_greedy_breakout'),
+])
+def test_ddqn(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI has not enough RAM")
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('dqn.json', 'dqn_boltzmann_breakout'),
+    ('dqn.json', 'dqn_epsilon_greedy_breakout'),
+    ('ddqn.json', 'ddqn_boltzmann_breakout'),
+    ('ddqn.json', 'ddqn_epsilon_greedy_breakout'),
+])
+def test_dqn_breakout(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('multitask_dqn.json', 'multitask_dqn_boltzmann_cartpole'),
+    ('multitask_dqn.json', 'multitask_dqn_epsilon_greedy_cartpole'),
+])
+def test_multitask_dqn(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('hydra_dqn.json', 'hydra_dqn_boltzmann_cartpole'),
+    ('hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole'),
+])
+def test_multitask_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)

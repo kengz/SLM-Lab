@@ -16,9 +16,44 @@ class ConvNet(Net, nn.Module):
 
     Assumes that a single input example is organized into a 3D tensor.
     The entire model consists of three parts:
-         1. self.conv_model
-         2. self.dense_model
-         3. self.out_layers
+        1. self.conv_model
+        2. self.dense_model
+        3. self.out_layers
+
+    e.g. net_spec
+    "net": {
+        "type": "ConvNet",
+        "hid_layers": [
+          [
+            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [32, 64, [4, 4], 2, 0, [1, 1]],
+            [64, 64, [3, 3], 1, 0, [1, 1]]
+          ],
+          [512]
+        ],
+        "hid_layers_activation": "relu",
+        "batch_norm": false,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "RMSprop",
+          "lr": 0.00025,
+          "alpha": 0.95,
+          "eps": 0.01,
+          "momentum": 0.0,
+          "centered": true
+        },
+        "lr_decay": "no_decay",
+        "lr_decay_frequency": 400,
+        "lr_decay_min_timestep": 1400,
+        "update_type": "replace",
+        "update_frequency": 10000,
+        "polyak_coef": 0.9,
+        "gpu": true
+    }
     '''
 
     def __init__(self, net_spec, algorithm, in_dim, out_dim):
@@ -42,7 +77,7 @@ class ConvNet(Net, nn.Module):
         lr_decay_min_timestep: minimum amount of total timesteps before starting decay
         update_type: method to update network weights: 'replace' or 'polyak'
         update_frequency: how many total timesteps per update
-        polyak_weight: ratio of polyak weight update
+        polyak_coef: ratio of polyak weight update
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
         # OpenAI gym provides images as W x H x C, pyTorch expects C x W x H
@@ -61,7 +96,7 @@ class ConvNet(Net, nn.Module):
             lr_decay='no_decay',
             update_type='replace',
             update_frequency=1,
-            polyak_weight=0.0,
+            polyak_coef=0.0,
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
@@ -77,7 +112,7 @@ class ConvNet(Net, nn.Module):
             'lr_decay_min_timestep',
             'update_type',
             'update_frequency',
-            'polyak_weight',
+            'polyak_coef',
             'gpu',
         ])
 
@@ -145,13 +180,13 @@ class ConvNet(Net, nn.Module):
             x.unsqueeze_(dim=0)
         elif x.dim() == 4:
             x = x.permute(0, 3, 1, 2)
-            logger.debug(f'x: {x.size()}')
         x = self.conv_model(x)
         x = x.view(-1, self.conv_out_dim)
         x = self.dense_model(x)
         outs = []
         for model_tail in self.model_tails:
             outs.append(model_tail(x))
+        # return tensor if single tail, else list of tail tensors
         if len(outs) == 1:
             return outs[0]
         else:
@@ -165,6 +200,7 @@ class ConvNet(Net, nn.Module):
         if loss is None:
             out = self(x)
             loss = self.loss_fn(out, y)
+        assert not torch.isnan(loss).any()
         loss.backward()
         if self.clip_grad:
             logger.debug(f'Clipping gradient')

@@ -3,6 +3,8 @@ from collections import deque
 from slm_lab.lib import logger
 import numpy as np
 
+logger = logger.get_logger(__name__)
+
 
 class Memory(ABC):
     '''
@@ -40,8 +42,11 @@ class Memory(ABC):
     def epi_reset(self, state):
         '''Method to reset at new episode'''
         self.last_state = state
-        self.state_buffer.clear()
+        self.body.epi_reset()
         self.total_reward = 0
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim))
 
     def base_update(self, action, reward, state, done):
         '''Method to do base memory update, like stats'''
@@ -54,13 +59,6 @@ class Memory(ABC):
             self.total_reward_h.append(self.total_reward)
             self.avg_total_reward = np.mean(self.total_reward_h[-self.avg_window:])
             self.avg_total_reward_h.append(self.avg_total_reward_h)
-
-            body = self.body
-            info_space = body.agent.info_space
-            env = body.env
-            clock = env.clock
-            msg = f'Trial {info_space.get("trial")} session {info_space.get("session")} env {env.e}, body {body.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, total_reward: {self.total_reward:.2f}, last-{self.avg_window}-epi avg: {self.avg_total_reward:.2f}'
-            logger.info(msg)
         return
 
     @abstractmethod

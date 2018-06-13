@@ -1,5 +1,5 @@
 from slm_lab.agent import net
-from slm_lab.agent.algorithm import policy_util
+from slm_lab.agent.algorithm import math_util, policy_util
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -22,6 +22,22 @@ class Reinforce(Algorithm):
         2. Sum all the values above.
         3. Calculate the gradient of this value with respect to all of the parameters of the network
         4. Update the network parameters using the gradient
+
+    e.g. algorithm_spec:
+    "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.99,
+        "add_entropy": false,
+        "entropy_coef": 0.01,
+        "continuous_action_clip": 2.0,
+        "training_frequency": 1
+    }
     '''
 
     @lab_api
@@ -45,13 +61,16 @@ class Reinforce(Algorithm):
             explore_anneal_epi=np.nan,
         ))
         util.set_attr(self, self.algorithm_spec, [
+            'action_pdtype',
             'action_policy',
             # theoretically, REINFORCE does not have policy update; but in this implementation we have such option
             'action_policy_update',
-            'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
+            'explore_var_start',
+            'explore_var_end',
+            'explore_anneal_epi',
             'gamma',  # the discount factor
             'add_entropy',
-            'entropy_weight',
+            'entropy_coef',
             'continuous_action_clip',
             'training_frequency',
         ])
@@ -99,8 +118,8 @@ class Reinforce(Algorithm):
         action, action_pd = self.action_policy(state, self, body)
         body.entropies.append(action_pd.entropy())
         body.log_probs.append(action_pd.log_prob(action.float()))
-        if len(action.size()) == 0:  # scalar
-            return action.numpy().astype(body.action_space.dtype)
+        if len(action.shape) == 0:  # scalar
+            return action.numpy().astype(body.action_space.dtype).item()
         else:
             return action.numpy()
 
@@ -108,84 +127,45 @@ class Reinforce(Algorithm):
     def sample(self):
         '''Samples a batch from memory'''
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        # TODO if just want raw rewards, skip conversion to torch batch
-        batch = util.concat_dict(batches)
-        batch = util.to_torch_nested_batch_ex_rewards(batch, self.net.gpu)
+        batch = util.concat_batches(batches)
+        batch = util.to_torch_batch(batch, self.net.gpu)
         return batch
 
     @lab_api
     def train(self):
         if self.to_train == 1:
-            logger.debug2(f'Training...')
-            # We only care about the rewards from the batch
-            rewards = self.sample()['rewards']
-            loss = self.calc_policy_loss(rewards)
+            batch = self.sample()
+            loss = self.calc_policy_loss(batch)
             self.net.training_step(loss=loss)
-
+            # reset
             self.to_train = 0
             self.body.log_probs = []
             self.body.entropies = []
             logger.debug(f'Policy loss: {loss}')
-            return loss.item()
-        else:
-            return np.nan
+            self.last_loss = loss.item()
+        return self.last_loss
 
     def calc_policy_loss(self, batch):
-        '''
-        Returns the policy loss for a batch of data.
-        For REINFORCE just rewards are passed in as the batch
-        '''
-        advantage = self.calc_advantage(batch)
-        advantage = self.check_sizes(advantage)
+        '''Calculate the policy loss for a batch of data.'''
+        # use simple returns as advs
+        advs = math_util.calc_returns(batch, self.gamma)
+        # advantage standardization trick
+        # guard nan std by setting to 0 and add small const
+        adv_std = advs.std()
+        adv_std[adv_std != adv_std] = 0
+        adv_std += 1e-08
+        advs = (advs - advs.mean()) / adv_std
+        assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
         policy_loss = torch.tensor(0.0)
-        for log_prob, a, e in zip(self.body.log_probs, advantage, self.body.entropies):
-            logger.debug3(f'log prob: {log_prob.item()}, advantage: {a}, entropy: {e.item()}')
+        if torch.cuda.is_available() and self.net.gpu:
+            advs = advs.cuda()
+            policy_loss = policy_loss.cuda()
+        for logp, adv, ent in zip(self.body.log_probs, advs, self.body.entropies):
             if self.add_entropy:
-                policy_loss += (-log_prob * a - self.entropy_weight * e)
+                policy_loss += (-logp * adv - self.entropy_coef * ent)
             else:
-                policy_loss += (-log_prob * a)
+                policy_loss += (-logp * adv)
         return policy_loss
-
-    def check_sizes(self, advantage):
-        '''
-        Checks that log probs, advantage, and entropy all have the same size
-        Occassionally they do not, this is caused by first reward of an episode being nan. If they are not the same size, the function removes the elements of the log probs and entropy that correspond to nan rewards.
-        '''
-        body = self.body
-        nan_idxs = body.memory.last_nan_idxs
-        num_nans = sum(nan_idxs)
-        assert len(nan_idxs) == len(body.log_probs)
-        assert len(nan_idxs) == len(body.entropies)
-        assert len(nan_idxs) - num_nans == advantage.size(0)
-        logger.debug2(f'{num_nans} nans encountered when gathering data')
-        if num_nans != 0:
-            idxs = [x for x in range(len(nan_idxs)) if nan_idxs[x] == 1]
-            logger.debug3(f'Nan indexes: {idxs}')
-            for idx in idxs[::-1]:
-                del body.log_probs[idx]
-                del body.entropies[idx]
-        assert len(body.log_probs) == advantage.size(0)
-        assert len(body.entropies) == advantage.size(0)
-        return advantage
-
-    def calc_advantage(self, raw_rewards):
-        '''Returns the advantage for each action'''
-        advantage = []
-        logger.debug3(f'Raw rewards: {raw_rewards}')
-        for epi_rewards in raw_rewards:
-            big_r = 0
-            T = len(epi_rewards)
-            returns = np.empty(T, 'float32')
-            for t in reversed(range(T)):
-                big_r = epi_rewards[t] + self.gamma * big_r
-                returns[t] = big_r
-            logger.debug3(f'Rewards: {returns}')
-            returns = (returns - returns.mean()) / (returns.std() + 1e-08)
-            returns = torch.from_numpy(returns)
-            logger.debug3(f'Normalized returns: {returns}')
-            advantage.append(returns)
-        advantage = torch.cat(advantage)
-        return advantage
 
     @lab_api
     def update(self):

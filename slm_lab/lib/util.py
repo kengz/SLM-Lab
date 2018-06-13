@@ -3,10 +3,8 @@ from datetime import datetime
 from functools import wraps
 from gym import spaces
 from itertools import chain
-from scipy.misc import imsave
 from slm_lab import ROOT_DIR
 from sys import getsizeof, stderr
-import collections
 import colorlover as cl
 import cv2
 import json
@@ -14,7 +12,6 @@ import math
 import numpy as np
 import os
 import pandas as pd
-import pprint
 import pydash as ps
 import regex as re
 import scipy as sp
@@ -85,13 +82,23 @@ def compact_dict(d):
     return {k: v for k, v in d.items() if not gen_isnan(v)}
 
 
-def concat_dict(d_list):
-    '''Concatenate all the dicts by their array values'''
-    cat_dict = {}
-    for k in d_list[0]:
-        arr = np.concatenate([d[k] for d in d_list])
-        cat_dict[k] = arr
-    return cat_dict
+def concat_batches(batches):
+    '''
+    Concat batch objects from body.memory.sample() into one batch, when all bodies experience similar envs
+    Also concat any nested epi sub-batches into flat batch
+    {k: arr1} + {k: arr2} = {k: arr1 + arr2}
+    '''
+    episodic = is_episodic(batches[0])
+    concat_batch = {}
+    for k in batches[0]:
+        datas = []
+        for batch in batches:
+            data = batch[k]
+            if episodic:  # make into plain batch instead of nested
+                data = np.concatenate(data)
+            datas.append(data)
+        concat_batch[k] = np.concatenate(datas)
+    return concat_batch
 
 
 def count_nonan(arr):
@@ -350,6 +357,17 @@ def interp(scl, r):
     return cl.to_hsl(c)
 
 
+def is_episodic(batch):
+    '''
+    Check if batch is episodic or is plain
+    episodic: {k: [[*data_epi1], [*data_epi2], ...]}
+    plain: {k: [*data]}
+    '''
+    dones = batch['dones']  # the most reliable, scalar
+    # if is nested, then is episodic
+    return isinstance(dones[0], (list, np.ndarray))
+
+
 def is_jupyter():
     '''Check if process is in Jupyter kernel'''
     try:
@@ -489,8 +507,8 @@ def override_dev_spec(spec):
 
 def override_test_spec(spec):
     for env_spec in spec['env']:
-        env_spec['max_episode'] = 2
-        env_spec['max_timestep'] = 30
+        env_spec['max_episode'] = 3
+        env_spec['max_timestep'] = 100
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
     return spec
@@ -609,8 +627,8 @@ def self_desc(cls):
     desc_list = [f'{get_class_name(cls)}:']
     for k, v in get_class_attr(cls).items():
         if k == 'spec':
-            continue
-        if ps.is_dict(v) or ps.is_dict(ps.head(v)):
+            desc_v = v['name']
+        elif ps.is_dict(v) or ps.is_dict(ps.head(v)):
             desc_v = to_json(v)
         else:
             desc_v = v
@@ -673,6 +691,20 @@ def smart_path(data_path, as_dir=False):
 def to_json(d, indent=2):
     '''Shorthand method for stringify JSON with indent'''
     return json.dumps(d, indent=indent, cls=LabJsonEncoder)
+
+
+def to_one_hot(data, max_val):
+    '''Convert an int list of data into one-hot vectors'''
+    return np.eye(max_val)[np.array(data)]
+
+
+def to_torch_batch(batch, gpu):
+    '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
+    for k in batch:
+        batch[k] = torch.from_numpy(batch[k].astype('float32')).float()
+        if torch.cuda.is_available() and gpu:
+            batch[k] = batch[k].cuda()
+    return batch
 
 
 def to_tuple_list(l):
@@ -741,66 +773,6 @@ def write_as_plain(data, data_path):
         open_file.write(str(data))
     open_file.close()
     return data_path
-
-
-def to_torch_batch(batch, gpu):
-    '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
-    float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
-    for k in float_data_names:
-        batch[k] = torch.from_numpy(batch[k].astype(np.float)).float()
-        if torch.cuda.is_available() and gpu:
-            batch[k] = batch[k].cuda()
-    return batch
-
-
-def to_torch_nested_batch(batch, gpu):
-    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch tensor'''
-    float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
-    return to_torch_nested_batch_helper(batch, float_data_names, gpu)
-
-
-def to_torch_nested_batch_ex_rewards(batch, gpu):
-    '''Mutate a nested batch (dict of lists) to make its values (excluding rewards) from numpy into PyTorch tensor.'''
-    float_data_names = ['states', 'actions', 'dones', 'next_states']
-    return to_torch_nested_batch_helper(batch, float_data_names, gpu)
-
-
-def to_torch_nested_batch_helper(batch, float_data_names, gpu):
-    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch tensor. Excludes keys not included in float_data_names'''
-    for k in float_data_names:
-        k_b = []
-        for x in batch[k]:
-            nx = np.asarray(x).astype(np.float)
-            tx = torch.from_numpy(nx).float()
-            if torch.cuda.is_available() and gpu:
-                tx = tx.cuda()
-            k_b.append(tx)
-        batch[k] = k_b
-    return batch
-
-
-def concat_episodes(batch):
-    '''Concat episodic data into single tensors. Excludes data that isn't already a tensor'''
-    for k in batch:
-        classname = get_class_name(batch[k][0])
-        if 'ndarray' in classname or 'list' in classname:
-            # print(f'Skipping {k}')
-            pass
-        else:
-            batch[k] = torch.cat(batch[k], dim=0)
-            if batch[k].dim() == 1:
-                batch[k].unsqueeze_(1)
-    return batch
-
-
-def convert_to_one_hot(data, categories, gpu):
-    '''Converts categorical data to one hot representation'''
-    data_onehot = torch.zeros(data.size(0), categories)
-    idxs = torch.from_numpy(np.array(list(range(data.size(0)))))
-    data_onehot[idxs, data.data.long().cpu()] = 1
-    if torch.cuda.is_available() and gpu:
-        data_onehot = data_onehot.cuda()
-    return data_onehot
 
 
 def resize_image(im):

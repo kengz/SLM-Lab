@@ -29,8 +29,31 @@ class MLPNet(Net, nn.Module):
         lr_decay_min_timestep: minimum amount of total timesteps before starting decay
         update_type: method to update network weights: 'replace' or 'polyak'
         update_frequency: how many total timesteps per update
-        polyak_weight: ratio of polyak weight update
+        polyak_coef: ratio of polyak weight update
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
+
+        e.g. net_spec
+        "net": {
+            "type": "MLPNet",
+            "hid_layers": [32],
+            "hid_layers_activation": "relu",
+            "clip_grad": false,
+            "clip_grad_val": 1.0,
+            "loss_spec": {
+              "name": "MSELoss"
+            },
+            "optim_spec": {
+              "name": "Adam",
+              "lr": 0.02
+            },
+            "lr_decay": "rate_decay",
+            "lr_decay_frequency": 500,
+            "lr_decay_min_timestep": 1000,
+            "update_type": "replace",
+            "update_frequency": 1,
+            "polyak_coef": 0.9,
+            "gpu": true
+        }
         '''
         nn.Module.__init__(self)
         super(MLPNet, self).__init__(net_spec, algorithm, in_dim, out_dim)
@@ -43,7 +66,7 @@ class MLPNet(Net, nn.Module):
             lr_decay='no_decay',
             update_type='replace',
             update_frequency=1,
-            polyak_weight=0.0,
+            polyak_coef=0.0,
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
@@ -58,7 +81,7 @@ class MLPNet(Net, nn.Module):
             'lr_decay_min_timestep',
             'update_type',
             'update_frequency',
-            'polyak_weight',
+            'polyak_coef',
             'gpu',
         ])
 
@@ -85,7 +108,7 @@ class MLPNet(Net, nn.Module):
     def training_step(self, x=None, y=None, loss=None):
         '''
         Takes a single training step: one forward and one backwards pass
-        More most RL usage, we have custom, often complication, loss functions. Compute its value and put it in a pytorch tensor then pass it in as loss
+        More most RL usage, we have custom, often complicated, loss functions. Compute its value and put it in a pytorch tensor then pass it in as loss
         '''
         self.train()
         self.zero_grad()
@@ -93,6 +116,7 @@ class MLPNet(Net, nn.Module):
         if loss is None:
             out = self(x)
             loss = self.loss_fn(out, y)
+        assert not torch.isnan(loss).any()
         loss.backward()
         if self.clip_grad:
             logger.debug(f'Clipping gradient')
@@ -122,6 +146,29 @@ class MLPNet(Net, nn.Module):
 class MLPHeterogenousTails(MLPNet):
     '''
     Class for generating arbitrary sized feedforward neural network, with a heterogenous set of output tails that may correspond to different values. For example, the mean or std deviation of a continous policy, the state-value estimate, or the logits of a categorical action distribution
+
+    e.g. net_spec
+    "net": {
+        "type": "MLPHeterogenousTails",
+        "hid_layers": [32],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 500,
+        "lr_decay_min_timestep": 1000,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
+        "gpu": true
+    }
     '''
 
     def __init__(self, net_spec, algorithm, in_dim, out_dim):
@@ -136,7 +183,7 @@ class MLPHeterogenousTails(MLPNet):
             lr_decay='no_decay',
             update_type='replace',
             update_frequency=1,
-            polyak_weight=0.0,
+            polyak_coef=0.0,
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
@@ -151,7 +198,7 @@ class MLPHeterogenousTails(MLPNet):
             'lr_decay_min_timestep',
             'update_type',
             'update_frequency',
-            'polyak_weight',
+            'polyak_coef',
             'gpu',
         ])
 
@@ -180,6 +227,33 @@ class MLPHeterogenousTails(MLPNet):
 class HydraMLPNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized feedforward neural network with multiple state and action heads, and a single shared body.
+
+    e.g. net_spec
+    "net": {
+        "type": "HydraMLPNet",
+        "hid_layers": [
+            [[32],[32]], # 2 heads with hidden layers
+            [64], # body
+            [] # tail, no hidden layers
+        ],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 500,
+        "lr_decay_min_timestep": 1000,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
+        "gpu": true
+    }
     '''
 
     def __init__(self, net_spec, algorithm, in_dim, out_dim):
@@ -217,7 +291,7 @@ class HydraMLPNet(Net, nn.Module):
             lr_decay='no_decay',
             update_type='replace',
             update_frequency=1,
-            polyak_weight=0.0,
+            polyak_coef=0.0,
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
@@ -232,7 +306,7 @@ class HydraMLPNet(Net, nn.Module):
             'lr_decay_min_timestep',
             'update_type',
             'update_frequency',
-            'polyak_weight',
+            'polyak_coef',
             'gpu',
         ])
         assert len(self.hid_layers) == 3, 'Your hidden layers must specify [*heads], [body], [*tails]. If not, use MLPHeterogenousTails'
@@ -298,7 +372,7 @@ class HydraMLPNet(Net, nn.Module):
         outs = []
         for model_tail in self.model_tails:
             outs.append(model_tail(body_x))
-        return torch.cat(outs)
+        return outs
 
     def training_step(self, xs=None, ys=None, loss=None):
         '''
@@ -313,6 +387,7 @@ class HydraMLPNet(Net, nn.Module):
             for out, y in zip(outs, ys):
                 loss = self.loss_fn(out, y)
                 total_loss += loss
+        assert not torch.isnan(total_loss).any()
         total_loss.backward()
         if self.clip_grad:
             logger.debug(f'Clipping gradient')

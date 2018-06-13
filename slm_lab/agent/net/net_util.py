@@ -74,16 +74,6 @@ def init_layers(layers):
             pass
 
 
-def save(net, model_path):
-    '''Save model weights to path'''
-    torch.save(net.state_dict(), model_path)
-
-
-def load(net, model_path):
-    '''Save model weights from a path into a net module'''
-    net.load_state_dict(torch.load(model_path))
-
-
 # lr decay methods
 
 
@@ -157,9 +147,24 @@ def load_params(net, flattened):
     Source: https://discuss.pytorch.org/t/running-average-of-parameters/902/2'''
     offset = 0
     for param in net.parameters():
-        param.data.copy_(flattened[offset:offset + param.nelement()]).view(param.size())
+        param.data.copy_(flattened[offset:offset + param.nelement()]).view(param.shape)
         offset += param.nelement()
     return net
+
+
+def save(net, model_path):
+    '''Save model weights to path'''
+    torch.save(net.state_dict(), model_path)
+
+
+def load(net, model_path):
+    '''Save model weights from a path into a net module'''
+    net.load_state_dict(torch.load(model_path))
+
+
+def copy(src_net, tar_net):
+    '''Copy model weights from src to target'''
+    tar_net.load_state_dict(src_net.state_dict())
 
 
 def polyak_update(src_net, tar_net, beta=0.5):

@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod, abstractproperty
-from slm_lab.lib import util
+from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+
+logger = logger.get_logger(__name__)
 
 
 class Algorithm(ABC):
@@ -20,6 +22,7 @@ class Algorithm(ABC):
         self.algorithm_spec = self.agent_spec['algorithm']
         self.memory_spec = self.agent_spec['memory']
         self.net_spec = self.agent_spec['net']
+        self.last_loss = np.nan  # to record the loss from the last train() step
 
     @abstractmethod
     @lab_api

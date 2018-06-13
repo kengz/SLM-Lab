@@ -1,19 +1,22 @@
-from mpi4py import MPI
+from copy import deepcopy
+from functools import partial
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.lib import logger, math_util, tf_util, util
+from slm_lab.agent.algorithm import math_util, policy_util
+from slm_lab.agent.algorithm.actor_critic import ActorCritic
+from slm_lab.agent.net import net_util
+from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+import torch
 import pydash as ps
-import tensorflow as tf
 
 logger = logger.get_logger(__name__)
 
 
-class PPO(Algorithm):
-    # NOTE marked for deprecation, pytorch replacement coming soon
+class PPO(ActorCritic):
     '''
     Implementation of PPO
+    This is actually just ActorCritic with a custom loss function
     Original paper: "Proximal Policy Optimization Algorithms"
     https://arxiv.org/pdf/1707.06347.pdf
 
@@ -26,14 +29,29 @@ class PPO(Algorithm):
         end for
         optimize surrogate L wrt theta, with K epochs and minibatch size M <= NT
     end for
+
+    e.g. algorithm_spec
+    "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.99,
+        "lam": 1.0,
+        "clip_eps": 0.10,
+        "entropy_coef": 0.02,
+        "training_frequency": 1,
+        "training_epoch": 8
+    }
     '''
 
     @lab_api
     def post_body_init(self):
         '''Initializes the part of algorithm needing a body to exist first.'''
-        self.comm = MPI.Comm.Clone(MPI.COMM_WORLD)
-        tf_util.make_session(num_cpus=3).__enter__()
-        self.body = self.agent.nanflat_body_a[0]  # singleton algo
+        self.body = self.agent.nanflat_body_a[0]  # single-body algo
         self.init_algorithm_params()
         self.init_nets()
         logger.info(util.self_desc(self))
@@ -41,27 +59,74 @@ class PPO(Algorithm):
     @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
-        self.cur_lr_mult = 1.0
+        # set default
+        util.set_attr(self, dict(
+            action_pdtype='default',
+            action_policy='default',
+            action_policy_update='no_update',
+            explore_var_start=np.nan,
+            explore_var_end=np.nan,
+            explore_anneal_epi=np.nan,
+        ))
         util.set_attr(self, self.algorithm_spec, [
-            'clip_eps',
-            'ent_coef',
-            'adam_epsilon',
+            'action_pdtype',
+            'action_policy',
+            # theoretically, PPO does not have policy update; but in this implementation we have such option
+            'action_policy_update',
+            'explore_var_start',
+            'explore_var_end',
+            'explore_anneal_epi',
             'gamma',
-            'gaussian_fixed_var',
             'lam',
-            'horizon',
-            'epoch',
-            'lr',
-            'lr_anneal_epi',
-            'schedule',
+            'clip_eps',
+            'entropy_coef',
+            'training_frequency',  # horizon
+            'training_epoch',
         ])
+        # use the same annealing epi as lr
+        self.clip_eps_anneal_epi = self.net_spec['lr_decay_min_timestep'] + self.net_spec['lr_decay_frequency'] * 20
+        self.to_train = 0
+        self.action_policy = getattr(policy_util, self.action_policy)
+        self.action_policy_update = getattr(policy_util, self.action_policy_update)
+        for body in self.agent.nanflat_body_a:
+            body.explore_var = self.explore_var_start
 
     @lab_api
     def init_nets(self):
+        '''PPO uses old and new to calculate ratio for loss'''
+        super(PPO, self).init_nets()
+        if self.share_architecture:
+            self.old_net = deepcopy(self.net)
+        else:
+            self.old_net = deepcopy(self.net)
+            self.old_critic = deepcopy(self.critic)
+
+    def calc_log_probs(self, batch, use_old_net=False):
+        '''Helper method to calculate log_probs with the option to swith net'''
+        if use_old_net:
+            # temporarily swap to do calc
+            self.tmp_net = self.net
+            self.net = self.old_net
+        states, actions = batch['states'], batch['actions']
+        # get ActionPD, don't append to state_buffer
+        ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].numpy(), self, self.body, append=False)
+        # construct log_probs for each state-action
+        pdparams = self.calc_pdparam(states)
+        log_probs = []
+        for idx, pdparam in enumerate(pdparams):
+            _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam, self.body)
+            log_prob = action_pd.log_prob(actions[idx])
+            log_probs.append(log_prob)
+        log_probs = torch.tensor(log_probs)
+        if use_old_net:
+            # swap back
+            self.old_net = self.net
+            self.net = self.tmp_net
+        return log_probs
+
+    def calc_loss(self, batch):
         '''
-        Init policy network
-        Construct the loss function for PPO which tf can minimize:
-        (subscript t is omitted)
+        The PPO loss function (subscript t is omitted)
         L^{CLIP+VF+S} = E[ L^CLIP - c1 * L^VF + c2 * S[pi](s) ]
 
         Breakdown piecewise,
@@ -72,136 +137,76 @@ class PPO(Algorithm):
 
         3. S = E[ entropy ]
         '''
-        NetClass = getattr(net, self.net_spec['type'])
-        in_dim, out_dim = self.body.state_dim, self.body.action_dim
-        self.pi = pi = NetClass(self.net_spec, self, in_dim, out_dim, 'pi')
-        self.pi_old = pi_old = NetClass(self.net_spec, self, in_dim, out_dim, 'pi_old')
-        ob = pi.ob
-        ac = pi.pdtype.sample_placeholder([None])
-        # target advantage function
-        adv_target = tf.placeholder(name='adv_target', dtype=tf.float32, shape=[None])
-        # empirical return
-        v_target = tf.placeholder(name='v_target', dtype=tf.float32, shape=[None])
-        # learning rate multiplier for schedule
-        lr_mult = tf.placeholder(name='lr_mult', dtype=tf.float32, shape=[])
-        # annealed clipping param epsilon for L^CLIP
-        clip_eps = self.clip_eps * lr_mult
+        # decay clip_eps by episode
+        clip_eps = policy_util._linear_decay(self.clip_eps, 0.1 * self.clip_eps, self.clip_eps_anneal_epi, self.body.env.clock.get('epi'))
+
+        with torch.no_grad():
+            adv_targets, v_targets = self.calc_gae_advs_v_targets(batch)
 
         # L^CLIP
-        ratio = tf.exp(pi.pd.logp(ac) - pi_old.pd.logp(ac))
-        sur_1 = ratio * adv_target
-        sur_2 = tf.clip_by_value(ratio, 1.0 - clip_eps, 1.0 + clip_eps) * adv_target
+        log_probs = self.calc_log_probs(batch, use_old_net=False)
+        old_log_probs = self.calc_log_probs(batch, use_old_net=True)
+        assert log_probs.shape == old_log_probs.shape
+        assert adv_targets.shape == log_probs.shape
+        ratios = torch.exp(log_probs - old_log_probs)
+        sur_1 = ratios * adv_targets
+        sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * adv_targets
         # flip sign because need to maximize
-        loss_clip = -tf.reduce_mean(tf.minimum(sur_1, sur_2))
+        clip_loss = -torch.mean(torch.min(sur_1, sur_2))
 
         # L^VF
-        loss_vf = tf.losses.mean_squared_error(v_target, pi.v_pred)
+        val_loss = self.calc_val_loss(batch, v_targets)  # from critic
 
-        # S entropy bonus, some variables for diagnosis
-        kl_mean = tf.reduce_mean(pi_old.pd.kl(pi.pd))
-        ent_mean = tf.reduce_mean(pi.pd.entropy())
-        ent_penalty = -self.ent_coef * ent_mean
-
-        total_loss = loss_clip + loss_vf + ent_penalty
-
-        # variables
-        self.losses = [loss_clip, loss_vf, kl_mean, ent_mean, ent_penalty]
-        self.loss_names = ['loss_clip', 'loss_vf', 'kl_mean', 'ent_mean', 'ent_penalty']
-        var_list = pi.get_trainable_variables()
-        inputs = [ob, ac, adv_target, v_target, lr_mult]
-        outputs = self.losses + [tf_util.flat_grad(total_loss, var_list)]
-
-        # compute functions
-        self.adam = tf_util.MpiAdam(var_list, epsilon=self.adam_epsilon, comm=self.comm)
-        self.compute_loss_grad = tf_util.function(inputs, outputs)
-        self.compute_losses = tf_util.function(inputs, self.losses)
-        self.update_pi = tf_util.function([], [], updates=[
-            tf.assign(old_w, new_w) for (old_w, new_w) in zip(pi_old.get_variables(), pi.get_variables())
-        ])
-        tf_util.init()
-        self.adam.sync()
-
-    @lab_api
-    def body_act(self, body, state):
-        action, self.body.memory.v_pred = self.pi.act(state)
-        return action
-
-    @lab_api
-    def sample(self):
-        '''Samples a batch from memory'''
-        seg = self.body.memory.sample()
-        return seg
-
-    @lab_api
-    def train(self):
-        total_t = self.body.env.clock.get('total_t')
-        if total_t > 0 and (total_t % self.horizon == 0):
-            mean_losses = self._train()
-            loss = mean_losses.sum()
-        else:
-            loss = np.nan
+        # S entropy bonus
+        ent_mean = torch.mean(torch.tensor(self.body.entropies))
+        ent_penalty = -self.entropy_coef * ent_mean
+        loss = clip_loss + val_loss + ent_penalty
         return loss
 
-    def _train(self):
-        seg = self.sample()  # sample a segment
-        self.add_v_target_and_adv(seg)
-        obs, acs, adv_targets, v_targets = seg['obs'], seg['acs'], seg['advs'], seg['tdlamrets']
+    def train_shared(self):
+        '''
+        Trains the network when the actor and critic share parameters
+        '''
+        if self.to_train == 1:
+            batch = self.sample()
+            total_loss = torch.tensor(0.0)
+            for _ in range(self.training_epoch):
+                loss = self.calc_loss(batch)
+                self.net.training_step(loss=loss)
+                total_loss += loss
+            loss = total_loss.mean()
+            net_util.copy(self.net, self.old_net)
+            # reset
+            self.to_train = 0
+            self.body.log_probs = []
+            self.body.entropies = []
+            logger.debug(f'Loss: {loss:.2f}')
+            self.last_loss = loss.item()
+        return self.last_loss
 
-        # standardized advantage function estimate
-        adv_targets = (adv_targets - adv_targets.mean()) / adv_targets.std()
-        data = {'obs': obs, 'acs': acs, 'adv_targets': adv_targets, 'v_targets': v_targets}
-        dataset = math_util.Dataset(data, shuffle=True)
-
-        self.pi.ob_rms.update(obs)  # only if is not image
-        self.update_pi()
-
-        # compute gradient
-        for _i in range(self.epoch):
-            losses = []
-            for batch in dataset.iterate_once(self.body.memory.batch_size):
-                inputs = [batch[k] for k in ['obs', 'acs', 'adv_targets', 'v_targets']]
-                inputs.append(self.cur_lr_mult)
-                outputs = self.compute_loss_grad(*inputs)
-                g = outputs.pop()
-                assert not np.isnan(g).any(), f'grad has nan: {g}'
-                self.adam.update(g, self.cur_lr_mult * self.lr)
-                losses.append(outputs)
-            mean_losses = np.mean(losses, axis=0)
-
-        # compute losses
-        losses = []
-        for batch in dataset.iterate_once(self.body.memory.batch_size):
-            inputs = [batch[k] for k in ['obs', 'acs', 'adv_targets', 'v_targets']]
-            inputs.append(self.cur_lr_mult)
-            new_losses = self.compute_losses(*inputs)
-            losses.append(new_losses)
-        mean_losses, _std, _count = tf_util.mpi_moments(losses, axis=0, comm=self.comm)
-        logger.debug(f'Training losses {list(zip(self.loss_names, mean_losses))}')
-        return mean_losses
-
-    @lab_api
-    def update(self):
-        if self.schedule == 'constant':
-            self.cur_lr_mult = 1.0
-        elif self.schedule == 'linear':
-            self.cur_lr_mult = max(1.0 - self.body.env.clock.get('epi') / self.lr_anneal_epi, 0.0)
-        else:
-            raise NotImplementedError
-
-        explore_var = np.nan
-        return explore_var
-
-    def add_v_target_and_adv(self, seg):
-        '''Compute advantage given a segment of trajectory'''
-        news = np.append(seg['news'], 0)
-        v_preds = np.append(seg['v_preds'], seg['next_v_pred'])
-        rews = seg['rews']
-        T = len(rews)
-        seg['advs'] = gaelams = np.empty(T, 'float32')
-        last_gaelam = 0
-        for t in reversed(range(T)):
-            nonterminal = 1 - news[t + 1]
-            delta = rews[t] + self.gamma * v_preds[t + 1] * nonterminal - v_preds[t]
-            gaelams[t] = last_gaelam = delta + self.gamma * self.lam * nonterminal * last_gaelam
-        assert not np.isnan(gaelams).any(), f'GAE has nan: {gaelams}'
-        seg['tdlamrets'] = seg['advs'] + seg['v_preds']
+    def train_separate(self):
+        '''
+        Trains the network when the actor and critic share parameters
+        '''
+        if self.to_train == 1:
+            batch = self.sample()
+            total_loss = torch.tensor(0.0)
+            for _ in range(self.training_epoch):
+                loss = self.calc_loss(batch)
+                # to reuse loss for critic
+                loss.backward = partial(loss.backward, retain_graph=True)
+                self.net.training_step(loss=loss)
+                # critic.optim.step using the same loss
+                loss.backward = partial(loss.backward, retain_graph=False)
+                self.critic.training_step(loss=loss)
+                total_loss += loss
+            loss = total_loss.mean()
+            net_util.copy(self.net, self.old_net)
+            net_util.copy(self.critic, self.old_critic)
+            # reset
+            self.to_train = 0
+            self.body.log_probs = []
+            self.body.entropies = []
+            logger.debug(f'Loss: {loss:.2f}')
+            self.last_loss = loss.item()
+        return self.last_loss
