@@ -77,5 +77,10 @@ fi
 echo "--- Updating Conda environment ---"
 conda env update -f environment.yml
 
+# Mac uses box2d-kengz, ubuntu uses box2d
+conda activate lab
+pip uninstall box2d-kengz
+pip install box2d
+
 source ~/.bashrc
 echo "--- Lab setup complete ---"

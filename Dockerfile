@@ -2,7 +2,7 @@
 # build image: docker build -t slm_lab .
 # start container: docker run --name my_lab -dt slm_lab
 # enter container: docker exec -it my_lab bash
-# remove container: docker rm my_lab
+# remove container (forced): docker rm my_lab -f
 # list image: docker images -a
 # tag image: docker tag slm_lab keng/slm_lab
 # push image: docker push keng/slm_lab
@@ -55,6 +55,12 @@ RUN yarn install
 COPY environment.yml environment.yml
 RUN conda env update -f environment.yml
 
+# Mac uses box2d-kengz, ubuntu uses box2d
+RUN . /opt/conda/etc/profile.d/conda.sh && \
+    conda activate lab && \
+    pip uninstall box2d-kengz && \
+    pip install box2d
+
 # copy file at last to not trigger changes above unnecessarily
 COPY . .
 
@@ -64,6 +70,7 @@ RUN . /opt/conda/etc/profile.d/conda.sh && \
     find . -name "__pycache__" -print0 | xargs -0 rm -rf && \
     find . -name "*.pyc" -print0 | xargs -0 rm -rf && \
     conda activate lab && \
-    yarn test
+    yarn test && \
+    yarn reset
 
 CMD ["/bin/bash"]
