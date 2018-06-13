@@ -1,11 +1,14 @@
 # run instructions:
 # build image: docker build -t slm_lab .
-# start container: docker run -name my_lab -dt slm_lab
+# start container: docker run --name my_lab -dt slm_lab
 # enter container: docker exec -it my_lab bash
+# remove container: docker rm my_lab
+# list image: docker images -a
 # tag image: docker tag slm_lab keng/slm_lab
 # push image: docker push keng/slm_lab
+# prune: docker system prune
 
-FROM tensorflow/tensorflow:1.8.0-py3
+FROM pytorch/pytorch:0.4_cuda9_cudnn7
 
 LABEL maintainer="kengzwl@gmail.com"
 LABEL website="https://github.com/kengz/SLM-Lab"
@@ -14,15 +17,15 @@ SHELL ["/bin/bash", "-c"]
 
 # install system dependencies for OpenAI gym
 RUN apt-get update && \
-    apt-get install -y nano git python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig
+    apt-get install -y nano git cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
+RUN apt-get install -y python3-numpy python3-dev python3-pip python3-setuptools
 
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g yarn
 
-ENV PATH /opt/conda/bin:$PATH
-
 RUN curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    rm -rf /opt/conda && \
     bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda && \
     rm Miniconda3-latest-Linux-x86_64.sh && \
     /opt/conda/bin/conda clean -tipsy && \
@@ -31,13 +34,14 @@ RUN curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.s
     conda update -n base conda
 
 # install Python and Conda dependencies
-RUN conda config --add channels conda-forge && \
+RUN . /opt/conda/etc/profile.d/conda.sh && \
+    conda config --add channels conda-forge && \
     conda config --add channels pytorch && \
     conda create -n lab python=3.6 ipykernel -c conda-forge -c pytorch -y && \
-    source activate lab && \
+    conda activate lab && \
     python -m ipykernel install --user --name lab
 
-RUN echo "source activate lab" >> /root/.bashrc
+RUN echo "conda activate lab" >> /root/.bashrc
 
 # create and set the working directory
 RUN mkdir -p /opt/SLM-Lab
@@ -56,9 +60,10 @@ COPY . .
 
 RUN ./bin/copy_config
 
-RUN find . -name "__pycache__" -print0 | xargs -0 rm -rf && \
+RUN . /opt/conda/etc/profile.d/conda.sh && \
+    find . -name "__pycache__" -print0 | xargs -0 rm -rf && \
     find . -name "*.pyc" -print0 | xargs -0 rm -rf && \
-    source activate lab && \
+    conda activate lab && \
     yarn test
 
 CMD ["/bin/bash"]
