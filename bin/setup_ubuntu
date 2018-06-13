@@ -55,7 +55,7 @@ else
   curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
   bash Miniconda3-latest-Linux-x86_64.sh -b
   rm Miniconda3-latest-Linux-x86_64.sh
-  echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> ~/.bashrc
+  echo '. ~/miniconda3/etc/profile.d/conda.sh' >> ~/.bashrc
   source ~/.bashrc
 fi
 
@@ -66,12 +66,12 @@ else
   conda config --add channels conda-forge
   conda config --add channels pytorch
   conda create -n lab python=3.6 ipykernel -c conda-forge -c pytorch -y
-  source activate lab
+  conda activate lab
   python -m ipykernel install --user --name lab
 fi
 
 # remove for reset:
-# source deactivate
+# conda deactivate
 # conda env remove -n lab -y
 # conda env export > environment.yml
 echo "--- Updating Conda environment ---"
