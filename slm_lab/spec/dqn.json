@@ -13,8 +13,8 @@
         "gamma": 0.99,
         "training_batch_epoch": 8,
         "training_epoch": 4,
-        "training_frequency": 32,
-        "training_min_timestep": 10
+        "training_frequency": 16,
+        "training_min_timestep": 32
       },
       "memory": {
         "name": "Replay",
@@ -90,8 +90,8 @@
         "gamma": 0.99,
         "training_batch_epoch": 8,
         "training_epoch": 4,
-        "training_frequency": 32,
-        "training_min_timestep": 10
+        "training_frequency": 16,
+        "training_min_timestep": 32,
       },
       "memory": {
         "name": "Replay",
@@ -170,8 +170,8 @@
         "gamma": 0.99,
         "training_batch_epoch": 8,
         "training_epoch": 4,
-        "training_frequency": 32,
-        "training_min_timestep": 10
+        "training_frequency": 16,
+        "training_min_timestep": 32,
       },
       "memory": {
         "name": "Replay",
@@ -250,8 +250,8 @@
         "gamma": 0.99,
         "training_batch_epoch": 8,
         "training_epoch": 4,
-        "training_frequency": 32,
-        "training_min_timestep": 10
+        "training_frequency": 16,
+        "training_min_timestep": 32
       },
       "memory": {
         "name": "SeqReplay",
@@ -333,8 +333,8 @@
         "gamma": 0.99,
         "training_batch_epoch": 8,
         "training_epoch": 4,
-        "training_frequency": 32,
-        "training_min_timestep": 10
+        "training_frequency": 16,
+        "training_min_timestep": 32
       },
       "memory": {
         "name": "SeqReplay",
