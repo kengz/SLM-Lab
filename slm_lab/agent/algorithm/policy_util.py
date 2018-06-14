@@ -167,6 +167,8 @@ def random(state, algorithm, body):
 
 def epsilon_greedy(state, algorithm, body):
     '''Epsilon-greedy policy: with probability epsilon, do random action, otherwise do default sampling.'''
+    if util.get_lab_mode() == 'enjoy':
+        return default(state, algorithm, body)
     epsilon = body.explore_var
     if epsilon > np.random.rand():
         return random(state, algorithm, body)
@@ -178,6 +180,8 @@ def boltzmann(state, algorithm, body):
     '''
     Boltzmann policy: adjust pdparam with temperature tau; the higher the more randomness/noise in action.
     '''
+    if util.get_lab_mode() == 'enjoy':
+        return default(state, algorithm, body)
     tau = body.explore_var
     ActionPD, pdparam, body = init_action_pd(state, algorithm, body)
     pdparam /= tau
@@ -225,6 +229,8 @@ def multi_random(pdparam, algorithm, body_list):
 def multi_epsilon_greedy(pdparam, algorithm, body_list):
     '''Apply epsilon-greedy policy body-wise'''
     assert len(pdparam) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
+    if util.get_lab_mode() == 'enjoy':
+        return multi_default(pdparam, algorithm, body_list)
     action_list, action_pd_a = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
@@ -244,6 +250,8 @@ def multi_boltzmann(pdparam, algorithm, body_list):
     '''Apply Boltzmann policy body-wise'''
     # pdparam.squeeze_(dim=0)
     assert len(pdparam) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
+    if util.get_lab_mode() == 'enjoy':
+        return multi_default(pdparam, algorithm, body_list)
     action_list, action_pd_a = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
