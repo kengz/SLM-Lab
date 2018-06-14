@@ -155,6 +155,8 @@ class SARSA(Algorithm):
         Completes one training step for the agent if it is time to train.
         Otherwise this function does nothing.
         '''
+        if util.get_lab_mode() == 'enjoy':
+            return np.nan
         if self.to_train == 1:
             batch = self.sample()
             with torch.no_grad():

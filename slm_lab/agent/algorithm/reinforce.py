@@ -134,6 +134,8 @@ class Reinforce(Algorithm):
 
     @lab_api
     def train(self):
+        if util.get_lab_mode() == 'enjoy':
+            return np.nan
         if self.to_train == 1:
             batch = self.sample()
             loss = self.calc_policy_loss(batch)

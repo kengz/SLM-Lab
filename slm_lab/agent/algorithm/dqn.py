@@ -139,6 +139,8 @@ class VanillaDQN(SARSA):
         For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
         Otherwise this function does nothing.
         '''
+        if util.get_lab_mode() == 'enjoy':
+            return np.nan
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
         if self.to_train == 1:
@@ -481,6 +483,8 @@ class HydraDQN(MultitaskDQN):
         For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
         Otherwise this function does nothing.
         '''
+        if util.get_lab_mode() == 'enjoy':
+            return np.nan
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
         if self.to_train == 1:

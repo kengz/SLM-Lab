@@ -242,6 +242,8 @@ class ActorCritic(Reinforce):
     @lab_api
     def train(self):
         '''Trains the algorithm'''
+        if util.get_lab_mode() == 'enjoy':
+            return np.nan
         if self.share_architecture:
             return self.train_shared()
         else:
