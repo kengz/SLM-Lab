@@ -43,7 +43,7 @@ jobs:
             - ~/.cache/yarn
           key: v1-dependencies-{{ checksum "yarn.lock" }}
 
-      - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
+      - run: echo '. ~/miniconda3/etc/profile.d/conda.sh' >> $BASH_ENV
       - run:
           name: Install Conda
           command: |
@@ -63,10 +63,10 @@ jobs:
               conda config --add channels conda-forge
               conda config --add channels pytorch
               conda create -n lab python=3.6 ipykernel -c conda-forge -c pytorch -y
-              source activate lab
+              conda activate lab
               python -m ipykernel install --user --name lab
             fi
-            source activate lab
+            conda activate lab
             conda env update -f environment.yml
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}
@@ -100,7 +100,7 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
-      - run: echo 'export PATH=$HOME/miniconda3/bin:$PATH' >> $BASH_ENV
+      - run: echo '. ~/miniconda3/etc/profile.d/conda.sh' >> $BASH_ENV
       - run:
           name: Run Python tests
           command: |
@@ -110,7 +110,7 @@ jobs:
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
             ./cc-test-reporter before-build
-            source activate lab
+            conda activate lab
             python setup.py test
             cat coverage.xml
             ./cc-test-reporter after-build -d -p ~/SLM-Lab --exit-code $?

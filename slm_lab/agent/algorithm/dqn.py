@@ -41,6 +41,7 @@ class VanillaDQN(SARSA):
         "explore_var_end": 0.1,
         "explore_anneal_epi": 10,
         "gamma": 0.99,
+        "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 10,
         "training_min_timestep": 10
@@ -79,6 +80,7 @@ class VanillaDQN(SARSA):
             'explore_var_end',
             'explore_anneal_epi',
             'gamma',  # the discount factor
+            'training_batch_epoch',  # how many gradient updates per batch
             'training_epoch',  # how many batches to train each time
             'training_frequency',  # how often to train (once a few timesteps)
             'training_min_timestep',  # how long before starting training
@@ -142,11 +144,12 @@ class VanillaDQN(SARSA):
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
                 batch = self.sample()
-                with torch.no_grad():
-                    q_targets = self.calc_q_targets(batch)
-                loss = self.net.training_step(batch['states'], q_targets)
-                total_loss += loss
-            loss = total_loss / self.training_epoch
+                for _ in range(self.training_batch_epoch):
+                    with torch.no_grad():
+                        q_targets = self.calc_q_targets(batch)
+                    loss = self.net.training_step(batch['states'], q_targets)
+                    total_loss += loss
+            loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0
             self.body.log_probs = []
@@ -246,6 +249,7 @@ class DQN(DQNBase):
         "explore_var_end": 0.1,
         "explore_anneal_epi": 10,
         "gamma": 0.99,
+        "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 10,
         "training_min_timestep": 10
@@ -270,6 +274,7 @@ class DoubleDQN(DQN):
         "explore_var_end": 0.1,
         "explore_anneal_epi": 10,
         "gamma": 0.99,
+        "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 10,
         "training_min_timestep": 10
@@ -478,11 +483,12 @@ class HydraDQN(MultitaskDQN):
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
                 batch = self.sample()
-                with torch.no_grad():
-                    q_targets = self.calc_q_targets(batch)
-                loss = self.net.training_step(batch['states'], q_targets)
-                total_loss += loss
-            loss = total_loss / self.training_epoch
+                for _ in range(self.training_batch_epoch):
+                    with torch.no_grad():
+                        q_targets = self.calc_q_targets(batch)
+                    loss = self.net.training_step(batch['states'], q_targets)
+                    total_loss += loss
+            loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0
             self.body.log_probs = []

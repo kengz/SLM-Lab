@@ -30,3 +30,4 @@ checks:
 exclude_patterns:
 - config/
 - node_modules/
+- test/
