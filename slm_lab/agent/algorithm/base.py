@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod, abstractproperty
+from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -95,3 +96,19 @@ class Algorithm(ABC):
     def update(self):
         '''Implement algorithm update, or throw NotImplementedError'''
         raise NotImplementedError
+
+    @lab_api
+    def save(self):
+        '''Save net models for algorithm given the required property self.net_names'''
+        if not hasattr(self, 'net_names'):
+            logger.info('No net declared in self.net_names in init_nets(); no models to save.')
+        else:
+            net_util.save_algorithm(self)
+
+    @lab_api
+    def load(self):
+        '''Load net models for algorithm given the required property self.net_names'''
+        if not hasattr(self, 'net_names'):
+            logger.info('No net declared in self.net_names in init_nets(); no models to load.')
+        else:
+            net_util.load_algorithm(self)

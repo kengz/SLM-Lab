@@ -155,11 +155,37 @@ def load_params(net, flattened):
 def save(net, model_path):
     '''Save model weights to path'''
     torch.save(net.state_dict(), model_path)
+    logger.info(f'Saved model to {model_path}')
+
+
+def save_algorithm(algorithm):
+    '''Save all the nets for an algorithm'''
+    agent = algorithm.agent
+    net_names = algorithm.net_names
+    prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+    logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
+    for net_name in net_names:
+        net = getattr(algorithm, net_name)
+        model_path = f'{prepath}_model_{net_name}.pth'
+        save(net, model_path)
 
 
 def load(net, model_path):
     '''Save model weights from a path into a net module'''
     net.load_state_dict(torch.load(model_path))
+    logger.info(f'Loaded model from {model_path}')
+
+
+def load_algorithm(algorithm):
+    '''Save all the nets for an algorithm'''
+    agent = algorithm.agent
+    net_names = algorithm.net_names
+    prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names}')
+    for net_name in net_names:
+        net = getattr(algorithm, net_name)
+        model_path = f'{prepath}_model_{net_name}.pth'
+        load(net, model_path)
 
 
 def copy(src_net, tar_net):
