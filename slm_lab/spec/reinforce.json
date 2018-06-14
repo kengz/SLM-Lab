@@ -21,7 +21,7 @@
       },
       "net": {
         "type": "MLPdefault",
-        "hid_layers": [32],
+        "hid_layers": [16],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -95,7 +95,7 @@
         "type": "RecurrentNet",
         "hid_layers": [],
         "hid_layers_activation": "relu",
-        "rnn_hidden_size": 32,
+        "rnn_hidden_size": 16,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
