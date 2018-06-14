@@ -132,9 +132,16 @@ class OnPolicySeqReplay(OnPolicyReplay):
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
-        if append:
+        # Deals with the fact that the very first state of an episode is not appended.
+        if self.state_buffer[-1].sum() == 0:
             self.state_buffer.append(state)
+        # TODO - when 137 - 138 is uncommented the state buffer duplicates each state
+        # Uncomment all below to reproduce
+        # if append:
+        #     self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer)
+        # print(f'processed_state: {processed_state}')
+        # print(f'most recent state: {state}')
         return processed_state
 
     def sample(self):
@@ -264,8 +271,11 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
-        if append:
+        if self.state_buffer[-1].sum() == 0:
             self.state_buffer.append(state)
+        # See comments in same function in OnPolicySeqReplay
+        # if append:
+        #     self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer)
         return processed_state
 
