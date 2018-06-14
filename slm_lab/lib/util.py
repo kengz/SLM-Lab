@@ -246,6 +246,10 @@ def get_fn_list(a_cls):
     return fn_list
 
 
+def get_lab_mode():
+    return os.environ.get('lab_mode')
+
+
 def get_prepath(spec, info_space, unit='experiment'):
     spec_name = spec['name']
     predir = f'data/{spec_name}_{info_space.experiment_ts}'

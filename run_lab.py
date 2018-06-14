@@ -27,7 +27,7 @@ def run_benchmark(spec, const):
 
 def run_by_mode(spec_file, spec_name, lab_mode):
     spec = spec_util.get(spec_file, spec_name)
-    # TODO remove when analysis can save all plotly plots
+    # expose to runtime
     os.environ['lab_mode'] = lab_mode
     if lab_mode == 'search':
         Experiment(spec).run()
