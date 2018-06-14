@@ -265,7 +265,7 @@ def save_spec(spec, info_space, unit='experiment'):
 
 
 def spec_name_from_filepath(filepath):
-    '''Get space_name from data filepath: split folder name and remove tail timestamp'''
+    '''Get spec_name from data filepath: split folder name and remove tail timestamp'''
     spec_name = '_'.join(filepath.split('/')[1].split('_')[:-4])
     return spec_name
 

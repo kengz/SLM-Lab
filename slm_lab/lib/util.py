@@ -264,24 +264,6 @@ def get_prepath(spec, info_space, unit='experiment'):
     return prepath
 
 
-def set_from_prepath(prepath, spec, info_space):
-    '''Given a prepath, set info_space appropriately'''
-    tail = prepath.split('data/')[-1]
-    prefolder, prename = tail.split('/')
-    experiment_ts = RE_FILE_TS.findall(prefolder)[0]
-    spec_name_ = prefolder.replace(experiment_ts, '')
-    spec_name = spec_name_.strip('_')
-    tidx, sidx = prename.replace(spec_name_, '').split('_')[:2]
-    trial_index = int(tidx.replace('t', ''))
-    session_index = int(sidx.replace('s', ''))
-
-    assert spec_name == spec['name']
-    # set info_space
-    info_space.experiment_ts = experiment_ts
-    info_space.set('trial', trial_index)
-    info_space.set('session', session_index)
-
-
 def get_ts(pattern=FILE_TS_FORMAT):
     '''
     Get current ts, defaults to format used for filename
@@ -552,6 +534,49 @@ def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
     pool.close()
     pool.join()
     return results
+
+
+def prepath_to_info_space(prepath):
+    '''Create info_space from prepath such that it returns the same prepath with spec'''
+    from slm_lab.experiment.monitor import InfoSpace
+    prepath = prepath.strip('_')
+    tail = prepath.split('data/')[-1]
+    prefolder, prename = tail.split('/')
+    experiment_ts = RE_FILE_TS.findall(prefolder)[0]
+    spec_name_ = prefolder.replace(experiment_ts, '')
+    tidx, sidx = prename.replace(spec_name_, '').split('_')[:2]
+    trial_index = int(tidx.replace('t', ''))
+    session_index = int(sidx.replace('s', ''))
+
+    # create info_space for prepath
+    info_space = InfoSpace()
+    info_space.experiment_ts = experiment_ts
+    info_space.set('trial', trial_index)
+    info_space.set('session', session_index)
+    return info_space
+
+
+def prepath_to_spec(prepath):
+    '''Create spec from prepath such that it returns the same prepath with info_space'''
+    prepath = prepath.strip('_')
+    pre_spec_path = '_'.join(prepath.split('_')[:-1])
+    spec_path = f'{pre_spec_path}_spec.json'
+    # read the spec of prepath
+    spec = read(spec_path)
+    return spec
+
+
+def prepath_to_spec_info_space(prepath):
+    '''
+    Given a prepath, read the correct spec and craete the info_space that will return the same prepath
+    This is used for lab_mode: enjoy
+    example: data/a2c_cartpole_2018_06_13_220436/a2c_cartpole_t0_s0
+    '''
+    spec = prepath_to_spec(prepath)
+    info_space = prepath_to_info_space(prepath)
+    rep_prepath = get_prepath(spec, info_space, unit='session')
+    assert rep_prepath in prepath, f'{rep_prepath}, {prepath}'
+    return spec, info_space
 
 
 def read(data_path, **kwargs):
