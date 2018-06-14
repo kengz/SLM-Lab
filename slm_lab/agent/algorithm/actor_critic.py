@@ -174,12 +174,14 @@ class ActorCritic(Reinforce):
         if self.share_architecture:
             # net = actor_critic as one
             self.net = NetClass(actor_net_spec, self, in_dim, out_dim)
+            self.net_names = ['net']
         else:
             # main net = actor
             self.net = NetClass(actor_net_spec, self, in_dim, out_dim)
             if critic_net_spec['use_same_optim']:
                 critic_net_spec = actor_net_spec
             self.critic = NetClass(critic_net_spec, self, in_dim, critic_out_dim)
+            self.net_names = ['net', 'critic']
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api

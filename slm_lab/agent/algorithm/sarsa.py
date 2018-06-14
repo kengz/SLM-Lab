@@ -88,6 +88,7 @@ class SARSA(Algorithm):
             self.net_spec.update(seq_len=self.net_spec['seq_len'])
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
+        self.net_names = ['net']
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api

@@ -99,6 +99,7 @@ class Reinforce(Algorithm):
                 self.net_spec['type'] = 'MLPHeterogenousTails'
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, in_dim, out_dim)
+        self.net_names = ['net']
         logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
