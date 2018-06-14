@@ -95,7 +95,7 @@ class VanillaDQN(SARSA):
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
         self.net_names = ['net']
-        logger.info(f'Training on gpu: {self.net.gpu}')
+        self.post_init_nets()
 
     def calc_q_targets(self, batch):
         '''Computes the target Q values for a batch of experiences'''
@@ -191,9 +191,9 @@ class DQNBase(VanillaDQN):
         self.net = NetClass(self.net_spec, self, in_dim, out_dim)
         self.target_net = NetClass(self.net_spec, self, in_dim, out_dim)
         self.net_names = ['net', 'target_net']
+        self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        logger.info(f'Training on gpu: {self.net.gpu}')
 
     def calc_q_targets(self, batch):
         '''Computes the target Q values for a batch of experiences. Note that the net references may differ based on algorithm.'''
@@ -319,9 +319,9 @@ class MultitaskDQN(DQN):
         self.net = NetClass(self.net_spec, self, in_dim, out_dim)
         self.target_net = NetClass(self.net_spec, self, in_dim, out_dim)
         self.net_names = ['net', 'target_net']
+        self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
     def calc_pdparam(self, x, evaluate=True):
@@ -418,9 +418,9 @@ class HydraDQN(MultitaskDQN):
         self.net = NetClass(self.net_spec, self, in_dims, out_dims)
         self.target_net = NetClass(self.net_spec, self, in_dims, out_dims)
         self.net_names = ['net', 'target_net']
+        self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
     def calc_pdparam(self, x, evaluate=True):

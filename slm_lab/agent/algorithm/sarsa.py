@@ -89,7 +89,7 @@ class SARSA(Algorithm):
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
         self.net_names = ['net']
-        logger.info(f'Training on gpu: {self.net.gpu}')
+        self.post_init_nets()
 
     @lab_api
     def calc_pdparam(self, x, evaluate=True):

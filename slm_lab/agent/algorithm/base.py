@@ -46,6 +46,19 @@ class Algorithm(ABC):
         raise NotImplementedError
 
     @lab_api
+    def post_init_nets(self):
+        '''
+        Method to conditionally load models.
+        Call at the end of init_net() after setting self.net_names
+        '''
+        assert hasattr(self, 'net_names')
+        if util.get_lab_mode() == 'enjoy':
+            logger.info('Loaded algorithm models for lab_mode: enjoy')
+            self.load()
+        else:
+            logger.info(f'Initialized algorithm models for lab_mode: {util.get_lab_mode()}')
+
+    @lab_api
     def calc_pdparam(self, x, evaluate=True):
         '''
         To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.

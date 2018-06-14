@@ -182,7 +182,7 @@ class ActorCritic(Reinforce):
                 critic_net_spec = actor_net_spec
             self.critic = NetClass(critic_net_spec, self, in_dim, critic_out_dim)
             self.net_names = ['net', 'critic']
-        logger.info(f'Training on gpu: {self.net.gpu}')
+        self.post_init_nets()
 
     @lab_api
     def calc_pdparam(self, x, evaluate=True):
