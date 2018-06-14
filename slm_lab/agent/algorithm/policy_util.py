@@ -264,7 +264,7 @@ def _linear_decay(start_val, end_val, anneal_step, step):
     '''Simple linear decay with annealing'''
     rise = end_val - start_val
     slope = rise / anneal_step
-    val = max(slope * (step - 1) + start_val, end_val)
+    val = max(slope * step + start_val, end_val)
     return val
 
 
