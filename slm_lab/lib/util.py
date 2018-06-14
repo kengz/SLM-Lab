@@ -264,6 +264,24 @@ def get_prepath(spec, info_space, unit='experiment'):
     return prepath
 
 
+def set_from_prepath(prepath, spec, info_space):
+    '''Given a prepath, set info_space appropriately'''
+    tail = prepath.split('data/')[-1]
+    prefolder, prename = tail.split('/')
+    experiment_ts = RE_FILE_TS.findall(prefolder)[0]
+    spec_name_ = prefolder.replace(experiment_ts, '')
+    spec_name = spec_name_.strip('_')
+    tidx, sidx = prename.replace(spec_name_, '').split('_')[:2]
+    trial_index = int(tidx.replace('t', ''))
+    session_index = int(sidx.replace('s', ''))
+
+    assert spec_name == spec['name']
+    # set info_space
+    info_space.experiment_ts = experiment_ts
+    info_space.set('trial', trial_index)
+    info_space.set('session', session_index)
+
+
 def get_ts(pattern=FILE_TS_FORMAT):
     '''
     Get current ts, defaults to format used for filename

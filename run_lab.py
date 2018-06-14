@@ -4,6 +4,7 @@ Specify what to run in `config/experiments.json`
 Then run `yarn start` or `python run_lab.py`
 '''
 from slm_lab.experiment.control import Session, Trial, Experiment
+from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util, benchmarker
 import os
@@ -26,16 +27,19 @@ def run_benchmark(spec, const):
 
 
 def run_by_mode(spec_file, spec_name, lab_mode):
+    logger.info(f'Running lab in mode: {lab_mode}')
     spec = spec_util.get(spec_file, spec_name)
-    # expose to runtime
-    os.environ['lab_mode'] = lab_mode
+    # expose to runtime, '@' is reserved for 'enjoy@{prepath}'
+    os.environ['lab_mode'] = lab_mode.split('@')[0]
     if lab_mode == 'search':
         Experiment(spec).run()
     elif lab_mode == 'train':
         Trial(spec).run()
-    elif lab_mode == 'enjoy':
-        # TODO turn on save/load model mode
-        Session(spec).run()
+    elif lab_mode.startswith('enjoy'):
+        prepath = lab_mode.split('@')[1]
+        info_space = InfoSpace()
+        util.set_from_prepath(prepath, spec, info_space)
+        Session(spec, info_space).run()
     elif lab_mode == 'generate_benchmark':
         benchmarker.generate_specs(spec, const='agent')
     elif lab_mode == 'benchmark':

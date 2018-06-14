@@ -13,7 +13,7 @@ action, action_pd = sample_action_pd(ActionPD, pdparam, body)
 We can also augment pdparam before sampling - as in the case of Boltzmann sampling,
 or do epsilon-greedy to use pdparam-sampling or random sampling.
 '''
-from slm_lab.lib import logger
+from slm_lab.lib import logger, util
 from torch import distributions
 import numpy as np
 import torch
