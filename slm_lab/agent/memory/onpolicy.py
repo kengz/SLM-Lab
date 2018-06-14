@@ -135,7 +135,8 @@ class OnPolicySeqReplay(OnPolicyReplay):
         # Deals with the fact that the very first state of an episode is not appended.
         if self.state_buffer[-1].sum() == 0:
             self.state_buffer.append(state)
-        # TODO - when 137 - 138 is uncommented the state buffer duplicates each state
+        # TODO - when 141 - 142 is uncommented the state buffer adds each states twice.
+        # Think we can achieve the same thing with 136 - 137
         # Uncomment all below to reproduce
         # if append:
         #     self.state_buffer.append(state)

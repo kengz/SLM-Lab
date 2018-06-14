@@ -168,8 +168,10 @@ class SeqReplay(Replay):
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
-        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
-        if append:
+        # TODO - modifying approach to avoid adding each state twice.
+        # See notes for similar change in onpolicy.py
+        # Deals with the fact that the very first state of an episode is not appended.
+        if self.state_buffer[-1].sum() == 0:
             self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer)
         return processed_state
@@ -178,6 +180,7 @@ class SeqReplay(Replay):
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
         self.base_update(action, reward, state, done)
+        self.state_buffer.append(state)
         state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
             self.add_experience(self.last_state, action, reward, state, done)
@@ -226,8 +229,8 @@ class StackReplay(Replay):
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
-        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
-        if append:
+        # Deals with the fact that the very first state of an episode is not appended.
+        if self.state_buffer[-1].sum() == 0:
             self.state_buffer.append(state)
         processed_state = np.concatenate(self.state_buffer)
         return processed_state
@@ -236,6 +239,7 @@ class StackReplay(Replay):
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
         self.base_update(action, reward, state, done)
+        self.state_buffer.append(state)
         state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
             self.add_experience(self.last_state, action, reward, state, done)
@@ -269,11 +273,24 @@ class AtariReplay(StackReplay):
         self.state_buffer = deque(maxlen=self.stack_len)
         self.reset()
 
+    def reset(self):
+        '''Initializes the memory arrays, size and head pointer'''
+        super(AtariReplay, self).reset()
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
+
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(AtariReplay, self).epi_reset(state)
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
+
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
         state = util.transform_image(state)
-        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
-        if append:
+        # Deals with the fact that the very first state of an episode is not appended.
+        if self.state_buffer[-1].sum() == 0:
             self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
         assert processed_state.shape == self.body.state_dim
@@ -283,6 +300,7 @@ class AtariReplay(StackReplay):
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
         self.base_update(action, reward, state, done)
+        self.state_buffer.append(util.transform_image(state))
         state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
             logger.debug2(f'original reward: {reward}')
