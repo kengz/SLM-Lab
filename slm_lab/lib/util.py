@@ -539,21 +539,54 @@ def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
 def prepath_to_info_space(prepath):
     '''Create info_space from prepath such that it returns the same prepath with spec'''
     from slm_lab.experiment.monitor import InfoSpace
-    prepath = prepath.strip('_')
-    tail = prepath.split('data/')[-1]
-    prefolder, prename = tail.split('/')
-    experiment_ts = RE_FILE_TS.findall(prefolder)[0]
-    spec_name_ = prefolder.replace(experiment_ts, '')
-    tidx, sidx = prename.replace(spec_name_, '').split('_')[:2]
-    trial_index = int(tidx.replace('t', ''))
-    session_index = int(sidx.replace('s', ''))
-
+    experiment_ts = prepath_to_experiment_ts(prepath)
+    trial_index, session_index = prepath_to_idxs(prepath)
     # create info_space for prepath
     info_space = InfoSpace()
     info_space.experiment_ts = experiment_ts
     info_space.set('trial', trial_index)
     info_space.set('session', session_index)
     return info_space
+
+
+def prepath_split(prepath):
+    '''Split prepath into prefolder and prename'''
+    prepath = prepath.strip('_')
+    tail = prepath.split('data/')[-1]
+    prefolder, prename = tail.split('/')
+    return prefolder, prename
+
+
+def prepath_to_experiment_ts(prepath):
+    prefolder, _prenmame = prepath_split(prepath)
+    experiment_ts = RE_FILE_TS.findall(prefolder)[0]
+    return experiment_ts
+
+
+def prepath_to_idxs(prepath):
+    '''Extract trial index and session index from prepath if available'''
+    spec_name = prepath_to_spec_name(prepath)
+    _prefolder, prename = prepath_split(prepath)
+    idxs_tail = prename.replace(spec_name, '').strip('_')
+    idxs_strs = idxs_tail.split('_')[:2]
+    assert len(idxs_strs) > 0, 'No trial/session indices found in prepath'
+    tidx = idxs_strs[0]
+    assert tidx.startswith('t')
+    trial_index = int(tidx.strip('t'))
+    if len(idxs_strs) == 1:  # has session
+        session_index = None
+    else:
+        sidx = idxs_strs[0]
+        assert sidx.startswith('s')
+        session_index = int(sidx.strip('s'))
+    return trial_index, session_index
+
+
+def prepath_to_spec_name(prepath):
+    prefolder, _prename = prepath_split(prepath)
+    experiment_ts = prepath_to_experiment_ts(prepath)
+    spec_name = prefolder.replace(experiment_ts, '').strip('_')
+    return spec_name
 
 
 def prepath_to_spec(prepath):
@@ -574,8 +607,8 @@ def prepath_to_spec_info_space(prepath):
     '''
     spec = prepath_to_spec(prepath)
     info_space = prepath_to_info_space(prepath)
-    rep_prepath = get_prepath(spec, info_space, unit='session')
-    assert rep_prepath in prepath, f'{rep_prepath}, {prepath}'
+    check_prepath = get_prepath(spec, info_space, unit='session')
+    assert check_prepath in prepath, f'{check_prepath}, {prepath}'
     return spec, info_space
 
 
