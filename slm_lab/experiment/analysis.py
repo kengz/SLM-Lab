@@ -103,13 +103,19 @@ def calc_trial_fitness_df(trial):
     return trial_fitness_df
 
 
-def plot_session(session_spec, info_space, session_data):
-    '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
-    aeb_count = len(session_data)
+def get_palette(aeb_count):
+    '''Get the suitable palette to plot for some number of aeb graphs, where each aeb is a color.'''
     if aeb_count <= 8:
         palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
     else:
         palette = util.interp(cl.scales['8']['qual']['Set2'], aeb_count)
+    return palette
+
+
+def plot_session(session_spec, info_space, session_data):
+    '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
+    aeb_count = len(session_data)
+    palette = get_palette(aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
     for idx, (a, e, b) in enumerate(session_data):
         aeb_str = f'{a}{e}{b}'
@@ -313,7 +319,6 @@ def mock_info_space_spec(predir, trial_index=None, session_index=None):
     info_space = InfoSpace()
     info_space.experiment_ts = experiment_ts
     info_space.set('experiment', 0)
-    spec_name = spec_name_from_filepath(predir)
     if trial_index is None:
         filepath = f'{predir}/{spec_name}_spec.json'
     else:
