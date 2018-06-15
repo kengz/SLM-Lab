@@ -270,12 +270,6 @@ def save_spec(spec, info_space, unit='experiment'):
     util.write(spec, f'{prepath}_spec.json')
 
 
-def spec_name_from_filepath(filepath):
-    '''Get spec_name from data filepath: split folder name and remove tail timestamp'''
-    spec_name = '_'.join(filepath.split('/')[1].split('_')[:-4])
-    return spec_name
-
-
 def session_data_from_file(predir, trial_index, session_index):
     '''Build session.session_data from file'''
     for filename in os.listdir(predir):
@@ -311,11 +305,12 @@ def trial_data_dict_from_file(predir):
     return trial_data_dict
 
 
+# TODO unify with util method
 def mock_info_space_spec(predir, trial_index=None, session_index=None):
     '''Helper for retro analysis to build mock info_space and spec'''
     from slm_lab.experiment.monitor import InfoSpace
-    spec_name = spec_name_from_filepath(predir)
-    experiment_ts = predir.split('/')[1].replace(f'{spec_name}_', '')
+    spec_name = util.prepath_to_spec_name(predir)
+    experiment_ts = util.prepath_to_experiment_ts(predir)
     info_space = InfoSpace()
     info_space.experiment_ts = experiment_ts
     info_space.set('experiment', 0)
@@ -410,7 +405,7 @@ def plot_session_from_file(session_df_filepath):
     analysis.plot_session_from_file(filepath)
     '''
     from slm_lab.experiment.monitor import InfoSpace
-    spec_name = spec_name_from_filepath(session_df_filepath)
+    spec_name = util.prepath_to_spec_name(session_df_filepath)
     session_spec = {'name': spec_name}
     session_df = util.read(session_df_filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
     session_data = util.session_df_to_data(session_df)

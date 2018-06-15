@@ -544,6 +544,7 @@ def prepath_to_info_space(prepath):
     # create info_space for prepath
     info_space = InfoSpace()
     info_space.experiment_ts = experiment_ts
+    info_space.set('experiment', 0)
     info_space.set('trial', trial_index)
     info_space.set('session', session_index)
     return info_space
@@ -555,6 +556,13 @@ def prepath_split(prepath):
     tail = prepath.split('data/')[-1]
     prefolder, prename = tail.split('/')
     return prefolder, prename
+
+
+def prepath_to_predir(prepath):
+    tail = prepath.split('data/')[-1]
+    prefolder = tail.split('/')[0]
+    predir = f'data/{prefolder}'
+    return predir
 
 
 def prepath_to_experiment_ts(prepath):
