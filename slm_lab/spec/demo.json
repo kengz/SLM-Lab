@@ -1,42 +1,36 @@
 {
-  "a2c_cartpole": {
+  "dqn_cartpole": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "DQN",
       "algorithm": {
-        "name": "ActorCritic",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 20,
         "gamma": 0.99,
-        "add_entropy": false,
-        "entropy_coef": 0.01,
-        "continuous_action_clip": 2.0,
-        "training_frequency": 1,
-        "training_epoch": 8,
-        "use_gae": true,
-        "lam": 1.0,
-        "num_step_returns": 100,
-        "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0
+        "training_batch_epoch": 3,
+        "training_epoch": 4,
+        "training_frequency": 8,
+        "training_min_timestep": 32
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000
       },
       "net": {
-        "type": "MLPNetSeparate",
-        "hid_layers": [64],
+        "type": "MLPNet",
+        "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
-        "use_same_optim": false,
-        "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 0.02
+        "loss_spec": {
+          "name": "MSELoss"
         },
-        "critic_optim_spec": {
+        "optim_spec": {
           "name": "Adam",
           "lr": 0.02
         },
@@ -44,21 +38,24 @@
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0,
         "gpu": true
       }
     }],
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 150
+      "max_episode": 50
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "max_session": 1,
       "max_trial": 4,
+      "max_session": 4,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 4,
@@ -68,11 +65,11 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "gamma__choice": [0.91, 0.95]
+          "gamma__choice": [0.91, 0.99]
         },
         "net": {
-          "actor_optim_spec": {
-            "lr__choice": [0.002, 0.02]
+          "optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
           }
         }
       }]

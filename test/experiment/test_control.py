@@ -18,7 +18,7 @@ def test_trial(test_spec):
 
 
 def test_trial_demo():
-    spec = spec_util.get('demo.json', 'a2c_cartpole')
+    spec = spec_util.get('demo.json', 'dqn_cartpole')
     spec = util.override_test_spec(spec)
     trial_data = Trial(spec).run()
     assert isinstance(trial_data, pd.DataFrame)
