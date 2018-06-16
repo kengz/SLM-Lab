@@ -143,12 +143,12 @@ class VanillaDQN(SARSA):
             return np.nan
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
+        is_per = util.get_class_name(self.agent.nanflat_body_a[0].memory) == 'PrioritizedReplay'
         if self.to_train == 1:
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
                 batch = self.sample()
                 for _ in range(self.training_batch_epoch):
-                    is_per = util.get_class_name(self.agent.nanflat_body_a[0].memory) == 'PrioritizedReplay'
                     with torch.no_grad():
                         q_targets = self.calc_q_targets(batch)
                         if is_per:
@@ -494,6 +494,7 @@ class HydraDQN(MultitaskDQN):
             return np.nan
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
+        is_per = util.get_class_name(self.agent.nanflat_body_a[0].memory) == 'PrioritizedReplay'
         if self.to_train == 1:
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
@@ -501,6 +502,12 @@ class HydraDQN(MultitaskDQN):
                 for _ in range(self.training_batch_epoch):
                     with torch.no_grad():
                         q_targets = self.calc_q_targets(batch)
+                        if is_per:
+                            q_preds = self.net.wrap_eval(batch['states'])
+                            errors = torch.abs(q_targets - q_preds)
+                            errors = errors.sum(dim=1).unsqueeze_(dim=1)
+                            for body in self.agent.nanflat_body_a:
+                                body.memory.update_priorities(errors)
                     loss = self.net.training_step(batch['states'], q_targets)
                     total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
