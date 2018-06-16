@@ -170,6 +170,7 @@ class SeqReplay(Replay):
         '''Transforms the raw state into format that is fed into the network'''
         # append when state is first seen when acting in policy_util, don't append elsewhere in memory
         if append:
+            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
             self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer)
         return processed_state
@@ -228,6 +229,7 @@ class StackReplay(Replay):
         '''Transforms the raw state into format that is fed into the network'''
         # append when state is first seen when acting in policy_util, don't append elsewhere in memory
         if append:
+            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
             self.state_buffer.append(state)
         processed_state = np.concatenate(self.state_buffer)
         return processed_state
@@ -274,6 +276,7 @@ class AtariReplay(StackReplay):
         state = util.transform_image(state)
         # append when state is first seen when acting in policy_util, don't append elsewhere in memory
         if append:
+            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
             self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
         assert processed_state.shape == self.body.state_dim

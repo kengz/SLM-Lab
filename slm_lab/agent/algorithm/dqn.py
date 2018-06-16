@@ -94,7 +94,8 @@ class VanillaDQN(SARSA):
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for VanillaDQN; use DQN.'
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
-        logger.info(f'Training on gpu: {self.net.gpu}')
+        self.net_names = ['net']
+        self.post_init_nets()
 
     def calc_q_targets(self, batch):
         '''Computes the target Q values for a batch of experiences'''
@@ -138,6 +139,8 @@ class VanillaDQN(SARSA):
         For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
         Otherwise this function does nothing.
         '''
+        if util.get_lab_mode() == 'enjoy':
+            return np.nan
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
         if self.to_train == 1:
@@ -196,9 +199,10 @@ class DQNBase(VanillaDQN):
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, in_dim, out_dim)
         self.target_net = NetClass(self.net_spec, self, in_dim, out_dim)
+        self.net_names = ['net', 'target_net']
+        self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        logger.info(f'Training on gpu: {self.net.gpu}')
 
     def calc_q_targets(self, batch):
         '''Computes the target Q values for a batch of experiences. Note that the net references may differ based on algorithm.'''
@@ -323,9 +327,10 @@ class MultitaskDQN(DQN):
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, in_dim, out_dim)
         self.target_net = NetClass(self.net_spec, self, in_dim, out_dim)
+        self.net_names = ['net', 'target_net']
+        self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
     def calc_pdparam(self, x, evaluate=True):
@@ -421,9 +426,10 @@ class HydraDQN(MultitaskDQN):
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, in_dims, out_dims)
         self.target_net = NetClass(self.net_spec, self, in_dims, out_dims)
+        self.net_names = ['net', 'target_net']
+        self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
-        logger.info(f'Training on gpu: {self.net.gpu}')
 
     @lab_api
     def calc_pdparam(self, x, evaluate=True):
@@ -484,6 +490,8 @@ class HydraDQN(MultitaskDQN):
         For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
         Otherwise this function does nothing.
         '''
+        if util.get_lab_mode() == 'enjoy':
+            return np.nan
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
         if self.to_train == 1:

@@ -1,7 +1,3 @@
 {
-  "data_sync_dir": "~/Dropbox/SLM-Lab/data",
-  "plotly": {
-    "username": "get from https://plot.ly/settings/api",
-    "api_key": "generate from https://plot.ly/settings/api"
-  }
+  "data_sync_dir": "~/Dropbox/SLM-Lab/data"
 }

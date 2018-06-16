@@ -99,6 +99,7 @@ class Agent:
         self.agent_spec = agent_spec
         self.agent_space = agent_space
         self.a = a
+        self.spec = agent_space.spec
         self.info_space = agent_space.info_space
         self.name = self.agent_spec['name']
         self.body_a = None
@@ -148,9 +149,7 @@ class Agent:
     @lab_api
     def close(self):
         '''Close agent at the end of a session, e.g. save model'''
-        # TODO save model
-        model_for_loading_next_trial = 'not implemented'
-        return model_for_loading_next_trial
+        self.algorithm.save()
 
 
 class AgentSpace:

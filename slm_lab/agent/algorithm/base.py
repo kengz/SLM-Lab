@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod, abstractproperty
+from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -45,6 +46,19 @@ class Algorithm(ABC):
         raise NotImplementedError
 
     @lab_api
+    def post_init_nets(self):
+        '''
+        Method to conditionally load models.
+        Call at the end of init_net() after setting self.net_names
+        '''
+        assert hasattr(self, 'net_names')
+        if util.get_lab_mode() == 'enjoy':
+            logger.info('Loaded algorithm models for lab_mode: enjoy')
+            self.load()
+        else:
+            logger.info(f'Initialized algorithm models for lab_mode: {util.get_lab_mode()}')
+
+    @lab_api
     def calc_pdparam(self, x, evaluate=True):
         '''
         To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
@@ -88,6 +102,8 @@ class Algorithm(ABC):
     @lab_api
     def train(self):
         '''Implement algorithm train, or throw NotImplementedError'''
+        if util.get_lab_mode() == 'enjoy':
+            return np.nan
         raise NotImplementedError
 
     @abstractmethod
@@ -95,3 +111,19 @@ class Algorithm(ABC):
     def update(self):
         '''Implement algorithm update, or throw NotImplementedError'''
         raise NotImplementedError
+
+    @lab_api
+    def save(self):
+        '''Save net models for algorithm given the required property self.net_names'''
+        if not hasattr(self, 'net_names'):
+            logger.info('No net declared in self.net_names in init_nets(); no models to save.')
+        else:
+            net_util.save_algorithm(self)
+
+    @lab_api
+    def load(self):
+        '''Load net models for algorithm given the required property self.net_names'''
+        if not hasattr(self, 'net_names'):
+            logger.info('No net declared in self.net_names in init_nets(); no models to load.')
+        else:
+            net_util.load_algorithm(self)

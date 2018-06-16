@@ -88,7 +88,8 @@ class SARSA(Algorithm):
             self.net_spec.update(seq_len=self.net_spec['seq_len'])
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
-        logger.info(f'Training on gpu: {self.net.gpu}')
+        self.net_names = ['net']
+        self.post_init_nets()
 
     @lab_api
     def calc_pdparam(self, x, evaluate=True):
@@ -154,6 +155,8 @@ class SARSA(Algorithm):
         Completes one training step for the agent if it is time to train.
         Otherwise this function does nothing.
         '''
+        if util.get_lab_mode() == 'enjoy':
+            return np.nan
         if self.to_train == 1:
             batch = self.sample()
             with torch.no_grad():

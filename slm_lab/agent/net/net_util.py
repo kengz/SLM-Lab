@@ -56,7 +56,7 @@ def init_gru_layer(layer):
 
 def init_layers(layers):
     '''
-    Initializes all of the layers of type 'Linear', 'Conv', or GRU, using xavier uniform initialization for the weights and 0.01 for the biases, 0.0 for the biases of the GRU.
+    Initializes all of the layers of type 'Linear', 'Conv', or 'GRU', using xavier uniform initialization for the weights and 0.01 for the biases, 0.0 for the biases of the GRU.
     Initializes all layers of type 'BatchNorm' using uniform initialization for the weights and the same as above for the biases
     '''
     bias_init = 0.01
@@ -89,11 +89,11 @@ def fn_decay_lr(net, fn):
     '''
     space_clock = util.s_get(net.algorithm, 'aeb_space.clock')
     total_t = space_clock.get('total_t')
-    net_spec = net.net_spec
     start_val, end_val = net.optim_spec['lr'], 1e-6
-    anneal_total_t = max(10e6, 60 * net_spec['lr_decay_frequency'])
+    anneal_total_t = net.lr_anneal_timestep or max(10e6, 60 * net.lr_decay_frequency)
 
-    if total_t >= net_spec['lr_decay_min_timestep'] and total_t % net_spec['lr_decay_frequency'] == 0:
+    if total_t >= net.lr_decay_min_timestep and total_t % net.lr_decay_frequency == 0:
+        logger.debug(f'anneal_total_t: {anneal_total_t}, total_t: {total_t}')
         new_lr = fn(start_val, end_val, anneal_total_t, total_t)
         return new_lr
     else:
@@ -101,7 +101,7 @@ def fn_decay_lr(net, fn):
 
 
 def linear_decay(net):
-    '''Apply linear decay to lr'''
+    '''Apply _linear_decay to lr'''
     return fn_decay_lr(net, policy_util._linear_decay)
 
 
@@ -155,11 +155,37 @@ def load_params(net, flattened):
 def save(net, model_path):
     '''Save model weights to path'''
     torch.save(net.state_dict(), model_path)
+    logger.info(f'Saved model to {model_path}')
+
+
+def save_algorithm(algorithm):
+    '''Save all the nets for an algorithm'''
+    agent = algorithm.agent
+    net_names = algorithm.net_names
+    prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+    logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
+    for net_name in net_names:
+        net = getattr(algorithm, net_name)
+        model_path = f'{prepath}_model_{net_name}.pth'
+        save(net, model_path)
 
 
 def load(net, model_path):
     '''Save model weights from a path into a net module'''
     net.load_state_dict(torch.load(model_path))
+    logger.info(f'Loaded model from {model_path}')
+
+
+def load_algorithm(algorithm):
+    '''Save all the nets for an algorithm'''
+    agent = algorithm.agent
+    net_names = algorithm.net_names
+    prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names}')
+    for net_name in net_names:
+        net = getattr(algorithm, net_name)
+        model_path = f'{prepath}_model_{net_name}.pth'
+        load(net, model_path)
 
 
 def copy(src_net, tar_net):

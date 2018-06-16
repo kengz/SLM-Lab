@@ -103,17 +103,28 @@ def calc_trial_fitness_df(trial):
     return trial_fitness_df
 
 
-def plot_session(session_spec, info_space, session_data):
-    '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
-    aeb_count = len(session_data)
+def get_palette(aeb_count):
+    '''Get the suitable palette to plot for some number of aeb graphs, where each aeb is a color.'''
     if aeb_count <= 8:
         palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
     else:
         palette = util.interp(cl.scales['8']['qual']['Set2'], aeb_count)
+    return palette
+
+
+def lower_opacity(rgb, opacity):
+    return rgb.replace('rgb(', 'rgba(').replace(')', f',{opacity})')
+
+
+def plot_session(session_spec, info_space, session_data):
+    '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
+    aeb_count = len(session_data)
+    palette = get_palette(aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
     for idx, (a, e, b) in enumerate(session_data):
         aeb_str = f'{a}{e}{b}'
         aeb_df = session_data[(a, e, b)]
+        aeb_df.fillna(0, inplace=True)  # for saving plot, cant have nan
         fig_1 = viz.plot_line(aeb_df, 'reward', 'epi', legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
         fig.append_trace(fig_1.data[0], 1, 1)
 
@@ -130,6 +141,68 @@ def plot_session(session_spec, info_space, session_data):
     fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
     fig.layout.update(ps.pick(fig_1.layout, ['legend']))
     fig.layout.update(title=f'session graph: {session_spec["name"]} t{info_space.get("trial")} s{info_space.get("session")}', width=500, height=600)
+    viz.plot(fig)
+    return fig
+
+
+def gather_aeb_rewards_df(aeb, session_datas):
+    '''Gather rewards from each session for a body into a df'''
+    aeb_session_rewards = {}
+    for s, session_data in session_datas.items():
+        aeb_df = session_data[aeb]
+        aeb_reward_sr = aeb_df['reward']
+        aeb_session_rewards[s] = aeb_reward_sr
+    aeb_rewards_df = pd.DataFrame(aeb_session_rewards)
+    return aeb_rewards_df
+
+
+def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
+    '''Build the aeb_reward envelope figure'''
+    mean_sr = aeb_rewards_df.mean(axis=1)
+    std_sr = aeb_rewards_df.std(axis=1).fillna(0)
+    max_sr = mean_sr + std_sr
+    min_sr = mean_sr - std_sr
+    x = aeb_rewards_df.index.tolist()
+    max_y = max_sr.tolist()
+    min_y = min_sr.tolist()
+
+    envelope_trace = viz.go.Scatter(
+        x=x + x[::-1],
+        y=max_y + min_y[::-1],
+        fill='tozerox',
+        fillcolor=lower_opacity(color, 0.2),
+        line=dict(color='transparent'),
+        showlegend=False,
+        legendgroup=aeb_str,
+    )
+    df = pd.DataFrame({'epi': x, 'mean_reward': mean_sr})
+    fig = viz.plot_line(
+        df, ['mean_reward'], ['epi'], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
+    )
+    fig.data.append(envelope_trace)
+    return fig
+
+
+def plot_trial(trial_spec, info_space):
+    '''Plot the trial graph, 1 pane: mean and error envelope of reward graphs from all sessions. Each aeb_df gets its own color'''
+    prepath = util.get_prepath(trial_spec, info_space)
+    predir = util.prepath_to_predir(prepath)
+    session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
+
+    aeb_count = len(session_datas[0])
+    palette = get_palette(aeb_count)
+    fig = None
+    for idx, (a, e, b) in enumerate(session_datas[0]):
+        aeb = (a, e, b)
+        aeb_str = f'{a}{e}{b}'
+        color = palette[idx]
+        aeb_rewards_df = gather_aeb_rewards_df(aeb, session_datas)
+        aeb_fig = build_aeb_reward_fig(aeb_rewards_df, aeb_str, color)
+        if fig is None:
+            fig = aeb_fig
+        else:
+            fig.data.extend(aeb_fig.data)
+    fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{info_space.get("trial")}', width=500, height=600)
     viz.plot(fig)
     return fig
 
@@ -188,16 +261,15 @@ def save_session_data(spec, info_space, session_mdp_data, session_data, session_
         # util.write(session_mdp_df, f'{prepath}_session_mdp_df.csv')
         util.write(session_df, f'{prepath}_session_df.csv')
     util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
-    # TODO replaced by plot_best_sessions until Feb 2018 https://github.com/plotly/plotly.py/issues/880
-    if os.environ.get('lab_mode') == 'train':
-        viz.save_image(session_fig, f'{prepath}_session_graph.png')
+    viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
 
-def save_trial_data(spec, info_space, trial_fitness_df):
+def save_trial_data(spec, info_space, trial_fitness_df, trial_fig):
     '''Save the trial data: spec, trial_fitness_df.'''
     prepath = util.get_prepath(spec, info_space, unit='trial')
     logger.info(f'Saving trial data to {prepath}')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
+    viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
 
 
 def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
@@ -206,8 +278,6 @@ def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
     logger.info(f'Saving experiment data to {prepath}')
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
-    # TODO tmp hack
-    plot_best_sessions(experiment_df, prepath)
 
 
 def analyze_session(session, session_data=None):
@@ -233,7 +303,8 @@ def analyze_trial(trial):
     '''
     logger.info('Analyzing trial')
     trial_fitness_df = calc_trial_fitness_df(trial)
-    save_trial_data(trial.spec, trial.info_space, trial_fitness_df)
+    trial_fig = plot_trial(trial.spec, trial.info_space)
+    save_trial_data(trial.spec, trial.info_space, trial_fitness_df, trial_fig)
     return trial_fitness_df
 
 
@@ -264,12 +335,6 @@ def save_spec(spec, info_space, unit='experiment'):
     util.write(spec, f'{prepath}_spec.json')
 
 
-def spec_name_from_filepath(filepath):
-    '''Get space_name from data filepath: split folder name and remove tail timestamp'''
-    spec_name = '_'.join(filepath.split('/')[1].split('_')[:-4])
-    return spec_name
-
-
 def session_data_from_file(predir, trial_index, session_index):
     '''Build session.session_data from file'''
     for filename in os.listdir(predir):
@@ -278,6 +343,15 @@ def session_data_from_file(predir, trial_index, session_index):
             session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
             session_data = util.session_df_to_data(session_df)
             return session_data
+
+
+def session_datas_from_file(predir, trial_spec, trial_index):
+    '''Return a dict of {session_index: session_data} for a trial'''
+    session_datas = {}
+    for s in range(trial_spec['meta']['max_session']):
+        session_data = session_data_from_file(predir, trial_index, s)
+        session_datas[s] = session_data
+    return session_datas
 
 
 def session_data_dict_from_file(predir, trial_index):
@@ -305,15 +379,15 @@ def trial_data_dict_from_file(predir):
     return trial_data_dict
 
 
+# TODO unify with util method
 def mock_info_space_spec(predir, trial_index=None, session_index=None):
     '''Helper for retro analysis to build mock info_space and spec'''
     from slm_lab.experiment.monitor import InfoSpace
-    spec_name = spec_name_from_filepath(predir)
-    experiment_ts = predir.split('/')[1].replace(f'{spec_name}_', '')
+    spec_name = util.prepath_to_spec_name(predir)
+    experiment_ts = util.prepath_to_experiment_ts(predir)
     info_space = InfoSpace()
     info_space.experiment_ts = experiment_ts
     info_space.set('experiment', 0)
-    spec_name = spec_name_from_filepath(predir)
     if trial_index is None:
         filepath = f'{predir}/{spec_name}_spec.json'
     else:
@@ -405,7 +479,7 @@ def plot_session_from_file(session_df_filepath):
     analysis.plot_session_from_file(filepath)
     '''
     from slm_lab.experiment.monitor import InfoSpace
-    spec_name = spec_name_from_filepath(session_df_filepath)
+    spec_name = util.prepath_to_spec_name(session_df_filepath)
     session_spec = {'name': spec_name}
     session_df = util.read(session_df_filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
     session_data = util.session_df_to_data(session_df)
@@ -416,15 +490,6 @@ def plot_session_from_file(session_df_filepath):
     info_space.set('session', int(sn[1:]))
     session_fig = plot_session(session_spec, info_space, session_data)
     viz.save_image(session_fig, session_df_filepath.replace('_session_df.csv', '_session_graph.png'))
-
-
-def plot_best_sessions(experiment_df, prepath):
-    '''Plot the session graphs from the best trials.'''
-    logger.info('Plotting best sessions')
-    # TODO remove when plotly can save all
-    for trial_index in experiment_df.index[:5]:
-        session_df_filepath = f'{prepath}_t{trial_index}_s{0}_session_df.csv'
-        plot_session_from_file(session_df_filepath)
 
 
 '''

@@ -39,7 +39,7 @@ class LabJsonEncoder(json.JSONEncoder):
             return int(obj)
         elif isinstance(obj, np.floating):
             return float(obj)
-        elif isinstance(obj, np.ndarray):
+        elif isinstance(obj, (np.ndarray, pd.Series)):
             return obj.tolist()
         else:
             return str(obj)
@@ -244,6 +244,10 @@ def get_fn_list(a_cls):
     '''
     fn_list = ps.filter_(dir(a_cls), lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
     return fn_list
+
+
+def get_lab_mode():
+    return os.environ.get('lab_mode')
 
 
 def get_prepath(spec, info_space, unit='experiment'):
@@ -532,6 +536,92 @@ def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
     return results
 
 
+def prepath_to_info_space(prepath):
+    '''Create info_space from prepath such that it returns the same prepath with spec'''
+    from slm_lab.experiment.monitor import InfoSpace
+    experiment_ts = prepath_to_experiment_ts(prepath)
+    trial_index, session_index = prepath_to_idxs(prepath)
+    # create info_space for prepath
+    info_space = InfoSpace()
+    info_space.experiment_ts = experiment_ts
+    info_space.set('experiment', 0)
+    info_space.set('trial', trial_index)
+    info_space.set('session', session_index)
+    return info_space
+
+
+def prepath_split(prepath):
+    '''Split prepath into prefolder and prename'''
+    prepath = prepath.strip('_')
+    tail = prepath.split('data/')[-1]
+    prefolder, prename = tail.split('/')
+    return prefolder, prename
+
+
+def prepath_to_predir(prepath):
+    tail = prepath.split('data/')[-1]
+    prefolder = tail.split('/')[0]
+    predir = f'data/{prefolder}'
+    return predir
+
+
+def prepath_to_experiment_ts(prepath):
+    predir = prepath_to_predir(prepath)
+    experiment_ts = RE_FILE_TS.findall(predir)[0]
+    return experiment_ts
+
+
+def prepath_to_idxs(prepath):
+    '''Extract trial index and session index from prepath if available'''
+    spec_name = prepath_to_spec_name(prepath)
+    _prefolder, prename = prepath_split(prepath)
+    idxs_tail = prename.replace(spec_name, '').strip('_')
+    idxs_strs = idxs_tail.split('_')[:2]
+    assert len(idxs_strs) > 0, 'No trial/session indices found in prepath'
+    tidx = idxs_strs[0]
+    assert tidx.startswith('t')
+    trial_index = int(tidx.strip('t'))
+    if len(idxs_strs) == 1:  # has session
+        session_index = None
+    else:
+        sidx = idxs_strs[0]
+        assert sidx.startswith('s')
+        session_index = int(sidx.strip('s'))
+    return trial_index, session_index
+
+
+def prepath_to_spec_name(prepath):
+    predir = prepath_to_predir(prepath)
+    tail = prepath.split('data/')[-1]
+    prefolder = tail.split('/')[0]
+    experiment_ts = prepath_to_experiment_ts(prepath)
+    spec_name = prefolder.replace(experiment_ts, '').strip('_')
+    return spec_name
+
+
+def prepath_to_spec(prepath):
+    '''Create spec from prepath such that it returns the same prepath with info_space'''
+    prepath = prepath.strip('_')
+    pre_spec_path = '_'.join(prepath.split('_')[:-1])
+    spec_path = f'{pre_spec_path}_spec.json'
+    # read the spec of prepath
+    spec = read(spec_path)
+    return spec
+
+
+def prepath_to_spec_info_space(prepath):
+    '''
+    Given a prepath, read the correct spec and craete the info_space that will return the same prepath
+    This is used for lab_mode: enjoy
+    example: data/a2c_cartpole_2018_06_13_220436/a2c_cartpole_t0_s0
+    '''
+    spec = prepath_to_spec(prepath)
+    info_space = prepath_to_info_space(prepath)
+    check_prepath = get_prepath(spec, info_space, unit='session')
+    assert check_prepath in prepath, f'{check_prepath}, {prepath}'
+    return spec, info_space
+
+
 def read(data_path, **kwargs):
     '''
     Universal data reading method with smart data parsing
@@ -789,16 +879,14 @@ def normalize_image(im):
 
 def transform_image(im):
     '''
-    Image preprocessing from the paper Playing Atari with Deep Reinforcement Learning, 2013
-    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84, taking bottomost rows of image
+    Image preprocessing from the paper "Playing Atari with Deep Reinforcement Learning, 2013, Mnih et al"
+    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84, taking bottomost rows of the image.
     '''
     if im.ndim != 3:
         print(f'Unexpected image dimension: {im.ndim}, {im.shape}')
-    # imsave('atari_before.png', im)
     im = np.dot(im[..., :3], [0.299, 0.587, 0.114])
     im = resize_image(im)
     im = crop_image(im)
-    # imsave('atari_after.png', im)
     im = normalize_image(im)
     return im
 
@@ -810,6 +898,7 @@ def debug_image(im):
 
 
 def fn_timer(function):
+    '''Decorator to time the execution of a function. Useful for debugging slow training'''
     @wraps(function)
     def function_timer(*args, **kwargs):
         t0 = time.time()
