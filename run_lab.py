@@ -3,10 +3,12 @@ The entry point of SLM Lab
 Specify what to run in `config/experiments.json`
 Then run `yarn start` or `python run_lab.py`
 '''
+import os
+# pytorch thread overusage https://github.com/pytorch/pytorch/issues/975
+os.environ['OMP_NUM_THREADS'] = '1'
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util, benchmarker
-import os
 
 
 debug_modules = [
