@@ -105,7 +105,7 @@ class PrioritizedReplay(Replay):
     '''
 
     def __init__(self, memory_spec, algorithm, body):
-        util.set_attr(self, self.memory_spec, [
+        util.set_attr(self, memory_spec, [
             'alpha',
             'epsilon',
             'batch_size',
@@ -124,7 +124,7 @@ class PrioritizedReplay(Replay):
         Implementation for update() to add experience to memory, expanding the memory size if necessary.
         All experiences are added with a high priority to increase the likelihood that they are sampled at least once.
         '''
-        error = torch.full_like((1,), error)
+        error = torch.zeros(1).fill_(error)
         priority = self.get_priority(error)
         super(PrioritizedReplay, self).add_experience(state, action, reward, next_state, done, priority)
         self.tree.add(priority, self.head)
@@ -132,12 +132,12 @@ class PrioritizedReplay(Replay):
     def get_priority(self, error):
         '''Takes in the error of one or more examples and returns the proportional priority'''
         p = torch.pow(error + self.epsilon, self.alpha)
-        return p.numpy()
+        return p.squeeze_().numpy()
 
     def sample_idxs(self, batch_size):
         '''Samples batch_size indices from memory in proportional to their priority.'''
         batch_idxs = np.zeros(batch_size)
-        tree_idxs = np.zeros(batch_size)
+        tree_idxs = np.zeros(batch_size, dtype=np.int)
         segment = self.tree.total() / batch_size
 
         for i in range(batch_size):
