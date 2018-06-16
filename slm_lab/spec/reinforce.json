@@ -21,7 +21,7 @@
       },
       "net": {
         "type": "MLPdefault",
-        "hid_layers": [32],
+        "hid_layers": [16],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -35,6 +35,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "gpu": true
       }
     }],
@@ -94,7 +95,7 @@
         "type": "RecurrentNet",
         "hid_layers": [],
         "hid_layers_activation": "relu",
-        "rnn_hidden_size": 32,
+        "rnn_hidden_size": 16,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
@@ -109,6 +110,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "gpu": true
       }
     }],
@@ -188,6 +190,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 600,
+        "lr_anneal_timestep": 1000000,
         "gpu": true
       }
     }],

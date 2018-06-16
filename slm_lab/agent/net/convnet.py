@@ -18,7 +18,7 @@ class ConvNet(Net, nn.Module):
     The entire model consists of three parts:
         1. self.conv_model
         2. self.dense_model
-        3. self.out_layers
+        3. self.model_tails
 
     e.g. net_spec
     "net": {

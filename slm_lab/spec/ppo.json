@@ -38,6 +38,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "gpu": true
       }
     }],
@@ -115,6 +116,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "gpu": true
       }
     }],
@@ -195,6 +197,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "gpu": true
       }
     }],
@@ -275,6 +278,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "gpu": true
       }
     }],
@@ -359,6 +363,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 1000000,
         "gpu": true
       }
     }],
@@ -424,6 +429,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 1000000,
         "gpu": true
       }
     }],

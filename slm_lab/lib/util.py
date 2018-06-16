@@ -877,16 +877,14 @@ def normalize_image(im):
 
 def transform_image(im):
     '''
-    Image preprocessing from the paper Playing Atari with Deep Reinforcement Learning, 2013
-    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84, taking bottomost rows of image
+    Image preprocessing from the paper "Playing Atari with Deep Reinforcement Learning, 2013, Mnih et al"
+    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84, taking bottomost rows of the image.
     '''
     if im.ndim != 3:
         print(f'Unexpected image dimension: {im.ndim}, {im.shape}')
-    # imsave('atari_before.png', im)
     im = np.dot(im[..., :3], [0.299, 0.587, 0.114])
     im = resize_image(im)
     im = crop_image(im)
-    # imsave('atari_after.png', im)
     im = normalize_image(im)
     return im
 
@@ -898,6 +896,7 @@ def debug_image(im):
 
 
 def fn_timer(function):
+    '''Decorator to time the execution of a function. Useful for debugging slow training'''
     @wraps(function)
     def function_timer(*args, **kwargs):
         t0 = time.time()
