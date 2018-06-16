@@ -566,8 +566,8 @@ def prepath_to_predir(prepath):
 
 
 def prepath_to_experiment_ts(prepath):
-    prefolder, _prenmame = prepath_split(prepath)
-    experiment_ts = RE_FILE_TS.findall(prefolder)[0]
+    predir = prepath_to_predir(prepath)
+    experiment_ts = RE_FILE_TS.findall(predir)[0]
     return experiment_ts
 
 
@@ -591,7 +591,9 @@ def prepath_to_idxs(prepath):
 
 
 def prepath_to_spec_name(prepath):
-    prefolder, _prename = prepath_split(prepath)
+    predir = prepath_to_predir(prepath)
+    tail = prepath.split('data/')[-1]
+    prefolder = tail.split('/')[0]
     experiment_ts = prepath_to_experiment_ts(prepath)
     spec_name = prefolder.replace(experiment_ts, '').strip('_')
     return spec_name
