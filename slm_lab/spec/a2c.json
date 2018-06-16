@@ -14,7 +14,7 @@
         "use_gae": true,
         "lam": 1.0,
         "num_step_returns": 100,
-        "add_entropy": false,
+        "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
@@ -28,7 +28,7 @@
       "net": {
         "type": "MLPNetShared",
         "hid_layers": [32],
-        "hid_layers_activation": "relu",
+        "hid_layers_activation": "tanh",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "use_same_optim": false,
@@ -50,7 +50,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 250
+      "max_episode": 500
     }],
     "body": {
       "product": "outer",
@@ -64,6 +64,9 @@
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "training_epoch__choice": [1, 4, 8, 16]
+        },
         "net": {
           "hid_layers__choice": [
             [32],
@@ -71,12 +74,11 @@
             [32, 16],
             [64, 32]
           ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [0.0001, 0.1]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [0.0001, 0.1]
           }
         }
       }]
@@ -97,7 +99,7 @@
         "use_gae": true,
         "lam": 1.0,
         "num_step_returns": 100,
-        "add_entropy": false,
+        "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
@@ -111,7 +113,7 @@
       "net": {
         "type": "MLPNetSeparate",
         "hid_layers": [32],
-        "hid_layers_activation": "relu",
+        "hid_layers_activation": "tanh",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "use_same_optim": false,
@@ -133,7 +135,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 250
+      "max_episode": 500
     }],
     "body": {
       "product": "outer",
@@ -147,6 +149,9 @@
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "training_epoch__choice": [1, 4, 8, 16]
+        },
         "net": {
           "hid_layers__choice": [
             [32],
@@ -154,12 +159,11 @@
             [32, 16],
             [64, 32]
           ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [0.0001, 0.1]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [0.0001, 0.1]
           }
         }
       }]
@@ -180,7 +184,7 @@
         "use_gae": true,
         "lam": 1.0,
         "num_step_returns": 100,
-        "add_entropy": false,
+        "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
@@ -194,7 +198,7 @@
       "net": {
         "type": "RecurrentNetShared",
         "hid_layers": [],
-        "hid_layers_activation": "relu",
+        "hid_layers_activation": "tanh",
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
@@ -219,7 +223,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 250
+      "max_episode": 500
     }],
     "body": {
       "product": "outer",
@@ -233,6 +237,9 @@
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "training_epoch__choice": [1, 4, 8, 16]
+        },
         "net": {
           "hid_layers__choice": [
             [32],
@@ -240,12 +247,11 @@
             [32, 16],
             [64, 32]
           ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [0.0001, 0.1]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [0.0001, 0.1]
           }
         }
       }]
@@ -266,7 +272,7 @@
         "use_gae": true,
         "lam": 1.0,
         "num_step_returns": 100,
-        "add_entropy": false,
+        "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
@@ -280,7 +286,7 @@
       "net": {
         "type": "RecurrentNetSeparate",
         "hid_layers": [],
-        "hid_layers_activation": "relu",
+        "hid_layers_activation": "tanh",
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
@@ -305,7 +311,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 250
+      "max_episode": 500
     }],
     "body": {
       "product": "outer",
@@ -319,6 +325,9 @@
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "training_epoch__choice": [1, 4, 8, 16]
+        },
         "net": {
           "hid_layers__choice": [
             [32],
@@ -326,12 +335,11 @@
             [32, 16],
             [64, 32]
           ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [0.0001, 0.1]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [0.0001, 0.1]
           }
         }
       }]
@@ -352,7 +360,7 @@
         "use_gae": true,
         "lam": 1.0,
         "num_step_returns": 100,
-        "add_entropy": false,
+        "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
@@ -423,7 +431,7 @@
         "use_gae": true,
         "lam": 1.0,
         "num_step_returns": 100,
-        "add_entropy": false,
+        "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
