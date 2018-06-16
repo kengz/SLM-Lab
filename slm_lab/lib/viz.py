@@ -35,9 +35,9 @@ def save_image(figure, filepath=None):
     if filepath is None:
         filepath = f'{PLOT_FILEDIR}/{ps.get(figure, "layout.title")}.png'
     try:
-        call(['orca', 'graph', '-o', filepath, json.dumps(figure)])
-    except Exception:
-        logger.warn(
+        call(['orca', 'graph', '--verbose', '-o', filepath, json.dumps(figure)])
+    except Exception as e:
+        logger.exception(
             'Please install orca for plotly and run retro-analysis to generate graphs.')
 
 

@@ -124,6 +124,7 @@ def plot_session(session_spec, info_space, session_data):
     for idx, (a, e, b) in enumerate(session_data):
         aeb_str = f'{a}{e}{b}'
         aeb_df = session_data[(a, e, b)]
+        aeb_df.fillna(0, inplace=True)  # for saving plot, cant have nan
         fig_1 = viz.plot_line(aeb_df, 'reward', 'epi', legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
         fig.append_trace(fig_1.data[0], 1, 1)
 
@@ -158,7 +159,7 @@ def gather_aeb_rewards_df(aeb, session_datas):
 def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
     '''Build the aeb_reward envelope figure'''
     mean_sr = aeb_rewards_df.mean(axis=1)
-    std_sr = aeb_rewards_df.std(axis=1)
+    std_sr = aeb_rewards_df.std(axis=1).fillna(0)
     max_sr = mean_sr + std_sr
     min_sr = mean_sr - std_sr
     x = aeb_rewards_df.index.tolist()

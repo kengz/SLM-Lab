@@ -39,7 +39,7 @@ class LabJsonEncoder(json.JSONEncoder):
             return int(obj)
         elif isinstance(obj, np.floating):
             return float(obj)
-        elif isinstance(obj, np.ndarray):
+        elif isinstance(obj, (np.ndarray, pd.Series)):
             return obj.tolist()
         else:
             return str(obj)
