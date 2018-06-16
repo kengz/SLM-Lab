@@ -1,25 +1,32 @@
 # SLM Lab
 [![CircleCI](https://circleci.com/gh/kengz/SLM-Lab.svg?style=shield)](https://circleci.com/gh/kengz/SLM-Lab) [![Maintainability](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/maintainability)](https://codeclimate.com/github/kengz/SLM-Lab/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/20c6a124c468b4d3e967/test_coverage)](https://codeclimate.com/github/kengz/SLM-Lab/test_coverage)
 
-A research framework for Deep Reinforcement Learning using Unity, OpenAI Gym, PyTorch, Tensorflow.
+Modular Deep Reinforcement Learning framework in PyTorch.
 
 **[Github Repo](https://github.com/kengz/SLM-Lab) | [Lab Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log Book](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
 
 ## Features
 
-This lab is for general deep reinforcement learning research, built with proper software engineering:
+SLM Lab is created for deep reinforcement learning research.
 
-- baseline algorithms
-- [OpenAI gym](https://github.com/openai/gym), [Unity environments](https://github.com/Unity-Technologies/ml-agents)
-- modular reusable components
-- multi-agents, multi-environments
+#### algorithms
+- numerous canonical algorithms (list below)
+- reusable modular components: algorithm, policy, network, memory
+- ease and speed of building new algorithms
+- clear and unified design; production-grade code
+
+#### environments
+- works with [OpenAI gym](https://github.com/openai/gym), [Unity environments](https://github.com/Unity-Technologies/ml-agents), and more soon
+- supports multi-agents, multi-environments
+- API for adding custom environments
+
+#### experimentation
 - scalable hyperparameter search with [ray](https://github.com/ray-project/ray)
-- useful graphs and analytics
-- fitness vector for universal benchmarking of agents, environments
+- graphs and analytics
+- fitness function for comparing experiments
+- open science - [Log Book](https://lgraesser.gitbooks.io/slm-experiment-log/content/)
 
 #### Baselines
-
->Work in progress.
 
 The implemented baseline algorithms (besides research) are:
 - SARSA
