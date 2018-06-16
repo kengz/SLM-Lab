@@ -3,6 +3,6 @@ The nets module
 Contains classes of neural network architectures
 '''
 
-from slm_lab.agent.net.convnet import ConvNet
-from slm_lab.agent.net.feedforward import MLPNet, MultiMLPNet, MLPHeterogenousHeads
-from slm_lab.agent.net.recurrent import RecurrentNet
+from slm_lab.agent.net.convnet import *
+from slm_lab.agent.net.mlp import *
+from slm_lab.agent.net.recurrent import *

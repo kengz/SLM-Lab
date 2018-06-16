@@ -34,6 +34,7 @@ class TestOnPolicyBatchMemory:
           a tuple containing three elements:
           (memory, batch_size, experiences)
     '''
+
     def test_memory_init(self, test_on_policy_batch_memory):
         memory = test_on_policy_batch_memory[0]
         assert memory_init_util(memory)
@@ -86,7 +87,6 @@ class TestOnPolicyBatchMemory:
             if i == batch_size:
                 break
             else:
-                assert memory.body.agent.algorithm.to_train == 0
                 memory.add_experience(*e)
         assert memory.body.agent.algorithm.to_train == 1
 
@@ -105,6 +105,7 @@ class TestOnPolicyMemory:
           a tuple containing three elements:
           (memory, batch_size, experiences)
     '''
+
     def test_memory_init(self, test_on_policy_episodic_memory):
         memory = test_on_policy_episodic_memory[0]
         assert memory_init_util(memory)
@@ -120,12 +121,12 @@ class TestOnPolicyMemory:
         assert memory.true_size == 1
         assert len(memory.states) == 0
         # Handle states and actions with multiple dimensions
-        assert np.array_equal(memory.current_episode['states'][-1], exp[0])
-        assert memory.current_episode['rewards'][-1] == exp[1]
-        assert memory.current_episode['actions'][-1] == exp[2]
-        assert np.array_equal(memory.current_episode['next_states'][-1], exp[3])
-        assert memory.current_episode['dones'][-1] == exp[4]
-        assert memory.current_episode['priorities'][-1] == 1
+        assert np.array_equal(memory.cur_epi_data['states'][-1], exp[0])
+        assert memory.cur_epi_data['rewards'][-1] == exp[1]
+        assert memory.cur_epi_data['actions'][-1] == exp[2]
+        assert np.array_equal(memory.cur_epi_data['next_states'][-1], exp[3])
+        assert memory.cur_epi_data['dones'][-1] == exp[4]
+        assert memory.cur_epi_data['priorities'][-1] == 1
 
     def test_sample(self, test_on_policy_episodic_memory):
         '''Tests that a sample of batch size is returned with the correct dimensions'''

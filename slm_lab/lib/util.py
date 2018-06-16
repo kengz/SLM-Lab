@@ -1,27 +1,25 @@
+from collections import deque
 from datetime import datetime
-from slm_lab import ROOT_DIR
-from torch.autograd import Variable
-import collections
-import colorlover as cl
 from functools import wraps
+from gym import spaces
+from itertools import chain
+from slm_lab import ROOT_DIR
+from sys import getsizeof, stderr
+import colorlover as cl
+import cv2
 import json
 import math
-import multiprocessing as mp
 import numpy as np
-import scipy as sp
 import os
 import pandas as pd
-import pydash as _
+import pydash as ps
 import regex as re
+import scipy as sp
 import time
 import torch
+import torch.multiprocessing as mp
 import ujson
 import yaml
-import pprint
-from scipy.misc import imsave
-from sys import getsizeof, stderr
-from itertools import chain
-from collections import deque
 try:
     from reprlib import repr
 except ImportError:
@@ -73,7 +71,7 @@ def cast_df(val):
 
 def cast_list(val):
     '''missing pydash method to cast value as list'''
-    if _.is_list(val):
+    if ps.is_list(val):
         return val
     else:
         return [val]
@@ -84,13 +82,23 @@ def compact_dict(d):
     return {k: v for k, v in d.items() if not gen_isnan(v)}
 
 
-def concat_dict(d_list):
-    '''Concatenate all the dicts by their array values'''
-    cat_dict = {}
-    for k in d_list[0]:
-        arr = np.concatenate([d[k] for d in d_list])
-        cat_dict[k] = arr
-    return cat_dict
+def concat_batches(batches):
+    '''
+    Concat batch objects from body.memory.sample() into one batch, when all bodies experience similar envs
+    Also concat any nested epi sub-batches into flat batch
+    {k: arr1} + {k: arr2} = {k: arr1 + arr2}
+    '''
+    episodic = is_episodic(batches[0])
+    concat_batch = {}
+    for k in batches[0]:
+        datas = []
+        for batch in batches:
+            data = batch[k]
+            if episodic:  # make into plain batch instead of nested
+                data = np.concatenate(data)
+            datas.append(data)
+        concat_batch[k] = np.concatenate(datas)
+    return concat_batch
 
 
 def count_nonan(arr):
@@ -117,14 +125,14 @@ def flatten_dict(obj, delim='.'):
     '''Missing pydash method to flatten dict'''
     nobj = {}
     for key, val in obj.items():
-        if _.is_dict(val) and not _.is_empty(val):
+        if ps.is_dict(val) and not ps.is_empty(val):
             strip = flatten_dict(val, delim)
             for k, v in strip.items():
                 nobj[key + delim + k] = v
-        elif _.is_list(val) and not _.is_empty(val) and _.is_dict(val[0]):
+        elif ps.is_list(val) and not ps.is_empty(val) and ps.is_dict(val[0]):
             for idx, v in enumerate(val):
                 nobj[key + delim + str(idx)] = v
-                if _.is_object(v):
+                if ps.is_object(v):
                     nobj = flatten_dict(nobj, delim)
         else:
             nobj[key] = val
@@ -168,9 +176,28 @@ def gen_isnan(v):
         return v is None
 
 
+def get_action_type(action_space):
+    '''Method to get the action type to choose prob. dist. to sample actions from NN logits output'''
+    if isinstance(action_space, spaces.Box):
+        shape = action_space.shape
+        assert len(shape) == 1
+        if shape[0] == 1:
+            return 'continuous'
+        else:
+            return 'multi_continuous'
+    elif isinstance(action_space, spaces.Discrete):
+        return 'discrete'
+    elif isinstance(action_space, spaces.MultiDiscrete):
+        return 'multi_discrete'
+    elif isinstance(action_space, spaces.MultiBinary):
+        return 'multi_binary'
+    else:
+        raise NotImplementedError
+
+
 def get_df_aeb_list(session_df):
     '''Get the aeb list for session_df for iterating.'''
-    aeb_list = sorted(_.uniq([(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
+    aeb_list = sorted(ps.uniq([(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
     return aeb_list
 
 
@@ -190,7 +217,7 @@ def get_class_attr(obj):
     '''Get the class attr of an object as dict'''
     attr_dict = {}
     for k, v in obj.__dict__.items():
-        if hasattr(v, '__dict__') or _.is_tuple(v):
+        if hasattr(v, '__dict__') or ps.is_tuple(v):
             val = str(v)
         else:
             val = v
@@ -215,8 +242,22 @@ def get_fn_list(a_cls):
     Get the callable, non-private functions of a class
     @returns {[*str]} A list of strings of fn names
     '''
-    fn_list = _.filter_(dir(a_cls), lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
+    fn_list = ps.filter_(dir(a_cls), lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
     return fn_list
+
+
+def get_prepath(spec, info_space, unit='experiment'):
+    spec_name = spec['name']
+    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    prename = f'{spec_name}'
+    trial_index = info_space.get('trial')
+    session_index = info_space.get('session')
+    if unit == 'trial':
+        prename += f'_t{trial_index}'
+    elif unit == 'session':
+        prename += f'_t{trial_index}_s{session_index}'
+    prepath = f'{predir}/{prename}'
+    return prepath
 
 
 def get_ts(pattern=FILE_TS_FORMAT):
@@ -249,8 +290,8 @@ def interp(scl, r):
     '''
     Replacement for colorlover.interp
     Interpolate a color scale "scl" to a new one with length "r"
-        Fun usage in IPython notebook:
-        HTML( to_html( to_hsl( interp( cl.scales['11']['qual']['Paired'], 5000 ) ) ) )
+    Fun usage in IPython notebook:
+    HTML( to_html( to_hsl( interp( cl.scales['11']['qual']['Paired'], 5000 ) ) ) )
     '''
     c = []
     SCL_FI = len(scl) - 1  # final index of color scale
@@ -263,14 +304,16 @@ def interp(scl, r):
     scl = cl.to_numeric(scl)
 
     def interp3(fraction, start, end):
-        ''' Interpolate between values of 2, 3-member tuples '''
+        '''Interpolate between values of 2, 3-member tuples'''
         def intp(f, s, e):
             return s + (e - s) * f
         return tuple([intp(fraction, start[i], end[i]) for i in range(3)])
 
     def rgb_to_hsl(rgb):
-        ''' Adapted from M Bostock's RGB to HSL converter in d3.js
-            https://github.com/mbostock/d3/blob/master/src/color/rgb.js '''
+        '''
+        Adapted from M Bostock's RGB to HSL converter in d3.js
+        https://github.com/mbostock/d3/blob/master/src/color/rgb.js
+        '''
         r, g, b = float(rgb[0]) / 255.0,\
             float(rgb[1]) / 255.0,\
             float(rgb[2]) / 255.0
@@ -312,6 +355,17 @@ def interp(scl, r):
         c.append('hsl' + str(hsl))
 
     return cl.to_hsl(c)
+
+
+def is_episodic(batch):
+    '''
+    Check if batch is episodic or is plain
+    episodic: {k: [[*data_epi1], [*data_epi2], ...]}
+    plain: {k: [*data]}
+    '''
+    dones = batch['dones']  # the most reliable, scalar
+    # if is nested, then is episodic
+    return isinstance(dones[0], (list, np.ndarray))
 
 
 def is_jupyter():
@@ -377,13 +431,55 @@ def is_sub_dict(sub_dict, super_dict):
         super_v = super_dict[sub_k]
         if type(sub_v) != type(super_v):
             return False
-        if _.is_dict(sub_v):
+        if ps.is_dict(sub_v):
             if not is_sub_dict(sub_v, super_v):
                 return False
         else:
             if sub_k not in super_dict:
                 return False
     return True
+
+
+def memory_size(o, handlers={}, verbose=False, divisor=1e6):
+    '''
+    Returns the approximate memory footprint an object and all of its contents. In MB by default.
+
+    Automatically finds the contents of the following builtin containers and
+    their subclasses:  tuple, list, deque, dict, set and frozenset.
+    To search other containers, add handlers to iterate over their contents:
+
+        handlers = {SomeContainerClass: iter,
+                    OtherContainerClass: OtherContainerClass.get_elements}
+    Source: https://code.activestate.com/recipes/577504/
+    '''
+    def lambda_fn(d):
+        return chain.from_iterable(d.items())
+    dict_handler = lambda_fn
+    all_handlers = {
+        tuple: iter,
+        list: iter,
+        deque: iter,
+        dict: dict_handler,
+        set: iter,
+        frozenset: iter,
+    }
+    all_handlers.update(handlers)  # user handlers take precedence
+    seen = set()  # track which object id's have already been seen
+    default_size = getsizeof(0)  # estimate sizeof object without __sizeof__
+
+    def sizeof(o):
+        if id(o) in seen:  # do not double count the same object
+            return 0
+        seen.add(id(o))
+        s = getsizeof(o, default_size)
+        if verbose:
+            print(s, type(o), repr(o), file=stderr)
+        for typ, handler in all_handlers.items():
+            if isinstance(o, typ):
+                s += sum(map(sizeof, handler(o)))
+                break
+        return s
+    return sizeof(o) / divisor
 
 
 def monkey_patch(base_cls, extend_cls):
@@ -404,20 +500,17 @@ def nonan_all(v):
 
 
 def override_dev_spec(spec):
-    spec['env'][0]['max_episode'] = 20
-    spec['meta'] = {
-        'max_session': 1,
-        'max_trial': 2,
-    }
+    spec['meta']['max_session'] = 1
+    spec['meta']['max_trial'] = 2
     return spec
 
 
 def override_test_spec(spec):
-    spec['env'][0]['max_episode'] = 2
-    spec['meta'] = {
-        'max_session': 1,
-        'max_trial': 2,
-    }
+    for env_spec in spec['env']:
+        env_spec['max_episode'] = 3
+        env_spec['max_timestep'] = 100
+    spec['meta']['max_session'] = 1
+    spec['meta']['max_trial'] = 2
     return spec
 
 
@@ -446,7 +539,6 @@ def read(data_path, **kwargs):
     - {.json} to dict, list
     - {.yml} to dict
     - {*} to str
-    - TODO {.h5} to model weights
     - TODO {db-query} to dict, DataFrame
     @param {str} data_path The data path to read from
     @returns {data} The read data in sensible format
@@ -513,7 +605,7 @@ def s_get(cls, attr_path):
     util.s_get(self, 'aeb_space.clock')
     '''
     from_class_name = get_class_name(cls, lower=True)
-    from_idx = _.find_index(SPACE_PATH, lambda s: from_class_name in (s, s.replace('_', '')))
+    from_idx = ps.find_index(SPACE_PATH, lambda s: from_class_name in (s, s.replace('_', '')))
     from_idx = max(from_idx, 0)
     attr_path = attr_path.split('.')
     to_idx = SPACE_PATH.index(attr_path[0])
@@ -521,7 +613,7 @@ def s_get(cls, attr_path):
     if from_idx < to_idx:
         path_link = SPACE_PATH[from_idx: to_idx]
     else:
-        path_link = _.reverse(SPACE_PATH[to_idx: from_idx])
+        path_link = ps.reverse(SPACE_PATH[to_idx: from_idx])
 
     res = cls
     for attr in path_link + attr_path:
@@ -535,8 +627,8 @@ def self_desc(cls):
     desc_list = [f'{get_class_name(cls)}:']
     for k, v in get_class_attr(cls).items():
         if k == 'spec':
-            continue
-        if _.is_dict(v) or _.is_dict(_.head(v)):
+            desc_v = v['name']
+        elif ps.is_dict(v) or ps.is_dict(ps.head(v)):
             desc_v = to_json(v)
         else:
             desc_v = v
@@ -562,8 +654,10 @@ def session_df_to_data(session_df):
     return session_data
 
 
-def set_attr(obj, attr_dict):
+def set_attr(obj, attr_dict, keys=None):
     '''Set attribute of an object from a dict'''
+    if keys is not None:
+        attr_dict = ps.pick(attr_dict, keys)
     for attr, val in attr_dict.items():
         setattr(obj, attr, val)
     return obj
@@ -599,6 +693,20 @@ def to_json(d, indent=2):
     return json.dumps(d, indent=indent, cls=LabJsonEncoder)
 
 
+def to_one_hot(data, max_val):
+    '''Convert an int list of data into one-hot vectors'''
+    return np.eye(max_val)[np.array(data)]
+
+
+def to_torch_batch(batch, gpu):
+    '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
+    for k in batch:
+        batch[k] = torch.from_numpy(batch[k].astype('float32')).float()
+        if torch.cuda.is_available() and gpu:
+            batch[k] = batch[k].cuda()
+    return batch
+
+
 def to_tuple_list(l):
     '''Returns a copy of the list with its elements as tuples'''
     return [tuple(row) for row in l]
@@ -611,7 +719,6 @@ def write(data, data_path):
     - {.json} from dict, list
     - {.yml} from dict
     - {*} from str(*)
-    - TODO {.h5} from model weights
     - TODO {db-query} from dict, DataFrame
     @param {*} data The data to write
     @param {str} data_path The data path to write to
@@ -668,68 +775,6 @@ def write_as_plain(data, data_path):
     return data_path
 
 
-def to_torch_batch(batch, gpu):
-    '''Mutate a batch (dict) to make its values from numpy into PyTorch Variable'''
-    float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
-    for k in float_data_names:
-        batch[k] = torch.from_numpy(batch[k].astype(np.float)).float()
-        if torch.cuda.is_available() and gpu:
-            batch[k] = batch[k].cuda()
-        batch[k] = Variable(batch[k])
-    return batch
-
-
-def to_torch_nested_batch(batch, gpu):
-    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable.'''
-    float_data_names = ['states', 'actions', 'rewards', 'dones', 'next_states']
-    return to_torch_nested_batch_helper(batch, float_data_names, gpu)
-
-
-def to_torch_nested_batch_ex_rewards(batch, gpu):
-    '''Mutate a nested batch (dict of lists) to make its values (excluding rewards) from numpy into PyTorch Variable.'''
-    float_data_names = ['states', 'actions', 'dones', 'next_states']
-    return to_torch_nested_batch_helper(batch, float_data_names, gpu)
-
-
-def to_torch_nested_batch_helper(batch, float_data_names, gpu):
-    '''Mutate a nested batch (dict of lists) to make its values from numpy into PyTorch Variable. Excludes keys not included in float_data_names'''
-    for k in float_data_names:
-        k_b = []
-        for x in batch[k]:
-            nx = np.asarray(x).astype(np.float)
-            tx = torch.from_numpy(nx).float()
-            if torch.cuda.is_available() and gpu:
-                tx = tx.cuda()
-            tx = Variable(tx)
-            k_b.append(tx)
-        batch[k] = k_b
-    return batch
-
-
-def concat_episodes(batch):
-    '''Concat episodic data into single tensors. Excludes data that isn't already a tensor'''
-    for k in batch:
-        classname = batch[k][0].__class__.__name__
-        if classname.find('ndarray') != -1 or classname.find('list') != -1:
-            # print(f'Skipping {k}')
-            pass
-        else:
-            batch[k] = torch.cat(batch[k], dim=0)
-            if batch[k].dim() == 1:
-                batch[k].unsqueeze_(1)
-    return batch
-
-
-def convert_to_one_hot(data, categories, gpu):
-    '''Converts categorical data to one hot representation'''
-    data_onehot = torch.zeros(data.size(0), categories)
-    idxs = torch.from_numpy(np.array(list(range(data.size(0)))))
-    data_onehot[idxs, data.data.long().cpu()] = 1
-    if torch.cuda.is_available() and gpu:
-        data_onehot = data_onehot.cuda()
-    return Variable(data_onehot)
-
-
 def resize_image(im):
     return sp.misc.imresize(im, (110, 84))
 
@@ -758,47 +803,10 @@ def transform_image(im):
     return im
 
 
-def total_size(o, handlers={}, verbose=False):
-    """ Returns the approximate memory footprint an object and all of its contents.
-
-    Automatically finds the contents of the following builtin containers and
-    their subclasses:  tuple, list, deque, dict, set and frozenset.
-    To search other containers, add handlers to iterate over their contents:
-
-        handlers = {SomeContainerClass: iter,
-                    OtherContainerClass: OtherContainerClass.get_elements}
-    Source: https://code.activestate.com/recipes/577504/
-    """
-    def lambda_fn(d):
-        return chain.from_iterable(d.items())
-    dict_handler = lambda_fn
-    all_handlers = {tuple: iter,
-                    list: iter,
-                    deque: iter,
-                    dict: dict_handler,
-                    set: iter,
-                    frozenset: iter,
-                    }
-    all_handlers.update(handlers)     # user handlers take precedence
-    seen = set()                      # track which object id's have already been seen
-    default_size = getsizeof(0)       # estimate sizeof object without __sizeof__
-
-    def sizeof(o):
-        if id(o) in seen:       # do not double count the same object
-            return 0
-        seen.add(id(o))
-        s = getsizeof(o, default_size)
-
-        if verbose:
-            print(s, type(o), repr(o), file=stderr)
-
-        for typ, handler in all_handlers.items():
-            if isinstance(o, typ):
-                s += sum(map(sizeof, handler(o)))
-                break
-        return s
-
-    return sizeof(o)
+def debug_image(im):
+    '''Use this method to render image the agent sees; waits for a key press before continuing'''
+    cv2.imshow('image', im)
+    cv2.waitKey(0)
 
 
 def fn_timer(function):

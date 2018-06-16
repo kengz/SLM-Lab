@@ -5,8 +5,11 @@ from setuptools.command.test import test as TestCommand
 
 test_args = [
     '-n 0',
-    '--capture=no',
     '--verbose',
+    '--capture=sys',
+    '--log-level=INFO',
+    '--log-cli-level=INFO',
+    '--log-file-level=INFO',
     '--no-flaky-report',
     '--timeout=60',
     '--cov-report=html',
@@ -54,8 +57,8 @@ class PyTest(TestCommand):
 
 setup(
     name='slm_lab',
-    version='0.1.0',
-    description='An experimental framework for Reinforcement Learning using Unity and PyTorch.',
+    version='1.0.3',
+    description='A research framework for Deep Reinforcement Learning using Unity, OpenAI Gym, PyTorch, Tensorflow.',
     long_description=read('README.md'),
     keywords='SLM Lab',
     url='https://github.com/kengz/slm_lab',

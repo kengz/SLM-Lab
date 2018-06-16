@@ -1,15 +1,8 @@
 {
   "agent": {
     "discrete": [
-      "Reinforce",
-      "ActorCritic",
-      "VanillaDQN",
-      "DQN",
-      "DoubleDQN"
     ],
     "continuous": [
-      "Reinforce",
-      "ActorCritic"
     ]
   },
   "env": {

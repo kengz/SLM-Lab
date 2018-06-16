@@ -12,7 +12,7 @@ from slm_lab import config
 from slm_lab.lib import logger, util
 import os
 import plotly
-import pydash as _
+import pydash as ps
 
 PLOT_FILEDIR = util.smart_path('data')
 os.makedirs(PLOT_FILEDIR, exist_ok=True)
@@ -25,19 +25,19 @@ def plot(*args, **kwargs):
     if util.is_jupyter():
         return py.iplot(*args, **kwargs)
     else:
-        kwargs.update({'auto_open': _.get(kwargs, 'auto_open', False)})
+        kwargs.update({'auto_open': ps.get(kwargs, 'auto_open', False)})
         return py.plot(*args, **kwargs)
 
 
 def save_image(figure, filepath=None):
-    if os.environ.get('lab_mode') == 'dev':
+    if os.environ.get('lab_mode') == 'dev' or os.environ.get('PY_ENV') == 'test':
         return
     if filepath is None:
-        filepath = f'{PLOT_FILEDIR}/{_.get(figure, "layout.title")}.png'
+        filepath = f'{PLOT_FILEDIR}/{ps.get(figure, "layout.title")}.png'
     try:
         plotly.tools.set_credentials_file(
-            username=_.get(config, 'plotly.username'),
-            api_key=_.get(config, 'plotly.api_key'))
+            username=ps.get(config, 'plotly.username'),
+            api_key=ps.get(config, 'plotly.api_key'))
         plotly.tools.set_config_file(world_readable=True, sharing='public')
         return plotly.plotly.image.save_as(figure, filepath)
     except Exception:
@@ -64,7 +64,7 @@ def create_label(
         title=None, y_title=None, x_title=None, legend_name=None):
     '''Create label dict for go.Layout with smart resolution'''
     legend_name = legend_name or y_col
-    y_col_list, x_col_list, legend_name_list = _.map_(
+    y_col_list, x_col_list, legend_name_list = ps.map_(
         [y_col, x_col, legend_name], util.cast_list)
     y_title = str(y_title or ','.join(y_col_list))
     x_title = str(x_title or ','.join(x_col_list))
@@ -118,7 +118,7 @@ def plot_go(
     label = create_label(y_col, x_col, title, y_title, x_title, legend_name)
     layout = create_layout(
         x_type=x_type, width=width, height=height, layout_kwargs=layout_kwargs,
-        **_.pick(label, ['title', 'y_title', 'x_title']))
+        **ps.pick(label, ['title', 'y_title', 'x_title']))
     y_col_list, x_col_list = label['y_col_list'], label['x_col_list']
 
     if y2_col is not None:
@@ -139,10 +139,10 @@ def plot_go(
     trace_num = max(y_col_num, x_col_num)
     data = []
     for idx in range(trace_num):
-        y_c = _.get(combo_y_col_list, idx % y_col_num)
-        x_c = _.get(x_col_list, idx % x_col_num)
-        df_y, df_x = _.get(df, y_c), _.get(df, x_c)
-        trace = _.get(go, trace_class)(y=df_y, x=df_x, name=combo_legend_name_list[idx])
+        y_c = ps.get(combo_y_col_list, idx % y_col_num)
+        x_c = ps.get(x_col_list, idx % x_col_num)
+        df_y, df_x = ps.get(df, y_c), ps.get(df, x_c)
+        trace = ps.get(go, trace_class)(y=df_y, x=df_x, name=combo_legend_name_list[idx])
         trace.update(trace_kwargs)
         if idx >= len(y_col_list):
             trace.update(dict(yaxis='y2', xaxis='x1'))
@@ -165,8 +165,8 @@ def plot_area(
         df, y_col = args[:2]
         stack_df = stack_cumsum(df, y_col)
         args = (stack_df,) + args[1:]
-    trace_kwargs = _.merge(dict(fill=fill, mode='lines', line=dict(width=1)), trace_kwargs)
-    layout_kwargs = _.merge(dict(), layout_kwargs)
+    trace_kwargs = ps.merge(dict(fill=fill, mode='lines', line=dict(width=1)), trace_kwargs)
+    layout_kwargs = ps.merge(dict(), layout_kwargs)
     return plot_go(
         *args, trace_class='Scatter',
         trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
@@ -178,8 +178,8 @@ def plot_bar(
     trace_kwargs=None, layout_kwargs=None,
         **kwargs):
     '''Plot bar chart from df'''
-    trace_kwargs = _.merge(dict(orientation=orientation), trace_kwargs)
-    layout_kwargs = _.merge(dict(barmode=barmode), layout_kwargs)
+    trace_kwargs = ps.merge(dict(orientation=orientation), trace_kwargs)
+    layout_kwargs = ps.merge(dict(barmode=barmode), layout_kwargs)
     return plot_go(
         *args, trace_class='Bar',
         trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
@@ -191,8 +191,8 @@ def plot_line(
     trace_kwargs=None, layout_kwargs=None,
         **kwargs):
     '''Plot line from df'''
-    trace_kwargs = _.merge(dict(mode='lines', line=dict(width=1)), trace_kwargs)
-    layout_kwargs = _.merge(dict(), layout_kwargs)
+    trace_kwargs = ps.merge(dict(mode='lines', line=dict(width=1)), trace_kwargs)
+    layout_kwargs = ps.merge(dict(), layout_kwargs)
     return plot_go(
         *args, trace_class='Scatter',
         trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
@@ -204,8 +204,8 @@ def plot_scatter(
     trace_kwargs=None, layout_kwargs=None,
         **kwargs):
     '''Plot scatter from df'''
-    trace_kwargs = _.merge(dict(mode='markers'), trace_kwargs)
-    layout_kwargs = _.merge(dict(), layout_kwargs)
+    trace_kwargs = ps.merge(dict(mode='markers'), trace_kwargs)
+    layout_kwargs = ps.merge(dict(), layout_kwargs)
     return plot_go(
         *args, trace_class='Scatter',
         trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
@@ -217,8 +217,8 @@ def plot_histogram(
     trace_kwargs=None, layout_kwargs=None,
         **kwargs):
     '''Plot histogram from df'''
-    trace_kwargs = _.merge(dict(orientation=orientation, xbins={}, histnorm=histnorm), trace_kwargs)
-    layout_kwargs = _.merge(dict(barmode=barmode), layout_kwargs)
+    trace_kwargs = ps.merge(dict(orientation=orientation, xbins={}, histnorm=histnorm), trace_kwargs)
+    layout_kwargs = ps.merge(dict(barmode=barmode), layout_kwargs)
     return plot_go(
         *args, trace_class='Histogram',
         trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,

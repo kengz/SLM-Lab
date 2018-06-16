@@ -1,33 +1,39 @@
 {
-  "sarsa_mlp_boltzmann_cartpole": {
+  "ppo_mlp_shared_cartpole": {
     "agent": [{
-      "name": "SARSA",
+      "name": "PPO",
       "algorithm": {
-        "name": "SARSA",
+        "name": "PPO",
         "action_pdtype": "default",
-        "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.5,
-        "explore_var_end": 0.3,
-        "explore_anneal_epi": 20,
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
         "gamma": 0.99,
-        "training_frequency": 20
+        "lam": 1.0,
+        "clip_eps": 0.10,
+        "entropy_coef": 0.01,
+        "training_frequency": 1,
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyBatchReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPNet",
+        "type": "MLPNetShared",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
+        "use_same_optim": false,
+        "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
         },
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
@@ -38,7 +44,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 10
     }],
     "body": {
       "product": "outer",
@@ -52,9 +58,6 @@
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "explore_anneal_epi__choice": [10, 30, 50, 100]
-        },
         "net": {
           "hid_layers__choice": [
             [16],
@@ -63,42 +66,51 @@
             [64, 32]
           ],
           "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          },
+          "critic_optim_spec": {
             "lr__uniform": [0.0001, 0.2]
           }
         }
       }]
     }
   },
-  "sarsa_mlp_epsilon_greedy_cartpole": {
+  "ppo_mlp_separate_cartpole": {
     "agent": [{
-      "name": "SARSA",
+      "name": "PPO",
       "algorithm": {
-        "name": "SARSA",
+        "name": "PPO",
         "action_pdtype": "default",
-        "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
         "gamma": 0.99,
-        "training_frequency": 20
+        "lam": 1.0,
+        "clip_eps": 0.10,
+        "entropy_coef": 0.01,
+        "training_frequency": 1,
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyBatchReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPNet",
+        "type": "MLPNetSeparate",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
+        "use_same_optim": false,
+        "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
         },
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
@@ -109,7 +121,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 10
     }],
     "body": {
       "product": "outer",
@@ -123,9 +135,6 @@
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "explore_anneal_epi__choice": [10, 30, 50, 100]
-        },
         "net": {
           "hid_layers__choice": [
             [16],
@@ -134,32 +143,39 @@
             [64, 32]
           ],
           "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          },
+          "critic_optim_spec": {
             "lr__uniform": [0.0001, 0.2]
           }
         }
       }]
     }
   },
-  "sarsa_rnn_boltzmann_cartpole": {
+  "ppo_rnn_shared_cartpole": {
     "agent": [{
-      "name": "SARSA",
+      "name": "PPO",
       "algorithm": {
-        "name": "SARSA",
+        "name": "PPO",
         "action_pdtype": "default",
-        "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.5,
-        "explore_var_end": 0.3,
-        "explore_anneal_epi": 20,
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
         "gamma": 0.99,
-        "training_frequency": 20
+        "lam": 1.0,
+        "clip_eps": 0.10,
+        "entropy_coef": 0.01,
+        "training_frequency": 1,
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicySeqBatchReplay"
+        "name": "OnPolicySeqReplay"
       },
       "net": {
-        "type": "RecurrentNet",
+        "type": "RecurrentNetShared",
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
@@ -167,12 +183,14 @@
         "seq_len": 4,
         "clip_grad": false,
         "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
+        "use_same_optim": false,
+        "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
         },
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
@@ -183,7 +201,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 10
     }],
     "body": {
       "product": "outer",
@@ -197,9 +215,6 @@
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "explore_anneal_epi__choice": [10, 30, 50, 100]
-        },
         "net": {
           "hid_layers__choice": [
             [16],
@@ -208,32 +223,39 @@
             [64, 32]
           ],
           "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          },
+          "critic_optim_spec": {
             "lr__uniform": [0.0001, 0.2]
           }
         }
       }]
     }
   },
-  "sarsa_rnn_epsilon_greedy_cartpole": {
+  "ppo_rnn_separate_cartpole": {
     "agent": [{
-      "name": "SARSA",
+      "name": "PPO",
       "algorithm": {
-        "name": "SARSA",
+        "name": "PPO",
         "action_pdtype": "default",
-        "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
         "gamma": 0.99,
-        "training_frequency": 20
+        "lam": 1.0,
+        "clip_eps": 0.10,
+        "entropy_coef": 0.01,
+        "training_frequency": 1,
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicySeqBatchReplay"
+        "name": "OnPolicySeqReplay"
       },
       "net": {
-        "type": "RecurrentNet",
+        "type": "RecurrentNetSeparate",
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
@@ -241,12 +263,14 @@
         "seq_len": 4,
         "clip_grad": false,
         "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
+        "use_same_optim": false,
+        "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
         },
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
@@ -257,7 +281,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 10
     }],
     "body": {
       "product": "outer",
@@ -271,9 +295,6 @@
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "explore_anneal_epi__choice": [10, 30, 50, 100]
-        },
         "net": {
           "hid_layers__choice": [
             [16],
@@ -282,32 +303,39 @@
             [64, 32]
           ],
           "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          },
+          "critic_optim_spec": {
             "lr__uniform": [0.0001, 0.2]
           }
         }
       }]
     }
   },
-  "sarsa_conv_boltzmann_breakout": {
+  "ppo_conv_shared_breakout": {
     "agent": [{
-      "name": "SARSA",
+      "name": "PPO",
       "algorithm": {
-        "name": "SARSA",
+        "name": "PPO",
         "action_pdtype": "default",
-        "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.5,
-        "explore_var_end": 0.3,
-        "explore_anneal_epi": 20,
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
         "gamma": 0.99,
-        "training_frequency": 100
+        "lam": 1.0,
+        "clip_eps": 0.10,
+        "entropy_coef": 0.01,
+        "training_frequency": 1,
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyBatchReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "ConvNet",
+        "type": "ConvNetShared",
         "hid_layers": [
           [
             [3, 16, [5, 5], 2, 0, [1, 1]],
@@ -320,6 +348,7 @@
         "batch_norm": false,
         "clip_grad": false,
         "clip_grad_val": 1.0,
+        "use_same_optim": false,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
@@ -349,25 +378,29 @@
       "max_generation": null
     }
   },
-  "sarsa_conv_epsilon_greedy_breakout": {
+  "ppo_conv_separate_breakout": {
     "agent": [{
-      "name": "SARSA",
+      "name": "PPO",
       "algorithm": {
-        "name": "SARSA",
+        "name": "PPO",
         "action_pdtype": "default",
-        "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
         "gamma": 0.99,
-        "training_frequency": 100
+        "lam": 1.0,
+        "clip_eps": 0.10,
+        "entropy_coef": 0.01,
+        "training_frequency": 1,
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyBatchReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "ConvNet",
+        "type": "ConvNetSeparate",
         "hid_layers": [
           [
             [3, 16, [5, 5], 2, 0, [1, 1]],
@@ -380,6 +413,7 @@
         "batch_norm": false,
         "clip_grad": false,
         "clip_grad_val": 1.0,
+        "use_same_optim": false,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },

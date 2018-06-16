@@ -2,13 +2,12 @@ from slm_lab.agent import AgentSpace, Body
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.net.recurrent import RecurrentNet
-from slm_lab.agent.net.feedforward import MLPNet, MultiMLPNet, MLPHeterogenousHeads
+from slm_lab.agent.net.mlp import MLPNet, HydraMLPNet, MLPHeterogenousTails
 from slm_lab.env import EnvSpace
 # from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
-from torch.autograd import Variable
 import numpy as np
 import pandas as pd
 import pytest
@@ -30,15 +29,6 @@ def test_spec():
     spec = spec_util.get('base.json', 'base_case')
     spec = util.override_test_spec(spec)
     return spec
-
-
-# TODO properly use in tests
-# @pytest.fixture(scope='session')
-# def test_session(test_spec):
-#     trial = Trial(test_spec)
-#     session = trial.init_session()
-#     yield session
-#     session.close()
 
 
 @pytest.fixture(scope='session')
@@ -123,7 +113,7 @@ def test_multiline_str():
     (
         MLPNet,
         {
-            'in_dim': 10, 'hid_dim': [5, 3],
+            'in_dim': 10, 'hid_layers': [5, 3],
             'out_dim':2,
             'hid_layers_activation': 'tanh',
         },
@@ -132,7 +122,7 @@ def test_multiline_str():
     ), (
         MLPNet,
         {
-            'in_dim': 20, 'hid_dim': [10, 50, 5],
+            'in_dim': 20, 'hid_layers': [10, 50, 5],
             'out_dim':2, 'hid_layers_activation': 'tanh',
         },
         None,
@@ -140,67 +130,67 @@ def test_multiline_str():
     ), (
         MLPNet,
         {
-            'in_dim': 10, 'hid_dim': [],
+            'in_dim': 10, 'hid_layers': [],
             'out_dim':5, 'hid_layers_activation': 'tanh',
         },
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
-            'in_dim': 10, 'hid_dim': [5, 3],
+            'in_dim': 10, 'hid_layers': [5, 3],
             'out_dim':[2],
             'hid_layers_activation': 'tanh',
         },
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
-            'in_dim': 10, 'hid_dim': [5, 3],
+            'in_dim': 10, 'hid_layers': [5, 3],
             'out_dim':[2, 1],
             'hid_layers_activation': 'tanh',
         },
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
-            'in_dim': 10, 'hid_dim': [5, 3],
+            'in_dim': 10, 'hid_layers': [5, 3],
             'out_dim':[2, 5, 1],
             'hid_layers_activation': 'tanh',
         },
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
-            'in_dim': 10, 'hid_dim': [10, 50, 5],
+            'in_dim': 10, 'hid_layers': [10, 50, 5],
             'out_dim':[2, 5, 1],
             'hid_layers_activation': 'tanh',
         },
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
-            'in_dim': 10, 'hid_dim': [],
+            'in_dim': 10, 'hid_layers': [],
             'out_dim':[5], 'hid_layers_activation': 'tanh',
         },
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
-            'in_dim': 10, 'hid_dim': [],
+            'in_dim': 10, 'hid_layers': [],
             'out_dim':[5, 2], 'hid_layers_activation': 'tanh',
         },
         None,
         2
     ), (
-        MLPHeterogenousHeads,
+        MLPHeterogenousTails,
         {
-            'in_dim': 10, 'hid_dim': [],
+            'in_dim': 10, 'hid_layers': [],
             'out_dim':[5, 2, 1], 'hid_layers_activation': 'tanh',
         },
         None,
@@ -212,9 +202,9 @@ def test_multiline_str():
             'hid_layers': ([],
                            []),
             'out_dim': 10,
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
+            'clip_grad': False,
             'batch_norm': False,
         },
         None,
@@ -227,9 +217,9 @@ def test_multiline_str():
                             [16, 32, (5, 5), 2, 0, 1]],
                            [100]),
             'out_dim': 10,
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
+            'clip_grad': False,
             'batch_norm': False,
         },
         None,
@@ -242,9 +232,9 @@ def test_multiline_str():
                             [16, 32, (5, 5), 2, 0, 1]],
                            [100, 50]),
             'out_dim': 10,
-            'optim_param': {'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'optim_spec': {'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
+            'clip_grad': False,
             'batch_norm': True,
         },
         None,
@@ -258,9 +248,9 @@ def test_multiline_str():
                             [32, 64, (5, 5), 1, 0, 2]],
                            [100]),
             'out_dim': 10,
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
-            'clamp_grad': True,
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
+            'clip_grad': True,
             'batch_norm': False,
         },
         None,
@@ -274,9 +264,9 @@ def test_multiline_str():
                             [32, 64, (5, 5), 1, 0, 2]],
                            [100]),
             'out_dim': 10,
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
-            'clamp_grad': True,
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
+            'clip_grad': True,
             'batch_norm': True,
         },
         None,
@@ -290,9 +280,9 @@ def test_multiline_str():
                             [32, 64, (3, 3), 1, 0, 1]],
                            [100, 50]),
             'out_dim': 10,
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
+            'clip_grad': False,
             'batch_norm': False,
         },
         None,
@@ -306,9 +296,9 @@ def test_multiline_str():
                             [32, 64, (3, 3), 1, 0, 1]],
                            [100, 50]),
             'out_dim': 10,
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
+            'clip_grad': False,
             'batch_norm': True,
         },
         None,
@@ -322,9 +312,9 @@ def test_multiline_str():
                             [32, 64, (3, 3), 1, 0, 1]],
                            [100, 50]),
             'out_dim': [10],
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
+            'clip_grad': False,
             'batch_norm': True,
         },
         None,
@@ -338,9 +328,9 @@ def test_multiline_str():
                             [32, 64, (3, 3), 1, 0, 1]],
                            [100, 50]),
             'out_dim': [10, 5],
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
+            'clip_grad': False,
             'batch_norm': True,
         },
         None,
@@ -354,82 +344,82 @@ def test_multiline_str():
                             [32, 64, (3, 3), 1, 0, 1]],
                            [100, 50]),
             'out_dim': [10, 5, 1],
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
-            'clamp_grad': False,
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
+            'clip_grad': False,
             'batch_norm': True,
         },
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
-            'hid_dim': [64],
+            'hid_layers': [64],
             'out_dim': [[3], [2]],
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
-            'hid_dim': [],
+            'hid_layers': [],
             'out_dim': [[3], [2]],
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10], [8, 16]],
-            'hid_dim': [],
+            'hid_layers': [],
             'out_dim': [[5, 3], [8, 2]],
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10, 15], [8, 16]],
-            'hid_dim': [],
+            'hid_layers': [],
             'out_dim': [[5, 3], [12, 8, 2]],
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10, 15], [8, 16]],
-            'hid_dim': [32, 64],
+            'hid_layers': [32, 64],
             'out_dim': [[5, 3], [12, 8, 2]],
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
     ), (
-        MultiMLPNet,
+        HydraMLPNet,
         {
             'in_dim': [[5, 10], [8, 16, 24]],
-            'hid_dim': [32, 64],
+            'hid_layers': [32, 64],
             'out_dim': [[9, 6, 3], [2]],
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
@@ -437,12 +427,12 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 4,
-            'hid_dim': [64, 50],
+            'hid_layers': [64, 50],
             'out_dim': 10,
-            'sequence_length': 8,
+            'seq_len': 8,
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
@@ -450,12 +440,12 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 4,
-            'hid_dim': [50],
+            'hid_layers': [50],
             'out_dim': 10,
-            'sequence_length': 8,
+            'seq_len': 8,
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
@@ -463,12 +453,12 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 4,
-            'hid_dim': [64, 32, 50],
+            'hid_layers': [64, 32, 50],
             'out_dim': 10,
-            'sequence_length': 8,
+            'seq_len': 8,
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
@@ -476,12 +466,12 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 4,
-            'hid_dim': [64, 32, 100],
+            'hid_layers': [64, 32, 100],
             'out_dim': 10,
-            'sequence_length': 8,
+            'seq_len': 8,
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
@@ -489,12 +479,12 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 6,
-            'hid_dim': [64, 32, 100],
+            'hid_layers': [64, 32, 100],
             'out_dim': 10,
-            'sequence_length': 8,
+            'seq_len': 8,
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
@@ -502,12 +492,12 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 6,
-            'hid_dim': [64, 32, 100],
+            'hid_layers': [64, 32, 100],
             'out_dim': 10,
-            'sequence_length': 16,
+            'seq_len': 16,
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
@@ -515,12 +505,12 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 6,
-            'hid_dim': [64, 32, 100],
+            'hid_layers': [64, 32, 100],
             'out_dim': 20,
-            'sequence_length': 16,
+            'seq_len': 16,
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
@@ -528,12 +518,12 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 6,
-            'hid_dim': [64, 32, 16],
+            'hid_layers': [64, 32, 16],
             'out_dim': [20],
-            'sequence_length': 16,
+            'seq_len': 16,
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
@@ -541,12 +531,12 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 6,
-            'hid_dim': [64, 32, 16],
+            'hid_layers': [64, 32, 16],
             'out_dim': [20, 10],
-            'sequence_length': 16,
+            'seq_len': 16,
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2
@@ -554,12 +544,12 @@ def test_multiline_str():
         RecurrentNet,
         {
             'in_dim': 6,
-            'hid_dim': [64, 32, 16],
+            'hid_layers': [64, 32, 16],
             'out_dim': [20, 10, 1],
-            'sequence_length': 16,
+            'seq_len': 16,
             'hid_layers_activation': 'tanh',
-            'optim_param':{'name': 'Adam'},
-            'loss_param': {'name': 'mse_loss'},
+            'optim_spec':{'name': 'Adam'},
+            'loss_spec': {'name': 'mse_loss'},
         },
         None,
         2

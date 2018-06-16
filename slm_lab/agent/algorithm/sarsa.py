@@ -1,21 +1,18 @@
-from copy import deepcopy
 from slm_lab.agent import net
-from slm_lab.agent.algorithm.algorithm_util import act_fns, act_update_fns, decay_learning_rate
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-from torch.autograd import Variable
 import numpy as np
-import pydash as _
-import sys
+import pydash as ps
 import torch
 
 logger = logger.get_logger(__name__)
 
 
 class SARSA(Algorithm):
-    '''Implementation of SARSA.
+    '''
+    Implementation of SARSA.
 
     Algorithm:
     Repeat:
@@ -26,214 +23,156 @@ class SARSA(Algorithm):
                 x_t = Q(s_t, a_t)
         5. Calculate L(x, y) where L is a regression loss (eg. mse)
         6. Calculate the gradient of L with respect to all the parameters in the network and update the network parameters using the gradient
-    '''
 
-    def __init__(self, agent):
-        '''
-        After initialization SARSA has an attribute self.agent which contains a reference to the entire Agent acting in the environment.
-        Agent components:
-            - algorithm (with a net: neural network function approximator, and a policy: how to act in the environment). One algorithm per agent, shared across all bodies of the agent
-            - memory (one per body)
-        '''
-        super(SARSA, self).__init__(agent)
+    e.g. algorithm_spec
+    "algorithm": {
+        "name": "SARSA",
+        "action_pdtype": "default",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.5,
+        "explore_var_end": 0.3,
+        "explore_anneal_epi": 10,
+        "gamma": 0.99,
+        "training_frequency": 10
+    }
+    '''
 
     @lab_api
     def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
+        '''
+        Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
             - Memory (holding experiences obtained by acting in the environment)
             - State and action dimensions for an environment
             - Boolean var for if the action space is discrete
         '''
+        self.body = self.agent.nanflat_body_a[0]  # single-body algo
+        self.init_algorithm_params()
         self.init_nets()
-        self.init_algo_params()
         logger.info(util.self_desc(self))
 
-    def init_nets(self):
-        '''Initialize the neural network used to learn the Q function from the spec'''
-        body = self.agent.nanflat_body_a[0]  # single-body algo
-        self.state_dim = body.state_dim  # dimension of the environment state, e.g. 4
-        self.action_dim = body.action_dim  # dimension of the environment actions, e.g. 2
-        net_spec = self.agent.spec['net']
-        mem_spec = self.agent.spec['memory']
-        net_kwargs = util.compact_dict(dict(
-            hid_layers_activation=_.get(net_spec, 'hid_layers_activation'),
-            optim_param=_.get(net_spec, 'optim'),
-            loss_param=_.get(net_spec, 'loss'),
-            clamp_grad=_.get(net_spec, 'clamp_grad'),
-            clamp_grad_val=_.get(net_spec, 'clamp_grad_val'),
-            gpu=_.get(net_spec, 'gpu'),
-            decay_lr=_.get(net_spec, 'decay_lr_factor'),
-        ))
-        if net_spec['type'].find('Recurrent') != -1:
-            self.net = getattr(net, net_spec['type'])(
-                self.state_dim, net_spec['hid_layers'], self.action_dim, mem_spec['length_history'], **net_kwargs)
-        else:
-            self.net = getattr(net, net_spec['type'])(
-                self.state_dim, net_spec['hid_layers'], self.action_dim, **net_kwargs)
-        self.set_net_attributes()
-
-    def set_net_attributes(self):
-        '''Initializes additional parameters from the net spec. Called by init_nets'''
-        net_spec = self.agent.spec['net']
-        util.set_attr(self, _.pick(net_spec, [
-            'decay_lr', 'decay_lr_frequency', 'decay_lr_min_timestep', 'gpu'
-        ]))
-        if not hasattr(self, 'gpu'):
-            self.gpu = False
-        logger.info(f'Training on gpu: {self.gpu}')
-
-    def init_algo_params(self):
+    @lab_api
+    def init_algorithm_params(self):
         '''Initialize other algorithm parameters.'''
-        algorithm_spec = self.agent.spec['algorithm']
-        net_spec = self.agent.spec['net']
-        self.action_policy = act_fns[algorithm_spec['action_policy']]
-        self.action_policy_update = act_update_fns[algorithm_spec['action_policy_update']]
-        self.set_other_algo_attributes()
-        self.nanflat_explore_var_a = [
-            self.explore_var_start] * self.agent.body_num
-
-    def set_other_algo_attributes(self):
-        '''Initializes additional parameters from the algorithm spec. Called by init_algo_params'''
-        algorithm_spec = self.agent.spec['algorithm']
-        util.set_attr(self, _.pick(algorithm_spec, [
+        # set default
+        util.set_attr(self, dict(
+            action_pdtype='default',
+            action_policy='default',
+            action_policy_update='no_update',
+            explore_var_start=np.nan,
+            explore_var_end=np.nan,
+            explore_anneal_epi=np.nan,
+        ))
+        util.set_attr(self, self.algorithm_spec, [
+            'action_pdtype',
+            'action_policy',
+            'action_policy_update',
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
-            'explore_var_start', 'explore_var_end', 'explore_anneal_epi',
+            'explore_var_start',
+            'explore_var_end',
+            'explore_anneal_epi',
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
-            'num_epis_to_collect',  # how many episodes to collect before training for episodic training
-        ]))
+        ])
         self.to_train = 0
-        self.set_memory_flag()
+        self.action_policy = getattr(policy_util, self.action_policy)
+        self.action_policy_update = getattr(policy_util, self.action_policy_update)
+        for body in self.agent.nanflat_body_a:
+            body.explore_var = self.explore_var_start
 
-    def set_memory_flag(self):
-        '''Flags if memory is episodic or discrete. This affects how self.sample() handles the batch it gets back from memory'''
-        body = self.agent.nanflat_body_a[0]
-        memory = body.memory.__class__.__name__
-        if (memory.find('OnPolicyReplay') != -1) or (memory.find('OnPolicyNStepReplay') != -1):
-            self.is_episodic = True
-        elif (memory.find('OnPolicyBatchReplay') != -1) or (memory.find('OnPolicyNStepBatchReplay') != -1):
-            self.is_episodic = False
+    @lab_api
+    def init_nets(self):
+        '''Initialize the neural network used to learn the Q function from the spec'''
+        if 'Recurrent' in self.net_spec['type']:
+            self.net_spec.update(seq_len=self.net_spec['seq_len'])
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
+        logger.info(f'Training on gpu: {self.net.gpu}')
+
+    @lab_api
+    def calc_pdparam(self, x, evaluate=True):
+        '''
+        To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
+        The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
+        '''
+        if evaluate:
+            pdparam = self.net.wrap_eval(x)
         else:
-            logger.warn(f'Error: Memory {memory} not recognized')
-            raise NotImplementedError
+            self.net.train()
+            pdparam = self.net(x)
+        return pdparam
 
-    def compute_q_target_values(self, batch):
+    @lab_api
+    def body_act(self, body, state):
+        '''Note, SARSA is discrete-only'''
+        action, action_pd = self.action_policy(state, self, body)
+        body.entropies.append(action_pd.entropy())
+        body.log_probs.append(action_pd.log_prob(action.float()))
+        if len(action.shape) == 0:  # scalar
+            return action.numpy().astype(body.action_space.dtype).item()
+        else:
+            return action.numpy()
+
+    def calc_q_targets(self, batch):
         '''Computes the target Q values for a batch of experiences'''
-        # Calculate the Q values of the current and next states
-        q_sts = self.net.wrap_eval(batch['states'])
-        q_next_st = self.net.wrap_eval(batch['next_states'])
-        q_next_actions = batch['next_actions']
-        logger.debug2(f'Q next states: {q_next_st.size()}')
+        q_preds = self.net.wrap_eval(batch['states'])
+        next_q_preds = self.net.wrap_eval(batch['next_states'])
+        action_idxs = batch['next_actions'].long()
         # Get the q value for the next action that was actually taken
-        idx = torch.from_numpy(np.array(list(range(q_next_st.size(0)))))
-        if torch.cuda.is_available() and self.gpu:
-            idx = idx.cuda()
-        q_next_st_vals = q_next_st[idx, q_next_actions.squeeze_(1).data.long()]
-        # Expand the dims so that q_next_st_vals can be broadcast
-        q_next_st_vals.unsqueeze_(1)
-        logger.debug2(f'Q next_states vals {q_next_st_vals.size()}')
-        logger.debug3(f'Q next_states {q_next_st}')
-        logger.debug3(f'Q next actions {q_next_actions}')
-        logger.debug3(f'Q next_states vals {q_next_st_vals}')
-        logger.debug3(f'Dones {batch["dones"]}')
-        # Compute q_targets using reward and Q value corresponding to the action taken in the next state if there is one. Make next state Q value 0 if the current state is done
-        q_targets_actual = batch['rewards'].data + self.gamma * \
-            torch.mul((1 - batch['dones'].data), q_next_st_vals)
-        logger.debug2(f'Q targets actual: {q_targets_actual.size()}')
-        logger.debug3(f'Q states {q_sts}')
-        logger.debug3(f'Q targets actual: {q_targets_actual}')
-        # We only want to train the network for the action selected in the current state
-        # For all other actions we set the q_target = q_sts so that the loss for these actions is 0
-        q_targets = torch.mul(q_targets_actual, batch['actions_onehot'].data) + \
-            torch.mul(q_sts, (1 - batch['actions_onehot'].data))
-        logger.debug2(f'Q targets: {q_targets.size()}')
-        logger.debug3(f'Q targets: {q_targets}')
+        batch_size = len(batch['dones'])
+        act_next_q_preds = next_q_preds[range(batch_size), action_idxs]
+        # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
+        act_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * act_next_q_preds
+        act_q_targets.unsqueeze_(1)
+        # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
+        q_targets = (act_q_targets * batch['one_hot_actions']) + (q_preds * (1 - batch['one_hot_actions']))
+        if torch.cuda.is_available() and self.net.gpu:
+            q_targets = q_targets.cuda()
         return q_targets
 
+    @lab_api
     def sample(self):
         '''Samples a batch from memory'''
-        batches = [body.memory.sample()
-                   for body in self.agent.nanflat_body_a]
-        batch = util.concat_dict(batches)
-        if self.is_episodic:
-            util.to_torch_nested_batch(batch, self.gpu)
-            # Add next action to batch
-            batch['actions_onehot'] = []
-            batch['next_actions'] = []
-            for acts in batch['actions']:
-                # The next actions are the actions shifted by one time step
-                # For episodic training is does not matter that the action in the last state is set to zero since there is no corresponding next state. The Q target is just the reward received in the terminal state.
-                next_acts = torch.zeros_like(acts)
-                next_acts[:-1] = acts[1:]
-                # Convert actions to one hot (both representations are needed for SARSA)
-                acts_onehot = util.convert_to_one_hot(acts, self.action_dim, self.gpu)
-                batch['actions_onehot'].append(acts_onehot)
-                batch['next_actions'].append(next_acts)
-            # Flatten the batch to train all at once
-            batch = util.concat_episodes(batch)
-        else:
-            util.to_torch_batch(batch, self.gpu)
-            # Batch only useful to train with if it has more than one element
-            # Train function checks for this and skips training if batch is too small
-            if batch['states'].size(0) > 1:
-                batch['next_actions'] = torch.zeros_like(batch['actions'])
-                batch['next_actions'][:-1] = batch['actions'][1:]
-                batch['actions_onehot'] = util.convert_to_one_hot(batch['actions'], self.action_dim, self.gpu)
-                batch_elems = ['states', 'actions', 'actions_onehot', 'rewards', 'dones', 'next_states', 'next_actions']
-                for k in batch_elems:
-                    if batch[k].dim() == 1:
-                        batch[k].unsqueeze_(1)
-                # If the last experience in the batch is not terminal the batch has to be shortened by one element since the algorithm does not yet have access to the next action taken for the final experience
-                if batch['dones'].data[-1].int().eq_(0).cpu().numpy()[0]:
-                    logger.debug(f'Popping last element')
-                    for k in batch_elems:
-                        batch[k] = batch[k][:-1]
+        batches = []
+        for body in self.agent.nanflat_body_a:
+            body_batch = body.memory.sample()
+            # one-hot actions to calc q_targets
+            if body.is_discrete:
+                body_batch['one_hot_actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
+            batches.append(body_batch)
+        batch = util.concat_batches(batches)
+        # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['dones'])
+        batch['next_actions'] = np.zeros_like(batch['actions'])
+        batch['next_actions'][:-1] = batch['actions'][1:]
+        batch = util.to_torch_batch(batch, self.net.gpu)
         return batch
 
     @lab_api
     def train(self):
-        '''Completes one training step for the agent if it is time to train.
-           Otherwise this function does nothing.
         '''
-        t = util.s_get(self, 'aeb_space.clock').get('total_t')
+        Completes one training step for the agent if it is time to train.
+        Otherwise this function does nothing.
+        '''
         if self.to_train == 1:
-            logger.debug3(f'Training at t: {t}')
             batch = self.sample()
-            if batch['states'].size(0) < 2:
-                logger.info(f'Batch too small to train with, skipping...')
-                self.to_train = 0
-                return np.nan
-            q_targets = self.compute_q_target_values(batch)
-            if torch.cuda.is_available() and self.gpu:
-                q_targets = q_targets.cuda()
-            y = Variable(q_targets)
+            with torch.no_grad():
+                q_targets = self.calc_q_targets(batch)
+                y = q_targets
             loss = self.net.training_step(batch['states'], y)
-            logger.debug(f'loss {loss.data[0]}')
+            # reset
             self.to_train = 0
-            return loss.data[0]
-        else:
-            logger.debug3('NOT training')
-            return np.nan
-
-    @lab_api
-    def body_act_discrete(self, body, state):
-        ''' Selects and returns a discrete action for body using the action policy'''
-        return self.action_policy(body, state, self.net, self.nanflat_explore_var_a[body.nanflat_a_idx], self.gpu)
-
-    def update_explore_var(self):
-        '''Updates the explore variables'''
-        space_clock = util.s_get(self, 'aeb_space.clock')
-        nanflat_explore_var_a = self.action_policy_update(self, space_clock)
-        explore_var_a = self.nanflat_to_data_a(
-            'explore_var', nanflat_explore_var_a)
-        return explore_var_a
-
-    def update_learning_rate(self):
-        decay_learning_rate(self, [self.net])
+            self.body.log_probs = []
+            self.body.entropies = []
+            logger.debug(f'Loss: {loss}')
+            self.last_loss = loss.item()
+        return self.last_loss
 
     @lab_api
     def update(self):
         '''Update the agent after training'''
-        self.update_learning_rate()
-        return self.update_explore_var()
+        for net in [self.net]:
+            net.update_lr()
+        explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
+        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
+        return explore_var_a

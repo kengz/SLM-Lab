@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-import sys
 
 
 def get_session_data(session_file):
@@ -16,7 +15,7 @@ def get_session_data(session_file):
 
 
 def get_trial_data(path, trial_num):
-    session_dfs = [os.path.join(path, f) for f in os.listdir(path) if f.find('session_df') != -1]
+    session_dfs = [os.path.join(path, f) for f in os.listdir(path) if 'session_df' in f]
     print(f'{len(session_dfs)} sessions in trial {trial_num}')
     data = []
     lengths = []

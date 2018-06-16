@@ -1,8 +1,12 @@
+from collections import deque
+from copy import deepcopy
 from slm_lab.agent.memory.base import Memory
-from slm_lab.lib import util, logger
+from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import pydash as _
+import pydash as ps
+
+logger = logger.get_logger(__name__)
 
 
 class Replay(Memory):
@@ -11,9 +15,7 @@ class Replay(Memory):
 
     An experience consists of
         - state: representation of a state
-        - action: action taken.
-                - One hot encoding (discrete)
-                - Real numbers representing mean on action dist (continuous)
+        - action: action taken
         - reward: scalar value
         - next state: representation of next state (should be same as state)
         - done: 0 / 1 representing if the current state is the last in an episode
@@ -28,63 +30,58 @@ class Replay(Memory):
 
     All experiences have a priority of 1.
     This allows for other implementations to sample based on the experience priorities
+
+    e.g. memory_spec
+    "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000
+    }
     '''
 
-    def __init__(self, body):
-        super(Replay, self).__init__(body)
-        self.max_size = self.body.agent.spec['memory']['max_size']
-        self.state_dim = self.body.state_dim
-        self.action_dim = self.body.action_dim
+    def __init__(self, memory_spec, algorithm, body):
+        super(Replay, self).__init__(memory_spec, algorithm, body)
+        util.set_attr(self, self.memory_spec, [
+            'batch_size',
+            'max_size',
+        ])
+        self.state_buffer = deque(maxlen=0)  # for API consistency
         self.batch_idxs = None
-        self.prioritized_replay = False  # flag specifying whether memory is prioritized or not
         self.total_experiences = 0  # To track total experiences encountered even with forgetting
-        self.stacked = False  # Memory does not stack states
-        self.atari = False  # Memory is not specialised for Atari games
-        self.last_done = None
         self.reset()
         self.print_memory_info()
 
-    def reset_states(self):
-        '''Initializes the state and next state arrays'''
-        if type(self.state_dim) is int:
-            self.states = np.zeros((self.max_size, self.state_dim))
-            self.next_states = np.zeros((self.max_size, self.state_dim))
-        elif type(self.state_dim) is tuple:
-            self.states = np.zeros((self.max_size, *self.state_dim))
-            self.next_states = np.zeros((self.max_size, *self.state_dim))
-
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
-        self.reset_states()
-        self.actions = np.zeros((self.max_size, self.action_dim), dtype=np.uint16)
-        self.rewards = np.zeros((self.max_size, 1))
-        self.dones = np.zeros((self.max_size, 1), dtype=np.uint8)
-        self.priorities = np.zeros((self.max_size, 1))
+        states_shape = np.concatenate([[self.max_size], np.reshape(self.body.state_dim, -1)])
+        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
+        setattr(self, 'states', np.zeros(states_shape))
+        setattr(self, 'actions', np.zeros((self.max_size,), dtype=self.body.action_space.dtype))
+        setattr(self, 'rewards', np.zeros((self.max_size,)))
+        setattr(self, 'next_states', np.zeros(states_shape))
+        setattr(self, 'dones', np.zeros((self.max_size,), dtype=np.uint8))
+        setattr(self, 'priorities', np.zeros((self.max_size,)))
         self.true_size = 0
         self.head = -1  # Index of most recent experience
 
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim))
+
     @lab_api
     def update(self, action, reward, state, done):
-        '''Interface method to update memory.
-        Guard for nan rewards and last state from previous episode'''
-        if (not np.isnan(reward)) and (self.last_done != 1):
+        '''Interface method to update memory.'''
+        self.base_update(action, reward, state, done)
+        if not np.isnan(reward):  # not the start of episode
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
-        self.last_done = done
 
     def add_experience(self, state, action, reward, next_state, done, priority=1):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
-        logger.debug2(f'state: {state.shape}')
         self.states[self.head] = state
-        # make action into one_hot
-        if _.is_iterable(action):
-            # non-singular action
-            # self.actions[self.head] = one hot of multi-action (matrix) on a 3rd axis, to be implement
-            raise NotImplementedError
-        else:
-            self.actions[self.head][action] = 1
+        self.actions[self.head] = action
         self.rewards[self.head] = reward
         self.next_states[self.head] = next_state
         self.dones[self.head] = done
@@ -94,38 +91,29 @@ class Replay(Memory):
             self.true_size += 1
         self.total_experiences += 1
 
-    # @util.fn_timer
     @lab_api
-    def sample(self, batch_size, latest=False):
+    def sample(self):
         '''
         Returns a batch of batch_size samples.
         Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are an array of the corresponding sampled elements
         e.g.
-            batch = {'states'      : states,
-                     'actions'     : actions,
-                     'rewards'     : rewards,
-                     'next_states' : next_states,
-                     'dones'       : dones,
-                     'priorities'  : priorities}
+        batch = {
+            'states'     : states,
+            'actions'    : actions,
+            'rewards'    : rewards,
+            'next_states': next_states,
+            'dones'      : dones,
+            'priorities' : priorities}
         '''
-        # TODO if latest, return unused. implement
-        if latest:
-            raise NotImplementedError
-        batch_idxs = self.sample_idxs(batch_size)
-        self.batch_idxs = batch_idxs
-        batch = {}
-        batch['states'] = self.states[batch_idxs]
-        batch['actions'] = self.actions[batch_idxs]
-        batch['rewards'] = self.rewards[batch_idxs]
-        batch['next_states'] = self.next_states[batch_idxs]
-        batch['dones'] = self.dones[batch_idxs]
-        batch['priorities'] = self.priorities[batch_idxs]
+        self.batch_idxs = self.sample_idxs(self.batch_size)
+        batch = {k: getattr(self, k)[self.batch_idxs] for k in self.data_keys}
         return batch
 
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
-        batch_idxs = np.random.choice(list(range(self.true_size)), batch_size)
+        batch_idxs = np.random.choice(list(range(self.true_size)), batch_size - 1)
+        batch_idxs = np.append(batch_idxs, self.true_size - 1)  # add the latest sample
         return batch_idxs
 
     def update_priorities(self, priorities):
@@ -138,117 +126,168 @@ class Replay(Memory):
 
     def print_memory_info(self):
         '''Prints size of all of the memory arrays'''
-        logger.info(f'MEMORY: states :{self.states.shape} dtype: {self.states.dtype}, size: {util.total_size(self.states) / 1000000}MB')
-        logger.info(f'MEMORY: next states :{self.next_states.shape} dtype: {self.next_states.dtype}, size: {util.total_size(self.next_states) / 1000000}MB')
-        logger.info(f'MEMORY: actions :{self.actions.shape} dtype: {self.actions.dtype}, size: {util.total_size(self.actions) / 1000000}MB')
-        logger.info(f'MEMORY: dones :{self.dones.shape} dtype: {self.dones.dtype}, size: {util.total_size(self.dones) / 1000000}MB')
-        logger.info(f'MEMORY: rewards :{self.rewards.shape} dtype: {self.rewards.dtype}, size: {util.total_size(self.rewards) / 1000000}MB')
-        logger.info(f'MEMORY: priorities :{self.priorities.shape} dtype: {self.priorities.dtype}, size: {util.total_size(self.priorities) / 1000000}MB')
+        for k in self.data_keys:
+            d = getattr(self, k)
+            logger.info(f'Memory for body {self.body.aeb}: {k} :shape: {d.shape}, dtype: {d.dtype}, size: {util.memory_size(d)}MB')
+
+
+class SeqReplay(Replay):
+    '''
+    Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as Replay memory
+
+    e.g. memory_spec
+    "memory": {
+        "name": "SeqReplay",
+        "batch_size": 32,
+        "max_size": 10000
+    }
+    * seq_len provided by net_spec
+    '''
+
+    def __init__(self, memory_spec, algorithm, body):
+        util.set_attr(self, memory_spec, [
+            'batch_size',
+            'max_size',
+        ])
+        self.seq_len = algorithm.net_spec['seq_len']
+        super(SeqReplay, self).__init__(memory_spec, algorithm, body)
+        self.state_buffer = deque(maxlen=self.seq_len)
+        self.reset()
+
+    def reset(self):
+        '''Initializes the memory arrays, size and head pointer'''
+        super(SeqReplay, self).reset()
+        # override state shape for concat
+        states_shape = np.concatenate([[self.max_size], np.reshape([self.seq_len, self.body.state_dim], -1)])
+        setattr(self, 'states', np.zeros(states_shape))
+        setattr(self, 'next_states', np.zeros(states_shape))
+
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(SeqReplay, self).epi_reset(self.preprocess_state(state, append=False))
+
+    def preprocess_state(self, state, append=True):
+        '''Transforms the raw state into format that is fed into the network'''
+        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
+        if append:
+            self.state_buffer.append(state)
+        processed_state = np.stack(self.state_buffer)
+        return processed_state
+
+    @lab_api
+    def update(self, action, reward, state, done):
+        '''Interface method to update memory'''
+        self.base_update(action, reward, state, done)
+        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
+        if not np.isnan(reward):  # not the start of episode
+            self.add_experience(self.last_state, action, reward, state, done)
+        self.last_state = state
 
 
 class StackReplay(Replay):
-    '''Preprocesses an state to be the concatenation of the last n states. Otherwise the same as Replay memory'''
-    def __init__(self, body):
-        self.num_stacked_states = body.agent.spec['memory']['length_history']
-        super(StackReplay, self).__init__(body)
-        self.stacked = True  # Memory stacks states
+    '''
+    Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as Replay memory
 
-    def reset_last_state(self, state):
-        '''Do reset of body memory per session during agent_space.reset() to set last_state'''
-        self.last_state = self.preprocess_state(state)
+    e.g. memory_spec
+    "memory": {
+        "name": "SeqReplay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "stack_len": 4
+    }
+    '''
 
-    def clear_buffer(self):
-        '''Clears the raw state buffer'''
-        self.state_buffer = []
-        for _ in range(self.num_stacked_states - 1):
-            self.state_buffer.append(np.zeros((self.orig_state_dim)))
-
-    def reset_states(self):
-        '''Initializes the state and next state arrays'''
-        self.orig_state_dim = self.state_dim
-        self.state_dim = self.state_dim * self.num_stacked_states
-        super(StackReplay, self).reset_states()
+    def __init__(self, memory_spec, algorithm, body):
+        util.set_attr(self, memory_spec, [
+            'batch_size',
+            'max_size',
+            'stack_len',  # num_stack_states
+        ])
+        self.raw_state_dim = deepcopy(body.state_dim)  # used for state_buffer
+        body.state_dim = body.state_dim * self.stack_len  # modify to use for net init for flattened stacked input
+        super(StackReplay, self).__init__(memory_spec, algorithm, body)
+        self.state_buffer = deque(maxlen=self.stack_len)
+        self.reset()
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
         super(StackReplay, self).reset()
-        self.state_buffer = []
-        self.clear_buffer()
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
 
-    def preprocess_state(self, state):
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(StackReplay, self).epi_reset(self.preprocess_state(state, append=False))
+        # reappend buffer with custom shape
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
+
+    def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
-        if len(self.state_buffer) == self.num_stacked_states:
-            del self.state_buffer[0]
-        self.state_buffer.append(state)
+        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
+        if append:
+            self.state_buffer.append(state)
         processed_state = np.concatenate(self.state_buffer)
         return processed_state
 
     @lab_api
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
-        state = self.preprocess_state(state)
-        logger.debug(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
-        logger.debug2(f'state buffer: {self.state_buffer}, state: {state}')
-        if (not np.isnan(reward)) and (self.last_done != 1):
+        self.base_update(action, reward, state, done)
+        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
+        if not np.isnan(reward):  # not the start of episode
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
-        self.last_done = done
-        if done:
-            '''Clear buffer so there are no experiences from previous states spilling over to new episodes'''
-            self.clear_buffer()
-            self.body.state_buffer = []
 
 
-class Atari(Replay):
-    '''Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
-       Otherwise the same as Replay memory'''
-    def __init__(self, body):
-        super(Atari, self).__init__(body)
+class AtariReplay(StackReplay):
+    '''
+    Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
+    Otherwise the same as Replay memory
+
+    e.g. memory_spec
+    "memory": {
+        "name": "AtariReplay",
+        "batch_size": 32,
+        "max_size": 250000,
+        "stack_len": 4
+    }
+    '''
+
+    def __init__(self, memory_spec, algorithm, body):
         self.atari = True  # Memory is specialized for playing Atari games
+        util.set_attr(self, memory_spec, [
+            'batch_size',
+            'max_size',
+            'stack_len',  # num_stack_states
+        ])
+        self.raw_state_dim = (84, 84)
+        body.state_dim = self.raw_state_dim + (self.stack_len,)  # greyscale downsized, stacked
+        Replay.__init__(self, memory_spec, algorithm, body)
+        self.state_buffer = deque(maxlen=self.stack_len)
+        self.reset()
 
-    def reset_last_state(self, state):
-        '''Do reset of body memory per session during agent_space.reset() to set last_state'''
-        self.last_state = self.preprocess_state(state)
-
-    def clear_buffer(self):
-        '''Clears the raw state buffer'''
-        self.state_buffer = []
-        for _ in range(3):
-            self.state_buffer.append(np.zeros((84, 84)))
-
-    def reset_states(self):
-        '''Initializes the state and next state arrays'''
-        self.state_dim = (84, 84, 4)
-        self.states = np.zeros((self.max_size, *self.state_dim), dtype=np.float16)
-        self.next_states = np.zeros((self.max_size, *self.state_dim), dtype=np.float16)
-
-    def reset(self):
-        '''Initializes the memory arrays, size and head pointer'''
-        super(Atari, self).reset()
-        self.state_buffer = []
-        self.clear_buffer()
-
-    def preprocess_state(self, state):
+    def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
-        if len(self.state_buffer) == 4:
-            del self.state_buffer[0]
         state = util.transform_image(state)
-        self.state_buffer.append(state)
+        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
+        if append:
+            self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
+        assert processed_state.shape == self.body.state_dim
         return processed_state
 
     @lab_api
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
-        logger.debug2(f'original reward: {reward}')
-        state = self.preprocess_state(state)
-        reward = max(-1, min(1, reward))
-        logger.debug3(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
-        if (not np.isnan(reward)) and (self.last_done != 1):
+        self.base_update(action, reward, state, done)
+        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
+        if not np.isnan(reward):  # not the start of episode
+            logger.debug2(f'original reward: {reward}')
+            if not np.isnan(reward):
+                reward = max(-1, min(1, reward))
+            logger.debug(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
-        self.last_done = done
-        if done:
-            '''Clear buffer so there are no experiences from previous states spilling over to new episodes'''
-            self.clear_buffer()
-            self.body.state_buffer = []

@@ -4,13 +4,14 @@ __pycache__/
 *$py.class
 *.egg*
 *.manifest
+.pytest*
 .cache
 build/
 dist/
 src/
 htmlcov/
 coverage.xml
-.coverage
+.coverage*
 .env
 .venv
 venv/

@@ -9,7 +9,7 @@ from slm_lab.lib.decorator import lab_api
 import json
 import numpy as np
 import pandas as pd
-import pydash as _
+import pydash as ps
 import random
 import ray
 
@@ -69,7 +69,7 @@ def spec_from_config(experiment, config):
     spec = deepcopy(experiment.spec)
     spec.pop('search', None)
     for k, v in config.items():
-        _.set_(spec, k, v)
+        ps.set_(spec, k, v)
     return spec
 
 
@@ -83,7 +83,7 @@ def run_trial(experiment, config):
     fitness_vec = trial_fitness_df.iloc[0].to_dict()
     fitness = analysis.calc_fitness(trial_fitness_df)
     trial_data = {**config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index}
-    prepath = analysis.get_prepath(spec, info_space, unit='trial')
+    prepath = util.get_prepath(spec, info_space, unit='trial')
     util.write(trial_data, f'{prepath}_trial_data.json')
     return trial_data
 
