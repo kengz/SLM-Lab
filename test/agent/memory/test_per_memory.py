@@ -26,7 +26,7 @@ class TestPERMemory:
         assert memory.priorities.shape == (memory.max_size, 1)
         assert memory.tree.write == 0
         assert memory.tree.total() == 0
-        assert memory.e[0] == 0
+        assert memory.epsilon[0] == 0
         assert memory.alpha[0] == 1
 
     def test_add_experience(self, test_prioritized_replay_memory):
