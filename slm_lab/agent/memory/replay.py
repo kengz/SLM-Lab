@@ -168,6 +168,7 @@ class SeqReplay(Replay):
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
+        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
         if append:
             self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer)
@@ -225,6 +226,7 @@ class StackReplay(Replay):
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
+        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
         if append:
             self.state_buffer.append(state)
         processed_state = np.concatenate(self.state_buffer)
@@ -270,6 +272,7 @@ class AtariReplay(StackReplay):
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
         state = util.transform_image(state)
+        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
         if append:
             self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
