@@ -41,7 +41,7 @@ def save_image(figure, filepath=None):
         plotly.tools.set_config_file(world_readable=True, sharing='public')
         return plotly.plotly.image.save_as(figure, filepath)
     except Exception:
-        logger.error(
+        logger.warn(
             'Plotly server unreachable, but you can save the plots later via retro-analysis.')
         return None
 
