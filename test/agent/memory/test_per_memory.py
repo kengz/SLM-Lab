@@ -18,12 +18,12 @@ class TestPERMemory:
     def test_prioritized_replay_memory_init(self, test_prioritized_replay_memory):
         memory = test_prioritized_replay_memory[0]
         assert memory.true_size == 0
-        assert memory.states.shape == (memory.max_size, memory.state_dim)
-        assert memory.actions.shape == (memory.max_size, memory.action_dim)
-        assert memory.rewards.shape == (memory.max_size, 1)
-        assert memory.next_states.shape == (memory.max_size, memory.state_dim)
-        assert memory.dones.shape == (memory.max_size, 1)
-        assert memory.priorities.shape == (memory.max_size, 1)
+        assert memory.states.shape == (memory.max_size, memory.body.state_dim)
+        assert memory.actions.shape == (memory.max_size,)
+        assert memory.rewards.shape == (memory.max_size,)
+        assert memory.next_states.shape == (memory.max_size, memory.body.state_dim)
+        assert memory.dones.shape == (memory.max_size,)
+        assert memory.priorities.shape == (memory.max_size,)
         assert memory.tree.write == 0
         assert memory.tree.total() == 0
         assert memory.epsilon[0] == 0
@@ -40,11 +40,11 @@ class TestPERMemory:
         assert memory.head == 0
         # Handle states and actions with multiple dimensions
         assert np.array_equal(memory.states[memory.head], exp[0])
-        assert memory.actions[memory.head][exp[1]] == exp[1]
+        assert memory.actions[memory.head] == exp[1]
         assert memory.rewards[memory.head] == exp[2]
         assert np.array_equal(memory.next_states[memory.head], exp[3])
         assert memory.dones[memory.head] == exp[4]
-        assert memory.priorities[memory.head][0] == 100000
+        assert memory.priorities[memory.head] == 100000
 
     def test_wrap(self, test_prioritized_replay_memory):
         '''Tests that the memory wraps round when it is at capacity'''
@@ -70,13 +70,13 @@ class TestPERMemory:
         experiences = test_prioritized_replay_memory[2]
         for e in experiences:
             memory.add_experience(*e)
-        batch = memory.sample(batch_size)
-        assert batch['states'].shape == (batch_size, memory.state_dim)
-        assert batch['actions'].shape == (batch_size, memory.action_dim)
-        assert batch['rewards'].shape == (batch_size, 1)
-        assert batch['next_states'].shape == (batch_size, memory.state_dim)
-        assert batch['dones'].shape == (batch_size, 1)
-        assert batch['priorities'].shape == (batch_size, 1)
+        batch = memory.sample()
+        assert batch['states'].shape == (batch_size, memory.body.state_dim)
+        assert batch['actions'].shape == (batch_size,)
+        assert batch['rewards'].shape == (batch_size,)
+        assert batch['next_states'].shape == (batch_size, memory.body.state_dim)
+        assert batch['dones'].shape == (batch_size,)
+        assert batch['priorities'].shape == (batch_size,)
 
     def test_sample_distribution(self, test_prioritized_replay_memory):
         '''Tests if batch conforms to prioritized distribution'''
@@ -86,7 +86,7 @@ class TestPERMemory:
         experiences = test_prioritized_replay_memory[2]
         for e in experiences:
             memory.add_experience(*e)
-        batch = memory.sample(batch_size)
+        batch = memory.sample()
         assert memory.batch_idxs[0] == 0
         assert memory.batch_idxs[1] == 1
         assert memory.batch_idxs[2] == 2
@@ -120,7 +120,7 @@ class TestPERMemory:
         experiences = test_prioritized_replay_memory[2]
         for e in experiences:
             memory.add_experience(*e)
-        batch = memory.sample(batch_size)
+        batch = memory.sample()
         # First update
         print(f'batch_size: {batch_size}, batch_idxs: {memory.batch_idxs}, tree_idxs: {memory.tree_idxs}')
         new_errors = torch.from_numpy(np.asarray([0, 10, 10, 20])).float().unsqueeze_(dim=1)
@@ -131,7 +131,7 @@ class TestPERMemory:
         assert memory.priorities[1] == 10
         assert memory.priorities[2] == 10
         assert memory.priorities[3] == 20
-        batch = memory.sample(batch_size)
+        batch = memory.sample()
         print(f'batch_size: {batch_size}, batch_idxs: {memory.batch_idxs}, tree_idxs: {memory.tree_idxs}')
         assert memory.batch_idxs[0] == 1
         assert memory.batch_idxs[1] == 2
@@ -153,7 +153,7 @@ class TestPERMemory:
         assert memory.priorities[1] == 0
         assert memory.priorities[2] == 30
         assert memory.priorities[3] == 0
-        batch = memory.sample(batch_size)
+        batch = memory.sample()
         assert memory.batch_idxs[0] == 0
         assert memory.batch_idxs[1] == 0
         assert memory.batch_idxs[2] == 0

@@ -169,6 +169,7 @@
         "name": "PrioritizedReplay",
         "alpha": 1,
         "epsilon": 0,
+        "batch_size": 4,
         "max_size": 4
       },
       "net": {}
