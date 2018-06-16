@@ -71,6 +71,7 @@ def init_layers(layers):
             torch.nn.init.xavier_uniform_(layer.weight.data)
             torch.nn.init.constant_(layer.bias.data, bias_init)
         else:
+            logger.warn(f'Unrecognised layer {classname}, skipping initialization')
             pass
 
 
@@ -91,9 +92,10 @@ def fn_decay_lr(net, fn):
     total_t = space_clock.get('total_t')
     net_spec = net.net_spec
     start_val, end_val = net.optim_spec['lr'], 1e-6
-    anneal_total_t = max(10e6, 60 * net_spec['lr_decay_frequency'])
+    anneal_total_t = net_spec['lr_anneal_timestep'] if 'lr_anneal_timestep' in net_spec else max(10e6, 60 * net_spec['lr_decay_frequency'])
 
     if total_t >= net_spec['lr_decay_min_timestep'] and total_t % net_spec['lr_decay_frequency'] == 0:
+        logger.debug(f'anneal_total_t: {anneal_total_t}, total_t: {total_t}')
         new_lr = fn(start_val, end_val, anneal_total_t, total_t)
         return new_lr
     else:
@@ -101,7 +103,7 @@ def fn_decay_lr(net, fn):
 
 
 def linear_decay(net):
-    '''Apply linear decay to lr'''
+    '''Apply _linear decay to lr'''
     return fn_decay_lr(net, policy_util._linear_decay)
 
 
