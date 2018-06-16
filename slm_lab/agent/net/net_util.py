@@ -56,7 +56,7 @@ def init_gru_layer(layer):
 
 def init_layers(layers):
     '''
-    Initializes all of the layers of type 'Linear', 'Conv', or GRU, using xavier uniform initialization for the weights and 0.01 for the biases, 0.0 for the biases of the GRU.
+    Initializes all of the layers of type 'Linear', 'Conv', or 'GRU', using xavier uniform initialization for the weights and 0.01 for the biases, 0.0 for the biases of the GRU.
     Initializes all layers of type 'BatchNorm' using uniform initialization for the weights and the same as above for the biases
     '''
     bias_init = 0.01
@@ -71,7 +71,6 @@ def init_layers(layers):
             torch.nn.init.xavier_uniform_(layer.weight.data)
             torch.nn.init.constant_(layer.bias.data, bias_init)
         else:
-            logger.warn(f'Unrecognised layer {classname}, skipping initialization')
             pass
 
 
