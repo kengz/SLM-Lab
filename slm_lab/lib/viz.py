@@ -32,6 +32,8 @@ def plot(*args, **kwargs):
 
 
 def save_image(figure, filepath=None):
+    if os.environ['PY_ENV'] == 'test':
+        return
     if filepath is None:
         filepath = f'{PLOT_FILEDIR}/{ps.get(figure, "layout.title")}.png'
     filepath = util.smart_path(filepath)
