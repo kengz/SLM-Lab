@@ -43,10 +43,12 @@ Various algorithms are in fact extensions of some simpler ones, and they are imp
 - REINFORCE
 - AC (Vanilla Actor-Critic)
     - shared or separate actor critic networks
-    - N-step returns
-    - entropy control
+    - plain TD
+    - entropy term control
 - A2C (Advantage Actor-Critic)
-    - extension of AC with GAE (Generalized Advantage Estimate)
+    - extension of AC with with advantage function
+    - N-step returns as advantage
+    - GAE (Generalized Advantage Estimate) as advantage
 - PPO (Proximal Policy Optimization)
     - extension of A3C with PPO loss function
 
