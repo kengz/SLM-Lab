@@ -39,7 +39,7 @@ code: [slm_lab/agent/algorithm](https://github.com/kengz/SLM-Lab/tree/master/slm
 
 Various algorithms are in fact extensions of some simpler ones, and they are implemented as such. This makes the code very concise.
 
-Policy Gradient:
+**Policy Gradient:**
 - REINFORCE
 - AC (Vanilla Actor-Critic)
     - shared or separate actor critic networks
@@ -50,7 +50,7 @@ Policy Gradient:
 - PPO (Proximal Policy Optimization)
     - extension of A3C with PPO loss function
 
-Value-based:
+**Value-based:**
 - SARSA
 - DQN (Deep Q Learning)
     - boltzmann or epsilon-greedy policy
@@ -192,16 +192,30 @@ It is `DQN` in `CartPole-v0`:
     yarn start
     ```
 
-4. This demo will run a single trial using the default parameters, and render the environment. After completion, check the output for data `data/dqn_cartpole/`. You should see some healthy graphs.
+4. This demo will run a single trial using the default parameters, and render the environment. After completion, check the output for data `data/dqn_cartpole_2018_06_16_214527/` (timestamp will differ). You should see some healthy graphs.
 
-5. Next, change the run mode from `"train"` to `"search"`  `config/experiments.json`, and rerun. This runs experiments of multiple trials with hyperparameter search. Environments will not be rendered.:
+    ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_trial_graph.png)
+    >Trial graph showing average envelope of repeated sessions.
+
+    ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
+    >Session graph showing total rewards, exploration variable and loss for the episodes.
+
+5. Enjoy mode - when a session ends, a model file will automatically save. You can find the session `prepath` that ends in its trial and session numbers. The example above is trial 1 session 0, and you can see a pyotrch model saved at `data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_model_net.pth`. Use the prepath at `config/experiments.json` to run eval mode:
+    ```json
+    "demo.json": {
+      "dqn_cartpole": "eval@data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0"
+    }
+    ```
+    >enjoy mode will automatically disable learning and exploration. Graphs will still save.
+
+6. Next, change the run mode from `"train"` to `"search"`  `config/experiments.json`, and rerun. This runs experiments of multiple trials with hyperparameter search. Environments will not be rendered.:
     ```json
     "demo.json": {
       "dqn_cartpole": "search"
     }
     ```
 
->If the quick start fails, consult [Debugging](https://kengz.gitbooks.io/slm-lab/content/debugging.html).
+>If the demo fails, consult [Debugging](https://kengz.gitbooks.io/slm-lab/content/debugging.html).
 
 Now the lab is ready for usage.
 
@@ -224,4 +238,8 @@ If you use `SLM-Lab` in your research, please cite below:
 
 ## Contributing
 
-If you're interested in using the lab for research, teaching or applications, please contact the [authors](https://twitter.com/kengzwl).
+SLM Lab is an MIT-licensed open source project. Contributions are very much welcome, no matter if it's a quick bug-fix or new feature addition.
+
+If you have an idea for a new algorithm, environment support, analytics, benchmarking, or new experiment design, let us know.
+
+If you're interested in using the lab for **research, teaching or applications**, please contact the [authors](https://twitter.com/kengzwl).
