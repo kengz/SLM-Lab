@@ -19,7 +19,8 @@
       "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
@@ -96,7 +97,8 @@
       "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
@@ -176,7 +178,8 @@
       "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
@@ -256,7 +259,8 @@
       "memory": {
         "name": "SeqReplay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "RecurrentNet",
@@ -339,7 +343,8 @@
       "memory": {
         "name": "SeqReplay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "RecurrentNet",
@@ -423,7 +428,8 @@
         "name": "AtariReplay",
         "batch_size": 32,
         "max_size": 250000,
-        "stack_len": 4
+        "stack_len": 4,
+        "use_cer": true
       },
       "net": {
         "type": "ConvNet",
@@ -496,7 +502,8 @@
         "name": "AtariReplay",
         "batch_size": 32,
         "max_size": 250000,
-        "stack_len": 4
+        "stack_len": 4,
+        "use_cer": true
       },
       "net": {
         "type": "ConvNet",
@@ -569,7 +576,8 @@
         "name": "StackReplay",
         "batch_size": 32,
         "max_size": 100000,
-        "stack_len": 4
+        "stack_len": 4,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",

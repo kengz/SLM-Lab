@@ -19,7 +19,8 @@
       "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
