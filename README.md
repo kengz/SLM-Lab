@@ -3,7 +3,10 @@
 
 Modular Deep Reinforcement Learning framework in PyTorch.
 
-**[Github Repo](https://github.com/kengz/SLM-Lab) | [Lab Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log Book](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
+**[Github](https://github.com/kengz/SLM-Lab) | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
+
+![dqn cartpole ball2d](https://media.giphy.com/media/l0DAIymuiMS3HyW9G/giphy.gif)
+>A multitask agent solving both OpenAI Cartpole-v0 and Unity Ball2D.
 
 ## Features
 
@@ -34,6 +37,8 @@ SLM Lab implements most of the recent canonical algorithms and various extension
 
 code: [slm_lab/agent/algorithm](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/algorithm)
 
+Various algorithms are in fact extensions of some simpler ones, and they are implemented as such. This makes the code very concise.
+
 Policy Gradient:
 - REINFORCE
 - AC (Vanilla Actor-Critic)
@@ -55,7 +60,9 @@ Value-based:
 - Multitask DQN (multi-environment DQN)
 - Hydra DQN (multi-environment DQN)
 
-### Memory
+Below are the modular building blocks for the algorithms. They are designed to be general, and are reused extensively.
+
+#### Memory
 
 code: [slm_lab/agent/memory](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/memory)
 
@@ -72,7 +79,7 @@ For off-policy algorithms (value-based)
 - AtariReplay
 - PrioritizedReplay
 
-### Neural Network
+#### Neural Network
 
 code: [slm_lab/agent/net](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/net)
 
@@ -84,7 +91,7 @@ These networks are usable for all algorithms.
 - RecurrentNet
 - ConvNet
 
-### Policy
+#### Policy
 
 code: [slm_lab/agent/algorithm/policy_util.py](https://github.com/kengz/SLM-Lab/blob/master/slm_lab/agent/algorithm/policy_util.py)
 
@@ -94,20 +101,20 @@ code: [slm_lab/agent/algorithm/policy_util.py](https://github.com/kengz/SLM-Lab/
 - Epsilon-greedy policy
 - numerous rate decay methods
 
-## Feature Demos
+## Experimentation framework
 
-![dqn cartpole ball2d](https://media.giphy.com/media/l0DAIymuiMS3HyW9G/giphy.gif)
->A multitask agent solving both OpenAI Cartpole-v0 and Unity Ball2D.
+Deep Reinforcement Learning is very empirical. The systematic building blocks above need a experimentation framework to study variables systematically. The experiment framework completes the lab.
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/Reinforce_CartPole-v0_experiment_graph.png)
->Experiment graph showing fitness from hyperparameter search.
+![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_experiment_graph.png)
+>Experiment graph summarizing the trials in hyperparameter search.
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/Reinforce_CartPole-v0_t150_s0_session_graph.png)
->Example total reward and loss graph from a session.
+![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
+>Trial graph showing average envelope of repeated sessions.
+
+![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
+>Session graph showing total rewards, exploration variable and loss for the episodes.
 
 Read on for tutorials, research and results.
-
-**[Github Repo](https://github.com/kengz/SLM-Lab) | [Lab Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log Book](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
 
 ## Installation
 
@@ -124,7 +131,7 @@ Read on for tutorials, research and results.
     source activate lab
     ```
 
-> Alternatively, run the content of `bin/setup_macOS` or `bin/setup_ubuntu` on your terminal manually.
+>Alternatively, run the content of `bin/setup_macOS` or `bin/setup_ubuntu` on your terminal manually.
 >Docker image and Dockerfile with instructions are also available
 
 ### Setup
@@ -177,7 +184,7 @@ It is `DQN` in `CartPole-v0`:
       "dqn_cartpole": "dev"
     }
     ```
-    > To run fast, change lab mode from "dev" to "train" above
+    > To run faster, change lab mode from "dev" to "train" above and rendering will be disabled.
 
 3. launch terminal in the repo directory, run the lab:
     ```shell
@@ -198,11 +205,11 @@ It is `DQN` in `CartPole-v0`:
 
 Now the lab is ready for usage.
 
-**Read on: [Github Repo](https://github.com/kengz/SLM-Lab) | [Lab Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log Book](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
+**Read on: [Github](https://github.com/kengz/SLM-Lab) | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
 
 ## Citing
 
-If you use `SLM-Lab` in your research, you can cite it as follows:
+If you use `SLM-Lab` in your research, please cite below:
 
 ```
 @misc{kenggraesser2017slmlab,
