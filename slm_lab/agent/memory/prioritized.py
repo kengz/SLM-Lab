@@ -100,7 +100,8 @@ class PrioritizedReplay(Replay):
         "alpha": 1,
         "epsilon": 0,
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
     }
     '''
 
@@ -110,6 +111,7 @@ class PrioritizedReplay(Replay):
             'epsilon',
             'batch_size',
             'max_size',
+            'use_cer',
         ])
         self.epsilon = torch.full((1,), self.epsilon)
         self.alpha = torch.full((1,), self.alpha)
@@ -151,8 +153,8 @@ class PrioritizedReplay(Replay):
 
         batch_idxs = np.asarray(batch_idxs).astype(int)
         self.tree_idxs = tree_idxs
-        # NOTE research: sample latest for CPER
-        # batch_idxs[-1] = self.true_size - 1   # add the latest sample
+        if self.use_cer:  # add the latest sample
+            batch_idxs[-1] = self.head
         return batch_idxs
 
     def get_body_errors(self, errors):
