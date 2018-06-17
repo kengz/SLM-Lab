@@ -10,7 +10,7 @@ from plotly import (
 )
 from slm_lab import config
 from slm_lab.lib import logger, util
-from subprocess import call
+from subprocess import Popen
 import os
 import plotly
 import pydash as ps
@@ -39,7 +39,7 @@ def save_image(figure, filepath=None):
     filepath = util.smart_path(filepath)
     dirname, filename = os.path.split(filepath)
     try:
-        call(['orca', 'graph', '--verbose', '-o', filename, json.dumps(figure)], cwd=dirname)
+        Popen(['orca', 'graph', '--verbose', '-o', filename, json.dumps(figure)], cwd=dirname)
     except Exception as e:
         logger.exception(
             'Please install orca for plotly and run retro-analysis to generate graphs.')
