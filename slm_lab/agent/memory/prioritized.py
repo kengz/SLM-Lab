@@ -151,6 +151,8 @@ class PrioritizedReplay(Replay):
 
         batch_idxs = np.asarray(batch_idxs).astype(int)
         self.tree_idxs = tree_idxs
+        # NOTE research: sample latest for CPER
+        # batch_idxs[-1] = self.true_size - 1   # add the latest sample
         return batch_idxs
 
     def get_body_errors(self, errors):
