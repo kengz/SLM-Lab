@@ -69,7 +69,7 @@
         },
         "net": {
           "optim_spec": {
-            "lr__choice": [0.001, 0.1]
+            "lr__choice": [0.001, 0.01]
           }
         }
       }]

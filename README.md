@@ -108,7 +108,7 @@ Deep Reinforcement Learning is very empirical. The systematic building blocks ab
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_experiment_graph.png)
 >Experiment graph summarizing the trials in hyperparameter search.
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
+![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_trial_graph.png)
 >Trial graph showing average envelope of repeated sessions.
 
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
