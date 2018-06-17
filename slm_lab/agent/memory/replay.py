@@ -31,11 +31,14 @@ class Replay(Memory):
     All experiences have a priority of 1.
     This allows for other implementations to sample based on the experience priorities
 
+    If 'use_cer', sampling will add the latest experience.
+
     e.g. memory_spec
     "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
     }
     '''
 
@@ -44,6 +47,7 @@ class Replay(Memory):
         util.set_attr(self, self.memory_spec, [
             'batch_size',
             'max_size',
+            'use_cer',
         ])
         self.state_buffer = deque(maxlen=0)  # for API consistency
         self.batch_idxs = None
@@ -112,8 +116,9 @@ class Replay(Memory):
 
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
-        batch_idxs = np.random.choice(list(range(self.true_size)), batch_size - 1)
-        batch_idxs = np.append(batch_idxs, self.true_size - 1)  # add the latest sample for CER
+        batch_idxs = np.random.choice(list(range(self.true_size)), batch_size)
+        if self.use_cer:  # add the latest sample
+            batch_idxs[-1] = self.head
         return batch_idxs
 
     def update_priorities(self, priorities):
@@ -139,16 +144,13 @@ class SeqReplay(Replay):
     "memory": {
         "name": "SeqReplay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
     }
     * seq_len provided by net_spec
     '''
 
     def __init__(self, memory_spec, algorithm, body):
-        util.set_attr(self, memory_spec, [
-            'batch_size',
-            'max_size',
-        ])
         self.seq_len = algorithm.net_spec['seq_len']
         super(SeqReplay, self).__init__(memory_spec, algorithm, body)
         self.state_buffer = deque(maxlen=self.seq_len)
@@ -194,7 +196,8 @@ class StackReplay(Replay):
         "name": "SeqReplay",
         "batch_size": 32,
         "max_size": 10000,
-        "stack_len": 4
+        "stack_len": 4,
+        "use_cer": true
     }
     '''
 
@@ -203,6 +206,7 @@ class StackReplay(Replay):
             'batch_size',
             'max_size',
             'stack_len',  # num_stack_states
+            'use_cer',
         ])
         self.raw_state_dim = deepcopy(body.state_dim)  # used for state_buffer
         body.state_dim = body.state_dim * self.stack_len  # modify to use for net init for flattened stacked input
@@ -254,7 +258,8 @@ class AtariReplay(StackReplay):
         "name": "AtariReplay",
         "batch_size": 32,
         "max_size": 250000,
-        "stack_len": 4
+        "stack_len": 4,
+        "use_cer": true
     }
     '''
 
@@ -264,6 +269,7 @@ class AtariReplay(StackReplay):
             'batch_size',
             'max_size',
             'stack_len',  # num_stack_states
+            'use_cer',
         ])
         self.raw_state_dim = (84, 84)
         body.state_dim = self.raw_state_dim + (self.stack_len,)  # greyscale downsized, stacked

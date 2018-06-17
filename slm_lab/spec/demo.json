@@ -19,7 +19,8 @@
       "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
@@ -32,7 +33,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.01
         },
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
@@ -47,7 +48,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 50
+      "max_episode": 150
     }],
     "body": {
       "product": "outer",
@@ -65,11 +66,11 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "gamma__choice": [0.91, 0.99]
+          "gamma__choice": [0.95, 0.99]
         },
         "net": {
           "optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__choice": [0.001, 0.01]
           }
         }
       }]

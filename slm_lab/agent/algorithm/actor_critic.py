@@ -17,7 +17,8 @@ class ActorCritic(Reinforce):
     Original paper: "Asynchronous Methods for Deep Reinforcement Learning"
     https://arxiv.org/abs/1602.01783
     Algorithm specific spec param:
-    use_gae: If false, use the default n-step returns from "Asynchronous Methods for Deep Reinforcement Learning". Then the algorithm stays as AC. If True, use generalized advantage estimation (GAE) introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. The algorithm becomes A2C.
+    use_gae: If false, use the default TD error. Then the algorithm stays as AC. If True, use generalized advantage estimation (GAE) introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. The algorithm becomes A2C.
+    use_nstep: If false, use the default TD error. Then the algorithm stays as AC. If True, use n-step returns from "Asynchronous Methods for Deep Reinforcement Learning". The algorithm becomes A2C.
     add_entropy: option to add entropy to policy during training to encourage exploration as outlined in "Asynchronous Methods for Deep Reinforcement Learning"
     memory.name: batch (through OnPolicyBatchReplay memory class) or episodic through (OnPolicyReplay memory class)
     num_step_returns: if use_gae is false, this specifies the number of steps used for the N-step returns method.
@@ -55,6 +56,7 @@ class ActorCritic(Reinforce):
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
+        "use_nstep": false,
         "num_step_returns": 100,
         "add_entropy": false,
         "entropy_coef": 0.01,
@@ -97,6 +99,7 @@ class ActorCritic(Reinforce):
             'gamma',  # the discount factor
             'use_gae',
             'lam',
+            'use_nstep',
             'num_step_returns',
             'add_entropy',
             'entropy_coef',
@@ -114,8 +117,10 @@ class ActorCritic(Reinforce):
         # Select appropriate methods to calculate adv_targets and v_targets for training
         if self.use_gae:
             self.calc_advs_v_targets = self.calc_gae_advs_v_targets
-        else:
+        elif self.use_nstep:
             self.calc_advs_v_targets = self.calc_nstep_advs_v_targets
+        else:
+            self.calc_advs_v_targets = self.calc_td_advs_v_targets
 
     @lab_api
     def init_nets(self):
@@ -377,6 +382,19 @@ class ActorCritic(Reinforce):
         if torch.cuda.is_available() and self.net.gpu:
             nstep_advs = nstep_advs.cuda()
         adv_targets = v_targets = nstep_advs
+        return adv_targets, v_targets
+
+    def calc_td_advs_v_targets(self, batch):
+        '''
+        Calculate plain TD error and target for plain AC algorithm
+        '''
+        v_preds = self.calc_v(batch['states'])
+        # TD is equivalent to 1-step return
+        td_returns = math_util.calc_nstep_returns(batch, self.gamma, 1, v_preds)
+        if torch.cuda.is_available() and self.net.gpu:
+            td_returns = td_returns.cuda()
+        v_targets = td_returns
+        adv_targets = v_targets - v_preds  # TD error, but called adv for API consistency
         return adv_targets, v_targets
 
     @lab_api
