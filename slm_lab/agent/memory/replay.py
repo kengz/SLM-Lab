@@ -118,7 +118,7 @@ class Replay(Memory):
         '''Batch indices a sampled random uniformly'''
         batch_idxs = np.random.choice(list(range(self.true_size)), batch_size)
         if self.use_cer:  # add the latest sample
-            batch_idxs[-1] = self.true_size - 1
+            batch_idxs[-1] = self.head
         return batch_idxs
 
     def update_priorities(self, priorities):

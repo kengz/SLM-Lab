@@ -160,6 +160,38 @@
       "search": "RandomSearch"
     }
   },
+  "base_prioritized_replay_memory": {
+    "agent": [{
+      "name": "BaseMemory",
+      "algorithm": {
+        "name": "Random"
+      },
+      "memory": {
+        "name": "PrioritizedReplay",
+        "alpha": 1,
+        "epsilon": 0,
+        "batch_size": 4,
+        "max_size": 4,
+        "use_cer": false
+      },
+      "net": {}
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": 10,
+      "max_episode": 1
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 1,
+      "max_trial": 1,
+      "search": "RandomSearch",
+      "train_mode": true
+    }
+  },
   "multi_body": {
     "agent": [{
       "name": "BaseDemo",

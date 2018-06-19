@@ -161,8 +161,7 @@ class SARSA(Algorithm):
             batch = self.sample()
             with torch.no_grad():
                 q_targets = self.calc_q_targets(batch)
-                y = q_targets
-            loss = self.net.training_step(batch['states'], y)
+            loss = self.net.training_step(batch['states'], q_targets)
             # reset
             self.to_train = 0
             self.body.log_probs = []
