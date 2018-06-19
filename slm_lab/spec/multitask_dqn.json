@@ -19,7 +19,8 @@
       "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
@@ -37,6 +38,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "gpu": true
       }
     }],
@@ -66,7 +68,7 @@
         },
         "net": {
           "hid_layers__choice": [
-            [16],
+            [32],
             [64],
             [32, 16],
             [64, 32]
@@ -99,7 +101,8 @@
       "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
@@ -117,6 +120,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.9,
@@ -149,7 +153,7 @@
         },
         "net": {
           "hid_layers__choice": [
-            [16],
+            [32],
             [64],
             [32, 16],
             [64, 32]

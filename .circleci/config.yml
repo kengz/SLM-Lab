@@ -37,6 +37,7 @@ jobs:
               sudo npm install -g yarn
             fi
             yarn install
+            yarn global add electron@1.8.4 orca
       - save_cache:
           paths:
             - node_modules

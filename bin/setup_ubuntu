@@ -39,6 +39,7 @@ if [ -d ./node_modules ]; then
   echo "Npm modules are already installed"
 else
   yarn install
+  yarn global add electron@1.8.4 orca
 fi
 
 echo "--- Installing Python for Lab backend ---"

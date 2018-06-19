@@ -186,7 +186,7 @@ class OpenAIEnv:
             state_e[(a, b)] = state
             done_e[(a, b)] = self.done
         # TODO internalize render code
-        if os.environ.get('lab_mode') == 'dev':
+        if util.get_lab_mode() == 'dev':
             self.u_env.render()
         non_nan_cnt = util.count_nonan(state_e.flatten())
         assert non_nan_cnt == 1, 'OpenAI Gym supports only single body'
@@ -200,7 +200,7 @@ class OpenAIEnv:
             return self.reset()
         action = action_e[(0, 0)]
         (state, reward, done, _info) = self.u_env.step(action)
-        if os.environ.get('lab_mode') == 'dev':
+        if util.get_lab_mode() == 'dev':
             self.u_env.render()
         reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
@@ -319,7 +319,7 @@ class UnityEnv:
     @lab_api
     def reset(self):
         self.done = False
-        env_info_dict = self.u_env.reset(train_mode=(os.environ.get('lab_mode') != 'dev'), config=self.env_spec.get('unity'))
+        env_info_dict = self.u_env.reset(train_mode=(util.get_lab_mode() != 'dev'), config=self.env_spec.get('unity'))
         _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self.get_env_info(env_info_dict, a)

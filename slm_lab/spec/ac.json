@@ -13,6 +13,7 @@
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
+        "use_nstep": false,
         "num_step_returns": 100,
         "add_entropy": false,
         "entropy_coef": 0.01,
@@ -43,13 +44,14 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "gpu": true
       }
     }],
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 10
+      "max_episode": 250
     }],
     "body": {
       "product": "outer",
@@ -65,7 +67,7 @@
       "agent": [{
         "net": {
           "hid_layers__choice": [
-            [16],
+            [32],
             [64],
             [32, 16],
             [64, 32]
@@ -95,6 +97,7 @@
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
+        "use_nstep": false,
         "num_step_returns": 100,
         "add_entropy": false,
         "entropy_coef": 0.01,
@@ -125,13 +128,14 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "gpu": true
       }
     }],
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 10
+      "max_episode": 250
     }],
     "body": {
       "product": "outer",
@@ -147,7 +151,7 @@
       "agent": [{
         "net": {
           "hid_layers__choice": [
-            [16],
+            [32],
             [64],
             [32, 16],
             [64, 32]
@@ -177,6 +181,7 @@
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
+        "use_nstep": false,
         "num_step_returns": 100,
         "add_entropy": false,
         "entropy_coef": 0.01,
@@ -210,13 +215,14 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "gpu": true
       }
     }],
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 10
+      "max_episode": 250
     }],
     "body": {
       "product": "outer",
@@ -232,7 +238,7 @@
       "agent": [{
         "net": {
           "hid_layers__choice": [
-            [16],
+            [32],
             [64],
             [32, 16],
             [64, 32]
@@ -262,6 +268,7 @@
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
+        "use_nstep": false,
         "num_step_returns": 100,
         "add_entropy": false,
         "entropy_coef": 0.01,
@@ -295,13 +302,14 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "gpu": true
       }
     }],
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 10
+      "max_episode": 250
     }],
     "body": {
       "product": "outer",
@@ -317,7 +325,7 @@
       "agent": [{
         "net": {
           "hid_layers__choice": [
-            [16],
+            [32],
             [64],
             [32, 16],
             [64, 32]
@@ -347,6 +355,7 @@
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
+        "use_nstep": false,
         "num_step_returns": 100,
         "add_entropy": false,
         "entropy_coef": 0.01,
@@ -384,6 +393,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 600,
+        "lr_anneal_timestep": 1000000,
         "gpu": true
       }
     }],
@@ -417,6 +427,7 @@
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
+        "use_nstep": false,
         "num_step_returns": 100,
         "add_entropy": false,
         "entropy_coef": 0.01,
@@ -454,6 +465,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 600,
+        "lr_anneal_timestep": 1000000,
         "gpu": true
       }
     }],

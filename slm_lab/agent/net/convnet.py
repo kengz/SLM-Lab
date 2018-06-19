@@ -18,7 +18,7 @@ class ConvNet(Net, nn.Module):
     The entire model consists of three parts:
         1. self.conv_model
         2. self.dense_model
-        3. self.out_layers
+        3. self.model_tails
 
     e.g. net_spec
     "net": {
@@ -49,6 +49,7 @@ class ConvNet(Net, nn.Module):
         "lr_decay": "no_decay",
         "lr_decay_frequency": 400,
         "lr_decay_min_timestep": 1400,
+        "lr_anneal_timestep": 1000000,
         "update_type": "replace",
         "update_frequency": 10000,
         "polyak_coef": 0.9,
@@ -75,6 +76,7 @@ class ConvNet(Net, nn.Module):
         lr_decay: function to decay learning rate
         lr_decay_frequency: how many total timesteps per decay
         lr_decay_min_timestep: minimum amount of total timesteps before starting decay
+        lr_anneal_timestep: timestep to anneal lr decay
         update_type: method to update network weights: 'replace' or 'polyak'
         update_frequency: how many total timesteps per update
         polyak_coef: ratio of polyak weight update
@@ -110,6 +112,7 @@ class ConvNet(Net, nn.Module):
             'lr_decay',
             'lr_decay_frequency',
             'lr_decay_min_timestep',
+            'lr_anneal_timestep',
             'update_type',
             'update_frequency',
             'polyak_coef',

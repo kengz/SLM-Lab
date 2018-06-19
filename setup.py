@@ -57,8 +57,8 @@ class PyTest(TestCommand):
 
 setup(
     name='slm_lab',
-    version='1.0.3',
-    description='A research framework for Deep Reinforcement Learning using Unity, OpenAI Gym, PyTorch, Tensorflow.',
+    version='1.1.0',
+    description='Modular Deep Reinforcement Learning framework in PyTorch.',
     long_description=read('README.md'),
     keywords='SLM Lab',
     url='https://github.com/kengz/slm_lab',

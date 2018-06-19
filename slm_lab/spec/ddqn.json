@@ -19,7 +19,8 @@
       "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
@@ -37,6 +38,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.9,
@@ -46,7 +48,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 250
     }],
     "body": {
       "product": "outer",
@@ -65,7 +67,7 @@
         },
         "net": {
           "hid_layers__choice": [
-            [16],
+            [32],
             [64],
             [32, 16],
             [64, 32]
@@ -98,7 +100,8 @@
       "memory": {
         "name": "Replay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
@@ -116,6 +119,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.9,
@@ -125,7 +129,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 250
     }],
     "body": {
       "product": "outer",
@@ -144,7 +148,7 @@
         },
         "net": {
           "hid_layers__choice": [
-            [16],
+            [32],
             [64],
             [32, 16],
             [64, 32]
@@ -177,7 +181,8 @@
       "memory": {
         "name": "SeqReplay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "RecurrentNet",
@@ -198,6 +203,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.9,
@@ -207,7 +213,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 250
     }],
     "body": {
       "product": "outer",
@@ -226,7 +232,7 @@
         },
         "net": {
           "hid_layers__choice": [
-            [16],
+            [32],
             [64],
             [32, 16],
             [64, 32]
@@ -259,7 +265,8 @@
       "memory": {
         "name": "SeqReplay",
         "batch_size": 32,
-        "max_size": 10000
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "RecurrentNet",
@@ -280,6 +287,7 @@
         "lr_decay": "rate_decay",
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.9,
@@ -289,7 +297,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 1000
+      "max_episode": 250
     }],
     "body": {
       "product": "outer",
@@ -308,7 +316,7 @@
         },
         "net": {
           "hid_layers__choice": [
-            [16],
+            [32],
             [64],
             [32, 16],
             [64, 32]
@@ -342,7 +350,8 @@
         "name": "AtariReplay",
         "batch_size": 32,
         "max_size": 250000,
-        "stack_len": 4
+        "stack_len": 4,
+        "use_cer": true
       },
       "net": {
         "type": "ConvNet",
@@ -372,6 +381,7 @@
         "lr_decay": "no_decay",
         "lr_decay_frequency": 400,
         "lr_decay_min_timestep": 1400,
+        "lr_anneal_timestep": 1000000,
         "update_type": "replace",
         "update_frequency": 10000,
         "polyak_coef": 0.9,
@@ -414,7 +424,8 @@
         "name": "AtariReplay",
         "batch_size": 32,
         "max_size": 250000,
-        "stack_len": 4
+        "stack_len": 4,
+        "use_cer": true
       },
       "net": {
         "type": "ConvNet",
@@ -444,6 +455,7 @@
         "lr_decay": "no_decay",
         "lr_decay_frequency": 400,
         "lr_decay_min_timestep": 1400,
+        "lr_anneal_timestep": 1000000,
         "update_type": "replace",
         "update_frequency": 10000,
         "polyak_coef": 0.9,

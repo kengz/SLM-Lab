@@ -68,7 +68,6 @@ class OnPolicyReplay(Memory):
         if not np.isnan(reward):  # not the start of episode
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
-        self.state_buffer.append(state)
 
     def add_experience(self, state, action, reward, next_state, done, priority=1):
         '''Interface helper method for update() to add experience to memory'''
@@ -133,6 +132,7 @@ class OnPolicySeqReplay(OnPolicyReplay):
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
         if append:
+            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
             self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer)
         return processed_state
@@ -265,6 +265,7 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
         if append:
+            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
             self.state_buffer.append(state)
         processed_state = np.stack(self.state_buffer)
         return processed_state

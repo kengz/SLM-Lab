@@ -50,7 +50,8 @@ WORKDIR /opt/SLM-Lab
 
 # install dependencies, only retrigger on dependency changes
 COPY package.json package.json
-RUN yarn install
+RUN yarn install && \
+    yarn global add electron@1.8.4 orca
 
 COPY environment.yml environment.yml
 RUN conda env update -f environment.yml

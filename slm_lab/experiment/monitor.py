@@ -105,7 +105,8 @@ class DataSpace:
         else:
             self.data = new_data
             self.swap_data = new_data.swapaxes(0, 1)
-        if self.data_name == 'state' and len(self.data[(0, 0, 0)].shape) > 1:
+        # Do not store states with more than 10 dimensions total. It places too much burden on the memory
+        if self.data_name == 'state' and self.data[(0, 0, 0)].size > 10:
             self.data_history.append(np.zeros_like(self.data))
         else:
             self.data_history.append(self.data)

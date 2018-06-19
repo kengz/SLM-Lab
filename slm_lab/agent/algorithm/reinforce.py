@@ -99,7 +99,8 @@ class Reinforce(Algorithm):
                 self.net_spec['type'] = 'MLPHeterogenousTails'
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, self, in_dim, out_dim)
-        logger.info(f'Training on gpu: {self.net.gpu}')
+        self.net_names = ['net']
+        self.post_init_nets()
 
     @lab_api
     def calc_pdparam(self, x, evaluate=True):
@@ -133,6 +134,8 @@ class Reinforce(Algorithm):
 
     @lab_api
     def train(self):
+        if util.get_lab_mode() == 'enjoy':
+            return np.nan
         if self.to_train == 1:
             batch = self.sample()
             loss = self.calc_policy_loss(batch)

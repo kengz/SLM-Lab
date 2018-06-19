@@ -10,9 +10,11 @@ from plotly import (
 )
 from slm_lab import config
 from slm_lab.lib import logger, util
+from subprocess import Popen
 import os
 import plotly
 import pydash as ps
+import ujson as json
 
 PLOT_FILEDIR = util.smart_path('data')
 os.makedirs(PLOT_FILEDIR, exist_ok=True)
@@ -30,20 +32,17 @@ def plot(*args, **kwargs):
 
 
 def save_image(figure, filepath=None):
-    if os.environ.get('lab_mode') == 'dev' or os.environ.get('PY_ENV') == 'test':
+    if os.environ['PY_ENV'] == 'test':
         return
     if filepath is None:
         filepath = f'{PLOT_FILEDIR}/{ps.get(figure, "layout.title")}.png'
+    filepath = util.smart_path(filepath)
+    dirname, filename = os.path.split(filepath)
     try:
-        plotly.tools.set_credentials_file(
-            username=ps.get(config, 'plotly.username'),
-            api_key=ps.get(config, 'plotly.api_key'))
-        plotly.tools.set_config_file(world_readable=True, sharing='public')
-        return plotly.plotly.image.save_as(figure, filepath)
-    except Exception:
-        logger.error(
-            'Plotly server unreachable, but you can save the plots later via retro-analysis.')
-        return None
+        Popen(['orca', 'graph', '--verbose', '-o', filename, json.dumps(figure)], cwd=dirname)
+    except Exception as e:
+        logger.exception(
+            'Please install orca for plotly and run retro-analysis to generate graphs.')
 
 
 def stack_cumsum(df, y_col):
