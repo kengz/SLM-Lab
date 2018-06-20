@@ -81,6 +81,18 @@ def test_ppo(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
+    ('sil.json', 'sil_mlp_shared_cartpole'),
+    ('sil.json', 'sil_mlp_separate_cartpole'),
+    ('sil.json', 'sil_rnn_shared_cartpole'),
+    ('sil.json', 'sil_rnn_separate_cartpole'),
+    # ('sil.json', 'sil_conv_shared_breakout'),
+    # ('sil.json', 'sil_conv_separate_breakout'),
+])
+def test_sil(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
     ('sarsa.json', 'sarsa_mlp_boltzmann_cartpole'),
     ('sarsa.json', 'sarsa_mlp_epsilon_greedy_cartpole'),
     ('sarsa.json', 'sarsa_rnn_boltzmann_cartpole'),

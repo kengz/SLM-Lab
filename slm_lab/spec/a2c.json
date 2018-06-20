@@ -423,7 +423,7 @@
   },
   "a2c_conv_separate_breakout": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",

@@ -131,7 +131,7 @@ class SIL(ActorCritic):
         '''
         Calculate the SIL policy losses for actor and critic
         sil_policy_loss = -log_prob * max(R - v_pred, 0)
-        sil_val_loss = norm(max(R - v_pred, 0)) / 2
+        sil_val_loss = (max(R - v_pred, 0)**2) / 2
         This is called on a randomly-sample batch from experience replay
         '''
         returns = math_util.calc_returns(batch, self.gamma)
