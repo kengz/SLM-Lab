@@ -143,7 +143,7 @@ class SIL(ActorCritic):
         log_probs = self.calc_log_probs(batch)
 
         sil_policy_loss = torch.mean(- log_probs * v_preds)
-        sil_val_loss = torch.norm(clipped_advs) / 2.0
+        sil_val_loss = torch.mean((clipped_advs ** 2) / 2)
 
         if torch.cuda.is_available() and self.net.gpu:
             sil_policy_loss = sil_policy_loss.cuda()
@@ -180,12 +180,11 @@ class SIL(ActorCritic):
             # offpolicy sil update with random minibatch
             total_sil_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
-                batch = self.body.replay_sample()
-                with torch.no_grad():
-                    sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
-                    sil_policy_loss = self.policy_loss_coef * sil_policy_loss
+                batch = self.replay_sample()
+                sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
+                sil_policy_loss = self.policy_loss_coef * sil_policy_loss
                 sil_val_loss = self.val_loss_coef * sil_val_loss
-                self.net.training_step(loss=sil_policy_loss)
+                self.net.training_step(loss=sil_policy_loss, retain_graph=True)
                 self.critic.training_step(loss=sil_val_loss)
                 total_sil_loss += sil_policy_loss + sil_val_loss
             sil_loss = total_sil_loss / self.training_epoch
