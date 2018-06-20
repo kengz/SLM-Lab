@@ -20,7 +20,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "continuous_action_clip": 2.0,
-        "training_frequency": 1,
+        "training_frequency": 4,
         "training_epoch": 8
       },
       "memory": {
@@ -110,7 +110,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "continuous_action_clip": 2.0,
-        "training_frequency": 1,
+        "training_frequency": 4,
         "training_epoch": 8
       },
       "memory": {
@@ -179,7 +179,7 @@
       }]
     }
   },
-  "a2c_rnn_shared_cartpole": {
+  "sil_rnn_shared_cartpole": {
     "agent": [{
       "name": "SIL",
       "algorithm": {
@@ -200,7 +200,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "continuous_action_clip": 2.0,
-        "training_frequency": 1,
+        "training_frequency": 4,
         "training_epoch": 8
       },
       "memory": {
@@ -272,7 +272,7 @@
       }]
     }
   },
-  "a2c_rnn_separate_cartpole": {
+  "sil_rnn_separate_cartpole": {
     "agent": [{
       "name": "SIL",
       "algorithm": {
@@ -293,7 +293,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "continuous_action_clip": 2.0,
-        "training_frequency": 1,
+        "training_frequency": 4,
         "training_epoch": 8
       },
       "memory": {
@@ -365,7 +365,7 @@
       }]
     }
   },
-  "a2c_conv_shared_breakout": {
+  "sil_conv_shared_breakout": {
     "agent": [{
       "name": "SIL",
       "algorithm": {
@@ -386,7 +386,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "continuous_action_clip": 2.0,
-        "training_frequency": 1,
+        "training_frequency": 4,
         "training_epoch": 8
       },
       "memory": {
@@ -441,7 +441,7 @@
       "max_generation": null
     }
   },
-  "a2c_conv_separate_breakout": {
+  "sil_conv_separate_breakout": {
     "agent": [{
       "name": "SIL",
       "algorithm": {
@@ -462,7 +462,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "continuous_action_clip": 2.0,
-        "training_frequency": 1,
+        "training_frequency": 4,
         "training_epoch": 8
       },
       "memory": {
