@@ -49,7 +49,6 @@ class SIL(ActorCritic):
         memory_name = self.memory_spec['sil_replay_name']
         MemoryClass = getattr(memory, memory_name)
         self.body.replay_memory = MemoryClass(self.memory_spec, self, self.body)
-        # TODO set replay memory lsat state
         self.init_algorithm_params()
         self.init_nets()
         logger.info(util.self_desc(self))
@@ -98,12 +97,10 @@ class SIL(ActorCritic):
         '''Modify the onpolicy sample to also append to replay'''
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_batches(batches)
-        keys = ['actions', 'rewards', 'states', 'dones']
+        data_keys = self.body.replay_memory.data_keys
         for idx in range(len(batch['dones'])):
-            if idx == 0:
-                self.body.replay_memory.last_state = self.body.memory.last_state
-            tuples = [batch[k][idx] for k in keys]
-            self.body.replay_memory.update(*tuples)
+            tuples = [batch[k][idx] for k in data_keys]
+            self.body.replay_memory.add_experience(*tuples)
         batch = util.to_torch_batch(batch, self.net.gpu)
         return batch
 

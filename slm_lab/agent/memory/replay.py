@@ -294,9 +294,7 @@ class AtariReplay(StackReplay):
         self.base_update(action, reward, state, done)
         state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
-            logger.debug2(f'original reward: {reward}')
             if not np.isnan(reward):
                 reward = max(-1, min(1, reward))
-            logger.debug(f'state: {state.shape}, reward: {reward}, last_state: {self.last_state.shape}')
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
