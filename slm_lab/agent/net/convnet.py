@@ -195,7 +195,7 @@ class ConvNet(Net, nn.Module):
         else:
             return outs
 
-    def training_step(self, x=None, y=None, loss=None):
+    def training_step(self, x=None, y=None, loss=None, retain_graph=False):
         '''Takes a single training step: one forward and one backwards pass'''
         self.train()
         self.zero_grad()
@@ -204,7 +204,7 @@ class ConvNet(Net, nn.Module):
             out = self(x)
             loss = self.loss_fn(out, y)
         assert not torch.isnan(loss).any()
-        loss.backward()
+        loss.backward(retain_graph=retain_graph)
         if self.clip_grad:
             logger.debug(f'Clipping gradient')
             torch.nn.utils.clip_grad_norm(self.parameters(), self.clip_grad_val)

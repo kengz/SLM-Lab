@@ -108,7 +108,7 @@ class MLPNet(Net, nn.Module):
         '''The feedforward step'''
         return self.model(x)
 
-    def training_step(self, x=None, y=None, loss=None):
+    def training_step(self, x=None, y=None, loss=None, retain_graph=False):
         '''
         Takes a single training step: one forward and one backwards pass
         More most RL usage, we have custom, often complicated, loss functions. Compute its value and put it in a pytorch tensor then pass it in as loss
@@ -120,7 +120,7 @@ class MLPNet(Net, nn.Module):
             out = self(x)
             loss = self.loss_fn(out, y)
         assert not torch.isnan(loss).any()
-        loss.backward()
+        loss.backward(retain_graph=retain_graph)
         if self.clip_grad:
             logger.debug(f'Clipping gradient')
             torch.nn.utils.clip_grad_norm(self.parameters(), self.clip_grad_val)
@@ -381,7 +381,7 @@ class HydraMLPNet(Net, nn.Module):
             outs.append(model_tail(body_x))
         return outs
 
-    def training_step(self, xs=None, ys=None, loss=None):
+    def training_step(self, xs=None, ys=None, loss=None, retain_graph=False):
         '''
         Takes a single training step: one forward and one backwards pass. Both x and y are lists of the same length, one x and y per environment
         '''
@@ -395,7 +395,7 @@ class HydraMLPNet(Net, nn.Module):
                 loss = self.loss_fn(out, y)
                 total_loss += loss
         assert not torch.isnan(total_loss).any()
-        total_loss.backward()
+        total_loss.backward(retain_graph=retain_graph)
         if self.clip_grad:
             logger.debug(f'Clipping gradient')
             torch.nn.utils.clip_grad_norm(self.parameters(), self.clip_grad_val)
