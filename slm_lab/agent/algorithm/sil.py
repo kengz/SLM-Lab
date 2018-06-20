@@ -131,7 +131,7 @@ class SIL(ActorCritic):
         '''
         Calculate the SIL policy losses for actor and critic
         sil_policy_loss = -log_prob * max(R - v_pred, 0)
-        sil_val_loss = (max(R - v_pred, 0)**2) / 2
+        sil_val_loss = norm(max(R - v_pred, 0)) / 2
         This is called on a randomly-sample batch from experience replay
         '''
         returns = math_util.calc_returns(batch, self.gamma)
@@ -140,7 +140,7 @@ class SIL(ActorCritic):
         log_probs = self.calc_log_probs(batch)
 
         sil_policy_loss = torch.mean(- log_probs * v_preds)
-        sil_val_loss = torch.mean((clipped_advs ** 2) / 2)
+        sil_val_loss = torch.norm(clipped_advs ** 2) / 2
 
         if torch.cuda.is_available() and self.net.gpu:
             sil_policy_loss = sil_policy_loss.cuda()
