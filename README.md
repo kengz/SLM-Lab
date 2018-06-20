@@ -50,7 +50,9 @@ Various algorithms are in fact extensions of some simpler ones, and they are imp
     - N-step returns as advantage
     - GAE (Generalized Advantage Estimate) as advantage
 - PPO (Proximal Policy Optimization)
-    - extension of A3C with PPO loss function
+    - extension of A2C with PPO loss function
+- SIL (Self-Imitation Learning)
+    - extension of A2C with off-policy training on custom loss
 
 **Value-based:**
 - SARSA
