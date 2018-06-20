@@ -194,10 +194,8 @@ class PPO(ActorCritic):
             for _ in range(self.training_epoch):
                 loss = self.calc_loss(batch)
                 # to reuse loss for critic
-                loss.backward = partial(loss.backward, retain_graph=True)
-                self.net.training_step(loss=loss)
+                self.net.training_step(loss=loss, retain_graph=True)
                 # critic.optim.step using the same loss
-                loss.backward = partial(loss.backward, retain_graph=False)
                 self.critic.training_step(loss=loss)
                 total_loss += loss
             loss = total_loss / self.training_epoch
