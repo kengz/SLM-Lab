@@ -139,10 +139,10 @@ class SIL(ActorCritic):
         '''
         returns = math_util.calc_returns(batch, self.gamma)
         v_preds = self.calc_v(batch['states'])
-        clipped_advs = torch.max(returns - v_preds, torch.tensor(0.0))
+        clipped_advs = torch.clamp(returns - v_preds, min=0.0)
         log_probs = self.calc_log_probs(batch)
 
-        sil_policy_loss = - log_probs * clipped_advs
+        sil_policy_loss = torch.mean(- log_probs * v_preds)
         sil_val_loss = torch.norm(clipped_advs) / 2.0
 
         if torch.cuda.is_available() and self.net.gpu:
