@@ -161,9 +161,8 @@ class SIL(ActorCritic):
             total_sil_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
                 batch = self.replay_sample()
-                with torch.no_grad():
-                    sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
-                    sil_loss = self.policy_loss_coef * sil_policy_loss + self.val_loss_coef * sil_val_loss
+                sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
+                sil_loss = self.policy_loss_coef * sil_policy_loss + self.val_loss_coef * sil_val_loss
                 self.net.training_step(loss=sil_loss)
                 total_sil_loss += sil_loss
             sil_loss = total_sil_loss / self.training_epoch
