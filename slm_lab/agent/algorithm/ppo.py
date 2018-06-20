@@ -174,7 +174,7 @@ class PPO(ActorCritic):
                 loss = self.calc_loss(batch)
                 self.net.training_step(loss=loss)
                 total_loss += loss
-            loss = total_loss.mean()
+            loss = total_loss / self.training_epoch
             net_util.copy(self.net, self.old_net)
             # reset
             self.to_train = 0
@@ -200,7 +200,7 @@ class PPO(ActorCritic):
                 loss.backward = partial(loss.backward, retain_graph=False)
                 self.critic.training_step(loss=loss)
                 total_loss += loss
-            loss = total_loss.mean()
+            loss = total_loss / self.training_epoch
             net_util.copy(self.net, self.old_net)
             net_util.copy(self.critic, self.old_critic)
             # reset
