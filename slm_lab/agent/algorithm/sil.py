@@ -40,6 +40,14 @@ class SIL(ActorCritic):
         "training_frequency": 1,
         "training_epoch": 8
     }
+    e.g. special memory_spec
+    "memory": {
+        "name": "OnPolicyReplay",
+        "sil_replay_name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
+    }
     '''
     @lab_api
     def post_body_init(self):
