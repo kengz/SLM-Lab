@@ -95,6 +95,11 @@ These networks are usable for all algorithms.
 - RecurrentNet
 - ConvNet
 
+These networks are usable for Q-learning algorithms. For more details see [this paper](http://proceedings.mlr.press/v48/wangf16.pdf).
+
+- DuelingMLPNet
+- DuelingConvNet
+
 #### Policy
 
 code: [slm_lab/agent/algorithm/policy_util.py](https://github.com/kengz/SLM-Lab/blob/master/slm_lab/agent/algorithm/policy_util.py)
