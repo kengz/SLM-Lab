@@ -483,9 +483,9 @@ class DuelingMLPNet(MLPNet):
             'gpu',
         ])
 
-        if self.algorithm.agent.nanflat_body_a[0].action_type != "discrete":
-            logger.warn(f'DuelingMLPNet only appropriate for Q-Learning algorithms. Currently implemented for single body algorithms in discrete action spaces')
-        assert self.algorithm.agent.nanflat_body_a[0].action_type == "discrete"
+        # Guard against inappropriate algorithms and environments
+        assert net_util.check_q_learning_algo(algorithm)
+        # Build model body
         dims = [self.in_dim] + self.hid_layers
         self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
         # output layers
@@ -499,14 +499,10 @@ class DuelingMLPNet(MLPNet):
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)
 
-    def calc_q_value_logits(self, state_value, raw_advantages):
-        mean_adv = raw_advantages.mean(dim=-1).unsqueeze_(dim=-1)
-        return state_value + raw_advantages - mean_adv
-
     def forward(self, x):
         '''The feedforward step'''
         x = self.model_body(x)
         state_value = self.v(x)
         raw_advantages = self.adv(x)
-        out = self.calc_q_value_logits(state_value, raw_advantages)
+        out = net_util.calc_q_value_logits(state_value, raw_advantages)
         return out
