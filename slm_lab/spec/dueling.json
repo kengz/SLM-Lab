@@ -222,5 +222,79 @@
       "max_trial": 1,
       "search": "RandomSearch"
     }
-  }
+  },
+  "duelingdqn_epsilon_greedy_breakout": {
+    "agent": [{
+      "name": "DuelingDQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 20,
+        "gamma": 0.99,
+        "training_batch_epoch": 8,
+        "training_epoch": 4,
+        "training_frequency": 100,
+        "training_min_timestep": 100
+      },
+      "memory": {
+        "name": "AtariReplay",
+        "batch_size": 32,
+        "max_size": 250000,
+        "stack_len": 4,
+        "use_cer": true
+      },
+      "net": {
+        "type": "DuelingConvNet",
+        "hid_layers": [
+          [
+            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [32, 64, [4, 4], 2, 0, [1, 1]],
+            [64, 64, [3, 3], 1, 0, [1, 1]]
+          ],
+          [512]
+        ],
+        "hid_layers_activation": "relu",
+        "batch_norm": false,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "RMSprop",
+          "lr": 0.00025,
+          "alpha": 0.95,
+          "eps": 0.01,
+          "momentum": 0.0,
+          "centered": true
+        },
+        "lr_decay": "no_decay",
+        "lr_decay_frequency": 400,
+        "lr_decay_min_timestep": 1400,
+        "lr_anneal_timestep": 1000000,
+        "update_type": "replace",
+        "update_frequency": 10000,
+        "polyak_coef": 0.9,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "BreakoutDeterministic-v4",
+      "max_timestep": null,
+      "max_episode": 50000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 1,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    }
+  },
 }
