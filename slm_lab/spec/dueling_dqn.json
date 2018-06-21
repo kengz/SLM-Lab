@@ -1,0 +1,226 @@
+{
+  "duelingdqn_boltzmann_cartpole": {
+    "agent": [{
+      "name": "DuelingDQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.5,
+        "explore_var_end": 0.3,
+        "explore_anneal_epi": 20,
+        "gamma": 0.99,
+        "training_batch_epoch": 3,
+        "training_epoch": 4,
+        "training_frequency": 8,
+        "training_min_timestep": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "DuelingMLPNet",
+        "hid_layers": [32],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 500,
+        "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 250
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 1,
+      "max_trial": 100,
+      "search": "RandomSearch",
+      "max_generation": null
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_anneal_epi__choice": [10, 30, 50, 100]
+        },
+        "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          }
+        }
+      }]
+    }
+  },
+  "duelingdqn_epsilon_greedy_cartpole": {
+    "agent": [{
+      "name": "DuelingDQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 20,
+        "gamma": 0.99,
+        "training_batch_epoch": 3,
+        "training_epoch": 4,
+        "training_frequency": 8,
+        "training_min_timestep": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "DuelingMLPNet",
+        "hid_layers": [32],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 500,
+        "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 250
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 4,
+      "max_trial": 100,
+      "search": "RandomSearch",
+      "max_generation": null
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_anneal_epi__choice": [10, 30, 50, 100]
+        },
+        "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          }
+        }
+      }]
+    }
+  },
+  "duelingdqn_stack_epsilon_greedy_lunar": {
+    "agent": [{
+      "name": "DuelingDQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.08,
+        "explore_anneal_epi": 175,
+        "gamma": 0.99,
+        "training_batch_epoch": 8,
+        "training_epoch": 5,
+        "training_frequency": 50,
+        "training_min_timestep": 100
+      },
+      "memory": {
+        "name": "StackReplay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "stack_len": 4,
+        "use_cer": true
+      },
+      "net": {
+        "type": "DuelingMLPNet",
+        "hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.0002
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 5000,
+        "lr_decay_min_timestep": 50000,
+        "lr_anneal_timestep": 500000,
+        "update_type": "replace",
+        "update_frequency": 500,
+        "polyak_coef": 0.9,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 600
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "max_session": 1,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    }
+  }
+}
