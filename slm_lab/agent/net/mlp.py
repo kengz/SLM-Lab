@@ -419,3 +419,94 @@ class HydraMLPNet(Net, nn.Module):
         self.optim_spec['lr'] = new_lr
         logger.info(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)
+
+
+class DuelingMLPNet(MLPNet):
+    '''
+    Class for generating arbitrary sized feedforward neural network, with dueling heads. Intended for Q-Learning algorithms only.
+    Implementation based on "Dueling Network Architectures for Deep Reinforcement Learning" http://proceedings.mlr.press/v48/wangf16.pdf
+
+    e.g. net_spec
+    "net": {
+        "type": "DuelingMLPNet",
+        "hid_layers": [32],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 500,
+        "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 1000000,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
+        "gpu": true
+    }
+    '''
+
+    def __init__(self, net_spec, algorithm, in_dim, out_dim):
+        nn.Module.__init__(self)
+        Net.__init__(self, net_spec, algorithm, in_dim, out_dim)
+        # set default
+        util.set_attr(self, dict(
+            clip_grad=False,
+            clip_grad_val=1.0,
+            loss_spec={'name': 'MSELoss'},
+            optim_spec={'name': 'Adam'},
+            lr_decay='no_decay',
+            update_type='replace',
+            update_frequency=1,
+            polyak_coef=0.0,
+            gpu=False,
+        ))
+        util.set_attr(self, self.net_spec, [
+            'hid_layers',
+            'hid_layers_activation',
+            'clip_grad',
+            'clip_grad_val',
+            'loss_spec',
+            'optim_spec',
+            'lr_decay',
+            'lr_decay_frequency',
+            'lr_decay_min_timestep',
+            'lr_anneal_timestep',
+            'update_type',
+            'update_frequency',
+            'polyak_coef',
+            'gpu',
+        ])
+
+        if self.algorithm.agent.nanflat_body_a[0].action_type != "discrete":
+            logger.warn(f'DuelingMLPNet only appropriate for Q-Learning algorithms. Currently implemented for single body algorithms in discrete action spaces')
+        assert self.algorithm.agent.nanflat_body_a[0].action_type == "discrete"
+        dims = [self.in_dim] + self.hid_layers
+        self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
+        # output layers
+        self.v = nn.Linear(dims[-1], 1)  # state value
+        self.adv = nn.Linear(dims[-1], out_dim)  # action dependent raw advantage
+        net_util.init_layers(self.modules())
+        if torch.cuda.is_available() and self.gpu:
+            for module in self.modules():
+                module.cuda()
+        self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
+        self.optim = net_util.get_optim(self, self.optim_spec)
+        self.lr_decay = getattr(net_util, self.lr_decay)
+
+    def calc_q_value_logits(self, state_value, raw_advantages):
+        mean_adv = raw_advantages.mean(dim=-1).unsqueeze_(dim=-1)
+        return state_value + raw_advantages - mean_adv
+
+    def forward(self, x):
+        '''The feedforward step'''
+        x = self.model_body(x)
+        state_value = self.v(x)
+        raw_advantages = self.adv(x)
+        out = self.calc_q_value_logits(state_value, raw_advantages)
+        return out
