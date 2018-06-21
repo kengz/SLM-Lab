@@ -158,11 +158,13 @@ def save(net, model_path):
     logger.info(f'Saved model to {model_path}')
 
 
-def save_algorithm(algorithm):
+def save_algorithm(algorithm, epi=None):
     '''Save all the nets for an algorithm'''
     agent = algorithm.agent
     net_names = algorithm.net_names
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+    if epi is not None:
+        prepath = f'{prepath}_epi_{epi}'
     logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
     for net_name in net_names:
         net = getattr(algorithm, net_name)

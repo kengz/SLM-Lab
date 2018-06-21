@@ -229,8 +229,12 @@ class AEBSpace:
             done = env.done or env.clock.get('t') > env.max_timestep
             env_dones.append(done)
             if done:
+                to_save = 'save_epi_frequency' in env.env_spec
+                save_this_epi = (env.clock.get('epi') % env.env_spec['save_epi_frequency']) == 0
                 for body in env.nanflat_body_e:
                     self.body_done_log(body)
+                    if to_save and save_this_epi and env.clock.get('epi') > 0:
+                        body.agent.algorithm.save(epi=env.clock.get('epi'))
                 env.clock.tick('epi')
             else:
                 env.clock.tick('t')
