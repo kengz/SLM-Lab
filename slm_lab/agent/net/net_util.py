@@ -206,13 +206,14 @@ def polyak_update(src_net, tar_net, beta=0.5):
     tar_net.load_state_dict(src_dict_params)
 
 
-def check_q_learning_algo(algorithm):
+def is_q_learning(algorithm):
     '''Check the algorithm is a Q-learning variant and action space is discrete'''
-    discrete_action_space = algorithm.agent.nanflat_body_a[0].action_type == "discrete"
-    q_learning_algo = ('DQN' in algorithm.algorithm_spec['name']) or ('SARSA' in algorithm['name'])
-    if not (discrete_action_space and q_learning_algo):
-        logger.warn(f'DuelingMLPNet only appropriate for Q-Learning algorithms. Currently implemented for single body algorithms in discrete action spaces')
-    return discrete_action_space and q_learning_algo
+    assert hasattr(algorithm, 'body')
+    is_q_algo = any(k in algorithm.algorithm_spec['name'] for k in ('DQN', 'SARSA'))
+    is_q = algorithm.body.is_discrete and is_q_algo
+    if not is_q:
+        logger.warn('DuelingMLPNet only appropriate for Q-Learning algorithms. Currently implemented for single body algorithms in discrete action spaces')
+    return is_q
 
 
 def calc_q_value_logits(state_value, raw_advantages):

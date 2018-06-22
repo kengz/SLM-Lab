@@ -341,7 +341,7 @@ class DuelingConvNet(ConvNet):
         ])
 
         # Guard against inappropriate algorithms and environments
-        assert net_util.check_q_learning_algo(algorithm)
+        assert net_util.is_q_learning(algorithm)
         assert len(out_dim) == 1
         # Build model
         self.conv_hid_layers = self.hid_layers[0]
