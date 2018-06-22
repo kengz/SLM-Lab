@@ -1,5 +1,5 @@
 {
-  "duelingdqn_boltzmann_cartpole": {
+  "dueling_dqn_boltzmann_cartpole": {
     "agent": [{
       "name": "DuelingDQN",
       "algorithm": {
@@ -80,7 +80,7 @@
       }]
     }
   },
-  "duelingdqn_epsilon_greedy_cartpole": {
+  "dueling_dqn_epsilon_greedy_cartpole": {
     "agent": [{
       "name": "DuelingDQN",
       "algorithm": {
@@ -161,7 +161,7 @@
       }]
     }
   },
-  "duelingdqn_stack_epsilon_greedy_lunar": {
+  "dueling_dqn_stack_epsilon_greedy_lunar": {
     "agent": [{
       "name": "DuelingDQN",
       "algorithm": {
@@ -223,7 +223,7 @@
       "search": "RandomSearch"
     }
   },
-  "duelingdqn_epsilon_greedy_breakout": {
+  "dueling_dqn_epsilon_greedy_breakout": {
     "agent": [{
       "name": "DuelingDQN",
       "algorithm": {
@@ -296,5 +296,5 @@
       "max_trial": 1,
       "search": "RandomSearch"
     }
-  },
+  }
 }
