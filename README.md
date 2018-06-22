@@ -59,8 +59,10 @@ Various algorithms are in fact extensions of some simpler ones, and they are imp
 - DQN (Deep Q Learning)
     - boltzmann or epsilon-greedy policy
 - DRQN (Recurrent DQN)
-- Double DQN
-- Double DRQN
+- Dueling DQN
+- DDQN (Double DQN)
+- DDRQN
+- Dueling DDQN
 - Multitask DQN (multi-environment DQN)
 - Hydra DQN (multi-environment DQN)
 
@@ -94,6 +96,11 @@ These networks are usable for all algorithms.
 - HydraMLPNet (multi-heads, multi-tails)
 - RecurrentNet
 - ConvNet
+
+These networks are usable for Q-learning algorithms. For more details see [this paper](http://proceedings.mlr.press/v48/wangf16.pdf).
+
+- DuelingMLPNet
+- DuelingConvNet
 
 #### Policy
 

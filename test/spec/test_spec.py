@@ -130,6 +130,16 @@ def test_ddqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('dueling_dqn.json', 'dueling_dqn_boltzmann_cartpole'),
+    ('dueling_dqn.json', 'dueling_dqn_epsilon_greedy_cartpole'),
+    # ('dueling_dqn.json', 'dueling_dqn_boltzmann_breakout'),
+    # ('dueling_dqn.json', 'dueling_dqn_epsilon_greedy_breakout'),
+])
+def test_dueling_dqn(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
 @pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI has not enough RAM")
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('dqn.json', 'dqn_boltzmann_breakout'),

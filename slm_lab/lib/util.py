@@ -665,7 +665,7 @@ def read(data_path, **kwargs):
 def read_as_df(data_path, **kwargs):
     '''Submethod to read data as DataFrame'''
     ext = get_file_ext(data_path)
-    if ext in ['.xlsx', 'xls']:
+    if ext in ['.xlsx', '.xls']:
         data = pd.read_excel(data_path, **kwargs)
     else:  # .csv
         data = pd.read_csv(data_path, **kwargs)
