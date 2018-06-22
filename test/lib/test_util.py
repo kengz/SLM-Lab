@@ -220,7 +220,7 @@ def test_smart_path():
 
 @pytest.mark.parametrize('filename,dtype', [
     ('test_df.csv', pd.DataFrame),
-    ('test_df.xls', pd.DataFrame),
+    # ('test_df.xls', pd.DataFrame),
 ])
 def test_write_read_as_df(test_df, filename, dtype):
     data_path = f'test/fixture/lib/util/{filename}'
