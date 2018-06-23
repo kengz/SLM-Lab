@@ -124,7 +124,7 @@ class SIL(ActorCritic):
         '''Helper method to calculate log_probs for a randomly sampled batch'''
         states, actions = batch['states'], batch['actions']
         # get ActionPD, don't append to state_buffer
-        ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].numpy(), self, self.body, append=False)
+        ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].cpu().numpy(), self, self.body, append=False)
         # construct log_probs for each state-action
         pdparams = self.calc_pdparam(states)
         log_probs = []
@@ -169,7 +169,7 @@ class SIL(ActorCritic):
                 sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
                 sil_loss = self.policy_loss_coef * sil_policy_loss + self.val_loss_coef * sil_val_loss
                 self.net.training_step(loss=sil_loss)
-                total_sil_loss += sil_loss
+                total_sil_loss += sil_loss.cpu()
             sil_loss = total_sil_loss / self.training_epoch
             loss = a2c_loss + sil_loss
             self.last_loss = loss.item()

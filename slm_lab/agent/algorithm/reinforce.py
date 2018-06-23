@@ -120,9 +120,9 @@ class Reinforce(Algorithm):
         body.entropies.append(action_pd.entropy())
         body.log_probs.append(action_pd.log_prob(action.float()))
         if len(action.shape) == 0:  # scalar
-            return action.numpy().astype(body.action_space.dtype).item()
+            return action.cpu().numpy().astype(body.action_space.dtype).item()
         else:
-            return action.numpy()
+            return action.cpu().numpy()
 
     @lab_api
     def sample(self):
@@ -165,9 +165,9 @@ class Reinforce(Algorithm):
             policy_loss = policy_loss.cuda()
         for logp, adv, ent in zip(self.body.log_probs, advs, self.body.entropies):
             if self.add_entropy:
-                policy_loss += (-logp * adv - self.entropy_coef * ent)
+                policy_loss += (-logp * adv - self.entropy_coef * ent).cpu()
             else:
-                policy_loss += (-logp * adv)
+                policy_loss += (-logp * adv).cpu()
         return policy_loss
 
     @lab_api

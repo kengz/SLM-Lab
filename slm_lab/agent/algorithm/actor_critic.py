@@ -232,9 +232,9 @@ class ActorCritic(Reinforce):
         body.entropies.append(action_pd.entropy())
         body.log_probs.append(action_pd.log_prob(action.float()))
         if len(action.shape) == 0:  # scalar
-            return action.numpy().astype(body.action_space.dtype).item()
+            return action.cpu().numpy().astype(body.action_space.dtype).item()
         else:
-            return action.numpy()
+            return action.cpu().numpy()
 
     @lab_api
     def sample(self):
@@ -310,7 +310,7 @@ class ActorCritic(Reinforce):
                 _advs, v_targets = self.calc_advs_v_targets(batch)
             val_loss = self.calc_val_loss(batch, v_targets)
             self.critic.training_step(loss=val_loss)
-            total_val_loss += val_loss
+            total_val_loss += val_loss.cpu()
         val_loss = total_val_loss / self.training_epoch
         return val_loss
 

@@ -393,7 +393,7 @@ class HydraMLPNet(Net, nn.Module):
             total_loss = torch.tensor(0.0)
             for out, y in zip(outs, ys):
                 loss = self.loss_fn(out, y)
-                total_loss += loss
+                total_loss += loss.cpu()
         assert not torch.isnan(total_loss).any()
         total_loss.backward(retain_graph=retain_graph)
         if self.clip_grad:
