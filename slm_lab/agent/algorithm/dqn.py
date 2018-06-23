@@ -158,7 +158,7 @@ class VanillaDQN(SARSA):
                             for body in self.agent.nanflat_body_a:
                                 body.memory.update_priorities(errors)
                     loss = self.net.training_step(batch['states'], q_targets)
-                    total_loss += loss
+                    total_loss += loss.cpu()
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0
@@ -509,7 +509,7 @@ class HydraDQN(MultitaskDQN):
                             for body in self.agent.nanflat_body_a:
                                 body.memory.update_priorities(errors)
                     loss = self.net.training_step(batch['states'], q_targets)
-                    total_loss += loss
+                    total_loss += loss.cpu()
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0

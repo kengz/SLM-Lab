@@ -165,9 +165,9 @@ class Reinforce(Algorithm):
             policy_loss = policy_loss.cuda()
         for logp, adv, ent in zip(self.body.log_probs, advs, self.body.entropies):
             if self.add_entropy:
-                policy_loss += (-logp * adv - self.entropy_coef * ent)
+                policy_loss += (-logp * adv - self.entropy_coef * ent).cpu()
             else:
-                policy_loss += (-logp * adv)
+                policy_loss += (-logp * adv).cpu()
         return policy_loss
 
     @lab_api
