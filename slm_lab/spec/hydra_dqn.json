@@ -53,7 +53,7 @@
       "name": "CartPole-v0",
       "max_timestep": null,
       "max_episode": 1000,
-      "save_epi_frequency": 100
+      "save_epi_frequency": 1000
     }, {
       "name": "CartPole-v0",
       "max_timestep": null,
@@ -146,7 +146,7 @@
       "name": "CartPole-v0",
       "max_timestep": null,
       "max_episode": 1000,
-      "save_epi_frequency": 100
+      "save_epi_frequency": 1000
     }, {
       "name": "CartPole-v0",
       "max_timestep": null,

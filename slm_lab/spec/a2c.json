@@ -52,7 +52,7 @@
       "name": "CartPole-v0",
       "max_timestep": null,
       "max_episode": 500,
-      "save_epi_frequency": 100
+      "save_epi_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -139,7 +139,7 @@
       "name": "CartPole-v0",
       "max_timestep": null,
       "max_episode": 500,
-      "save_epi_frequency": 100
+      "save_epi_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -229,7 +229,7 @@
       "name": "CartPole-v0",
       "max_timestep": null,
       "max_episode": 500,
-      "save_epi_frequency": 100
+      "save_epi_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -319,7 +319,7 @@
       "name": "CartPole-v0",
       "max_timestep": null,
       "max_episode": 500,
-      "save_epi_frequency": 100
+      "save_epi_frequency": 1000
     }],
     "body": {
       "product": "outer",
