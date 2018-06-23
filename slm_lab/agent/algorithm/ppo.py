@@ -109,7 +109,7 @@ class PPO(ActorCritic):
             self.net = self.old_net
         states, actions = batch['states'], batch['actions']
         # get ActionPD, don't append to state_buffer
-        ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].numpy(), self, self.body, append=False)
+        ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].cpu().numpy(), self, self.body, append=False)
         # construct log_probs for each state-action
         pdparams = self.calc_pdparam(states)
         log_probs = []

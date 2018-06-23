@@ -120,9 +120,9 @@ class Reinforce(Algorithm):
         body.entropies.append(action_pd.entropy())
         body.log_probs.append(action_pd.log_prob(action.float()))
         if len(action.shape) == 0:  # scalar
-            return action.numpy().astype(body.action_space.dtype).item()
+            return action.cpu().numpy().astype(body.action_space.dtype).item()
         else:
-            return action.numpy()
+            return action.cpu().numpy()
 
     @lab_api
     def sample(self):
