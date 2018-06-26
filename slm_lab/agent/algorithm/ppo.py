@@ -67,6 +67,7 @@ class PPO(ActorCritic):
             explore_var_start=np.nan,
             explore_var_end=np.nan,
             explore_anneal_epi=np.nan,
+            val_loss_coef=1.0,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -80,6 +81,7 @@ class PPO(ActorCritic):
             'lam',
             'clip_eps',
             'entropy_coef',
+            'val_loss_coef',
             'training_frequency',  # horizon
             'training_epoch',
         ])

@@ -14,6 +14,7 @@
         "lam": 1.0,
         "clip_eps": 0.10,
         "entropy_coef": 0.01,
+        "val_loss_coef": 1.0,
         "training_frequency": 1,
         "training_epoch": 8
       },
@@ -93,6 +94,7 @@
         "lam": 1.0,
         "clip_eps": 0.10,
         "entropy_coef": 0.01,
+        "val_loss_coef": 1.0,
         "training_frequency": 1,
         "training_epoch": 8
       },
@@ -172,6 +174,7 @@
         "lam": 1.0,
         "clip_eps": 0.10,
         "entropy_coef": 0.01,
+        "val_loss_coef": 1.0,
         "training_frequency": 1,
         "training_epoch": 8
       },
@@ -254,6 +257,7 @@
         "lam": 1.0,
         "clip_eps": 0.10,
         "entropy_coef": 0.01,
+        "val_loss_coef": 1.0,
         "training_frequency": 1,
         "training_epoch": 8
       },
@@ -336,6 +340,7 @@
         "lam": 1.0,
         "clip_eps": 0.10,
         "entropy_coef": 0.01,
+        "val_loss_coef": 1.0,
         "training_frequency": 1,
         "training_epoch": 8
       },
@@ -402,6 +407,7 @@
         "lam": 1.0,
         "clip_eps": 0.10,
         "entropy_coef": 0.01,
+        "val_loss_coef": 1.0,
         "training_frequency": 1,
         "training_epoch": 8
       },
