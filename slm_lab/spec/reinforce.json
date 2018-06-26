@@ -21,7 +21,7 @@
       },
       "net": {
         "type": "MLPdefault",
-        "hid_layers": [16],
+        "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -57,16 +57,13 @@
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.90, 0.99],
+          "entropy_coef__uniform": [0.01, 0.10]
+        },
         "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [0.0001, 0.1]
           }
         }
       }]
@@ -96,7 +93,7 @@
         "type": "RecurrentNet",
         "hid_layers": [],
         "hid_layers_activation": "relu",
-        "rnn_hidden_size": 16,
+        "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
@@ -133,14 +130,11 @@
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.90, 0.99],
+          "entropy_coef__uniform": [0.01, 0.10]
+        },
         "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "optim_spec": {
             "lr__uniform": [0.0001, 0.2]
           }
