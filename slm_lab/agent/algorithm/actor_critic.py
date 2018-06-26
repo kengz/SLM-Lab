@@ -265,7 +265,7 @@ class ActorCritic(Reinforce):
                 advs, v_targets = self.calc_advs_v_targets(batch)
             policy_loss = self.calc_policy_loss(advs)  # from actor
             val_loss = self.calc_val_loss(batch, v_targets)  # from critic
-            loss = self.policy_loss_coef * policy_loss + self.val_loss_coef * val_loss
+            loss = policy_loss + val_loss
             self.net.training_step(loss=loss)
             # reset
             self.to_train = 0
@@ -319,10 +319,9 @@ class ActorCritic(Reinforce):
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
         log_probs = torch.tensor(self.body.log_probs, requires_grad=True)
         entropies = torch.tensor(self.body.entropies, requires_grad=True)
+        policy_loss = self.policy_loss_coef * (- log_probs * advs)
         if self.add_entropy:
-            policy_loss = (- log_probs * advs) - self.entropy_coef * entropies
-        else:
-            policy_loss = - log_probs * advs
+            policy_loss += - self.entropy_coef * entropies
         policy_loss = torch.mean(policy_loss)
         if torch.cuda.is_available() and self.net.gpu:
             policy_loss = policy_loss.cuda()
@@ -334,7 +333,7 @@ class ActorCritic(Reinforce):
         v_targets = v_targets.unsqueeze(dim=-1)
         v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze_(dim=-1)
         assert v_preds.shape == v_targets.shape
-        val_loss = self.net.loss_fn(v_preds, v_targets)
+        val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
         if torch.cuda.is_available() and self.net.gpu:
             val_loss = val_loss.cuda()
         logger.debug(f'Critic value loss: {val_loss:.2f}')
