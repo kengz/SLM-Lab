@@ -161,11 +161,10 @@ class Reinforce(Algorithm):
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
         log_probs = torch.tensor(self.body.log_probs, requires_grad=True)
         entropies = torch.tensor(self.body.entropies, requires_grad=True)
+        policy_loss = - log_probs * advs
         if self.add_entropy:
-            policy_loss = (- log_probs * advs) - self.entropy_coef * entropies
-        else:
-            policy_loss = - log_probs * advs
-        policy_loss = torch.mean(policy_loss)
+            policy_loss += (- self.entropy_coef * entropies)
+        policy_loss = torch.sum(policy_loss)
         return policy_loss
 
     @lab_api
