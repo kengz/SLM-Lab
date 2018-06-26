@@ -87,6 +87,8 @@ class ActorCritic(Reinforce):
             explore_var_start=np.nan,
             explore_var_end=np.nan,
             explore_anneal_epi=np.nan,
+            policy_loss_coef=1.0,
+            val_loss_coef=1.0,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
