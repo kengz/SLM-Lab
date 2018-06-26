@@ -61,7 +61,7 @@ class ActorCritic(Reinforce):
         "add_entropy": false,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_epoch": 8
