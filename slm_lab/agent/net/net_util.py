@@ -1,5 +1,6 @@
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.lib import logger, util
+import os
 import pydash as ps
 import torch
 import torch.nn as nn
@@ -123,6 +124,30 @@ def copy_trainable_params(net):
 
 def copy_fixed_params(net):
     return None
+
+
+def to_assert_trained():
+    '''Condition for running assert_trained'''
+    return os.environ.get('PY_ENV') == 'test' or util.get_lab_mode() == 'dev'
+
+
+def gen_assert_trained(pre_model):
+    '''
+    Generate assert_trained function used to check weight updates
+    @example
+
+    assert_trained = gen_assert_trained(model)
+    # ...
+    loss.backward()
+    optim.step()
+    assert_trained(model)
+    '''
+    pre_weights = [param.clone() for param in pre_model.parameters()]
+
+    def assert_trained(post_model):
+        post_weights = [param.clone() for param in post_model.parameters()]
+        assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), 'Model parameter is not updated in training_step(), check if your tensor is detached from graph.'
+    return assert_trained
 
 
 def get_grad_norms(net):
