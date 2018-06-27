@@ -42,7 +42,7 @@ def save_image(figure, filepath=None):
     try:
         cmd = ['orca', 'graph', '--verbose', '-o', filename, json.dumps(figure)]
         if 'linux' in sys.platform:
-            cmd.insert(0, 'xvfb-run -a -s "-screen 0 1400x900x24" --')
+            cmd = ['xvfb-run', '-a', '-s', '"-screen 0 1400x900x24"',  '--'] + cmd
         Popen(cmd, cwd=dirname)
     except Exception as e:
         logger.exception(
