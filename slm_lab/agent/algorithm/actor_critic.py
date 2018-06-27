@@ -319,12 +319,12 @@ class ActorCritic(Reinforce):
     def calc_policy_loss(self, batch, advs):
         '''Calculate the actor's policy loss'''
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
-        policy_loss = 0
-        for lp, a, e in zip(self.body.log_probs, advs, self.body.entropies):
-            policy_loss += -self.policy_loss_coef * lp * a
-            if self.add_entropy:
-                policy_loss += (-self.entropy_coef * e)
-        policy_loss /= len(advs)  # take mean for policy_loss
+        log_probs = torch.stack(self.body.log_probs)
+        policy_loss = - self.policy_loss_coef * log_probs * advs
+        if self.add_entropy:
+            entropies = torch.stack(self.body.entropies)
+            policy_loss += (-self.entropy_coef * entropies)
+        policy_loss = torch.mean(policy_loss)
         if torch.cuda.is_available() and self.net.gpu:
             policy_loss = policy_loss.cuda()
         logger.debug(f'Actor policy loss: {policy_loss:.2f}')
