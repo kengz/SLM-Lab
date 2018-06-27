@@ -129,10 +129,12 @@ def get_grad_norms(net):
     '''Returns a list of the norm of the gradients for all parameters'''
     norms = []
     for i, param in enumerate(net.parameters()):
-        grad_norm = torch.norm(param.grad.data)
-        if grad_norm is None:
-            logger.info(f'Param with None grad: {param}, layer: {i}')
-        norms.append(grad_norm)
+        if param.grad is None:
+            logger.info(f'Param with None grad: {param.shape}, layer: {i}')
+            norms.append(None)
+        else:
+            grad_norm = torch.norm(param.grad)
+            norms.append(grad_norm)
     return norms
 
 
