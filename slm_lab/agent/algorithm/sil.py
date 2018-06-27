@@ -138,7 +138,7 @@ class SIL(ActorCritic):
             _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam, self.body)
             log_prob = action_pd.log_prob(actions[idx])
             log_probs.append(log_prob)
-        log_probs = torch.tensor(log_probs)
+        log_probs = torch.stack(log_probs)
         return log_probs
 
     def calc_sil_policy_val_loss(self, batch):
