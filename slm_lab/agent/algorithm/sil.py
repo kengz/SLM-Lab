@@ -36,7 +36,10 @@ class SIL(ActorCritic):
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
+        "sil_policy_loss_coef": 1.0,
+        "sil_val_loss_coef": 0.01,
         "continuous_action_clip": 2.0,
+        "training_batch_epoch": 8,
         "training_frequency": 1,
         "training_epoch": 8
     }
@@ -90,8 +93,11 @@ class SIL(ActorCritic):
             'entropy_coef',
             'policy_loss_coef',
             'val_loss_coef',
+            'sil_policy_loss_coef',
+            'sil_val_loss_coef',
             'continuous_action_clip',
             'training_frequency',
+            'training_batch_epoch',
             'training_epoch',
         ])
         self.to_train = 0
@@ -126,7 +132,7 @@ class SIL(ActorCritic):
         # get ActionPD, don't append to state_buffer
         ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].cpu().numpy(), self, self.body, append=False)
         # construct log_probs for each state-action
-        pdparams = self.calc_pdparam(states)
+        pdparams = self.calc_pdparam(states, evaluate=False)
         log_probs = []
         for idx, pdparam in enumerate(pdparams):
             _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam, self.body)
@@ -143,12 +149,12 @@ class SIL(ActorCritic):
         This is called on a randomly-sample batch from experience replay
         '''
         returns = math_util.calc_returns(batch, self.gamma)
-        v_preds = self.calc_v(batch['states'])
+        v_preds = self.calc_v(batch['states'], evaluate=False)
         clipped_advs = torch.clamp(returns - v_preds, min=0.0)
         log_probs = self.calc_log_probs(batch)
 
-        sil_policy_loss = self.policy_loss_coef * torch.mean(- log_probs * v_preds)
-        sil_val_loss = self.val_loss_coef * torch.norm(clipped_advs ** 2) / 2
+        sil_policy_loss = self.sil_policy_loss_coef * torch.mean(- log_probs * v_preds)
+        sil_val_loss = self.sil_val_loss_coef * torch.norm(clipped_advs ** 2) / 2
 
         if torch.cuda.is_available() and self.net.gpu:
             sil_policy_loss = sil_policy_loss.cuda()
