@@ -265,7 +265,7 @@ class ActorCritic(Reinforce):
             batch = self.sample()
             with torch.no_grad():
                 advs, v_targets = self.calc_advs_v_targets(batch)
-            policy_loss = self.calc_policy_loss(advs)  # from actor
+            policy_loss = self.calc_policy_loss(batch, advs)  # from actor
             val_loss = self.calc_val_loss(batch, v_targets)  # from critic
             loss = policy_loss + val_loss
             self.net.training_step(loss=loss)
@@ -299,7 +299,7 @@ class ActorCritic(Reinforce):
         '''Trains the actor when the actor and critic are separate networks'''
         with torch.no_grad():
             advs, _v_targets = self.calc_advs_v_targets(batch)
-        policy_loss = self.calc_policy_loss(advs)
+        policy_loss = self.calc_policy_loss(batch, advs)
         self.net.training_step(loss=policy_loss)
         return policy_loss
 
@@ -316,12 +316,12 @@ class ActorCritic(Reinforce):
         val_loss = total_val_loss / self.training_epoch
         return val_loss
 
-    def calc_policy_loss(self, advs):
+    def calc_policy_loss(self, batch, advs):
         '''Calculate the actor's policy loss'''
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
         policy_loss = 0
         for lp, a, e in zip(self.body.log_probs, advs, self.body.entropies):
-            policy_loss += -lp * a
+            policy_loss += -self.policy_loss_coef * lp * a
             if self.add_entropy:
                 policy_loss += (-self.entropy_coef * e)
         policy_loss /= len(advs)  # take mean for policy_loss
