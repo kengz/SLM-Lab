@@ -164,7 +164,7 @@ class Reinforce(Algorithm):
         policy_loss = - log_probs * advs
         if self.add_entropy:
             policy_loss += (- self.entropy_coef * entropies)
-        policy_loss = torch.sum(policy_loss)
+        policy_loss = torch.mean(policy_loss)
         return policy_loss
 
     @lab_api
