@@ -14,6 +14,7 @@ from subprocess import Popen
 import os
 import plotly
 import pydash as ps
+import sys
 import ujson as json
 
 PLOT_FILEDIR = util.smart_path('data')
@@ -39,7 +40,10 @@ def save_image(figure, filepath=None):
     filepath = util.smart_path(filepath)
     dirname, filename = os.path.split(filepath)
     try:
-        Popen(['orca', 'graph', '--verbose', '-o', filename, json.dumps(figure)], cwd=dirname)
+        cmd = ['orca', 'graph', '--verbose', '-o', filename, json.dumps(figure)]
+        if 'linux' in os.platform:
+            cmd.insert(0, 'xvfb-run -a -s "-screen 0 1400x900x24" --')
+        Popen(cmd, cwd=dirname)
     except Exception as e:
         logger.exception(
             'Please install orca for plotly and run retro-analysis to generate graphs.')
