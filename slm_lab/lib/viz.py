@@ -42,11 +42,9 @@ def save_image(figure, filepath=None):
     try:
         cmd = ['orca', 'graph', '--verbose', '-o', filename, json.dumps(figure)]
         if 'linux' in sys.platform:
-            logger.info('saving from linux')
-            vdisplay = Xvfb()
-            vdisplay.start()
-            Popen(cmd, cwd=dirname)
-            vdisplay.stop()
+            with Xvfb(width=1280, height=740) as xvfb:
+                logger.info('saving from linux')
+                Popen(cmd, cwd=dirname)
         else:
             Popen(cmd, cwd=dirname)
     except Exception as e:
