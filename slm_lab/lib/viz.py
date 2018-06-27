@@ -2,7 +2,6 @@
 The data visualization module
 TODO pie, swarm, box plots
 '''
-
 from plotly import (
     graph_objs as go,
     offline as py,
@@ -11,6 +10,7 @@ from plotly import (
 from slm_lab import config
 from slm_lab.lib import logger, util
 from subprocess import Popen
+from xvfbwrapper import Xvfb
 import os
 import plotly
 import pydash as ps
@@ -42,8 +42,12 @@ def save_image(figure, filepath=None):
     try:
         cmd = ['orca', 'graph', '--verbose', '-o', filename, json.dumps(figure)]
         if 'linux' in sys.platform:
-            cmd = ['xvfb-run', '-a', '-s', '"-screen 0 1400x900x24"',  '--'] + cmd
-        Popen(cmd, cwd=dirname)
+            vdisplay = Xvfb()
+            vdisplay.start()
+            Popen(cmd, cwd=dirname)
+            vdisplay.stop()
+        else:
+            Popen(cmd, cwd=dirname)
     except Exception as e:
         logger.exception(
             'Please install orca for plotly and run retro-analysis to generate graphs.')
