@@ -43,10 +43,10 @@ def save_image(figure, filepath=None):
         cmd = ['orca', 'graph', '--verbose', '-o', filename, json.dumps(figure)]
         if 'linux' in sys.platform:
             with Xvfb(width=1280, height=740) as xvfb:
-                logger.info('saving from linux')
                 Popen(cmd, cwd=dirname)
         else:
             Popen(cmd, cwd=dirname)
+        logger.info(f'Graph saved to {dirname}/{filename}')
     except Exception as e:
         logger.exception(
             'Please install orca for plotly and run retro-analysis to generate graphs.')
