@@ -9,8 +9,7 @@ from plotly import (
 )
 from slm_lab import config
 from slm_lab.lib import logger, util
-from subprocess import Popen
-from xvfbwrapper import Xvfb
+from subprocess import Popen, DEVNULL
 import os
 import plotly
 import pydash as ps
@@ -40,12 +39,10 @@ def save_image(figure, filepath=None):
     filepath = util.smart_path(filepath)
     dirname, filename = os.path.split(filepath)
     try:
-        cmd = ['orca', 'graph', '--verbose', '-o', filename, json.dumps(figure)]
+        cmd = f'orca graph -o {filename} \'{json.dumps(figure)}\''
         if 'linux' in sys.platform:
-            with Xvfb() as xvfb:
-                Popen(cmd, cwd=dirname)
-        else:
-            Popen(cmd, cwd=dirname)
+            cmd = 'xvfb-run -a -s "-screen 0 1400x900x24" -- ' + cmd
+        Popen(cmd, cwd=dirname, shell=True, stderr=DEVNULL, stdout=DEVNULL)
         logger.info(f'Graph saved to {dirname}/{filename}')
     except Exception as e:
         logger.exception(
