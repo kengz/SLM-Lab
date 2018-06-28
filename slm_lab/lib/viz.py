@@ -42,7 +42,7 @@ def save_image(figure, filepath=None):
     try:
         cmd = ['orca', 'graph', '--verbose', '-o', filename, json.dumps(figure)]
         if 'linux' in sys.platform:
-            with Xvfb(width=1280, height=740) as xvfb:
+            with Xvfb() as xvfb:
                 Popen(cmd, cwd=dirname)
         else:
             Popen(cmd, cwd=dirname)

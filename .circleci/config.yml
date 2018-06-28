@@ -24,7 +24,7 @@ jobs:
           name: Install apt-get packages for lab
           command: |
             sudo apt-get update
-            sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
+            sudo apt-get install -y python-numpy python-dev cmake libhdf5-dev libopenblas-dev zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
           environment:
             LD_PRELOAD: /usr/lib/libtcmalloc_minimal.so.4
 
@@ -34,10 +34,9 @@ jobs:
             if which yarn >/dev/null; then
               echo "Yarn is already installed"
             else
-              sudo npm install -g yarn
+              sudo npm install --unsafe-perm=true --allow-root -g yarn electron@1.8.4 orca
             fi
             yarn install
-            yarn global add electron@1.8.4 orca
       - save_cache:
           paths:
             - node_modules
@@ -100,7 +99,7 @@ jobs:
           name: Install apt-get packages for lab
           command: |
             sudo apt-get update
-            sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
+            sudo apt-get install -y python-numpy python-dev cmake libhdf5-dev libopenblas-dev zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
       - run: echo '. ~/miniconda3/etc/profile.d/conda.sh' >> $BASH_ENV
       - run:
           name: Run Python tests
