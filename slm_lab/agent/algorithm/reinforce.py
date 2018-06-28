@@ -159,15 +159,14 @@ class Reinforce(Algorithm):
         adv_std += 1e-08
         advs = (advs - advs.mean()) / adv_std
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
-        policy_loss = torch.tensor(0.0)
+        log_probs = torch.stack(self.body.log_probs)
+        policy_loss = - log_probs * advs
+        if self.add_entropy:
+            entropies = torch.stack(self.body.entropies)
+            policy_loss += (-self.entropy_coef * entropies)
+        policy_loss = torch.sum(policy_loss)
         if torch.cuda.is_available() and self.net.gpu:
-            advs = advs.cuda()
             policy_loss = policy_loss.cuda()
-        for logp, adv, ent in zip(self.body.log_probs, advs, self.body.entropies):
-            if self.add_entropy:
-                policy_loss += (-logp * adv - self.entropy_coef * ent).cpu()
-            else:
-                policy_loss += (-logp * adv).cpu()
         return policy_loss
 
     @lab_api

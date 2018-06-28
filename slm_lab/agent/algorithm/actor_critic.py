@@ -61,7 +61,7 @@ class ActorCritic(Reinforce):
         "add_entropy": false,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_epoch": 8
@@ -87,6 +87,8 @@ class ActorCritic(Reinforce):
             explore_var_start=np.nan,
             explore_var_end=np.nan,
             explore_anneal_epi=np.nan,
+            policy_loss_coef=1.0,
+            val_loss_coef=1.0,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -263,9 +265,9 @@ class ActorCritic(Reinforce):
             batch = self.sample()
             with torch.no_grad():
                 advs, v_targets = self.calc_advs_v_targets(batch)
-            policy_loss = self.calc_policy_loss(advs)  # from actor
+            policy_loss = self.calc_policy_loss(batch, advs)  # from actor
             val_loss = self.calc_val_loss(batch, v_targets)  # from critic
-            loss = self.policy_loss_coef * policy_loss + self.val_loss_coef * val_loss
+            loss = policy_loss + val_loss
             self.net.training_step(loss=loss)
             # reset
             self.to_train = 0
@@ -282,9 +284,7 @@ class ActorCritic(Reinforce):
         '''
         if self.to_train == 1:
             batch = self.sample()
-            with torch.no_grad():
-                advs, v_targets = self.calc_advs_v_targets(batch)
-            policy_loss = self.train_actor(advs)
+            policy_loss = self.train_actor(batch)
             val_loss = self.train_critic(batch)
             loss = val_loss + abs(policy_loss)
             # reset
@@ -295,9 +295,11 @@ class ActorCritic(Reinforce):
             self.last_loss = loss.item()
         return self.last_loss
 
-    def train_actor(self, advs):
+    def train_actor(self, batch):
         '''Trains the actor when the actor and critic are separate networks'''
-        policy_loss = self.calc_policy_loss(advs)
+        with torch.no_grad():
+            advs, _v_targets = self.calc_advs_v_targets(batch)
+        policy_loss = self.calc_policy_loss(batch, advs)
         self.net.training_step(loss=policy_loss)
         return policy_loss
 
@@ -314,15 +316,14 @@ class ActorCritic(Reinforce):
         val_loss = total_val_loss / self.training_epoch
         return val_loss
 
-    def calc_policy_loss(self, advs):
+    def calc_policy_loss(self, batch, advs):
         '''Calculate the actor's policy loss'''
         assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
-        log_probs = torch.tensor(self.body.log_probs, requires_grad=True)
-        entropies = torch.tensor(self.body.entropies, requires_grad=True)
+        log_probs = torch.stack(self.body.log_probs)
+        policy_loss = - self.policy_loss_coef * log_probs * advs
         if self.add_entropy:
-            policy_loss = (- log_probs * advs) - self.entropy_coef * entropies
-        else:
-            policy_loss = - log_probs * advs
+            entropies = torch.stack(self.body.entropies)
+            policy_loss += (-self.entropy_coef * entropies)
         policy_loss = torch.mean(policy_loss)
         if torch.cuda.is_available() and self.net.gpu:
             policy_loss = policy_loss.cuda()
@@ -334,7 +335,7 @@ class ActorCritic(Reinforce):
         v_targets = v_targets.unsqueeze(dim=-1)
         v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze_(dim=-1)
         assert v_preds.shape == v_targets.shape
-        val_loss = self.net.loss_fn(v_preds, v_targets)
+        val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
         if torch.cuda.is_available() and self.net.gpu:
             val_loss = val_loss.cuda()
         logger.debug(f'Critic value loss: {val_loss:.2f}')

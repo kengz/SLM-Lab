@@ -166,11 +166,15 @@ class RecurrentNet(Net, nn.Module):
             out = self(x)
             loss = self.loss_fn(out, y)
         assert not torch.isnan(loss).any()
+        if net_util.to_assert_trained():
+            assert_trained = net_util.gen_assert_trained(self.rnn_model)
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad:
             logger.debug(f'Clipping gradient')
             torch.nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()
+        if net_util.to_assert_trained():
+            assert_trained(self.rnn_model)
         return loss
 
     def wrap_eval(self, x):

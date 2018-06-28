@@ -23,24 +23,13 @@ for item in "${hb_list[@]}"; do
   brew info "${item}" | grep --quiet "Not installed" && brew install "${item}"
 done
 
-echo "--- Installing Atom and Hydrogen for interactive computing ---"
-if which atom >/dev/null; then
-  echo "Atom is already installed"
-else
-  brew cask install atom
-fi
-if apm ls | grep " Hydrogen" >/dev/null; then
-  echo "Hydrogen is already installed"
-else
-  apm install hydrogen
-fi
-
 echo "--- Installing NodeJS Lab interface ---"
 if which node >/dev/null; then
   echo "NodeJS is already installed"
 else
   brew install node
   brew install yarn
+  npm install --unsafe-perm=true --allow-root -g electron@1.8.4 orca
 fi
 
 echo "--- Installing npm modules for Lab interface ---"
@@ -48,7 +37,6 @@ if [ -d ./node_modules ]; then
   echo "Npm modules are already installed"
 else
   yarn install
-  yarn global add electron@1.8.4 orca
 fi
 
 echo "--- Installing Python for Lab backend ---"

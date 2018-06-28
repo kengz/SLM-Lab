@@ -18,10 +18,13 @@
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "sil_policy_loss_coef": 1.0,
+        "sil_val_loss_coef": 0.01,
         "continuous_action_clip": 2.0,
-        "training_frequency": 4,
-        "training_epoch": 8
+        "training_frequency": 1,
+        "training_batch_epoch": 4,
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -32,7 +35,7 @@
       },
       "net": {
         "type": "MLPNetShared",
-        "hid_layers": [32],
+        "hid_layers": [64],
         "hid_layers_activation": "tanh",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -109,10 +112,13 @@
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "sil_policy_loss_coef": 1.0,
+        "sil_val_loss_coef": 0.01,
         "continuous_action_clip": 2.0,
-        "training_frequency": 4,
-        "training_epoch": 8
+        "training_frequency": 1,
+        "training_batch_epoch": 8,
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -200,10 +206,13 @@
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "sil_policy_loss_coef": 1.0,
+        "sil_val_loss_coef": 0.01,
         "continuous_action_clip": 2.0,
-        "training_frequency": 4,
-        "training_epoch": 8
+        "training_frequency": 1,
+        "training_batch_epoch": 8,
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicySeqReplay",
@@ -294,10 +303,13 @@
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "sil_policy_loss_coef": 1.0,
+        "sil_val_loss_coef": 0.01,
         "continuous_action_clip": 2.0,
-        "training_frequency": 4,
-        "training_epoch": 8
+        "training_frequency": 1,
+        "training_batch_epoch": 8,
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicySeqReplay",
@@ -388,10 +400,13 @@
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "sil_policy_loss_coef": 1.0,
+        "sil_val_loss_coef": 0.01,
         "continuous_action_clip": 2.0,
-        "training_frequency": 4,
-        "training_epoch": 8
+        "training_frequency": 1,
+        "training_batch_epoch": 8,
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -464,10 +479,13 @@
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "sil_policy_loss_coef": 1.0,
+        "sil_val_loss_coef": 0.01,
         "continuous_action_clip": 2.0,
-        "training_frequency": 4,
-        "training_epoch": 8
+        "training_frequency": 1,
+        "training_batch_epoch": 8,
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay",

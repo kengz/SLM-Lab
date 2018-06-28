@@ -35,8 +35,11 @@ class SIL(ActorCritic):
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "sil_policy_loss_coef": 1.0,
+        "sil_val_loss_coef": 0.01,
         "continuous_action_clip": 2.0,
+        "training_batch_epoch": 8,
         "training_frequency": 1,
         "training_epoch": 8
     }
@@ -90,8 +93,11 @@ class SIL(ActorCritic):
             'entropy_coef',
             'policy_loss_coef',
             'val_loss_coef',
+            'sil_policy_loss_coef',
+            'sil_val_loss_coef',
             'continuous_action_clip',
             'training_frequency',
+            'training_batch_epoch',
             'training_epoch',
         ])
         self.to_train = 0
@@ -126,33 +132,36 @@ class SIL(ActorCritic):
         # get ActionPD, don't append to state_buffer
         ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].cpu().numpy(), self, self.body, append=False)
         # construct log_probs for each state-action
-        pdparams = self.calc_pdparam(states)
+        pdparams = self.calc_pdparam(states, evaluate=False)
         log_probs = []
         for idx, pdparam in enumerate(pdparams):
             _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam, self.body)
             log_prob = action_pd.log_prob(actions[idx])
             log_probs.append(log_prob)
-        log_probs = torch.tensor(log_probs)
+        log_probs = torch.stack(log_probs)
         return log_probs
 
     def calc_sil_policy_val_loss(self, batch):
         '''
         Calculate the SIL policy losses for actor and critic
         sil_policy_loss = -log_prob * max(R - v_pred, 0)
-        sil_val_loss = norm(max(R - v_pred, 0)) / 2
+        sil_val_loss = (max(R - v_pred, 0)^2) / 2
         This is called on a randomly-sample batch from experience replay
         '''
         returns = math_util.calc_returns(batch, self.gamma)
-        v_preds = self.calc_v(batch['states'])
+        v_preds = self.calc_v(batch['states'], evaluate=False)
         clipped_advs = torch.clamp(returns - v_preds, min=0.0)
         log_probs = self.calc_log_probs(batch)
 
-        sil_policy_loss = torch.mean(- log_probs * v_preds)
-        sil_val_loss = torch.norm(clipped_advs ** 2) / 2
+        sil_policy_loss = self.sil_policy_loss_coef * torch.mean(- log_probs * clipped_advs)
+        sil_val_loss = self.sil_val_loss_coef * torch.pow(clipped_advs, 2) / 2
+        sil_val_loss = torch.mean(sil_val_loss)
 
         if torch.cuda.is_available() and self.net.gpu:
             sil_policy_loss = sil_policy_loss.cuda()
             sil_val_loss = sil_val_loss.cuda()
+        logger.debug(f'SIL actor policy loss: {sil_policy_loss:.2f}')
+        logger.debug(f'SIL critic value loss: {sil_val_loss:.2f}')
         return sil_policy_loss, sil_val_loss
 
     def train_shared(self):
@@ -167,7 +176,7 @@ class SIL(ActorCritic):
             for _ in range(self.training_epoch):
                 batch = self.replay_sample()
                 sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
-                sil_loss = self.policy_loss_coef * sil_policy_loss + self.val_loss_coef * sil_val_loss
+                sil_loss = sil_policy_loss + sil_val_loss
                 self.net.training_step(loss=sil_loss)
                 total_sil_loss += sil_loss.cpu()
             sil_loss = total_sil_loss / self.training_epoch
@@ -187,8 +196,6 @@ class SIL(ActorCritic):
             for _ in range(self.training_epoch):
                 batch = self.replay_sample()
                 sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
-                sil_policy_loss = self.policy_loss_coef * sil_policy_loss
-                sil_val_loss = self.val_loss_coef * sil_val_loss
                 self.net.training_step(loss=sil_policy_loss, retain_graph=True)
                 self.critic.training_step(loss=sil_val_loss)
                 total_sil_loss += sil_policy_loss + sil_val_loss

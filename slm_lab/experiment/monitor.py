@@ -215,7 +215,7 @@ class AEBSpace:
         env = body.env
         clock = env.clock
         memory = body.memory
-        msg = f'Trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e}, body {body.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {body.loss:.2f}, total_reward: {memory.total_reward:.2f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.2f}'
+        msg = f'Trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e}, body {body.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {body.loss:.4f}, total_reward: {memory.total_reward:.2f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.2f}'
         logger.info(msg)
 
     def tick_clocks(self, session):
