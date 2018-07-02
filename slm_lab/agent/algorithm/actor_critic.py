@@ -202,8 +202,8 @@ class ActorCritic(Reinforce):
             self.net.train()
             pdparam = self.net(x)
         if self.share_architecture:
-            # MLPHeterogenousTails, get front
-            return pdparam[0]
+            # MLPHeterogenousTails, get front (no critic)
+            return pdparam[:-1]
         else:
             return pdparam
 
