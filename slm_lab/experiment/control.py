@@ -121,7 +121,12 @@ class Trial:
         if util.get_lab_mode() == 'train' and len(info_spaces) > 1:
             session_datas = util.parallelize_fn(self.init_session_and_run, info_spaces, num_cpus)
         else:  # dont parallelize when debugging to allow render
-            session_datas = [self.init_session_and_run(info_space) for info_space in info_spaces]
+            session_datas = []
+            for info_space in info_spaces:
+                session_data = self.init_session_and_run(info_space)
+                session_datas.append(session_data)
+                if analysis.is_unfit(session_data):
+                    break
         self.session_data_dict = {data.index[0]: data for data in session_datas}
         self.data = analysis.analyze_trial(self)
         self.close()

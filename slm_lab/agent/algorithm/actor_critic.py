@@ -187,7 +187,9 @@ class ActorCritic(Reinforce):
             self.net = NetClass(actor_net_spec, self, in_dim, out_dim)
             if critic_net_spec['use_same_optim']:
                 critic_net_spec = actor_net_spec
-            self.critic = NetClass(critic_net_spec, self, in_dim, critic_out_dim)
+            # stand-alone critic does not use Heterogenous tails
+            CriticNetClass = getattr(net, self.net_spec['type'].replace('HeterogenousTails', 'Net'))
+            self.critic = CriticNetClass(critic_net_spec, self, in_dim, critic_out_dim)
             self.net_names = ['net', 'critic']
         self.post_init_nets()
 
@@ -202,8 +204,11 @@ class ActorCritic(Reinforce):
             self.net.train()
             pdparam = self.net(x)
         if self.share_architecture:
-            # MLPHeterogenousTails, get front
-            return pdparam[0]
+            # MLPHeterogenousTails, get front (no critic)
+            if self.body.is_discrete:
+                return pdparam[0]
+            else:
+                return pdparam[:-1]
         else:
             return pdparam
 

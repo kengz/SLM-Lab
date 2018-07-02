@@ -116,6 +116,16 @@ def try_preprocess(state, algorithm, body, append=True):
     return state
 
 
+def cond_squeeze(out):
+    '''Helper to squeeze output depending if it is tensor (discrete pdparam) or list of tensors (continuous pdparam of loc and scale)'''
+    if isinstance(out, list):
+        for out_t in out:
+            out_t.squeeze_(dim=0)
+    else:
+        out.squeeze_(dim=0)
+    return out
+
+
 def init_action_pd(state, algorithm, body, append=True):
     '''
     Build the proper action prob. dist. to use for action sampling.
@@ -131,7 +141,7 @@ def init_action_pd(state, algorithm, body, append=True):
     state = try_preprocess(state, algorithm, body, append=append)
     if torch.cuda.is_available() and algorithm.net_spec['gpu']:
         state = state.cuda()
-    pdparam = algorithm.calc_pdparam(state, evaluate=False).squeeze_(dim=0)
+    pdparam = algorithm.calc_pdparam(state, evaluate=False)
     return ActionPD, pdparam, body
 
 
@@ -140,9 +150,10 @@ def sample_action_pd(ActionPD, pdparam, body):
     This uses the outputs from init_action_pd and an optionally augmented pdparam to construct a action_pd for sampling action
     @returns {tensor, distribution} action, action_pd A sampled action, and the prob. dist. used for sampling to enable calculations like kl, entropy, etc. later.
     '''
+    pdparam = cond_squeeze(pdparam)
     if body.is_discrete:
         action_pd = ActionPD(logits=pdparam)
-    else:
+    else:  # continuous outputs a list, loc and scale
         action_pd = ActionPD(*pdparam)
     action = action_pd.sample()
     return action, action_pd

@@ -24,6 +24,11 @@ MA_WINDOW = 100
 logger = logger.get_logger(__name__)
 
 
+def calc_mean_fitness(fitness_df):
+    '''Method to calculated mean over all bodies for a fitness_df'''
+    return fitness_df.mean(axis=1, level=3)
+
+
 def get_session_data(session):
     '''
     Gather data from session: MDP, Agent, Env data, hashed by aeb; then aggregate.
@@ -73,10 +78,16 @@ def calc_session_fitness_df(session, session_data):
         session_fitness_data[aeb] = aeb_fitness_df
     # form multiindex df, then take mean across all bodies
     session_fitness_df = pd.concat(session_fitness_data, axis=1)
-    mean_fitness_df = session_fitness_df.mean(axis=1, level=3)
+    mean_fitness_df = calc_mean_fitness(session_fitness_df)
     session_fitness = calc_fitness(mean_fitness_df)
     logger.info(f'Session mean fitness: {session_fitness}\n{mean_fitness_df}')
     return session_fitness_df
+
+
+def is_unfit(fitness_df):
+    '''Check if a fitness_df is unfit. Used to determine of trial should stop running more sessions'''
+    mean_fitness_df = calc_mean_fitness(fitness_df)
+    return mean_fitness_df['strength'][0] < NOISE_WINDOW
 
 
 def calc_trial_fitness_df(trial):
@@ -96,7 +107,7 @@ def calc_trial_fitness_df(trial):
         trial_fitness_data[aeb] = aeb_fitness_df
     # form multiindex df, then take mean across all bodies
     trial_fitness_df = pd.concat(trial_fitness_data, axis=1)
-    mean_fitness_df = trial_fitness_df.mean(axis=1, level=3)
+    mean_fitness_df = calc_mean_fitness(trial_fitness_df)
     trial_fitness_df = mean_fitness_df
     trial_fitness = calc_fitness(mean_fitness_df)
     logger.info(f'Trial mean fitness: {trial_fitness}\n{mean_fitness_df}')
@@ -350,7 +361,8 @@ def session_datas_from_file(predir, trial_spec, trial_index):
     session_datas = {}
     for s in range(trial_spec['meta']['max_session']):
         session_data = session_data_from_file(predir, trial_index, s)
-        session_datas[s] = session_data
+        if session_data is not None:
+            session_datas[s] = session_data
     return session_datas
 
 
