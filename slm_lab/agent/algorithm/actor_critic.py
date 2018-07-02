@@ -236,6 +236,7 @@ class ActorCritic(Reinforce):
     @lab_api
     def body_act(self, body, state):
         action, action_pd = self.action_policy(state, self, body)
+        print(f'action: {action}, action_pd: {action_pd}')
         body.entropies.append(action_pd.entropy())
         body.log_probs.append(action_pd.log_prob(action.float()))
         if len(action.shape) == 0:  # scalar

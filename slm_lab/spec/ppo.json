@@ -1,5 +1,5 @@
 {
-  "ppo_mlp_shared_cartpole": {
+  "ppo_mlp_shared_pendulum": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
@@ -44,7 +44,7 @@
       }
     }],
     "env": [{
-      "name": "CartPole-v0",
+      "name": "Pendulum-v0",
       "max_timestep": null,
       "max_episode": 500,
       "save_epi_frequency": 1000

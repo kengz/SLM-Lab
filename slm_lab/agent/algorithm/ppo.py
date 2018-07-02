@@ -114,14 +114,20 @@ class PPO(ActorCritic):
         states, actions = batch['states'], batch['actions']
         # get ActionPD, don't append to state_buffer
         ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].cpu().numpy(), self, self.body, append=False)
+        print(f'Actions pd: {ActionPD}, _pdparam: {_pdparam}, _body: {_body}')
         # construct log_probs for each state-action
         pdparams = self.calc_pdparam(states, evaluate=False)
+        print(f'pdparams:  {type(pdparams)}, length: {len(pdparams)}')
         log_probs = []
-        for idx, pdparam in enumerate(pdparams):
+        for idx, pdparam in enumerate(zip(pdparams[0], pdparams[1])):
+            pdparam = list(pdparam)
+            print(f'idx: {idx}, pdparam: {pdparam}')
             _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam, self.body)
+            print(f'action: {_action}, action pd {action_pd}')
             log_prob = action_pd.log_prob(actions[idx])
+            print(f'log_prob {log_prob}')
             log_probs.append(log_prob)
-        log_probs = torch.stack(log_probs)
+        log_probs = torch.squeeze(torch.stack(log_probs), dim=-1)
         if use_old_net:
             # swap back
             self.old_net = self.net
@@ -147,22 +153,30 @@ class PPO(ActorCritic):
         # L^CLIP
         log_probs = self.calc_log_probs(batch, use_old_net=False)
         old_log_probs = self.calc_log_probs(batch, use_old_net=True)
+        print(f'log prob shape: {log_probs.shape}')
+        print(f'adv shape: {advs.shape}')
         assert log_probs.shape == old_log_probs.shape
         assert advs.shape == log_probs.shape
         ratios = torch.exp(log_probs - old_log_probs)
+        print(f'log probs: {log_probs}')
+        print(f'old log probs: {old_log_probs}')
+        print(f'advs: {advs}')
+        print(f'ratios: {ratios}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
+        print(f'sur 1: {sur_1}, sur 2: {sur_2}')
         # flip sign because need to maximize
         clip_loss = -torch.mean(torch.min(sur_1, sur_2))
+        print(f'clip_loss: {clip_loss}')
 
         # L^VF (inherit from ActorCritic)
-
+        print(f'entropies: {self.body.entropies}')
         # S entropy bonus
         ent_penalty = 0
         for e in self.body.entropies:
             ent_penalty += (-self.entropy_coef * e)
         ent_penalty /= len(self.body.entropies)
-
+        print(f'entropy bonus: {ent_penalty}')
         policy_loss = clip_loss + ent_penalty
         return policy_loss
 
@@ -178,10 +192,13 @@ class PPO(ActorCritic):
                     advs, v_targets = self.calc_advs_v_targets(batch)
                 policy_loss = self.calc_policy_loss(batch, advs)  # from actor
                 val_loss = self.calc_val_loss(batch, v_targets)  # from critic
+                print(f'policy loss: {policy_loss}, val_loss: {val_loss}')
                 loss = policy_loss + val_loss
+                print(f'loss: {loss}')
                 # retain for entropies etc.
                 self.net.training_step(loss=loss, retain_graph=True)
-                total_loss += loss.cpu()
+                total_loss += loss.cpu()[0]
+                print(f'total_loss: {total_loss}')
             loss = total_loss / self.training_epoch
             net_util.copy(self.net, self.old_net)
             # reset
