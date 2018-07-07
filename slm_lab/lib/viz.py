@@ -42,7 +42,12 @@ def save_image(figure, filepath=None):
         cmd = f'orca graph -o {filename} \'{json.dumps(figure)}\''
         if 'linux' in sys.platform:
             cmd = 'xvfb-run -a -s "-screen 0 1400x900x24" -- ' + cmd
-        Popen(cmd, cwd=dirname, shell=True, stderr=DEVNULL, stdout=DEVNULL)
+        proc = Popen(cmd, cwd=dirname, shell=True, stderr=DEVNULL, stdout=DEVNULL)
+        try:
+            outs, errs = proc.communicate(timeout=20)
+        except TimeoutExpired:
+            proc.kill()
+            outs, errs = proc.communicate()
         logger.info(f'Graph saved to {dirname}/{filename}')
     except Exception as e:
         logger.exception(
