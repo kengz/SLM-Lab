@@ -338,3 +338,7 @@ def rate_decay(algorithm, body):
 def periodic_decay(algorithm, body):
     '''Apply _periodic_decay to explore_var'''
     return fn_decay_explore_var(algorithm, body, _periodic_decay)
+
+
+if __name__ == '__main__':
+    Argmax(probs=[])
