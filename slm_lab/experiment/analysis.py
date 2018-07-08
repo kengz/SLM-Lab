@@ -87,7 +87,7 @@ def calc_session_fitness_df(session, session_data):
 def is_unfit(fitness_df):
     '''Check if a fitness_df is unfit. Used to determine of trial should stop running more sessions'''
     mean_fitness_df = calc_mean_fitness(fitness_df)
-    return mean_fitness_df['strength'][0] < NOISE_WINDOW
+    return mean_fitness_df['strength'].iloc[0] < NOISE_WINDOW
 
 
 def calc_trial_fitness_df(trial):
