@@ -27,6 +27,8 @@ $BIN_DIR/copy_config
 # Run setup by OS
 if [ $(uname) == "Darwin" ]; then
   $BIN_DIR/setup_macOS
+elif [ -f '/etc/arch-release' ]; then
+  $BIN_DIR/setup_arch
 else
   $BIN_DIR/setup_ubuntu
 fi
