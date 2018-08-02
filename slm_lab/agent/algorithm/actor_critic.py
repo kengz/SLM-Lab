@@ -234,24 +234,6 @@ class ActorCritic(Reinforce):
         return v
 
     @lab_api
-    def body_act(self, body, state):
-        action, action_pd = self.action_policy(state, self, body)
-        body.entropies.append(action_pd.entropy())
-        body.log_probs.append(action_pd.log_prob(action.float()))
-        if len(action.shape) == 0:  # scalar
-            return action.cpu().numpy().astype(body.action_space.dtype).item()
-        else:
-            return action.cpu().numpy()
-
-    @lab_api
-    def sample(self):
-        '''Samples a batch from memory'''
-        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        batch = util.concat_batches(batches)
-        batch = util.to_torch_batch(batch, self.net.gpu)
-        return batch
-
-    @lab_api
     def train(self):
         '''Trains the algorithm'''
         if util.get_lab_mode() == 'enjoy':
