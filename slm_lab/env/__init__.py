@@ -149,7 +149,7 @@ class OpenAIEnv:
         elif isinstance(action_space, (gym.spaces.Discrete, gym.spaces.MultiBinary)):
             action_dim = action_space.n
         elif isinstance(action_space, gym.spaces.MultiDiscrete):
-            action_dim = action_space.nvec
+            action_dim = action_space.nvec.tolist()
         else:
             raise ValueError('action_space not recognized')
         return action_dim
