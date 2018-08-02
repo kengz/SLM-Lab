@@ -78,18 +78,17 @@ def init_layers(layers):
 # lr decay methods
 
 
-def no_decay(net):
+def no_decay(net, clock):
     '''No update'''
     return net.optim_spec['lr']
 
 
-def fn_decay_lr(net, fn):
+def fn_decay_lr(net, clock, fn):
     '''
     Decay learning rate for net module, only returns the new lr for user to set to appropriate nets
     In the future, might add more flexible lr adjustment, like boosting and decaying on need.
     '''
-    space_clock = util.s_get(net.algorithm, 'aeb_space.clock')
-    total_t = space_clock.get('total_t')
+    total_t = clock.get('total_t')
     start_val, end_val = net.optim_spec['lr'], 1e-6
     anneal_total_t = net.lr_anneal_timestep or max(10e6, 60 * net.lr_decay_frequency)
 
@@ -98,22 +97,22 @@ def fn_decay_lr(net, fn):
         new_lr = fn(start_val, end_val, anneal_total_t, total_t)
         return new_lr
     else:
-        return no_decay(net)
+        return no_decay(net, clock)
 
 
-def linear_decay(net):
+def linear_decay(net, clock):
     '''Apply _linear_decay to lr'''
-    return fn_decay_lr(net, policy_util._linear_decay)
+    return fn_decay_lr(net, clock, policy_util._linear_decay)
 
 
-def rate_decay(net):
+def rate_decay(net, clock):
     '''Apply _rate_decay to lr'''
-    return fn_decay_lr(net, policy_util._rate_decay)
+    return fn_decay_lr(net, clock, policy_util._rate_decay)
 
 
-def periodic_decay(net):
+def periodic_decay(net, clock):
     '''Apply _periodic_decay to lr'''
-    return fn_decay_lr(net, policy_util._periodic_decay)
+    return fn_decay_lr(net, clock, policy_util._periodic_decay)
 
 
 # params methods

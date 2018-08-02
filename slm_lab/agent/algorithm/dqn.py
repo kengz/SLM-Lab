@@ -93,7 +93,7 @@ class VanillaDQN(SARSA):
         if self.algorithm_spec['name'] == 'VanillaDQN':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for VanillaDQN; use DQN.'
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
+        self.net = NetClass(self.net_spec, self.body.state_dim, self.body.action_dim)
         self.net_names = ['net']
         self.post_init_nets()
 
@@ -197,8 +197,8 @@ class DQNBase(VanillaDQN):
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for DQNBase; use DQN.'
         in_dim, out_dim = self.body.state_dim, self.body.action_dim
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, in_dim, out_dim)
-        self.target_net = NetClass(self.net_spec, self, in_dim, out_dim)
+        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.target_net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net', 'target_net']
         self.post_init_nets()
         self.online_net = self.target_net
@@ -325,8 +325,8 @@ class MultitaskDQN(DQN):
         in_dim = sum(self.state_dims)
         out_dim = sum(self.action_dims)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, in_dim, out_dim)
-        self.target_net = NetClass(self.net_spec, self, in_dim, out_dim)
+        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.target_net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net', 'target_net']
         self.post_init_nets()
         self.online_net = self.target_net
@@ -424,8 +424,8 @@ class HydraDQN(MultitaskDQN):
         self.state_dims = in_dims = [body.state_dim for body in self.body_list]
         self.action_dims = out_dims = [body.action_dim for body in self.body_list]
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, in_dims, out_dims)
-        self.target_net = NetClass(self.net_spec, self, in_dims, out_dims)
+        self.net = NetClass(self.net_spec, in_dims, out_dims)
+        self.target_net = NetClass(self.net_spec, in_dims, out_dims)
         self.net_names = ['net', 'target_net']
         self.post_init_nets()
         self.online_net = self.target_net

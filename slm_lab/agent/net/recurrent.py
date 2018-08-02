@@ -48,7 +48,7 @@ class RecurrentNet(Net, nn.Module):
     }
     '''
 
-    def __init__(self, net_spec, algorithm, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim):
         '''
         net_spec:
         hid_layers: list containing dimensions of the hidden layers. The last element of the list is should be the dimension of the hidden state for the recurrent layer. The other elements in the list are the dimensions of the MLP (if desired) which is to transform the state space.
@@ -72,7 +72,7 @@ class RecurrentNet(Net, nn.Module):
         # use generic multi-output for RNN
         out_dim = np.reshape(out_dim, -1).tolist()
         nn.Module.__init__(self)
-        super(RecurrentNet, self).__init__(net_spec, algorithm, in_dim, out_dim)
+        super(RecurrentNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             rnn_num_layers=1,
@@ -184,10 +184,10 @@ class RecurrentNet(Net, nn.Module):
         self.eval()
         return self(x)
 
-    def update_lr(self):
+    def update_lr(self, clock):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
-        new_lr = self.lr_decay(self)
+        new_lr = self.lr_decay(self, clock)
         if new_lr == old_lr:
             return
         self.optim_spec['lr'] = new_lr
