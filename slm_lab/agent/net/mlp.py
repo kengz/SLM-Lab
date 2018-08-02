@@ -495,7 +495,6 @@ class DuelingMLPNet(MLPNet):
         ])
 
         # Guard against inappropriate algorithms and environments
-        assert net_util.is_q_learning(algorithm)
         # Build model body
         dims = [self.in_dim] + self.hid_layers
         self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
