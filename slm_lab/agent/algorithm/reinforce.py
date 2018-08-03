@@ -94,7 +94,8 @@ class Reinforce(Algorithm):
             if self.net_spec['type'] == 'MLPdefault':
                 self.net_spec['type'] = 'MLPNet'
         else:
-            out_dim = [self.body.action_dim, self.body.action_dim]
+            # 2 for loc and scale per dim
+            out_dim = self.body.action_dim * [2]
             if self.net_spec['type'] == 'MLPdefault':
                 self.net_spec['type'] = 'MLPHeterogenousTails'
         NetClass = getattr(net, self.net_spec['type'])

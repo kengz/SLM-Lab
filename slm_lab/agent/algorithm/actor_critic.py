@@ -155,11 +155,12 @@ class ActorCritic(Reinforce):
         else:
             if 'Shared' in net_type:
                 self.share_architecture = True
-                out_dim = [self.body.action_dim, self.body.action_dim, 1]
+                # 2 for loc and scale per dim
+                out_dim = self.body.action_dim * [2] + [1]
             else:
                 assert 'Separate' in net_type
                 self.share_architecture = False
-                out_dim = [self.body.action_dim, self.body.action_dim]
+                out_dim = self.body.action_dim * [2]
                 critic_out_dim = 1
 
         self.net_spec['type'] = net_type = net_type.replace('Shared', '').replace('Separate', '')
@@ -208,7 +209,10 @@ class ActorCritic(Reinforce):
             if self.body.is_discrete:
                 return pdparam[0]
             else:
-                return pdparam[:-1]
+                if len(pdparam) == 2:  # only (loc, scale) and (v)
+                    return pdparam[0]
+                else:
+                    return pdparam[:-1]
         else:
             return pdparam
 
