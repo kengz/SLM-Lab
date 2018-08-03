@@ -117,11 +117,12 @@ class PPO(ActorCritic):
         # construct log_probs for each state-action
         pdparams = self.calc_pdparam(states, evaluate=False)
         log_probs = []
-        for idx, pdparam in enumerate(pdparams):
+        for idx, pdparam in enumerate(zip(pdparams[0], pdparams[1])):
+            pdparam = list(pdparam)
             _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam, self.body)
             log_prob = action_pd.log_prob(actions[idx])
             log_probs.append(log_prob)
-        log_probs = torch.stack(log_probs)
+        log_probs = torch.squeeze(torch.stack(log_probs), dim=-1)
         if use_old_net:
             # swap back
             self.old_net = self.net
@@ -156,13 +157,11 @@ class PPO(ActorCritic):
         clip_loss = -torch.mean(torch.min(sur_1, sur_2))
 
         # L^VF (inherit from ActorCritic)
-
         # S entropy bonus
         ent_penalty = 0
         for e in self.body.entropies:
             ent_penalty += (-self.entropy_coef * e)
         ent_penalty /= len(self.body.entropies)
-
         policy_loss = clip_loss + ent_penalty
         return policy_loss
 
@@ -181,7 +180,7 @@ class PPO(ActorCritic):
                 loss = policy_loss + val_loss
                 # retain for entropies etc.
                 self.net.training_step(loss=loss, retain_graph=True)
-                total_loss += loss.cpu()
+                total_loss += loss.cpu()[0]
             loss = total_loss / self.training_epoch
             net_util.copy(self.net, self.old_net)
             # reset

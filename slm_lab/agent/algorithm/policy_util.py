@@ -154,6 +154,9 @@ def sample_action_pd(ActionPD, pdparam, body):
     if body.is_discrete:
         action_pd = ActionPD(logits=pdparam)
     else:  # continuous outputs a list, loc and scale
+        # Constrain scale (assumed to be second element of pdparam list) to be > 0 by applying softplus and adding small constant
+        if pdparam[1] < 5:
+            pdparam[1] = torch.log(1 + torch.exp(pdparam[1])) + 1e-6
         action_pd = ActionPD(*pdparam)
     action = action_pd.sample()
     return action, action_pd
