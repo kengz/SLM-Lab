@@ -115,10 +115,10 @@ class PPO(ActorCritic):
         # get ActionPD, don't append to state_buffer
         ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].cpu().numpy(), self, self.body, append=False)
         # construct log_probs for each state-action
-        pdparams = self.calc_pdparam(states, evaluate=False)
+        pdparams = self.calc_pdparam(states)
         log_probs = []
         for idx, pdparam in enumerate(pdparams):
-            _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam, self.body)
+            _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam.clone(), self.body)
             log_prob = action_pd.log_prob(actions[idx])
             log_probs.append(log_prob)
         log_probs = torch.stack(log_probs)
@@ -158,10 +158,8 @@ class PPO(ActorCritic):
         # L^VF (inherit from ActorCritic)
 
         # S entropy bonus
-        ent_penalty = 0
-        for e in self.body.entropies:
-            ent_penalty += (-self.entropy_coef * e)
-        ent_penalty /= len(self.body.entropies)
+        entropies = torch.stack(self.body.entropies)
+        ent_penalty = torch.mean(-self.entropy_coef * entropies)
 
         policy_loss = clip_loss + ent_penalty
         return policy_loss
