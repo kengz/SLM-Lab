@@ -198,6 +198,8 @@ class OpenAIEnv:
         if self.done:  # t will actually be 0
             return self.reset()
         action = action_e[(0, 0)]
+        if not self.is_discrete(a=0):
+            action = np.array([action])
         (state, reward, done, _info) = self.u_env.step(action)
         if util.get_lab_mode() == 'dev':
             self.u_env.render()
