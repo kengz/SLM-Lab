@@ -123,7 +123,7 @@ class SIL(ActorCritic):
         batches = [body.replay_memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_batches(batches)
         batch = util.to_torch_batch(batch, self.net.gpu)
-        assert not torch.isnan(batch['states']).any()
+        assert not torch.isnan(batch['states']).any(), batch['states']
         return batch
 
     def calc_log_probs(self, batch):
@@ -139,6 +139,7 @@ class SIL(ActorCritic):
             log_prob = action_pd.log_prob(actions[idx])
             log_probs.append(log_prob)
         log_probs = torch.stack(log_probs)
+        assert not torch.isnan(log_probs).any(), f'log_probs: {log_probs}, \npdparams: {pdparams} \nactions: {actions}'
         return log_probs
 
     def calc_sil_policy_val_loss(self, batch):

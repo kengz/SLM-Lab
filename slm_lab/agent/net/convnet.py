@@ -203,7 +203,7 @@ class ConvNet(Net, nn.Module):
         if loss is None:
             out = self(x)
             loss = self.loss_fn(out, y)
-        assert not torch.isnan(loss).any()
+        assert not torch.isnan(loss).any(), loss
         if net_util.to_assert_trained():
             assert_trained = net_util.gen_assert_trained(self.conv_model)
         loss.backward(retain_graph=retain_graph)

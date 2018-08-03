@@ -119,7 +119,7 @@ class MLPNet(Net, nn.Module):
         if loss is None:
             out = self(x)
             loss = self.loss_fn(out, y)
-        assert not torch.isnan(loss).any()
+        assert not torch.isnan(loss).any(), loss
         if net_util.to_assert_trained():
             # to accommodate split model in inherited classes
             model = getattr(self, 'model', None) or getattr(self, 'model_body')
@@ -401,7 +401,7 @@ class HydraMLPNet(Net, nn.Module):
             for out, y in zip(outs, ys):
                 loss = self.loss_fn(out, y)
                 total_loss += loss.cpu()
-        assert not torch.isnan(total_loss).any()
+        assert not torch.isnan(total_loss).any(), total_loss
         if net_util.to_assert_trained():
             assert_trained = net_util.gen_assert_trained(self.model_body)
         total_loss.backward(retain_graph=retain_graph)

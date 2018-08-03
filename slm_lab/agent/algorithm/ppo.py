@@ -122,6 +122,7 @@ class PPO(ActorCritic):
             log_prob = action_pd.log_prob(actions[idx])
             log_probs.append(log_prob)
         log_probs = torch.stack(log_probs)
+        assert not torch.isnan(log_probs).any(), f'log_probs: {log_probs}, \npdparams: {pdparams} \nactions: {actions}'
         if use_old_net:
             # swap back
             self.old_net = self.net
