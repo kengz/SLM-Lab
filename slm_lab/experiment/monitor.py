@@ -241,26 +241,8 @@ class AEBSpace:
             env_end_session = env.clock.get('epi') > env.max_episode
             body_end_sessions.append(env_end_session)
 
-        env_early_stops = []
-        if any(env_dones) and self.clock.get('epi') > analysis.MA_WINDOW:
-            session_mdp_data, session_data = analysis.get_session_data(session)
-            for aeb in session_data:
-                aeb_df = session_data[aeb]
-                util.downcast_float32(aeb_df)
-                body = self.body_space.data[aeb]
-                env_epi = body.env.clock.get('epi')
-                if env_epi > max(analysis.MA_WINDOW, body.env.max_episode / 2):
-                    aeb_fitness_sr = analysis.calc_aeb_fitness_sr(aeb_df, body.env.name)
-                    strength = aeb_fitness_sr['strength']
-                    # TODO properly trigger early stop
-                    # env_early_stop = strength < analysis.NOISE_WINDOW
-                    env_early_stop = False
-                else:
-                    env_early_stop = False
-                env_early_stops.append(env_early_stop)
-        else:
-            env_early_stops.append(False)
-        end_session = all(body_end_sessions) or all(env_early_stops)
+        # TODO do an efficient all(env_early_stops)
+        end_session = all(body_end_sessions)
         return end_session
 
 
