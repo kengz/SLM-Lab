@@ -220,9 +220,6 @@ class AEBSpace:
 
     def tick_clocks(self, session):
         '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''
-        from slm_lab.experiment import analysis
-        # TODO simplify below
-
         env_dones = []
         body_end_sessions = []
         for env in self.env_space.envs:
@@ -246,7 +243,6 @@ class AEBSpace:
         return end_session
 
 
-# TODO put AEBSpace into InfoSpace, careful with pickle in ray. propagate method usage, shove into DB
 class InfoSpace:
     def __init__(self, last_coor=None):
         '''

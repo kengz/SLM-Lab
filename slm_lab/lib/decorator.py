@@ -1,6 +1,6 @@
-import time
 from functools import wraps
 from slm_lab.lib import logger
+import time
 
 logger = logger.get_logger(__name__)
 
@@ -17,7 +17,6 @@ def lab_api(fn):
     '''
     @wraps(fn)
     def check_api(*args, **kwargs):
-        # TODO name-based data check for api methods
         output = fn(*args, **kwargs)
         logger.debug(f'API method: {fn.__name__}, output: {output}')
         return output

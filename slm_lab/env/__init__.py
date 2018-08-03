@@ -185,7 +185,6 @@ class OpenAIEnv:
             state = self.u_env.reset()
             state_e[(a, b)] = state
             done_e[(a, b)] = self.done
-        # TODO internalize render code
         if util.get_lab_mode() == 'dev':
             self.u_env.render()
         non_nan_cnt = util.count_nonan(state_e.flatten())
