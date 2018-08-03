@@ -73,6 +73,10 @@ def test_a2c(spec_file, spec_name):
     ('ppo.json', 'ppo_mlp_separate_cartpole'),
     ('ppo.json', 'ppo_rnn_shared_cartpole'),
     ('ppo.json', 'ppo_rnn_separate_cartpole'),
+    ('ppo.json', 'ppo_mlp_shared_pendulum'),
+    ('ppo.json', 'ppo_mlp_separate_pendulum'),
+    ('ppo.json', 'ppo_rnn_shared_pendulum'),
+    ('ppo.json', 'ppo_rnn_separate_pendulum'),
     # ('ppo.json', 'ppo_conv_shared_breakout'),
     # ('ppo.json', 'ppo_conv_separate_breakout'),
 ])
