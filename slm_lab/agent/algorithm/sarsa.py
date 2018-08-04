@@ -87,7 +87,7 @@ class SARSA(Algorithm):
         if 'Recurrent' in self.net_spec['type']:
             self.net_spec.update(seq_len=self.net_spec['seq_len'])
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, self.body.state_dim, self.body.action_dim)
+        self.net = NetClass(self.net_spec, self.body.state_dim, self.body.action_dim)
         self.net_names = ['net']
         self.post_init_nets()
 
@@ -173,8 +173,9 @@ class SARSA(Algorithm):
     @lab_api
     def update(self):
         '''Update the agent after training'''
+        space_clock = util.s_get(self, 'aeb_space.clock')
         for net in [self.net]:
-            net.update_lr()
+            net.update_lr(space_clock)
         explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
         explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
         return explore_var_a

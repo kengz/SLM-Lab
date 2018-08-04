@@ -149,7 +149,7 @@ class OpenAIEnv:
         elif isinstance(action_space, (gym.spaces.Discrete, gym.spaces.MultiBinary)):
             action_dim = action_space.n
         elif isinstance(action_space, gym.spaces.MultiDiscrete):
-            action_dim = action_space.nvec
+            action_dim = action_space.nvec.tolist()
         else:
             raise ValueError('action_space not recognized')
         return action_dim
@@ -185,7 +185,6 @@ class OpenAIEnv:
             state = self.u_env.reset()
             state_e[(a, b)] = state
             done_e[(a, b)] = self.done
-        # TODO internalize render code
         if util.get_lab_mode() == 'dev':
             self.u_env.render()
         non_nan_cnt = util.count_nonan(state_e.flatten())
@@ -199,6 +198,8 @@ class OpenAIEnv:
         if self.done:  # t will actually be 0
             return self.reset()
         action = action_e[(0, 0)]
+        if not self.is_discrete(a=0):
+            action = np.array([action])
         (state, reward, done, _info) = self.u_env.step(action)
         if util.get_lab_mode() == 'dev':
             self.u_env.render()

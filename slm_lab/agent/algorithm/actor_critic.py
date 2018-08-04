@@ -155,11 +155,12 @@ class ActorCritic(Reinforce):
         else:
             if 'Shared' in net_type:
                 self.share_architecture = True
-                out_dim = [self.body.action_dim, self.body.action_dim, 1]
+                # 2 for loc and scale per dim
+                out_dim = self.body.action_dim * [2] + [1]
             else:
                 assert 'Separate' in net_type
                 self.share_architecture = False
-                out_dim = [self.body.action_dim, self.body.action_dim]
+                out_dim = self.body.action_dim * [2]
                 critic_out_dim = 1
 
         self.net_spec['type'] = net_type = net_type.replace('Shared', '').replace('Separate', '')
@@ -180,16 +181,16 @@ class ActorCritic(Reinforce):
         # properly set net_spec and action_dim for actor, critic nets
         if self.share_architecture:
             # net = actor_critic as one
-            self.net = NetClass(actor_net_spec, self, in_dim, out_dim)
+            self.net = NetClass(actor_net_spec, in_dim, out_dim)
             self.net_names = ['net']
         else:
             # main net = actor
-            self.net = NetClass(actor_net_spec, self, in_dim, out_dim)
+            self.net = NetClass(actor_net_spec, in_dim, out_dim)
             if critic_net_spec['use_same_optim']:
                 critic_net_spec = actor_net_spec
             # stand-alone critic does not use Heterogenous tails
             CriticNetClass = getattr(net, self.net_spec['type'].replace('HeterogenousTails', 'Net'))
-            self.critic = CriticNetClass(critic_net_spec, self, in_dim, critic_out_dim)
+            self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
             self.net_names = ['net', 'critic']
         self.post_init_nets()
 
@@ -208,7 +209,10 @@ class ActorCritic(Reinforce):
             if self.body.is_discrete:
                 return pdparam[0]
             else:
-                return pdparam[:-1]
+                if len(pdparam) == 2:  # only (loc, scale) and (v)
+                    return pdparam[0]
+                else:
+                    return pdparam[:-1]
         else:
             return pdparam
 
@@ -232,24 +236,6 @@ class ActorCritic(Reinforce):
                 out = self.critic(x)
             v = out.squeeze_(dim=1)
         return v
-
-    @lab_api
-    def body_act(self, body, state):
-        action, action_pd = self.action_policy(state, self, body)
-        body.entropies.append(action_pd.entropy())
-        body.log_probs.append(action_pd.log_prob(action.float()))
-        if len(action.shape) == 0:  # scalar
-            return action.cpu().numpy().astype(body.action_space.dtype).item()
-        else:
-            return action.cpu().numpy()
-
-    @lab_api
-    def sample(self):
-        '''Samples a batch from memory'''
-        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        batch = util.concat_batches(batches)
-        batch = util.to_torch_batch(batch, self.net.gpu)
-        return batch
 
     @lab_api
     def train(self):
@@ -406,9 +392,10 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def update(self):
+        space_clock = util.s_get(self, 'aeb_space.clock')
         nets = [self.net] if self.share_architecture else [self.net, self.critic]
         for net in nets:
-            net.update_lr()
+            net.update_lr(space_clock)
         explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
         explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
         return explore_var_a

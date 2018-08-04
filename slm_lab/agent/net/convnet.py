@@ -57,7 +57,7 @@ class ConvNet(Net, nn.Module):
     }
     '''
 
-    def __init__(self, net_spec, algorithm, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim):
         '''
         net_spec:
         hid_layers: list with tuple consisting of two elements. (conv_hid, flat_hid)
@@ -87,7 +87,7 @@ class ConvNet(Net, nn.Module):
         # use generic multi-output for Convnet
         out_dim = np.reshape(out_dim, -1).tolist()
         nn.Module.__init__(self)
-        super(ConvNet, self).__init__(net_spec, algorithm, in_dim, out_dim)
+        super(ConvNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             batch_norm=True,
@@ -203,7 +203,7 @@ class ConvNet(Net, nn.Module):
         if loss is None:
             out = self(x)
             loss = self.loss_fn(out, y)
-        assert not torch.isnan(loss).any()
+        assert not torch.isnan(loss).any(), loss
         if net_util.to_assert_trained():
             assert_trained = net_util.gen_assert_trained(self.conv_model)
         loss.backward(retain_graph=retain_graph)
@@ -222,10 +222,10 @@ class ConvNet(Net, nn.Module):
         self.eval()
         return self(x)
 
-    def update_lr(self):
+    def update_lr(self, clock):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
-        new_lr = self.lr_decay(self)
+        new_lr = self.lr_decay(self, clock)
         if new_lr == old_lr:
             return
         self.optim_spec['lr'] = new_lr
@@ -282,7 +282,7 @@ class DuelingConvNet(ConvNet):
     }
     '''
 
-    def __init__(self, net_spec, algorithm, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim):
         '''
         net_spec:
         hid_layers: list with tuple consisting of two elements. (conv_hid, flat_hid)
@@ -312,7 +312,7 @@ class DuelingConvNet(ConvNet):
         # use generic multi-output for Convnet
         out_dim = np.reshape(out_dim, -1).tolist()
         nn.Module.__init__(self)
-        Net.__init__(self, net_spec, algorithm, in_dim, out_dim)
+        Net.__init__(self, net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             batch_norm=True,
@@ -345,7 +345,6 @@ class DuelingConvNet(ConvNet):
         ])
 
         # Guard against inappropriate algorithms and environments
-        assert net_util.is_q_learning(algorithm)
         assert len(out_dim) == 1
         # Build model
         self.conv_hid_layers = self.hid_layers[0]

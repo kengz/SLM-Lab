@@ -78,18 +78,17 @@ def init_layers(layers):
 # lr decay methods
 
 
-def no_decay(net):
+def no_decay(net, clock):
     '''No update'''
     return net.optim_spec['lr']
 
 
-def fn_decay_lr(net, fn):
+def fn_decay_lr(net, clock, fn):
     '''
     Decay learning rate for net module, only returns the new lr for user to set to appropriate nets
     In the future, might add more flexible lr adjustment, like boosting and decaying on need.
     '''
-    space_clock = util.s_get(net.algorithm, 'aeb_space.clock')
-    total_t = space_clock.get('total_t')
+    total_t = clock.get('total_t')
     start_val, end_val = net.optim_spec['lr'], 1e-6
     anneal_total_t = net.lr_anneal_timestep or max(10e6, 60 * net.lr_decay_frequency)
 
@@ -98,22 +97,22 @@ def fn_decay_lr(net, fn):
         new_lr = fn(start_val, end_val, anneal_total_t, total_t)
         return new_lr
     else:
-        return no_decay(net)
+        return no_decay(net, clock)
 
 
-def linear_decay(net):
+def linear_decay(net, clock):
     '''Apply _linear_decay to lr'''
-    return fn_decay_lr(net, policy_util._linear_decay)
+    return fn_decay_lr(net, clock, policy_util._linear_decay)
 
 
-def rate_decay(net):
+def rate_decay(net, clock):
     '''Apply _rate_decay to lr'''
-    return fn_decay_lr(net, policy_util._rate_decay)
+    return fn_decay_lr(net, clock, policy_util._rate_decay)
 
 
-def periodic_decay(net):
+def periodic_decay(net, clock):
     '''Apply _periodic_decay to lr'''
-    return fn_decay_lr(net, policy_util._periodic_decay)
+    return fn_decay_lr(net, clock, policy_util._periodic_decay)
 
 
 # params methods
@@ -233,16 +232,6 @@ def polyak_update(src_net, tar_net, beta=0.5):
             src_dict_params[name].data.copy_(beta * tar_param.data + (1 - beta) * src_dict_params[name].data)
 
     tar_net.load_state_dict(src_dict_params)
-
-
-def is_q_learning(algorithm):
-    '''Check the algorithm is a Q-learning variant and action space is discrete'''
-    assert hasattr(algorithm, 'body')
-    is_q_algo = any(k in algorithm.algorithm_spec['name'] for k in ('DQN', 'SARSA'))
-    is_q = algorithm.body.is_discrete and is_q_algo
-    if not is_q:
-        logger.warn('DuelingMLPNet only appropriate for Q-Learning algorithms. Currently implemented for single body algorithms in discrete action spaces')
-    return is_q
 
 
 def calc_q_value_logits(state_value, raw_advantages):

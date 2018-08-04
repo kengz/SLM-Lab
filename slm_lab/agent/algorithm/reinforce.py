@@ -94,11 +94,12 @@ class Reinforce(Algorithm):
             if self.net_spec['type'] == 'MLPdefault':
                 self.net_spec['type'] = 'MLPNet'
         else:
-            out_dim = [self.body.action_dim, self.body.action_dim]
+            # 2 for loc and scale per dim
+            out_dim = self.body.action_dim * [2]
             if self.net_spec['type'] == 'MLPdefault':
                 self.net_spec['type'] = 'MLPHeterogenousTails'
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self, in_dim, out_dim)
+        self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net']
         self.post_init_nets()
 
@@ -171,8 +172,9 @@ class Reinforce(Algorithm):
 
     @lab_api
     def update(self):
+        space_clock = util.s_get(self, 'aeb_space.clock')
         for net in [self.net]:
-            net.update_lr()
+            net.update_lr(space_clock)
         explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
         explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
         return explore_var_a

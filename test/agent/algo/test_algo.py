@@ -6,7 +6,6 @@ from flaky import flaky
 import pytest
 import os
 import shutil
-# TODO Fix pytest seg faults on Ubuntu
 
 
 def generic_algorithm_test(spec, algorithm_name):
@@ -24,12 +23,3 @@ def generic_algorithm_test(spec, algorithm_name):
     shutil.rmtree(path)
     del trial
     return maxr
-
-
-# NOTE score-based tests should be done on benchmarking instead of CI. Example is kept below for reference
-# @pytest.mark.skip(reason="Crashes on CI")
-# @flaky(max_runs=5)
-# def test_sarsa():
-#     algorithm_name = 'unit_test_sarsa'
-#     spec = spec_util.get('test.json', 'unit_test_sarsa')
-#     assert generic_algorithm_test(spec, algorithm_name) > 100

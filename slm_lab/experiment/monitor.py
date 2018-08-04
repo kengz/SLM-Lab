@@ -220,9 +220,6 @@ class AEBSpace:
 
     def tick_clocks(self, session):
         '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''
-        from slm_lab.experiment import analysis
-        # TODO simplify below
-
         env_dones = []
         body_end_sessions = []
         for env in self.env_space.envs:
@@ -241,30 +238,11 @@ class AEBSpace:
             env_end_session = env.clock.get('epi') > env.max_episode
             body_end_sessions.append(env_end_session)
 
-        env_early_stops = []
-        if any(env_dones) and self.clock.get('epi') > analysis.MA_WINDOW:
-            session_mdp_data, session_data = analysis.get_session_data(session)
-            for aeb in session_data:
-                aeb_df = session_data[aeb]
-                util.downcast_float32(aeb_df)
-                body = self.body_space.data[aeb]
-                env_epi = body.env.clock.get('epi')
-                if env_epi > max(analysis.MA_WINDOW, body.env.max_episode / 2):
-                    aeb_fitness_sr = analysis.calc_aeb_fitness_sr(aeb_df, body.env.name)
-                    strength = aeb_fitness_sr['strength']
-                    # TODO properly trigger early stop
-                    # env_early_stop = strength < analysis.NOISE_WINDOW
-                    env_early_stop = False
-                else:
-                    env_early_stop = False
-                env_early_stops.append(env_early_stop)
-        else:
-            env_early_stops.append(False)
-        end_session = all(body_end_sessions) or all(env_early_stops)
+        # TODO do an efficient all(env_early_stops)
+        end_session = all(body_end_sessions)
         return end_session
 
 
-# TODO put AEBSpace into InfoSpace, careful with pickle in ray. propagate method usage, shove into DB
 class InfoSpace:
     def __init__(self, last_coor=None):
         '''

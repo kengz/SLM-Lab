@@ -15,7 +15,7 @@ class MLPNet(Net, nn.Module):
     Class for generating arbitrary sized feedforward neural network
     '''
 
-    def __init__(self, net_spec, algorithm, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim):
         '''
         net_spec:
         hid_layers: list containing dimensions of the hidden layers
@@ -58,7 +58,7 @@ class MLPNet(Net, nn.Module):
         }
         '''
         nn.Module.__init__(self)
-        super(MLPNet, self).__init__(net_spec, algorithm, in_dim, out_dim)
+        super(MLPNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             clip_grad=False,
@@ -119,7 +119,7 @@ class MLPNet(Net, nn.Module):
         if loss is None:
             out = self(x)
             loss = self.loss_fn(out, y)
-        assert not torch.isnan(loss).any()
+        assert not torch.isnan(loss).any(), loss
         if net_util.to_assert_trained():
             # to accommodate split model in inherited classes
             model = getattr(self, 'model', None) or getattr(self, 'model_body')
@@ -142,10 +142,10 @@ class MLPNet(Net, nn.Module):
         self.eval()
         return self(x)
 
-    def update_lr(self):
+    def update_lr(self, clock):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
-        new_lr = self.lr_decay(self)
+        new_lr = self.lr_decay(self, clock)
         if new_lr == old_lr:
             return
         self.optim_spec['lr'] = new_lr
@@ -182,9 +182,9 @@ class MLPHeterogenousTails(MLPNet):
     }
     '''
 
-    def __init__(self, net_spec, algorithm, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim):
         nn.Module.__init__(self)
-        Net.__init__(self, net_spec, algorithm, in_dim, out_dim)
+        Net.__init__(self, net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             clip_grad=False,
@@ -269,7 +269,7 @@ class HydraMLPNet(Net, nn.Module):
     }
     '''
 
-    def __init__(self, net_spec, algorithm, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim):
         '''
         Multi state processing heads, single shared body, and multi action tails.
         There is one state and action head per body/environment
@@ -294,7 +294,7 @@ class HydraMLPNet(Net, nn.Module):
            env 1 action      env 2 action
         '''
         nn.Module.__init__(self)
-        super(HydraMLPNet, self).__init__(net_spec, algorithm, in_dim, out_dim)
+        super(HydraMLPNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             clip_grad=False,
@@ -401,7 +401,7 @@ class HydraMLPNet(Net, nn.Module):
             for out, y in zip(outs, ys):
                 loss = self.loss_fn(out, y)
                 total_loss += loss.cpu()
-        assert not torch.isnan(total_loss).any()
+        assert not torch.isnan(total_loss).any(), total_loss
         if net_util.to_assert_trained():
             assert_trained = net_util.gen_assert_trained(self.model_body)
         total_loss.backward(retain_graph=retain_graph)
@@ -421,10 +421,10 @@ class HydraMLPNet(Net, nn.Module):
         self.eval()
         return self(x)
 
-    def update_lr(self):
+    def update_lr(self, clock):
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
-        new_lr = self.lr_decay(self)
+        new_lr = self.lr_decay(self, clock)
         if new_lr == old_lr:
             return
         self.optim_spec['lr'] = new_lr
@@ -462,9 +462,9 @@ class DuelingMLPNet(MLPNet):
     }
     '''
 
-    def __init__(self, net_spec, algorithm, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim):
         nn.Module.__init__(self)
-        Net.__init__(self, net_spec, algorithm, in_dim, out_dim)
+        Net.__init__(self, net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             clip_grad=False,
@@ -495,7 +495,6 @@ class DuelingMLPNet(MLPNet):
         ])
 
         # Guard against inappropriate algorithms and environments
-        assert net_util.is_q_learning(algorithm)
         # Build model body
         dims = [self.in_dim] + self.hid_layers
         self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
