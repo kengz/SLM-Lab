@@ -107,8 +107,7 @@ class PPO(ActorCritic):
 
     def calc_log_probs(self, batch, use_old_net=False):
         '''Helper method to calculate log_probs with the option to swith net'''
-        if use_old_net:
-            # temporarily swap to do calc
+        if use_old_net:  # temporarily swap to do calc
             self.tmp_net = self.net
             self.net = self.old_net
         states, actions = batch['states'], batch['actions']
@@ -116,15 +115,28 @@ class PPO(ActorCritic):
         ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].cpu().numpy(), self, self.body, append=False)
         # construct log_probs for each state-action
         pdparams = self.calc_pdparam(states)
+        action_dim = self.body.action_dim
+        is_multi_action = ps.is_iterable(action_dim)
+        if is_multi_action:
+            assert ps.is_list(pdparams)
+            pdparams = [t.clone() for t in pdparams]  # clone for grad safety
+            assert len(pdparams) == len(action_dims), pdparams
+            # transpose into (batch_size, [action_dims])
+            pdparams = [list(torch.split(t, action_dim, dim=0)) for t in torch.cat(pdparams, dim=1)]
+        assert len(pdparams) == len(states), f'batch_size of pdparams: {len(pdparams)} vs states: {len(states)}'
+
         log_probs = []
         for idx, pdparam in enumerate(pdparams):
-            _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam.clone(), self.body)
-            log_prob = action_pd.log_prob(actions[idx])
-            log_probs.append(log_prob)
+            if not is_multi_action:  # already cloned  for multi_action above
+                pdparam = pdparam.clone()  # clone for grad safety
+            _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam, self.body)
+            log_probs.append(action_pd.log_prob(actions[idx]))
         log_probs = torch.stack(log_probs)
+        if is_multi_action:
+            log_probs = log_probs.mean(dim=1)
+        log_probs = torch.tensor(log_probs, requires_grad=True)
         assert not torch.isnan(log_probs).any(), f'log_probs: {log_probs}, \npdparams: {pdparams} \nactions: {actions}'
-        if use_old_net:
-            # swap back
+        if use_old_net:  # swap back
             self.old_net = self.net
             self.net = self.tmp_net
         return log_probs
