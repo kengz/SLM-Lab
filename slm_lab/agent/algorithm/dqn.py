@@ -359,6 +359,7 @@ class MultitaskDQN(DQN):
             action_pd = action_pd_a[idx]
             body.entropies.append(action_pd.entropy())
             body.log_probs.append(action_pd.log_prob(action_a[idx].float()))
+            assert not torch.isnan(body.log_probs[-1])
         return action_a.cpu().numpy()
 
     @lab_api
