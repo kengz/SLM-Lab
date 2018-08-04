@@ -207,14 +207,14 @@ class ActorCritic(Reinforce):
         if self.share_architecture:
             # MLPHeterogenousTails, get front (no critic)
             if self.body.is_discrete:
-                return pdparam[0]
+                pdparam = pdparam[0]
             else:
                 if len(pdparam) == 2:  # only (loc, scale) and (v)
-                    return pdparam[0]
+                    pdparam = pdparam[0]
                 else:
-                    return pdparam[:-1]
-        else:
-            return pdparam
+                    pdparam = pdparam[:-1]
+        logger.debug(f'pdparam: {pdparam}')
+        return pdparam
 
     def calc_v(self, x, evaluate=True):
         '''
@@ -235,6 +235,7 @@ class ActorCritic(Reinforce):
                 self.critic.train()
                 out = self.critic(x)
             v = out.squeeze_(dim=1)
+        logger.debug(f'v: {v}')
         return v
 
     @lab_api
@@ -309,7 +310,7 @@ class ActorCritic(Reinforce):
 
     def calc_policy_loss(self, batch, advs):
         '''Calculate the actor's policy loss'''
-        assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
+        assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)
         policy_loss = - self.policy_loss_coef * log_probs * advs
         if self.add_entropy:
@@ -360,6 +361,7 @@ class ActorCritic(Reinforce):
         adv_std[adv_std != adv_std] = 0
         adv_std += 1e-08
         adv_targets = (adv_targets - adv_targets.mean()) / adv_std
+        logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
     def calc_nstep_advs_v_targets(self, batch):
@@ -375,6 +377,7 @@ class ActorCritic(Reinforce):
         if torch.cuda.is_available() and self.net.gpu:
             nstep_advs = nstep_advs.cuda()
         adv_targets = v_targets = nstep_advs
+        logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
     def calc_td_advs_v_targets(self, batch):
@@ -388,6 +391,7 @@ class ActorCritic(Reinforce):
             td_returns = td_returns.cuda()
         v_targets = td_returns
         adv_targets = v_targets - v_preds  # TD error, but called adv for API consistency
+        logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
     @lab_api

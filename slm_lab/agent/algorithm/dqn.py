@@ -109,6 +109,7 @@ class VanillaDQN(SARSA):
         q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
+        logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
     @lab_api
@@ -221,6 +222,7 @@ class DQNBase(VanillaDQN):
         q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
+        logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
     def update_nets(self):
@@ -339,6 +341,7 @@ class MultitaskDQN(DQN):
         '''
         pdparam = super(MultitaskDQN, self).calc_pdparam(x, evaluate=evaluate)
         pdparam = torch.cat(torch.split(pdparam, self.action_dims, dim=1))
+        logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
     @lab_api
@@ -411,6 +414,7 @@ class MultitaskDQN(DQN):
         q_targets = torch.cat(multi_q_targets, dim=1)
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
+        logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
 
@@ -480,6 +484,7 @@ class HydraDQN(MultitaskDQN):
             multi_q_targets.append(q_targets)
         # return as list for compatibility with net output in training_step
         q_targets = multi_q_targets
+        logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
     @lab_api

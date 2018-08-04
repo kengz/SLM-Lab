@@ -139,6 +139,7 @@ class PPO(ActorCritic):
         if use_old_net:  # swap back
             self.old_net = self.net
             self.net = self.tmp_net
+        logger.debug(f'log_probs: {log_probs}')
         return log_probs
 
     def calc_policy_loss(self, batch, advs):
@@ -164,7 +165,6 @@ class PPO(ActorCritic):
         assert advs.shape[0] == log_probs.shape[0]  # batch size
         ratios = torch.exp(log_probs - old_log_probs)
         logger.debug(f'ratios: {ratios}')
-        logger.debug(f'advs: {advs}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
         # flip sign because need to maximize

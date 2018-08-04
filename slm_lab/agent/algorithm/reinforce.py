@@ -113,6 +113,7 @@ class Reinforce(Algorithm):
         else:
             self.net.train()
             pdparam = self.net(x)
+        logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
     @lab_api
@@ -157,10 +158,11 @@ class Reinforce(Algorithm):
         # advantage standardization trick
         # guard nan std by setting to 0 and add small const
         adv_std = advs.std()
-        adv_std[adv_std != adv_std] = 0
-        adv_std += 1e-08
+        adv_std[adv_std != adv_std] = 0  # nan guard
+        adv_std += 1e-08  # division guard
         advs = (advs - advs.mean()) / adv_std
-        assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
+        logger.debug(f'advs: {advs}')
+        assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)
         policy_loss = - log_probs * advs
         if self.add_entropy:
@@ -169,6 +171,7 @@ class Reinforce(Algorithm):
         policy_loss = torch.sum(policy_loss)
         if torch.cuda.is_available() and self.net.gpu:
             policy_loss = policy_loss.cuda()
+        logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 
     @lab_api

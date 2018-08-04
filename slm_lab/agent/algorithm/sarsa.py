@@ -102,6 +102,7 @@ class SARSA(Algorithm):
         else:
             self.net.train()
             pdparam = self.net(x)
+        logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
     @lab_api
@@ -131,6 +132,7 @@ class SARSA(Algorithm):
         q_targets = (act_q_targets * batch['one_hot_actions']) + (q_preds * (1 - batch['one_hot_actions']))
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
+        logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
     @lab_api
