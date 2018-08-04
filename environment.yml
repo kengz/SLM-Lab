@@ -8,7 +8,6 @@ dependencies:
 - blas=1.1=openblas
 - colorlog=3.1.0=py36_0
 - coverage=4.4.2=py36_0
-- cudatoolkit=9.0
 - cython=0.27.3=py36_0
 - flaky=3.4.0=py_0
 - hdf5=1.10.1=1
