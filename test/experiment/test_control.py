@@ -24,6 +24,7 @@ def test_trial_demo():
     assert isinstance(trial_data, pd.DataFrame)
 
 
+@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI ray hangs since aa4aba314299dc78716f9d10b80b9ac18562daac")
 def test_experiment(test_spec):
     experiment = Experiment(test_spec)
     experiment_data = experiment.run()
