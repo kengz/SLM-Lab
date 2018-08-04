@@ -126,10 +126,6 @@ class SIL(ActorCritic):
         assert not torch.isnan(batch['states']).any(), batch['states']
         return batch
 
-    def calc_log_probs(self, batch):
-        '''Helper method to calculate log_probs for a randomly sampled batch'''
-        return super(SIL, self).calc_log_probs(batch, use_old_net=False)
-
     def calc_sil_policy_val_loss(self, batch):
         '''
         Calculate the SIL policy losses for actor and critic
@@ -140,7 +136,7 @@ class SIL(ActorCritic):
         returns = math_util.calc_returns(batch, self.gamma)
         v_preds = self.calc_v(batch['states'], evaluate=False)
         clipped_advs = torch.clamp(returns - v_preds, min=0.0)
-        log_probs = self.calc_log_probs(batch)
+        log_probs = torch.stack(self.body.log_probs)
 
         sil_policy_loss = self.sil_policy_loss_coef * torch.mean(- log_probs * clipped_advs)
         sil_val_loss = self.sil_val_loss_coef * torch.pow(clipped_advs, 2) / 2
@@ -149,8 +145,8 @@ class SIL(ActorCritic):
         if torch.cuda.is_available() and self.net.gpu:
             sil_policy_loss = sil_policy_loss.cuda()
             sil_val_loss = sil_val_loss.cuda()
-        logger.debug(f'SIL actor policy loss: {sil_policy_loss:.2f}')
-        logger.debug(f'SIL critic value loss: {sil_val_loss:.2f}')
+        logger.debug(f'SIL actor policy loss: {sil_policy_loss:.4f}')
+        logger.debug(f'SIL critic value loss: {sil_val_loss:.4f}')
         return sil_policy_loss, sil_val_loss
 
     def train_shared(self):

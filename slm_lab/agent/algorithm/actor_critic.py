@@ -264,7 +264,7 @@ class ActorCritic(Reinforce):
             self.to_train = 0
             self.body.log_probs = []
             self.body.entropies = []
-            logger.debug(f'Total loss: {loss:.2f}')
+            logger.debug(f'Total loss: {loss:.4f}')
             self.last_loss = loss.item()
         return self.last_loss
 
@@ -282,7 +282,7 @@ class ActorCritic(Reinforce):
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Total loss: {loss:.2f}')
+            logger.debug(f'Total loss: {loss:.4f}')
             self.last_loss = loss.item()
         return self.last_loss
 
@@ -318,7 +318,7 @@ class ActorCritic(Reinforce):
         policy_loss = torch.mean(policy_loss)
         if torch.cuda.is_available() and self.net.gpu:
             policy_loss = policy_loss.cuda()
-        logger.debug(f'Actor policy loss: {policy_loss:.2f}')
+        logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 
     def calc_val_loss(self, batch, v_targets):
@@ -329,7 +329,7 @@ class ActorCritic(Reinforce):
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
         if torch.cuda.is_available() and self.net.gpu:
             val_loss = val_loss.cuda()
-        logger.debug(f'Critic value loss: {val_loss:.2f}')
+        logger.debug(f'Critic value loss: {val_loss:.4f}')
         return val_loss
 
     def calc_gae_advs_v_targets(self, batch):

@@ -158,23 +158,30 @@ class PPO(ActorCritic):
         clip_eps = policy_util._linear_decay(self.clip_eps, 0.1 * self.clip_eps, self.clip_eps_anneal_epi, self.body.env.clock.get('epi'))
 
         # L^CLIP
-        log_probs = self.calc_log_probs(batch, use_old_net=False)
+        log_probs = torch.stack(self.body.log_probs)
         old_log_probs = self.calc_log_probs(batch, use_old_net=True)
         assert log_probs.shape == old_log_probs.shape
-        assert advs.shape == log_probs.shape
+        assert advs.shape[0] == log_probs.shape[0]  # batch size
         ratios = torch.exp(log_probs - old_log_probs)
+        logger.debug(f'ratios: {ratios}')
+        logger.debug(f'advs: {advs}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
         # flip sign because need to maximize
         clip_loss = -torch.mean(torch.min(sur_1, sur_2))
+        logger.debug(f'clip_loss: {clip_loss}')
 
         # L^VF (inherit from ActorCritic)
 
         # S entropy bonus
         entropies = torch.stack(self.body.entropies)
         ent_penalty = torch.mean(-self.entropy_coef * entropies)
+        logger.debug(f'ent_penalty: {ent_penalty}')
 
         policy_loss = clip_loss + ent_penalty
+        if torch.cuda.is_available() and self.net.gpu:
+            policy_loss = policy_loss.cuda()
+        logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 
     def train_shared(self):
@@ -199,7 +206,7 @@ class PPO(ActorCritic):
             self.to_train = 0
             self.body.log_probs = []
             self.body.entropies = []
-            logger.debug(f'Loss: {loss:.2f}')
+            logger.debug(f'Loss: {loss:.4f}')
             self.last_loss = loss.item()
         return self.last_loss
 
@@ -218,7 +225,7 @@ class PPO(ActorCritic):
             self.to_train = 0
             self.body.log_probs = []
             self.body.entropies = []
-            logger.debug(f'Loss: {loss:.2f}')
+            logger.debug(f'Loss: {loss:.4f}')
             self.last_loss = loss.item()
         return self.last_loss
 
