@@ -161,6 +161,8 @@ class ActorCritic(Reinforce):
                 assert 'Separate' in net_type
                 self.share_architecture = False
                 out_dim = self.body.action_dim * [2]
+                if len(out_dim) == 1:
+                    out_dim = out_dim[0]
                 critic_out_dim = 1
 
         self.net_spec['type'] = net_type = net_type.replace('Shared', '').replace('Separate', '')

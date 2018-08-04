@@ -80,7 +80,6 @@ def test_ppo(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI breaks with CUDA error")
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ppo.json', 'ppo_mlp_shared_pendulum'),
     ('ppo.json', 'ppo_mlp_separate_pendulum'),
