@@ -208,11 +208,12 @@ class ConvNet(Net, nn.Module):
             assert_trained = net_util.gen_assert_trained(self.conv_model)
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad:
-            logger.debug(f'Clipping gradient')
+            logger.debug(f'Clipping gradient: {self.clip_grad_val}')
             torch.nn.utils.clip_grad_norm(self.parameters(), self.clip_grad_val)
         self.optim.step()
         if net_util.to_assert_trained():
             assert_trained(self.conv_model)
+        logger.debug(f'Net training_step loss: {loss}')
         return loss
 
     def wrap_eval(self, x):
