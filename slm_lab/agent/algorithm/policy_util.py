@@ -155,9 +155,10 @@ def sample_action_pd(ActionPD, pdparam, body):
         action_pd = ActionPD(logits=pdparam)
     else:  # continuous outputs a list, loc and scale
         assert len(pdparam) == 2, pdparam
-        # scale (stdev) must be >=0
-        clamp_pdparam = torch.stack([pdparam[0], torch.clamp(pdparam[1], 1e-8)])
-        action_pd = ActionPD(*clamp_pdparam)
+        # scale (stdev) must be >0, use softplus
+        if pdparam[1] < 5:
+            pdparam[1] = torch.log(1 + torch.exp(pdparam[1])) + 1e-8
+        action_pd = ActionPD(*pdparam)
     action = action_pd.sample()
     return action, action_pd
 
