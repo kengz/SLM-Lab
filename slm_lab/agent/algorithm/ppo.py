@@ -99,11 +99,9 @@ class PPO(ActorCritic):
     def init_nets(self):
         '''PPO uses old and new to calculate ratio for loss'''
         super(PPO, self).init_nets()
-        if self.share_architecture:
-            self.old_net = deepcopy(self.net)
-        else:
-            self.old_net = deepcopy(self.net)
-            self.old_critic = deepcopy(self.critic)
+        # create old net to calculate ratio
+        self.old_net = deepcopy(self.net)
+        assert id(self.old_net) != id(self.net)
 
     def calc_log_probs(self, batch, use_old_net=False):
         '''Helper method to calculate log_probs with the option to swith net'''
@@ -159,7 +157,7 @@ class PPO(ActorCritic):
         clip_eps = policy_util._linear_decay(self.clip_eps, 0.1 * self.clip_eps, self.clip_eps_anneal_epi, self.body.env.clock.get('epi'))
 
         # L^CLIP
-        log_probs = torch.stack(self.body.log_probs)
+        log_probs = self.calc_log_probs(batch)
         old_log_probs = self.calc_log_probs(batch, use_old_net=True)
         assert log_probs.shape == old_log_probs.shape
         assert advs.shape[0] == log_probs.shape[0]  # batch size
@@ -189,6 +187,8 @@ class PPO(ActorCritic):
         Trains the network when the actor and critic share parameters
         '''
         if self.to_train == 1:
+            # update old net
+            net_util.copy(self.net, self.old_net)
             batch = self.sample()
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
@@ -201,7 +201,6 @@ class PPO(ActorCritic):
                 self.net.training_step(loss=loss, retain_graph=True)
                 total_loss += loss.cpu()
             loss = total_loss / self.training_epoch
-            net_util.copy(self.net, self.old_net)
             # reset
             self.to_train = 0
             self.body.log_probs = []
@@ -215,12 +214,11 @@ class PPO(ActorCritic):
         Trains the network when the actor and critic share parameters
         '''
         if self.to_train == 1:
+            net_util.copy(self.net, self.old_net)
             batch = self.sample()
             policy_loss = self.train_actor(batch)
             val_loss = self.train_critic(batch)
             loss = val_loss + abs(policy_loss)
-            net_util.copy(self.net, self.old_net)
-            net_util.copy(self.critic, self.old_critic)
             # reset
             self.to_train = 0
             self.body.log_probs = []
