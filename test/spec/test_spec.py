@@ -91,6 +91,16 @@ def test_ppo_cont(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
+    ('ppo_sil.json', 'ppo_sil_mlp_shared_cartpole'),
+    ('ppo_sil.json', 'ppo_sil_mlp_separate_cartpole'),
+    ('ppo_sil.json', 'ppo_sil_rnn_shared_cartpole'),
+    ('ppo_sil.json', 'ppo_sil_rnn_separate_cartpole'),
+])
+def test_ppo_sil(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
     ('sil.json', 'sil_mlp_shared_cartpole'),
     ('sil.json', 'sil_mlp_separate_cartpole'),
     ('sil.json', 'sil_rnn_shared_cartpole'),
