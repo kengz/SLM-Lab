@@ -117,7 +117,7 @@ class PPO(ActorCritic):
         is_multi_action = ps.is_iterable(action_dim)
         if is_multi_action:
             assert ps.is_list(pdparams)
-            pdparams = [t.detach() for t in pdparams]  # detach for grad safety
+            pdparams = [t.clone() for t in pdparams]  # clone for grad safety
             assert len(pdparams) == len(action_dims), pdparams
             # transpose into (batch_size, [action_dims])
             pdparams = [list(torch.split(t, action_dim, dim=0)) for t in torch.cat(pdparams, dim=1)]
@@ -126,7 +126,7 @@ class PPO(ActorCritic):
         log_probs = []
         for idx, pdparam in enumerate(pdparams):
             if not is_multi_action:  # already cloned  for multi_action above
-                pdparam = pdparam.detach()  # detach for grad safety
+                pdparam = pdparam.clone()  # clone for grad safety
             _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam, self.body)
             log_probs.append(action_pd.log_prob(actions[idx]))
         log_probs = torch.stack(log_probs)

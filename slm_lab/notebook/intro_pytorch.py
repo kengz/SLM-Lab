@@ -68,7 +68,7 @@ if torch.cuda.is_available():
 # Part 2 autograd https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html
 
 # Tensors auto-track compute history with `.requires_grad=True`, then call `.backward()` to do autograd
-# to stop tracking history, call `.detach()`.
+# to stop tracking history, call `.clone()`.
 # to prevent tracking history (and using memory) altogether, use in `with torch.no_grad():` super useful for eval model
 # If tensor is scalar, no arg for `backward()`, else supply argument that is a tensor of matching shape
 
