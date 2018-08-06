@@ -16,6 +16,7 @@ or do epsilon-greedy to use pdparam-sampling or random sampling.
 from slm_lab.lib import logger, util
 from torch import distributions
 import numpy as np
+import pydash as ps
 import torch
 
 logger = logger.get_logger(__name__)
@@ -163,7 +164,43 @@ def sample_action_pd(ActionPD, pdparam, body):
     return action, action_pd
 
 
+def calc_log_probs(algorithm, body, batch):
+    '''
+    Method to calculate log_probs fresh from batch data
+    Body already stores log_prob from self.net. This is used for PPO where log_probs needs to be recalculated.
+    '''
+    states, actions = batch['states'], batch['actions']
+    # construct log_probs for each state-action
+    pdparams = algorithm.calc_pdparam(states)
+    action_dim = body.action_dim
+    is_multi_action = ps.is_iterable(action_dim)
+    if is_multi_action:
+        assert ps.is_list(pdparams)
+        pdparams = [t.clone() for t in pdparams]  # clone for grad safety
+        assert len(pdparams) == len(action_dims), pdparams
+        # transpose into (batch_size, [action_dims])
+        pdparams = [list(torch.split(t, action_dim, dim=0)) for t in torch.cat(pdparams, dim=1)]
+    assert len(pdparams) == len(states), f'batch_size of pdparams: {len(pdparams)} vs states: {len(states)}'
+
+    pdtypes = ACTION_PDS[body.action_type]
+    ActionPD = getattr(distributions, body.action_pdtype)
+
+    log_probs = []
+    for idx, pdparam in enumerate(pdparams):
+        if not is_multi_action:  # already cloned  for multi_action above
+            pdparam = pdparam.clone()  # clone for grad safety
+        _action, action_pd = sample_action_pd(ActionPD, pdparam, body)
+        log_probs.append(action_pd.log_prob(actions[idx]))
+    log_probs = torch.stack(log_probs)
+    if is_multi_action:
+        log_probs = log_probs.mean(dim=1)
+    log_probs = torch.tensor(log_probs, requires_grad=True)
+    assert not torch.isnan(log_probs).any(), f'log_probs: {log_probs}, \npdparams: {pdparams} \nactions: {actions}'
+    logger.debug(f'log_probs: {log_probs}')
+    return log_probs
+
 # interface action sampling methods
+
 
 def default(state, algorithm, body):
     '''Plain policy by direct sampling using outputs of net as logits and constructing ActionPD as appropriate'''
