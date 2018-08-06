@@ -92,16 +92,17 @@ class SARSA(Algorithm):
         self.post_init_nets()
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True):
+    def calc_pdparam(self, x, evaluate=True, net=None):
         '''
         To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
+        net = self.net if net is None else net
         if evaluate:
-            pdparam = self.net.wrap_eval(x)
+            pdparam = net.wrap_eval(x)
         else:
-            self.net.train()
-            pdparam = self.net(x)
+            net.train()
+            pdparam = net(x)
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
 

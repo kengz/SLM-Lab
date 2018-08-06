@@ -103,17 +103,6 @@ class PPO(ActorCritic):
         self.old_net = deepcopy(self.net)
         assert id(self.old_net) != id(self.net)
 
-    def calc_log_probs(self, batch, use_old_net=False):
-        '''Helper method to calculate log_probs with the option to swith net'''
-        if use_old_net:  # temporarily swap to do calc
-            self.tmp_net = self.net
-            self.net = self.old_net
-        log_probs = policy_util.calc_log_probs(self, self.body, batch)
-        if use_old_net:  # swap back
-            self.old_net = self.net
-            self.net = self.tmp_net
-        return log_probs
-
     def calc_policy_loss(self, batch, advs):
         '''
         The PPO loss function (subscript t is omitted)
@@ -131,8 +120,8 @@ class PPO(ActorCritic):
         clip_eps = policy_util._linear_decay(self.clip_eps, 0.1 * self.clip_eps, self.clip_eps_anneal_epi, self.body.env.clock.get('epi'))
 
         # L^CLIP
-        log_probs = self.calc_log_probs(batch)
-        old_log_probs = self.calc_log_probs(batch, use_old_net=True)
+        log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
+        old_log_probs = policy_util.calc_log_probs(self, self.old_net, self.body, batch)
         assert log_probs.shape == old_log_probs.shape
         assert advs.shape[0] == log_probs.shape[0]  # batch size
         ratios = torch.exp(log_probs - old_log_probs)

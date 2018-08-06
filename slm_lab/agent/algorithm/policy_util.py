@@ -164,14 +164,14 @@ def sample_action_pd(ActionPD, pdparam, body):
     return action, action_pd
 
 
-def calc_log_probs(algorithm, body, batch):
+def calc_log_probs(algorithm, net, body, batch):
     '''
     Method to calculate log_probs fresh from batch data
     Body already stores log_prob from self.net. This is used for PPO where log_probs needs to be recalculated.
     '''
     states, actions = batch['states'], batch['actions']
     # construct log_probs for each state-action
-    pdparams = algorithm.calc_pdparam(states)
+    pdparams = algorithm.calc_pdparam(states, net=net)
     action_dim = body.action_dim
     is_multi_action = ps.is_iterable(action_dim)
     if is_multi_action:

@@ -59,7 +59,7 @@ class Algorithm(ABC):
             logger.info(f'Initialized algorithm models for lab_mode: {util.get_lab_mode()}')
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True):
+    def calc_pdparam(self, x, evaluate=True, net=None):
         '''
         To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.

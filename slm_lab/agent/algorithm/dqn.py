@@ -335,11 +335,11 @@ class MultitaskDQN(DQN):
         self.eval_net = self.target_net
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True):
+    def calc_pdparam(self, x, evaluate=True, net=None):
         '''
         Calculate pdparams for multi-action by chunking the network logits output
         '''
-        pdparam = super(MultitaskDQN, self).calc_pdparam(x, evaluate=evaluate)
+        pdparam = super(MultitaskDQN, self).calc_pdparam(x, evaluate=evaluate, net=net)
         pdparam = torch.cat(torch.split(pdparam, self.action_dims, dim=1))
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
@@ -437,12 +437,12 @@ class HydraDQN(MultitaskDQN):
         self.eval_net = self.target_net
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True):
+    def calc_pdparam(self, x, evaluate=True, net=None):
         '''
         Calculate pdparams for multi-action by chunking the network logits output
         '''
         x = torch.cat(torch.split(x, self.state_dims, dim=1)).unsqueeze_(dim=1)
-        pdparam = SARSA.calc_pdparam(self, x, evaluate=evaluate)
+        pdparam = SARSA.calc_pdparam(self, x, evaluate=evaluate, net=net)
         return pdparam
 
     @lab_api

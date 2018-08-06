@@ -197,15 +197,16 @@ class ActorCritic(Reinforce):
         self.post_init_nets()
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True):
+    def calc_pdparam(self, x, evaluate=True, net=None):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
+        net = self.net if net is None else net
         if evaluate:
-            pdparam = self.net.wrap_eval(x)
+            pdparam = net.wrap_eval(x)
         else:
-            self.net.train()
-            pdparam = self.net(x)
+            net.train()
+            pdparam = net(x)
         if self.share_architecture:
             # MLPHeterogenousTails, get front (no critic)
             if self.body.is_discrete:
@@ -218,16 +219,17 @@ class ActorCritic(Reinforce):
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
-    def calc_v(self, x, evaluate=True):
+    def calc_v(self, x, evaluate=True, net=None):
         '''
         Forward-pass to calculate the predicted state-value from critic.
         '''
+        net = self.net if net is None else net
         if self.share_architecture:
             if evaluate:
-                out = self.net.wrap_eval(x)
+                out = net.wrap_eval(x)
             else:
-                self.net.train()
-                out = self.net(x)
+                net.train()
+                out = net(x)
             # MLPHeterogenousTails, get last
             v = out[-1].squeeze_(dim=1)
         else:
