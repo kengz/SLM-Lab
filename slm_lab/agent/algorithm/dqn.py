@@ -109,6 +109,7 @@ class VanillaDQN(SARSA):
         q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
+        logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
     @lab_api
@@ -221,6 +222,7 @@ class DQNBase(VanillaDQN):
         q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
+        logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
     def update_nets(self):
@@ -333,12 +335,13 @@ class MultitaskDQN(DQN):
         self.eval_net = self.target_net
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True):
+    def calc_pdparam(self, x, evaluate=True, net=None):
         '''
         Calculate pdparams for multi-action by chunking the network logits output
         '''
-        pdparam = super(MultitaskDQN, self).calc_pdparam(x, evaluate=evaluate)
+        pdparam = super(MultitaskDQN, self).calc_pdparam(x, evaluate=evaluate, net=net)
         pdparam = torch.cat(torch.split(pdparam, self.action_dims, dim=1))
+        logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
     @lab_api
@@ -359,6 +362,7 @@ class MultitaskDQN(DQN):
             action_pd = action_pd_a[idx]
             body.entropies.append(action_pd.entropy())
             body.log_probs.append(action_pd.log_prob(action_a[idx].float()))
+            assert not torch.isnan(body.log_probs[-1])
         return action_a.cpu().numpy()
 
     @lab_api
@@ -410,6 +414,7 @@ class MultitaskDQN(DQN):
         q_targets = torch.cat(multi_q_targets, dim=1)
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
+        logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
 
@@ -432,12 +437,12 @@ class HydraDQN(MultitaskDQN):
         self.eval_net = self.target_net
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True):
+    def calc_pdparam(self, x, evaluate=True, net=None):
         '''
         Calculate pdparams for multi-action by chunking the network logits output
         '''
         x = torch.cat(torch.split(x, self.state_dims, dim=1)).unsqueeze_(dim=1)
-        pdparam = SARSA.calc_pdparam(self, x, evaluate=evaluate)
+        pdparam = SARSA.calc_pdparam(self, x, evaluate=evaluate, net=net)
         return pdparam
 
     @lab_api
@@ -479,6 +484,7 @@ class HydraDQN(MultitaskDQN):
             multi_q_targets.append(q_targets)
         # return as list for compatibility with net output in training_step
         q_targets = multi_q_targets
+        logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
     @lab_api

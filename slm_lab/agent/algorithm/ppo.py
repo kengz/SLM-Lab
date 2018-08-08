@@ -99,35 +99,9 @@ class PPO(ActorCritic):
     def init_nets(self):
         '''PPO uses old and new to calculate ratio for loss'''
         super(PPO, self).init_nets()
-        if self.share_architecture:
-            self.old_net = deepcopy(self.net)
-        else:
-            self.old_net = deepcopy(self.net)
-            self.old_critic = deepcopy(self.critic)
-
-    def calc_log_probs(self, batch, use_old_net=False):
-        '''Helper method to calculate log_probs with the option to swith net'''
-        if use_old_net:
-            # temporarily swap to do calc
-            self.tmp_net = self.net
-            self.net = self.old_net
-        states, actions = batch['states'], batch['actions']
-        # get ActionPD, don't append to state_buffer
-        ActionPD, _pdparam, _body = policy_util.init_action_pd(states[0].cpu().numpy(), self, self.body, append=False)
-        # construct log_probs for each state-action
-        pdparams = self.calc_pdparam(states)
-        log_probs = []
-        for idx, pdparam in enumerate(pdparams):
-            _action, action_pd = policy_util.sample_action_pd(ActionPD, pdparam.clone(), self.body)
-            log_prob = action_pd.log_prob(actions[idx])
-            log_probs.append(log_prob)
-        log_probs = torch.stack(log_probs)
-        assert not torch.isnan(log_probs).any(), f'log_probs: {log_probs}, \npdparams: {pdparams} \nactions: {actions}'
-        if use_old_net:
-            # swap back
-            self.old_net = self.net
-            self.net = self.tmp_net
-        return log_probs
+        # create old net to calculate ratio
+        self.old_net = deepcopy(self.net)
+        assert id(self.old_net) != id(self.net)
 
     def calc_policy_loss(self, batch, advs):
         '''
@@ -146,23 +120,29 @@ class PPO(ActorCritic):
         clip_eps = policy_util._linear_decay(self.clip_eps, 0.1 * self.clip_eps, self.clip_eps_anneal_epi, self.body.env.clock.get('epi'))
 
         # L^CLIP
-        log_probs = self.calc_log_probs(batch, use_old_net=False)
-        old_log_probs = self.calc_log_probs(batch, use_old_net=True)
+        log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
+        old_log_probs = policy_util.calc_log_probs(self, self.old_net, self.body, batch)
         assert log_probs.shape == old_log_probs.shape
-        assert advs.shape == log_probs.shape
+        assert advs.shape[0] == log_probs.shape[0]  # batch size
         ratios = torch.exp(log_probs - old_log_probs)
+        logger.debug(f'ratios: {ratios}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
         # flip sign because need to maximize
         clip_loss = -torch.mean(torch.min(sur_1, sur_2))
+        logger.debug(f'clip_loss: {clip_loss}')
 
         # L^VF (inherit from ActorCritic)
 
         # S entropy bonus
         entropies = torch.stack(self.body.entropies)
         ent_penalty = torch.mean(-self.entropy_coef * entropies)
+        logger.debug(f'ent_penalty: {ent_penalty}')
 
         policy_loss = clip_loss + ent_penalty
+        if torch.cuda.is_available() and self.net.gpu:
+            policy_loss = policy_loss.cuda()
+        logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 
     def train_shared(self):
@@ -170,6 +150,8 @@ class PPO(ActorCritic):
         Trains the network when the actor and critic share parameters
         '''
         if self.to_train == 1:
+            # update old net
+            net_util.copy(self.net, self.old_net)
             batch = self.sample()
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
@@ -182,12 +164,11 @@ class PPO(ActorCritic):
                 self.net.training_step(loss=loss, retain_graph=True)
                 total_loss += loss.cpu()
             loss = total_loss / self.training_epoch
-            net_util.copy(self.net, self.old_net)
             # reset
             self.to_train = 0
             self.body.log_probs = []
             self.body.entropies = []
-            logger.debug(f'Loss: {loss:.2f}')
+            logger.debug(f'Loss: {loss:.4f}')
             self.last_loss = loss.item()
         return self.last_loss
 
@@ -196,17 +177,16 @@ class PPO(ActorCritic):
         Trains the network when the actor and critic share parameters
         '''
         if self.to_train == 1:
+            net_util.copy(self.net, self.old_net)
             batch = self.sample()
             policy_loss = self.train_actor(batch)
             val_loss = self.train_critic(batch)
             loss = val_loss + abs(policy_loss)
-            net_util.copy(self.net, self.old_net)
-            net_util.copy(self.critic, self.old_critic)
             # reset
             self.to_train = 0
             self.body.log_probs = []
             self.body.entropies = []
-            logger.debug(f'Loss: {loss:.2f}')
+            logger.debug(f'Loss: {loss:.4f}')
             self.last_loss = loss.item()
         return self.last_loss
 

@@ -16,7 +16,7 @@ def run_trial_test(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('base.json', 'base_case'),
+    ('base.json', 'base_case_unity'),
     ('base.json', 'base_case_openai'),
     ('random.json', 'random_cartpole'),
     # ('base.json', 'multi_agent'),
@@ -80,7 +80,6 @@ def test_ppo(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI breaks with CUDA error")
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ppo.json', 'ppo_mlp_shared_pendulum'),
     ('ppo.json', 'ppo_mlp_separate_pendulum'),
@@ -88,6 +87,16 @@ def test_ppo(spec_file, spec_name):
     ('ppo.json', 'ppo_rnn_separate_pendulum'),
 ])
 def test_ppo_cont(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('ppo_sil.json', 'ppo_sil_mlp_shared_cartpole'),
+    ('ppo_sil.json', 'ppo_sil_mlp_separate_cartpole'),
+    ('ppo_sil.json', 'ppo_sil_rnn_shared_cartpole'),
+    ('ppo_sil.json', 'ppo_sil_rnn_separate_cartpole'),
+])
+def test_ppo_sil(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 

@@ -76,7 +76,7 @@ def calc_session_fitness_df(session, session_data):
         aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[session.index])
         aeb_fitness_df = aeb_fitness_df.reindex(FITNESS_COLS[:3], axis=1)
         session_fitness_data[aeb] = aeb_fitness_df
-    # form multiindex df, then take mean across all bodies
+    # form multi_index df, then take mean across all bodies
     session_fitness_df = pd.concat(session_fitness_data, axis=1)
     mean_fitness_df = calc_mean_fitness(session_fitness_df)
     session_fitness = calc_fitness(mean_fitness_df)
@@ -105,7 +105,7 @@ def calc_trial_fitness_df(trial):
         aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[trial.index])
         aeb_fitness_df = aeb_fitness_df.reindex(FITNESS_COLS, axis=1)
         trial_fitness_data[aeb] = aeb_fitness_df
-    # form multiindex df, then take mean across all bodies
+    # form multi_index df, then take mean across all bodies
     trial_fitness_df = pd.concat(trial_fitness_data, axis=1)
     mean_fitness_df = calc_mean_fitness(trial_fitness_df)
     trial_fitness_df = mean_fitness_df
@@ -373,7 +373,7 @@ def session_data_dict_from_file(predir, trial_index):
         if f'_t{trial_index}_' in filename and filename.endswith('_session_fitness_df.csv'):
             filepath = f'{predir}/{filename}'
             fitness_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
-            util.fix_multiindex_dtype(fitness_df)
+            util.fix_multi_index_dtype(fitness_df)
             session_index = fitness_df.index[0]
             session_data_dict[session_index] = fitness_df
     return session_data_dict

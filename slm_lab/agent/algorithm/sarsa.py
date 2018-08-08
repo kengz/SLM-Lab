@@ -92,16 +92,18 @@ class SARSA(Algorithm):
         self.post_init_nets()
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True):
+    def calc_pdparam(self, x, evaluate=True, net=None):
         '''
         To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
+        net = self.net if net is None else net
         if evaluate:
-            pdparam = self.net.wrap_eval(x)
+            pdparam = net.wrap_eval(x)
         else:
-            self.net.train()
-            pdparam = self.net(x)
+            net.train()
+            pdparam = net(x)
+        logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
     @lab_api
@@ -110,6 +112,7 @@ class SARSA(Algorithm):
         action, action_pd = self.action_policy(state, self, body)
         body.entropies.append(action_pd.entropy())
         body.log_probs.append(action_pd.log_prob(action.float()))
+        assert not torch.isnan(body.log_probs[-1])
         if len(action.shape) == 0:  # scalar
             return action.cpu().numpy().astype(body.action_space.dtype).item()
         else:
@@ -130,6 +133,7 @@ class SARSA(Algorithm):
         q_targets = (act_q_targets * batch['one_hot_actions']) + (q_preds * (1 - batch['one_hot_actions']))
         if torch.cuda.is_available() and self.net.gpu:
             q_targets = q_targets.cuda()
+        logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
     @lab_api

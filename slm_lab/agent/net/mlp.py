@@ -126,12 +126,13 @@ class MLPNet(Net, nn.Module):
             assert_trained = net_util.gen_assert_trained(model)
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad:
-            logger.debug(f'Clipping gradient')
+            logger.debug(f'Clipping gradient: {self.clip_grad_val}')
             torch.nn.utils.clip_grad_norm(self.parameters(), self.clip_grad_val)
         self.optim.step()
         if net_util.to_assert_trained():
             model = getattr(self, 'model', None) or getattr(self, 'model_body')
             assert_trained(model)
+        logger.debug(f'Net training_step loss: {loss}')
         return loss
 
     def wrap_eval(self, x):
@@ -401,17 +402,19 @@ class HydraMLPNet(Net, nn.Module):
             for out, y in zip(outs, ys):
                 loss = self.loss_fn(out, y)
                 total_loss += loss.cpu()
-        assert not torch.isnan(total_loss).any(), total_loss
+            loss = total_loss
+        assert not torch.isnan(loss).any(), loss
         if net_util.to_assert_trained():
             assert_trained = net_util.gen_assert_trained(self.model_body)
-        total_loss.backward(retain_graph=retain_graph)
+        loss.backward(retain_graph=retain_graph)
         if self.clip_grad:
-            logger.debug(f'Clipping gradient')
+            logger.debug(f'Clipping gradient: {self.clip_grad_val}')
             torch.nn.utils.clip_grad_norm(self.parameters(), self.clip_grad_val)
         self.optim.step()
         if net_util.to_assert_trained():
             assert_trained(self.model_body)
-        return total_loss
+        logger.debug(f'Net training_step loss: {loss}')
+        return loss
 
     def wrap_eval(self, x):
         '''

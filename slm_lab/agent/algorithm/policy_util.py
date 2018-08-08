@@ -16,6 +16,7 @@ or do epsilon-greedy to use pdparam-sampling or random sampling.
 from slm_lab.lib import logger, util
 from torch import distributions
 import numpy as np
+import pydash as ps
 import torch
 
 logger = logger.get_logger(__name__)
@@ -155,14 +156,16 @@ def sample_action_pd(ActionPD, pdparam, body):
         action_pd = ActionPD(logits=pdparam)
     else:  # continuous outputs a list, loc and scale
         assert len(pdparam) == 2, pdparam
-        # scale (stdev) must be >=0
-        clamp_pdparam = torch.stack([pdparam[0], torch.clamp(pdparam[1], 1e-8)])
-        action_pd = ActionPD(*clamp_pdparam)
+        # scale (stdev) must be >0, use softplus
+        if pdparam[1] < 5:
+            pdparam[1] = torch.log(1 + torch.exp(pdparam[1])) + 1e-8
+        action_pd = ActionPD(*pdparam)
     action = action_pd.sample()
     return action, action_pd
 
 
 # interface action sampling methods
+
 
 def default(state, algorithm, body):
     '''Plain policy by direct sampling using outputs of net as logits and constructing ActionPD as appropriate'''
@@ -341,3 +344,50 @@ def rate_decay(algorithm, body):
 def periodic_decay(algorithm, body):
     '''Apply _periodic_decay to explore_var'''
     return fn_decay_explore_var(algorithm, body, _periodic_decay)
+
+
+# misc calc methods
+
+
+def guard_multi_pdparams(pdparams, body):
+    '''Guard pdparams for multi action'''
+    action_dim = body.action_dim
+    is_multi_action = ps.is_iterable(action_dim)
+    if is_multi_action:
+        assert ps.is_list(pdparams)
+        pdparams = [t.clone() for t in pdparams]  # clone for grad safety
+        assert len(pdparams) == len(action_dim), pdparams
+        # transpose into (batch_size, [action_dims])
+        pdparams = [list(torch.split(t, action_dim, dim=0)) for t in torch.cat(pdparams, dim=1)]
+    return pdparams
+
+
+def calc_log_probs(algorithm, net, body, batch):
+    '''
+    Method to calculate log_probs fresh from batch data
+    Body already stores log_prob from self.net. This is used for PPO where log_probs needs to be recalculated.
+    '''
+    states, actions = batch['states'], batch['actions']
+    action_dim = body.action_dim
+    is_multi_action = ps.is_iterable(action_dim)
+    # construct log_probs for each state-action
+    pdparams = algorithm.calc_pdparam(states, net=net)
+    pdparams = guard_multi_pdparams(pdparams, body)
+    assert len(pdparams) == len(states), f'batch_size of pdparams: {len(pdparams)} vs states: {len(states)}'
+
+    pdtypes = ACTION_PDS[body.action_type]
+    ActionPD = getattr(distributions, body.action_pdtype)
+
+    log_probs = []
+    for idx, pdparam in enumerate(pdparams):
+        if not is_multi_action:  # already cloned  for multi_action above
+            pdparam = pdparam.clone()  # clone for grad safety
+        _action, action_pd = sample_action_pd(ActionPD, pdparam, body)
+        log_probs.append(action_pd.log_prob(actions[idx]))
+    log_probs = torch.stack(log_probs)
+    if is_multi_action:
+        log_probs = log_probs.mean(dim=1)
+    log_probs = torch.tensor(log_probs, requires_grad=True)
+    assert not torch.isnan(log_probs).any(), f'log_probs: {log_probs}, \npdparams: {pdparams} \nactions: {actions}'
+    logger.debug(f'log_probs: {log_probs}')
+    return log_probs

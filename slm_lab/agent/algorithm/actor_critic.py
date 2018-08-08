@@ -161,6 +161,8 @@ class ActorCritic(Reinforce):
                 assert 'Separate' in net_type
                 self.share_architecture = False
                 out_dim = self.body.action_dim * [2]
+                if len(out_dim) == 1:
+                    out_dim = out_dim[0]
                 critic_out_dim = 1
 
         self.net_spec['type'] = net_type = net_type.replace('Shared', '').replace('Separate', '')
@@ -195,37 +197,39 @@ class ActorCritic(Reinforce):
         self.post_init_nets()
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True):
+    def calc_pdparam(self, x, evaluate=True, net=None):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
+        net = self.net if net is None else net
         if evaluate:
-            pdparam = self.net.wrap_eval(x)
+            pdparam = net.wrap_eval(x)
         else:
-            self.net.train()
-            pdparam = self.net(x)
+            net.train()
+            pdparam = net(x)
         if self.share_architecture:
             # MLPHeterogenousTails, get front (no critic)
             if self.body.is_discrete:
-                return pdparam[0]
+                pdparam = pdparam[0]
             else:
                 if len(pdparam) == 2:  # only (loc, scale) and (v)
-                    return pdparam[0]
+                    pdparam = pdparam[0]
                 else:
-                    return pdparam[:-1]
-        else:
-            return pdparam
+                    pdparam = pdparam[:-1]
+        logger.debug(f'pdparam: {pdparam}')
+        return pdparam
 
-    def calc_v(self, x, evaluate=True):
+    def calc_v(self, x, evaluate=True, net=None):
         '''
         Forward-pass to calculate the predicted state-value from critic.
         '''
+        net = self.net if net is None else net
         if self.share_architecture:
             if evaluate:
-                out = self.net.wrap_eval(x)
+                out = net.wrap_eval(x)
             else:
-                self.net.train()
-                out = self.net(x)
+                net.train()
+                out = net(x)
             # MLPHeterogenousTails, get last
             v = out[-1].squeeze_(dim=1)
         else:
@@ -235,6 +239,7 @@ class ActorCritic(Reinforce):
                 self.critic.train()
                 out = self.critic(x)
             v = out.squeeze_(dim=1)
+        logger.debug(f'v: {v}')
         return v
 
     @lab_api
@@ -264,7 +269,7 @@ class ActorCritic(Reinforce):
             self.to_train = 0
             self.body.log_probs = []
             self.body.entropies = []
-            logger.debug(f'Total loss: {loss:.2f}')
+            logger.debug(f'Total loss: {loss:.4f}')
             self.last_loss = loss.item()
         return self.last_loss
 
@@ -282,7 +287,7 @@ class ActorCritic(Reinforce):
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Total loss: {loss:.2f}')
+            logger.debug(f'Total loss: {loss:.4f}')
             self.last_loss = loss.item()
         return self.last_loss
 
@@ -309,7 +314,7 @@ class ActorCritic(Reinforce):
 
     def calc_policy_loss(self, batch, advs):
         '''Calculate the actor's policy loss'''
-        assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
+        assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)
         policy_loss = - self.policy_loss_coef * log_probs * advs
         if self.add_entropy:
@@ -318,7 +323,7 @@ class ActorCritic(Reinforce):
         policy_loss = torch.mean(policy_loss)
         if torch.cuda.is_available() and self.net.gpu:
             policy_loss = policy_loss.cuda()
-        logger.debug(f'Actor policy loss: {policy_loss:.2f}')
+        logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 
     def calc_val_loss(self, batch, v_targets):
@@ -329,7 +334,7 @@ class ActorCritic(Reinforce):
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
         if torch.cuda.is_available() and self.net.gpu:
             val_loss = val_loss.cuda()
-        logger.debug(f'Critic value loss: {val_loss:.2f}')
+        logger.debug(f'Critic value loss: {val_loss:.4f}')
         return val_loss
 
     def calc_gae_advs_v_targets(self, batch):
@@ -360,6 +365,7 @@ class ActorCritic(Reinforce):
         adv_std[adv_std != adv_std] = 0
         adv_std += 1e-08
         adv_targets = (adv_targets - adv_targets.mean()) / adv_std
+        logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
     def calc_nstep_advs_v_targets(self, batch):
@@ -375,6 +381,7 @@ class ActorCritic(Reinforce):
         if torch.cuda.is_available() and self.net.gpu:
             nstep_advs = nstep_advs.cuda()
         adv_targets = v_targets = nstep_advs
+        logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
     def calc_td_advs_v_targets(self, batch):
@@ -388,6 +395,7 @@ class ActorCritic(Reinforce):
             td_returns = td_returns.cuda()
         v_targets = td_returns
         adv_targets = v_targets - v_preds  # TD error, but called adv for API consistency
+        logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
     @lab_api

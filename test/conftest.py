@@ -26,7 +26,7 @@ env = None
 @pytest.fixture(scope='session')
 def test_spec():
     global spec
-    spec = spec_util.get('base.json', 'base_case')
+    spec = spec_util.get('base.json', 'base_case_openai')
     spec = util.override_test_spec(spec)
     return spec
 

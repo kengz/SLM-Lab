@@ -86,6 +86,3 @@ def calc_gaes(rewards, v_preds, next_v_preds, gamma, lam):
     assert not np.isnan(gaes).any(), f'GAE has nan: {gaes}'
     gaes = torch.from_numpy(gaes).float()
     return gaes
-
-
-# Q-learning calc

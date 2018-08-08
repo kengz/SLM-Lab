@@ -189,6 +189,7 @@ class OpenAIEnv:
             self.u_env.render()
         non_nan_cnt = util.count_nonan(state_e.flatten())
         assert non_nan_cnt == 1, 'OpenAI Gym supports only single body'
+        logger.debug(f'Env {self.e} reset reward_e: {_reward_e}, state_e: {state_e}, done_e: {done_e}')
         return _reward_e, state_e, done_e
 
     @lab_api
@@ -209,6 +210,7 @@ class OpenAIEnv:
             state_e[(a, b)] = state
             done_e[(a, b)] = done
         self.done = (util.nonan_all(done_e) or self.clock.get('t') > self.max_timestep)
+        logger.debug(f'Env {self.e} step reward_e: {reward_e}, state_e: {state_e}, done_e: {done_e}')
         return reward_e, state_e, done_e
 
     @lab_api
@@ -328,6 +330,7 @@ class UnityEnv:
             state = env_info_a.states[b]
             state_e[(a, b)] = state
             done_e[(a, b)] = self.done
+        logger.debug(f'Env {self.e} reset reward_e: {_reward_e}, state_e: {state_e}, done_e: {done_e}')
         return _reward_e, state_e, done_e
 
     @lab_api
@@ -344,6 +347,7 @@ class UnityEnv:
             state_e[(a, b)] = env_info_a.states[b]
             done_e[(a, b)] = env_info_a.local_done[b]
         self.done = (util.nonan_all(done_e) or self.clock.get('t') > self.max_timestep)
+        logger.debug(f'Env {self.e} step reward_e: {reward_e}, state_e: {state_e}, done_e: {done_e}')
         return reward_e, state_e, done_e
 
     @lab_api
@@ -390,14 +394,14 @@ class EnvSpace:
 
     @lab_api
     def reset(self):
-        logger.debug('EnvSpace.reset')
+        logger.debug3('EnvSpace.reset')
         _reward_v, state_v, done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
         for env in self.envs:
             _reward_e, state_e, done_e = env.reset()
             state_v[env.e, 0:len(state_e)] = state_e
             done_v[env.e, 0:len(done_e)] = done_e
         _reward_space, state_space, done_space = self.aeb_space.add(ENV_DATA_NAMES, [_reward_v, state_v, done_v])
-        logger.debug(f'\nstate_space: {state_space}')
+        logger.debug3(f'\nstate_space: {state_space}')
         return _reward_space, state_space, done_space
 
     @lab_api
@@ -411,7 +415,7 @@ class EnvSpace:
             state_v[e, 0:len(state_e)] = state_e
             done_v[e, 0:len(done_e)] = done_e
         reward_space, state_space, done_space = self.aeb_space.add(ENV_DATA_NAMES, [reward_v, state_v, done_v])
-        logger.debug(f'\nreward_space: {reward_space}\nstate_space: {state_space}\ndone_space: {done_space}')
+        logger.debug3(f'\nreward_space: {reward_space}\nstate_space: {state_space}\ndone_space: {done_space}')
         return reward_space, state_space, done_space
 
     @lab_api

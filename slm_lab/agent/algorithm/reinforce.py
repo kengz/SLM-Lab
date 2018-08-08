@@ -104,15 +104,17 @@ class Reinforce(Algorithm):
         self.post_init_nets()
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True):
+    def calc_pdparam(self, x, evaluate=True, net=None):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
+        net = self.net if net is None else net
         if evaluate:
-            pdparam = self.net.wrap_eval(x)
+            pdparam = net.wrap_eval(x)
         else:
-            self.net.train()
-            pdparam = self.net(x)
+            net.train()
+            pdparam = net(x)
+        logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
     @lab_api
@@ -120,6 +122,7 @@ class Reinforce(Algorithm):
         action, action_pd = self.action_policy(state, self, body)
         body.entropies.append(action_pd.entropy())
         body.log_probs.append(action_pd.log_prob(action.float()))
+        assert not torch.isnan(body.log_probs[-1])
         if len(action.shape) == 0:  # scalar
             return action.cpu().numpy().astype(body.action_space.dtype).item()
         else:
@@ -156,10 +159,11 @@ class Reinforce(Algorithm):
         # advantage standardization trick
         # guard nan std by setting to 0 and add small const
         adv_std = advs.std()
-        adv_std[adv_std != adv_std] = 0
-        adv_std += 1e-08
+        adv_std[adv_std != adv_std] = 0  # nan guard
+        adv_std += 1e-08  # division guard
         advs = (advs - advs.mean()) / adv_std
-        assert len(self.body.log_probs) == len(advs), f'{len(self.body.log_probs)} vs {len(advs)}'
+        logger.debug(f'advs: {advs}')
+        assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)
         policy_loss = - log_probs * advs
         if self.add_entropy:
@@ -168,6 +172,7 @@ class Reinforce(Algorithm):
         policy_loss = torch.sum(policy_loss)
         if torch.cuda.is_available() and self.net.gpu:
             policy_loss = policy_loss.cuda()
+        logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 
     @lab_api

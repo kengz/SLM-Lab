@@ -18,7 +18,7 @@ def lab_api(fn):
     @wraps(fn)
     def check_api(*args, **kwargs):
         output = fn(*args, **kwargs)
-        logger.debug(f'API method: {fn.__name__}, output: {output}')
+        logger.debug3(f'API method: {fn.__name__}, output: {output}')
         return output
     return check_api
 
@@ -43,6 +43,6 @@ def timeit(fn):
         start = time.time()
         output = fn(*args, **kwargs)
         end = time.time()
-        logger.debug(f'Timed: {fn.__name__} {round((end - start) * 1000, 4)}ms')
+        logger.debug3(f'Timed: {fn.__name__} {round((end - start) * 1000, 4)}ms')
         return output
     return time_fn
