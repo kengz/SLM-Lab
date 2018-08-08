@@ -349,12 +349,14 @@ def periodic_decay(algorithm, body):
 # misc calc methods
 
 
-def guard_multi_pdparams(pdparams, is_multi_action):
+def guard_multi_pdparams(pdparams, body):
     '''Guard pdparams for multi action'''
+    action_dim = body.action_dim
+    is_multi_action = ps.is_iterable(action_dim)
     if is_multi_action:
         assert ps.is_list(pdparams)
         pdparams = [t.clone() for t in pdparams]  # clone for grad safety
-        assert len(pdparams) == len(action_dims), pdparams
+        assert len(pdparams) == len(action_dim), pdparams
         # transpose into (batch_size, [action_dims])
         pdparams = [list(torch.split(t, action_dim, dim=0)) for t in torch.cat(pdparams, dim=1)]
     return pdparams
@@ -370,7 +372,7 @@ def calc_log_probs(algorithm, net, body, batch):
     is_multi_action = ps.is_iterable(action_dim)
     # construct log_probs for each state-action
     pdparams = algorithm.calc_pdparam(states, net=net)
-    pdparams = guard_multi_pdparams(pdparams, is_multi_action)
+    pdparams = guard_multi_pdparams(pdparams, body)
     assert len(pdparams) == len(states), f'batch_size of pdparams: {len(pdparams)} vs states: {len(states)}'
 
     pdtypes = ACTION_PDS[body.action_type]
