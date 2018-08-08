@@ -45,6 +45,14 @@ def test_reinforce(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
+    ('reinforce.json', 'reinforce_mlp_pendulum'),
+    ('reinforce.json', 'reinforce_rnn_pendulum'),
+])
+def test_reinforce_cont(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
     ('ac.json', 'ac_mlp_shared_cartpole'),
     ('ac.json', 'ac_mlp_separate_cartpole'),
     ('ac.json', 'ac_rnn_shared_cartpole'),
@@ -57,6 +65,16 @@ def test_ac(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
+    ('ac.json', 'ac_mlp_shared_pendulum'),
+    ('ac.json', 'ac_mlp_separate_pendulum'),
+    ('ac.json', 'ac_rnn_shared_pendulum'),
+    ('ac.json', 'ac_rnn_separate_pendulum'),
+])
+def test_ac_cont(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
     ('a2c.json', 'a2c_mlp_shared_cartpole'),
     ('a2c.json', 'a2c_mlp_separate_cartpole'),
     ('a2c.json', 'a2c_rnn_shared_cartpole'),
@@ -65,6 +83,16 @@ def test_ac(spec_file, spec_name):
     # ('a2c.json', 'a2c_conv_separate_breakout'),
 ])
 def test_a2c(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('a2c.json', 'a2c_mlp_shared_pendulum'),
+    ('a2c.json', 'a2c_mlp_separate_pendulum'),
+    ('a2c.json', 'a2c_rnn_shared_pendulum'),
+    ('a2c.json', 'a2c_rnn_separate_pendulum'),
+])
+def test_a2c_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
@@ -101,6 +129,16 @@ def test_ppo_sil(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
+    ('ppo_sil.json', 'ppo_sil_mlp_shared_pendulum'),
+    ('ppo_sil.json', 'ppo_sil_mlp_separate_pendulum'),
+    ('ppo_sil.json', 'ppo_sil_rnn_shared_pendulum'),
+    ('ppo_sil.json', 'ppo_sil_rnn_separate_pendulum'),
+])
+def test_ppo_sil_cont(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
     ('sil.json', 'sil_mlp_shared_cartpole'),
     ('sil.json', 'sil_mlp_separate_cartpole'),
     ('sil.json', 'sil_rnn_shared_cartpole'),
@@ -109,6 +147,16 @@ def test_ppo_sil(spec_file, spec_name):
     # ('sil.json', 'sil_conv_separate_breakout'),
 ])
 def test_sil(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('sil.json', 'sil_mlp_shared_pendulum'),
+    ('sil.json', 'sil_mlp_separate_pendulum'),
+    ('sil.json', 'sil_rnn_shared_pendulum'),
+    ('sil.json', 'sil_rnn_separate_pendulum'),
+])
+def test_sil_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 

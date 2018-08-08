@@ -114,6 +114,8 @@ class Reinforce(Algorithm):
         else:
             net.train()
             pdparam = net(x)
+        if (not self.body.is_discrete) and len(pdparam) == 1:
+            pdparam = pdparam[0]
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
