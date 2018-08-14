@@ -122,8 +122,9 @@ class Reinforce(Algorithm):
     @lab_api
     def body_act(self, body, state):
         action, action_pd = self.action_policy(state, self, body)
-        body.entropies.append(action_pd.entropy())
-        body.log_probs.append(action_pd.log_prob(action.float()))
+        # sum for single and multi-action
+        body.entropies.append(action_pd.entropy().sum(dim=0))
+        body.log_probs.append(action_pd.log_prob(action.float()).sum(dim=0))
         assert not torch.isnan(body.log_probs[-1])
         if len(action.shape) == 0:  # scalar
             return action.cpu().numpy().astype(body.action_space.dtype).item()
