@@ -127,7 +127,7 @@ class MLPNet(Net, nn.Module):
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad:
             logger.debug(f'Clipping gradient: {self.clip_grad_val}')
-            torch.nn.utils.clip_grad_norm(self.parameters(), self.clip_grad_val)
+            torch.nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()
         if net_util.to_assert_trained():
             model = getattr(self, 'model', None) or getattr(self, 'model_body')
@@ -409,7 +409,7 @@ class HydraMLPNet(Net, nn.Module):
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad:
             logger.debug(f'Clipping gradient: {self.clip_grad_val}')
-            torch.nn.utils.clip_grad_norm(self.parameters(), self.clip_grad_val)
+            torch.nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()
         if net_util.to_assert_trained():
             assert_trained(self.model_body)
