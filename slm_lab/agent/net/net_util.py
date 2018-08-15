@@ -192,12 +192,14 @@ def save_algorithm(algorithm, epi=None):
     net_names = algorithm.net_names
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
     if epi is not None:
-        prepath = f'{prepath}_epi_{epi}'
+        prepath = f'{prepath}_epi{epi}'
     logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_model_{net_name}.pth'
         save(net, model_path)
+        optim_path = f'{prepath}_optim_{net_name}.pth'
+        save(net.optim, optim_path)
 
 
 def load(net, model_path):
@@ -216,6 +218,8 @@ def load_algorithm(algorithm):
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_model_{net_name}.pth'
         load(net, model_path)
+        optim_path = f'{prepath}_optim_{net_name}.pth'
+        load(net.optim, optim_path)
 
 
 def copy(src_net, tar_net):
