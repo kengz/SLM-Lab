@@ -70,35 +70,35 @@ class MultiCategorical(distributions.Categorical):
 
     @property
     def logits(self):
-        return torch.tensor([cat.logits for cat in self.categoricals])
+        return [cat.logits for cat in self.categoricals]
 
     @property
     def probs(self):
-        return torch.tensor([cat.probs for cat in self.categoricals])
+        return [cat.probs for cat in self.categoricals]
 
     @property
     def param_shape(self):
-        return torch.tensor([cat.param_shape for cat in self.categoricals])
+        return [cat.param_shape for cat in self.categoricals]
 
     @property
     def mean(self):
-        return torch.tensor([cat.mean for cat in self.categoricals])
+        return torch.stack([cat.mean for cat in self.categoricals])
 
     @property
     def variance(self):
-        return torch.tensor([cat.variance for cat in self.categoricals])
+        return torch.stack([cat.variance for cat in self.categoricals])
 
     def sample(self, sample_shape=torch.Size()):
-        return torch.tensor([cat.sample(sample_shape=sample_shape) for cat in self.categoricals])
+        return torch.stack([cat.sample(sample_shape=sample_shape) for cat in self.categoricals])
 
     def log_prob(self, value):
-        return torch.tensor([cat.log_prob(value[idx]) for idx, cat in enumerate(self.categoricals)])
+        return torch.stack([cat.log_prob(value[idx]) for idx, cat in enumerate(self.categoricals)])
 
     def entropy(self):
-        return torch.tensor([cat.entropy() for cat in self.categoricals])
+        return torch.stack([cat.entropy() for cat in self.categoricals])
 
     def enumerate_support(self):
-        return torch.tensor([cat.enumerate_support() for cat in self.categoricals])
+        return [cat.enumerate_support() for cat in self.categoricals]
 
 
 setattr(distributions, 'Argmax', Argmax)
@@ -383,11 +383,8 @@ def calc_log_probs(algorithm, net, body, batch):
         if not is_multi_action:  # already cloned  for multi_action above
             pdparam = pdparam.clone()  # clone for grad safety
         _action, action_pd = sample_action_pd(ActionPD, pdparam, body)
-        log_probs.append(action_pd.log_prob(actions[idx]))
+        log_probs.append(action_pd.log_prob(actions[idx].float()).sum(dim=0))
     log_probs = torch.stack(log_probs)
-    if is_multi_action:
-        log_probs = log_probs.mean(dim=1)
-    log_probs = torch.tensor(log_probs, requires_grad=True)
     assert not torch.isnan(log_probs).any(), f'log_probs: {log_probs}, \npdparams: {pdparams} \nactions: {actions}'
     logger.debug(f'log_probs: {log_probs}')
     return log_probs

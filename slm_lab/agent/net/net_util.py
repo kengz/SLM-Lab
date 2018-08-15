@@ -146,6 +146,8 @@ def gen_assert_trained(pre_model):
     def assert_trained(post_model):
         post_weights = [param.clone() for param in post_model.parameters()]
         assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), 'Model parameter is not updated in training_step(), check if your tensor is detached from graph.'
+        assert all(param.grad.norm() < 100.0 for param in post_model.parameters()), 'Gradient norm is > 100, which is bad. Consider using the "clip_grad" and "clip_grad_val" net parameter'
+        logger.info('Passed network weight update assertation in dev lab_mode.')
     return assert_trained
 
 
