@@ -155,7 +155,7 @@ class MLPNet(Net, nn.Module):
         if new_lr == old_lr:
             return
         self.optim_spec['lr'] = new_lr
-        logger.info(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
+        logger.debug(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)
 
 
@@ -441,7 +441,7 @@ class HydraMLPNet(Net, nn.Module):
         if new_lr == old_lr:
             return
         self.optim_spec['lr'] = new_lr
-        logger.info(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
+        logger.debug(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)
 
 

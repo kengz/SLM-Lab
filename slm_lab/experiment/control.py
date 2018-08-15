@@ -150,6 +150,7 @@ class Trial:
         for net_name in global_agent.algorithm.net_names:
             g_net = getattr(global_agent.algorithm, net_name)
             g_net.share_memory()  # make global sharable
+            # TODO also create shared optimizer here
             global_nets[net_name] = g_net
         return global_nets
 
