@@ -117,68 +117,6 @@ def periodic_decay(net, clock):
 
 # params methods
 
-def copy_trainable_params(net):
-    return [param.clone() for param in net.parameters()]
-
-
-def copy_fixed_params(net):
-    return None
-
-
-def to_assert_trained():
-    '''Condition for running assert_trained'''
-    return os.environ.get('PY_ENV') == 'test' or util.get_lab_mode() == 'dev'
-
-
-def gen_assert_trained(pre_model):
-    '''
-    Generate assert_trained function used to check weight updates
-    @example
-
-    assert_trained = gen_assert_trained(model)
-    # ...
-    loss.backward()
-    optim.step()
-    assert_trained(model)
-    '''
-    pre_weights = [param.clone() for param in pre_model.parameters()]
-
-    def assert_trained(post_model):
-        post_weights = [param.clone() for param in post_model.parameters()]
-        assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), 'Model parameter is not updated in training_step(), check if your tensor is detached from graph.'
-        assert all(param.grad.norm() < 100.0 for param in post_model.parameters()), 'Gradient norm is > 100, which is bad. Consider using the "clip_grad" and "clip_grad_val" net parameter'
-        logger.info('Passed network weight update assertation in dev lab_mode.')
-    return assert_trained
-
-
-def get_grad_norms(net):
-    '''Returns a list of the norm of the gradients for all parameters'''
-    norms = []
-    for i, param in enumerate(net.parameters()):
-        if param.grad is None:
-            logger.info(f'Param with None grad: {param.shape}, layer: {i}')
-            norms.append(None)
-        else:
-            grad_norm = torch.norm(param.grad)
-            norms.append(grad_norm)
-    return norms
-
-
-def flatten_params(net):
-    '''Flattens all of the parameters in a net
-    Source: https://discuss.pytorch.org/t/running-average-of-parameters/902/2'''
-    return torch.cat([param.data.view(-1) for param in net.parameters()], 0)
-
-
-def load_params(net, flattened):
-    '''Loads flattened parameters into a net
-    Source: https://discuss.pytorch.org/t/running-average-of-parameters/902/2'''
-    offset = 0
-    for param in net.parameters():
-        param.data.copy_(flattened[offset:offset + param.nelement()]).view(param.shape)
-        offset += param.nelement()
-    return net
-
 
 def save(net, model_path):
     '''Save model weights to path'''
@@ -238,6 +176,32 @@ def polyak_update(src_net, tar_net, beta=0.5):
             src_dict_params[name].data.copy_(beta * tar_param.data + (1 - beta) * src_dict_params[name].data)
 
     tar_net.load_state_dict(src_dict_params)
+
+
+def to_assert_trained():
+    '''Condition for running assert_trained'''
+    return os.environ.get('PY_ENV') == 'test' or util.get_lab_mode() == 'dev'
+
+
+def gen_assert_trained(pre_model):
+    '''
+    Generate assert_trained function used to check weight updates
+    @example
+
+    assert_trained = gen_assert_trained(model)
+    # ...
+    loss.backward()
+    optim.step()
+    assert_trained(model)
+    '''
+    pre_weights = [param.clone() for param in pre_model.parameters()]
+
+    def assert_trained(post_model):
+        post_weights = [param.clone() for param in post_model.parameters()]
+        assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), 'Model parameter is not updated in training_step(), check if your tensor is detached from graph.'
+        assert all(param.grad.norm() < 100.0 for param in post_model.parameters()), 'Gradient norm is > 100, which is bad. Consider using the "clip_grad" and "clip_grad_val" net parameter'
+        logger.info('Passed network weight update assertation in dev lab_mode.')
+    return assert_trained
 
 
 def calc_q_value_logits(state_value, raw_advantages):
