@@ -146,7 +146,7 @@ class Reinforce(Algorithm):
         if self.to_train == 1:
             batch = self.sample()
             loss = self.calc_policy_loss(batch)
-            self.net.training_step(loss=loss)
+            self.net.training_step(loss=loss, global_net=self.global_nets.get('net'))
             # reset
             self.to_train = 0
             self.body.log_probs = []

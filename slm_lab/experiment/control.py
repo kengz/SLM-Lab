@@ -14,6 +14,7 @@ import os
 import pandas as pd
 import pydash as ps
 import torch
+import torch.multiprocessing as mp
 
 
 def init_thread_vars(spec, info_space, unit):
@@ -34,7 +35,7 @@ class Session:
     then return the session data.
     '''
 
-    def __init__(self, spec, info_space=None):
+    def __init__(self, spec, info_space=None, global_nets=None):
         info_space = info_space or InfoSpace()
         init_thread_vars(spec, info_space, unit='session')
         self.spec = deepcopy(spec)
@@ -47,21 +48,11 @@ class Session:
         self.data = None
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
-        self.agent_space = AgentSpace(self.spec, self.aeb_space)
+        self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
         logger.info(util.self_desc(self))
         self.aeb_space.init_body_space()
         self.aeb_space.post_body_init()
         logger.info(f'Initialized session {self.index}')
-
-    def close(self):
-        '''
-        Close session and clean up.
-        Save agent, close env.
-        Prepare self.df.
-        '''
-        self.agent_space.close()
-        self.env_space.close()
-        logger.info('Session done, closing.')
 
     def run_all_episodes(self):
         '''
@@ -77,11 +68,33 @@ class Session:
             reward_space, state_space, done_space = self.env_space.step(action_space)
             self.agent_space.update(action_space, reward_space, state_space, done_space)
 
+    def close(self):
+        '''
+        Close session and clean up.
+        Save agent, close env.
+        Prepare self.df.
+        '''
+        self.agent_space.close()
+        self.env_space.close()
+        logger.info('Session done, closing.')
+
     def run(self):
         self.run_all_episodes()
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
         return self.data
+
+
+class DistSession(mp.Process):
+    '''Distributed Session for distributed training'''
+
+    def __init__(self, spec, info_space, global_nets):
+        super(DistSession, self).__init__()
+        self.name = f'w{info_space.get("session")}'
+        self.session = Session(spec, info_space, global_nets)
+
+    def run(self):
+        return self.session.run()
 
 
 class Trial:
@@ -109,10 +122,8 @@ class Trial:
         session_data = session.run()
         return session_data
 
-    def close(self):
-        logger.info('Trial done, closing.')
-
-    def run(self):
+    def run_serial_sessions(self):
+        logger.info('Running serial sessions')
         num_cpus = ps.get(self.spec['meta'], 'resources.num_cpus', util.NUM_CPUS)
         info_spaces = []
         for _s in range(self.spec['meta']['max_session']):
@@ -127,6 +138,47 @@ class Trial:
                 session_datas.append(session_data)
                 if analysis.is_unfit(session_data):
                     break
+        return session_datas
+
+    def init_global_nets(self):
+        spec = deepcopy(self.spec)
+        global_session = Session(deepcopy(self.spec))
+        # TODO move away from space
+        global_agent = global_session.agent_space.agents[0]
+        global_session.env_space.close()
+        global_nets = {}
+        for net_name in global_agent.algorithm.net_names:
+            g_net = getattr(global_agent.algorithm, net_name)
+            g_net.share_memory()  # make global sharable
+            global_nets[net_name] = g_net
+        return global_nets
+
+    def run_distributed_sessions(self):
+        logger.info('Running distributed sessions')
+        global_nets = self.init_global_nets()
+        workers = []
+        for s in range(self.spec['meta']['max_session']):
+            self.info_space.tick('session')
+            w = DistSession(deepcopy(self.spec), self.info_space, global_nets)
+            w.start()
+            workers.append(w)
+        for w in workers:
+            w.join()
+
+        prepath = util.get_prepath(self.spec, self.info_space)
+        predir = util.prepath_to_predir(prepath)
+        session_datas = analysis.session_data_dict_from_file(predir, self.info_space.get('trial'))
+        session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
+        return session_datas
+
+    def close(self):
+        logger.info('Trial done, closing.')
+
+    def run(self):
+        if self.spec['meta'].get('distributed'):
+            session_datas = self.run_distributed_sessions()
+        else:
+            session_datas = self.run_serial_sessions()
         self.session_data_dict = {data.index[0]: data for data in session_datas}
         self.data = analysis.analyze_trial(self)
         self.close()

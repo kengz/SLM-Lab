@@ -204,6 +204,17 @@ def gen_assert_trained(pre_model):
     return assert_trained
 
 
+def push_global_grad(local_net, global_net):
+    '''Push local gradient to global for distributed training'''
+    for lp, gp in zip(local_net.parameters(), global_net.parameters()):
+        gp._grad = lp.grad
+
+
+def pull_global_param(local_net, global_net):
+    '''Pull global param to local network for distributed training'''
+    copy(local_net, global_net)
+
+
 def calc_q_value_logits(state_value, raw_advantages):
     mean_adv = raw_advantages.mean(dim=-1).unsqueeze_(dim=-1)
     return state_value + raw_advantages - mean_adv

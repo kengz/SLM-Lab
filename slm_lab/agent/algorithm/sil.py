@@ -158,7 +158,7 @@ class SIL(ActorCritic):
                 batch = self.replay_sample()
                 sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
                 sil_loss = sil_policy_loss + sil_val_loss
-                self.net.training_step(loss=sil_loss)
+                self.net.training_step(loss=sil_loss, global_net=self.global_nets.get('net'))
                 total_sil_loss += sil_loss.cpu()
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
@@ -178,8 +178,8 @@ class SIL(ActorCritic):
             for _ in range(self.training_epoch):
                 batch = self.replay_sample()
                 sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
-                self.net.training_step(loss=sil_policy_loss, retain_graph=True)
-                self.critic.training_step(loss=sil_val_loss)
+                self.net.training_step(loss=sil_policy_loss, retain_graph=True, global_net=self.global_nets.get('net'))
+                self.critic.training_step(loss=sil_val_loss, global_net=self.global_nets.get('critic'))
                 total_sil_loss += sil_policy_loss + sil_val_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
@@ -319,7 +319,7 @@ class PPOSIL(PPO):
                 batch = self.replay_sample()
                 sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
                 sil_loss = sil_policy_loss + sil_val_loss
-                self.net.training_step(loss=sil_loss)
+                self.net.training_step(loss=sil_loss, global_net=self.global_nets.get('net'))
                 total_sil_loss += sil_loss.cpu()
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
@@ -339,8 +339,8 @@ class PPOSIL(PPO):
             for _ in range(self.training_epoch):
                 batch = self.replay_sample()
                 sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
-                self.net.training_step(loss=sil_policy_loss, retain_graph=True)
-                self.critic.training_step(loss=sil_val_loss)
+                self.net.training_step(loss=sil_policy_loss, retain_graph=True, global_net=self.global_nets.get('net'))
+                self.critic.training_step(loss=sil_val_loss, global_net=self.global_nets.get('critic'))
                 total_sil_loss += sil_policy_loss + sil_val_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
