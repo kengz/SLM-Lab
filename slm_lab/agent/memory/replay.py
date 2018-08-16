@@ -60,6 +60,7 @@ class Replay(Memory):
         states_shape = np.concatenate([[self.max_size], np.reshape(self.body.state_dim, -1)])
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
         setattr(self, 'states', np.zeros(states_shape))
+        # TODO generalize for multi-action
         setattr(self, 'actions', np.zeros((self.max_size,), dtype=self.body.action_space.dtype))
         setattr(self, 'rewards', np.zeros((self.max_size,)))
         setattr(self, 'next_states', np.zeros(states_shape))
@@ -134,6 +135,59 @@ class Replay(Memory):
         for k in self.data_keys:
             d = getattr(self, k)
             logger.info(f'Memory for body {self.body.aeb}: {k} :shape: {d.shape}, dtype: {d.dtype}, size: {util.memory_size(d)}MB')
+
+
+class SILReplay(Replay):
+    '''
+    Special Replay for SIL, which adds the returns calculated from its OnPolicyReplay
+
+    e.g. memory_spec
+    "memory": {
+        "name": "SILReplay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
+    }
+    '''
+
+    def reset(self):
+        '''Initializes the memory arrays, size and head pointer'''
+        states_shape = np.concatenate([[self.max_size], np.reshape(self.body.state_dim, -1)])
+        self.data_keys = ['states', 'actions', 'rewards', 'rets', 'next_states', 'dones', 'priorities']
+        setattr(self, 'states', np.zeros(states_shape))
+        setattr(self, 'actions', np.zeros((self.max_size,), dtype=self.body.action_space.dtype))
+        setattr(self, 'rewards', np.zeros((self.max_size,)))
+        setattr(self, 'rets', np.zeros((self.max_size,)))
+        setattr(self, 'next_states', np.zeros(states_shape))
+        setattr(self, 'dones', np.zeros((self.max_size,), dtype=np.uint8))
+        setattr(self, 'priorities', np.zeros((self.max_size,)))
+        self.true_size = 0
+        self.head = -1  # Index of most recent experience
+
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.body.state_dim))
+
+    @lab_api
+    def update(self, action, reward, state, done):
+        '''Interface method to update memory.'''
+        raise ValueError('Should not call memory.update() with SIL; append from after OnPolicyReplay instead')
+
+    def add_experience(self, state, action, reward, ret, next_state, done, priority=1):
+        '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
+        # Move head pointer. Wrap around if necessary
+        self.head = (self.head + 1) % self.max_size
+        self.states[self.head] = state
+        self.actions[self.head] = action
+        self.rewards[self.head] = reward
+        self.rets[self.head] = ret
+        self.next_states[self.head] = next_state
+        self.dones[self.head] = done
+        self.priorities[self.head] = priority
+        # Actually occupied size of memory
+        if self.true_size < self.max_size:
+            self.true_size += 1
+        self.total_experiences += 1
 
 
 class SeqReplay(Replay):

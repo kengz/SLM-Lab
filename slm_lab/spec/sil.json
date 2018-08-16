@@ -20,7 +20,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 4,
@@ -28,7 +28,7 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "Replay",
+        "sil_replay_name": "SILReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -114,7 +114,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
@@ -122,7 +122,7 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "Replay",
+        "sil_replay_name": "SILReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -208,7 +208,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
@@ -305,7 +305,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
@@ -402,7 +402,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 4,
@@ -410,7 +410,7 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "Replay",
+        "sil_replay_name": "SILReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -496,7 +496,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
@@ -504,7 +504,7 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "Replay",
+        "sil_replay_name": "SILReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -590,7 +590,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
@@ -687,7 +687,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
@@ -784,7 +784,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
@@ -792,7 +792,7 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "Replay",
+        "sil_replay_name": "SILReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -863,7 +863,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
@@ -871,7 +871,7 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "Replay",
+        "sil_replay_name": "SILReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
