@@ -146,13 +146,18 @@ class ActorCritic(Reinforce):
         if self.body.is_discrete:
             if 'Shared' in net_type:
                 self.share_architecture = True
-                out_dim = [self.body.action_dim, 1]
+                if ps.is_iterable(self.body.action_dim):
+                    out_dim = self.body.action_dim + [1]
+                else:
+                    out_dim = [self.body.action_dim, 1]
             else:
                 assert 'Separate' in net_type
                 self.share_architecture = False
                 out_dim = self.body.action_dim
                 critic_out_dim = 1
         else:
+            if ps.is_iterable(self.body.action_dim):
+                raise NotImplementedError('multi_continuous not supported yet')
             if 'Shared' in net_type:
                 self.share_architecture = True
                 # 2 for loc and scale per dim
@@ -209,13 +214,10 @@ class ActorCritic(Reinforce):
             pdparam = net(x)
         if self.share_architecture:
             # MLPHeterogenousTails, get front (no critic)
-            if self.body.is_discrete:
+            if len(pdparam) == 2:  # only (logits)/(loc, scale) and (v)
                 pdparam = pdparam[0]
             else:
-                if len(pdparam) == 2:  # only (loc, scale) and (v)
-                    pdparam = pdparam[0]
-                else:
-                    pdparam = pdparam[:-1]
+                pdparam = pdparam[:-1]
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
