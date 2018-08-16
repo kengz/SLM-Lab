@@ -169,9 +169,12 @@ class SILReplay(Replay):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
     @lab_api
-    def update(self, action, reward, state, done):
+    def update(self, action, reward, ret, state, done):
         '''Interface method to update memory.'''
-        raise ValueError('Should not call memory.update() with SIL; append from after OnPolicyReplay instead')
+        self.base_update(action, reward, state, done)
+        if not np.isnan(reward):  # not the start of episode
+            self.add_experience(self.last_state, action, reward, ret, state, done)
+        self.last_state = state
 
     def add_experience(self, state, action, reward, ret, next_state, done, priority=1):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
