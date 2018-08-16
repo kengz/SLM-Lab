@@ -149,6 +149,7 @@ class SILReplay(Replay):
         "use_cer": true
     }
     '''
+    # TODO generalize Replay to take data_keys
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
@@ -241,6 +242,57 @@ class SeqReplay(Replay):
         state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
             self.add_experience(self.last_state, action, reward, state, done)
+        self.last_state = state
+
+
+class SILSeqReplay(SILReplay):
+    '''
+    Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as SILReplay memory
+
+    e.g. memory_spec
+    "memory": {
+        "name": "SILSeqReplay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
+    }
+    * seq_len provided by net_spec
+    '''
+
+    def __init__(self, memory_spec, algorithm, body):
+        self.seq_len = algorithm.net_spec['seq_len']
+        super(SILSeqReplay, self).__init__(memory_spec, algorithm, body)
+        self.state_buffer = deque(maxlen=self.seq_len)
+        self.reset()
+
+    def reset(self):
+        '''Initializes the memory arrays, size and head pointer'''
+        super(SILSeqReplay, self).reset()
+        # override state shape for concat
+        states_shape = np.concatenate([[self.max_size], np.reshape([self.seq_len, self.body.state_dim], -1)])
+        setattr(self, 'states', np.zeros(states_shape))
+        setattr(self, 'next_states', np.zeros(states_shape))
+
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(SILSeqReplay, self).epi_reset(self.preprocess_state(state, append=False))
+
+    def preprocess_state(self, state, append=True):
+        '''Transforms the raw state into format that is fed into the network'''
+        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
+        if append:
+            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
+            self.state_buffer.append(state)
+        processed_state = np.stack(self.state_buffer)
+        return processed_state
+
+    @lab_api
+    def update(self, action, reward, ret, state, done):
+        '''Interface method to update memory'''
+        self.base_update(action, reward, state, done)
+        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
+        if not np.isnan(reward):  # not the start of episode
+            self.add_experience(self.last_state, action, reward, ret, state, done)
         self.last_state = state
 
 
