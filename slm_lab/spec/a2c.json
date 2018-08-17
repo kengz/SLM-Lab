@@ -26,7 +26,8 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPNetShared",
+        "type": "MLPNet",
+        "shared": true,
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -107,7 +108,8 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPNetSeparate",
+        "type": "MLPNet",
+        "shared": false,
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -188,7 +190,8 @@
         "name": "OnPolicySeqReplay"
       },
       "net": {
-        "type": "RecurrentNetShared",
+        "type": "RecurrentNet",
+        "shared": true,
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
@@ -272,7 +275,8 @@
         "name": "OnPolicySeqReplay"
       },
       "net": {
-        "type": "RecurrentNetSeparate",
+        "type": "RecurrentNet",
+        "shared": false,
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
@@ -356,7 +360,8 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPNetShared",
+        "type": "MLPNet",
+        "shared": true,
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -437,7 +442,8 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPNetSeparate",
+        "type": "MLPNet",
+        "shared": false,
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad": false,
@@ -518,7 +524,8 @@
         "name": "OnPolicySeqReplay"
       },
       "net": {
-        "type": "RecurrentNetShared",
+        "type": "RecurrentNet",
+        "shared": true,
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
@@ -602,7 +609,8 @@
         "name": "OnPolicySeqReplay"
       },
       "net": {
-        "type": "RecurrentNetSeparate",
+        "type": "RecurrentNet",
+        "shared": false,
         "hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
@@ -686,7 +694,8 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "ConvNetShared",
+        "type": "ConvNet",
+        "shared": true,
         "hid_layers": [
           [
             [3, 16, [5, 5], 2, 0, [1, 1]],
@@ -757,7 +766,8 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "ConvNetSeparate",
+        "type": "ConvNet",
+        "shared": false,
         "hid_layers": [
           [
             [3, 16, [5, 5], 2, 0, [1, 1]],

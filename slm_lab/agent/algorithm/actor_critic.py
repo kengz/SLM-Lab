@@ -66,6 +66,12 @@ class ActorCritic(Reinforce):
         "training_frequency": 1,
         "training_epoch": 8
     }
+
+    e.g. special net_spec param "shared" to share/separate Actor/Critic
+    "net": {
+        "type": "MLPNet",
+        "shared": true,
+        ...
     '''
 
     @lab_api

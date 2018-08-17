@@ -43,6 +43,7 @@ class SIL(ActorCritic):
         "training_frequency": 1,
         "training_epoch": 8
     }
+
     e.g. special memory_spec
     "memory": {
         "name": "OnPolicyReplay",
@@ -213,6 +214,7 @@ class PPOSIL(PPO):
         "training_batch_epoch": 8,
         "training_epoch": 8
     }
+
     e.g. special memory_spec
     "memory": {
         "name": "OnPolicyReplay",

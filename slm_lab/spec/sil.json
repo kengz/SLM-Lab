@@ -33,7 +33,8 @@
         "use_cer": true
       },
       "net": {
-        "type": "MLPNetShared",
+        "type": "MLPNet",
+        "shared": true,
         "hid_layers": [64],
         "hid_layers_activation": "tanh",
         "clip_grad": false,
@@ -126,7 +127,8 @@
         "use_cer": true
       },
       "net": {
-        "type": "MLPNetSeparate",
+        "type": "MLPNet",
+        "shared": false,
         "hid_layers": [32],
         "hid_layers_activation": "tanh",
         "clip_grad": false,
@@ -219,7 +221,8 @@
         "use_cer": true
       },
       "net": {
-        "type": "RecurrentNetShared",
+        "type": "RecurrentNet",
+        "shared": true,
         "hid_layers": [],
         "hid_layers_activation": "tanh",
         "rnn_hidden_size": 32,
@@ -315,7 +318,8 @@
         "use_cer": true
       },
       "net": {
-        "type": "RecurrentNetSeparate",
+        "type": "RecurrentNet",
+        "shared": false,
         "hid_layers": [],
         "hid_layers_activation": "tanh",
         "rnn_hidden_size": 32,
@@ -411,7 +415,8 @@
         "use_cer": true
       },
       "net": {
-        "type": "MLPNetShared",
+        "type": "MLPNet",
+        "shared": true,
         "hid_layers": [64],
         "hid_layers_activation": "tanh",
         "clip_grad": false,
@@ -504,7 +509,8 @@
         "use_cer": true
       },
       "net": {
-        "type": "MLPNetSeparate",
+        "type": "MLPNet",
+        "shared": false,
         "hid_layers": [32],
         "hid_layers_activation": "tanh",
         "clip_grad": false,
@@ -597,7 +603,8 @@
         "use_cer": true
       },
       "net": {
-        "type": "RecurrentNetShared",
+        "type": "RecurrentNet",
+        "shared": true,
         "hid_layers": [],
         "hid_layers_activation": "tanh",
         "rnn_hidden_size": 32,
@@ -693,7 +700,8 @@
         "use_cer": true
       },
       "net": {
-        "type": "RecurrentNetSeparate",
+        "type": "RecurrentNet",
+        "shared": false,
         "hid_layers": [],
         "hid_layers_activation": "tanh",
         "rnn_hidden_size": 32,
@@ -789,7 +797,8 @@
         "use_cer": true
       },
       "net": {
-        "type": "ConvNetShared",
+        "type": "ConvNet",
+        "shared": true,
         "hid_layers": [
           [
             [3, 16, [5, 5], 2, 0, [1, 1]],
@@ -867,7 +876,8 @@
         "use_cer": true
       },
       "net": {
-        "type": "ConvNetSeparate",
+        "type": "ConvNet",
+        "shared": false,
         "hid_layers": [
           [
             [3, 16, [5, 5], 2, 0, [1, 1]],
