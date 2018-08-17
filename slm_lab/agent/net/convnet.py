@@ -187,13 +187,13 @@ class ConvNet(Net, nn.Module):
         x = self.conv_model(x)
         x = x.view(-1, self.conv_out_dim)
         x = self.dense_model(x)
-        outs = []
-        for model_tail in self.model_tails:
-            outs.append(model_tail(x))
         # return tensor if single tail, else list of tail tensors
-        if len(outs) == 1:
-            return outs[0]
+        if len(self.model_tails) == 1:
+            return model_tails[0](x)
         else:
+            outs = []
+            for model_tail in self.model_tails:
+                outs.append(model_tail(x))
             return outs
 
     def training_step(self, x=None, y=None, loss=None, retain_graph=False):

@@ -148,13 +148,13 @@ class RecurrentNet(Net, nn.Module):
         hid_0 = self.init_hidden(batch_size)
         _, final_hid = self.rnn_model(x, hid_0)
         final_hid.squeeze_(dim=0)
-        outs = []
-        for model_tail in self.model_tails:
-            outs.append(model_tail(final_hid))
         # return tensor if single tail, else list of tail tensors
-        if len(outs) == 1:
-            return outs[0]
+        if len(self.model_tails) == 1:
+            return model_tails[0](final_hid)
         else:
+            outs = []
+            for model_tail in self.model_tails:
+                outs.append(model_tail(x))
             return outs
 
     def training_step(self, x=None, y=None, loss=None, retain_graph=False):
