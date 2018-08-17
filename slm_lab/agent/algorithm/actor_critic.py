@@ -326,13 +326,7 @@ class ActorCritic(Reinforce):
         if torch.cuda.is_available() and self.net.gpu:
             adv_targets = adv_targets.cuda()
             v_targets = v_targets.cuda()
-
-        # standardization trick
-        # guard nan std by setting to 0 and add small const
-        adv_std = adv_targets.std()
-        adv_std[adv_std != adv_std] = 0
-        adv_std += 1e-08
-        adv_targets = (adv_targets - adv_targets.mean()) / adv_std
+        adv_targets = math_util.standardize(adv_targets)
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 

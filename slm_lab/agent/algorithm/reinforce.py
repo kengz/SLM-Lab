@@ -148,12 +148,7 @@ class Reinforce(Algorithm):
         '''Calculate the policy loss for a batch of data.'''
         # use simple returns as advs
         advs = math_util.calc_returns(batch, self.gamma)
-        # advantage standardization trick
-        # guard nan std by setting to 0 and add small const
-        adv_std = advs.std()
-        adv_std[adv_std != adv_std] = 0  # nan guard
-        adv_std += 1e-08  # division guard
-        advs = (advs - advs.mean()) / adv_std
+        advs = math_util.standardize(advs)
         logger.debug(f'advs: {advs}')
         assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)
