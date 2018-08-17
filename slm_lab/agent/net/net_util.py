@@ -117,12 +117,65 @@ def periodic_decay(net, clock):
 
 # params methods
 
-def copy_trainable_params(net):
-    return [param.clone() for param in net.parameters()]
+
+def save(net, model_path):
+    '''Save model weights to path'''
+    torch.save(net.state_dict(), model_path)
+    logger.info(f'Saved model to {model_path}')
 
 
-def copy_fixed_params(net):
-    return None
+def save_algorithm(algorithm, epi=None):
+    '''Save all the nets for an algorithm'''
+    agent = algorithm.agent
+    net_names = algorithm.net_names
+    prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+    if epi is not None:
+        prepath = f'{prepath}_epi{epi}'
+    logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
+    for net_name in net_names:
+        net = getattr(algorithm, net_name)
+        model_path = f'{prepath}_model_{net_name}.pth'
+        save(net, model_path)
+        optim_path = f'{prepath}_optim_{net_name}.pth'
+        save(net.optim, optim_path)
+
+
+def load(net, model_path):
+    '''Save model weights from a path into a net module'''
+    net.load_state_dict(torch.load(model_path))
+    logger.info(f'Loaded model from {model_path}')
+
+
+def load_algorithm(algorithm):
+    '''Save all the nets for an algorithm'''
+    agent = algorithm.agent
+    net_names = algorithm.net_names
+    prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names}')
+    for net_name in net_names:
+        net = getattr(algorithm, net_name)
+        model_path = f'{prepath}_model_{net_name}.pth'
+        load(net, model_path)
+        optim_path = f'{prepath}_optim_{net_name}.pth'
+        load(net.optim, optim_path)
+
+
+def copy(src_net, tar_net):
+    '''Copy model weights from src to target'''
+    tar_net.load_state_dict(src_net.state_dict())
+
+
+def polyak_update(src_net, tar_net, beta=0.5):
+    '''Polyak weight update to update a target tar_net'''
+    tar_params = tar_net.named_parameters()
+    src_params = src_net.named_parameters()
+    src_dict_params = dict(src_params)
+
+    for name, tar_param in tar_params:
+        if name in src_dict_params:
+            src_dict_params[name].data.copy_(beta * tar_param.data + (1 - beta) * src_dict_params[name].data)
+
+    tar_net.load_state_dict(src_dict_params)
 
 
 def to_assert_trained():
@@ -147,93 +200,8 @@ def gen_assert_trained(pre_model):
         post_weights = [param.clone() for param in post_model.parameters()]
         assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), 'Model parameter is not updated in training_step(), check if your tensor is detached from graph.'
         assert all(param.grad.norm() < 100.0 for param in post_model.parameters()), 'Gradient norm is > 100, which is bad. Consider using the "clip_grad" and "clip_grad_val" net parameter'
-        logger.info('Passed network weight update assertation in dev lab_mode.')
+        logger.debug('Passed network weight update assertation in dev lab_mode.')
     return assert_trained
-
-
-def get_grad_norms(net):
-    '''Returns a list of the norm of the gradients for all parameters'''
-    norms = []
-    for i, param in enumerate(net.parameters()):
-        if param.grad is None:
-            logger.info(f'Param with None grad: {param.shape}, layer: {i}')
-            norms.append(None)
-        else:
-            grad_norm = torch.norm(param.grad)
-            norms.append(grad_norm)
-    return norms
-
-
-def flatten_params(net):
-    '''Flattens all of the parameters in a net
-    Source: https://discuss.pytorch.org/t/running-average-of-parameters/902/2'''
-    return torch.cat([param.data.view(-1) for param in net.parameters()], 0)
-
-
-def load_params(net, flattened):
-    '''Loads flattened parameters into a net
-    Source: https://discuss.pytorch.org/t/running-average-of-parameters/902/2'''
-    offset = 0
-    for param in net.parameters():
-        param.data.copy_(flattened[offset:offset + param.nelement()]).view(param.shape)
-        offset += param.nelement()
-    return net
-
-
-def save(net, model_path):
-    '''Save model weights to path'''
-    torch.save(net.state_dict(), model_path)
-    logger.info(f'Saved model to {model_path}')
-
-
-def save_algorithm(algorithm, epi=None):
-    '''Save all the nets for an algorithm'''
-    agent = algorithm.agent
-    net_names = algorithm.net_names
-    prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
-    if epi is not None:
-        prepath = f'{prepath}_epi_{epi}'
-    logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
-    for net_name in net_names:
-        net = getattr(algorithm, net_name)
-        model_path = f'{prepath}_model_{net_name}.pth'
-        save(net, model_path)
-
-
-def load(net, model_path):
-    '''Save model weights from a path into a net module'''
-    net.load_state_dict(torch.load(model_path))
-    logger.info(f'Loaded model from {model_path}')
-
-
-def load_algorithm(algorithm):
-    '''Save all the nets for an algorithm'''
-    agent = algorithm.agent
-    net_names = algorithm.net_names
-    prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
-    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names}')
-    for net_name in net_names:
-        net = getattr(algorithm, net_name)
-        model_path = f'{prepath}_model_{net_name}.pth'
-        load(net, model_path)
-
-
-def copy(src_net, tar_net):
-    '''Copy model weights from src to target'''
-    tar_net.load_state_dict(src_net.state_dict())
-
-
-def polyak_update(src_net, tar_net, beta=0.5):
-    '''Polyak weight update to update a target tar_net'''
-    tar_params = tar_net.named_parameters()
-    src_params = src_net.named_parameters()
-    src_dict_params = dict(src_params)
-
-    for name, tar_param in tar_params:
-        if name in src_dict_params:
-            src_dict_params[name].data.copy_(beta * tar_param.data + (1 - beta) * src_dict_params[name].data)
-
-    tar_net.load_state_dict(src_dict_params)
 
 
 def calc_q_value_logits(state_value, raw_advantages):

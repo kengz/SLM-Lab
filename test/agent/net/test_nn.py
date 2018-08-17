@@ -80,12 +80,12 @@ class TestNet:
             assert True is True
             return
         flag = True
-        before_params = net_util.copy_trainable_params(net)
+        before_params = [param.clone() for param in net.parameters()]
         with torch.no_grad():
             dummy_input = self.init_dummy_input(net)
             dummy_output = self.init_dummy_output(net)
         loss = net.training_step(dummy_input, dummy_output)
-        after_params = net_util.copy_trainable_params(net)
+        after_params = [param.clone() for param in net.parameters()]
         i = 0
         if before_params is not None:
             for b, a in zip(before_params, after_params):
@@ -111,11 +111,11 @@ class TestNet:
             assert True is True
             return
         flag = True
-        before_params = net_util.copy_fixed_params(net)
+        before_params = None
         dummy_input = self.init_dummy_input(net)
         dummy_output = self.init_dummy_output(net)
         loss = net.training_step(dummy_input, dummy_output)
-        after_params = net_util.copy_fixed_params(net)
+        after_params = None
         i = 0
         if before_params is not None:
             for b, a in zip(before_params, after_params):
