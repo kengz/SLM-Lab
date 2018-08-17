@@ -1,11 +1,12 @@
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import math_util, policy_util
 from slm_lab.agent.algorithm.base import Algorithm
+from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import torch
 import pydash as ps
+import torch
 
 logger = logger.get_logger(__name__)
 
@@ -87,15 +88,7 @@ class Reinforce(Algorithm):
         Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
         '''
         in_dim = self.body.state_dim
-        if self.body.is_discrete:
-            out_dim = self.body.action_dim
-            if self.net_spec['type'] == 'MLPdefault':
-                self.net_spec['type'] = 'MLPNet'
-        else:
-            # 2 for loc and scale per dim
-            out_dim = self.body.action_dim * [2]
-            if self.net_spec['type'] == 'MLPdefault':
-                self.net_spec['type'] = 'MLPHeterogenousTails'
+        out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net']
@@ -112,8 +105,6 @@ class Reinforce(Algorithm):
         else:
             net.train()
             pdparam = net(x)
-        if (not self.body.is_discrete) and len(pdparam) == 1:
-            pdparam = pdparam[0]
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
 

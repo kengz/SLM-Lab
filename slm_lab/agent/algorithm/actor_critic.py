@@ -2,11 +2,12 @@ from copy import deepcopy
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import math_util, policy_util
 from slm_lab.agent.algorithm.reinforce import Reinforce
+from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import torch
 import pydash as ps
+import torch
 
 logger = logger.get_logger(__name__)
 
@@ -141,35 +142,17 @@ class ActorCritic(Reinforce):
         net_type = self.net_spec['type']
         # options of net_type are {MLPNet, ConvNet, RecurrentNet} x {Shared, Separate}
         in_dim = self.body.state_dim
-        if self.body.is_discrete:
-            if 'Shared' in net_type:
-                self.share_architecture = True
-                if ps.is_iterable(self.body.action_dim):
-                    out_dim = self.body.action_dim + [1]
-                else:
-                    out_dim = [self.body.action_dim, 1]
-            else:
-                assert 'Separate' in net_type
-                self.share_architecture = False
-                out_dim = self.body.action_dim
-                critic_out_dim = 1
+        if 'Shared' in net_type:
+            self.share_architecture = True
+            out_dim = net_util.get_out_dim(self.body, add_critic=True)
         else:
-            if ps.is_iterable(self.body.action_dim):
-                raise NotImplementedError('multi_continuous not supported yet')
-            if 'Shared' in net_type:
-                self.share_architecture = True
-                # 2 for loc and scale per dim
-                out_dim = self.body.action_dim * [2] + [1]
-            else:
-                assert 'Separate' in net_type
-                self.share_architecture = False
-                out_dim = self.body.action_dim * [2]
-                if len(out_dim) == 1:
-                    out_dim = out_dim[0]
-                critic_out_dim = 1
+            assert 'Separate' in net_type
+            self.share_architecture = False
+            out_dim = net_util.get_out_dim(self.body)
+            critic_out_dim = 1
 
         self.net_spec['type'] = net_type = net_type.replace('Shared', '').replace('Separate', '')
-        if 'MLP' in net_type and ps.is_list(out_dim) and len(out_dim) > 1:
+        if 'MLP' in net_type and ps.is_list(out_dim):
             self.net_spec['type'] = 'MLPHeterogenousTails'
 
         actor_net_spec = self.net_spec.copy()

@@ -1,6 +1,7 @@
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.base import Algorithm
+from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -86,8 +87,10 @@ class SARSA(Algorithm):
         '''Initialize the neural network used to learn the Q function from the spec'''
         if 'Recurrent' in self.net_spec['type']:
             self.net_spec.update(seq_len=self.net_spec['seq_len'])
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self.body.state_dim, self.body.action_dim)
+        self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net']
         self.post_init_nets()
 

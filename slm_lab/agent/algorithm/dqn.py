@@ -92,8 +92,10 @@ class VanillaDQN(SARSA):
         '''Initialize the neural network used to learn the Q function from the spec'''
         if self.algorithm_spec['name'] == 'VanillaDQN':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for VanillaDQN; use DQN.'
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, self.body.state_dim, self.body.action_dim)
+        self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net']
         self.post_init_nets()
 
@@ -196,7 +198,8 @@ class DQNBase(VanillaDQN):
         '''Initialize networks'''
         if self.algorithm_spec['name'] == 'DQNBase':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for DQNBase; use DQN.'
-        in_dim, out_dim = self.body.state_dim, self.body.action_dim
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.target_net = NetClass(self.net_spec, in_dim, out_dim)
