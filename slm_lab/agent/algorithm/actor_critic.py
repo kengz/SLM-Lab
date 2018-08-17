@@ -164,8 +164,6 @@ class ActorCritic(Reinforce):
         in_dim = self.body.state_dim
         out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
         # main actor network, may contain out_dim self.shared == True
-        if 'MLP' in actor_net_spec['type'] and ps.is_list(out_dim):
-            actor_net_spec['type'] = 'MLPHeterogenousTails'
         NetClass = getattr(net, actor_net_spec['type'])
         self.net = NetClass(actor_net_spec, in_dim, out_dim)
         self.net_names = ['net']
@@ -188,11 +186,10 @@ class ActorCritic(Reinforce):
         else:
             net.train()
             pdparam = net(x)
-        if self.shared:
-            # MLPHeterogenousTails, get front (no critic)
-            if len(pdparam) == 2:  # only (logits)/(loc, scale) and (v)
+        if self.shared:  # output: policy, value
+            if len(pdparam) == 2:  # single policy outputs, value
                 pdparam = pdparam[0]
-            else:
+            else:  # multiple policy outputs, value
                 pdparam = pdparam[:-1]
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
@@ -202,14 +199,13 @@ class ActorCritic(Reinforce):
         Forward-pass to calculate the predicted state-value from critic.
         '''
         net = self.net if net is None else net
-        if self.shared:
+        if self.shared:  # output: policy, value
             if evaluate:
                 out = net.wrap_eval(x)
             else:
                 net.train()
                 out = net(x)
-            # MLPHeterogenousTails, get last
-            v = out[-1].squeeze_(dim=1)
+            v = out[-1].squeeze_(dim=1)  # get value only
         else:
             if evaluate:
                 out = self.critic.wrap_eval(x)
