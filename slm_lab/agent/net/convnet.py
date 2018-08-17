@@ -189,7 +189,7 @@ class ConvNet(Net, nn.Module):
         x = self.dense_model(x)
         # return tensor if single tail, else list of tail tensors
         if len(self.model_tails) == 1:
-            return model_tails[0](x)
+            return self.model_tails[0](x)
         else:
             outs = []
             for model_tail in self.model_tails:
