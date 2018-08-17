@@ -180,12 +180,7 @@ class ActorCritic(Reinforce):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
-        net = self.net if net is None else net
-        if evaluate:
-            pdparam = net.wrap_eval(x)
-        else:
-            net.train()
-            pdparam = net(x)
+        pdparam = super(ActorCritic, self).calc_pdparam(x, evaluate=evaluate, net=net)
         if self.shared:  # output: policy, value
             if len(pdparam) == 2:  # single policy outputs, value
                 pdparam = pdparam[0]
