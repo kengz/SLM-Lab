@@ -21,7 +21,6 @@
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 4,
         "training_epoch": 4
@@ -115,7 +114,6 @@
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4
@@ -209,7 +207,6 @@
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4
@@ -306,7 +303,6 @@
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4
@@ -403,7 +399,6 @@
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 4,
         "training_epoch": 4
@@ -497,7 +492,6 @@
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4
@@ -591,7 +585,6 @@
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4
@@ -688,7 +681,6 @@
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4
@@ -785,7 +777,6 @@
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4
@@ -864,7 +855,6 @@
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4

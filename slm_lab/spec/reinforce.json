@@ -13,7 +13,6 @@
         "gamma": 0.99,
         "add_entropy": true,
         "entropy_coef": 0.01,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1
       },
       "memory": {
@@ -83,7 +82,6 @@
         "gamma": 0.99,
         "add_entropy": true,
         "entropy_coef": 0.01,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1
       },
       "memory": {
@@ -156,7 +154,6 @@
         "gamma": 0.99,
         "add_entropy": true,
         "entropy_coef": 0.01,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1
       },
       "memory": {
@@ -226,7 +223,6 @@
         "gamma": 0.99,
         "add_entropy": true,
         "entropy_coef": 0.01,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1
       },
       "memory": {
@@ -299,7 +295,6 @@
         "gamma": 0.99,
         "add_entropy": true,
         "entropy_coef": 0.01,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1
       },
       "memory": {

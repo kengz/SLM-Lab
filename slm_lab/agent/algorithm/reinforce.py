@@ -35,7 +35,6 @@ class Reinforce(Algorithm):
         "gamma": 0.99,
         "add_entropy": false,
         "entropy_coef": 0.01,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1
     }
     '''
@@ -71,7 +70,6 @@ class Reinforce(Algorithm):
             'gamma',  # the discount factor
             'add_entropy',
             'entropy_coef',
-            'continuous_action_clip',
             'training_frequency',
         ])
         self.to_train = 0

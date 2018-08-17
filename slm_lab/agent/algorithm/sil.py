@@ -39,7 +39,6 @@ class SIL(ActorCritic):
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.01,
-        "continuous_action_clip": 2.0,
         "training_batch_epoch": 8,
         "training_frequency": 1,
         "training_epoch": 8
@@ -96,7 +95,6 @@ class SIL(ActorCritic):
             'val_loss_coef',
             'sil_policy_loss_coef',
             'sil_val_loss_coef',
-            'continuous_action_clip',
             'training_frequency',
             'training_batch_epoch',
             'training_epoch',
