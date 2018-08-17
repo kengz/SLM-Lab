@@ -86,3 +86,8 @@ def calc_gaes(rewards, v_preds, next_v_preds, gamma, lam):
     assert not np.isnan(gaes).any(), f'GAE has nan: {gaes}'
     gaes = torch.from_numpy(gaes).float()
     return gaes
+
+
+def calc_q_value_logits(state_value, raw_advantages):
+    mean_adv = raw_advantages.mean(dim=-1).unsqueeze_(dim=-1)
+    return state_value + raw_advantages - mean_adv

@@ -1,3 +1,4 @@
+from slm_lab.agent.algorithm import math_util
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
 from slm_lab.lib import logger, util
@@ -447,5 +448,5 @@ class DuelingMLPNet(MLPNet):
         x = self.model_body(x)
         state_value = self.v(x)
         raw_advantages = self.adv(x)
-        out = net_util.calc_q_value_logits(state_value, raw_advantages)
+        out = math_util.calc_q_value_logits(state_value, raw_advantages)
         return out
