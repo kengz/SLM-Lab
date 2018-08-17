@@ -145,22 +145,10 @@ class ActorCritic(Reinforce):
             - Feedforward and convolutional networks take a single state as input and require an OnPolicyReplay or OnPolicyBatchReplay memory
             - Recurrent networks take n states as input and require an OnPolicySeqReplay or OnPolicySeqBatchReplay memory
         '''
-        net_type = self.net_spec['type']
-        # options of net_type are {MLPNet, ConvNet, RecurrentNet} x {Shared, Separate}
-        in_dim = self.body.state_dim
-        if 'Shared' in net_type:
-            self.share_architecture = True
-            out_dim = net_util.get_out_dim(self.body, add_critic=True)
-        else:
-            assert 'Separate' in net_type
-            self.share_architecture = False
-            out_dim = net_util.get_out_dim(self.body)
-            critic_out_dim = 1
+        assert 'shared' in self.net_spec, 'Specify "shared" for ActorCritic network in net_spec'
+        self.shared = self.net_spec['shared']
 
-        self.net_spec['type'] = net_type = net_type.replace('Shared', '').replace('Separate', '')
-        if 'MLP' in net_type and ps.is_list(out_dim):
-            self.net_spec['type'] = 'MLPHeterogenousTails'
-
+        # create actor/critic specific specs
         actor_net_spec = self.net_spec.copy()
         critic_net_spec = self.net_spec.copy()
         for k in self.net_spec:
@@ -170,22 +158,23 @@ class ActorCritic(Reinforce):
             if 'critic_' in k:
                 critic_net_spec[k.replace('critic_', '')] = critic_net_spec.pop(k)
                 actor_net_spec.pop(k)
+        if critic_net_spec['use_same_optim']:
+            critic_net_spec = actor_net_spec
 
-        NetClass = getattr(net, self.net_spec['type'])
-        # properly set net_spec and action_dim for actor, critic nets
-        if self.share_architecture:
-            # net = actor_critic as one
-            self.net = NetClass(actor_net_spec, in_dim, out_dim)
-            self.net_names = ['net']
-        else:
-            # main net = actor
-            self.net = NetClass(actor_net_spec, in_dim, out_dim)
-            if critic_net_spec['use_same_optim']:
-                critic_net_spec = actor_net_spec
-            # stand-alone critic does not use Heterogenous tails
-            CriticNetClass = getattr(net, self.net_spec['type'].replace('HeterogenousTails', 'Net'))
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
+        # main actor network, may contain out_dim self.shared == True
+        if 'MLP' in actor_net_spec['type'] and ps.is_list(out_dim):
+            actor_net_spec['type'] = 'MLPHeterogenousTails'
+        NetClass = getattr(net, actor_net_spec['type'])
+        self.net = NetClass(actor_net_spec, in_dim, out_dim)
+        self.net_names = ['net']
+        if not self.shared:  # add separate network for critic
+            critic_out_dim = 1
+            CriticNetClass = getattr(net, critic_net_spec['type'])
             self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
-            self.net_names = ['net', 'critic']
+            self.net_names.append('critic')
+
         self.post_init_nets()
 
     @lab_api
@@ -199,7 +188,7 @@ class ActorCritic(Reinforce):
         else:
             net.train()
             pdparam = net(x)
-        if self.share_architecture:
+        if self.shared:
             # MLPHeterogenousTails, get front (no critic)
             if len(pdparam) == 2:  # only (logits)/(loc, scale) and (v)
                 pdparam = pdparam[0]
@@ -213,7 +202,7 @@ class ActorCritic(Reinforce):
         Forward-pass to calculate the predicted state-value from critic.
         '''
         net = self.net if net is None else net
-        if self.share_architecture:
+        if self.shared:
             if evaluate:
                 out = net.wrap_eval(x)
             else:
@@ -236,7 +225,7 @@ class ActorCritic(Reinforce):
         '''Trains the algorithm'''
         if util.get_lab_mode() == 'enjoy':
             return np.nan
-        if self.share_architecture:
+        if self.shared:
             return self.train_shared()
         else:
             return self.train_separate()
@@ -390,7 +379,7 @@ class ActorCritic(Reinforce):
     @lab_api
     def update(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
-        nets = [self.net] if self.share_architecture else [self.net, self.critic]
+        nets = [self.net] if self.shared else [self.net, self.critic]
         for net in nets:
             net.update_lr(space_clock)
         explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]

@@ -110,7 +110,7 @@
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "MLPdefault",
+        "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad": false,
