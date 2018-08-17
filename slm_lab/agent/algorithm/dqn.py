@@ -230,7 +230,7 @@ class DQNBase(VanillaDQN):
         if self.net.update_type == 'replace':
             if total_t % self.net.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
-                self.target_net.load_state_dict(self.net.state_dict())
+                net_util.copy(self.target_net, self.net)
                 self.online_net = self.target_net
                 self.eval_net = self.target_net
         elif self.net.update_type == 'polyak':
