@@ -16,14 +16,14 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_batch_epoch": 4,
         "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "Replay",
+        "sil_replay_name": "SILReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -105,14 +105,14 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "Replay",
+        "sil_replay_name": "SILReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -194,14 +194,14 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SeqReplay",
+        "sil_replay_name": "SILSeqReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -286,14 +286,14 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SeqReplay",
+        "sil_replay_name": "SILSeqReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -378,14 +378,14 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_batch_epoch": 4,
         "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "Replay",
+        "sil_replay_name": "SILReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -467,14 +467,14 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "Replay",
+        "sil_replay_name": "SILReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -556,14 +556,14 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SeqReplay",
+        "sil_replay_name": "SILSeqReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -648,14 +648,14 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.01,
+        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SeqReplay",
+        "sil_replay_name": "SILSeqReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true

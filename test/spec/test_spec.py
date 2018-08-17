@@ -1,3 +1,4 @@
+from flaky import flaky
 from slm_lab.experiment.control import Trial, Session
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
@@ -172,6 +173,7 @@ def test_sarsa(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('dqn.json', 'vanilla_dqn_cartpole'),
     ('dqn.json', 'dqn_boltzmann_cartpole'),
