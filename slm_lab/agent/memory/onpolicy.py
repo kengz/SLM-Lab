@@ -1,8 +1,8 @@
-from collections import Iterable, deque
+from collections import deque
+from copy import deepcopy
 from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-import copy
 import numpy as np
 import pydash as ps
 
@@ -175,7 +175,7 @@ class OnPolicySeqReplay(OnPolicyReplay):
         for epi_data in data:
             data_seq = []
             # make [0, ..., *epi_data]
-            padded_epi_data = copy.deepcopy(epi_data)
+            padded_epi_data = deepcopy(epi_data)
             padding = np.zeros_like(epi_data[0])
             for i in range(self.seq_len - 1):
                 padded_epi_data.insert(0, padding)
@@ -300,7 +300,7 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
         '''Construct the seq data for sampling'''
         data_seq = []
         # make [0, ..., *data]
-        padded_data = copy.deepcopy(data)
+        padded_data = deepcopy(data)
         padding = np.zeros_like(data[0])
         for i in range(self.seq_len - 1):
             padded_data.insert(0, padding)
