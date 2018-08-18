@@ -195,7 +195,7 @@ class SILReplay(Replay):
         self.rets[self.head] = ret
 
 
-class SILSeqReplay(SILReplay):
+class SILSeqReplay(SeqReplay):
     '''
     Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as SILReplay memory
 
@@ -210,31 +210,19 @@ class SILSeqReplay(SILReplay):
     '''
 
     def __init__(self, memory_spec, algorithm, body):
-        self.seq_len = algorithm.net_spec['seq_len']
         super(SILSeqReplay, self).__init__(memory_spec, algorithm, body)
-        self.state_buffer = deque(maxlen=self.seq_len)
-        # update states_shape and call reset again
-        self.states_shape = self.scalar_shape + tuple(np.reshape([self.seq_len, self.body.state_dim], -1))
+        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'rets']
         self.reset()
 
-    def epi_reset(self, state):
-        '''Method to reset at new episode'''
-        super(SILSeqReplay, self).epi_reset(self.preprocess_state(state, append=False))
-
-    def preprocess_state(self, state, append=True):
-        '''Transforms the raw state into format that is fed into the network'''
-        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
-        if append:
-            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
-            self.state_buffer.append(state)
-        processed_state = np.stack(self.state_buffer)
-        return processed_state
+    @lab_api
+    def update(self, action, reward, state, done):
+        '''Interface method to update memory.'''
+        raise AssertionError('Do not call SIL memory in main API control loop')
 
     def add_experience(self, state, action, reward, next_state, done, ret):
-        # prevent conflict with preprocess in epi_reset
-        state = self.preprocess_state(state, append=False)
-        next_state = self.preprocess_state(next_state, append=False)
-        super(SILSeqReplay, self).add_experience(state, action, reward, next_state, done, ret)
+        '''Used to add memory from onpolicy memory'''
+        super(SILSeqReplay, self).add_experience(state, action, reward, next_state, done)
+        self.rets[self.head] = ret
 
 
 class StackReplay(Replay):
