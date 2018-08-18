@@ -113,9 +113,13 @@ class PrioritizedReplay(Replay):
             'max_size',
             'use_cer',
         ])
+        super(PrioritizedReplay, self).__init__(memory_spec, algorithm, body)
+
         self.epsilon = torch.full((1,), self.epsilon)
         self.alpha = torch.full((1,), self.alpha)
-        super(PrioritizedReplay, self).__init__(memory_spec, algorithm, body)
+        # adds a 'priorities' scalar to the data_keys and call reset again
+        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
+        self.reset()
 
     def reset(self):
         super(PrioritizedReplay, self).reset()
@@ -126,9 +130,10 @@ class PrioritizedReplay(Replay):
         Implementation for update() to add experience to memory, expanding the memory size if necessary.
         All experiences are added with a high priority to increase the likelihood that they are sampled at least once.
         '''
+        super(PrioritizedReplay, self).add_experience(state, action, reward, next_state, done)
         error = torch.zeros(1).fill_(error)
         priority = self.get_priority(error)
-        super(PrioritizedReplay, self).add_experience(state, action, reward, next_state, done, priority)
+        self.priorities[self.head] = priority
         self.tree.add(priority, self.head)
 
     def get_priority(self, error):
@@ -172,6 +177,7 @@ class PrioritizedReplay(Replay):
         '''
         body_errors = self.get_body_errors(errors)
         priorities = self.get_priority(body_errors)
-        super(PrioritizedReplay, self).update_priorities(priorities)
+        assert len(priorities) == self.batch_idxs.size
+        self.priorities[self.batch_idxs] = priorities
         for p, i in zip(priorities, self.tree_idxs):
             self.tree.update(i, p)

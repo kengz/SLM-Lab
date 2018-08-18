@@ -6,7 +6,7 @@ import pytest
 
 def memory_init_util(memory):
     assert memory.true_size == 0
-    assert memory.total_experiences == 0
+    assert memory.seen_size == 0
     return True
 
 
@@ -22,7 +22,6 @@ def memory_reset_util(memory, experiences):
     assert np.sum(memory.rewards) == 0
     assert np.sum(memory.next_states) == 0
     assert np.sum(memory.dones) == 0
-    assert np.sum(memory.priorities) == 0
     return True
 
 
@@ -54,7 +53,6 @@ class TestOnPolicyBatchMemory:
         assert memory.actions[-1] == exp[2]
         assert np.array_equal(memory.next_states[-1], exp[3])
         assert memory.dones[-1] == exp[4]
-        assert memory.priorities[-1] == 1
 
     def test_sample(self, test_on_policy_batch_memory):
         '''Tests that a sample of batch size is returned with the correct dimensions'''
@@ -71,7 +69,6 @@ class TestOnPolicyBatchMemory:
         assert len(batch['next_states']) == size
         assert len(batch['actions']) == size
         assert len(batch['dones']) == size
-        assert len(batch['priorities']) == size
         assert len(memory.states) == 0
 
     def test_batch_size(self, test_on_policy_batch_memory):
@@ -125,7 +122,6 @@ class TestOnPolicyMemory:
         assert memory.cur_epi_data['actions'][-1] == exp[2]
         assert np.array_equal(memory.cur_epi_data['next_states'][-1], exp[3])
         assert memory.cur_epi_data['dones'][-1] == exp[4]
-        assert memory.cur_epi_data['priorities'][-1] == 1
 
     def test_sample(self, test_on_policy_episodic_memory):
         '''Tests that a sample of batch size is returned with the correct dimensions'''
@@ -142,7 +138,6 @@ class TestOnPolicyMemory:
         assert len(batch['next_states'][0]) == size
         assert len(batch['actions'][0]) == size
         assert len(batch['dones'][0]) == size
-        assert len(batch['priorities'][0]) == size
         assert len(memory.states) == 0
 
     def test_batch_size(self, test_on_policy_episodic_memory):
@@ -174,7 +169,6 @@ class TestOnPolicyMemory:
         assert len(batch['next_states']) == 3
         assert len(batch['actions']) == 3
         assert len(batch['dones']) == 3
-        assert len(batch['priorities']) == 3
         assert len(batch['states'][0]) == size
         assert len(batch['states'][1]) == size
         assert len(batch['states'][2]) == size
