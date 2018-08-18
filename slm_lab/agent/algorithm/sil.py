@@ -104,11 +104,9 @@ class SIL(ActorCritic):
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_batches(batches)
         batch['rets'] = math_util.calc_returns(batch, self.gamma).numpy()
-        data_keys = ['actions', 'rewards', 'rets', 'next_states', 'dones']
         for idx in range(len(batch['dones'])):
-            self.body.replay_memory.last_state = batch['states'][idx]
-            tuples = [batch[k][idx] for k in data_keys]
-            self.body.replay_memory.update(*tuples)
+            tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]
+            self.body.replay_memory.add_experience(*tuples)
         batch = util.to_torch_batch(batch, self.net.gpu)
         return batch
 
@@ -270,11 +268,9 @@ class PPOSIL(PPO):
         batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
         batch = util.concat_batches(batches)
         batch['rets'] = math_util.calc_returns(batch, self.gamma).numpy()
-        data_keys = ['actions', 'rewards', 'rets', 'next_states', 'dones']
         for idx in range(len(batch['dones'])):
-            self.body.replay_memory.last_state = batch['states'][idx]
-            tuples = [batch[k][idx] for k in data_keys]
-            self.body.replay_memory.update(*tuples)
+            tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]
+            self.body.replay_memory.add_experience(*tuples)
         batch = util.to_torch_batch(batch, self.net.gpu)
         return batch
 

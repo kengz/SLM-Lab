@@ -1,8 +1,8 @@
-from collections import Iterable, deque
+from collections import deque
+from copy import deepcopy
 from slm_lab.agent.memory.base import Memory
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-import copy
 import numpy as np
 import pydash as ps
 
@@ -19,7 +19,6 @@ class OnPolicyReplay(Memory):
         - reward: scalar value
         - next state: representation of next state (should be same as state)
         - done: 0 / 1 representing if the current state is the last in an episode
-        - priority (optional): scalar value, unnormalized
 
     The memory does not have a fixed size. Instead the memory stores data from N episodes, where N is determined by the user. After N episodes, all of the examples are returned to the agent to learn from.
 
@@ -43,20 +42,20 @@ class OnPolicyReplay(Memory):
         self.state_buffer = deque(maxlen=0)  # for API consistency
         # Don't want total experiences reset when memory is
         self.is_episodic = True
-        self.total_experiences = 0
-        self.warn_size_once = ps.once(lambda msg: logger.warn(msg))
+        self.true_size = 0  # to number of experiences stored
+        self.seen_size = 0  # the number of experiences seen, including those stored and discarded
+        # declare what data keys to store
+        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones']
         self.reset()
 
     @lab_api
     def reset(self):
         '''Resets the memory. Also used to initialize memory vars'''
-        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
         for k in self.data_keys:
             setattr(self, k, [])
         self.cur_epi_data = {k: [] for k in self.data_keys}
         self.most_recent = [None] * len(self.data_keys)
         self.true_size = 0  # Size of the current memory
-
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
@@ -69,9 +68,9 @@ class OnPolicyReplay(Memory):
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
 
-    def add_experience(self, state, action, reward, next_state, done, priority=1):
+    def add_experience(self, state, action, reward, next_state, done):
         '''Interface helper method for update() to add experience to memory'''
-        self.most_recent = [state, action, reward, next_state, done, priority]
+        self.most_recent = [state, action, reward, next_state, done]
         for idx, k in enumerate(self.data_keys):
             self.cur_epi_data[k].append(self.most_recent[idx])
         # If episode ended, add to memory and clear cur_epi_data
@@ -87,7 +86,7 @@ class OnPolicyReplay(Memory):
         self.true_size += 1
         if self.true_size > 1000:
             self.warn_size_once('Large memory size: {}'.format(self.true_size))
-        self.total_experiences += 1
+        self.seen_size += 1
 
     def get_most_recent_experience(self):
         '''Returns the most recent experience'''
@@ -95,8 +94,7 @@ class OnPolicyReplay(Memory):
 
     def sample(self):
         '''
-        Returns all the examples from memory in a single batch
-        Batch is stored as a dict.
+        Returns all the examples from memory in a single batch. Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are nested lists of the corresponding sampled elements. Elements are nested into episodes
         e.g.
         batch = {
@@ -104,8 +102,7 @@ class OnPolicyReplay(Memory):
             'actions'    : [[a_epi1], [a_epi2], ...],
             'rewards'    : [[r_epi1], [r_epi2], ...],
             'next_states': [[ns_epi1], [ns_epi2], ...],
-            'dones'      : [[d_epi1], [d_epi2], ...],
-            'priorities' : [[p_epi1], [p_epi2], ...]}
+            'dones'      : [[d_epi1], [d_epi2], ...]}
         '''
         batch = {k: getattr(self, k) for k in self.data_keys}
         self.reset()
@@ -139,8 +136,7 @@ class OnPolicySeqReplay(OnPolicyReplay):
 
     def sample(self):
         '''
-        Returns all the examples from memory in a single batch
-        Batch is stored as a dict.
+        Returns all the examples from memory in a single batch. Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are nested lists of the corresponding sampled elements. Elements are nested into episodes
         states and next_states have are further nested into sequences containing the previous `seq_len` - 1 relevant states
         e.g.
@@ -156,8 +152,7 @@ class OnPolicySeqReplay(OnPolicyReplay):
                 [ns_seq_0, ns_seq_1, ..., ns_seq_k]_epi_1,
                 [ns_seq_0, ns_seq_1, ..., ns_seq_k]_epi_2,
                 ...]
-            'dones'     : [[d_epi1], [d_epi2], ...],
-            'priorities': [[p_epi1], [p_epi2], ...]}
+            'dones'     : [[d_epi1], [d_epi2], ...]}
         '''
         batch = {}
         batch['states'] = self.build_seqs(self.states)
@@ -165,7 +160,6 @@ class OnPolicySeqReplay(OnPolicyReplay):
         batch['rewards'] = self.rewards
         batch['next_states'] = self.build_seqs(self.next_states)
         batch['dones'] = self.dones
-        batch['priorities'] = self.priorities
         self.reset()
         return batch
 
@@ -175,7 +169,7 @@ class OnPolicySeqReplay(OnPolicyReplay):
         for epi_data in data:
             data_seq = []
             # make [0, ..., *epi_data]
-            padded_epi_data = copy.deepcopy(epi_data)
+            padded_epi_data = deepcopy(epi_data)
             padding = np.zeros_like(epi_data[0])
             for i in range(self.seq_len - 1):
                 padded_epi_data.insert(0, padding)
@@ -205,24 +199,23 @@ class OnPolicyBatchReplay(OnPolicyReplay):
         super(OnPolicyBatchReplay, self).__init__(memory_spec, algorithm, body)
         self.is_episodic = False
 
-    def add_experience(self, state, action, reward, next_state, done, priority=1):
+    def add_experience(self, state, action, reward, next_state, done):
         '''Interface helper method for update() to add experience to memory'''
-        self.most_recent = [state, action, reward, next_state, done, priority]
+        self.most_recent = [state, action, reward, next_state, done]
         for idx, k in enumerate(self.data_keys):
             getattr(self, k).append(self.most_recent[idx])
         # Track memory size and num experiences
         self.true_size += 1
         if self.true_size > 1000:
             self.warn_size_once('Large memory size: {}'.format(self.true_size))
-        self.total_experiences += 1
+        self.seen_size += 1
         # Decide if agent is to train
         if done or len(self.states) == self.body.agent.algorithm.training_frequency:
             self.body.agent.algorithm.to_train = 1
 
     def sample(self):
         '''
-        Returns all the examples from memory in a single batch
-        Batch is stored as a dict.
+        Returns all the examples from memory in a single batch. Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are a list of the corresponding sampled elements
         e.g.
         batch = {
@@ -230,8 +223,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
             'actions'    : actions,
             'rewards'    : rewards,
             'next_states': next_states,
-            'dones'      : dones,
-            'priorities' : priorities}
+            'dones'      : dones}
         '''
         return super(OnPolicyBatchReplay, self).sample()
 
@@ -272,8 +264,7 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
 
     def sample(self):
         '''
-        Returns all the examples from memory in a single batch
-        Batch is stored as a dict.
+        Returns all the examples from memory in a single batch. Batch is stored as a dict.
         Keys are the names of the different elements of an experience. Values are a list of the corresponding sampled elements.
         states and next_states have are further nested into sequences containing the previous `seq_len` - 1 relevant states
         e.g.
@@ -283,8 +274,7 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
             'actions'    : actions,
             'rewards'    : rewards,
             'next_states': [[ns_seq_0, ns_seq_1, ..., ns_seq_k]],
-            'dones'      : dones,
-            'priorities' : priorities}
+            'dones'      : dones}
         '''
         batch = {}
         batch['states'] = self.build_seqs(self.states)
@@ -292,7 +282,6 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
         batch['rewards'] = self.rewards
         batch['next_states'] = self.build_seqs(self.next_states)
         batch['dones'] = self.dones
-        batch['priorities'] = self.priorities
         self.reset()
         return batch
 
@@ -300,7 +289,7 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
         '''Construct the seq data for sampling'''
         data_seq = []
         # make [0, ..., *data]
-        padded_data = copy.deepcopy(data)
+        padded_data = deepcopy(data)
         padding = np.zeros_like(data[0])
         for i in range(self.seq_len - 1):
             padded_data.insert(0, padding)

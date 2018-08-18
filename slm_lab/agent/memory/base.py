@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod, abstractproperty
 from collections import deque
-from slm_lab.lib import logger
+from slm_lab.lib import logger, util
 import numpy as np
+import pydash as ps
 
 logger = logger.get_logger(__name__)
 
@@ -23,8 +24,12 @@ class Memory(ABC):
         self.body = body
         self.agent_spec = body.agent.agent_spec
 
+        # declare what data keys to store
+        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
         # the basic variables for every memory
         self.last_state = None
+        # method to log size warning only once to prevent spamming log
+        self.warn_size_once = ps.once(lambda msg: logger.warn(msg))
         # for API consistency, reset to some max_len in your specific memory class
         self.state_buffer = deque(maxlen=0)
         # total_reward and its history over episodes
@@ -71,3 +76,9 @@ class Memory(ABC):
     def sample(self):
         '''Implement memory sampling mechanism'''
         raise NotImplementedError
+
+    def print_memory_info(self):
+        '''Prints size of all of the memory arrays'''
+        for k in self.data_keys:
+            d = getattr(self, k)
+            logger.info(f'Memory for body {self.body.aeb}: {k} :shape: {d.shape}, dtype: {d.dtype}, size: {util.memory_size(d)}MB')

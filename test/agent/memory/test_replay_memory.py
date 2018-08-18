@@ -22,7 +22,6 @@ class TestMemory:
         assert memory.rewards.shape == (memory.max_size,)
         assert memory.next_states.shape == (memory.max_size, memory.body.state_dim)
         assert memory.dones.shape == (memory.max_size,)
-        assert memory.priorities.shape == (memory.max_size,)
 
     def test_add_experience(self, test_memory):
         '''Adds an experience to the memory. Checks that memory size = 1, and checks that the experience values are equal to the experience added'''
@@ -39,7 +38,6 @@ class TestMemory:
         assert memory.rewards[memory.head] == exp[2]
         assert np.array_equal(memory.next_states[memory.head], exp[3])
         assert memory.dones[memory.head] == exp[4]
-        assert memory.priorities[memory.head] == 1
 
     def test_wrap(self, test_memory):
         '''Tests that the memory wraps round when it is at capacity'''
@@ -68,7 +66,6 @@ class TestMemory:
         assert batch['rewards'].shape == (batch_size,)
         assert batch['next_states'].shape == (batch_size, memory.body.state_dim)
         assert batch['dones'].shape == (batch_size,)
-        assert batch['priorities'].shape == (batch_size,)
 
     @flaky(max_runs=10)
     def test_sample_changes(self, test_memory):
@@ -104,16 +101,9 @@ class TestMemory:
         assert np.sum(memory.rewards) == 0
         assert np.sum(memory.next_states) == 0
         assert np.sum(memory.dones) == 0
-        assert np.sum(memory.priorities) == 0
 
     @pytest.mark.skip(reason="Not implemented yet")
     def test_sample_dist(self, test_memory):
         '''Samples 100 times from memory. Accumulates the indices sampled and checks for significant deviation from a uniform distribution'''
         # TODO test_sample_dist
-        assert None is None
-
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_update_priorities(self, test_memory):
-        '''Samples from memory, and updates all priorities from 1 to 2. Checks that correct experiences are updated'''
-        # TODO implement test_update_priorities
         assert None is None
