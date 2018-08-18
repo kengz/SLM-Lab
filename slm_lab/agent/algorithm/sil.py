@@ -1,15 +1,12 @@
-from copy import deepcopy
-from functools import partial
 from slm_lab.agent import net, memory
 from slm_lab.agent.algorithm import math_util, policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
 from slm_lab.agent.algorithm.ppo import PPO
-from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import torch
 import pydash as ps
+import torch
 
 logger = logger.get_logger(__name__)
 
@@ -39,11 +36,11 @@ class SIL(ActorCritic):
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.01,
-        "continuous_action_clip": 2.0,
         "training_batch_epoch": 8,
         "training_frequency": 1,
         "training_epoch": 8
     }
+
     e.g. special memory_spec
     "memory": {
         "name": "OnPolicyReplay",
@@ -96,7 +93,6 @@ class SIL(ActorCritic):
             'val_loss_coef',
             'sil_policy_loss_coef',
             'sil_val_loss_coef',
-            'continuous_action_clip',
             'training_frequency',
             'training_batch_epoch',
             'training_epoch',
@@ -215,6 +211,7 @@ class PPOSIL(PPO):
         "training_batch_epoch": 8,
         "training_epoch": 8
     }
+
     e.g. special memory_spec
     "memory": {
         "name": "OnPolicyReplay",

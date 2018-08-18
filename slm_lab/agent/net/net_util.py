@@ -45,6 +45,41 @@ def get_optim(cls, optim_spec):
     return optim
 
 
+def get_policy_out_dim(body):
+    '''Helper method to construct the policy network out_dim for a body according to is_discrete, action_type'''
+    if body.is_discrete:
+        if body.action_type == 'multi_discrete':
+            assert ps.is_list(body.action_dim), body.action_dim
+            policy_out_dim = body.action_dim
+        else:
+            assert ps.is_integer(body.action_dim), body.action_dim
+            policy_out_dim = body.action_dim
+    else:
+        if body.action_type == 'multi_continuous':
+            assert ps.is_list(body.action_dim), body.action_dim
+            raise NotImplementedError('multi_continuous not supported yet')
+        else:
+            assert ps.is_integer(body.action_dim), body.action_dim
+            if body.action_dim == 1:
+                policy_out_dim = 2  # singleton stay as int
+            else:
+                policy_out_dim = body.action_dim * [2]
+    return policy_out_dim
+
+
+def get_out_dim(body, add_critic=False):
+    '''Construct the NetClass out_dim for a body according to is_discrete, action_type, and whether to add a critic unit'''
+    policy_out_dim = get_policy_out_dim(body)
+    if add_critic:
+        if ps.is_list(policy_out_dim):
+            out_dim = policy_out_dim + [1]
+        else:
+            out_dim = [policy_out_dim, 1]
+    else:
+        out_dim = policy_out_dim
+    return out_dim
+
+
 def init_gru_layer(layer):
     '''Initializes a GRU layer in with xavier_uniform initialization and 0 biases'''
     for layer_p in layer._all_weights:
@@ -202,8 +237,3 @@ def gen_assert_trained(pre_model):
         assert all(param.grad.norm() < 100.0 for param in post_model.parameters()), 'Gradient norm is > 100, which is bad. Consider using the "clip_grad" and "clip_grad_val" net parameter'
         logger.debug('Passed network weight update assertation in dev lab_mode.')
     return assert_trained
-
-
-def calc_q_value_logits(state_value, raw_advantages):
-    mean_adv = raw_advantages.mean(dim=-1).unsqueeze_(dim=-1)
-    return state_value + raw_advantages - mean_adv

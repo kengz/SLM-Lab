@@ -32,7 +32,7 @@ class TestNet:
             dummy_output = []
             for outdim in net.out_dim:
                 dummy_output.append(torch.zeros((2, outdim[-1])))
-        elif 'MLPHeterogenousTails' in net.__class__.__name__ or len(net.out_dim) > 1:
+        elif 'MLPNet' in net.__class__.__name__ or len(net.out_dim) > 1:
             dummy_output = []
             for outdim in net.out_dim:
                 print(type(outdim), outdim)
@@ -42,8 +42,8 @@ class TestNet:
         return dummy_output
 
     def check_net_type(self, net):
-        # Skipping test for 'MLPHeterogenousTails' because there is no training step function
-        if 'MLPHeterogenousTails' in net.__class__.__name__:
+        # Skipping test for 'MLPNet' because there is no training step function
+        if 'MLPNet' in net.__class__.__name__:
             return True
         # Skipping test for 'RecurrentNet' and 'ConvNet' with multiple output heads because training step not applicable
         elif any(k in net.__class__.__name__ for k in ('RecurrentNet', 'ConvNet')) and len(net.out_dim) > 1:
@@ -168,7 +168,7 @@ class TestNet:
         assert loss is None
 
     def check_multi_output(self, net):
-        if any(k in net.__class__.__name__ for k in ('HydraMLPNet', 'MLPHeterogenousTails', 'RecurrentNet', 'ConvNet')) and len(net.out_dim) > 1:
+        if any(k in net.__class__.__name__ for k in ('HydraMLPNet', 'MLPNet', 'RecurrentNet', 'ConvNet')) and len(net.out_dim) > 1:
             return True
         else:
             return False

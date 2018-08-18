@@ -1,5 +1,4 @@
 from collections import Counter
-from copy import deepcopy
 from flaky import flaky
 import numpy as np
 import pytest

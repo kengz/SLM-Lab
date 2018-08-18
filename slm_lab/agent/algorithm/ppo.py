@@ -1,5 +1,4 @@
 from copy import deepcopy
-from functools import partial
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import math_util, policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
@@ -7,8 +6,8 @@ from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import torch
 import pydash as ps
+import torch
 
 logger = logger.get_logger(__name__)
 
@@ -46,6 +45,12 @@ class PPO(ActorCritic):
         "training_frequency": 1,
         "training_epoch": 8
     }
+
+    e.g. special net_spec param "shared" to share/separate Actor/Critic
+    "net": {
+        "type": "MLPNet",
+        "shared": true,
+        ...
     '''
 
     @lab_api
