@@ -27,6 +27,7 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch",
@@ -71,6 +72,7 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -101,6 +103,7 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -128,6 +131,7 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -155,6 +159,7 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -186,6 +191,7 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch",
@@ -215,6 +221,7 @@
       "num": 12
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -254,6 +261,7 @@
       "num": 6
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -286,6 +294,7 @@
       "num": [1, 12]
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -329,6 +338,7 @@
       "num": [1, 6]
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -372,6 +382,7 @@
       "num": 2
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -415,6 +426,7 @@
       "num": 2
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -461,6 +473,7 @@
       ]
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"

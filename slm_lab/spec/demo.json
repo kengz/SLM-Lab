@@ -56,6 +56,7 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_trial": 4,
       "max_session": 4,
       "search": "RandomSearch",

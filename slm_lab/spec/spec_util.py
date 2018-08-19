@@ -36,6 +36,7 @@ SPEC_FORMAT = {
         "num": (int, list),
     },
     "meta": {
+        "distributed": bool,
         "max_session": int,
         "max_trial": (type(None), int),
         "search": str,
