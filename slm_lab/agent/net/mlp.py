@@ -1,3 +1,4 @@
+from slm_lab.agent.algorithm import math_util
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
 from slm_lab.lib import logger, util
@@ -13,6 +14,7 @@ logger = logger.get_logger(__name__)
 class MLPNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized feedforward neural network
+    If more than 1 output tensors, will create a self.model_tails instead of making last layer part of self.model
     '''
 
     def __init__(self, net_spec, in_dim, out_dim):
@@ -36,6 +38,7 @@ class MLPNet(Net, nn.Module):
         e.g. net_spec
         "net": {
             "type": "MLPNet",
+            "shared": true,
             "hid_layers": [32],
             "hid_layers_activation": "relu",
             "clip_grad": false,
@@ -72,6 +75,7 @@ class MLPNet(Net, nn.Module):
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
+            'separate',
             'hid_layers',
             'hid_layers_activation',
             'clip_grad',
@@ -91,7 +95,10 @@ class MLPNet(Net, nn.Module):
         dims = [self.in_dim] + self.hid_layers
         self.model = net_util.build_sequential(dims, self.hid_layers_activation)
         # add last layer with no activation
-        self.model.add_module(str(len(self.model)), nn.Linear(dims[-1], self.out_dim))
+        if ps.is_integer(self.out_dim):
+            self.model.add_module(str(len(self.model)), nn.Linear(dims[-1], self.out_dim))
+        else:  # if more than 1 output, add last layer as tails separate from main model
+            self.model_tails = nn.ModuleList([nn.Linear(dims[-1], out_d) for out_d in self.out_dim])
 
         net_util.init_layers(self.modules())
         if torch.cuda.is_available() and self.gpu:
@@ -106,7 +113,14 @@ class MLPNet(Net, nn.Module):
 
     def forward(self, x):
         '''The feedforward step'''
-        return self.model(x)
+        if hasattr(self, 'model_tails'):
+            x = self.model(x)
+            outs = []
+            for model_tail in self.model_tails:
+                outs.append(model_tail(x))
+            return outs
+        else:
+            return self.model(x)
 
     def training_step(self, x=None, y=None, loss=None, retain_graph=False, global_net=None):
         '''
@@ -157,89 +171,6 @@ class MLPNet(Net, nn.Module):
         self.optim_spec['lr'] = new_lr
         logger.debug(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)
-
-
-class MLPHeterogenousTails(MLPNet):
-    '''
-    Class for generating arbitrary sized feedforward neural network, with a heterogenous set of output tails that may correspond to different values. For example, the mean or std deviation of a continous policy, the state-value estimate, or the logits of a categorical action distribution
-
-    e.g. net_spec
-    "net": {
-        "type": "MLPHeterogenousTails",
-        "hid_layers": [32],
-        "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 1000000,
-        "update_type": "replace",
-        "update_frequency": 1,
-        "polyak_coef": 0.9,
-        "gpu": true
-    }
-    '''
-
-    def __init__(self, net_spec, in_dim, out_dim):
-        nn.Module.__init__(self)
-        Net.__init__(self, net_spec, in_dim, out_dim)
-        # set default
-        util.set_attr(self, dict(
-            clip_grad=False,
-            clip_grad_val=1.0,
-            loss_spec={'name': 'MSELoss'},
-            optim_spec={'name': 'Adam'},
-            lr_decay='no_decay',
-            update_type='replace',
-            update_frequency=1,
-            polyak_coef=0.0,
-            gpu=False,
-        ))
-        util.set_attr(self, self.net_spec, [
-            'hid_layers',
-            'hid_layers_activation',
-            'clip_grad',
-            'clip_grad_val',
-            'loss_spec',
-            'optim_spec',
-            'lr_decay',
-            'lr_decay_frequency',
-            'lr_decay_min_timestep',
-            'lr_anneal_timestep',
-            'update_type',
-            'update_frequency',
-            'polyak_coef',
-            'gpu',
-        ])
-
-        dims = [self.in_dim] + self.hid_layers
-        self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
-        # multi-tail output layer with mean and std
-        self.model_tails = nn.ModuleList([nn.Linear(dims[-1], out_d) for out_d in out_dim])
-
-        net_util.init_layers(self.modules())
-        if torch.cuda.is_available() and self.gpu:
-            for module in self.modules():
-                module.cuda()
-        self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
-        self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_decay = getattr(net_util, self.lr_decay)
-
-    def forward(self, x):
-        '''The feedforward step'''
-        x = self.model_body(x)
-        outs = []
-        for model_tail in self.model_tails:
-            outs.append(model_tail(x))
-        return outs
 
 
 class HydraMLPNet(Net, nn.Module):
@@ -329,7 +260,7 @@ class HydraMLPNet(Net, nn.Module):
             'polyak_coef',
             'gpu',
         ])
-        assert len(self.hid_layers) == 3, 'Your hidden layers must specify [*heads], [body], [*tails]. If not, use MLPHeterogenousTails'
+        assert len(self.hid_layers) == 3, 'Your hidden layers must specify [*heads], [body], [*tails]. If not, use MLPNet'
         assert isinstance(self.in_dim, list), 'Hydra network needs in_dim as list'
         assert isinstance(self.out_dim, list), 'Hydra network needs out_dim as list'
         self.head_hid_layers = self.hid_layers[0]
@@ -527,5 +458,5 @@ class DuelingMLPNet(MLPNet):
         x = self.model_body(x)
         state_value = self.v(x)
         raw_advantages = self.adv(x)
-        out = net_util.calc_q_value_logits(state_value, raw_advantages)
+        out = math_util.calc_q_value_logits(state_value, raw_advantages)
         return out

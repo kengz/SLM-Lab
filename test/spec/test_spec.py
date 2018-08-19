@@ -17,26 +17,6 @@ def run_trial_test(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('base.json', 'base_case_unity'),
-    ('base.json', 'base_case_openai'),
-    ('random.json', 'random_cartpole'),
-    # ('base.json', 'multi_agent'),
-    # ('base.json', 'multi_agent_multi_env'),
-])
-def test_base(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('base.json', 'multi_body'),
-    ('base.json', 'multi_env'),
-])
-def test_base_multi(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-# NOTE mute conv tests for onpolicy memory because there is no preprocessor yet and images will be very large
-@pytest.mark.parametrize('spec_file,spec_name', [
     ('reinforce.json', 'reinforce_mlp_cartpole'),
     ('reinforce.json', 'reinforce_rnn_cartpole'),
     # ('reinforce.json', 'reinforce_conv_breakout'),
@@ -234,4 +214,23 @@ def test_multitask_dqn(spec_file, spec_name):
     ('hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole'),
 ])
 def test_multitask_dqn(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('base.json', 'base_case_unity'),
+    ('base.json', 'base_case_openai'),
+    ('random.json', 'random_cartpole'),
+    # ('base.json', 'multi_agent'),
+    # ('base.json', 'multi_agent_multi_env'),
+])
+def test_base(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('base.json', 'multi_body'),
+    ('base.json', 'multi_env'),
+])
+def test_base_multi(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)

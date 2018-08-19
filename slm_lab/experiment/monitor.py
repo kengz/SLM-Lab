@@ -19,7 +19,6 @@ DataSpace: a data space storing an AEB data projected to a-axis, and its dual pr
 Object reference (for agent to access env properties, vice versa):
 Agents - AgentSpace - AEBSpace - EnvSpace - Envs
 '''
-from copy import deepcopy
 from slm_lab.agent import AGENT_DATA_NAMES, Body
 from slm_lab.env import ENV_DATA_NAMES, Clock
 from slm_lab.lib import logger, util

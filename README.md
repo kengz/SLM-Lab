@@ -91,11 +91,10 @@ code: [slm_lab/agent/net](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/a
 
 These networks are usable for all algorithms.
 
-- MLPNet (Multi Layer Perceptron)
-- MLPHeterogenousTails (multi-tails)
+- MLPNet (Multi Layer Perceptron, with multi-tails support)
 - HydraMLPNet (multi-heads, multi-tails)
-- RecurrentNet
-- ConvNet
+- RecurrentNet (with multi-tails support)
+- ConvNet (with multi-tails support)
 
 These networks are usable for Q-learning algorithms. For more details see [this paper](http://proceedings.mlr.press/v48/wangf16.pdf).
 

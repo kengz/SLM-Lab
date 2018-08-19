@@ -1,11 +1,12 @@
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import math_util, policy_util
 from slm_lab.agent.algorithm.base import Algorithm
+from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import torch
 import pydash as ps
+import torch
 
 logger = logger.get_logger(__name__)
 
@@ -35,7 +36,6 @@ class Reinforce(Algorithm):
         "gamma": 0.99,
         "add_entropy": false,
         "entropy_coef": 0.01,
-        "continuous_action_clip": 2.0,
         "training_frequency": 1
     }
     '''
@@ -71,7 +71,6 @@ class Reinforce(Algorithm):
             'gamma',  # the discount factor
             'add_entropy',
             'entropy_coef',
-            'continuous_action_clip',
             'training_frequency',
         ])
         self.to_train = 0
@@ -84,20 +83,12 @@ class Reinforce(Algorithm):
     def init_nets(self):
         '''
         Initialize the neural network used to learn the policy function from the spec
-        Below we automatically select an appropriate net for a discrete or continuous action space if the setting is of the form 'MLPdefault'. Otherwise the correct type of network is assumed to be specified in the spec.
+        Below we automatically select an appropriate net for a discrete or continuous action space if the setting is of the form 'MLPNet'. Otherwise the correct type of network is assumed to be specified in the spec.
         Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
         Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
         '''
         in_dim = self.body.state_dim
-        if self.body.is_discrete:
-            out_dim = self.body.action_dim
-            if self.net_spec['type'] == 'MLPdefault':
-                self.net_spec['type'] = 'MLPNet'
-        else:
-            # 2 for loc and scale per dim
-            out_dim = self.body.action_dim * [2]
-            if self.net_spec['type'] == 'MLPdefault':
-                self.net_spec['type'] = 'MLPHeterogenousTails'
+        out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net']
@@ -114,8 +105,6 @@ class Reinforce(Algorithm):
         else:
             net.train()
             pdparam = net(x)
-        if (not self.body.is_discrete) and len(pdparam) == 1:
-            pdparam = pdparam[0]
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
@@ -159,12 +148,7 @@ class Reinforce(Algorithm):
         '''Calculate the policy loss for a batch of data.'''
         # use simple returns as advs
         advs = math_util.calc_returns(batch, self.gamma)
-        # advantage standardization trick
-        # guard nan std by setting to 0 and add small const
-        adv_std = advs.std()
-        adv_std[adv_std != adv_std] = 0  # nan guard
-        adv_std += 1e-08  # division guard
-        advs = (advs - advs.mean()) / adv_std
+        advs = math_util.standardize(advs)
         logger.debug(f'advs: {advs}')
         assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)
