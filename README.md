@@ -53,6 +53,13 @@ Various algorithms are in fact extensions of some simpler ones, and they are imp
     - extension of A2C with PPO loss function
 - SIL (Self-Imitation Learning)
     - extension of A2C with off-policy training on custom loss
+- PPOSIL
+    - SIL with PPO instead of A2C
+
+Using the lab's unified API, **all the algorithms be ran in a distributed fashion**, with Session (DistSession in fact) taking the role of workers under a Trial. Some of the distributed algorithms have their own name:
+
+- A3C (Asynchronous A2C / distributed A2C)
+- DPPO (Distributed PPO)
 
 **Value-based:**
 - SARSA
@@ -65,6 +72,8 @@ Various algorithms are in fact extensions of some simpler ones, and they are imp
 - Dueling DDQN
 - Multitask DQN (multi-environment DQN)
 - Hydra DQN (multi-environment DQN)
+
+As mentioned above, **all these algorithms can be turned into distributed algorithms too**, altough we do not have special names for them.
 
 Below are the modular building blocks for the algorithms. They are designed to be general, and are reused extensively.
 
@@ -81,6 +90,8 @@ For on-policy algorithms (policy gradient):
 For off-policy algorithms (value-based)
 - Replay
 - SeqReplay
+- SILReplay (special Replay for SIL)
+- SILSeqReplay (special SeqReplay for SIL)
 - StackReplay
 - AtariReplay
 - PrioritizedReplay
