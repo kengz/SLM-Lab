@@ -8,9 +8,12 @@ import pytest
 
 
 # helper method to run all tests below, split for parallelization
-def run_trial_test(spec_file, spec_name):
+def run_trial_test(spec_file, spec_name, distributed=False):
     spec = spec_util.get(spec_file, spec_name)
     spec = util.override_test_spec(spec)
+    if distributed:
+        spec['meta']['distributed'] = True
+        spec['meta']['max_session'] = 2
     trial = Trial(spec)
     trial_data = trial.run()
     assert isinstance(trial_data, pd.DataFrame)
@@ -23,6 +26,7 @@ def run_trial_test(spec_file, spec_name):
 ])
 def test_reinforce(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -31,6 +35,7 @@ def test_reinforce(spec_file, spec_name):
 ])
 def test_reinforce_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -43,6 +48,7 @@ def test_reinforce_cont(spec_file, spec_name):
 ])
 def test_ac(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -53,6 +59,7 @@ def test_ac(spec_file, spec_name):
 ])
 def test_ac_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -65,6 +72,7 @@ def test_ac_cont(spec_file, spec_name):
 ])
 def test_a2c(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -75,6 +83,7 @@ def test_a2c(spec_file, spec_name):
 ])
 def test_a2c_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -87,6 +96,7 @@ def test_a2c_cont(spec_file, spec_name):
 ])
 def test_ppo(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -97,6 +107,7 @@ def test_ppo(spec_file, spec_name):
 ])
 def test_ppo_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -107,6 +118,7 @@ def test_ppo_cont(spec_file, spec_name):
 ])
 def test_ppo_sil(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -117,6 +129,7 @@ def test_ppo_sil(spec_file, spec_name):
 ])
 def test_ppo_sil_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -129,6 +142,7 @@ def test_ppo_sil_cont(spec_file, spec_name):
 ])
 def test_sil(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -139,6 +153,7 @@ def test_sil(spec_file, spec_name):
 ])
 def test_sil_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -151,6 +166,7 @@ def test_sil_cont(spec_file, spec_name):
 ])
 def test_sarsa(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @flaky
@@ -166,6 +182,7 @@ def test_sarsa(spec_file, spec_name):
 ])
 def test_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -178,6 +195,7 @@ def test_dqn(spec_file, spec_name):
 ])
 def test_ddqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -188,6 +206,7 @@ def test_ddqn(spec_file, spec_name):
 ])
 def test_dueling_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI has not enough RAM")
@@ -207,6 +226,7 @@ def test_dqn_breakout(spec_file, spec_name):
 ])
 def test_multitask_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -215,6 +235,7 @@ def test_multitask_dqn(spec_file, spec_name):
 ])
 def test_multitask_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
