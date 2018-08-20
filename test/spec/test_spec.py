@@ -22,7 +22,6 @@ def run_trial_test(spec_file, spec_name=False, distributed=False):
 
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('reinforce.json', 'reinforce_mlp_cartpole'),
-    ('reinforce.json', 'reinforce_mlp_cartpole'),
     ('reinforce.json', 'reinforce_rnn_cartpole'),
     # ('reinforce.json', 'reinforce_conv_breakout'),
 ])
@@ -32,7 +31,6 @@ def test_reinforce(spec_file, spec_name):
 
 @pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('reinforce.json', 'reinforce_mlp_cartpole'),
     ('reinforce.json', 'reinforce_mlp_cartpole'),
     ('reinforce.json', 'reinforce_rnn_cartpole'),
     # ('reinforce.json', 'reinforce_conv_breakout'),
