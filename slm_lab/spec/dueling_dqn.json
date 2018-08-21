@@ -56,10 +56,10 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 100,
-      "search": "RandomSearch",
-      "max_generation": null
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -138,10 +138,10 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch",
-      "max_generation": null
+      "search": "RandomSearch"
     },
     "search": {
       "agent": [{
@@ -221,6 +221,7 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -296,6 +297,7 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"

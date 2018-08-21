@@ -3,6 +3,7 @@ from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+import pydash as ps
 
 logger = logger.get_logger(__name__)
 
@@ -14,11 +15,12 @@ class Algorithm(ABC):
     Mostly, implement just the abstract methods and properties.
     '''
 
-    def __init__(self, agent):
+    def __init__(self, agent, global_nets=None):
         '''
         @param {*} agent is the container for algorithm and related components, and interfaces with env.
         '''
         self.agent = agent
+        self.global_nets = global_nets or {}
         self.agent_spec = agent.agent_spec
         self.algorithm_spec = self.agent_spec['algorithm']
         self.memory_spec = self.agent_spec['memory']
@@ -52,6 +54,8 @@ class Algorithm(ABC):
         Call at the end of init_net() after setting self.net_names
         '''
         assert hasattr(self, 'net_names')
+        if not ps.is_empty(self.global_nets):
+            assert all(k in self.net_names for k in self.global_nets), f'Provided global_nets keys: {list(self.global_nets.keys())} are inconsistent with self.net_names: {self.net_names}'
         if util.get_lab_mode() == 'enjoy':
             logger.info('Loaded algorithm models for lab_mode: enjoy')
             self.load()

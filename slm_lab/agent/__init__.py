@@ -95,7 +95,7 @@ class Agent:
     Access Envs properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    def __init__(self, agent_spec, agent_space, a=0):
+    def __init__(self, agent_spec, agent_space, a=0, global_nets=None):
         self.agent_spec = agent_spec
         self.agent_space = agent_space
         self.a = a
@@ -107,7 +107,7 @@ class Agent:
         self.body_num = None
 
         AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
-        self.algorithm = AlgorithmClass(self)
+        self.algorithm = AlgorithmClass(self, global_nets)
 
     @lab_api
     def post_body_init(self):
@@ -161,14 +161,14 @@ class AgentSpace:
     Access EnvSpace properties by: AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    def __init__(self, spec, aeb_space):
+    def __init__(self, spec, aeb_space, global_nets=None):
         self.spec = spec
         self.aeb_space = aeb_space
         aeb_space.agent_space = self
         self.agent_spec = spec['agent']
         self.info_space = aeb_space.info_space
         self.aeb_shape = aeb_space.aeb_shape
-        self.agents = [Agent(agent_spec, self, a) for a, agent_spec in enumerate(self.agent_spec)]
+        self.agents = [Agent(agent_spec, self, a, global_nets) for a, agent_spec in enumerate(self.agent_spec)]
 
     @lab_api
     def post_body_init(self):

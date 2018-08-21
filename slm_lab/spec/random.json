@@ -22,6 +22,7 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_session": 5,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -50,6 +51,7 @@
       "num": 1
     },
     "meta": {
+      "distributed": false,
       "max_session": 5,
       "max_trial": 1,
       "search": "RandomSearch"

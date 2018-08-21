@@ -237,3 +237,14 @@ def gen_assert_trained(pre_model):
         assert all(param.grad.norm() < 100.0 for param in post_model.parameters()), 'Gradient norm is > 100, which is bad. Consider using the "clip_grad" and "clip_grad_val" net parameter'
         logger.debug('Passed network weight update assertation in dev lab_mode.')
     return assert_trained
+
+
+def push_global_grad(local_net, global_net):
+    '''Push local gradient to global for distributed training'''
+    for lp, gp in zip(local_net.parameters(), global_net.parameters()):
+        gp._grad = lp.grad
+
+
+def pull_global_param(local_net, global_net):
+    '''Pull global param to local network for distributed training'''
+    copy(local_net, global_net)

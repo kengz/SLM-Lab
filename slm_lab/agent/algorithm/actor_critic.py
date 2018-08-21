@@ -232,7 +232,7 @@ class ActorCritic(Reinforce):
             policy_loss = self.calc_policy_loss(batch, advs)  # from actor
             val_loss = self.calc_val_loss(batch, v_targets)  # from critic
             loss = policy_loss + val_loss
-            self.net.training_step(loss=loss)
+            self.net.training_step(loss=loss, global_net=self.global_nets.get('net'))
             # reset
             self.to_train = 0
             self.body.log_probs = []
@@ -264,7 +264,7 @@ class ActorCritic(Reinforce):
         with torch.no_grad():
             advs, _v_targets = self.calc_advs_v_targets(batch)
         policy_loss = self.calc_policy_loss(batch, advs)
-        self.net.training_step(loss=policy_loss)
+        self.net.training_step(loss=policy_loss, global_net=self.global_nets.get('net'))
         return policy_loss
 
     def train_critic(self, batch):
@@ -275,7 +275,7 @@ class ActorCritic(Reinforce):
             with torch.no_grad():
                 _advs, v_targets = self.calc_advs_v_targets(batch)
             val_loss = self.calc_val_loss(batch, v_targets)
-            self.critic.training_step(loss=val_loss)
+            self.critic.training_step(loss=val_loss, global_net=self.global_nets.get('critic'))
             total_val_loss += val_loss.cpu()
         val_loss = total_val_loss / self.training_epoch
         return val_loss
