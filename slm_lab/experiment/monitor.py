@@ -305,6 +305,10 @@ class InfoSpace:
         index = coor[axis]
         return coor, index
 
+    def get_random_seed(self):
+        '''Standard method to get random seed for a session'''
+        return 1e5 * (self.get('trial') or 0) + 1e3 * self.get('session')
+
 
 class Monitor:
     '''

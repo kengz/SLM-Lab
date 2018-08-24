@@ -41,8 +41,7 @@ class Session:
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
-        self.random_seed = 100 * (info_space.get('trial') or 0) + self.index
-        util.set_module_seed(self.random_seed)
+        util.set_module_seed(self.info_space.get_random_seed())
         self.data = None
         # TODO tmp hack
         self.spec['env'] = self.spec['env'][0]
