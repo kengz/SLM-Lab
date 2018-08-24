@@ -88,13 +88,14 @@ def concat_batches(batches):
     Also concat any nested epi sub-batches into flat batch
     {k: arr1} + {k: arr2} = {k: arr1 + arr2}
     '''
-    episodic = is_episodic(batches[0])
+    # if is nested, then is episodic
+    is_episodic = isinstance(batches[0]['dones'][0], (list, np.ndarray))
     concat_batch = {}
     for k in batches[0]:
         datas = []
         for batch in batches:
             data = batch[k]
-            if episodic:  # make into plain batch instead of nested
+            if is_episodic:  # make into plain batch instead of nested
                 data = np.concatenate(data)
             datas.append(data)
         concat_batch[k] = np.concatenate(datas)
@@ -359,17 +360,6 @@ def interp(scl, r):
         c.append('hsl' + str(hsl))
 
     return cl.to_hsl(c)
-
-
-def is_episodic(batch):
-    '''
-    Check if batch is episodic or is plain
-    episodic: {k: [[*data_epi1], [*data_epi2], ...]}
-    plain: {k: [*data]}
-    '''
-    dones = batch['dones']  # the most reliable, scalar
-    # if is nested, then is episodic
-    return isinstance(dones[0], (list, np.ndarray))
 
 
 def is_jupyter():
@@ -798,6 +788,8 @@ def to_one_hot(data, max_val):
 def to_torch_batch(batch, gpu):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
     for k in batch:
+        if ps.is_list(batch[k]):  # for episodic format
+            batch[k] = np.concatenate(batch[k])
         batch[k] = torch.from_numpy(batch[k].astype('float32')).float()
         if torch.cuda.is_available() and gpu:
             batch[k] = batch[k].cuda()
