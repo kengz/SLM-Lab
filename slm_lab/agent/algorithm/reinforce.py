@@ -165,7 +165,8 @@ class Reinforce(Algorithm):
     @lab_api
     def update(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
-        for net in [self.net]:
+        for net_name in self.net_names:
+            net = getattr(self, net_name)
             net.update_lr(space_clock)
         explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
         explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)

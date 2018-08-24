@@ -363,8 +363,8 @@ class ActorCritic(Reinforce):
     @lab_api
     def update(self):
         space_clock = util.s_get(self, 'aeb_space.clock')
-        nets = [self.net] if self.shared else [self.net, self.critic]
-        for net in nets:
+        for net_name in self.net_names:
+            net = getattr(self, net_name)
             net.update_lr(space_clock)
         explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
         explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
