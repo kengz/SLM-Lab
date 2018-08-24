@@ -49,38 +49,18 @@ class Clock:
         return getattr(self, unit)
 
 
-class BrainExt:
-    '''
-    Unity Brain class extension, where self = brain
-    TODO to be absorbed into ml-agents Brain class later
-    TODO or just set properties for all these, no method
-    '''
-
-    def is_discrete(self):
-        return self.action_space_type == 'discrete'
-
-    def get_action_dim(self):
-        return self.action_space_size
-
-    def get_observable_types(self):
-        '''What channels are observable: state, image, sound, touch, etc.'''
-        observable = {
-            'state': self.state_space_size > 0,
-            'image': self.number_observations > 0,
-        }
-        return observable
-
-    def get_observable_dim(self):
-        '''Get observable dimensions'''
-        observable_dim = {
-            'state': self.state_space_size,
-            'image': 'some np array shape, as opposed to what Arthur called size',
-        }
-        return observable_dim
-
-
-# Extend Unity BrainParameters class at runtime to add BrainExt methods
-util.monkey_patch(brain.BrainParameters, BrainExt)
+def get_action_dim(action_space):
+    '''Get the action dim for an action_space for agent to use'''
+    if isinstance(action_space, gym.spaces.Box):
+        assert len(action_space.shape) == 1
+        action_dim = action_space.shape[0]
+    elif isinstance(action_space, (gym.spaces.Discrete, gym.spaces.MultiBinary)):
+        action_dim = action_space.n
+    elif isinstance(action_space, gym.spaces.MultiDiscrete):
+        action_dim = action_space.nvec.tolist()
+    else:
+        raise ValueError('action_space not recognized')
+    return action_dim
 
 
 def set_gym_space_attr(gym_space):
@@ -101,6 +81,62 @@ def set_gym_space_attr(gym_space):
 
 
 class OpenAIEnv:
+    def __init__(self, spec):
+        self.env_spec = spec['env']
+        self.e = 0  # for compatibility with env_space
+        util.set_attr(self, self.env_spec, [
+            'name',
+            'max_timestep',
+            'max_episode',
+            'save_epi_frequency',
+        ])
+        self.u_env = gym.make(self.name)
+        self.observation_space = self.u_env.observation_space
+        self.action_space = self.u_env.action_space
+        set_gym_space_attr(self.observation_space)
+        set_gym_space_attr(self.action_space)
+        self.observable_dim = self._get_observable_dim()
+        self.action_dim = get_action_dim(self.action_space)
+        self.is_discrete = util.get_class_name(self.action_space) != 'Box'  # continuous
+        self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
+        self.clock = Clock()
+        self.done = False
+        logger.info(util.self_desc(self))
+
+    def _get_observable_dim(self):
+        '''Get the observable dim for an agent in env'''
+        state_dim = self.observation_space.shape
+        if len(state_dim) == 1:
+            state_dim = state_dim[0]
+        return {'state': state_dim}
+
+    @lab_api
+    def reset(self):
+        _reward = np.nan
+        state = self.u_env.reset()
+        self.done = done = False
+        if util.get_lab_mode() == 'dev':
+            self.u_env.render()
+        logger.debug(f'Env {self.e} reset reward: {_reward}, state: {state}, done: {done}')
+        return _reward, state, done
+
+    @lab_api
+    def step(self, action):
+        if not self.is_discrete:  # guard for continuous
+            action = np.array([action])
+        state, reward, done, _info = self.u_env.step(action)
+        if util.get_lab_mode() == 'dev':
+            self.u_env.render()
+        self.done = done = done or self.clock.get('t') > self.max_timestep
+        logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
+        return reward, state, done
+
+    @lab_api
+    def close(self):
+        self.u_env.close()
+
+
+class OpenAISpaceEnv:
     def __init__(self, env_spec, env_space, e=0):
         self.env_spec = env_spec
         self.env_space = env_space
@@ -216,6 +252,40 @@ class OpenAIEnv:
     @lab_api
     def close(self):
         self.u_env.close()
+
+
+class BrainExt:
+    '''
+    Unity Brain class extension, where self = brain
+    TODO to be absorbed into ml-agents Brain class later
+    TODO or just set properties for all these, no method
+    '''
+
+    def is_discrete(self):
+        return self.action_space_type == 'discrete'
+
+    def get_action_dim(self):
+        return self.action_space_size
+
+    def get_observable_types(self):
+        '''What channels are observable: state, image, sound, touch, etc.'''
+        observable = {
+            'state': self.state_space_size > 0,
+            'image': self.number_observations > 0,
+        }
+        return observable
+
+    def get_observable_dim(self):
+        '''Get observable dimensions'''
+        observable_dim = {
+            'state': self.state_space_size,
+            'image': 'some np array shape, as opposed to what Arthur called size',
+        }
+        return observable_dim
+
+
+# Extend Unity BrainParameters class at runtime to add BrainExt methods
+util.monkey_patch(brain.BrainParameters, BrainExt)
 
 
 class UnityEnv:
