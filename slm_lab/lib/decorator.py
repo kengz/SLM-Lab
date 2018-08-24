@@ -15,12 +15,7 @@ def lab_api(fn):
     def foo():
         print('foo')
     '''
-    @wraps(fn)
-    def check_api(*args, **kwargs):
-        output = fn(*args, **kwargs)
-        logger.debug3(f'API method: {fn.__name__}, output: {output}')
-        return output
-    return check_api
+    return fn
 
 
 def timeit(fn):
