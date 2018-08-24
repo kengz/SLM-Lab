@@ -4,8 +4,8 @@ Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Se
 '''
 from copy import deepcopy
 from importlib import reload
-from slm_lab.agent import AgentSpace
-from slm_lab.env import EnvSpace
+from slm_lab.agent import AgentSpace, Agent, Body
+from slm_lab.env import EnvSpace, OpenAIEnv, UnityEnv
 from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import logger, util, viz
@@ -40,6 +40,77 @@ class Session:
         init_thread_vars(spec, info_space, unit='session')
         self.spec = spec
         self.info_space = info_space
+        self.index = self.info_space.get('session')
+        self.random_seed = 100 * (info_space.get('trial') or 0) + self.index
+        util.set_module_seed(self.random_seed)
+        self.data = None
+        # TODO tmp hack
+        self.spec['env'] = self.spec['env'][0]
+        self.spec['agent'] = self.spec['agent'][0]
+        try:
+            self.env = OpenAIEnv(self.spec)
+        except Exception:
+            self.env = UnityEnv(self.spec)
+        body = Body(self.env, self.spec['agent'])
+        self.agent = Agent(self.spec, self.info_space, body)
+        # self.aeb_space = AEBSpace(self.spec, self.info_space)
+        # self.env_space = EnvSpace(self.spec, self.aeb_space)
+        # self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
+        logger.info(util.self_desc(self))
+        # self.aeb_space.init_body_space()
+        # self.aeb_space.post_body_init()
+        logger.info(f'Initialized session {self.index}')
+
+    def save_if_ckpt(cls, agent, env):
+        '''Save for agent, env if episode is at checkpoint'''
+        agent.body.log_summary()
+        epi = env.clock.get('epi')
+        save_this_epi = epi > 0 and hasattr(env, 'save_epi_frequency') and epi % env.save_epi_frequency == 0
+        if save_this_epi:
+            agent.algorithm.save(epi=epi)
+
+    def run_episode(self):
+        self.env.clock.tick('epi')
+        reward, state, done = self.env.reset()
+        self.agent.reset(state)
+        while not done:
+            self.env.clock.tick('t')
+            action = self.agent.act(state)
+            reward, state, done = self.env.step(action)
+            self.agent.update(action, reward, state, done)
+        self.save_if_ckpt(self.agent, self.env)
+
+    def close(self):
+        '''
+        Close session and clean up.
+        Save agent, close env.
+        '''
+        self.agent.close()
+        self.env.close()
+        logger.info('Session done, closing.')
+
+    def run(self):
+        while self.env.clock.get('epi') <= self.env.max_episode:
+            self.run_episode()
+        self.data = analysis.analyze_session(self)  # session fitness
+        self.close()
+        return self.data
+
+
+class SpaceSession:
+    '''
+    The base unit of instantiated RL system.
+    Given a spec,
+    session creates agent(s) and environment(s),
+    run the RL system and collect data, e.g. fitness metrics, till it ends,
+    then return the session data.
+    '''
+
+    def __init__(self, spec, info_space=None, global_nets=None):
+        info_space = info_space or InfoSpace()
+        init_thread_vars(spec, info_space, unit='session')
+        self.spec = spec
+        self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
         self.random_seed = 100 * (info_space.get('trial') or 0) + self.index
         util.set_module_seed(self.random_seed)
@@ -59,6 +130,7 @@ class Session:
         _reward_space, state_space, _done_space = self.env_space.reset()
         _action_space = self.agent_space.reset(state_space)  # nan action at t=0 for bookkeeping in data_space
         while True:
+            # TODO epi now stats from self.epi = 0 instead of 1. use the same ticking scheme as singleton
             end_session = self.aeb_space.tick_clocks(self)
             if end_session:
                 break

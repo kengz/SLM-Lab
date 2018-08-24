@@ -25,7 +25,7 @@ class Clock:
         self.ticks = 0  # multiple ticks make a timestep; used for clock speed
         self.t = 0
         self.total_t = 0
-        self.epi = 1
+        self.epi = 0
 
     def to_step(self):
         '''Step signal from clock_speed. Step only if the base unit of time in this clock has moved. Used to control if env of different clock_speed should step()'''

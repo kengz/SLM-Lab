@@ -209,16 +209,9 @@ class AEBSpace:
         else:
             return [self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v)]
 
-    def body_done_log(self, body):
-        '''Log the summary for a body when it is done'''
-        env = body.env
-        clock = env.clock
-        memory = body.memory
-        msg = f'{self.spec["name"]} trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e}, body {body.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {body.loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
-        logger.info(msg)
-
     def tick_clocks(self, session):
         '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''
+        # TODO remove this method to be like singleton
         env_dones = []
         body_end_sessions = []
         for env in self.env_space.envs:
@@ -228,7 +221,7 @@ class AEBSpace:
                 epi = env.clock.get('epi')
                 save_this_epi = 'save_epi_frequency' in env.env_spec and (epi % env.env_spec['save_epi_frequency']) == 0
                 for body in env.nanflat_body_e:
-                    self.body_done_log(body)
+                    body.log_summary()
                     if epi > 0 and save_this_epi:
                         body.agent.algorithm.save(epi=epi)
                 env.clock.tick('epi')
