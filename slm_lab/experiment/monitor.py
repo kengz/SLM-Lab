@@ -223,7 +223,7 @@ class AEBSpace:
                 for body in env.nanflat_body_e:
                     body.log_summary()
                     if epi > 0 and save_this_epi:
-                        body.agent.algorithm.save(epi=epi)
+                        body.agent.save(epi=epi)
                 env.clock.tick('epi')
             else:
                 env.clock.tick('t')
@@ -307,7 +307,7 @@ class InfoSpace:
 
     def get_random_seed(self):
         '''Standard method to get random seed for a session'''
-        return 1e5 * (self.get('trial') or 0) + 1e3 * self.get('session')
+        return int(1e5 * (self.get('trial') or 0) + 1e3 * self.get('session'))
 
 
 class Monitor:

@@ -146,9 +146,14 @@ class Agent:
         return loss, explore_var
 
     @lab_api
+    def save(self):
+        '''Save agent'''
+        self.algorithm.save()
+
+    @lab_api
     def close(self):
         '''Close agent at the end of a session, e.g. save model'''
-        self.algorithm.save()
+        self.save()
 
 
 class SpaceBody:
@@ -271,9 +276,14 @@ class SpaceAgent:
         return loss_a, explore_var_a
 
     @lab_api
+    def save(self):
+        '''Save agent'''
+        self.algorithm.save()
+
+    @lab_api
     def close(self):
         '''Close agent at the end of a session, e.g. save model'''
-        self.algorithm.save()
+        self.save()
 
 
 class AgentSpace:

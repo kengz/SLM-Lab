@@ -17,6 +17,7 @@ import torch
 import torch.multiprocessing as mp
 
 
+# TODO check if this is still needed
 def init_thread_vars(spec, info_space, unit):
     '''Initialize thread variables from lab units that do not get carried over properly from master'''
     if info_space.get(unit) is None:
@@ -43,7 +44,7 @@ class Session:
         self.index = self.info_space.get('session')
         util.set_module_seed(self.info_space.get_random_seed())
         self.data = None
-        # TODO tmp hack
+        # TODO tmp hack, split to singleton or space later
         self.spec['env'] = self.spec['env'][0]
         self.spec['agent'] = self.spec['agent'][0]
         try:
@@ -66,7 +67,7 @@ class Session:
         epi = env.clock.get('epi')
         save_this_epi = epi > 0 and hasattr(env, 'save_epi_frequency') and epi % env.save_epi_frequency == 0
         if save_this_epi:
-            agent.algorithm.save(epi=epi)
+            agent.save(epi=epi)
 
     def run_episode(self):
         self.env.clock.tick('epi')
