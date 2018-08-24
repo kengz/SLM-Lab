@@ -753,6 +753,13 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
+def set_module_seed(random_seed):
+    '''Set all the module random seeds'''
+    torch.cuda.manual_seed_all(random_seed)
+    torch.manual_seed(random_seed)
+    np.random.seed(random_seed)
+
+
 def smart_path(data_path, as_dir=False):
     '''
     Resolve data_path into abspath with fallback to join from ROOT_DIR
