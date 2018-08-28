@@ -112,11 +112,6 @@ class Agent:
         MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
         self.body.memory = MemoryClass(self.agent_spec['memory'], self.algorithm, self.body)
 
-        # TODO remove?
-        self.body_a = np.array([self.body])
-        # self.post_body_init()
-        self.algorithm.post_body_init()
-
         logger.info(util.self_desc(self))
 
     @lab_api
@@ -128,8 +123,7 @@ class Agent:
     @lab_api
     def act(self, state):
         '''Standard act method from algorithm.'''
-        # TODO remove body requirement be default
-        action = self.algorithm.body_act(self.body, state)
+        action = self.algorithm.act(state)
         logger.debug(f'Agent {self.a} act: {action}')
         return action
 

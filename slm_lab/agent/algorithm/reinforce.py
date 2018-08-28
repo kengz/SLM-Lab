@@ -41,14 +41,6 @@ class Reinforce(Algorithm):
     '''
 
     @lab_api
-    def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
-        self.init_algorithm_params()
-        self.init_nets()
-        logger.info(util.self_desc(self))
-
-    @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         # set default
@@ -76,8 +68,7 @@ class Reinforce(Algorithm):
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        for body in self.agent.nanflat_body_a:
-            body.explore_var = self.explore_var_start
+        self.body.explore_var = self.explore_var_start
 
     @lab_api
     def init_nets(self):
@@ -109,7 +100,8 @@ class Reinforce(Algorithm):
         return pdparam
 
     @lab_api
-    def body_act(self, body, state):
+    def act(self, state):
+        body = self.body
         action, action_pd = self.action_policy(state, self, body)
         # sum for single and multi-action
         body.entropies.append(action_pd.entropy().sum(dim=0))
@@ -123,8 +115,7 @@ class Reinforce(Algorithm):
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
-        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        batch = util.concat_batches(batches)
+        batch = self.body.memory.sample()
         batch = util.to_torch_batch(batch, self.net.gpu)
         return batch
 
@@ -164,10 +155,8 @@ class Reinforce(Algorithm):
 
     @lab_api
     def update(self):
-        space_clock = util.s_get(self, 'aeb_space.clock')
         for net_name in self.net_names:
             net = getattr(self, net_name)
-            net.update_lr(space_clock)
-        explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
-        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
-        return explore_var_a
+            net.update_lr(self.body.env.clock)
+        explore_var = self.action_policy_update(self, self.body)
+        return explore_var

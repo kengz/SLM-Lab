@@ -74,14 +74,6 @@ class ActorCritic(Reinforce):
     '''
 
     @lab_api
-    def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
-        self.init_algorithm_params()
-        self.init_nets()
-        logger.info(util.self_desc(self))
-
-    @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         # set default
@@ -118,8 +110,7 @@ class ActorCritic(Reinforce):
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        for body in self.agent.nanflat_body_a:
-            body.explore_var = self.explore_var_start
+        self.body.explore_var = self.explore_var_start
         # Select appropriate methods to calculate adv_targets and v_targets for training
         if self.use_gae:
             self.calc_advs_v_targets = self.calc_gae_advs_v_targets
@@ -362,10 +353,8 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def update(self):
-        space_clock = util.s_get(self, 'aeb_space.clock')
         for net_name in self.net_names:
             net = getattr(self, net_name)
-            net.update_lr(space_clock)
-        explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
-        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
-        return explore_var_a
+            net.update_lr(self.body.env.clock)
+        explore_var = self.action_policy_update(self, self.body)
+        return explore_var

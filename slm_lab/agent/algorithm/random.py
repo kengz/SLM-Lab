@@ -16,12 +16,6 @@ class Random(Algorithm):
     '''
 
     @lab_api
-    def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
-        self.init_algorithm_params()
-        self.init_nets()
-
-    @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         self.to_train = 0
@@ -33,9 +27,9 @@ class Random(Algorithm):
         pass
 
     @lab_api
-    def body_act(self, body, state):
+    def act(self, state):
         '''Random action'''
-        action = body.action_space.sample()
+        action = self.body.action_space.sample()
         return action
 
     @lab_api

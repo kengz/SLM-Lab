@@ -50,15 +50,12 @@ class SIL(ActorCritic):
         "use_cer": true
     }
     '''
-    @lab_api
-    def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
+
+    def __init__(self, agent, global_nets=None):
+        super(SIL, self).__init__(agent, global_nets)
         # create the extra replay memory for SIL
-        memory_name = self.memory_spec['sil_replay_name']
-        MemoryClass = getattr(memory, memory_name)
+        MemoryClass = getattr(memory, self.memory_spec['sil_replay_name'])
         self.body.replay_memory = MemoryClass(self.memory_spec, self, self.body)
-        super(SIL, self).post_body_init()
 
     @lab_api
     def init_algorithm_params(self):
@@ -101,8 +98,8 @@ class SIL(ActorCritic):
 
     def sample(self):
         '''Modify the onpolicy sample to also append to replay'''
-        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        batch = util.concat_batches(batches)
+        batch = self.body.memory.sample()
+        batch = {k: np.concatenate(v) for k, v in batch.items()}  # concat episodic memory
         batch['rets'] = math_util.calc_returns(batch, self.gamma).numpy()
         for idx in range(len(batch['dones'])):
             tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]
@@ -112,8 +109,7 @@ class SIL(ActorCritic):
 
     def replay_sample(self):
         '''Samples a batch from memory'''
-        batches = [body.replay_memory.sample() for body in self.agent.nanflat_body_a]
-        batch = util.concat_batches(batches)
+        batch = self.body.replay_memory.sample()
         batch = util.to_torch_batch(batch, self.net.gpu)
         assert not torch.isnan(batch['states']).any(), batch['states']
         return batch

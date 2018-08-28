@@ -54,14 +54,6 @@ class PPO(ActorCritic):
     '''
 
     @lab_api
-    def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
-        self.init_algorithm_params()
-        self.init_nets()
-        logger.info(util.self_desc(self))
-
-    @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         # set default
@@ -95,8 +87,7 @@ class PPO(ActorCritic):
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        for body in self.agent.nanflat_body_a:
-            body.explore_var = self.explore_var_start
+        self.body.explore_var = self.explore_var_start
         # PPO uses GAE
         self.calc_advs_v_targets = self.calc_gae_advs_v_targets
 
