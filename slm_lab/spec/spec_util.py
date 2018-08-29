@@ -150,8 +150,8 @@ def resolve_aeb(spec):
     aeb_list = spec_util.resolve_aeb(spec)
     # => [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
     '''
-    agent_num = len(spec['agent'])
-    env_num = len(spec['env'])
+    agent_num = len(spec['agent']) if ps.is_list(spec['agent']) else 1
+    env_num = len(spec['env']) if ps.is_list(spec['env']) else 1
     ae_product = ps.get(spec, 'body.product')
     body_num = ps.get(spec, 'body.num')
     body_num_list = body_num if ps.is_list(body_num) else [body_num] * env_num
