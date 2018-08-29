@@ -68,7 +68,7 @@ class Algorithm(ABC):
 
     def nanflat_to_data_a(self, data_name, nanflat_data_a):
         '''Reshape nanflat_data_a, e.g. action_a, from a single pass back into the API-conforming data_a'''
-        data_names = [data_name]
+        data_names = (data_name,)
         data_a, = self.agent.agent_space.aeb_space.init_data_s(data_names, a=self.agent.a)
         for body, data in zip(self.agent.nanflat_body_a, nanflat_data_a):
             e, b = body.e, body.b
@@ -84,7 +84,7 @@ class Algorithm(ABC):
     @lab_api
     def space_act(self, state_a):
         '''Interface-level agent act method for all its bodies. Resolves state to state; get action and compose into action.'''
-        data_names = ['action']
+        data_names = ('action',)
         action_a, = self.agent.agent_space.aeb_space.init_data_s(data_names, a=self.agent.a)
         for (e, b), body in util.ndenumerate_nonan(self.agent.body_a):
             state = state_a[(e, b)]

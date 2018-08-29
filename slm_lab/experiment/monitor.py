@@ -159,11 +159,11 @@ class AEBSpace:
 
     def init_data_s(self, data_names, a=None, e=None):
         '''Shortcut to init data_s_1, data_s_2, ...'''
-        return [self.data_spaces[data_name].init_data_s(a=a, e=e) for data_name in data_names]
+        return (self.data_spaces[data_name].init_data_s(a=a, e=e) for data_name in data_names)
 
     def init_data_v(self, data_names):
         '''Shortcut to init data_v_1, data_v_2, ...'''
-        return [self.data_spaces[data_name].init_data_v() for data_name in data_names]
+        return (self.data_spaces[data_name].init_data_v() for data_name in data_names)
 
     def get_history_v(self, data_name):
         '''Get a data_v history and stack into a data_h_v (history volume)'''
@@ -207,7 +207,7 @@ class AEBSpace:
             data_space.add(data_v)
             return data_space
         else:
-            return [self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v)]
+            return (self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v))
 
     def tick_clocks(self, session):
         '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''

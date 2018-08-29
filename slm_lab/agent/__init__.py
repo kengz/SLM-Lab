@@ -312,26 +312,26 @@ class AgentSpace:
         for agent in self.agents:
             state_a = state_space.get(a=agent.a)
             agent.reset(state_a)
-        _action_space, _loss_space, _explore_var_space = self.aeb_space.add(AGENT_DATA_NAMES, [_action_v, _loss_v, _explore_var_v])
+        _action_space, _loss_space, _explore_var_space = self.aeb_space.add(AGENT_DATA_NAMES, (_action_v, _loss_v, _explore_var_v))
         logger.debug3(f'action_space: {_action_space}')
         return _action_space
 
     @lab_api
     def act(self, state_space):
-        data_names = ['action']
+        data_names = ('action',)
         action_v, = self.aeb_space.init_data_v(data_names)
         for agent in self.agents:
             a = agent.a
             state_a = state_space.get(a=a)
             action_a = agent.act(state_a)
             action_v[a, 0:len(action_a)] = action_a
-        action_space, = self.aeb_space.add(data_names, [action_v])
+        action_space, = self.aeb_space.add(data_names, (action_v,))
         logger.debug3(f'\naction_space: {action_space}')
         return action_space
 
     @lab_api
     def update(self, action_space, reward_space, state_space, done_space):
-        data_names = ['loss', 'explore_var']
+        data_names = ('loss', 'explore_var')
         loss_v, explore_var_v = self.aeb_space.init_data_v(data_names)
         for agent in self.agents:
             a = agent.a
@@ -342,7 +342,7 @@ class AgentSpace:
             loss_a, explore_var_a = agent.update(action_a, reward_a, state_a, done_a)
             loss_v[a, 0:len(loss_a)] = loss_a
             explore_var_v[a, 0:len(explore_var_a)] = explore_var_a
-        loss_space, explore_var_space = self.aeb_space.add(data_names, [loss_v, explore_var_v])
+        loss_space, explore_var_space = self.aeb_space.add(data_names, (loss_v, explore_var_v))
         logger.debug3(f'\nloss_space: {loss_space}\nexplore_var_space: {explore_var_space}')
         return loss_space, explore_var_space
 
