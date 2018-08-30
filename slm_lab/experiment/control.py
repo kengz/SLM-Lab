@@ -7,7 +7,7 @@ from importlib import reload
 from slm_lab.agent import AgentSpace, Agent, Body
 from slm_lab.env import EnvSpace, OpenAIEnv, UnityEnv
 from slm_lab.experiment import analysis, search
-from slm_lab.experiment.monitor import AEBSpace, InfoSpace
+from slm_lab.experiment.monitor import AEBSpace, DataSpace, InfoSpace
 from slm_lab.lib import logger, util, viz
 import numpy as np
 import os
@@ -56,13 +56,13 @@ class Session:
 
         # TODO hack. alternatively set from inside agent
         self.aeb_space = AEBSpace(self.spec, self.info_space)
+        self.aeb_space.body_space = DataSpace('body', self.aeb_space)
+        body_v = np.full(self.aeb_space.aeb_shape, np.nan, dtype=object)
+        body_v[0, 0, 0] = body
+        self.aeb_space.body_space.add(body_v)
         self.agent.aeb_space = self.aeb_space
         self.env.aeb_space = self.aeb_space
-        # self.env_space = EnvSpace(self.spec, self.aeb_space)
-        # self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
         logger.info(util.self_desc(self))
-        # self.aeb_space.init_body_space()
-        # self.aeb_space.post_body_init()
         logger.info(f'Initialized session {self.index}')
 
     def save_if_ckpt(cls, agent, env):
