@@ -119,12 +119,14 @@ class Agent:
         '''Do agent reset per session, such as memory pointer'''
         logger.debug(f'Agent {self.a} reset')
         self.body.memory.epi_reset(state)
+        self.aeb_space.add_single(AGENT_DATA_NAMES, (np.nan, np.nan, np.nan))
 
     @lab_api
     def act(self, state):
         '''Standard act method from algorithm.'''
         action = self.algorithm.act(state)
         logger.debug(f'Agent {self.a} act: {action}')
+        self.aeb_space.add_single(('action',), (action,))
         return action
 
     @lab_api
@@ -137,6 +139,7 @@ class Agent:
         self.body.loss = loss
         explore_var = self.algorithm.update()
         logger.debug(f'Agent {self.a} loss: {loss}, explore_var {explore_var}')
+        self.aeb_space.add_single(('loss', 'explore_var'), (loss, explore_var))
         return loss, explore_var
 
     @lab_api

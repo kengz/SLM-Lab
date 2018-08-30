@@ -159,11 +159,11 @@ class AEBSpace:
 
     def init_data_s(self, data_names, a=None, e=None):
         '''Shortcut to init data_s_1, data_s_2, ...'''
-        return (self.data_spaces[data_name].init_data_s(a=a, e=e) for data_name in data_names)
+        return tuple(self.data_spaces[data_name].init_data_s(a=a, e=e) for data_name in data_names)
 
     def init_data_v(self, data_names):
         '''Shortcut to init data_v_1, data_v_2, ...'''
-        return (self.data_spaces[data_name].init_data_v() for data_name in data_names)
+        return tuple(self.data_spaces[data_name].init_data_v() for data_name in data_names)
 
     def get_history_v(self, data_name):
         '''Get a data_v history and stack into a data_h_v (history volume)'''
@@ -207,7 +207,16 @@ class AEBSpace:
             data_space.add(data_v)
             return data_space
         else:
-            return (self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v))
+            return tuple(self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v))
+
+    def add_single(self, data_names, datas):
+        '''Backward compatible add method for singleton case - single agent, env, body with aeb = 0,0,0'''
+        assert ps.is_iterable(data_names) and ps.is_iterable(datas)
+        data_vs = self.init_data_v(data_names)
+        for data_v, data in zip(data_vs, datas):
+            data_v[0, 0, 0] = data
+        data_spaces = self.add(data_names, data_vs)
+        return data_spaces
 
     def tick_clocks(self, session):
         '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''

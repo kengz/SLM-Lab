@@ -53,7 +53,11 @@ class Session:
             self.env = UnityEnv(self.spec)
         body = Body(self.env, self.spec['agent'])
         self.agent = Agent(self.spec, self.info_space, body)
-        # self.aeb_space = AEBSpace(self.spec, self.info_space)
+
+        # TODO hack. alternatively set from inside agent
+        self.aeb_space = AEBSpace(self.spec, self.info_space)
+        self.agent.aeb_space = self.aeb_space
+        self.env.aeb_space = self.aeb_space
         # self.env_space = EnvSpace(self.spec, self.aeb_space)
         # self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
         logger.info(util.self_desc(self))
@@ -213,9 +217,8 @@ class Trial:
     def init_global_nets(self):
         spec = deepcopy(self.spec)
         global_session = Session(deepcopy(self.spec))
-        # TODO move away from space
-        global_agent = global_session.agent_space.agents[0]
-        global_session.env_space.close()
+        global_agent = global_session.agent
+        global_session.env.close()
         global_nets = {}
         for net_name in global_agent.algorithm.net_names:
             g_net = getattr(global_agent.algorithm, net_name)
