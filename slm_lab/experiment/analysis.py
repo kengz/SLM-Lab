@@ -49,12 +49,13 @@ def get_session_data(session):
         reset_idx = reset_bin.astype('bool')
         nonreset_idx = ~reset_idx
         data_h_dict['t'] = np.ones(reset_idx.shape)
-        data_h_dict['epi'] = reset_idx.astype(int).cumsum()
+        data_h_dict['epi'] = reset_idx.astype(int).cumsum() + 1  # +1 to start counting from 1
         mdp_df = pd.DataFrame({
             data_name: data_h_dict[data_name][:data_len]
             for data_name in mdp_data_names})
         mdp_df = mdp_df.reindex(mdp_data_names, axis=1)
         aeb_df = mdp_df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
+        aeb_df['t'] -= 1  # offset t=0 at reset
         aeb_df.reset_index(drop=False, inplace=True)
         session_mdp_data[aeb], session_data[aeb] = mdp_df, aeb_df
     logger.debug(f'{session_data}')
