@@ -107,11 +107,11 @@ class Agent:
         self.agent_spec = spec['agent']
         self.name = self.agent_spec['name']
 
+        MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
+        self.body.memory = MemoryClass(self.agent_spec['memory'], self.body)
+
         AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
         self.algorithm = AlgorithmClass(self, global_nets)
-
-        MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
-        self.body.memory = MemoryClass(self.agent_spec['memory'], self.algorithm, self.body)
 
         logger.info(util.self_desc(self))
 

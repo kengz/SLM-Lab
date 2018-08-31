@@ -105,7 +105,7 @@ class PrioritizedReplay(Replay):
     }
     '''
 
-    def __init__(self, memory_spec, algorithm, body):
+    def __init__(self, memory_spec, body):
         util.set_attr(self, memory_spec, [
             'alpha',
             'epsilon',
@@ -113,7 +113,7 @@ class PrioritizedReplay(Replay):
             'max_size',
             'use_cer',
         ])
-        super(PrioritizedReplay, self).__init__(memory_spec, algorithm, body)
+        super(PrioritizedReplay, self).__init__(memory_spec, body)
 
         self.epsilon = torch.full((1,), self.epsilon)
         self.alpha = torch.full((1,), self.alpha)
