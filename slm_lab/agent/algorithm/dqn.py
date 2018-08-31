@@ -48,17 +48,6 @@ class VanillaDQN(SARSA):
     '''
 
     @lab_api
-    def post_body_init(self):
-        '''
-        Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
-            - Memory (holding experiences obtained by acting in the environment)
-            - State and action dimentions for an environment
-            - Boolean var for if the action space is discrete
-        '''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
-        super(VanillaDQN, self).post_body_init()
-
-    @lab_api
     def init_algorithm_params(self):
         # set default
         util.set_attr(self, dict(
@@ -114,21 +103,17 @@ class VanillaDQN(SARSA):
         return q_targets
 
     @lab_api
-    def body_act(self, body, state):
+    def act(self, state):
         '''Selects and returns a discrete action for body using the action policy'''
-        return super(VanillaDQN, self).body_act(body, state)
+        return super(VanillaDQN, self).act(state)
 
     @lab_api
     def sample(self):
         '''Samples a batch from memory of size self.memory_spec['batch_size']'''
-        batches = []
-        for body in self.agent.nanflat_body_a:
-            body_batch = body.memory.sample()
-            # one-hot actions to calc q_targets
-            if body.is_discrete:
-                body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
-            batches.append(body_batch)
-        batch = util.concat_batches(batches)
+        batch = self.body.memory.sample()
+        # one-hot actions to calc q_targets
+        if self.body.is_discrete:
+            batch['actions'] = util.to_one_hot(batch['actions'], self.body.action_space.high)
         batch = util.to_torch_batch(batch, self.net.gpu, self.body.memory.is_episodic)
         return batch
 
@@ -143,9 +128,9 @@ class VanillaDQN(SARSA):
         '''
         if util.get_lab_mode() == 'enjoy':
             return np.nan
-        total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
+        total_t = self.body.env.clock.get('total_t')
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
-        is_per = util.get_class_name(self.agent.nanflat_body_a[0].memory) == 'PrioritizedReplay'
+        is_per = util.get_class_name(self.body.memory) == 'PrioritizedReplay'
         if self.to_train == 1:
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
@@ -157,8 +142,7 @@ class VanillaDQN(SARSA):
                             q_preds = self.net.wrap_eval(batch['states'])
                             errors = torch.abs(q_targets - q_preds)
                             errors = errors.sum(dim=1).unsqueeze_(dim=1)
-                            for body in self.agent.nanflat_body_a:
-                                body.memory.update_priorities(errors)
+                            self.body.memory.update_priorities(errors)
                     loss = self.net.training_step(batch['states'], q_targets, global_net=self.global_nets.get('net'))
                     total_loss += loss.cpu()
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
@@ -229,7 +213,7 @@ class DQNBase(VanillaDQN):
         return q_targets
 
     def update_nets(self):
-        total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
+        total_t = self.body.env.clock.get('total_t')
         if self.net.update_type == 'replace':
             if total_t % self.net.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
@@ -304,7 +288,7 @@ class DoubleDQN(DQN):
 
     def update_nets(self):
         res = super(DoubleDQN, self).update_nets()
-        total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
+        total_t = self.body.env.clock.get('total_t')
         if self.net.update_type == 'replace':
             if total_t % self.net.update_frequency == 0:
                 self.online_net = self.net
