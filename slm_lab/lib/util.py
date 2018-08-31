@@ -785,11 +785,13 @@ def to_one_hot(data, max_val):
     return np.eye(max_val)[np.array(data)]
 
 
-def to_torch_batch(batch, gpu):
+def to_torch_batch(batch, gpu, is_episodic):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
     for k in batch:
-        if ps.is_list(batch[k]):  # for episodic format
+        if is_episodic:  # for episodic format
             batch[k] = np.concatenate(batch[k])
+        elif ps.is_list(batch[k]):
+            batch[k] = np.array(batch[k])
         batch[k] = torch.from_numpy(batch[k].astype('float32')).float()
         if torch.cuda.is_available() and gpu:
             batch[k] = batch[k].cuda()

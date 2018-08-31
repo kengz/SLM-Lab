@@ -104,13 +104,13 @@ class SIL(ActorCritic):
         for idx in range(len(batch['dones'])):
             tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]
             self.body.replay_memory.add_experience(*tuples)
-        batch = util.to_torch_batch(batch, self.net.gpu)
+        batch = util.to_torch_batch(batch, self.net.gpu, self.body.replay_memory.is_episodic)
         return batch
 
     def replay_sample(self):
         '''Samples a batch from memory'''
         batch = self.body.replay_memory.sample()
-        batch = util.to_torch_batch(batch, self.net.gpu)
+        batch = util.to_torch_batch(batch, self.net.gpu, self.body.replay_memory.is_episodic)
         assert not torch.isnan(batch['states']).any(), batch['states']
         return batch
 
