@@ -46,6 +46,7 @@ class Replay(Memory):
             'use_cer',
         ])
         self.state_buffer = deque(maxlen=0)  # for API consistency
+        self.is_episodic = False
         self.batch_idxs = None
         self.true_size = 0  # to number of experiences stored
         self.seen_size = 0  # the number of experiences seen, including those stored and discarded
