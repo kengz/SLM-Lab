@@ -234,7 +234,10 @@ def gen_assert_trained(pre_model):
     def assert_trained(post_model):
         post_weights = [param.clone() for param in post_model.parameters()]
         assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), 'Model parameter is not updated in training_step(), check if your tensor is detached from graph.'
-        assert all(1e-3 < param.grad.norm() < 1e4 for param in post_model.parameters()), 'Gradient norm has extreme value < 1e-3 or > 1e4, which is bad. Check your network and loss computation. Consider using the "clip_grad" and "clip_grad_val" net parameter'
+        min_norm = 1e-8
+        max_norm = 1e4
+        for p_name, param in post_model.named_parameters():
+            assert min_norm < param.grad.norm() < max_norm, f'Gradient norm fails the extreme value check {min_norm} < {p_name} {param.grad.norm()} < {max_norm}, which is bad. Check your network and loss computation. Consider using the "clip_grad" and "clip_grad_val" net parameter.'
         logger.debug('Passed network weight update assertation in dev lab_mode.')
     return assert_trained
 
