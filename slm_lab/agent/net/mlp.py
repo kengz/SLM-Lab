@@ -150,7 +150,7 @@ class MLPNet(Net, nn.Module):
             net_util.pull_global_param(self, global_net)
         if net_util.to_assert_trained():
             model = getattr(self, 'model', None) or getattr(self, 'model_body')
-            assert_trained(model)
+            assert_trained(model, loss)
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
@@ -353,7 +353,7 @@ class HydraMLPNet(Net, nn.Module):
             self.optim.step()
             net_util.pull_global_param(self, global_net)
         if net_util.to_assert_trained():
-            assert_trained(self.model_body)
+            assert_trained(self.model_body, loss)
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 

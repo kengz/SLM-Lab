@@ -179,7 +179,7 @@ class RecurrentNet(Net, nn.Module):
             self.optim.step()
             net_util.pull_global_param(self, global_net)
         if net_util.to_assert_trained():
-            assert_trained(self.rnn_model)
+            assert_trained(self.rnn_model, loss)
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
