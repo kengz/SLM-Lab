@@ -132,8 +132,9 @@ class Reinforce(Algorithm):
             self.body.log_probs = []
             self.body.entropies = []
             logger.debug(f'Policy loss: {loss}')
-            self.last_loss = loss.item()
-        return self.last_loss
+            return loss.item()
+        else:
+            return np.nan
 
     def calc_policy_loss(self, batch):
         '''Calculate the policy loss for a batch of data.'''

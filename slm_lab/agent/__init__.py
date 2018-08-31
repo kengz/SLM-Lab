@@ -54,6 +54,7 @@ class Body:
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
 
         self.loss = np.nan  # training losses
+        self.last_loss = np.nan  # the last non-nan loss, for printing
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
 
@@ -85,7 +86,7 @@ class Body:
         info_space = self.agent.info_space
         clock = self.env.clock
         memory = self.memory
-        msg = f'{spec["name"]} trial {info_space.get("trial")} session {info_space.get("session")} env {self.env.e}, body {self.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {self.loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
+        msg = f'{spec["name"]} trial {info_space.get("trial")} session {info_space.get("session")} env {self.env.e}, body {self.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {self.last_loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
         logger.info(msg)
 
 
@@ -135,8 +136,9 @@ class Agent:
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
         self.body.memory.update(action, reward, state, done)
-        loss = self.algorithm.train()
-        self.body.loss = loss
+        self.body.loss = loss = self.algorithm.train()
+        if not np.isnan(loss):  # set for printing in log_summary()
+            self.body.last_loss = loss
         explore_var = self.algorithm.update()
         logger.debug(f'Agent {self.a} loss: {loss}, explore_var {explore_var}')
         self.aeb_space.add_single(('loss', 'explore_var'), (loss, explore_var))

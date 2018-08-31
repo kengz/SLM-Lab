@@ -175,8 +175,9 @@ class SARSA(Algorithm):
             self.body.log_probs = []
             self.body.entropies = []
             logger.debug(f'Loss: {loss}')
-            self.last_loss = loss.item()
-        return self.last_loss
+            return loss.item()
+        else:
+            return np.nan
 
     @lab_api
     def update(self):

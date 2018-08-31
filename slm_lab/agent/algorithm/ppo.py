@@ -165,8 +165,9 @@ class PPO(ActorCritic):
             self.body.log_probs = []
             self.body.entropies = []
             logger.debug(f'Loss: {loss:.4f}')
-            self.last_loss = loss.item()
-        return self.last_loss
+            return loss.item()
+        else:
+            return np.nan
 
     def train_separate(self):
         '''
@@ -183,8 +184,9 @@ class PPO(ActorCritic):
             self.body.log_probs = []
             self.body.entropies = []
             logger.debug(f'Loss: {loss:.4f}')
-            self.last_loss = loss.item()
-        return self.last_loss
+            return loss.item()
+        else:
+            return np.nan
 
     def train_actor(self, batch):
         '''Trains the actor when the actor and critic are separate networks'''

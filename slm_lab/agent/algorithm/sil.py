@@ -156,8 +156,9 @@ class SIL(ActorCritic):
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
             logger.debug(f'Loss: {loss:.4f}')
-            self.last_loss = loss.item()
-        return self.last_loss
+            return loss.item()
+        else:
+            return np.nan
 
     def train_separate(self):
         '''
@@ -178,8 +179,9 @@ class SIL(ActorCritic):
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
             logger.debug(f'Loss: {loss:.4f}')
-            self.last_loss = loss.item()
-        return self.last_loss
+            return loss.item()
+        else:
+            return np.nan
 
 
 class PPOSIL(SIL, PPO):
