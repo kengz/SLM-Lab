@@ -17,6 +17,45 @@ ENV_DATA_NAMES = ['reward', 'state', 'done']
 logger = logger.get_logger(__name__)
 
 
+def get_action_dim(action_space):
+    '''Get the action dim for an action_space for agent to use'''
+    if isinstance(action_space, gym.spaces.Box):
+        assert len(action_space.shape) == 1
+        action_dim = action_space.shape[0]
+    elif isinstance(action_space, (gym.spaces.Discrete, gym.spaces.MultiBinary)):
+        action_dim = action_space.n
+    elif isinstance(action_space, gym.spaces.MultiDiscrete):
+        action_dim = action_space.nvec.tolist()
+    else:
+        raise ValueError('action_space not recognized')
+    return action_dim
+
+
+def make_env(spec):
+    try:
+        env = OpenAIEnv(spec)
+    except gym.error.Error:
+        env = UnityEnv(spec)
+    return env
+
+
+def set_gym_space_attr(gym_space):
+    '''Set missing gym space attributes for standardization'''
+    if isinstance(gym_space, gym.spaces.Box):
+        pass
+    elif isinstance(gym_space, gym.spaces.Discrete):
+        setattr(gym_space, 'low', 0)
+        setattr(gym_space, 'high', gym_space.n)
+    elif isinstance(gym_space, gym.spaces.MultiBinary):
+        setattr(gym_space, 'low', np.full(gym_space.n, 0))
+        setattr(gym_space, 'high', np.full(gym_space.n, 2))
+    elif isinstance(gym_space, gym.spaces.MultiDiscrete):
+        setattr(gym_space, 'low', np.zeros_like(nvec))
+        setattr(gym_space, 'high', np.array(gym_space.nvec))
+    else:
+        raise ValueError('gym_space not recognized')
+
+
 class Clock:
     '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0, but epi begins at 1, env step begins at 1.'''
 
@@ -47,37 +86,6 @@ class Clock:
 
     def get(self, unit='t'):
         return getattr(self, unit)
-
-
-def get_action_dim(action_space):
-    '''Get the action dim for an action_space for agent to use'''
-    if isinstance(action_space, gym.spaces.Box):
-        assert len(action_space.shape) == 1
-        action_dim = action_space.shape[0]
-    elif isinstance(action_space, (gym.spaces.Discrete, gym.spaces.MultiBinary)):
-        action_dim = action_space.n
-    elif isinstance(action_space, gym.spaces.MultiDiscrete):
-        action_dim = action_space.nvec.tolist()
-    else:
-        raise ValueError('action_space not recognized')
-    return action_dim
-
-
-def set_gym_space_attr(gym_space):
-    '''Set missing gym space attributes for standardization'''
-    if isinstance(gym_space, gym.spaces.Box):
-        pass
-    elif isinstance(gym_space, gym.spaces.Discrete):
-        setattr(gym_space, 'low', 0)
-        setattr(gym_space, 'high', gym_space.n)
-    elif isinstance(gym_space, gym.spaces.MultiBinary):
-        setattr(gym_space, 'low', np.full(gym_space.n, 0))
-        setattr(gym_space, 'high', np.full(gym_space.n, 2))
-    elif isinstance(gym_space, gym.spaces.MultiDiscrete):
-        setattr(gym_space, 'low', np.zeros_like(nvec))
-        setattr(gym_space, 'high', np.array(gym_space.nvec))
-    else:
-        raise ValueError('gym_space not recognized')
 
 
 class OpenAIEnv:
@@ -442,10 +450,8 @@ class EnvSpace:
         self.envs = []
         for e, env_spec in enumerate(self.env_spec):
             env_spec = ps.merge(spec['meta'].copy(), env_spec)
-            try:
-                env = OpenAIEnv(env_spec, self, e)
-            except gym.error.Error:
-                env = UnityEnv(env_spec, self, e)
+            env = make_env(self.spec)
+            env.e = e
             self.envs.append(env)
 
     @lab_api

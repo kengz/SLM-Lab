@@ -4,9 +4,9 @@ Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Se
 '''
 from copy import deepcopy
 from slm_lab.agent import AgentSpace, Agent, Body
-from slm_lab.env import EnvSpace, OpenAIEnv, UnityEnv
+from slm_lab.env import EnvSpace, make_env
 from slm_lab.experiment import analysis, search
-from slm_lab.experiment.monitor import AEBSpace, DataSpace
+from slm_lab.experiment.monitor import AEBSpace, enable_aeb_space
 from slm_lab.lib import logger, util
 import numpy as np
 import os
@@ -31,24 +31,16 @@ class Session:
         self.index = self.info_space.get('session')
         util.set_module_seed(self.info_space.get_random_seed())
         self.data = None
+
         # TODO tmp hack, split to singleton or space later
         self.spec['env'] = self.spec['env'][0]
         self.spec['agent'] = self.spec['agent'][0]
-        try:
-            self.env = OpenAIEnv(self.spec)
-        except Exception:
-            self.env = UnityEnv(self.spec)
+        self.env = make_env(self.spec)
         body = Body(self.env, self.spec['agent'])
         self.agent = Agent(self.spec, self.info_space, body)
 
-        # TODO hack. alternatively set from inside agent
-        self.aeb_space = AEBSpace(self.spec, self.info_space)
-        self.aeb_space.body_space = DataSpace('body', self.aeb_space)
-        body_v = np.full(self.aeb_space.aeb_shape, np.nan, dtype=object)
-        body_v[0, 0, 0] = body
-        self.aeb_space.body_space.add(body_v)
-        self.agent.aeb_space = self.aeb_space
-        self.env.aeb_space = self.aeb_space
+        # TODO move outside
+        enable_aeb_space(self)
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 

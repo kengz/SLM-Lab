@@ -41,6 +41,18 @@ COOR_DIM = len(COOR_AXES)
 logger = logger.get_logger(__name__)
 
 
+def enable_aeb_space(session):
+    '''Enable aeb_space to session use Lab's data-monitor and analysis modules'''
+    session.aeb_space = AEBSpace(session.spec, session.info_space)
+    # make compatible with the generic multiagent setup
+    session.aeb_space.body_space = DataSpace('body', session.aeb_space)
+    body_v = np.full(session.aeb_space.aeb_shape, np.nan, dtype=object)
+    body_v[0, 0, 0] = session.agent.body
+    session.aeb_space.body_space.add(body_v)
+    session.agent.aeb_space = session.aeb_space
+    session.env.aeb_space = session.aeb_space
+
+
 class DataSpace:
     '''
     AEB data space. Store all data from RL system in standard aeb-shaped tensors.
