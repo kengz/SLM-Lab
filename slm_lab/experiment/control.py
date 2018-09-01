@@ -29,9 +29,10 @@ class Session:
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
-        util.set_module_seed(self.info_space.get_random_seed())
         self.data = None
+        util.set_module_seed(self.info_space.get_random_seed())
 
+        # init singleton agent and env
         self.env = make_env(self.spec)
         body = Body(self.env, self.spec['agent'])
         self.agent = Agent(self.spec, self.info_space, body)
@@ -78,21 +79,17 @@ class Session:
 
 
 class SpaceSession:
-    '''
-    The base unit of instantiated RL system.
-    Given a spec,
-    session creates agent(s) and environment(s),
-    run the RL system and collect data, e.g. fitness metrics, till it ends,
-    then return the session data.
-    '''
+    '''Session for multi-agent/env setting'''
+    # TODO unify with Session without complicating it
 
     def __init__(self, spec, info_space, global_nets=None):
         self.spec = spec
         self.info_space = info_space
-        self.coor, self.index = self.info_space.get_coor_idx(self)
-        self.random_seed = 100 * (info_space.get('trial') or 0) + self.index
-        util.set_module_seed(self.random_seed)
+        self.index = self.info_space.get('session')
         self.data = None
+        util.set_module_seed(self.info_space.get_random_seed())
+
+        # TODO make it extend Session but with modification
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
@@ -139,6 +136,7 @@ class DistSession(mp.Process):
     def __init__(self, spec, info_space, global_nets):
         super(DistSession, self).__init__()
         self.name = f'w{info_space.get("session")}'
+        # TODO generalize for multiagent too
         self.session = Session(spec, info_space, global_nets)
 
     def run(self):
@@ -157,7 +155,7 @@ class Trial:
     def __init__(self, spec, info_space):
         self.spec = spec
         self.info_space = info_space
-        self.coor, self.index = self.info_space.get_coor_idx(self)
+        self.index = self.info_space.get('trial')
         self.session_data_dict = {}
         self.data = None
         analysis.save_spec(spec, info_space, unit='trial')
@@ -243,30 +241,28 @@ class Experiment:
     An experiment then forms a node containing its data in the evolution graph with the evolution link and suggestion at the adjacent possible new experiments
     On the evolution graph level, an experiment and its neighbors could be seen as test/development of traits.
     '''
-    # TODO metaspec to specify specs to run, can be sourced from evolution suggestion
 
     def __init__(self, spec, info_space):
         self.spec = spec
         self.info_space = info_space
-        self.coor, self.index = self.info_space.get_coor_idx(self)
+        self.index = self.info_space.get('experiment')
         self.trial_data_dict = {}
         self.data = None
+        analysis.save_spec(spec, info_space, unit='experiment')
         SearchClass = getattr(search, spec['meta'].get('search'))
         self.search = SearchClass(self)
-        analysis.save_spec(spec, info_space, unit='experiment')
         logger.info(f'Initialized experiment {self.index}')
 
     def init_trial_and_run(self, spec, info_space):
         '''
         Method to run trial with the properly updated info_space (trial_index) from experiment.search.lab_trial.
-        Do not tick info_space below, it is already updated when passed from lab_trial.
         '''
         trial = Trial(spec, info_space)
         trial_data = trial.run()
         return trial_data
 
     def close(self):
-        reload(search)  # to fix ray consecutive run crash due to bad cleanup
+        reload(search)  # fixes ray consecutive run crashing due to bad cleanup
         logger.info('Experiment done, closing.')
 
     def run(self):
@@ -284,4 +280,6 @@ class EvolutionGraph:
     to suggest new experiment via node creation, mutation or combination (no DAG restriction).
     There could be a high level evolution module that guides and optimizes the evolution graph and experiments to achieve SLM.
     '''
-    pass
+
+    def __init__(self, spec, info_space):
+        raise NotImplementedError

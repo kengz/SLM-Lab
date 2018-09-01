@@ -316,8 +316,6 @@ class InfoSpace:
         '''
         Initialize the coor, the global point in info space that will advance according to experiment progress.
         The coor starts with null first since the coor may not start at the origin.
-        TODO In general, when we parallelize to use multiple coor on a info space, keep a covered space and multiple coors to advance without conflicts.
-        TODO logic to resume from given last_coor
         '''
         self.coor = last_coor or {k: None for k in COOR_AXES}
         self.covered_space = []
@@ -361,25 +359,6 @@ class InfoSpace:
     def set(self, axis, val):
         self.coor[axis] = val
         return self.coor[axis]
-
-    def get_coor_idx(self, lab_comp):
-        '''
-        Get info space coor when initializing lab component, and return its coor and index.
-        Does not apply to AEB entities.
-        @returns {tuple, int} data_coor, index
-        @example
-
-        class Session:
-            def __init__(self, spec):
-                self.coor, self.index = info_space.get_coor_idx(self)
-
-        info_space.tick('session')
-        session = Session(spec, info_space)
-        '''
-        axis = util.get_class_name(lab_comp, lower=True)
-        coor = self.coor.copy()
-        index = coor[axis]
-        return coor, index
 
     def get_random_seed(self):
         '''Standard method to get random seed for a session'''
