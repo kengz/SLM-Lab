@@ -35,7 +35,7 @@ class Session:
         # init singleton agent and env
         self.env = make_env(self.spec)
         body = Body(self.env, self.spec['agent'])
-        self.agent = Agent(self.spec, self.info_space, body)
+        self.agent = Agent(self.spec, self.info_space, body, global_nets=global_nets)
 
         # TODO move outside, and properly pick singleton or multiagent session
         enable_aeb_space(self)
