@@ -78,7 +78,7 @@ class Session:
         return self.data
 
 
-class SpaceSession:
+class SpaceSession(Session):
     '''Session for multi-agent/env setting'''
     # TODO unify with Session without complicating it
 
@@ -93,31 +93,39 @@ class SpaceSession:
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
+
         logger.info(util.self_desc(self))
+        # TODO are these still relevant?
         self.aeb_space.init_body_space()
         self.aeb_space.post_body_init()
         logger.info(f'Initialized session {self.index}')
 
+    def save_if_ckpt(cls, agent_space, env_space):
+        '''Save for agent, env if episode is at checkpoint'''
+        for agent in self.agent_space.agents:
+            for body in agent.nanflat_body_a:
+                env = body.env
+                super(SpaceSession, self).save_if_ckpt(agent, env)
+
     def run_all_episodes(self):
         '''
-        Run all episodes, where each env can step and reset at its own clock_speed and timeline. Will terminate when all envs done running max_episode.
+        Continually run all episodes, where each env can step and reset at its own clock_speed and timeline.
+        Will terminate when all envs done are done.
         '''
-        _reward_space, state_space, _done_space = self.env_space.reset()
-        _action_space = self.agent_space.reset(state_space)  # nan action at t=0 for bookkeeping in data_space
-        while True:
-            # TODO epi now stats from self.epi = 0 instead of 1. use the same ticking scheme as singleton
-            end_session = self.aeb_space.tick_clocks(self)
-            if end_session:
-                break
+        all_done = self.aeb_space.tick('epi')
+        reward_space, state_space, done_space = self.env_space.reset()
+        self.agent_space.reset(state_space)
+        while not all_done:
+            all_done = self.aeb_space.tick()
             action_space = self.agent_space.act(state_space)
             reward_space, state_space, done_space = self.env_space.step(action_space)
             self.agent_space.update(action_space, reward_space, state_space, done_space)
+            self.save_if_ckpt(self.agent_space, self.env_space)
 
     def close(self):
         '''
         Close session and clean up.
         Save agent, close env.
-        Prepare self.df.
         '''
         self.agent_space.close()
         self.env_space.close()
@@ -159,10 +167,18 @@ class Trial:
         self.session_data_dict = {}
         self.data = None
         analysis.save_spec(spec, info_space, unit='trial')
+        # TODO still messy
+        if len(spec['agent']) == 1 and len(spec['env']) == 1:
+            if self.spec['meta'].get('distributed'):
+                self.SessionClass = DistSession
+            else:
+                self.SessionClass = Session
+        else:
+            self.SessionClass = SpaceSession
         logger.info(f'Initialized trial {self.index}')
 
     def init_session_and_run(self, info_space):
-        session = Session(self.spec, info_space)
+        session = self.SessionClass(self.spec, info_space)
         session_data = session.run()
         return session_data
 

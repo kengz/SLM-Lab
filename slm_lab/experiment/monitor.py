@@ -363,30 +363,15 @@ class AEBSpace:
         data_spaces = self.add(data_names, data_vs)
         return data_spaces
 
-    def tick_clocks(self, session):
-        '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''
-        # TODO remove this method to be like singleton
+    def tick(self, unit=None):
+        '''Tick all the clocks in env_space, and tell if all envs are done'''
         env_dones = []
-        body_end_sessions = []
         for env in self.env_space.envs:
-            done = env.done or env.clock.get('t') > env.max_timestep
+            unit = unit or ('epi' if env.done else 't')
+            env.clock.tick(unit)
+            done = env.done or env.clock.get('epi') > env.max_episode
             env_dones.append(done)
-            if done:
-                epi = env.clock.get('epi')
-                save_this_epi = 'save_epi_frequency' in env.env_spec and (epi % env.env_spec['save_epi_frequency']) == 0
-                for body in env.nanflat_body_e:
-                    body.log_summary()
-                    if epi > 0 and save_this_epi:
-                        body.agent.save(epi=epi)
-                env.clock.tick('epi')
-            else:
-                env.clock.tick('t')
-            env_end_session = env.clock.get('epi') > env.max_episode
-            body_end_sessions.append(env_end_session)
-
-        # TODO do an efficient all(env_early_stops)
-        end_session = all(body_end_sessions)
-        return end_session
+        return all(env_dones)
 
 
 class InfoSpace:
