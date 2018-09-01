@@ -21,10 +21,9 @@ class Algorithm(ABC):
         '''
         self.agent = agent
         self.global_nets = global_nets or {}
-        self.agent_spec = agent.agent_spec
-        self.algorithm_spec = self.agent_spec['algorithm']
-        self.memory_spec = self.agent_spec['memory']
-        self.net_spec = self.agent_spec['net']
+        self.algorithm_spec = agent.agent_spec['algorithm']
+        self.memory_spec = agent.agent_spec['memory']
+        self.net_spec = agent.agent_spec['net']
         self.body = self.agent.body
         self.init_algorithm_params()
         self.init_nets()

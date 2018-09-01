@@ -17,7 +17,6 @@ import torch
 import torch.multiprocessing as mp
 
 
-# TODO check if this is still needed
 def init_thread_vars(spec, info_space, unit):
     '''Initialize thread variables from lab units that do not get carried over properly from master'''
     if info_space.get(unit) is None:

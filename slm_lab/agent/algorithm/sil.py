@@ -55,7 +55,7 @@ class SIL(ActorCritic):
         super(SIL, self).__init__(agent, global_nets)
         # create the extra replay memory for SIL
         MemoryClass = getattr(memory, self.memory_spec['sil_replay_name'])
-        self.body.replay_memory = MemoryClass(self.memory_spec, self, self.body)
+        self.body.replay_memory = MemoryClass(self.memory_spec, self.body)
 
     @lab_api
     def init_algorithm_params(self):

@@ -21,7 +21,6 @@ class Memory(ABC):
         '''
         self.memory_spec = memory_spec
         self.body = body
-        self.agent_spec = body.agent.agent_spec
 
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']

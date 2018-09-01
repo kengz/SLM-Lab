@@ -63,13 +63,6 @@ class Body:
         self.log_probs = []  # calculate loss
         self.kls = []  # to compare old and new nets
 
-        # TODO move out
-        # # every body has its own memory for ease of computation
-        # memory_spec = self.agent.agent_spec['memory']
-        # memory_name = memory_spec['name']
-        # MemoryClass = getattr(memory, memory_name)
-        # self.memory = MemoryClass(memory_spec, self.agent.algorithm, self)
-
     def epi_reset(self):
         '''
         Handles any body attribute reset at the start of an episode.
@@ -97,7 +90,6 @@ class Agent:
     Access Envs properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    # def __init__(self, agent_spec, agent_space, a=0):
     def __init__(self, spec, info_space, body, global_nets=None):
         self.spec = spec
         self.info_space = info_space
@@ -195,7 +187,7 @@ class SpaceBody:
         memory_spec = self.agent.agent_spec['memory']
         memory_name = memory_spec['name']
         MemoryClass = getattr(memory, memory_name)
-        self.memory = MemoryClass(memory_spec, self.agent.algorithm, self)
+        self.memory = MemoryClass(memory_spec, self)
 
     def epi_reset(self):
         '''

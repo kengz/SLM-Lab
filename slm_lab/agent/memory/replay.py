@@ -136,8 +136,8 @@ class SeqReplay(Replay):
     '''
 
     def __init__(self, memory_spec, body):
-        self.seq_len = self.agent_spec['net']['seq_len']
         super(SeqReplay, self).__init__(memory_spec, body)
+        self.seq_len = self.body.agent.agent_spec['net']['seq_len']
         self.state_buffer = deque(maxlen=self.seq_len)
         # update states_shape and call reset again
         self.states_shape = self.scalar_shape + tuple(np.reshape([self.seq_len, self.body.state_dim], -1))
