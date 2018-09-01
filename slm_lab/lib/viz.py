@@ -7,9 +7,9 @@ from plotly import (
     offline as py,
     tools,
 )
-from slm_lab import config
 from slm_lab.lib import logger, util
 from subprocess import Popen, DEVNULL
+import colorlover as cl
 import os
 import plotly
 import pydash as ps
@@ -21,50 +21,6 @@ os.makedirs(PLOT_FILEDIR, exist_ok=True)
 if util.is_jupyter():
     py.init_notebook_mode(connected=True)
 logger = logger.get_logger(__name__)
-
-
-def plot(*args, **kwargs):
-    if util.is_jupyter():
-        return py.iplot(*args, **kwargs)
-    else:
-        kwargs.update({'auto_open': ps.get(kwargs, 'auto_open', False)})
-        return py.plot(*args, **kwargs)
-
-
-def save_image(figure, filepath=None):
-    if os.environ['PY_ENV'] == 'test':
-        return
-    if filepath is None:
-        filepath = f'{PLOT_FILEDIR}/{ps.get(figure, "layout.title")}.png'
-    filepath = util.smart_path(filepath)
-    dirname, filename = os.path.split(filepath)
-    try:
-        cmd = f'orca graph -o {filename} \'{json.dumps(figure)}\''
-        if 'linux' in sys.platform:
-            cmd = 'xvfb-run -a -s "-screen 0 1400x900x24" -- ' + cmd
-        proc = Popen(cmd, cwd=dirname, shell=True, stderr=DEVNULL, stdout=DEVNULL)
-        try:
-            outs, errs = proc.communicate(timeout=20)
-        except TimeoutExpired:
-            proc.kill()
-            outs, errs = proc.communicate()
-        logger.info(f'Graph saved to {dirname}/{filename}')
-    except Exception as e:
-        logger.exception(
-            'Please install orca for plotly and run retro-analysis to generate graphs.')
-
-
-def stack_cumsum(df, y_col):
-    '''Submethod to cumsum over y columns for stacked area plot'''
-    y_col_list = util.cast_list(y_col)
-    stack_df = df.copy()
-    for idx in range(len(y_col_list)):
-        col = y_col_list[idx]
-        presum_idx = idx - 1
-        if presum_idx > -1:
-            presum_col = y_col_list[presum_idx]
-            stack_df[col] += stack_df[presum_col]
-    return stack_df
 
 
 def create_label(
@@ -103,6 +59,27 @@ def create_layout(
     )
     layout.update(layout_kwargs)
     return layout
+
+
+def get_palette(aeb_count):
+    '''Get the suitable palette to plot for some number of aeb graphs, where each aeb is a color.'''
+    if aeb_count <= 8:
+        palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
+    else:
+        palette = util.interp(cl.scales['8']['qual']['Set2'], aeb_count)
+    return palette
+
+
+def lower_opacity(rgb, opacity):
+    return rgb.replace('rgb(', 'rgba(').replace(')', f',{opacity})')
+
+
+def plot(*args, **kwargs):
+    if util.is_jupyter():
+        return py.iplot(*args, **kwargs)
+    else:
+        kwargs.update({'auto_open': ps.get(kwargs, 'auto_open', False)})
+        return py.plot(*args, **kwargs)
 
 
 def plot_go(
@@ -231,3 +208,39 @@ def plot_histogram(
         *args, trace_class='Histogram',
         trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
         **kwargs)
+
+
+def save_image(figure, filepath=None):
+    if os.environ['PY_ENV'] == 'test':
+        return
+    if filepath is None:
+        filepath = f'{PLOT_FILEDIR}/{ps.get(figure, "layout.title")}.png'
+    filepath = util.smart_path(filepath)
+    dirname, filename = os.path.split(filepath)
+    try:
+        cmd = f'orca graph -o {filename} \'{json.dumps(figure)}\''
+        if 'linux' in sys.platform:
+            cmd = 'xvfb-run -a -s "-screen 0 1400x900x24" -- ' + cmd
+        proc = Popen(cmd, cwd=dirname, shell=True, stderr=DEVNULL, stdout=DEVNULL)
+        try:
+            outs, errs = proc.communicate(timeout=20)
+        except TimeoutExpired:
+            proc.kill()
+            outs, errs = proc.communicate()
+        logger.info(f'Graph saved to {dirname}/{filename}')
+    except Exception as e:
+        logger.exception(
+            'Please install orca for plotly and run retro-analysis to generate graphs.')
+
+
+def stack_cumsum(df, y_col):
+    '''Submethod to cumsum over y columns for stacked area plot'''
+    y_col_list = util.cast_list(y_col)
+    stack_df = df.copy()
+    for idx in range(len(y_col_list)):
+        col = y_col_list[idx]
+        presum_idx = idx - 1
+        if presum_idx > -1:
+            presum_col = y_col_list[presum_idx]
+            stack_df[col] += stack_df[presum_col]
+    return stack_df

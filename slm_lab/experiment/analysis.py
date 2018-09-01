@@ -5,7 +5,6 @@ Handles the analyses of the info and data space for experiment evaluation and de
 from slm_lab.agent import AGENT_DATA_NAMES
 from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.lib import logger, util, viz
-import colorlover as cl
 import numpy as np
 import os
 import pandas as pd
@@ -117,23 +116,10 @@ def is_unfit(fitness_df):
     return mean_fitness_df['strength'].iloc[0] < NOISE_WINDOW
 
 
-def get_palette(aeb_count):
-    '''Get the suitable palette to plot for some number of aeb graphs, where each aeb is a color.'''
-    if aeb_count <= 8:
-        palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
-    else:
-        palette = util.interp(cl.scales['8']['qual']['Set2'], aeb_count)
-    return palette
-
-
-def lower_opacity(rgb, opacity):
-    return rgb.replace('rgb(', 'rgba(').replace(')', f',{opacity})')
-
-
 def plot_session(session_spec, info_space, session_data):
     '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
     aeb_count = len(session_data)
-    palette = get_palette(aeb_count)
+    palette = viz.get_palette(aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
     for idx, (a, e, b) in enumerate(session_data):
         aeb_str = f'{a}{e}{b}'
@@ -184,7 +170,7 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
         x=x + x[::-1],
         y=max_y + min_y[::-1],
         fill='tozerox',
-        fillcolor=lower_opacity(color, 0.2),
+        fillcolor=viz.lower_opacity(color, 0.2),
         line=dict(color='transparent'),
         showlegend=False,
         legendgroup=aeb_str,
@@ -204,7 +190,7 @@ def plot_trial(trial_spec, info_space):
     session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
 
     aeb_count = len(session_datas[0])
-    palette = get_palette(aeb_count)
+    palette = viz.get_palette(aeb_count)
     fig = None
     for idx, (a, e, b) in enumerate(session_datas[0]):
         aeb = (a, e, b)
