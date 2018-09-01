@@ -166,7 +166,7 @@ class Trial:
         session_data = session.run()
         return session_data
 
-    def run_serial_sessions(self):
+    def run_sessions(self):
         logger.info('Running serial sessions')
         info_spaces = []
         for _s in range(self.spec['meta']['max_session']):
@@ -218,7 +218,7 @@ class Trial:
         if self.spec['meta'].get('distributed'):
             session_datas = self.run_distributed_sessions()
         else:
-            session_datas = self.run_serial_sessions()
+            session_datas = self.run_sessions()
         self.session_data_dict = {data.index[0]: data for data in session_datas}
         self.data = analysis.analyze_trial(self)
         self.close()
