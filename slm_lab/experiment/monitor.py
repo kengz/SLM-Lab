@@ -84,17 +84,6 @@ class Body:
         self.env = env
         self.aeb = aeb
         self.a, self.e, self.b = aeb
-        # the specific agent-env interface variables for a body
-        self.observation_space = self.env.observation_space
-        self.action_space = self.env.action_space
-        self.observable_dim = self.env.observable_dim
-        self.state_dim = self.observable_dim['state']
-        self.action_dim = self.env.action_dim
-        self.is_discrete = self.env.is_discrete
-        self.action_type = get_action_type(self.action_space)
-        self.action_pdtype = agent_spec[self.a]['algorithm'].get('action_pdtype')
-        if self.action_pdtype in (None, 'default'):
-            self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
 
         # stats variables
         self.loss = np.nan  # training losses
@@ -107,6 +96,18 @@ class Body:
         self.log_probs = []  # calculate loss
         # register them
         self.action_stats = [self.entropies, self.log_probs]
+
+        # the specific agent-env interface variables for a body
+        self.observation_space = self.env.observation_space
+        self.action_space = self.env.action_space
+        self.observable_dim = self.env.observable_dim
+        self.state_dim = self.observable_dim['state']
+        self.action_dim = self.env.action_dim
+        self.is_discrete = self.env.is_discrete
+        self.action_type = get_action_type(self.action_space)
+        self.action_pdtype = agent_spec[self.a]['algorithm'].get('action_pdtype')
+        if self.action_pdtype in (None, 'default'):
+            self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
 
     def epi_reset(self):
         '''

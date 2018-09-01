@@ -17,20 +17,6 @@ ENV_DATA_NAMES = ['reward', 'state', 'done']
 logger = logger.get_logger(__name__)
 
 
-def get_action_dim(action_space):
-    '''Get the action dim for an action_space for agent to use'''
-    if isinstance(action_space, gym.spaces.Box):
-        assert len(action_space.shape) == 1
-        action_dim = action_space.shape[0]
-    elif isinstance(action_space, (gym.spaces.Discrete, gym.spaces.MultiBinary)):
-        action_dim = action_space.n
-    elif isinstance(action_space, gym.spaces.MultiDiscrete):
-        action_dim = action_space.nvec.tolist()
-    else:
-        raise ValueError('action_space not recognized')
-    return action_dim
-
-
 def make_env(spec):
     try:
         env = OpenAIEnv(spec)
@@ -103,20 +89,37 @@ class OpenAIEnv:
         self.action_space = self.u_env.action_space
         set_gym_space_attr(self.observation_space)
         set_gym_space_attr(self.action_space)
-        self.observable_dim = self._get_observable_dim()
-        self.action_dim = get_action_dim(self.action_space)
-        self.is_discrete = util.get_class_name(self.action_space) != 'Box'  # continuous
+        self.observable_dim = self._get_observable_dim(self.observation_space)
+        self.action_dim = self._get_action_dim(self.action_space)
+        self.is_discrete = self._is_discrete(self.action_space)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
         self.clock = Clock()
         self.done = False
         logger.info(util.self_desc(self))
 
-    def _get_observable_dim(self):
+    def _get_observable_dim(self, observation_space):
         '''Get the observable dim for an agent in env'''
-        state_dim = self.observation_space.shape
+        state_dim = observation_space.shape
         if len(state_dim) == 1:
             state_dim = state_dim[0]
         return {'state': state_dim}
+
+    def _get_action_dim(self, action_space):
+        '''Get the action dim for an action_space for agent to use'''
+        if isinstance(action_space, gym.spaces.Box):
+            assert len(action_space.shape) == 1
+            action_dim = action_space.shape[0]
+        elif isinstance(action_space, (gym.spaces.Discrete, gym.spaces.MultiBinary)):
+            action_dim = action_space.n
+        elif isinstance(action_space, gym.spaces.MultiDiscrete):
+            action_dim = action_space.nvec.tolist()
+        else:
+            raise ValueError('action_space not recognized')
+        return action_dim
+
+    def _is_discrete(self, action_space):
+        '''Check if an action space is discrete'''
+        return util.get_class_name(action_space) != 'Box'
 
     @lab_api
     def reset(self):
