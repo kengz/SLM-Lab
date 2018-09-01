@@ -208,7 +208,7 @@ class Trial:
             workers.append(w)
         for w in workers:
             w.join()
-        session_datas = analysis.session_data_dict_from_file_for_dist(self.spec, self.info_space)
+        session_datas = analysis.session_data_dict_for_dist(self.spec, self.info_space)
         return session_datas
 
     def close(self):
