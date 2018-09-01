@@ -92,64 +92,6 @@ class Agent:
         self.save()
 
 
-class SpaceBody:
-    '''
-    Body is the handler with proper info to reference the single-agent-single-environment unit in this generalized multi-agent-env setting.
-    '''
-
-    def __init__(self, aeb, agent, env):
-        # essential reference variables
-        self.aeb = aeb
-        self.agent = agent
-        self.env = env
-        self.a, self.e, self.b = aeb
-        self.nanflat_a_idx = None
-        self.nanflat_e_idx = None
-
-        # TODO generalize and make state_space to include observables
-        # the specific agent-env interface variables for a body
-        self.observable_dim = self.env.get_observable_dim(self.a)
-        self.state_dim = self.observable_dim['state']
-        self.observation_space = self.env.get_observation_space(self.a)
-        self.action_dim = self.env.get_action_dim(self.a)
-        self.action_space = self.env.get_action_space(self.a)
-        self.action_type = util.get_action_type(self.action_space)
-        self.action_pdtype = self.agent.agent_spec['algorithm'].get('action_pdtype')
-        if self.action_pdtype in (None, 'default'):
-            self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
-        self.is_discrete = self.env.is_discrete(self.a)
-
-        self.loss = np.nan  # training losses
-        # for action policy exploration, so be set in algo during init_algorithm_params()
-        self.explore_var = np.nan
-
-        # diagnostics variables/stats from action_policy prob. dist.
-        self.entropies = []  # check exploration
-        self.log_probs = []  # calculate loss
-        # register them
-        self.action_stats = [self.entropies, self.log_probs]
-
-        # every body has its own memory for ease of computation
-        memory_spec = self.agent.agent_spec['memory']
-        memory_name = memory_spec['name']
-        MemoryClass = getattr(memory, memory_name)
-        self.memory = MemoryClass(memory_spec, self)
-
-    def epi_reset(self):
-        '''
-        Agent will still produce action (and the action stat) at terminal step and feed to env.step() at t=0. Remove them at epi_reset.
-        This method is called automatically at base memory.epi_reset().
-        '''
-        assert self.env.clock.get('t') == 0, self.env.clock.get('t')
-        for action_stat in self.action_stats:
-            # use pop instead of clear for cross-epi training
-            if len(action_stat) > 0:
-                action_stat.pop()
-
-    def __str__(self):
-        return 'body: ' + util.to_json(util.get_class_attr(self))
-
-
 class SpaceAgent:
     '''
     Class for all Agents.

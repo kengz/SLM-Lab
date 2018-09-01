@@ -1,7 +1,4 @@
-from collections import deque
 from datetime import datetime
-from functools import wraps
-from gym import spaces
 from itertools import chain
 from slm_lab import ROOT_DIR
 from sys import getsizeof, stderr
@@ -175,25 +172,6 @@ def gen_isnan(v):
         return np.isnan(v).all()
     except Exception:
         return v is None
-
-
-def get_action_type(action_space):
-    '''Method to get the action type to choose prob. dist. to sample actions from NN logits output'''
-    if isinstance(action_space, spaces.Box):
-        shape = action_space.shape
-        assert len(shape) == 1
-        if shape[0] == 1:
-            return 'continuous'
-        else:
-            return 'multi_continuous'
-    elif isinstance(action_space, spaces.Discrete):
-        return 'discrete'
-    elif isinstance(action_space, spaces.MultiDiscrete):
-        return 'multi_discrete'
-    elif isinstance(action_space, spaces.MultiBinary):
-        return 'multi_binary'
-    else:
-        raise NotImplementedError
 
 
 def get_df_aeb_list(session_df):
@@ -434,46 +412,9 @@ def is_sub_dict(sub_dict, super_dict):
     return True
 
 
-def memory_size(o, handlers={}, verbose=False, divisor=1e6):
-    '''
-    Returns the approximate memory footprint an object and all of its contents. In MB by default.
-
-    Automatically finds the contents of the following builtin containers and
-    their subclasses:  tuple, list, deque, dict, set and frozenset.
-    To search other containers, add handlers to iterate over their contents:
-
-        handlers = {SomeContainerClass: iter,
-                    OtherContainerClass: OtherContainerClass.get_elements}
-    Source: https://code.activestate.com/recipes/577504/
-    '''
-    def lambda_fn(d):
-        return chain.from_iterable(d.items())
-    dict_handler = lambda_fn
-    all_handlers = {
-        tuple: iter,
-        list: iter,
-        deque: iter,
-        dict: dict_handler,
-        set: iter,
-        frozenset: iter,
-    }
-    all_handlers.update(handlers)  # user handlers take precedence
-    seen = set()  # track which object id's have already been seen
-    default_size = getsizeof(0)  # estimate sizeof object without __sizeof__
-
-    def sizeof(o):
-        if id(o) in seen:  # do not double count the same object
-            return 0
-        seen.add(id(o))
-        s = getsizeof(o, default_size)
-        if verbose:
-            print(s, type(o), repr(o), file=stderr)
-        for typ, handler in all_handlers.items():
-            if isinstance(o, typ):
-                s += sum(map(sizeof, handler(o)))
-                break
-        return s
-    return sizeof(o) / divisor
+def memory_size(obj, divisor=1e6):
+    '''Return the size of object, in MB by default'''
+    return getsizeof(obj) / divisor
 
 
 def monkey_patch(base_cls, extend_cls):
@@ -896,15 +837,3 @@ def debug_image(im):
     '''Use this method to render image the agent sees; waits for a key press before continuing'''
     cv2.imshow('image', im)
     cv2.waitKey(0)
-
-
-def fn_timer(function):
-    '''Decorator to time the execution of a function. Useful for debugging slow training'''
-    @wraps(function)
-    def function_timer(*args, **kwargs):
-        t0 = time.time()
-        result = function(*args, **kwargs)
-        t1 = time.time()
-        print("Time %s %s: %s seconds" % (function, function.__name__, str(t1 - t0)))
-        return result
-    return function_timer
