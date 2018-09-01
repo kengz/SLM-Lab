@@ -92,7 +92,7 @@ For off-policy algorithms (value-based)
 - SeqReplay
 - SILReplay (special Replay for SIL)
 - SILSeqReplay (special SeqReplay for SIL)
-- StackReplay
+- ConcatReplay
 - AtariReplay
 - PrioritizedReplay
 
