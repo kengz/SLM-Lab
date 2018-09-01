@@ -316,7 +316,7 @@ class InfoSpace:
 
     def get_random_seed(self):
         '''Standard method to get random seed for a session'''
-        return int(1e5 * (self.get('trial') or 0) + 1e3 * self.get('session'))
+        return int(1e5 * (self.get('trial') or 0) + 1e3 * (self.get('session') or 0))
 
 
 class Monitor:

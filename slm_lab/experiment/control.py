@@ -3,27 +3,17 @@ The control module
 Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Session
 '''
 from copy import deepcopy
-from importlib import reload
 from slm_lab.agent import AgentSpace, Agent, Body
 from slm_lab.env import EnvSpace, OpenAIEnv, UnityEnv
 from slm_lab.experiment import analysis, search
-from slm_lab.experiment.monitor import AEBSpace, DataSpace, InfoSpace
-from slm_lab.lib import logger, util, viz
+from slm_lab.experiment.monitor import AEBSpace, DataSpace
+from slm_lab.lib import logger, util
 import numpy as np
 import os
 import pandas as pd
 import pydash as ps
 import torch
 import torch.multiprocessing as mp
-
-
-def init_thread_vars(spec, info_space, unit):
-    '''Initialize thread variables from lab units that do not get carried over properly from master'''
-    if info_space.get(unit) is None:
-        info_space.tick(unit)
-    if logger.to_init(spec, info_space):
-        os.environ['PREPATH'] = util.get_prepath(spec, info_space)
-        reload(logger)
 
 
 class Session:
@@ -35,9 +25,7 @@ class Session:
     then return the session data.
     '''
 
-    def __init__(self, spec, info_space=None, global_nets=None):
-        info_space = info_space or InfoSpace()
-        init_thread_vars(spec, info_space, unit='session')
+    def __init__(self, spec, info_space, global_nets=None):
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
@@ -109,9 +97,7 @@ class SpaceSession:
     then return the session data.
     '''
 
-    def __init__(self, spec, info_space=None, global_nets=None):
-        info_space = info_space or InfoSpace()
-        init_thread_vars(spec, info_space, unit='session')
+    def __init__(self, spec, info_space, global_nets=None):
         self.spec = spec
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
@@ -179,9 +165,7 @@ class Trial:
     then return the trial data.
     '''
 
-    def __init__(self, spec, info_space=None):
-        info_space = info_space or InfoSpace()
-        init_thread_vars(spec, info_space, unit='trial')
+    def __init__(self, spec, info_space):
         self.spec = spec
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)
@@ -214,8 +198,7 @@ class Trial:
         return session_datas
 
     def init_global_nets(self):
-        spec = deepcopy(self.spec)
-        global_session = Session(deepcopy(self.spec))
+        global_session = Session(deepcopy(self.spec), deepcopy(self.info_space))
         global_agent = global_session.agent
         global_session.env.close()
         global_nets = {}
@@ -273,9 +256,7 @@ class Experiment:
     '''
     # TODO metaspec to specify specs to run, can be sourced from evolution suggestion
 
-    def __init__(self, spec, info_space=None):
-        info_space = info_space or InfoSpace()
-        init_thread_vars(spec, info_space, unit='experiment')
+    def __init__(self, spec, info_space):
         self.spec = spec
         self.info_space = info_space
         self.coor, self.index = self.info_space.get_coor_idx(self)

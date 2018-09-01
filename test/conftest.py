@@ -32,6 +32,11 @@ def test_spec():
 
 
 @pytest.fixture(scope='session')
+def test_info_space():
+    return InfoSpace()
+
+
+@pytest.fixture(scope='session')
 def test_aeb_space(test_spec):
     global aeb_space
     if aeb_space is None:

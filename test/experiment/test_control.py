@@ -5,27 +5,31 @@ import pandas as pd
 import pytest
 
 
-def test_session(test_spec):
-    session = Session(test_spec)
+def test_session(test_spec, test_info_space):
+    test_info_space.tick('session')
+    session = Session(test_spec, test_info_space)
     session_data = session.run()
     assert isinstance(session_data, pd.DataFrame)
 
 
-def test_trial(test_spec):
-    trial = Trial(test_spec)
+def test_trial(test_spec, test_info_space):
+    test_info_space.tick('trial')
+    trial = Trial(test_spec, test_info_space)
     trial_data = trial.run()
     assert isinstance(trial_data, pd.DataFrame)
 
 
-def test_trial_demo():
+def test_trial_demo(test_info_space):
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     spec = util.override_test_spec(spec)
-    trial_data = Trial(spec).run()
+    test_info_space.tick('trial')
+    trial_data = Trial(spec, test_info_space).run()
     assert isinstance(trial_data, pd.DataFrame)
 
 
-def test_experiment():
+def test_experiment(test_info_space):
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     spec = util.override_test_spec(spec)
-    experiment_data = Experiment(spec).run()
+    test_info_space.tick('experiment')
+    experiment_data = Experiment(spec, test_info_space).run()
     assert isinstance(experiment_data, pd.DataFrame)
