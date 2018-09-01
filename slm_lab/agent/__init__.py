@@ -49,7 +49,7 @@ class Body:
         self.action_dim = self.env.action_dim
         self.is_discrete = self.env.is_discrete
         self.action_type = util.get_action_type(self.action_space)
-        self.action_pdtype = agent_spec['algorithm'].get('action_pdtype')
+        self.action_pdtype = agent_spec[self.a]['algorithm'].get('action_pdtype')
         if self.action_pdtype in (None, 'default'):
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
 
@@ -96,7 +96,7 @@ class Agent:
         self.body = body
         body.agent = self
         self.a = 0  # for compatibility with agent_space
-        self.agent_spec = spec['agent']
+        self.agent_spec = spec['agent'][self.a]
         self.name = self.agent_spec['name']
 
         MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))

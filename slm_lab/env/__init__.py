@@ -90,8 +90,8 @@ class Clock:
 
 class OpenAIEnv:
     def __init__(self, spec):
-        self.env_spec = spec['env']
         self.e = 0  # for compatibility with env_space
+        self.env_spec = spec['env'][self.e]
         util.set_attr(self, self.env_spec, [
             'name',
             'max_timestep',

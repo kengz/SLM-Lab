@@ -32,14 +32,11 @@ class Session:
         util.set_module_seed(self.info_space.get_random_seed())
         self.data = None
 
-        # TODO tmp hack, split to singleton or space later
-        self.spec['env'] = self.spec['env'][0]
-        self.spec['agent'] = self.spec['agent'][0]
         self.env = make_env(self.spec)
         body = Body(self.env, self.spec['agent'])
         self.agent = Agent(self.spec, self.info_space, body)
 
-        # TODO move outside
+        # TODO move outside, and properly pick singleton or multiagent session
         enable_aeb_space(self)
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
