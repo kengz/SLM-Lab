@@ -526,6 +526,20 @@ def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
     return results
 
 
+def prepath_split(prepath):
+    '''Split prepath into prefolder and prename'''
+    prepath = prepath.strip('_')
+    tail = prepath.split('data/')[-1]
+    prefolder, prename = tail.split('/')
+    return prefolder, prename
+
+
+def prepath_to_experiment_ts(prepath):
+    predir = prepath_to_predir(prepath)
+    experiment_ts = RE_FILE_TS.findall(predir)[0]
+    return experiment_ts
+
+
 def prepath_to_info_space(prepath):
     '''Create info_space from prepath such that it returns the same prepath with spec'''
     from slm_lab.experiment.monitor import InfoSpace
@@ -538,27 +552,6 @@ def prepath_to_info_space(prepath):
     info_space.set('trial', trial_index)
     info_space.set('session', session_index)
     return info_space
-
-
-def prepath_split(prepath):
-    '''Split prepath into prefolder and prename'''
-    prepath = prepath.strip('_')
-    tail = prepath.split('data/')[-1]
-    prefolder, prename = tail.split('/')
-    return prefolder, prename
-
-
-def prepath_to_predir(prepath):
-    tail = prepath.split('data/')[-1]
-    prefolder = tail.split('/')[0]
-    predir = f'data/{prefolder}'
-    return predir
-
-
-def prepath_to_experiment_ts(prepath):
-    predir = prepath_to_predir(prepath)
-    experiment_ts = RE_FILE_TS.findall(predir)[0]
-    return experiment_ts
 
 
 def prepath_to_idxs(prepath):
@@ -578,6 +571,13 @@ def prepath_to_idxs(prepath):
         assert sidx.startswith('s')
         session_index = int(sidx.strip('s'))
     return trial_index, session_index
+
+
+def prepath_to_predir(prepath):
+    tail = prepath.split('data/')[-1]
+    prefolder = tail.split('/')[0]
+    predir = f'data/{prefolder}'
+    return predir
 
 
 def prepath_to_spec_name(prepath):
