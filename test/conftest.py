@@ -1,4 +1,4 @@
-from slm_lab.agent import AgentSpace, Body
+from slm_lab.agent import AgentSpace
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.net.recurrent import RecurrentNet

@@ -19,8 +19,9 @@ DataSpace: a data space storing an AEB data projected to a-axis, and its dual pr
 Object reference (for agent to access env properties, vice versa):
 Agents - AgentSpace - AEBSpace - EnvSpace - Envs
 '''
-from slm_lab.agent import AGENT_DATA_NAMES, Body
-from slm_lab.env import ENV_DATA_NAMES, Clock
+from slm_lab.agent import AGENT_DATA_NAMES
+from slm_lab.agent.algorithm import policy_util
+from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import numpy as np
@@ -51,6 +52,60 @@ def enable_aeb_space(session):
     session.aeb_space.body_space.add(body_v)
     session.agent.aeb_space = session.aeb_space
     session.env.aeb_space = session.aeb_space
+
+
+class Body:
+    '''
+    Body of an agent inside an environment. This acts as the main variable storage and bridge between agent and environment to pair them up properly in the generalized multi-agent-env setting.
+    '''
+
+    def __init__(self, env, agent_spec, aeb=(0, 0, 0)):
+        # essential reference variables
+        self.env = env
+        self.aeb = aeb
+        self.a, self.e, self.b = aeb
+        # the specific agent-env interface variables for a body
+        self.observation_space = self.env.observation_space
+        self.action_space = self.env.action_space
+        self.observable_dim = self.env.observable_dim
+        self.state_dim = self.observable_dim['state']
+        self.action_dim = self.env.action_dim
+        self.is_discrete = self.env.is_discrete
+        self.action_type = util.get_action_type(self.action_space)
+        self.action_pdtype = agent_spec[self.a]['algorithm'].get('action_pdtype')
+        if self.action_pdtype in (None, 'default'):
+            self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
+
+        # stats variables
+        self.loss = np.nan  # training losses
+        self.last_loss = np.nan  # the last non-nan loss, for printing
+        # for action policy exploration, so be set in algo during init_algorithm_params()
+        self.explore_var = np.nan
+
+        # diagnostics variables/stats from action_policy prob. dist.
+        self.entropies = []  # check exploration
+        self.log_probs = []  # calculate loss
+        # register them
+        self.action_stats = [self.entropies, self.log_probs]
+
+    def epi_reset(self):
+        '''
+        Handles any body attribute reset at the start of an episode.
+        This method is called automatically at base memory.epi_reset().
+        '''
+        assert self.env.clock.get('t') == 0, self.env.clock.get('t')
+
+    def __str__(self):
+        return 'body: ' + util.to_json(util.get_class_attr(self))
+
+    def log_summary(self):
+        '''Log the summary for this body when its environment is done'''
+        spec = self.agent.spec
+        info_space = self.agent.info_space
+        clock = self.env.clock
+        memory = self.memory
+        msg = f'{spec["name"]} trial {info_space.get("trial")} session {info_space.get("session")} env {self.env.e}, body {self.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {self.last_loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
+        logger.info(msg)
 
 
 class DataSpace:

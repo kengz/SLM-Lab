@@ -3,10 +3,10 @@ The control module
 Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Session
 '''
 from copy import deepcopy
-from slm_lab.agent import AgentSpace, Agent, Body
+from slm_lab.agent import AgentSpace, Agent
 from slm_lab.env import EnvSpace, make_env
 from slm_lab.experiment import analysis, search
-from slm_lab.experiment.monitor import AEBSpace, enable_aeb_space
+from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
 from slm_lab.lib import logger, util
 import numpy as np
 import os

@@ -18,9 +18,7 @@ Agent components:
 - algorithm (with net, policy)
 - memory (per body)
 '''
-from collections import deque
 from slm_lab.agent import algorithm, memory
-from slm_lab.agent.algorithm import policy_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -28,59 +26,6 @@ import pydash as ps
 
 AGENT_DATA_NAMES = ['action', 'loss', 'explore_var']
 logger = logger.get_logger(__name__)
-
-
-class Body:
-    '''
-    Body is the handler with proper info to reference the single-agent-single-environment unit in this generalized multi-agent-env setting.
-    '''
-
-    def __init__(self, env, agent_spec, aeb=(0, 0, 0)):
-        # TODO move this to under env for interface with agent. maybe like create_env_body
-        # essential reference variables
-        self.env = env
-        self.aeb = aeb
-        self.a, self.e, self.b = aeb
-        # the specific agent-env interface variables for a body
-        self.observation_space = self.env.observation_space
-        self.action_space = self.env.action_space
-        self.observable_dim = self.env.observable_dim
-        self.state_dim = self.observable_dim['state']
-        self.action_dim = self.env.action_dim
-        self.is_discrete = self.env.is_discrete
-        self.action_type = util.get_action_type(self.action_space)
-        self.action_pdtype = agent_spec[self.a]['algorithm'].get('action_pdtype')
-        if self.action_pdtype in (None, 'default'):
-            self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
-
-        self.loss = np.nan  # training losses
-        self.last_loss = np.nan  # the last non-nan loss, for printing
-        # for action policy exploration, so be set in algo during init_algorithm_params()
-        self.explore_var = np.nan
-
-        # diagnostics variables from action_policy prob. dist.
-        self.entropies = []  # check exploration
-        self.log_probs = []  # calculate loss
-        self.kls = []  # to compare old and new nets
-
-    def epi_reset(self):
-        '''
-        Handles any body attribute reset at the start of an episode.
-        This method is called automatically at base memory.epi_reset().
-        '''
-        assert self.env.clock.get('t') == 0, self.env.clock.get('t')
-
-    def __str__(self):
-        return 'body: ' + util.to_json(util.get_class_attr(self))
-
-    def log_summary(self):
-        '''Log the summary for this body when its environment is done'''
-        spec = self.agent.spec
-        info_space = self.agent.info_space
-        clock = self.env.clock
-        memory = self.memory
-        msg = f'{spec["name"]} trial {info_space.get("trial")} session {info_space.get("session")} env {self.env.e}, body {self.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {self.last_loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
-        logger.info(msg)
 
 
 class Agent:
@@ -129,7 +74,7 @@ class Agent:
         '''
         self.body.memory.update(action, reward, state, done)
         self.body.loss = loss = self.algorithm.train()
-        if not np.isnan(loss):  # set for printing in log_summary()
+        if not np.isnan(loss):  # set for log_summary()
             self.body.last_loss = loss
         explore_var = self.algorithm.update()
         logger.debug(f'Agent {self.a} loss: {loss}, explore_var {explore_var}')
@@ -178,10 +123,11 @@ class SpaceBody:
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
 
-        # diagnostics variables from action_policy prob. dist.
+        # diagnostics variables/stats from action_policy prob. dist.
         self.entropies = []  # check exploration
         self.log_probs = []  # calculate loss
-        self.kls = []  # to compare old and new nets
+        # register them
+        self.action_stats = [self.entropies, self.log_probs]
 
         # every body has its own memory for ease of computation
         memory_spec = self.agent.agent_spec['memory']
@@ -195,8 +141,7 @@ class SpaceBody:
         This method is called automatically at base memory.epi_reset().
         '''
         assert self.env.clock.get('t') == 0, self.env.clock.get('t')
-        action_stats = [self.entropies, self.log_probs, self.kls]
-        for action_stat in action_stats:
+        for action_stat in self.action_stats:
             # use pop instead of clear for cross-epi training
             if len(action_stat) > 0:
                 action_stat.pop()
