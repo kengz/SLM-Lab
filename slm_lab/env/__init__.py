@@ -75,8 +75,8 @@ class Clock:
 
 
 class OpenAIEnv:
-    def __init__(self, spec):
-        self.e = 0  # for compatibility with env_space
+    def __init__(self, spec, e=0):
+        self.e = e  # for compatibility with env_space
         self.env_spec = spec['env'][self.e]
         util.set_attr(self, self.env_spec, [
             'name',
@@ -85,10 +85,7 @@ class OpenAIEnv:
             'save_epi_frequency',
         ])
         self.u_env = gym.make(self.name)
-        self.observation_space = self.u_env.observation_space
-        self.action_space = self.u_env.action_space
-        set_gym_space_attr(self.observation_space)
-        set_gym_space_attr(self.action_space)
+        self.observation_space, self.action_space = self._get_spaces(self.u_env)
         self.observable_dim = self._get_observable_dim(self.observation_space)
         self.action_dim = self._get_action_dim(self.action_space)
         self.is_discrete = self._is_discrete(self.action_space)
@@ -96,6 +93,14 @@ class OpenAIEnv:
         self.clock = Clock()
         self.done = False
         logger.info(util.self_desc(self))
+
+    def _get_spaces(self, u_env):
+        '''Helper to set the extra attributes to, and get, observation and action spaces'''
+        observation_space = u_env.observation_space
+        action_space = u_env.action_space
+        set_gym_space_attr(observation_space)
+        set_gym_space_attr(action_space)
+        return observation_space, action_space
 
     def _get_observable_dim(self, observation_space):
         '''Get the observable dim for an agent in env'''
@@ -148,123 +153,55 @@ class OpenAIEnv:
     def close(self):
         self.u_env.close()
 
-
-class OpenAISpaceEnv:
-    def __init__(self, env_spec, env_space, e=0):
-        self.env_spec = env_spec
-        self.env_space = env_space
-        self.info_space = env_space.info_space
-        util.set_attr(self, self.env_spec)
-        self.name = self.env_spec['name']
-        self.e = e
-        self.body_e = None
-        self.nanflat_body_e = None  # nanflatten version of bodies
-        self.body_num = None
-
-        self.u_env = gym.make(self.name)
-        # spaces for NN auto input/output inference
-        set_gym_space_attr(self.u_env.observation_space)
-        self.observation_spaces = [self.u_env.observation_space]
-        set_gym_space_attr(self.u_env.action_space)
-        self.action_spaces = [self.u_env.action_space]
-
-        self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
-        # TODO ensure clock_speed from env_spec
-        self.clock_speed = 1
-        self.clock = Clock(self.clock_speed)
-        self.done = False
-
     @lab_api
-    def post_body_init(self):
-        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
+    def space_init(self, env_space):
+        '''Post init override for space env. Note that aeb is already correct from __init__'''
+        self.env_space = env_space
+        self.observation_spaces = [self.observation_space]
+        self.action_spaces = [self.action_space]
+
+        # TODO have the body initialized and set directly
         self.nanflat_body_e = util.nanflatten(self.body_e)
         for idx, body in enumerate(self.nanflat_body_e):
             body.nanflat_e_idx = idx
         self.body_num = len(self.nanflat_body_e)
+        assert len(self.body_num) == 1, 'OpenAI Gym supports only single body'
+
+        # self.body_e = None
+        # self.nanflat_body_e = None  # nanflatten version of bodies
+        # self.body_num = None
         logger.info(util.self_desc(self))
 
-    def is_discrete(self, a):
-        '''Check if an agent (brain) is subject to discrete actions'''
-        assert a == 0, 'OpenAI Gym supports only single body, use a=0'
-        return util.get_class_name(self.action_spaces[a]) != 'Box'  # continuous
-
-    def get_action_dim(self, a):
-        '''Get the action dim for an agent (brain) in env'''
-        assert a == 0, 'OpenAI Gym supports only single body, use a=0'
-        action_space = self.action_spaces[a]
-        if isinstance(action_space, gym.spaces.Box):
-            assert len(action_space.shape) == 1
-            action_dim = action_space.shape[0]
-        elif isinstance(action_space, (gym.spaces.Discrete, gym.spaces.MultiBinary)):
-            action_dim = action_space.n
-        elif isinstance(action_space, gym.spaces.MultiDiscrete):
-            action_dim = action_space.nvec.tolist()
-        else:
-            raise ValueError('action_space not recognized')
-        return action_dim
-
-    def get_action_space(self, a):
-        assert a == 0, 'OpenAI Gym supports only single body, use a=0'
-        return self.action_spaces[a]
-
-    def get_observable_dim(self, a):
-        '''Get the observable dim for an agent (brain) in env'''
-        assert a == 0, 'OpenAI Gym supports only single body, use a=0'
-        state_dim = self.observation_spaces[a].shape
-        if len(state_dim) == 1:
-            state_dim = state_dim[0]
-        return {'state': state_dim}
-
-    def get_observable_types(self, a):
-        '''Get the observable for an agent (brain) in env'''
-        if len(self.get_observable_dim(a)) >= 3:  # RGB
-            return {'state': False, 'image': True}
-        else:
-            return {'state': True, 'image': False}
-
-    def get_observation_space(self, a):
-        assert a == 0, 'OpenAI Gym supports only single body, use a=0'
-        return self.observation_spaces[a]
-
     @lab_api
-    def reset(self):
-        self.done = False
+    def space_reset(self):
         _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[(a, b)] = state
-            done_e[(a, b)] = self.done
+            done_e[(a, b)] = self.done = False
         if util.get_lab_mode() == 'dev':
             self.u_env.render()
-        non_nan_cnt = util.count_nonan(state_e.flatten())
-        assert non_nan_cnt == 1, 'OpenAI Gym supports only single body'
         logger.debug(f'Env {self.e} reset reward_e: {_reward_e}, state_e: {state_e}, done_e: {done_e}')
         return _reward_e, state_e, done_e
 
     @lab_api
-    def step(self, action_e):
-        assert len(action_e) == 1, 'OpenAI Gym supports only single body'
-        # TODO implement clock_speed: step only if self.clock.to_step()
-        if self.done:  # t will actually be 0
+    def space_step(self, action_e):
+        action = action_e[(0, 0)]  # single body
+        if self.done:  # space envs run continually without a central reset signal
             return self.reset()
-        action = action_e[(0, 0)]
-        if not self.is_discrete(a=0):
+        if not self.is_discrete:
             action = np.array([action])
         (state, reward, done, _info) = self.u_env.step(action)
         if util.get_lab_mode() == 'dev':
             self.u_env.render()
+        self.done = done = done or self.clock.get('t') > self.max_timestep
         reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             reward_e[(a, b)] = reward
             state_e[(a, b)] = state
             done_e[(a, b)] = done
-        self.done = (util.nonan_all(done_e) or self.clock.get('t') > self.max_timestep)
         logger.debug(f'Env {self.e} step reward_e: {reward_e}, state_e: {state_e}, done_e: {done_e}')
         return reward_e, state_e, done_e
-
-    @lab_api
-    def close(self):
-        self.u_env.close()
 
 
 class BrainExt:
