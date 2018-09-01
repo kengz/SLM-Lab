@@ -168,14 +168,15 @@ class Trial:
 
     def run_serial_sessions(self):
         logger.info('Running serial sessions')
-        num_cpus = ps.get(self.spec['meta'], 'resources.num_cpus', util.NUM_CPUS)
         info_spaces = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
             info_spaces.append(deepcopy(self.info_space))
+
         if util.get_lab_mode() == 'train' and len(info_spaces) > 1:
-            session_datas = util.parallelize_fn(self.init_session_and_run, info_spaces, num_cpus)
-        else:  # dont parallelize when debugging to allow render
+            # when training a single spec over multiple sessions
+            session_datas = util.parallelize_fn(self.init_session_and_run, info_spaces, ps.get(self.spec['meta'], 'resources.num_cpus', util.NUM_CPUS))
+        else:
             session_datas = []
             for info_space in info_spaces:
                 session_data = self.init_session_and_run(info_space)
@@ -185,13 +186,13 @@ class Trial:
         return session_datas
 
     def init_global_nets(self):
+        # not-runnable session to get global network
         global_session = Session(deepcopy(self.spec), deepcopy(self.info_space))
-        global_agent = global_session.agent
-        global_session.env.close()
+        global_session.env.close()  # cleanliness
         global_nets = {}
-        for net_name in global_agent.algorithm.net_names:
-            g_net = getattr(global_agent.algorithm, net_name)
-            g_net.share_memory()  # make global sharable
+        for net_name in global_session.agent.algorithm.net_names:
+            g_net = getattr(global_session.agent.algorithm, net_name)
+            g_net.share_memory()  # make net global
             # TODO also create shared optimizer here
             global_nets[net_name] = g_net
         return global_nets
@@ -200,18 +201,14 @@ class Trial:
         logger.info('Running distributed sessions')
         global_nets = self.init_global_nets()
         workers = []
-        for s in range(self.spec['meta']['max_session']):
+        for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
             w = DistSession(deepcopy(self.spec), self.info_space, global_nets)
             w.start()
             workers.append(w)
         for w in workers:
             w.join()
-
-        prepath = util.get_prepath(self.spec, self.info_space)
-        predir = util.prepath_to_predir(prepath)
-        session_datas = analysis.session_data_dict_from_file(predir, self.info_space.get('trial'))
-        session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
+        session_datas = analysis.session_data_dict_from_file_for_dist(self.spec, self.info_space)
         return session_datas
 
     def close(self):

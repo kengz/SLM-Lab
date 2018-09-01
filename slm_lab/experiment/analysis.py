@@ -18,6 +18,7 @@ DATA_AGG_FNS = {
     'explore_var': 'mean',
 }
 FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
+# TODO improve to make it work with any reward mean
 FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
 NOISE_WINDOW = 0.05
 MA_WINDOW = 100
@@ -85,12 +86,6 @@ def calc_session_fitness_df(session, session_data):
     return session_fitness_df
 
 
-def is_unfit(fitness_df):
-    '''Check if a fitness_df is unfit. Used to determine of trial should stop running more sessions'''
-    mean_fitness_df = calc_mean_fitness(fitness_df)
-    return mean_fitness_df['strength'].iloc[0] < NOISE_WINDOW
-
-
 def calc_trial_fitness_df(trial):
     '''
     Calculate the trial fitness df by aggregating from the collected session_data_dict (session_fitness_df's).
@@ -113,6 +108,13 @@ def calc_trial_fitness_df(trial):
     trial_fitness = calc_fitness(mean_fitness_df)
     logger.info(f'Trial mean fitness: {trial_fitness}\n{mean_fitness_df}')
     return trial_fitness_df
+
+
+def is_unfit(fitness_df):
+    '''Check if a fitness_df is unfit. Used to determine of trial should stop running more sessions'''
+    # TODO improve to make it work with any reward mean
+    mean_fitness_df = calc_mean_fitness(fitness_df)
+    return mean_fitness_df['strength'].iloc[0] < NOISE_WINDOW
 
 
 def get_palette(aeb_count):
@@ -380,6 +382,15 @@ def session_data_dict_from_file(predir, trial_index):
     return session_data_dict
 
 
+def session_data_dict_from_file_for_dist(spec, info_space):
+    '''Method to retrieve session_datas (fitness df, so the same as session_data_dict above) when a trial with distributed sessions is done, to avoid messy multiprocessing data communication'''
+    prepath = util.get_prepath(spec, info_space)
+    predir = util.prepath_to_predir(prepath)
+    session_datas = session_data_dict_from_file(predir, info_space.get('trial'))
+    session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
+    return session_datas
+
+
 def trial_data_dict_from_file(predir):
     '''Build experiment.trial_data_dict from file'''
     trial_data_dict = {}
@@ -439,8 +450,7 @@ def retro_analyze_trials(predir):
             # mock trial
             spec, info_space = mock_info_space_spec(predir, trial_index)
             trial = Trial(spec, info_space)
-            session_data_dict = session_data_dict_from_file(predir, trial_index)
-            trial.session_data_dict = session_data_dict
+            trial.session_data_dict = session_data_dict_from_file(predir, trial_index)
             trial_fitness_df = analyze_trial(trial)
             # write trial_data that was written from ray search
             fitness_vec = trial_fitness_df.iloc[0].to_dict()
@@ -459,8 +469,7 @@ def retro_analyze_experiment(predir):
     # mock experiment
     spec, info_space = mock_info_space_spec(predir)
     experiment = Experiment(spec, info_space)
-    trial_data_dict = trial_data_dict_from_file(predir)
-    experiment.trial_data_dict = trial_data_dict
+    experiment.trial_data_dict = trial_data_dict_from_file(predir)
     return analyze_experiment(experiment)
 
 
