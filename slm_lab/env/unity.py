@@ -110,7 +110,7 @@ class UnityEnv(BaseEnv):
     @lab_api
     def reset(self):
         _reward = np.nan
-        env_info_dict = self.u_env.reset(train_mode=(util.get_lab_mode() != 'dev'), config=self.unity)
+        env_info_dict = self.u_env.reset(train_mode=(util.get_lab_mode() != 'dev'), config=self.env_spec.get('unity'))
         a, b = 0, 0  # default singleton aeb
         env_info_a = self._get_env_info(env_info_dict, a)
         state = env_info_a.states[b]
@@ -121,8 +121,6 @@ class UnityEnv(BaseEnv):
 
     @lab_api
     def step(self, action):
-        # unity assumes multi-agent input format
-        action = np.array([action])
         env_info_dict = self.u_env.step(action)
         a, b = 0, 0  # default singleton aeb
         env_info_a = self._get_env_info(env_info_dict, a)
@@ -147,10 +145,10 @@ class UnityEnv(BaseEnv):
         self.aeb_space = env_space.aeb_space
         self.observation_spaces = [self.observation_space]
         self.action_spaces = [self.action_space]
-        self._check_u_brain_to_agent()
 
     @lab_api
     def space_reset(self):
+        self._check_u_brain_to_agent()
         self.done = False
         env_info_dict = self.u_env.reset(train_mode=(util.get_lab_mode() != 'dev'), config=self.env_spec.get('unity'))
         _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
