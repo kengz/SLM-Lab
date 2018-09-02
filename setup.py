@@ -57,7 +57,7 @@ class PyTest(TestCommand):
 
 setup(
     name='slm_lab',
-    version='1.1.1',
+    version='2.0.0',
     description='Modular Deep Reinforcement Learning framework in PyTorch.',
     long_description=read('README.md'),
     keywords='SLM Lab',
