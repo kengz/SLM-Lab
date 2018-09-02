@@ -84,6 +84,8 @@ class Body:
         self.env = env
         self.aeb = aeb
         self.a, self.e, self.b = aeb
+        self.nanflat_a_idx = self.a
+        self.nanflat_e_idx = self.e
 
         # stats variables
         self.loss = np.nan  # training losses
@@ -115,12 +117,12 @@ class Body:
         This method is called automatically at base memory.epi_reset().
         '''
         assert self.env.clock.get('t') == 0, self.env.clock.get('t')
-        # # NOTE for space only
-        # # TODO just dont append in the first palce
-        # for action_stat in self.action_stats:
-        #     # use pop instead of clear for cross-epi training
-        #     if len(action_stat) > 0:
-        #         action_stat.pop()
+
+        # the space control loop will make agent append stat at done, so to offset for that, pop it at reset
+        if hasattr(self.env, 'env_space'):
+            for action_stat in self.action_stats:
+                if len(action_stat) > 0:
+                    action_stat.pop()
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
@@ -136,16 +138,16 @@ class Body:
 
     def space_init(self):
         '''Post init override for space env. Note that aeb is already correct from __init__'''
+        # to be reset properly later
+        self.nanflat_a_idx = None
+        self.nanflat_e_idx = None
+
         self.observation_space = self.env.observation_spaces[self.a]
         self.action_space = self.env.action_spaces[self.a]
         self.observable_dim = self.env._get_observable_dim(self.observation_space)
         self.state_dim = self.observable_dim['state']
         self.action_dim = self.env._get_action_dim(self.action_space)
         self.is_discrete = self.env._is_discrete(self.action_space)
-
-        # TODO set
-        self.nanflat_a_idx = None
-        self.nanflat_e_idx = None
 
 
 class DataSpace:
@@ -283,23 +285,18 @@ class AEBSpace:
         body_v = np.full(self.aeb_shape, np.nan, dtype=object)
         for (a, e, b), sig in np.ndenumerate(self.aeb_sig):
             if sig == 1:
-                agent = self.agent_space.get(a)
                 env = self.env_space.get(e)
-                body = Body((a, e, b), agent, env)
+                body = Body(self.env, self.spec['agent'], aeb=(a, e, b))
+                body.space_init()
                 body_v[(a, e, b)] = body
         self.body_space.add(body_v)
-        for agent in self.agent_space.agents:
-            agent.body_a = self.body_space.get(a=agent.a)
+        # complete the backward reference to env_space
         for env in self.env_space.envs:
-            env.body_e = self.body_space.get(e=env.e)
-        return self.body_space
-
-    def post_body_init(self):
-        '''Run init for agent, env components that need bodies to exist first, e.g. memory or architecture.'''
+            body_e = self.body_space.get(e=env.e)
+            env.set_body_e(body_e)
         self.clock = self.env_space.get_base_clock()
         logger.info(util.self_desc(self))
-        self.agent_space.post_body_init()
-        self.env_space.post_body_init()
+        return self.body_space
 
     def add(self, data_name, data_v):
         '''

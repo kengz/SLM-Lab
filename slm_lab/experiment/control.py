@@ -37,8 +37,7 @@ class Session:
         body = Body(self.env, self.spec['agent'])
         self.agent = Agent(self.spec, self.info_space, body, global_nets=global_nets)
 
-        # TODO move outside, and properly pick singleton or multiagent session
-        enable_aeb_space(self)
+        enable_aeb_space(self)  # to use lab's data analysis framework
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
@@ -80,7 +79,6 @@ class Session:
 
 class SpaceSession(Session):
     '''Session for multi-agent/env setting'''
-    # TODO unify with Session without complicating it
 
     def __init__(self, spec, info_space, global_nets=None):
         self.spec = spec
@@ -89,15 +87,12 @@ class SpaceSession(Session):
         self.data = None
         util.set_module_seed(self.info_space.get_random_seed())
 
-        # TODO make it extend Session but with modification
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
+        self.aeb_space.init_body_space()
         self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
 
         logger.info(util.self_desc(self))
-        # TODO are these still relevant?
-        self.aeb_space.init_body_space()
-        self.aeb_space.post_body_init()
         logger.info(f'Initialized session {self.index}')
 
     def save_if_ckpt(cls, agent_space, env_space):
@@ -202,6 +197,7 @@ class Trial:
         return session_datas
 
     def init_global_nets(self):
+        # TODO make global_nets available for space too
         # not-runnable session to get global network
         global_session = Session(deepcopy(self.spec), deepcopy(self.info_space))
         global_session.env.close()  # cleanliness

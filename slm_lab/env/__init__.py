@@ -18,11 +18,11 @@ ENV_DATA_NAMES = ['reward', 'state', 'done']
 logger = logger.get_logger(__name__)
 
 
-def make_env(spec):
+def make_env(spec, e=None):
     try:
-        env = OpenAIEnv(spec)
+        env = OpenAIEnv(spec, e)
     except gym.error.Error:
-        env = UnityEnv(spec)
+        env = UnityEnv(spec, e)
     return env
 
 
@@ -147,6 +147,15 @@ class BaseEnv(ABC):
         raise NotImplementedError
 
     @lab_api
+    def set_body_e(self, body_e):
+        '''Method called by body_space.init_body_space to complete the necessary backward reference needed for EnvSpace to work'''
+        self.body_e = body_e
+        self.nanflat_body_e = util.nanflatten(self.body_e)
+        for idx, body in enumerate(self.nanflat_body_e):
+            body.nanflat_e_idx = idx
+        self.body_num = len(self.nanflat_body_e)
+
+    @lab_api
     def space_reset(self):
         '''Space (multi-env) reset method, return _reward_e, state_e, done_e'''
         raise NotImplementedError
@@ -200,20 +209,9 @@ class OpenAIEnv(BaseEnv):
     @lab_api
     def space_init(self, env_space):
         '''Post init override for space env. Note that aeb is already correct from __init__'''
-        self.env_space = env_space
         self.observation_spaces = [self.observation_space]
         self.action_spaces = [self.action_space]
-
-        # TODO have the body initialized and set directly
-        self.nanflat_body_e = util.nanflatten(self.body_e)
-        for idx, body in enumerate(self.nanflat_body_e):
-            body.nanflat_e_idx = idx
-        self.body_num = len(self.nanflat_body_e)
-        assert len(self.body_num) == 1, 'OpenAI Gym supports only single body'
-
-        # self.body_e = None
-        # self.nanflat_body_e = None  # nanflatten version of bodies
-        # self.body_num = None
+        self.env_space = env_space
         logger.info(util.self_desc(self))
 
     @lab_api
@@ -351,15 +349,14 @@ class UnityEnv:
         env_info_a = env_info_dict[name_a]
         return env_info_a
 
-    @lab_api
-    def post_body_init(self):
-        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        self.nanflat_body_e = util.nanflatten(self.body_e)
-        for idx, body in enumerate(self.nanflat_body_e):
-            body.nanflat_e_idx = idx
-        self.body_num = len(self.nanflat_body_e)
-        self.check_u_brain_to_agent()
-        logger.info(util.self_desc(self))
+    # @lab_api
+    # def space_init(self, env_space):
+    #     '''Post init override for space env. Note that aeb is already correct from __init__'''
+    #     self.observation_spaces = [self.observation_space]
+    #     self.action_spaces = [self.action_space]
+    #     self.env_space = env_space
+    #     self.check_u_brain_to_agent()
+    #     logger.info(util.self_desc(self))
 
     def is_discrete(self, a):
         '''Check if an agent (brain) is subject to discrete actions'''
@@ -429,20 +426,12 @@ class EnvSpace:
         self.spec = spec
         self.aeb_space = aeb_space
         aeb_space.env_space = self
-        self.env_spec = spec['env']
         self.info_space = aeb_space.info_space
         self.envs = []
-        for e, env_spec in enumerate(self.env_spec):
-            env_spec = ps.merge(spec['meta'].copy(), env_spec)
-            env = make_env(self.spec)
-            env.e = e
+        for e in range(len(self.spec['env'])):
+            env = make_env(self.spec, e)
+            env.space_init(self)
             self.envs.append(env)
-
-    @lab_api
-    def post_body_init(self):
-        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        for env in self.envs:
-            env.post_body_init()
         logger.info(util.self_desc(self))
 
     def get(self, e):
