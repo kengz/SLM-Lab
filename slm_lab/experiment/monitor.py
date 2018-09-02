@@ -118,7 +118,8 @@ class Body:
         Handles any body attribute reset at the start of an episode.
         This method is called automatically at base memory.epi_reset().
         '''
-        assert self.env.clock.get('t') == 0, self.env.clock.get('t')
+        t = self.env.clock.get('t')
+        assert t == 0, f'aeb: {self.aeb}, t: {t}'
         if hasattr(self, 'aeb_space'):
             self.space_fix_stats()
 
@@ -330,11 +331,10 @@ class AEBSpace:
         '''Tick all the clocks in env_space, and tell if all envs are done'''
         end_sessions = []
         for env in self.env_space.envs:
-            unit = unit or ('epi' if env.done else 't')
-            env.clock.tick(unit)
             if env.done:
                 for body in env.nanflat_body_e:
                     body.log_summary()
+            env.clock.tick(unit or ('epi' if env.done else 't'))
             end_session = env.clock.get('epi') > env.max_episode
             end_sessions.append(end_session)
         return all(end_sessions)
