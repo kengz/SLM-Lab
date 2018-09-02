@@ -219,10 +219,10 @@ class OpenAIEnv(BaseEnv):
     @lab_api
     def space_reset(self):
         _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
-        for (a, b), body in util.ndenumerate_nonan(self.body_e):
+        for ab, body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
-            state_e[(a, b)] = state
-            done_e[(a, b)] = self.done = False
+            state_e[ab] = state
+            done_e[ab] = self.done = False
         if util.get_lab_mode() == 'dev':
             self.u_env.render()
         logger.debug(f'Env {self.e} reset reward_e: {_reward_e}, state_e: {state_e}, done_e: {done_e}')
@@ -240,10 +240,10 @@ class OpenAIEnv(BaseEnv):
             self.u_env.render()
         self.done = done = done or self.clock.get('t') > self.max_timestep
         reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
-        for (a, b), body in util.ndenumerate_nonan(self.body_e):
-            reward_e[(a, b)] = reward
-            state_e[(a, b)] = state
-            done_e[(a, b)] = done
+        for ab, body in util.ndenumerate_nonan(self.body_e):
+            reward_e[ab] = reward
+            state_e[ab] = state
+            done_e[ab] = done
         logger.debug(f'Env {self.e} step reward_e: {reward_e}, state_e: {state_e}, done_e: {done_e}')
         return reward_e, state_e, done_e
 

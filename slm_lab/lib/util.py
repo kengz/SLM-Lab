@@ -255,8 +255,8 @@ def guard_data_a(cls, data_a, data_name):
     '''Guard data_a in case if it scalar, create a data_a and fill.'''
     if np.isscalar(data_a):
         new_data_a, = s_get(cls, 'aeb_space').init_data_s([data_name], a=cls.a)
-        for (e, b), body in ndenumerate_nonan(cls.body_a):
-            new_data_a[(e, b)] = data_a
+        for eb, body in ndenumerate_nonan(cls.body_a):
+            new_data_a[eb] = data_a
         data_a = new_data_a
     return data_a
 

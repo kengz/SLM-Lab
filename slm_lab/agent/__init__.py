@@ -127,8 +127,8 @@ class SpaceAgent:
     def reset(self, state_a):
         '''Do agent reset per session, such as memory pointer'''
         logger.debug(f'Agent {self.a} reset')
-        for (e, b), body in util.ndenumerate_nonan(self.body_a):
-            body.memory.epi_reset(state_a[(e, b)])
+        for eb, body in util.ndenumerate_nonan(self.body_a):
+            body.memory.epi_reset(state_a[eb])
 
     @lab_api
     def act(self, state_a):
@@ -142,12 +142,12 @@ class SpaceAgent:
         '''
         Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
         '''
-        for (e, b), body in util.ndenumerate_nonan(self.body_a):
-            body.memory.update(action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
+        for eb, body in util.ndenumerate_nonan(self.body_a):
+            body.memory.update(action_a[eb], reward_a[eb], state_a[eb], done_a[eb])
         loss_a = self.algorithm.train()
         loss_a = util.guard_data_a(self, loss_a, 'loss')
-        for (e, b), body in util.ndenumerate_nonan(self.body_a):
-            body.loss = loss_a[(e, b)]
+        for eb, body in util.ndenumerate_nonan(self.body_a):
+            body.loss = loss_a[eb]
         explore_var_a = self.algorithm.update()
         explore_var_a = util.guard_data_a(self, explore_var_a, 'explore_var')
         logger.debug(f'Agent {self.a} loss: {loss_a}, explore_var_a {explore_var_a}')

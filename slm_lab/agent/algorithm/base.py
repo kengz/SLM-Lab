@@ -84,10 +84,10 @@ class Algorithm(ABC):
         '''Interface-level agent act method for all its bodies. Resolves state to state; get action and compose into action.'''
         data_names = ('action',)
         action_a, = self.agent.agent_space.aeb_space.init_data_s(data_names, a=self.agent.a)
-        for (e, b), body in util.ndenumerate_nonan(self.agent.body_a):
-            state = state_a[(e, b)]
+        for eb, body in util.ndenumerate_nonan(self.agent.body_a):
+            state = state_a[eb]
             self.body = body
-            action_a[(e, b)] = self.act(state)
+            action_a[eb] = self.act(state)
         # set body reference back to default
         self.body = self.agent.nanflat_body_a[0]
         return action_a

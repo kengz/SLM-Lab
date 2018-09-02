@@ -336,8 +336,8 @@ class MultitaskDQN(DQN):
         '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
         # gather and flatten
         states = []
-        for (e, b), body in util.ndenumerate_nonan(self.agent.body_a):
-            state = state_a[(e, b)]
+        for eb, body in util.ndenumerate_nonan(self.agent.body_a):
+            state = state_a[eb]
             states.append(state)
         state = torch.tensor(states).view(-1).unsqueeze_(0).float()
         if torch.cuda.is_available() and self.net.gpu:
