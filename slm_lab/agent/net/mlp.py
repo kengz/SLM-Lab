@@ -318,7 +318,7 @@ class HydraMLPNet(Net, nn.Module):
         head_xs = []
         for model_head, x in zip(self.model_heads, xs):
             head_xs.append(model_head(x))
-        head_xs = torch.cat(head_xs, dim=1)
+        head_xs = torch.cat(head_xs, dim=-1)
         body_x = self.model_body(head_xs)
         outs = []
         for model_tail in self.model_tails:
