@@ -491,7 +491,7 @@ class HydraDQN(MultitaskDQN):
         if self.to_train == 1:
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
-                batch = self.sample()
+                batch = self.space_sample()
                 for _ in range(self.training_batch_epoch):
                     with torch.no_grad():
                         q_targets = self.calc_q_targets(batch)
