@@ -317,12 +317,11 @@ class ActorCritic(Reinforce):
         # calc next_state boundary value and concat with above for efficiency
         next_v_pred_tail = self.calc_v(batch['next_states'][-1:])
         next_v_preds = torch.cat([v_preds[1:], next_v_pred_tail], dim=0)
+        # v targets = r_t + gamma * V(s_(t+1))
+        v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
         # ensure val for next_state is 0 at done
         next_v_preds = next_v_preds * (1 - batch['dones'])
-
-        # v_targets = gae_targets + v_preds
         adv_targets = math_util.calc_gaes(batch['rewards'], v_preds, next_v_preds, self.gamma, self.lam)
-        v_targets = adv_targets + v_preds
         if torch.cuda.is_available() and self.net.gpu:
             adv_targets = adv_targets.cuda()
             v_targets = v_targets.cuda()
@@ -337,26 +336,29 @@ class ActorCritic(Reinforce):
         Used for training with N-step (not GAE)
         Returns 2-tuple for API-consistency with GAE
         '''
+        next_v_preds = self.calc_v(batch['next_states'])
         v_preds = self.calc_v(batch['states'])
-        nstep_returns = math_util.calc_nstep_returns(batch, self.gamma, self.num_step_returns, v_preds)
+        # v targets = r_t + gamma * V(s_(t+1))
+        v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
+        nstep_returns = math_util.calc_nstep_returns(batch, self.gamma, self.num_step_returns, next_v_preds)
         nstep_advs = nstep_returns - v_preds
         if torch.cuda.is_available() and self.net.gpu:
             nstep_advs = nstep_advs.cuda()
-        adv_targets = v_targets = nstep_advs
+        adv_targets = nstep_advs
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
     def calc_td_advs_v_targets(self, batch):
         '''
-        Calculate plain TD error and target for plain AC algorithm
+        Estimate Q(s_t, a_t) with r_t + gamma * V(s_t+1 ) for simplest AC algorithm
         '''
-        v_preds = self.calc_v(batch['states'])
-        # TD is equivalent to 1-step return
-        td_returns = math_util.calc_nstep_returns(batch, self.gamma, 1, v_preds)
+        next_v_preds = self.calc_v(batch['next_states'])
+        # Equivalent to 1-step return
+        # v targets = r_t + gamma * V(s_(t+1))
+        v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
         if torch.cuda.is_available() and self.net.gpu:
-            td_returns = td_returns.cuda()
-        v_targets = td_returns
-        adv_targets = v_targets - v_preds  # TD error, but called adv for API consistency
+            v_targets = v_targets.cuda()
+        adv_targets = v_targets  # Plain Q estimate, called adv for API consistency
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
