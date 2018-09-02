@@ -9,6 +9,8 @@ logger = logger.get_logger(__name__)
 
 
 class OpenAIEnv(BaseEnv):
+    '''Wrapper for OpenAI Gym env to work with the Lab.'''
+
     def __init__(self, spec, e=None, env_space=None):
         super(OpenAIEnv, self).__init__(spec, e, env_space)
         self.u_env = gym.make(self.name)
@@ -50,6 +52,8 @@ class OpenAIEnv(BaseEnv):
     @lab_api
     def close(self):
         self.u_env.close()
+
+    # extension for multi-agent-env space
 
     @lab_api
     def space_init(self, env_space):

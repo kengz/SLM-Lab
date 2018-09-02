@@ -9,7 +9,6 @@ from slm_lab.env.openai import OpenAIEnv
 from slm_lab.env.unity import UnityEnv
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-import gym
 import pydash as ps
 
 
@@ -19,7 +18,7 @@ logger = logger.get_logger(__name__)
 def make_env(spec, e=None, env_space=None):
     try:
         env = OpenAIEnv(spec, e, env_space)
-    except gym.error.Error:
+    except Exception:
         env = UnityEnv(spec, e, env_space)
     return env
 
