@@ -96,8 +96,6 @@ class Body:
         # diagnostics variables/stats from action_policy prob. dist.
         self.entropies = []  # check exploration
         self.log_probs = []  # calculate loss
-        # register them
-        self.action_stats = [self.entropies, self.log_probs]
 
         if aeb_space is None:  # singleton mode
             # the specific agent-env interface variables for a body
@@ -121,12 +119,8 @@ class Body:
         This method is called automatically at base memory.epi_reset().
         '''
         assert self.env.clock.get('t') == 0, self.env.clock.get('t')
-
-        # the space control loop will make agent append stat at done, so to offset for that, pop it at reset
-        if hasattr(self.env, 'env_space'):
-            for action_stat in self.action_stats:
-                if len(action_stat) > 0:
-                    action_stat.pop()
+        if hasattr(self, 'aeb_space'):
+            self.space_fix_stats()
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
@@ -153,6 +147,12 @@ class Body:
         self.state_dim = self.observable_dim['state']
         self.action_dim = self.env._get_action_dim(self.action_space)
         self.is_discrete = self.env._is_discrete(self.action_space)
+
+    def space_fix_stats(self):
+        '''the space control loop will make agent append stat at done, so to offset for that, pop it at reset'''
+        for action_stat in [self.entropies, self.log_probs]:
+            if len(action_stat) > 0:
+                action_stat.pop()
 
 
 class DataSpace:
