@@ -108,7 +108,6 @@ class Agent:
         self.body_num = len(self.nanflat_body_a)
         AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
         self.algorithm = AlgorithmClass(self, global_nets)
-        self.algorithm.space_init()
 
     @lab_api
     def space_reset(self, state_a):
