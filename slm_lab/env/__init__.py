@@ -143,11 +143,6 @@ class BaseEnv(ABC):
         raise NotImplementedError
 
     @lab_api
-    def space_init(self, env_space):
-        '''Post init override for space env. Note that aeb is already correct from __init__'''
-        raise NotImplementedError
-
-    @lab_api
     def set_body_e(self, body_e):
         '''Method called by body_space.init_body_space to complete the necessary backward reference needed for EnvSpace to work'''
         self.body_e = body_e
@@ -155,6 +150,11 @@ class BaseEnv(ABC):
         for idx, body in enumerate(self.nanflat_body_e):
             body.nanflat_e_idx = idx
         self.body_num = len(self.nanflat_body_e)
+
+    @lab_api
+    def space_init(self, env_space):
+        '''Post init override for space env. Note that aeb is already correct from __init__'''
+        raise NotImplementedError
 
     @lab_api
     def space_reset(self):

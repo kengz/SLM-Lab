@@ -98,13 +98,12 @@ class Agent:
         self.aeb_space = agent_space.aeb_space
         self.nanflat_body_a = util.nanflatten(self.body_a)
         for idx, body in enumerate(self.nanflat_body_a):
-            if idx == 0:  # set default body
+            if idx == 0:  # NOTE set default body
                 self.body = body
             body.agent = self
             body.nanflat_a_idx = idx
             MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
             body.memory = MemoryClass(self.agent_spec['memory'], body)
-            # TODO set other body attr here
         self.body_num = len(self.nanflat_body_a)
         AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
         self.algorithm = AlgorithmClass(self, global_nets)
