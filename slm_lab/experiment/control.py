@@ -35,7 +35,7 @@ class Session:
         # init singleton agent and env
         self.env = make_env(self.spec)
         body = Body(self.env, self.spec['agent'])
-        self.agent = Agent(self.spec, self.info_space, body, global_nets=global_nets)
+        self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
 
         enable_aeb_space(self)  # to use lab's data analysis framework
         logger.info(util.self_desc(self))

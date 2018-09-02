@@ -35,23 +35,23 @@ class Agent:
     Access Envs properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    def __init__(self, spec, info_space, body=None, a=None, global_nets=None):
+    def __init__(self, spec, info_space, body, a=None, agent_space=None, global_nets=None):
         self.spec = spec
         self.info_space = info_space
-        self.body = body
-        body.agent = self
         self.a = a or 0  # for compatibility with agent_space
         self.agent_spec = spec['agent'][self.a]
         self.name = self.agent_spec['name']
-
-        MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
-        self.body.memory = MemoryClass(self.agent_spec['memory'], self.body)
+        if agent_space is None:  # singleton mode
+            self.body = body
+            body.agent = self
+            MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
+            self.body.memory = MemoryClass(self.agent_spec['memory'], self.body)
+        else:
+            self.space_init(agent_space, body)
 
         AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
         self.algorithm = AlgorithmClass(self, global_nets)
-
-        if a is None:  # no a specified, is in singleton mode
-            logger.info(util.self_desc(self))
+        logger.info(util.self_desc(self))
 
     @lab_api
     def reset(self, state):
@@ -97,12 +97,14 @@ class Agent:
         self.body_a = body_a
         self.nanflat_body_a = util.nanflatten(self.body_a)
         for idx, body in enumerate(self.nanflat_body_a):
+            if idx == 0:  # set default body
+                self.body = body
+            body.agent = self
             body.nanflat_a_idx = idx
             MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
             body.memory = MemoryClass(self.agent_spec['memory'], body)
             # TODO set other body attr here
         self.body_num = len(self.nanflat_body_a)
-        logger.info(util.self_desc(self))
 
     @lab_api
     def space_reset(self, state_a):
@@ -148,9 +150,8 @@ class AgentSpace:
         assert ps.is_list(self.spec['agent'])
         self.agents = []
         for a in range(len(self.spec['agent'])):
-            agent = Agent(self.spec, self.info_space, a=a, global_nets=global_nets)
             body_a = self.aeb_space.body_space.get(a=a)
-            agent.space_init(self, body_a)
+            agent = Agent(self.spec, self.info_space, body=body_a, a=a, agent_space=self, global_nets=global_nets)
             self.agents.append(agent)
         logger.info(util.self_desc(self))
 

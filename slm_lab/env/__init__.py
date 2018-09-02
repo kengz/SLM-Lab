@@ -18,11 +18,11 @@ ENV_DATA_NAMES = ['reward', 'state', 'done']
 logger = logger.get_logger(__name__)
 
 
-def make_env(spec, e=None):
+def make_env(spec, e=None, env_space=None):
     try:
-        env = OpenAIEnv(spec, e)
+        env = OpenAIEnv(spec, e, env_space)
     except gym.error.Error:
-        env = UnityEnv(spec, e)
+        env = UnityEnv(spec, e, env_space)
     return env
 
 
@@ -79,8 +79,9 @@ class Clock:
 class BaseEnv(ABC):
     '''The base Env class with API and helper methods. Use this to implement your env class that is compatible with the Lab APIs'''
 
-    def __init__(self, spec, e=None):
+    def __init__(self, spec, e=None, env_space=None):
         self.e = e or 0  # for compatibility with env_space
+        self.clock_speed = 1
         self.clock = Clock()
         self.done = False
         self.env_spec = spec['env'][self.e]
@@ -167,17 +168,20 @@ class BaseEnv(ABC):
 
 
 class OpenAIEnv(BaseEnv):
-    def __init__(self, spec, e=None):
-        super(OpenAIEnv, self).__init__(spec, e)
-
+    def __init__(self, spec, e=None, env_space=None):
+        super(OpenAIEnv, self).__init__(spec, e, env_space)
         self.u_env = gym.make(self.name)
         self.observation_space, self.action_space = self._get_spaces(self.u_env)
         self.observable_dim = self._get_observable_dim(self.observation_space)
         self.action_dim = self._get_action_dim(self.action_space)
         self.is_discrete = self._is_discrete(self.action_space)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
-        if e is None:  # no e specified, is in singleton mode
-            logger.info(util.self_desc(self))
+        if env_space is None:  # singleton mode
+            pass
+        else:
+            self.space_init(env_space)
+
+        logger.info(util.self_desc(self))
 
     @lab_api
     def reset(self):
@@ -209,10 +213,9 @@ class OpenAIEnv(BaseEnv):
     @lab_api
     def space_init(self, env_space):
         '''Post init override for space env. Note that aeb is already correct from __init__'''
+        self.env_space = env_space
         self.observation_spaces = [self.observation_space]
         self.action_spaces = [self.action_space]
-        self.env_space = env_space
-        logger.info(util.self_desc(self))
 
     @lab_api
     def space_reset(self):
@@ -321,8 +324,6 @@ class UnityEnv:
             set_gym_space_attr(action_space)
 
         # TODO experiment to find out optimal benchmarking max_timestep, set
-        # TODO ensure clock_speed from env_spec
-        self.clock_speed = 1
         self.clock = Clock(self.clock_speed)
         self.done = False
 
@@ -429,8 +430,7 @@ class EnvSpace:
         self.info_space = aeb_space.info_space
         self.envs = []
         for e in range(len(self.spec['env'])):
-            env = make_env(self.spec, e)
-            env.space_init(self)
+            env = make_env(self.spec, e, env_space=self)
             self.envs.append(env)
         logger.info(util.self_desc(self))
 
