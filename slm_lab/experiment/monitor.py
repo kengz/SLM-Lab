@@ -79,7 +79,7 @@ class Body:
     Body of an agent inside an environment. This acts as the main variable storage and bridge between agent and environment to pair them up properly in the generalized multi-agent-env setting.
     '''
 
-    def __init__(self, env, agent_spec, aeb=(0, 0, 0)):
+    def __init__(self, env, agent_spec, aeb=(0, 0, 0), aeb_space=None):
         # essential reference variables
         self.env = env
         self.aeb = aeb
@@ -99,13 +99,17 @@ class Body:
         # register them
         self.action_stats = [self.entropies, self.log_probs]
 
-        # the specific agent-env interface variables for a body
-        self.observation_space = self.env.observation_space
-        self.action_space = self.env.action_space
-        self.observable_dim = self.env.observable_dim
-        self.state_dim = self.observable_dim['state']
-        self.action_dim = self.env.action_dim
-        self.is_discrete = self.env.is_discrete
+        if aeb_space is None:  # singleton mode
+            # the specific agent-env interface variables for a body
+            self.observation_space = self.env.observation_space
+            self.action_space = self.env.action_space
+            self.observable_dim = self.env.observable_dim
+            self.state_dim = self.observable_dim['state']
+            self.action_dim = self.env.action_dim
+            self.is_discrete = self.env.is_discrete
+        else:
+            self.space_init(aeb_space)
+
         self.action_type = get_action_type(self.action_space)
         self.action_pdtype = agent_spec[self.a]['algorithm'].get('action_pdtype')
         if self.action_pdtype in (None, 'default'):
@@ -136,8 +140,9 @@ class Body:
         msg = f'{spec["name"]} trial {info_space.get("trial")} session {info_space.get("session")} env {self.env.e}, body {self.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {self.last_loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
         logger.info(msg)
 
-    def space_init(self):
-        '''Post init override for space env. Note that aeb is already correct from __init__'''
+    def space_init(self, aeb_space):
+        '''Post init override for space body. Note that aeb is already correct from __init__'''
+        self.aeb_space = aeb_space
         # to be reset properly later
         self.nanflat_a_idx = None
         self.nanflat_e_idx = None
@@ -286,8 +291,7 @@ class AEBSpace:
         for (a, e, b), sig in np.ndenumerate(self.aeb_sig):
             if sig == 1:
                 env = self.env_space.get(e)
-                body = Body(self.env, self.spec['agent'], aeb=(a, e, b))
-                body.space_init()
+                body = Body(env, self.spec['agent'], aeb=(a, e, b), aeb_space=self)
                 body_v[(a, e, b)] = body
         self.body_space.add(body_v)
         # complete the backward reference to env_space
@@ -324,13 +328,16 @@ class AEBSpace:
 
     def tick(self, unit=None):
         '''Tick all the clocks in env_space, and tell if all envs are done'''
-        env_dones = []
+        end_sessions = []
         for env in self.env_space.envs:
             unit = unit or ('epi' if env.done else 't')
             env.clock.tick(unit)
-            done = env.done or env.clock.get('epi') > env.max_episode
-            env_dones.append(done)
-        return all(env_dones)
+            if env.done:
+                for body in env.nanflat_body_e:
+                    body.log_summary()
+            end_session = env.clock.get('epi') > env.max_episode
+            end_sessions.append(end_session)
+        return all(end_sessions)
 
 
 class InfoSpace:

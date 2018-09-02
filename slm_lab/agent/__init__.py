@@ -46,11 +46,11 @@ class Agent:
             body.agent = self
             MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
             self.body.memory = MemoryClass(self.agent_spec['memory'], self.body)
+            AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
+            self.algorithm = AlgorithmClass(self, global_nets)
         else:
-            self.space_init(agent_space, body)
+            self.space_init(agent_space, body, global_nets)
 
-        AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
-        self.algorithm = AlgorithmClass(self, global_nets)
         logger.info(util.self_desc(self))
 
     @lab_api
@@ -91,10 +91,11 @@ class Agent:
         self.save()
 
     @lab_api
-    def space_init(self, agent_space, body_a):
+    def space_init(self, agent_space, body_a, global_nets):
         '''Post init override for space env. Note that aeb is already correct from __init__'''
         self.agent_space = agent_space
         self.body_a = body_a
+        self.aeb_space = agent_space.aeb_space
         self.nanflat_body_a = util.nanflatten(self.body_a)
         for idx, body in enumerate(self.nanflat_body_a):
             if idx == 0:  # set default body
@@ -105,6 +106,9 @@ class Agent:
             body.memory = MemoryClass(self.agent_spec['memory'], body)
             # TODO set other body attr here
         self.body_num = len(self.nanflat_body_a)
+        AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
+        self.algorithm = AlgorithmClass(self, global_nets)
+        self.algorithm.space_init()
 
     @lab_api
     def space_reset(self, state_a):
@@ -116,7 +120,7 @@ class Agent:
     @lab_api
     def space_act(self, state_a):
         '''Standard act method from algorithm.'''
-        action_a = self.algorithm.act(state_a)
+        action_a = self.algorithm.space_act(state_a)
         logger.debug(f'Agent {self.a} act: {action_a}')
         return action_a
 

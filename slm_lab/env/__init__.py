@@ -214,6 +214,7 @@ class OpenAIEnv(BaseEnv):
     def space_init(self, env_space):
         '''Post init override for space env. Note that aeb is already correct from __init__'''
         self.env_space = env_space
+        self.aeb_space = env_space.aeb_space
         self.observation_spaces = [self.observation_space]
         self.action_spaces = [self.action_space]
 
@@ -233,7 +234,7 @@ class OpenAIEnv(BaseEnv):
     def space_step(self, action_e):
         action = action_e[(0, 0)]  # single body
         if self.done:  # space envs run continually without a central reset signal
-            return self.reset()
+            return self.space_reset()
         if not self.is_discrete:
             action = np.array([action])
         (state, reward, done, _info) = self.u_env.step(action)

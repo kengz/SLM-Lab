@@ -41,9 +41,8 @@ class Session:
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-    def save_if_ckpt(cls, agent, env):
+    def save_if_ckpt(self, agent, env):
         '''Save for agent, env if episode is at checkpoint'''
-        agent.body.log_summary()
         epi = env.clock.get('epi')
         save_this_epi = epi > 0 and hasattr(env, 'save_epi_frequency') and epi % env.save_epi_frequency == 0
         if save_this_epi:
@@ -58,6 +57,7 @@ class Session:
             action = self.agent.act(state)
             reward, state, done = self.env.step(action)
             self.agent.update(action, reward, state, done)
+        agent.body.log_summary()
         self.save_if_ckpt(self.agent, self.env)
 
     def close(self):
@@ -95,9 +95,9 @@ class SpaceSession(Session):
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-    def save_if_ckpt(cls, agent_space, env_space):
+    def save_if_ckpt(self, agent_space, env_space):
         '''Save for agent, env if episode is at checkpoint'''
-        for agent in self.agent_space.agents:
+        for agent in agent_space.agents:
             for body in agent.nanflat_body_a:
                 env = body.env
                 super(SpaceSession, self).save_if_ckpt(agent, env)
