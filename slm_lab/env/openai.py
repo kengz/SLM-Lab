@@ -1,5 +1,4 @@
-from slm_lab.env import ENV_DATA_NAMES
-from slm_lab.env.base import BaseEnv, Clock, ENV_DATA_NAMES
+from slm_lab.env.base import BaseEnv, ENV_DATA_NAMES
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
