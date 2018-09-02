@@ -122,10 +122,16 @@ class Algorithm(ABC):
 
     @lab_api
     def space_train(self):
-        '''Implement algorithm train, or throw NotImplementedError'''
         if util.get_lab_mode() == 'enjoy':
             return np.nan
-        raise NotImplementedError
+        losses = []
+        for body in self.agent.nanflat_body_a:
+            self.body = body
+            losses.append(self.train())
+        # set body reference back to default
+        self.body = self.agent.nanflat_body_a[0]
+        loss_a = self.nanflat_to_data_a('loss', losses)
+        return loss_a
 
     @abstractmethod
     @lab_api
