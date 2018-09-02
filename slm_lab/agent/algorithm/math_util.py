@@ -4,6 +4,7 @@ All calculations for training shall have a standard API that takes in `batch` fr
 `batch` is a dict containing keys to any data type you wish, e.g. {rewards: np.array([...])}
 '''
 from slm_lab.lib import logger, util
+import copy
 import numpy as np
 import torch
 import pydash as ps
@@ -44,7 +45,7 @@ def calc_gammas(batch, gamma):
     return gammas
 
 
-def calc_nstep_returns(batch, gamma, n, v_preds):
+def calc_nstep_returns(batch, gamma, n, next_v_preds):
     '''
     Calculate the n-step returns for advantage
     see n-step return in: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
@@ -52,18 +53,19 @@ def calc_nstep_returns(batch, gamma, n, v_preds):
         sum discounted rewards up till step n (0 to n-1 that is),
         then add v_pred for n as final term
     '''
-    rets = calc_returns(batch, gamma)
-    rets_len = len(rets)
-    # to subtract by offsetting n-steps
-    tail_rets = torch.cat([rets[n:], torch.zeros((n,))])[:rets_len]
-
-    # to add back the subtracted with v_pred at n
-    gammas = calc_gammas(batch, gamma)
-    final_terms = gammas * v_preds
-    final_terms = torch.cat([final_terms[n:], torch.zeros((n,))])[:rets_len]
-
-    nstep_rets = rets - tail_rets + final_terms
-    assert not np.isnan(nstep_rets).any(), f'N-step returns has nan: {nstep_rets}'
+    rets = copy.deepcopy(batch['rewards'])
+    nstep_rets = np.zeros_like(rets) + rets
+    cur_gamma = gamma
+    for i in range(1, n):
+        # Shift returns by one and pad with zeros
+        rets[:-1] = rets[1:]
+        rets[-1] = 0
+        nstep_rets += cur_gamma * rets
+        # Update current gamma
+        cur_gamma *= cur_gamma
+    # Add final terms. Note no next state if epi is done
+    final_terms = cur_gamma * next_v_preds * (1 - batch['dones'])
+    nstep_rets += final_terms
     return nstep_rets
 
 
