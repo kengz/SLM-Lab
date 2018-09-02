@@ -459,7 +459,7 @@ class EnvSpace:
         logger.debug3('EnvSpace.reset')
         _reward_v, state_v, done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
         for env in self.envs:
-            _reward_e, state_e, done_e = env.reset()
+            _reward_e, state_e, done_e = env.space_reset()
             state_v[env.e, 0:len(state_e)] = state_e
             done_v[env.e, 0:len(done_e)] = done_e
         _reward_space, state_space, done_space = self.aeb_space.add(ENV_DATA_NAMES, (_reward_v, state_v, done_v))
@@ -472,7 +472,7 @@ class EnvSpace:
         for env in self.envs:
             e = env.e
             action_e = action_space.get(e=e)
-            reward_e, state_e, done_e = env.step(action_e)
+            reward_e, state_e, done_e = env.space_step(action_e)
             reward_v[e, 0:len(reward_e)] = reward_e
             state_v[e, 0:len(state_e)] = state_e
             done_v[e, 0:len(done_e)] = done_e
