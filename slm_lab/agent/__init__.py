@@ -35,7 +35,7 @@ class Agent:
     Access Envs properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    def __init__(self, spec, info_space, body, a=None, global_nets=None):
+    def __init__(self, spec, info_space, body=None, a=None, global_nets=None):
         self.spec = spec
         self.info_space = info_space
         self.body = body
@@ -91,18 +91,17 @@ class Agent:
         self.save()
 
     @lab_api
-    def space_init(self, agent_space):
+    def space_init(self, agent_space, body_a):
         '''Post init override for space env. Note that aeb is already correct from __init__'''
         self.agent_space = agent_space
-
+        self.body_a = body_a
         self.nanflat_body_a = util.nanflatten(self.body_a)
         for idx, body in enumerate(self.nanflat_body_a):
             body.nanflat_a_idx = idx
+            MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
+            body.memory = MemoryClass(self.agent_spec['memory'], body)
+            # TODO set other body attr here
         self.body_num = len(self.nanflat_body_a)
-
-        # self.body_a = None
-        # self.nanflat_body_a = None  # nanflatten version of bodies
-        # self.body_num = None
         logger.info(util.self_desc(self))
 
     @lab_api
@@ -144,16 +143,15 @@ class AgentSpace:
         self.spec = spec
         self.aeb_space = aeb_space
         aeb_space.agent_space = self
-        self.agent_spec = spec['agent']
         self.info_space = aeb_space.info_space
         self.aeb_shape = aeb_space.aeb_shape
-        self.agents = [Agent(agent_spec, self, a, global_nets) for a, agent_spec in enumerate(self.agent_spec)]
-
-    @lab_api
-    def post_body_init(self):
-        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        for agent in self.agents:
-            agent.post_body_init()
+        assert ps.is_list(self.spec['agent'])
+        self.agents = []
+        for a in range(len(self.spec['agent'])):
+            agent = Agent(self.spec, self.info_space, a=a, global_nets=global_nets)
+            body_a = self.aeb_space.body_space.get(a=a)
+            agent.space_init(self, body_a)
+            self.agents.append(agent)
         logger.info(util.self_desc(self))
 
     def get(self, a):
