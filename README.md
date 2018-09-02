@@ -44,6 +44,10 @@ SLM Lab implements most of the recent canonical algorithms and various extension
     - `Body`: connects the agent-env, and stores the proper agent-env data, such as entropy/log_prob. Multitask agent will have multiple bodies, each handling a specific environment. Conversely, a multiagent environment will accept multiple bodies from different agents. Essentially, each body keeps track of an agent-env pair.
         - `Memory`: stores the numpy/plain type data produced from the agent-env interactions used for training.
 
+- `BaseEnv`: the environment wrapper class. It has the API methods to interface with the agent. Currently, the Lab contains:
+    - `OpenAIEnv` for [OpenAI gym](https://github.com/openai/gym)
+    - `UnityEnv` for [Unity ML-Agents](https://github.com/Unity-Technologies/ml-agents)
+
 #### Algorithm
 
 code: [slm_lab/agent/algorithm](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/algorithm)
