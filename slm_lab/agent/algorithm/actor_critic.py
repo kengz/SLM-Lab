@@ -314,16 +314,14 @@ class ActorCritic(Reinforce):
         Used for training with GAE
         '''
         v_preds = self.calc_v(batch['states'])
-        # v targets = r_t + gamma * V(s_(t+1))
-        next_v_preds = self.calc_v(batch['next_states'])
-        v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
         # calc next_state boundary value and concat with above for efficiency
-        next_v_pred_tail = next_v_preds[-1:]
+        next_v_pred_tail = self.calc_v(batch['next_states'][-1:])
         next_v_preds = torch.cat([v_preds[1:], next_v_pred_tail], dim=0)
+        # v targets = r_t + gamma * V(s_(t+1))
+        v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
         # ensure val for next_state is 0 at done
         next_v_preds = next_v_preds * (1 - batch['dones'])
         adv_targets = math_util.calc_gaes(batch['rewards'], v_preds, next_v_preds, self.gamma, self.lam)
-        # v_targets = adv_targets + v_preds
         if torch.cuda.is_available() and self.net.gpu:
             adv_targets = adv_targets.cuda()
             v_targets = v_targets.cuda()
