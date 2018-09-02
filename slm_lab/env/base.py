@@ -66,7 +66,7 @@ class BaseEnv(ABC):
     def __init__(self, spec, e=None, env_space=None):
         self.e = e or 0  # for compatibility with env_space
         self.clock_speed = 1
-        self.clock = Clock()
+        self.clock = Clock(self.clock_speed)
         self.done = False
         self.env_spec = spec['env'][self.e]
         util.set_attr(self, self.env_spec, [
@@ -75,6 +75,13 @@ class BaseEnv(ABC):
             'max_episode',
             'save_epi_frequency',
         ])
+
+    def _set_attr_from_u_env(self, u_env):
+        '''Set the observation, action dimensions and action type from u_env'''
+        self.observation_space, self.action_space = self._get_spaces(u_env)
+        self.observable_dim = self._get_observable_dim(self.observation_space)
+        self.action_dim = self._get_action_dim(self.action_space)
+        self.is_discrete = self._is_discrete(self.action_space)
 
     def _get_spaces(self, u_env):
         '''Helper to set the extra attributes to, and get, observation and action spaces'''

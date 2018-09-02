@@ -14,10 +14,7 @@ class OpenAIEnv(BaseEnv):
     def __init__(self, spec, e=None, env_space=None):
         super(OpenAIEnv, self).__init__(spec, e, env_space)
         self.u_env = gym.make(self.name)
-        self.observation_space, self.action_space = self._get_spaces(self.u_env)
-        self.observable_dim = self._get_observable_dim(self.observation_space)
-        self.action_dim = self._get_action_dim(self.action_space)
-        self.is_discrete = self._is_discrete(self.action_space)
+        self._set_attr_from_u_env(self.u_env)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
         if env_space is None:  # singleton mode
             pass
