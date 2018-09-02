@@ -116,7 +116,7 @@ class Reinforce(Algorithm):
     def sample(self):
         '''Samples a batch from memory'''
         batch = self.body.memory.sample()
-        batch = util.to_torch_batch(batch, self.net.gpu, self.body.memory.is_episodic)
+        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 
     @lab_api
@@ -149,8 +149,7 @@ class Reinforce(Algorithm):
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.entropy_coef * entropies)
         policy_loss = torch.sum(policy_loss)
-        if torch.cuda.is_available() and self.net.gpu:
-            policy_loss = policy_loss.cuda()
+        policy_loss = policy_loss.to(self.net.device)
         logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 

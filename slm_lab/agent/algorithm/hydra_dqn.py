@@ -50,8 +50,7 @@ class MultitaskDQN(DQN):
             state = state_a[eb]
             states.append(state)
         state = torch.tensor(states).view(-1).unsqueeze_(0).float()
-        if torch.cuda.is_available() and self.net.gpu:
-            state = state.cuda()
+        state = state.to(self.net.device)
         pdparam = self.calc_pdparam(state, evaluate=False)
         # use multi-policy. note arg change
         action_a, action_pd_a = self.action_policy(pdparam, self, self.agent.nanflat_body_a)
@@ -74,7 +73,7 @@ class MultitaskDQN(DQN):
             # one-hot actions to calc q_targets
             if body.is_discrete:
                 body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
-            body_batch = util.to_torch_batch(body_batch, self.net.gpu, body.memory.is_episodic)
+            body_batch = util.to_torch_batch(body_batch, self.net.device, body.memory.is_episodic)
             batches.append(body_batch)
         # Concat states at dim=1 for feedforward
         batch = {
@@ -109,8 +108,7 @@ class MultitaskDQN(DQN):
             multi_q_targets.append(q_targets)
             start_idx = end_idx
         q_targets = torch.cat(multi_q_targets, dim=1)
-        if torch.cuda.is_available() and self.net.gpu:
-            q_targets = q_targets.cuda()
+        q_targets = q_targets.to(self.net.device)
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
@@ -150,7 +148,7 @@ class HydraDQN(MultitaskDQN):
             # one-hot actions to calc q_targets
             if body.is_discrete:
                 body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
-            body_batch = util.to_torch_batch(body_batch, self.net.gpu, body.memory.is_episodic)
+            body_batch = util.to_torch_batch(body_batch, self.net.device, body.memory.is_episodic)
             batches.append(body_batch)
         # collect per body for feedforward to hydra heads
         batch = {
@@ -175,8 +173,7 @@ class HydraDQN(MultitaskDQN):
             max_q_targets = body_batch['rewards'] + self.gamma * (1 - body_batch['dones']) * max_next_q_preds
             max_q_targets.unsqueeze_(1)
             q_targets = (max_q_targets * body_batch['actions']) + (q_preds[b] * (1 - body_batch['actions']))
-            if torch.cuda.is_available() and self.net.gpu:
-                q_targets = q_targets.cuda()
+            q_targets = q_targets.to(self.net.device)
             multi_q_targets.append(q_targets)
         # return as list for compatibility with net output in training_step
         q_targets = multi_q_targets

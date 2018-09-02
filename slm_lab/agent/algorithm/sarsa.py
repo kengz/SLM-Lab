@@ -122,8 +122,7 @@ class SARSA(Algorithm):
         act_q_targets.unsqueeze_(1)
         # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
         q_targets = (act_q_targets * batch['one_hot_actions']) + (q_preds * (1 - batch['one_hot_actions']))
-        if torch.cuda.is_available() and self.net.gpu:
-            q_targets = q_targets.cuda()
+        q_targets = q_targets.to(self.net.device)
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
@@ -137,7 +136,7 @@ class SARSA(Algorithm):
         # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['dones'])
         batch['next_actions'] = np.zeros_like(batch['actions'])
         batch['next_actions'][:-1] = batch['actions'][1:]
-        batch = util.to_torch_batch(batch, self.net.gpu, self.body.memory.is_episodic)
+        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 
     @lab_api

@@ -97,8 +97,7 @@ class VanillaDQN(SARSA):
         max_q_targets.unsqueeze_(1)
         # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
         q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
-        if torch.cuda.is_available() and self.net.gpu:
-            q_targets = q_targets.cuda()
+        q_targets = q_targets.to(self.net.device)
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
@@ -114,7 +113,7 @@ class VanillaDQN(SARSA):
         # one-hot actions to calc q_targets
         if self.body.is_discrete:
             batch['actions'] = util.to_one_hot(batch['actions'], self.body.action_space.high)
-        batch = util.to_torch_batch(batch, self.net.gpu, self.body.memory.is_episodic)
+        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 
     @lab_api
@@ -207,8 +206,7 @@ class DQNBase(VanillaDQN):
         max_q_targets.unsqueeze_(1)
         # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
         q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
-        if torch.cuda.is_available() and self.net.gpu:
-            q_targets = q_targets.cuda()
+        q_targets = q_targets.to(self.net.device)
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 

@@ -140,8 +140,7 @@ def init_action_pd(state, algorithm, body, append=True):
     ActionPD = getattr(distributions, body.action_pdtype)
 
     state = try_preprocess(state, algorithm, body, append=append)
-    if torch.cuda.is_available() and algorithm.net_spec['gpu']:
-        state = state.cuda()
+    state = state.to(algorithm.net.device)
     pdparam = algorithm.calc_pdparam(state, evaluate=False)
     return ActionPD, pdparam, body
 

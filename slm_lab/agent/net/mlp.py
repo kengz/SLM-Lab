@@ -101,9 +101,8 @@ class MLPNet(Net, nn.Module):
             self.model_tails = nn.ModuleList([nn.Linear(dims[-1], out_d) for out_d in self.out_dim])
 
         net_util.init_layers(self.modules())
-        if torch.cuda.is_available() and self.gpu:
-            for module in self.modules():
-                module.cuda()
+        for module in self.modules():
+            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)
@@ -278,9 +277,8 @@ class HydraMLPNet(Net, nn.Module):
         self.model_tails = self.build_model_tails(out_dim)
 
         net_util.init_layers(self.modules())
-        if torch.cuda.is_available() and self.gpu:
-            for module in self.modules():
-                module.cuda()
+        for module in self.modules():
+            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)
@@ -446,9 +444,8 @@ class DuelingMLPNet(MLPNet):
         self.v = nn.Linear(dims[-1], 1)  # state value
         self.adv = nn.Linear(dims[-1], out_dim)  # action dependent raw advantage
         net_util.init_layers(self.modules())
-        if torch.cuda.is_available() and self.gpu:
-            for module in self.modules():
-                module.cuda()
+        for module in self.modules():
+            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)

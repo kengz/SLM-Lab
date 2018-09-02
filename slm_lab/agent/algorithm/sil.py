@@ -104,13 +104,13 @@ class SIL(ActorCritic):
         for idx in range(len(batch['dones'])):
             tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]
             self.body.replay_memory.add_experience(*tuples)
-        batch = util.to_torch_batch(batch, self.net.gpu, self.body.replay_memory.is_episodic)
+        batch = util.to_torch_batch(batch, self.net.device, self.body.replay_memory.is_episodic)
         return batch
 
     def replay_sample(self):
         '''Samples a batch from memory'''
         batch = self.body.replay_memory.sample()
-        batch = util.to_torch_batch(batch, self.net.gpu, self.body.replay_memory.is_episodic)
+        batch = util.to_torch_batch(batch, self.net.device, self.body.replay_memory.is_episodic)
         assert not torch.isnan(batch['states']).any(), batch['states']
         return batch
 
@@ -129,10 +129,8 @@ class SIL(ActorCritic):
         sil_policy_loss = self.sil_policy_loss_coef * torch.mean(- log_probs * clipped_advs)
         sil_val_loss = self.sil_val_loss_coef * torch.pow(clipped_advs, 2) / 2
         sil_val_loss = torch.mean(sil_val_loss)
-
-        if torch.cuda.is_available() and self.net.gpu:
-            sil_policy_loss = sil_policy_loss.cuda()
-            sil_val_loss = sil_val_loss.cuda()
+        sil_policy_loss = sil_policy_loss.to(self.net.device)
+        sil_val_loss = sil_val_loss.to(self.net.device)
         logger.debug(f'SIL actor policy loss: {sil_policy_loss:.4f}')
         logger.debug(f'SIL critic value loss: {sil_val_loss:.4f}')
         return sil_policy_loss, sil_val_loss
