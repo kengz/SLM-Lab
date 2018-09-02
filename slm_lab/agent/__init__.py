@@ -137,7 +137,7 @@ class Agent:
         for eb, body in util.ndenumerate_nonan(self.body_a):
             body.loss = loss_a[eb]
             if not np.isnan(body.loss):  # set for log_summary()
-                self.body.last_loss = body.loss
+                body.last_loss = body.loss
         explore_var_a = self.algorithm.space_update()
         explore_var_a = util.guard_data_a(self, explore_var_a, 'explore_var')
         logger.debug(f'Agent {self.a} loss: {loss_a}, explore_var_a {explore_var_a}')

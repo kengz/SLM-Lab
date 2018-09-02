@@ -19,9 +19,8 @@ class MultitaskDQN(DQN):
     @lab_api
     def init_nets(self):
         '''Initialize nets with multi-task dimensions, and set net params'''
-        self.body_list = self.agent.nanflat_body_a
-        self.state_dims = [body.state_dim for body in self.body_list]
-        self.action_dims = [body.action_dim for body in self.body_list]
+        self.state_dims = [body.state_dim for body in self.agent.nanflat_body_a]
+        self.action_dims = [body.action_dim for body in self.agent.nanflat_body_a]
         in_dim = sum(self.state_dims)
         out_dim = sum(self.action_dims)
         NetClass = getattr(net, self.net_spec['type'])
@@ -55,8 +54,8 @@ class MultitaskDQN(DQN):
             state = state.cuda()
         pdparam = self.calc_pdparam(state, evaluate=False)
         # use multi-policy. note arg change
-        action_a, action_pd_a = self.action_policy(pdparam, self, self.body_list)
-        for idx, body in enumerate(self.body_list):
+        action_a, action_pd_a = self.action_policy(pdparam, self, self.agent.nanflat_body_a)
+        for idx, body in enumerate(self.agent.nanflat_body_a):
             action_pd = action_pd_a[idx]
             body.entropies.append(action_pd.entropy())
             body.log_probs.append(action_pd.log_prob(action_a[idx].float()))
@@ -75,7 +74,7 @@ class MultitaskDQN(DQN):
             # one-hot actions to calc q_targets
             if body.is_discrete:
                 body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
-            body_batch = util.to_torch_batch(body_batch, self.net.gpu, self.body.memory.is_episodic)
+            body_batch = util.to_torch_batch(body_batch, self.net.gpu, body.memory.is_episodic)
             batches.append(body_batch)
         # Concat states at dim=1 for feedforward
         batch = {
@@ -123,9 +122,8 @@ class HydraDQN(MultitaskDQN):
     def init_nets(self):
         '''Initialize nets with multi-task dimensions, and set net params'''
         # NOTE: Separate init from MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
-        self.body_list = self.agent.nanflat_body_a
-        self.state_dims = in_dims = [body.state_dim for body in self.body_list]
-        self.action_dims = out_dims = [body.action_dim for body in self.body_list]
+        self.state_dims = in_dims = [body.state_dim for body in self.agent.nanflat_body_a]
+        self.action_dims = out_dims = [body.action_dim for body in self.agent.nanflat_body_a]
         NetClass = getattr(net, self.net_spec['type'])
         self.net = NetClass(self.net_spec, in_dims, out_dims)
         self.target_net = NetClass(self.net_spec, in_dims, out_dims)
@@ -152,7 +150,7 @@ class HydraDQN(MultitaskDQN):
             # one-hot actions to calc q_targets
             if body.is_discrete:
                 body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
-            body_batch = util.to_torch_batch(body_batch, self.net.gpu, self.body.memory.is_episodic)
+            body_batch = util.to_torch_batch(body_batch, self.net.gpu, body.memory.is_episodic)
             batches.append(body_batch)
         # collect per body for feedforward to hydra heads
         batch = {
@@ -217,8 +215,9 @@ class HydraDQN(MultitaskDQN):
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0
-            self.body.log_probs = []
-            self.body.entropies = []
+            for body in self.agent.nanflat_body_a:
+                body.log_probs = []
+                body.entropies = []
             logger.debug(f'Loss: {loss}')
             return loss.item()
         else:
