@@ -4,6 +4,7 @@ Contains graduated components from experiments for building/using environment.
 Provides the rich experience for agent embodiment, reflects the curriculum and allows teaching (possibly allows teacher to enter).
 To be designed by human and evolution module, based on the curriculum and fitness metrics.
 '''
+from abc import ABC, abstractmethod
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from unityagents import brain, UnityEnvironment
@@ -74,9 +75,14 @@ class Clock:
         return getattr(self, unit)
 
 
-class OpenAIEnv:
-    def __init__(self, spec, e=0):
-        self.e = e  # for compatibility with env_space
+# TODO move these classes out to files
+class BaseEnv(ABC):
+    '''The base Env class with API and helper methods. Use this to implement your env class that is compatible with the Lab APIs'''
+
+    def __init__(self, spec, e=None):
+        self.e = e or 0  # for compatibility with env_space
+        self.clock = Clock()
+        self.done = False
         self.env_spec = spec['env'][self.e]
         util.set_attr(self, self.env_spec, [
             'name',
@@ -84,15 +90,6 @@ class OpenAIEnv:
             'max_episode',
             'save_epi_frequency',
         ])
-        self.u_env = gym.make(self.name)
-        self.observation_space, self.action_space = self._get_spaces(self.u_env)
-        self.observable_dim = self._get_observable_dim(self.observation_space)
-        self.action_dim = self._get_action_dim(self.action_space)
-        self.is_discrete = self._is_discrete(self.action_space)
-        self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
-        self.clock = Clock()
-        self.done = False
-        logger.info(util.self_desc(self))
 
     def _get_spaces(self, u_env):
         '''Helper to set the extra attributes to, and get, observation and action spaces'''
@@ -125,6 +122,53 @@ class OpenAIEnv:
     def _is_discrete(self, action_space):
         '''Check if an action space is discrete'''
         return util.get_class_name(action_space) != 'Box'
+
+    @abstractmethod
+    @lab_api
+    def reset(self):
+        '''Reset method, return _reward, state, done'''
+        raise NotImplementedError
+
+    @abstractmethod
+    @lab_api
+    def step(self, action):
+        '''Step method, return reward, state, done'''
+        raise NotImplementedError
+
+    @abstractmethod
+    @lab_api
+    def close(self):
+        '''Method to close and cleanup env'''
+        raise NotImplementedError
+
+    @lab_api
+    def space_init(self, env_space):
+        '''Post init override for space env. Note that aeb is already correct from __init__'''
+        raise NotImplementedError
+
+    @lab_api
+    def space_reset(self):
+        '''Space (multi-env) reset method, return _reward_e, state_e, done_e'''
+        raise NotImplementedError
+
+    @lab_api
+    def space_step(self, action_e):
+        '''Space (multi-env) step method, return reward_e, state_e, done_e'''
+        raise NotImplementedError
+
+
+class OpenAIEnv(BaseEnv):
+    def __init__(self, spec, e=None):
+        super(OpenAIEnv, self).__init__(spec, e)
+
+        self.u_env = gym.make(self.name)
+        self.observation_space, self.action_space = self._get_spaces(self.u_env)
+        self.observable_dim = self._get_observable_dim(self.observation_space)
+        self.action_dim = self._get_action_dim(self.action_space)
+        self.is_discrete = self._is_discrete(self.action_space)
+        self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
+        if e is None:  # no e specified, is in singleton mode
+            logger.info(util.self_desc(self))
 
     @lab_api
     def reset(self):

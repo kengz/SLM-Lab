@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from collections import deque
 from slm_lab.lib import logger, util
 import numpy as np
