@@ -388,3 +388,36 @@ def calc_log_probs(algorithm, net, body, batch):
     assert not torch.isnan(log_probs).any(), f'log_probs: {log_probs}, \npdparams: {pdparams} \nactions: {actions}'
     logger.debug(f'log_probs: {log_probs}')
     return log_probs
+
+
+def update_online_stats(mean, std_dev, state, n):
+    '''
+    Method to calculate the running mean and standard deviation of the state space.
+    See https://www.johndcook.com/blog/standard_deviation/ for more details
+    for n >= 1
+        M_n = M_n-1 + (state - M_n-1)/n
+        S_n = S_n-1 + (state - M_n-1)(state - M_n)
+    '''
+    if mean is None:
+        assert std_dev is None
+        return state, 0
+    else:
+        new_mean = mean + (state - mean) / n
+        new_std_dev = std_dev + (state - mean) * (state - new_mean)
+        return new_mean, new_std_dev
+
+
+def normalize_state(state, mean, std_dev):
+    '''
+    Normalizes the state using a running mean and new_std_dev
+    Details of the normalization from Deep RL Bootcamp, L6
+    https://www.youtube.com/watch?v=8EcdaCk9KaQ&feature=youtu.be
+    '''
+    return np.clip((state - mean) / std_dev, -10, 10)
+
+
+def unnormalize_state(state, mean, std_dev):
+    '''
+    Un-normalizes the state using a running mean and new_std_dev
+    '''
+    return state * std_dev + mean
