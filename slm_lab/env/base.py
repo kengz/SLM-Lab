@@ -1,0 +1,148 @@
+from abc import ABC, abstractmethod
+from slm_lab.lib import logger, util
+from slm_lab.lib.decorator import lab_api
+import gym
+import numpy as np
+
+ENV_DATA_NAMES = ['reward', 'state', 'done']
+logger = logger.get_logger(__name__)
+
+
+def set_gym_space_attr(gym_space):
+    '''Set missing gym space attributes for standardization'''
+    if isinstance(gym_space, gym.spaces.Box):
+        pass
+    elif isinstance(gym_space, gym.spaces.Discrete):
+        setattr(gym_space, 'low', 0)
+        setattr(gym_space, 'high', gym_space.n)
+    elif isinstance(gym_space, gym.spaces.MultiBinary):
+        setattr(gym_space, 'low', np.full(gym_space.n, 0))
+        setattr(gym_space, 'high', np.full(gym_space.n, 2))
+    elif isinstance(gym_space, gym.spaces.MultiDiscrete):
+        setattr(gym_space, 'low', np.zeros_like(nvec))
+        setattr(gym_space, 'high', np.array(gym_space.nvec))
+    else:
+        raise ValueError('gym_space not recognized')
+
+
+class Clock:
+    '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0, but epi begins at 1, env step begins at 1.'''
+
+    def __init__(self, clock_speed=1):
+        self.clock_speed = int(clock_speed)
+        self.ticks = 0  # multiple ticks make a timestep; used for clock speed
+        self.t = 0
+        self.total_t = 0
+        self.epi = 0
+
+    def to_step(self):
+        '''Step signal from clock_speed. Step only if the base unit of time in this clock has moved. Used to control if env of different clock_speed should step()'''
+        return self.ticks % self.clock_speed == 0
+
+    def tick(self, unit='t'):
+        if unit == 't':  # timestep
+            if self.to_step():
+                self.t += 1
+                self.total_t += 1
+            else:
+                pass
+            self.ticks += 1
+        elif unit == 'epi':  # episode, reset timestep
+            self.epi += 1
+            self.t = 0
+        else:
+            raise KeyError
+
+    def get(self, unit='t'):
+        return getattr(self, unit)
+
+
+class BaseEnv(ABC):
+    '''The base Env class with API and helper methods. Use this to implement your env class that is compatible with the Lab APIs'''
+
+    def __init__(self, spec, e=None, env_space=None):
+        self.e = e or 0  # for compatibility with env_space
+        self.clock_speed = 1
+        self.clock = Clock()
+        self.done = False
+        self.env_spec = spec['env'][self.e]
+        util.set_attr(self, self.env_spec, [
+            'name',
+            'max_timestep',
+            'max_episode',
+            'save_epi_frequency',
+        ])
+
+    def _get_spaces(self, u_env):
+        '''Helper to set the extra attributes to, and get, observation and action spaces'''
+        observation_space = u_env.observation_space
+        action_space = u_env.action_space
+        set_gym_space_attr(observation_space)
+        set_gym_space_attr(action_space)
+        return observation_space, action_space
+
+    def _get_observable_dim(self, observation_space):
+        '''Get the observable dim for an agent in env'''
+        state_dim = observation_space.shape
+        if len(state_dim) == 1:
+            state_dim = state_dim[0]
+        return {'state': state_dim}
+
+    def _get_action_dim(self, action_space):
+        '''Get the action dim for an action_space for agent to use'''
+        if isinstance(action_space, gym.spaces.Box):
+            assert len(action_space.shape) == 1
+            action_dim = action_space.shape[0]
+        elif isinstance(action_space, (gym.spaces.Discrete, gym.spaces.MultiBinary)):
+            action_dim = action_space.n
+        elif isinstance(action_space, gym.spaces.MultiDiscrete):
+            action_dim = action_space.nvec.tolist()
+        else:
+            raise ValueError('action_space not recognized')
+        return action_dim
+
+    def _is_discrete(self, action_space):
+        '''Check if an action space is discrete'''
+        return util.get_class_name(action_space) != 'Box'
+
+    @abstractmethod
+    @lab_api
+    def reset(self):
+        '''Reset method, return _reward, state, done'''
+        raise NotImplementedError
+
+    @abstractmethod
+    @lab_api
+    def step(self, action):
+        '''Step method, return reward, state, done'''
+        raise NotImplementedError
+
+    @abstractmethod
+    @lab_api
+    def close(self):
+        '''Method to close and cleanup env'''
+        raise NotImplementedError
+
+    @lab_api
+    def set_body_e(self, body_e):
+        '''Method called by body_space.init_body_space to complete the necessary backward reference needed for EnvSpace to work'''
+        self.body_e = body_e
+        self.nanflat_body_e = util.nanflatten(self.body_e)
+        for idx, body in enumerate(self.nanflat_body_e):
+            body.nanflat_e_idx = idx
+        self.body_num = len(self.nanflat_body_e)
+
+    @lab_api
+    def space_init(self, env_space):
+        '''Post init override for space env. Note that aeb is already correct from __init__'''
+        raise NotImplementedError
+
+    @lab_api
+    def space_reset(self):
+        '''Space (multi-env) reset method, return _reward_e, state_e, done_e'''
+        raise NotImplementedError
+
+    @lab_api
+    def space_step(self, action_e):
+        '''Space (multi-env) step method, return reward_e, state_e, done_e'''
+        raise NotImplementedError

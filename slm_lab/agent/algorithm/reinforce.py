@@ -68,7 +68,6 @@ class Reinforce(Algorithm):
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        # TODO below set properly for space later
         self.body.explore_var = self.explore_var_start
 
     @lab_api
