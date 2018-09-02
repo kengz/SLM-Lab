@@ -332,8 +332,8 @@ class MultitaskDQN(DQN):
         return pdparam
 
     @lab_api
-    def act(self, state_a):
-        '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing body_act'''
+    def space_act(self, state_a):
+        '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing act() via iteration'''
         # gather and flatten
         states = []
         for eb, body in util.ndenumerate_nonan(self.agent.body_a):
@@ -353,7 +353,7 @@ class MultitaskDQN(DQN):
         return action_a.cpu().numpy()
 
     @lab_api
-    def sample(self):
+    def space_sample(self):
         '''
         Samples a batch from memory.
         Note that multitask's bodies are parallelized copies with similar envs, just to get more batch sizes
@@ -433,7 +433,7 @@ class HydraDQN(MultitaskDQN):
         return pdparam
 
     @lab_api
-    def sample(self):
+    def space_sample(self):
         '''Samples a batch per body, which may experience different environment'''
         batches = []
         for body in self.agent.nanflat_body_a:
@@ -475,7 +475,7 @@ class HydraDQN(MultitaskDQN):
         return q_targets
 
     @lab_api
-    def train(self):
+    def space_train(self):
         '''
         Completes one training step for the agent if it is time to train.
         i.e. the environment timestep is greater than the minimum training timestep and a multiple of the training_frequency.

@@ -107,6 +107,11 @@ class Agent:
         self.body_num = len(self.nanflat_body_a)
         AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
         self.algorithm = AlgorithmClass(self, global_nets)
+        # after algo init, transfer any missing variables from default body
+        for idx, body in enumerate(self.nanflat_body_a):
+            for k, v in vars(self.body).items():
+                if util.gen_isnan(getattr(body, k, None)):
+                    setattr(body, k, v)
 
     @lab_api
     def space_reset(self, state_a):
