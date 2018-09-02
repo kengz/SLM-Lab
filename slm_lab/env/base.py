@@ -11,14 +11,17 @@ logger = logger.get_logger(__name__)
 def set_gym_space_attr(gym_space):
     '''Set missing gym space attributes for standardization'''
     if isinstance(gym_space, spaces.Box):
-        pass
+        setattr(gym_space, 'is_discrete', False)
     elif isinstance(gym_space, spaces.Discrete):
+        setattr(gym_space, 'is_discrete', True)
         setattr(gym_space, 'low', 0)
         setattr(gym_space, 'high', gym_space.n)
     elif isinstance(gym_space, spaces.MultiBinary):
+        setattr(gym_space, 'is_discrete', True)
         setattr(gym_space, 'low', np.full(gym_space.n, 0))
         setattr(gym_space, 'high', np.full(gym_space.n, 2))
     elif isinstance(gym_space, spaces.MultiDiscrete):
+        setattr(gym_space, 'is_discrete', True)
         setattr(gym_space, 'low', np.zeros_like(nvec))
         setattr(gym_space, 'high', np.array(gym_space.nvec))
     else:
