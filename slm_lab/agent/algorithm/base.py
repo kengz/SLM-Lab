@@ -20,7 +20,10 @@ class Algorithm(ABC):
         @param {*} agent is the container for algorithm and related components, and interfaces with env.
         '''
         self.agent = agent
-        self.global_nets = global_nets or {}
+        if ps.is_list(global_nets):  # multiagent
+            self.global_nets = global_nets[agent.a]
+        else:
+            self.global_nets = global_nets or {}
         self.algorithm_spec = agent.agent_spec['algorithm']
         self.memory_spec = agent.agent_spec['memory']
         self.net_spec = agent.agent_spec['net']

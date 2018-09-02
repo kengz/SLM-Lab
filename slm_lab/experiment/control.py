@@ -57,7 +57,7 @@ class Session:
             action = self.agent.act(state)
             reward, state, done = self.env.step(action)
             self.agent.update(action, reward, state, done)
-        agent.body.log_summary()
+        self.agent.body.log_summary()
         self.save_if_ckpt(self.agent, self.env)
 
     def close(self):
@@ -136,11 +136,11 @@ class SpaceSession(Session):
 class DistSession(mp.Process):
     '''Distributed Session for distributed training'''
 
-    def __init__(self, spec, info_space, global_nets):
+    def __init__(self, DistSessionClass, spec, info_space, global_nets):
         super(DistSession, self).__init__()
         self.name = f'w{info_space.get("session")}'
-        # TODO generalize for multiagent too
-        self.session = Session(spec, info_space, global_nets)
+        self.session = DistSessionClass(spec, info_space, global_nets)
+        logger.info(f'Initialized DistSession {self.session.index}')
 
     def run(self):
         return self.session.run()
@@ -162,14 +162,8 @@ class Trial:
         self.session_data_dict = {}
         self.data = None
         analysis.save_spec(spec, info_space, unit='trial')
-        # TODO still messy
-        if len(spec['agent']) == 1 and len(spec['env']) == 1:
-            if self.spec['meta'].get('distributed'):
-                self.SessionClass = DistSession
-            else:
-                self.SessionClass = Session
-        else:
-            self.SessionClass = SpaceSession
+        self.is_singleton = len(spec['agent']) == 1 and len(spec['env']) == 1  # singleton mode as opposed to multi-agent-env space
+        self.SessionClass = Session if self.is_singleton else SpaceSession
         logger.info(f'Initialized trial {self.index}')
 
     def init_session_and_run(self, info_space):
@@ -178,7 +172,7 @@ class Trial:
         return session_data
 
     def run_sessions(self):
-        logger.info('Running serial sessions')
+        logger.info('Running sessions')
         info_spaces = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
@@ -196,17 +190,23 @@ class Trial:
                     break
         return session_datas
 
-    def init_global_nets(self):
-        # TODO make global_nets available for space too
-        # not-runnable session to get global network
-        global_session = Session(deepcopy(self.spec), deepcopy(self.info_space))
-        global_session.env.close()  # cleanliness
+    def make_global_nets(self, agent):
         global_nets = {}
-        for net_name in global_session.agent.algorithm.net_names:
-            g_net = getattr(global_session.agent.algorithm, net_name)
+        for net_name in agent.algorithm.net_names:
+            g_net = getattr(agent.algorithm, net_name)
             g_net.share_memory()  # make net global
             # TODO also create shared optimizer here
             global_nets[net_name] = g_net
+        return global_nets
+
+    def init_global_nets(self):
+        session = self.SessionClass(deepcopy(self.spec), deepcopy(self.info_space))
+        if self.is_singleton:
+            session.env.close()  # safety
+            global_nets = self.make_global_nets(session.agent)
+        else:
+            session.env_space.close()  # safety
+            global_nets = [self.make_global_nets(agent) for agent in session.agent_space.agents]
         return global_nets
 
     def run_distributed_sessions(self):
@@ -215,7 +215,7 @@ class Trial:
         workers = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
-            w = DistSession(deepcopy(self.spec), self.info_space, global_nets)
+            w = DistSession(self.SessionClass, deepcopy(self.spec), self.info_space, global_nets)
             w.start()
             workers.append(w)
         for w in workers:
