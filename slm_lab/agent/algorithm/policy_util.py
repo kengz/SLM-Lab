@@ -400,7 +400,7 @@ def update_online_stats(body, state):
         variance = S_n / (n - 1)
         std_dev = sqrt(variance)
     '''
-    logger.debug(f'Mean: {body.state_mean}, std: {body.state_std_dev}, num examples: {body.state_n}')
+    logger.debug(f'mean: {body.state_mean}, std: {body.state_std_dev}, num examples: {body.state_n}')
     # Assumes only one state is given
     assert state.ndim == 1
     mean = body.state_mean
@@ -419,7 +419,7 @@ def update_online_stats(body, state):
         # Guard against very small std devs
         if (body.state_std_dev < 1e-8).any():
             body.state_std_dev[np.where(body.state_std_dev < 1e-8)] += 1e-8
-    logger.debug(f'New mean: {body.state_mean}, new std: {body.state_std_dev}, num examples: {body.state_n}')
+    logger.debug(f'new mean: {body.state_mean}, new std: {body.state_std_dev}, num examples: {body.state_n}')
 
 
 def normalize_state(body, state):
@@ -445,20 +445,22 @@ def update_online_stats_and_normalize_state(body, state):
     '''
     Convenience combination function for updating running state mean and std_dev and normalizing the state in one go.
     '''
-    logger.debug(f'State: {state}')
+    logger.debug(f'state: {state}')
     update_online_stats(body, state)
     state = normalize_state(body, state)
-    logger.debug(f'Normalized state: {state}')
+    logger.debug(f'normalized state: {state}')
     return state
 
 
-def normalize_states_and_next_states(body, batch):
+def normalize_states_and_next_states(body, batch, episodic_flag=None):
     '''
     Convenience function for normalizing the states and next states in a batch of data
     '''
-    logger.debug(f'States: {batch["states"]}')
-    logger.debug(f'Next states: {batch["next_states"]}')
-    if body.memory.is_episodic:
+    logger.debug(f'states: {batch["states"]}')
+    logger.debug(f'next states: {batch["next_states"]}')
+    episodic = episodic_flag if episodic_flag is not None else body.memory.is_episodic
+    logger.debug(f'Episodic: {episodic}, episodic_flag: {episodic_flag}, body.memory: {body.memory.is_episodic}')
+    if episodic:
         normalized = []
         for epi in batch['states']:
             normalized.append(normalize_state(body, epi))
@@ -470,6 +472,6 @@ def normalize_states_and_next_states(body, batch):
     else:
         batch['states'] = normalize_state(body, batch['states'])
         batch['next_states'] = normalize_state(body, batch['next_states'])
-    logger.debug(f'Normalized states: {batch["states"]}')
-    logger.debug(f'Normalized next states: {batch["next_states"]}')
+    logger.debug(f'normalized states: {batch["states"]}')
+    logger.debug(f'normalized next states: {batch["next_states"]}')
     return batch

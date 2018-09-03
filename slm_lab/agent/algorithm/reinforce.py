@@ -36,7 +36,8 @@ class Reinforce(Algorithm):
         "gamma": 0.99,
         "add_entropy": false,
         "entropy_coef": 0.01,
-        "training_frequency": 1
+        "training_frequency": 1,
+        "normalize_state": true
     }
     '''
 
@@ -64,7 +65,7 @@ class Reinforce(Algorithm):
             'add_entropy',
             'entropy_coef',
             'training_frequency',
-            'normalize_state'
+            'normalize_state',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -123,6 +124,9 @@ class Reinforce(Algorithm):
     def sample(self):
         '''Samples a batch from memory'''
         batch = self.body.memory.sample()
+        if self.normalize_state:
+            batch = policy_util.normalize_states_and_next_states(
+                self.body, batch)
         batch = util.to_torch_batch(batch, self.net.gpu, self.body.memory.is_episodic)
         return batch
 
