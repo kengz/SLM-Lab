@@ -175,6 +175,7 @@ def default(state, algorithm, body):
 
 def random(state, algorithm, body):
     '''Random action sampling that returns the same data format as default(), but without forward pass. Uses gym.space.sample()'''
+    state = try_preprocess(state, algorithm, body, append=True)  # for consistency with init_action_pd
     if body.is_discrete:
         action_pd = distributions.Categorical(logits=torch.ones(body.action_space.high, device=algorithm.net.device))
     else:
@@ -210,7 +211,7 @@ def boltzmann(state, algorithm, body):
 
 # multi-body policy with a single forward pass to calc pdparam
 
-def multi_default(pdparam, algorithm, body_list):
+def multi_default(states, algorithm, body_list, pdparam):
     '''
     Apply default policy body-wise
     Note, for efficiency, do a single forward pass to calculate pdparam, then call this policy like:
@@ -233,29 +234,29 @@ def multi_default(pdparam, algorithm, body_list):
     return action_a, action_pd_a
 
 
-def multi_random(pdparam, algorithm, body_list):
+def multi_random(states, algorithm, body_list, pdparam):
     '''Apply random policy body-wise.'''
     pdparam.squeeze_(dim=0)
     action_list, action_pd_a = [], []
     for idx, body in body_list:
-        action, action_pd = random(None, algorithm, body)
+        action, action_pd = random(states[idx], algorithm, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze_(dim=1)
     return action_a, action_pd_a
 
 
-def multi_epsilon_greedy(pdparam, algorithm, body_list):
+def multi_epsilon_greedy(states, algorithm, body_list, pdparam):
     '''Apply epsilon-greedy policy body-wise'''
     assert len(pdparam) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
     if util.get_lab_mode() == 'enjoy':
-        return multi_default(pdparam, algorithm, body_list)
+        return multi_default(states, algorithm, body_list, pdparam)
     action_list, action_pd_a = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
         epsilon = body.explore_var
         if epsilon > np.random.rand():
-            action, action_pd = random(None, algorithm, body)
+            action, action_pd = random(states[idx], algorithm, body)
         else:
             ActionPD = getattr(distributions, body.action_pdtype)
             action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
@@ -265,12 +266,12 @@ def multi_epsilon_greedy(pdparam, algorithm, body_list):
     return action_a, action_pd_a
 
 
-def multi_boltzmann(pdparam, algorithm, body_list):
+def multi_boltzmann(states, algorithm, body_list, pdparam):
     '''Apply Boltzmann policy body-wise'''
     # pdparam.squeeze_(dim=0)
     assert len(pdparam) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
     if util.get_lab_mode() == 'enjoy':
-        return multi_default(pdparam, algorithm, body_list)
+        return multi_default(states, algorithm, body_list, pdparam)
     action_list, action_pd_a = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
