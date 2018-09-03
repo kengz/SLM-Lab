@@ -177,7 +177,7 @@ def random(state, algorithm, body):
     '''Random action sampling that returns the same data format as default(), but without forward pass. Uses gym.space.sample()'''
     action_pd = distributions.Uniform(low=torch.from_numpy(np.array(body.action_space.low)).float(), high=torch.from_numpy(np.array(body.action_space.high)).float())
     sample = body.action_space.sample()
-    action = torch.tensor(sample)
+    action = torch.tensor(sample, device=algorithm.net.device)
     return action, action_pd
 
 
@@ -226,7 +226,7 @@ def multi_default(pdparam, algorithm, body_list):
         action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
-    action_a = torch.tensor(action_list).unsqueeze_(dim=1)
+    action_a = torch.tensor(action_list, device=pdparam.device).unsqueeze_(dim=1)
     return action_a, action_pd_a
 
 
@@ -238,7 +238,7 @@ def multi_random(pdparam, algorithm, body_list):
         action, action_pd = random(None, algorithm, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
-    action_a = torch.tensor(action_list).unsqueeze_(dim=1)
+    action_a = torch.tensor(action_list, device=pdparam.device).unsqueeze_(dim=1)
     return action_a, action_pd_a
 
 
@@ -258,7 +258,7 @@ def multi_epsilon_greedy(pdparam, algorithm, body_list):
             action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
-    action_a = torch.tensor(action_list).unsqueeze_(dim=1)
+    action_a = torch.tensor(action_list, device=pdparam.device).unsqueeze_(dim=1)
     return action_a, action_pd_a
 
 
@@ -277,7 +277,7 @@ def multi_boltzmann(pdparam, algorithm, body_list):
         action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
-    action_a = torch.tensor(action_list).unsqueeze_(dim=1)
+    action_a = torch.tensor(action_list, device=pdparam.device).unsqueeze_(dim=1)
     return action_a, action_pd_a
 
 
