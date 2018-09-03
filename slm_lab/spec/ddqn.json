@@ -43,7 +43,7 @@
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.9,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -126,7 +126,7 @@
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.9,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -212,7 +212,7 @@
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.9,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -298,7 +298,7 @@
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0.9,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -394,7 +394,7 @@
         "update_type": "replace",
         "update_frequency": 10000,
         "polyak_coef": 0.9,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -471,7 +471,7 @@
         "update_type": "replace",
         "update_frequency": 10000,
         "polyak_coef": 0.9,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{

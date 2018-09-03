@@ -1,9 +1,9 @@
 {
-  "ac_mlp_shared_cartpole": {
+  "dppo_mlp_shared_cartpole": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "DPPO",
       "algorithm": {
-        "name": "ActorCritic",
+        "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -11,17 +11,12 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
         "lam": 1.0,
-        "use_nstep": false,
-        "num_step_returns": 100,
-        "add_entropy": true,
+        "clip_eps": 0.10,
         "entropy_coef": 0.01,
-        "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.01,
+        "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -29,7 +24,7 @@
       "net": {
         "type": "MLPNet",
         "shared": true,
-        "hid_layers": [64],
+        "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -60,33 +55,36 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
         "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           }
         }
       }]
     }
   },
-  "ac_mlp_separate_cartpole": {
+  "dppo_mlp_separate_cartpole": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "DPPO",
       "algorithm": {
-        "name": "ActorCritic",
+        "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -94,17 +92,12 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
         "lam": 1.0,
-        "use_nstep": false,
-        "num_step_returns": 100,
-        "add_entropy": true,
+        "clip_eps": 0.10,
         "entropy_coef": 0.01,
-        "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.01,
+        "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -112,7 +105,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64],
+        "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -143,33 +136,36 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
         "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           }
         }
       }]
     }
   },
-  "ac_rnn_shared_cartpole": {
+  "dppo_rnn_shared_cartpole": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "DPPO",
       "algorithm": {
-        "name": "ActorCritic",
+        "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -177,17 +173,12 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
         "lam": 1.0,
-        "use_nstep": false,
-        "num_step_returns": 100,
-        "add_entropy": true,
+        "clip_eps": 0.10,
         "entropy_coef": 0.01,
-        "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.01,
+        "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicySeqReplay"
@@ -197,7 +188,7 @@
         "shared": true,
         "hid_layers": [],
         "hid_layers_activation": "relu",
-        "rnn_hidden_size": 64,
+        "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
@@ -229,33 +220,36 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
         "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           }
         }
       }]
     }
   },
-  "ac_rnn_separate_cartpole": {
+  "dppo_rnn_separate_cartpole": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "DPPO",
       "algorithm": {
-        "name": "ActorCritic",
+        "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -263,17 +257,12 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
         "lam": 1.0,
-        "use_nstep": false,
-        "num_step_returns": 100,
-        "add_entropy": true,
+        "clip_eps": 0.10,
         "entropy_coef": 0.01,
-        "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.01,
+        "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicySeqReplay"
@@ -283,7 +272,7 @@
         "shared": false,
         "hid_layers": [],
         "hid_layers_activation": "relu",
-        "rnn_hidden_size": 64,
+        "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
@@ -315,33 +304,36 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
         "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           }
         }
       }]
     }
   },
-  "ac_mlp_shared_pendulum": {
+  "dppo_mlp_shared_pendulum": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "DPPO",
       "algorithm": {
-        "name": "ActorCritic",
+        "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -349,17 +341,12 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
         "lam": 1.0,
-        "use_nstep": false,
-        "num_step_returns": 100,
-        "add_entropy": true,
+        "clip_eps": 0.10,
         "entropy_coef": 0.01,
-        "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.01,
+        "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -367,7 +354,7 @@
       "net": {
         "type": "MLPNet",
         "shared": true,
-        "hid_layers": [64],
+        "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -398,33 +385,36 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
         "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           }
         }
       }]
     }
   },
-  "ac_mlp_separate_pendulum": {
+  "dppo_mlp_separate_pendulum": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "DPPO",
       "algorithm": {
-        "name": "ActorCritic",
+        "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -432,17 +422,12 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
         "lam": 1.0,
-        "use_nstep": false,
-        "num_step_returns": 100,
-        "add_entropy": true,
+        "clip_eps": 0.10,
         "entropy_coef": 0.01,
-        "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.01,
+        "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -450,7 +435,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64],
+        "hid_layers": [32],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -481,33 +466,36 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
         "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           }
         }
       }]
     }
   },
-  "ac_rnn_shared_pendulum": {
+  "dppo_rnn_shared_pendulum": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "DPPO",
       "algorithm": {
-        "name": "ActorCritic",
+        "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -515,17 +503,12 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
         "lam": 1.0,
-        "use_nstep": false,
-        "num_step_returns": 100,
-        "add_entropy": true,
+        "clip_eps": 0.10,
         "entropy_coef": 0.01,
-        "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.01,
+        "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicySeqReplay"
@@ -535,7 +518,7 @@
         "shared": true,
         "hid_layers": [],
         "hid_layers_activation": "relu",
-        "rnn_hidden_size": 64,
+        "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
@@ -567,33 +550,36 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
         "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           }
         }
       }]
     }
   },
-  "ac_rnn_separate_pendulum": {
+  "dppo_rnn_separate_pendulum": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "DPPO",
       "algorithm": {
-        "name": "ActorCritic",
+        "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -601,17 +587,12 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
         "lam": 1.0,
-        "use_nstep": false,
-        "num_step_returns": 100,
-        "add_entropy": true,
+        "clip_eps": 0.10,
         "entropy_coef": 0.01,
-        "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.01,
+        "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicySeqReplay"
@@ -621,7 +602,7 @@
         "shared": false,
         "hid_layers": [],
         "hid_layers_activation": "relu",
-        "rnn_hidden_size": 64,
+        "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
@@ -653,33 +634,36 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "lam__uniform": [0.1, 1.0]
-        },
         "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
+            "lr__uniform": [0.0001, 0.2]
           }
         }
       }]
     }
   },
-  "ac_conv_shared_breakout": {
+  "dppo_conv_shared_breakout": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "DPPO",
       "algorithm": {
-        "name": "ActorCritic",
+        "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -687,17 +671,12 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
         "lam": 1.0,
-        "use_nstep": false,
-        "num_step_returns": 100,
-        "add_entropy": true,
+        "clip_eps": 0.10,
         "entropy_coef": 0.01,
-        "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.01,
+        "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -726,8 +705,8 @@
           "lr": 0.01
         },
         "lr_decay": "rate_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 600,
+        "lr_decay_frequency": 500,
+        "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 1000000,
         "gpu": false
       }
@@ -742,17 +721,17 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
     }
   },
-  "ac_conv_separate_breakout": {
+  "dppo_conv_separate_breakout": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "DPPO",
       "algorithm": {
-        "name": "ActorCritic",
+        "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -760,17 +739,12 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
         "lam": 1.0,
-        "use_nstep": false,
-        "num_step_returns": 100,
-        "add_entropy": true,
+        "clip_eps": 0.10,
         "entropy_coef": 0.01,
-        "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.01,
+        "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -799,8 +773,8 @@
           "lr": 0.01
         },
         "lr_decay": "rate_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 600,
+        "lr_decay_frequency": 500,
+        "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 1000000,
         "gpu": false
       }
@@ -815,7 +789,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
