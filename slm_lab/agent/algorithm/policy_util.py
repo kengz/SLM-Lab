@@ -439,7 +439,7 @@ def normalize_state(body, state):
     Details of the normalization from Deep RL Bootcamp, L6
     https://www.youtube.com/watch?v=8EcdaCk9KaQ&feature=youtu.be
     '''
-    same_shape = state.shape == body.state_mean.shape
+    same_shape = False if type(state) == list else state.shape == body.state_mean.shape
     has_preprocess = getattr(body.memory, 'preprocess_state', False)
     if ("Atari" in body.memory.__class__.__name__):
         # never normalize atari, it has its own normalization step
