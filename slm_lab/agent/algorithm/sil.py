@@ -101,7 +101,7 @@ class SIL(ActorCritic):
         batch = self.body.memory.sample()
         batch = {k: np.concatenate(v) for k, v in batch.items()}  # concat episodic memory
         for idx in range(len(batch['dones'])):
-            tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]
+            tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys if k != 'rets']
             self.body.replay_memory.add_experience(*tuples)
         batch = util.to_torch_batch(batch, self.net.device, self.body.replay_memory.is_episodic)
         batch['rets'] = math_util.calc_returns(batch, self.gamma)
