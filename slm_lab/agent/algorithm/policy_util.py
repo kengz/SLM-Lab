@@ -175,7 +175,7 @@ def default(state, algorithm, body):
 
 def random(state, algorithm, body):
     '''Random action sampling that returns the same data format as default(), but without forward pass. Uses gym.space.sample()'''
-    state = try_preprocess(state, algorithm, body, append=True)  # for consistency with init_action_pd
+    state = try_preprocess(state, algorithm, body, append=True)  # for consistency with init_action_pd inner logic
     if body.is_discrete:
         action_pd = distributions.Categorical(logits=torch.ones(body.action_space.high, device=algorithm.net.device))
     else:
@@ -226,6 +226,7 @@ def multi_default(states, algorithm, body_list, pdparam):
     action_list, action_pd_a = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
+        try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with init_action_pd inner logic
         ActionPD = getattr(distributions, body.action_pdtype)
         action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
         action_list.append(action)
@@ -258,6 +259,7 @@ def multi_epsilon_greedy(states, algorithm, body_list, pdparam):
         if epsilon > np.random.rand():
             action, action_pd = random(states[idx], algorithm, body)
         else:
+            try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with init_action_pd inner logic
             ActionPD = getattr(distributions, body.action_pdtype)
             action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
         action_list.append(action)
@@ -275,6 +277,7 @@ def multi_boltzmann(states, algorithm, body_list, pdparam):
     action_list, action_pd_a = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
+        try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with init_action_pd inner logic
         tau = body.explore_var
         sub_pdparam /= tau
         ActionPD = getattr(distributions, body.action_pdtype)
