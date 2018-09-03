@@ -485,8 +485,8 @@ def normalize_states_and_next_states(body, batch, episodic_flag=None):
     '''
     Convenience function for normalizing the states and next states in a batch of data
     '''
-    logger.debug(f'states: {batch["states"].shape}, {batch["states"]}')
-    logger.debug(f'next states: {batch["next_states"].shape}, {batch["next_states"]}')
+    logger.debug(f'states: {batch["states"]}')
+    logger.debug(f'next states: {batch["next_states"]}')
     episodic = episodic_flag if episodic_flag is not None else body.memory.is_episodic
     logger.debug(f'Episodic: {episodic}, episodic_flag: {episodic_flag}, body.memory: {body.memory.is_episodic}')
     if episodic:
@@ -501,6 +501,6 @@ def normalize_states_and_next_states(body, batch, episodic_flag=None):
     else:
         batch['states'] = normalize_state(body, batch['states'])
         batch['next_states'] = normalize_state(body, batch['next_states'])
-    logger.debug(f'normalized states: {batch["states"].shape}, {batch["states"]}')
-    logger.debug(f'normalized next states: {batch["next_states"].shape}, {batch["next_states"]}')
+    logger.debug(f'normalized states: {batch["states"]}')
+    logger.debug(f'normalized next states: {batch["next_states"]}')
     return batch
