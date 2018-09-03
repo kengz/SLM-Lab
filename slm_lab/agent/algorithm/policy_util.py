@@ -435,7 +435,7 @@ def update_online_stats(body, state):
 
 def normalize_state(body, state):
     '''
-    Normalizes one or more states using a running mean and new_std_dev
+    Normalizes one or more states using a running mean and standard deviation
     Details of the normalization from Deep RL Bootcamp, L6
     https://www.youtube.com/watch?v=8EcdaCk9KaQ&feature=youtu.be
     '''
