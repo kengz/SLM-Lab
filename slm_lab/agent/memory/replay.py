@@ -235,7 +235,7 @@ class ConcatReplay(Replay):
         "name": "SeqReplay",
         "batch_size": 32,
         "max_size": 10000,
-        "stack_len": 4,
+        "concat_len": 4,
         "use_cer": true
     }
     '''
@@ -244,13 +244,13 @@ class ConcatReplay(Replay):
         util.set_attr(self, memory_spec, [
             'batch_size',
             'max_size',
-            'stack_len',  # num_stack_states
+            'concat_len',  # number of stack states
             'use_cer',
         ])
         self.raw_state_dim = deepcopy(body.state_dim)  # used for state_buffer
-        body.state_dim = body.state_dim * self.stack_len  # modify to use for net init for flattened stacked input
+        body.state_dim = body.state_dim * self.concat_len  # modify to use for net init for concat input
         super(ConcatReplay, self).__init__(memory_spec, body)
-        self.state_buffer = deque(maxlen=self.stack_len)
+        self.state_buffer = deque(maxlen=self.concat_len)
         self.reset()
 
     def reset(self):
@@ -307,7 +307,7 @@ class AtariReplay(ConcatReplay):
         util.set_attr(self, memory_spec, [
             'batch_size',
             'max_size',
-            'stack_len',  # num_stack_states
+            'stack_len',  # number of stack states
             'use_cer',
         ])
         self.raw_state_dim = (84, 84)
