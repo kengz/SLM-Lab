@@ -64,6 +64,7 @@ class Reinforce(Algorithm):
             'add_entropy',
             'entropy_coef',
             'training_frequency',
+            'normalize_state'
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -102,6 +103,12 @@ class Reinforce(Algorithm):
     @lab_api
     def act(self, state):
         body = self.body
+        logger.debug(f'state: {state}')
+        if self.normalize_state:
+            state = policy_util.update_online_stats_and_normalize_state(
+                body, state)
+        logger.debug(f'mean: {body.state_mean}, std: {body.state_std_dev}, n: {body.state_n}')
+        logger.debug(f'state after normalize: {state}')
         action, action_pd = self.action_policy(state, self, body)
         # sum for single and multi-action
         body.entropies.append(action_pd.entropy().sum(dim=0))
