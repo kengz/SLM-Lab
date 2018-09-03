@@ -43,7 +43,8 @@ class VanillaDQN(SARSA):
         "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_min_timestep": 10
+        "training_min_timestep": 10,
+        "normalize_state": true
     }
     '''
 
@@ -72,6 +73,7 @@ class VanillaDQN(SARSA):
             'training_epoch',  # how many batches to train each time
             'training_frequency',  # how often to train (once a few timesteps)
             'training_min_timestep',  # how long before starting training
+            'normalize_state',
         ])
         super(VanillaDQN, self).init_algorithm_params()
 
@@ -114,6 +116,9 @@ class VanillaDQN(SARSA):
         # one-hot actions to calc q_targets
         if self.body.is_discrete:
             batch['actions'] = util.to_one_hot(batch['actions'], self.body.action_space.high)
+        if self.normalize_state:
+            batch = policy_util.normalize_states_and_next_states(
+                self.body, batch)
         batch = util.to_torch_batch(batch, self.net.gpu, self.body.memory.is_episodic)
         return batch
 

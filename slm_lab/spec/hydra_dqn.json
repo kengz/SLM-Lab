@@ -14,7 +14,8 @@
         "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 32,
-        "training_min_timestep": 10
+        "training_min_timestep": 10,
+        "normalize_state": true
       },
       "memory": {
         "name": "Replay",
@@ -104,7 +105,8 @@
         "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 32,
-        "training_min_timestep": 10
+        "training_min_timestep": 10,
+        "normalize_state": true
       },
       "memory": {
         "name": "Replay",

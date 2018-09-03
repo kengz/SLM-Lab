@@ -1,4 +1,5 @@
 from slm_lab.agent import net
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.sarsa import SARSA
 from slm_lab.agent.algorithm.dqn import DQN
 from slm_lab.lib import logger, util
@@ -48,6 +49,9 @@ class MultitaskDQN(DQN):
         states = []
         for eb, body in util.ndenumerate_nonan(self.agent.body_a):
             state = state_a[eb]
+            if self.normalize_state:
+                state = policy_util.update_online_stats_and_normalize_state(
+                    body, state)
             states.append(state)
         state = torch.tensor(states).view(-1).unsqueeze_(0).float()
         if torch.cuda.is_available() and self.net.gpu:
@@ -74,6 +78,9 @@ class MultitaskDQN(DQN):
             # one-hot actions to calc q_targets
             if body.is_discrete:
                 body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
+            if self.normalize_state:
+                body_batch = policy_util.normalize_states_and_next_states(
+                    body, body_batch)
             body_batch = util.to_torch_batch(body_batch, self.net.gpu, body.memory.is_episodic)
             batches.append(body_batch)
         # Concat states at dim=1 for feedforward
@@ -150,6 +157,9 @@ class HydraDQN(MultitaskDQN):
             # one-hot actions to calc q_targets
             if body.is_discrete:
                 body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
+            if self.normalize_state:
+                body_batch = policy_util.normalize_states_and_next_states(
+                    body, body_batch)
             body_batch = util.to_torch_batch(body_batch, self.net.gpu, body.memory.is_episodic)
             batches.append(body_batch)
         # collect per body for feedforward to hydra heads

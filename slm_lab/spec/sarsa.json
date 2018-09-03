@@ -11,7 +11,8 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 20,
         "gamma": 0.99,
-        "training_frequency": 20
+        "training_frequency": 20,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -84,7 +85,8 @@
         "explore_var_end": 0.1,
         "explore_anneal_epi": 20,
         "gamma": 0.99,
-        "training_frequency": 20
+        "training_frequency": 20,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -157,7 +159,8 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 20,
         "gamma": 0.99,
-        "training_frequency": 20
+        "training_frequency": 20,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicySeqBatchReplay"
@@ -233,7 +236,8 @@
         "explore_var_end": 0.1,
         "explore_anneal_epi": 20,
         "gamma": 0.99,
-        "training_frequency": 20
+        "training_frequency": 20,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicySeqBatchReplay"
@@ -309,7 +313,8 @@
         "explore_var_end": 0.3,
         "explore_anneal_epi": 20,
         "gamma": 0.99,
-        "training_frequency": 100
+        "training_frequency": 100,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -370,7 +375,8 @@
         "explore_var_end": 0.1,
         "explore_anneal_epi": 20,
         "gamma": 0.99,
-        "training_frequency": 100
+        "training_frequency": 100,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
