@@ -44,7 +44,7 @@ def calc_gammas(batch, gamma):
     '''Calculate the gammas to the right power for multiplication with rewards'''
     dones = batch['dones']
     news = torch.cat([torch.ones((1,), device=dones.device), dones[:-1]])
-    gammas = torch.empty_like(news, device=dones.device)
+    gammas = torch.empty_like(news)
     cur_gamma = 1.0
     for t, new in enumerate(news):
         cur_gamma = new * 1.0 + (1 - new) * cur_gamma * gamma
@@ -61,7 +61,7 @@ def calc_nstep_returns(batch, gamma, n, next_v_preds):
         then add v_pred for n as final term
     '''
     rets = batch['rewards'].clone()  # prevent mutation
-    nstep_rets = torch.zeros_like(rets, device=rets.device) + rets
+    nstep_rets = torch.zeros_like(rets) + rets
     cur_gamma = gamma
     for i in range(1, n):
         # Shift returns by one and pad with zeros
