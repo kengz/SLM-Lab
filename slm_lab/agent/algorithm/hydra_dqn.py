@@ -49,8 +49,7 @@ class MultitaskDQN(DQN):
         for eb, body in util.ndenumerate_nonan(self.agent.body_a):
             state = state_a[eb]
             states.append(state)
-        state = torch.tensor(states).view(-1).unsqueeze_(0).float()
-        state = state.to(self.net.device)
+        state = torch.tensor(states, device=self.net.device).view(-1).unsqueeze_(0).float()
         pdparam = self.calc_pdparam(state, evaluate=False)
         # use multi-policy. note arg change
         action_a, action_pd_a = self.action_policy(pdparam, self, self.agent.nanflat_body_a)
@@ -195,7 +194,7 @@ class HydraDQN(MultitaskDQN):
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
         is_per = util.get_class_name(self.agent.nanflat_body_a[0].memory) == 'PrioritizedReplay'
         if self.to_train == 1:
-            total_loss = torch.tensor(0.0)
+            total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
                 batch = self.space_sample()
                 for _ in range(self.training_batch_epoch):
@@ -208,7 +207,7 @@ class HydraDQN(MultitaskDQN):
                             for body in self.agent.nanflat_body_a:
                                 body.memory.update_priorities(errors)
                     loss = self.net.training_step(batch['states'], q_targets, global_net=self.global_nets.get('net'))
-                    total_loss += loss.cpu()
+                    total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0

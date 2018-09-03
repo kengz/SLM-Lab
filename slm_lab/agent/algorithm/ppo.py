@@ -148,7 +148,7 @@ class PPO(ActorCritic):
             # update old net
             net_util.copy(self.net, self.old_net)
             batch = self.sample()
-            total_loss = torch.tensor(0.0)
+            total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
                 with torch.no_grad():
                     advs, v_targets = self.calc_advs_v_targets(batch)
@@ -157,7 +157,7 @@ class PPO(ActorCritic):
                 loss = policy_loss + val_loss
                 # retain for entropies etc.
                 self.net.training_step(loss=loss, retain_graph=True, global_net=self.global_nets.get('net'))
-                total_loss += loss.cpu()
+                total_loss += loss
             loss = total_loss / self.training_epoch
             # reset
             self.to_train = 0
@@ -189,7 +189,7 @@ class PPO(ActorCritic):
 
     def train_actor(self, batch):
         '''Trains the actor when the actor and critic are separate networks'''
-        total_policy_loss = torch.tensor(0.0)
+        total_policy_loss = torch.tensor(0.0, device=self.net.device)
         for _ in range(self.training_epoch):
             with torch.no_grad():
                 advs, _v_targets = self.calc_advs_v_targets(batch)

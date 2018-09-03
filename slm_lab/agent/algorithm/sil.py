@@ -143,14 +143,14 @@ class SIL(ActorCritic):
             # onpolicy update
             super_loss = super(SIL, self).train_shared()
             # offpolicy sil update with random minibatch
-            total_sil_loss = torch.tensor(0.0)
+            total_sil_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
                 batch = self.replay_sample()
                 for _ in range(self.training_batch_epoch):
                     sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
                     sil_loss = sil_policy_loss + sil_val_loss
                     self.net.training_step(loss=sil_loss, global_net=self.global_nets.get('net'))
-                    total_sil_loss += sil_loss.cpu()
+                    total_sil_loss += sil_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
             logger.debug(f'Loss: {loss:.4f}')
@@ -166,7 +166,7 @@ class SIL(ActorCritic):
             # onpolicy update
             super_loss = super(SIL, self).train_separate()
             # offpolicy sil update with random minibatch
-            total_sil_loss = torch.tensor(0.0)
+            total_sil_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
                 batch = self.replay_sample()
                 for _ in range(self.training_batch_epoch):

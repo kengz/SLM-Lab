@@ -262,14 +262,14 @@ class ActorCritic(Reinforce):
 
     def train_critic(self, batch):
         '''Trains the critic when the actor and critic are separate networks'''
-        total_val_loss = torch.tensor(0.0)
+        total_val_loss = torch.tensor(0.0, device=self.net.device)
         # training iters only applicable to separate critic network
         for _ in range(self.training_epoch):
             with torch.no_grad():
                 _advs, v_targets = self.calc_advs_v_targets(batch)
             val_loss = self.calc_val_loss(batch, v_targets)
             self.critic.training_step(loss=val_loss, global_net=self.global_nets.get('critic'))
-            total_val_loss += val_loss.cpu()
+            total_val_loss += val_loss
         val_loss = total_val_loss / self.training_epoch
         return val_loss
 

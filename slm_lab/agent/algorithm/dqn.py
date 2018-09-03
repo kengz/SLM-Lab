@@ -131,7 +131,7 @@ class VanillaDQN(SARSA):
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
         is_per = util.get_class_name(self.body.memory) == 'PrioritizedReplay'
         if self.to_train == 1:
-            total_loss = torch.tensor(0.0)
+            total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
                 batch = self.sample()
                 for _ in range(self.training_batch_epoch):
@@ -143,7 +143,7 @@ class VanillaDQN(SARSA):
                             errors = errors.sum(dim=1).unsqueeze_(dim=1)
                             self.body.memory.update_priorities(errors)
                     loss = self.net.training_step(batch['states'], q_targets, global_net=self.global_nets.get('net'))
-                    total_loss += loss.cpu()
+                    total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0

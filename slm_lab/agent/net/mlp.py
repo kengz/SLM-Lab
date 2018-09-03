@@ -332,10 +332,10 @@ class HydraMLPNet(Net, nn.Module):
         self.optim.zero_grad()
         if loss is None:
             outs = self(xs)
-            total_loss = torch.tensor(0.0)
+            total_loss = torch.tensor(0.0, device=self.device)
             for out, y in zip(outs, ys):
                 loss = self.loss_fn(out, y)
-                total_loss += loss.cpu()
+                total_loss += loss
             loss = total_loss
         assert not torch.isnan(loss).any(), loss
         if net_util.to_assert_trained():
