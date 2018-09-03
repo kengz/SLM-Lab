@@ -21,11 +21,18 @@ def calc_returns(batch, gamma):
     i.e. sum discounted rewards up till termination
     '''
     rewards = batch['rewards']
-    assert not torch.isnan(rewards).any()
+    is_tensor = torch.is_tensor(rewards)
+    if is_tensor:
+        assert not torch.isnan(rewards).any()
+    else:
+        assert not np.any(np.isnan(rewards))
     # handle epi-end, to not sum past current episode
     not_dones = 1 - batch['dones']
     T = len(rewards)
-    rets = torch.empty(T, dtype=torch.float32, device=rewards.device)
+    if is_tensor:
+        rets = torch.empty(T, dtype=torch.float32, device=rewards.device)
+    else:
+        rets = np.empty(T, dtype='float32')
     future_ret = 0.0
     for t in reversed(range(T)):
         future_ret = rewards[t] + gamma * future_ret * not_dones[t]
