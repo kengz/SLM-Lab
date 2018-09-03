@@ -52,7 +52,7 @@ class MultitaskDQN(DQN):
         state = torch.tensor(states, device=self.net.device).view(-1).unsqueeze_(0).float()
         pdparam = self.calc_pdparam(state, evaluate=False)
         # use multi-policy. note arg change
-        action_a, action_pd_a = self.action_policy(pdparam, self, self.agent.nanflat_body_a)
+        action_a, action_pd_a = self.action_policy(states, self, self.agent.nanflat_body_a, pdparam)
         for idx, body in enumerate(self.agent.nanflat_body_a):
             action_pd = action_pd_a[idx]
             body.entropies.append(action_pd.entropy())

@@ -1,9 +1,9 @@
 {
-  "sil_mlp_shared_cartpole": {
+  "a3c_mlp_shared_cartpole": {
     "agent": [{
-      "name": "SIL",
+      "name": "A3C",
       "algorithm": {
-        "name": "SIL",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -14,29 +14,22 @@
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 4,
-        "training_epoch": 4
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
         "shared": true,
         "hid_layers": [64],
-        "hid_layers_activation": "tanh",
+        "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "use_same_optim": false,
@@ -66,7 +59,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -74,15 +67,10 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
           "actor_optim_spec": {
             "lr__uniform": [0.0001, 0.1]
           },
@@ -93,11 +81,11 @@
       }]
     }
   },
-  "sil_mlp_separate_cartpole": {
+  "a3c_mlp_separate_cartpole": {
     "agent": [{
-      "name": "SIL",
+      "name": "A3C",
       "algorithm": {
-        "name": "SIL",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -108,29 +96,22 @@
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [32],
-        "hid_layers_activation": "tanh",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "use_same_optim": false,
@@ -160,7 +141,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -168,15 +149,10 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
           "actor_optim_spec": {
             "lr__uniform": [0.0001, 0.1]
           },
@@ -187,11 +163,11 @@
       }]
     }
   },
-  "sil_rnn_shared_cartpole": {
+  "a3c_rnn_shared_cartpole": {
     "agent": [{
-      "name": "SIL",
+      "name": "A3C",
       "algorithm": {
-        "name": "SIL",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -202,30 +178,23 @@
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SILSeqReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
+        "name": "OnPolicySeqReplay"
       },
       "net": {
         "type": "RecurrentNet",
         "shared": true,
         "hid_layers": [],
-        "hid_layers_activation": "tanh",
-        "rnn_hidden_size": 32,
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
@@ -257,7 +226,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -265,15 +234,10 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
           "actor_optim_spec": {
             "lr__uniform": [0.0001, 0.1]
           },
@@ -284,11 +248,11 @@
       }]
     }
   },
-  "sil_rnn_separate_cartpole": {
+  "a3c_rnn_separate_cartpole": {
     "agent": [{
-      "name": "SIL",
+      "name": "A3C",
       "algorithm": {
-        "name": "SIL",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -299,30 +263,23 @@
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SILSeqReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
+        "name": "OnPolicySeqReplay"
       },
       "net": {
         "type": "RecurrentNet",
         "shared": false,
         "hid_layers": [],
-        "hid_layers_activation": "tanh",
-        "rnn_hidden_size": 32,
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
@@ -354,7 +311,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -362,15 +319,10 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
           "actor_optim_spec": {
             "lr__uniform": [0.0001, 0.1]
           },
@@ -381,11 +333,11 @@
       }]
     }
   },
-  "sil_mlp_shared_pendulum": {
+  "a3c_mlp_shared_pendulum": {
     "agent": [{
-      "name": "SIL",
+      "name": "A3C",
       "algorithm": {
-        "name": "SIL",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -396,29 +348,22 @@
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 4,
-        "training_epoch": 4
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
         "shared": true,
         "hid_layers": [64],
-        "hid_layers_activation": "tanh",
+        "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "use_same_optim": false,
@@ -448,7 +393,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -456,15 +401,10 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
           "actor_optim_spec": {
             "lr__uniform": [0.0001, 0.1]
           },
@@ -475,11 +415,11 @@
       }]
     }
   },
-  "sil_mlp_separate_pendulum": {
+  "a3c_mlp_separate_pendulum": {
     "agent": [{
-      "name": "SIL",
+      "name": "A3C",
       "algorithm": {
-        "name": "SIL",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -490,29 +430,22 @@
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [32],
-        "hid_layers_activation": "tanh",
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "use_same_optim": false,
@@ -542,7 +475,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -550,15 +483,10 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
           "actor_optim_spec": {
             "lr__uniform": [0.0001, 0.1]
           },
@@ -569,11 +497,11 @@
       }]
     }
   },
-  "sil_rnn_shared_pendulum": {
+  "a3c_rnn_shared_pendulum": {
     "agent": [{
-      "name": "SIL",
+      "name": "A3C",
       "algorithm": {
-        "name": "SIL",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -584,30 +512,23 @@
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SILSeqReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
+        "name": "OnPolicySeqReplay"
       },
       "net": {
         "type": "RecurrentNet",
         "shared": true,
         "hid_layers": [],
-        "hid_layers_activation": "tanh",
-        "rnn_hidden_size": 32,
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
@@ -639,7 +560,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -647,15 +568,10 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
           "actor_optim_spec": {
             "lr__uniform": [0.0001, 0.1]
           },
@@ -666,11 +582,11 @@
       }]
     }
   },
-  "sil_rnn_separate_pendulum": {
+  "a3c_rnn_separate_pendulum": {
     "agent": [{
-      "name": "SIL",
+      "name": "A3C",
       "algorithm": {
-        "name": "SIL",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -681,30 +597,23 @@
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SILSeqReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
+        "name": "OnPolicySeqReplay"
       },
       "net": {
         "type": "RecurrentNet",
         "shared": false,
         "hid_layers": [],
-        "hid_layers_activation": "tanh",
-        "rnn_hidden_size": 32,
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
@@ -736,7 +645,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -744,15 +653,10 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
         },
         "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
           "actor_optim_spec": {
             "lr__uniform": [0.0001, 0.1]
           },
@@ -763,11 +667,11 @@
       }]
     }
   },
-  "sil_conv_shared_breakout": {
+  "a3c_conv_shared_breakout": {
     "agent": [{
-      "name": "SIL",
+      "name": "A3C",
       "algorithm": {
-        "name": "SIL",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -778,23 +682,16 @@
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -836,17 +733,17 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
     }
   },
-  "sil_conv_separate_breakout": {
+  "a3c_conv_separate_breakout": {
     "agent": [{
-      "name": "SIL",
+      "name": "A3C",
       "algorithm": {
-        "name": "SIL",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
@@ -857,23 +754,16 @@
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -915,7 +805,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
