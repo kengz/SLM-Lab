@@ -107,7 +107,6 @@ class MultitaskDQN(DQN):
             multi_q_targets.append(q_targets)
             start_idx = end_idx
         q_targets = torch.cat(multi_q_targets, dim=1)
-        q_targets = q_targets.to(self.net.device)
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
@@ -172,7 +171,6 @@ class HydraDQN(MultitaskDQN):
             max_q_targets = body_batch['rewards'] + self.gamma * (1 - body_batch['dones']) * max_next_q_preds
             max_q_targets.unsqueeze_(1)
             q_targets = (max_q_targets * body_batch['actions']) + (q_preds[b] * (1 - body_batch['actions']))
-            q_targets = q_targets.to(self.net.device)
             multi_q_targets.append(q_targets)
         # return as list for compatibility with net output in training_step
         q_targets = multi_q_targets

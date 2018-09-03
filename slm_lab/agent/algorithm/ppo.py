@@ -136,7 +136,6 @@ class PPO(ActorCritic):
         logger.debug(f'ent_penalty: {ent_penalty}')
 
         policy_loss = clip_loss + ent_penalty
-        policy_loss = policy_loss.to(self.net.device)
         logger.debug(f'PPO Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 

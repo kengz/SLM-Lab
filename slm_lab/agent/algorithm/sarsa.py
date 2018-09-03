@@ -122,7 +122,6 @@ class SARSA(Algorithm):
         act_q_targets.unsqueeze_(1)
         # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
         q_targets = (act_q_targets * batch['one_hot_actions']) + (q_preds * (1 - batch['one_hot_actions']))
-        q_targets = q_targets.to(self.net.device)
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 

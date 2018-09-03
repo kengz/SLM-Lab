@@ -141,7 +141,6 @@ class Reinforce(Algorithm):
         # use simple returns as advs
         advs = math_util.calc_returns(batch, self.gamma)
         advs = math_util.standardize(advs)
-        advs = advs.to(self.net.device)
         logger.debug(f'advs: {advs}')
         assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)
@@ -150,7 +149,6 @@ class Reinforce(Algorithm):
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.entropy_coef * entropies)
         policy_loss = torch.sum(policy_loss)
-        policy_loss = policy_loss.to(self.net.device)
         logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 
