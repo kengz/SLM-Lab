@@ -21,23 +21,23 @@ def calc_returns(batch, gamma):
     i.e. sum discounted rewards up till termination
     '''
     rewards = batch['rewards']
-    assert not np.any(np.isnan(rewards))
+    assert not torch.isnan(rewards).any()
     # handle epi-end, to not sum past current episode
     not_dones = 1 - batch['dones']
     T = len(rewards)
-    rets = np.empty(T, 'float32')
+    rets = torch.empty(T, dtype=torch.float32, device=rewards.device)
     future_ret = 0.0
     for t in reversed(range(T)):
         future_ret = rewards[t] + gamma * future_ret * not_dones[t]
         rets[t] = future_ret
-    rets = torch.from_numpy(rets).float()
     return rets
 
 
 def calc_gammas(batch, gamma):
     '''Calculate the gammas to the right power for multiplication with rewards'''
-    news = torch.cat([torch.ones((1,)), batch['dones'][:-1]])
-    gammas = torch.empty_like(news)
+    dones = batch['dones']
+    news = torch.cat([torch.ones((1,), device=dones.device), dones[:-1]])
+    gammas = torch.empty_like(news, device=dones.device)
     cur_gamma = 1.0
     for t, new in enumerate(news):
         cur_gamma = new * 1.0 + (1 - new) * cur_gamma * gamma
@@ -53,8 +53,8 @@ def calc_nstep_returns(batch, gamma, n, next_v_preds):
         sum discounted rewards up till step n (0 to n-1 that is),
         then add v_pred for n as final term
     '''
-    rets = copy.deepcopy(batch['rewards'])
-    nstep_rets = np.zeros_like(rets) + rets
+    rets = batch['rewards'].clone()  # prevent mutation
+    nstep_rets = torch.zeros_like(rets, device=rets.device) + rets
     cur_gamma = gamma
     for i in range(1, n):
         # Shift returns by one and pad with zeros
@@ -78,15 +78,14 @@ def calc_gaes(rewards, v_preds, next_v_preds, gamma, lam):
     NOTE for standardization trick, do it out of here
     '''
     T = len(rewards)
-    assert not np.any(np.isnan(rewards))
+    assert not torch.isnan(rewards).any()
     assert T == len(v_preds)
-    gaes = np.empty(T, 'float32')
+    gaes = torch.empty(T, dtype=torch.float32, device=v_preds.device)
     future_gae = 0.0
     for t in reversed(range(T)):
         delta = rewards[t] + gamma * next_v_preds[t] - v_preds[t]
         gaes[t] = future_gae = delta + gamma * lam * future_gae
-    assert not np.isnan(gaes).any(), f'GAE has nan: {gaes}'
-    gaes = torch.from_numpy(gaes).float()
+    assert not torch.isnan(gaes).any(), f'GAE has nan: {gaes}'
     return gaes
 
 
