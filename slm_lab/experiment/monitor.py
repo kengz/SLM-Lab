@@ -97,6 +97,12 @@ class Body:
         self.entropies = []  # check exploration
         self.log_probs = []  # calculate loss
 
+        # stores running mean and std dev of states
+        self.state_mean = np.nan
+        self.state_std_dev_int = np.nan
+        self.state_std_dev = np.nan
+        self.state_n = 0
+
         if aeb_space is None:  # singleton mode
             # the specific agent-env interface variables for a body
             self.observation_space = self.env.observation_space
