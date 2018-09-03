@@ -610,8 +610,13 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
-def set_net_spec_cuda_id(spec, info_space):
+def try_set_cuda_id(spec, info_space):
     '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
+    # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
+    # see issues https://github.com/pytorch/pytorch/issues/334 https://github.com/pytorch/pytorch/issues/3491 https://github.com/pytorch/pytorch/issues/9996
+    for agent_spec in spec['agent']:
+        if not agent_spec['net'].get('gpu'):
+            return
     trial_idx = info_space.get('trial') or 0
     session_idx = info_space.get('session') or 0
     job_idx = trial_idx * session_idx + session_idx
