@@ -27,7 +27,7 @@ class OpenAIEnv(BaseEnv):
         _reward = np.nan
         state = self.u_env.reset()
         self.done = done = False
-        if util.get_lab_mode() == 'dev':
+        if util.to_render():
             self.u_env.render()
         logger.debug(f'Env {self.e} reset reward: {_reward}, state: {state}, done: {done}')
         self.aeb_space.add_single(ENV_DATA_NAMES, (_reward, state, done))
@@ -38,7 +38,7 @@ class OpenAIEnv(BaseEnv):
         if not self.is_discrete:  # guard for continuous
             action = np.array([action])
         state, reward, done, _info = self.u_env.step(action)
-        if util.get_lab_mode() == 'dev':
+        if util.to_render():
             self.u_env.render()
         self.done = done = done or self.clock.get('t') > self.max_timestep
         logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
@@ -66,7 +66,7 @@ class OpenAIEnv(BaseEnv):
             state = self.u_env.reset()
             state_e[ab] = state
             done_e[ab] = self.done = False
-        if util.get_lab_mode() == 'dev':
+        if util.to_render():
             self.u_env.render()
         logger.debug(f'Env {self.e} reset reward_e: {_reward_e}, state_e: {state_e}, done_e: {done_e}')
         return _reward_e, state_e, done_e
@@ -79,7 +79,7 @@ class OpenAIEnv(BaseEnv):
         if not self.is_discrete:
             action = np.array([action])
         (state, reward, done, _info) = self.u_env.step(action)
-        if util.get_lab_mode() == 'dev':
+        if util.to_render():
             self.u_env.render()
         self.done = done = done or self.clock.get('t') > self.max_timestep
         reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
