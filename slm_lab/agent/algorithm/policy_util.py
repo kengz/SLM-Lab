@@ -175,9 +175,11 @@ def default(state, algorithm, body):
 
 def random(state, algorithm, body):
     '''Random action sampling that returns the same data format as default(), but without forward pass. Uses gym.space.sample()'''
-    action_pd = distributions.Uniform(low=torch.from_numpy(np.array(body.action_space.low)).float(), high=torch.from_numpy(np.array(body.action_space.high)).float())
+    low = torch.tensor(body.action_space.low, dtype=torch.float32, device=algorithm.net.device)
+    high = torch.tensor(body.action_space.high, dtype=torch.float32, device=algorithm.net.device)
+    action_pd = distributions.Uniform(low=low, high=high)
     sample = body.action_space.sample()
-    action = torch.tensor(sample, device=algorithm.net.device)
+    action = torch.tensor(sample)
     return action, action_pd
 
 
