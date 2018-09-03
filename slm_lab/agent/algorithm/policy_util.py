@@ -40,11 +40,11 @@ class Argmax(distributions.Categorical):
 
     def __init__(self, probs=None, logits=None, validate_args=None):
         if probs is not None:
-            new_probs = torch.zeros_like(probs, dtype=torch.float)
+            new_probs = torch.zeros_like(probs, dtype=torch.float, device=probs.device)
             new_probs[torch.argmax(probs, dim=0)] = 1.0
             probs = new_probs
         elif logits is not None:
-            new_logits = torch.full_like(logits, -1e8, dtype=torch.float)
+            new_logits = torch.full_like(logits, -1e8, dtype=torch.float, device=logits.device)
             max_idx = torch.argmax(logits, dim=0)
             new_logits[max_idx] = logits[max_idx]
             logits = new_logits
