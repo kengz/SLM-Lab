@@ -43,7 +43,8 @@ class PPO(ActorCritic):
         "clip_eps": 0.10,
         "entropy_coef": 0.02,
         "training_frequency": 1,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
     }
 
     e.g. special net_spec param "shared" to share/separate Actor/Critic
@@ -81,6 +82,7 @@ class PPO(ActorCritic):
             'val_loss_coef',
             'training_frequency',  # horizon
             'training_epoch',
+            'normalize_state',
         ])
         # use the same annealing epi as lr
         self.clip_eps_anneal_epi = self.net_spec['lr_decay_min_timestep'] + self.net_spec['lr_decay_frequency'] * 20

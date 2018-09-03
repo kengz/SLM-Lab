@@ -64,9 +64,9 @@ def calc_nstep_returns(batch, gamma, n, next_v_preds):
     nstep_rets = torch.zeros_like(rets) + rets
     cur_gamma = gamma
     for i in range(1, n):
-        # Shift returns by one and pad with zeros
+        # Shift returns by one and zero last element of each episode
         rets[:-1] = rets[1:]
-        rets[-1] = 0
+        rets *= (1 - batch['dones'])
         nstep_rets += cur_gamma * rets
         # Update current gamma
         cur_gamma *= cur_gamma

@@ -35,7 +35,8 @@ class SARSA(Algorithm):
         "explore_var_end": 0.3,
         "explore_anneal_epi": 10,
         "gamma": 0.99,
-        "training_frequency": 10
+        "training_frequency": 10,
+        "normalize_state": true
     }
     '''
 
@@ -62,6 +63,7 @@ class SARSA(Algorithm):
             'explore_anneal_epi',
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
+            'normalize_state',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -99,6 +101,8 @@ class SARSA(Algorithm):
     def act(self, state):
         '''Note, SARSA is discrete-only'''
         body = self.body
+        if self.normalize_state:
+            state = policy_util.update_online_stats_and_normalize_state(body, state)
         action, action_pd = self.action_policy(state, self, body)
         # sum for single and multi-action
         body.entropies.append(action_pd.entropy().sum(dim=0))
@@ -135,6 +139,8 @@ class SARSA(Algorithm):
         # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['dones'])
         batch['next_actions'] = np.zeros_like(batch['actions'])
         batch['next_actions'][:-1] = batch['actions'][1:]
+        if self.normalize_state:
+            batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 

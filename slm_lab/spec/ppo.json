@@ -16,7 +16,8 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -97,7 +98,8 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -178,7 +180,8 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicySeqReplay"
@@ -262,7 +265,8 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicySeqReplay"
@@ -346,7 +350,8 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -427,7 +432,8 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -508,7 +514,8 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicySeqReplay"
@@ -592,7 +599,8 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicySeqReplay"
@@ -676,7 +684,8 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -744,7 +753,8 @@
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"

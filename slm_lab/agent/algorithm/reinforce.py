@@ -36,7 +36,8 @@ class Reinforce(Algorithm):
         "gamma": 0.99,
         "add_entropy": false,
         "entropy_coef": 0.01,
-        "training_frequency": 1
+        "training_frequency": 1,
+        "normalize_state": true
     }
     '''
 
@@ -64,6 +65,7 @@ class Reinforce(Algorithm):
             'add_entropy',
             'entropy_coef',
             'training_frequency',
+            'normalize_state',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -102,6 +104,11 @@ class Reinforce(Algorithm):
     @lab_api
     def act(self, state):
         body = self.body
+        logger.debug(f'state: {state}')
+        if self.normalize_state:
+            state = policy_util.update_online_stats_and_normalize_state(body, state)
+        logger.debug(f'mean: {body.state_mean}, std: {body.state_std_dev}, n: {body.state_n}')
+        logger.debug(f'state after normalize: {state}')
         action, action_pd = self.action_policy(state, self, body)
         # sum for single and multi-action
         body.entropies.append(action_pd.entropy().sum(dim=0))
@@ -116,6 +123,8 @@ class Reinforce(Algorithm):
     def sample(self):
         '''Samples a batch from memory'''
         batch = self.body.memory.sample()
+        if self.normalize_state:
+            batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 

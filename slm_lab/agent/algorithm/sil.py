@@ -38,7 +38,8 @@ class SIL(ActorCritic):
         "sil_val_loss_coef": 0.01,
         "training_batch_epoch": 8,
         "training_frequency": 1,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
     }
 
     e.g. special memory_spec
@@ -93,6 +94,7 @@ class SIL(ActorCritic):
             'training_frequency',
             'training_batch_epoch',
             'training_epoch',
+            'normalize_state'
         ])
         super(SIL, self).init_algorithm_params()
 
@@ -104,12 +106,17 @@ class SIL(ActorCritic):
         for idx in range(len(batch['dones'])):
             tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]
             self.body.replay_memory.add_experience(*tuples)
+        if self.normalize_state:
+            batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.replay_memory.is_episodic)
         return batch
 
     def replay_sample(self):
         '''Samples a batch from memory'''
         batch = self.body.replay_memory.sample()
+        if self.normalize_state:
+            batch = policy_util.normalize_states_and_next_states(
+                self.body, batch, episodic_flag=self.body.replay_memory.is_episodic)
         batch = util.to_torch_batch(batch, self.net.device, self.body.replay_memory.is_episodic)
         assert not torch.isnan(batch['states']).any(), batch['states']
         return batch
@@ -201,7 +208,8 @@ class PPOSIL(SIL, PPO):
         "sil_val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_batch_epoch": 8,
-        "training_epoch": 8
+        "training_epoch": 8,
+        "normalize_state": true
     }
 
     e.g. special memory_spec
