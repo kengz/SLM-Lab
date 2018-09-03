@@ -120,7 +120,7 @@ class PPO(ActorCritic):
         old_log_probs = policy_util.calc_log_probs(self, self.old_net, self.body, batch)
         assert log_probs.shape == old_log_probs.shape
         assert advs.shape[0] == log_probs.shape[0]  # batch size
-        ratios = torch.exp(log_probs - old_log_probs)
+        ratios = torch.exp(log_probs - old_log_probs).detach()
         logger.debug(f'ratios: {ratios}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
