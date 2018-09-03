@@ -282,7 +282,6 @@ class ActorCritic(Reinforce):
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.entropy_coef * entropies)
         policy_loss = torch.mean(policy_loss)
-        policy_loss = policy_loss.to(self.net.device)
         logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 
@@ -292,7 +291,6 @@ class ActorCritic(Reinforce):
         v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze_(dim=-1)
         assert v_preds.shape == v_targets.shape
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
-        val_loss = val_loss.to(self.net.device)
         logger.debug(f'Critic value loss: {val_loss:.4f}')
         return val_loss
 
@@ -313,8 +311,6 @@ class ActorCritic(Reinforce):
         # ensure val for next_state is 0 at done
         next_v_preds = next_v_preds * (1 - batch['dones'])
         adv_targets = math_util.calc_gaes(batch['rewards'], v_preds, next_v_preds, self.gamma, self.lam)
-        adv_targets = adv_targets.to(self.net.device)
-        v_targets = v_targets.to(self.net.device)
         adv_targets = math_util.standardize(adv_targets)
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
@@ -332,7 +328,6 @@ class ActorCritic(Reinforce):
         v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
         nstep_returns = math_util.calc_nstep_returns(batch, self.gamma, self.num_step_returns, next_v_preds)
         nstep_advs = nstep_returns - v_preds
-        nstep_advs = nstep_advs.to(self.net.device)
         adv_targets = nstep_advs
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
@@ -345,7 +340,6 @@ class ActorCritic(Reinforce):
         # Equivalent to 1-step return
         # v targets = r_t + gamma * V(s_(t+1))
         v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
-        v_targets = v_targets.to(self.net.device)
         adv_targets = v_targets  # Plain Q estimate, called adv for API consistency
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
