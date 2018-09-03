@@ -407,8 +407,7 @@ def test_multitask_dqn_dist(spec_file, spec_name):
 
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('hydra_dqn.json', 'hydra_dqn_boltzmann_cartpole'),
-    # TODO restore this
-    # ('hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole'),
+    ('hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole'),
 ])
 def test_multitask_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
