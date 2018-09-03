@@ -120,14 +120,14 @@ def test_a2c(spec_file, spec_name):
 
 @pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('a2c.json', 'a2c_mlp_shared_cartpole'),
-    ('a2c.json', 'a2c_mlp_separate_cartpole'),
-    ('a2c.json', 'a2c_rnn_shared_cartpole'),
-    ('a2c.json', 'a2c_rnn_separate_cartpole'),
-    # ('a2c.json', 'a2c_conv_shared_breakout'),
-    # ('a2c.json', 'a2c_conv_separate_breakout'),
+    ('a3c.json', 'a3c_mlp_shared_cartpole'),
+    ('a3c.json', 'a3c_mlp_separate_cartpole'),
+    ('a3c.json', 'a3c_rnn_shared_cartpole'),
+    ('a3c.json', 'a3c_rnn_separate_cartpole'),
+    # ('a3c.json', 'a3c_conv_shared_breakout'),
+    # ('a3c.json', 'a3c_conv_separate_breakout'),
 ])
-def test_a2c_dist(spec_file, spec_name):
+def test_a3c(spec_file, spec_name):
     run_trial_test(spec_file, spec_name, distributed=True)
 
 
@@ -143,12 +143,12 @@ def test_a2c_cont(spec_file, spec_name):
 
 @pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('a2c.json', 'a2c_mlp_shared_pendulum'),
-    ('a2c.json', 'a2c_mlp_separate_pendulum'),
-    ('a2c.json', 'a2c_rnn_shared_pendulum'),
-    ('a2c.json', 'a2c_rnn_separate_pendulum'),
+    ('a3c.json', 'a3c_mlp_shared_pendulum'),
+    ('a3c.json', 'a3c_mlp_separate_pendulum'),
+    ('a3c.json', 'a3c_rnn_shared_pendulum'),
+    ('a3c.json', 'a3c_rnn_separate_pendulum'),
 ])
-def test_a2c_cont_dist(spec_file, spec_name):
+def test_a3c_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name, distributed=True)
 
 
@@ -166,14 +166,14 @@ def test_ppo(spec_file, spec_name):
 
 @pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('ppo.json', 'ppo_mlp_shared_cartpole'),
-    ('ppo.json', 'ppo_mlp_separate_cartpole'),
-    ('ppo.json', 'ppo_rnn_shared_cartpole'),
-    ('ppo.json', 'ppo_rnn_separate_cartpole'),
-    # ('ppo.json', 'ppo_conv_shared_breakout'),
-    # ('ppo.json', 'ppo_conv_separate_breakout'),
+    ('dppo.json', 'dppo_mlp_shared_cartpole'),
+    ('dppo.json', 'dppo_mlp_separate_cartpole'),
+    ('dppo.json', 'dppo_rnn_shared_cartpole'),
+    ('dppo.json', 'dppo_rnn_separate_cartpole'),
+    # ('dppo.json', 'dppo_conv_shared_breakout'),
+    # ('dppo.json', 'dppo_conv_separate_breakout'),
 ])
-def test_ppo_dist(spec_file, spec_name):
+def test_dppo_dist(spec_file, spec_name):
     run_trial_test(spec_file, spec_name, distributed=True)
 
 
