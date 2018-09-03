@@ -56,7 +56,7 @@ class MultitaskDQN(DQN):
         for idx, body in enumerate(self.agent.nanflat_body_a):
             action_pd = action_pd_a[idx]
             body.entropies.append(action_pd.entropy())
-            body.log_probs.append(action_pd.log_prob(action_a[idx].float()))
+            body.log_probs.append(action_pd.log_prob(action_a[idx].float().to(selfnet.device)))
             assert not torch.isnan(body.log_probs[-1])
         return action_a.cpu().numpy()
 
