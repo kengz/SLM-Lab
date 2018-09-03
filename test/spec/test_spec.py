@@ -127,7 +127,7 @@ def test_a2c(spec_file, spec_name):
     # ('a3c.json', 'a3c_conv_separate_breakout'),
 ])
 def test_a3c(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name, distributed=True)
+    run_trial_test(spec_file, spec_name)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -148,7 +148,7 @@ def test_a2c_cont(spec_file, spec_name):
     ('a3c.json', 'a3c_rnn_separate_pendulum'),
 ])
 def test_a3c_cont(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name, distributed=True)
+    run_trial_test(spec_file, spec_name)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -173,7 +173,7 @@ def test_ppo(spec_file, spec_name):
     # ('dppo.json', 'dppo_conv_separate_breakout'),
 ])
 def test_dppo_dist(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name, distributed=True)
+    run_trial_test(spec_file, spec_name)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
