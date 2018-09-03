@@ -405,7 +405,12 @@ def update_online_stats(body, state):
     '''
     logger.debug(f'mean: {body.state_mean}, std: {body.state_std_dev}, num examples: {body.state_n}')
     # Assumes only one state is given
-    assert state.ndim == 1
+    if ("Atari" in body.memory.__class__.__name__):
+        assert state.ndim == 3
+    elif getattr(body.memory, 'raw_state_dim', False):
+        assert state.size == body.memory.raw_state_dim
+    else:
+        assert state.size == body.state_dim
     mean = body.state_mean
     body.state_n += 1
     if np.isnan(mean).any():
@@ -431,17 +436,38 @@ def normalize_state(body, state):
     Details of the normalization from Deep RL Bootcamp, L6
     https://www.youtube.com/watch?v=8EcdaCk9KaQ&feature=youtu.be
     '''
-    if np.sum(body.state_std_dev) == 0:
-        return np.clip(state - body.state_mean, -10, 10)
+    same_shape = state.shape == body.state_mean.shape
+    has_preprocess = getattr(body.memory, 'preprocess_state', False)
+    if ("Atari" in body.memory.__class__.__name__):
+        # never normalize atari, it has its own normalization step
+        logger.debug('skipping normalizing for Atari, already handled by preprocess')
+        return state
+    elif same_shape:
+        # if not atari, always normalize the state the first time we see it during act
+        # if the shape is not transformed in some way
+        if np.sum(body.state_std_dev) == 0:
+            return np.clip(state - body.state_mean, -10, 10)
+        else:
+            return np.clip((state - body.state_mean) / body.state_std_dev, -10, 10)
+    elif ("Replay" in body.memory.__class__.__name__) and has_preprocess:
+        # normalization handled by preprocess_state function in the memory
+        logger.debug('skipping normalizing, already handled by preprocess')
+        return state
     else:
-        return np.clip((state - body.state_mean) / body.state_std_dev, -10, 10)
+        # broadcastable sample from an un-normalized memory so we should normalize
+        logger.debug('normalizing sample from memory')
+        if np.sum(body.state_std_dev) == 0:
+            return np.clip(state - body.state_mean, -10, 10)
+        else:
+            return np.clip((state - body.state_mean) / body.state_std_dev, -10, 10)
 
 
-def unnormalize_state(body, state):
-    '''
-    Un-normalizes one or more states using a running mean and new_std_dev
-    '''
-    return state * body.state_mean + body.state_std_dev
+# TODO Not currently used, this will crash for more exotic memory structures
+# def unnormalize_state(body, state):
+#     '''
+#     Un-normalizes one or more states using a running mean and new_std_dev
+#     '''
+#     return state * body.state_mean + body.state_std_dev
 
 
 def update_online_stats_and_normalize_state(body, state):
