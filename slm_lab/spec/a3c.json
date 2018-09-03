@@ -1,7 +1,7 @@
 {
-  "ac_mlp_shared_cartpole": {
+  "a3c_mlp_shared_cartpole": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -11,17 +11,16 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
+        "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -60,7 +59,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -82,9 +81,9 @@
       }]
     }
   },
-  "ac_mlp_separate_cartpole": {
+  "a3c_mlp_separate_cartpole": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -94,17 +93,16 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
+        "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -143,7 +141,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -165,9 +163,9 @@
       }]
     }
   },
-  "ac_rnn_shared_cartpole": {
+  "a3c_rnn_shared_cartpole": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -177,17 +175,16 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
+        "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicySeqReplay"
@@ -229,7 +226,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -251,9 +248,9 @@
       }]
     }
   },
-  "ac_rnn_separate_cartpole": {
+  "a3c_rnn_separate_cartpole": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -263,17 +260,16 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
+        "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicySeqReplay"
@@ -315,7 +311,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -337,9 +333,9 @@
       }]
     }
   },
-  "ac_mlp_shared_pendulum": {
+  "a3c_mlp_shared_pendulum": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -349,17 +345,16 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
+        "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -398,7 +393,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -420,9 +415,9 @@
       }]
     }
   },
-  "ac_mlp_separate_pendulum": {
+  "a3c_mlp_separate_pendulum": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -432,17 +427,16 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
+        "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -481,7 +475,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -503,9 +497,9 @@
       }]
     }
   },
-  "ac_rnn_shared_pendulum": {
+  "a3c_rnn_shared_pendulum": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -515,17 +509,16 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
+        "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicySeqReplay"
@@ -567,7 +560,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -589,9 +582,9 @@
       }]
     }
   },
-  "ac_rnn_separate_pendulum": {
+  "a3c_rnn_separate_pendulum": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -601,17 +594,16 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
+        "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicySeqReplay"
@@ -653,7 +645,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -675,9 +667,9 @@
       }]
     }
   },
-  "ac_conv_shared_breakout": {
+  "a3c_conv_shared_breakout": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -687,17 +679,16 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
+        "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -742,15 +733,15 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
     }
   },
-  "ac_conv_separate_breakout": {
+  "a3c_conv_separate_breakout": {
     "agent": [{
-      "name": "ActorCritic",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -760,17 +751,16 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "use_gae": false,
+        "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
-        "num_step_returns": 100,
+        "num_step_returns": 1,
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -815,7 +805,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"

@@ -30,7 +30,7 @@ class Session:
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
-        util.set_net_spec_cuda_id(self.spec, self.info_space)
+        util.try_set_cuda_id(self.spec, self.info_space)
         util.set_module_seed(self.info_space.get_random_seed())
         self.data = None
 
@@ -86,7 +86,7 @@ class SpaceSession(Session):
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
-        util.set_net_spec_cuda_id(self.spec, self.info_space)
+        util.try_set_cuda_id(self.spec, self.info_space)
         util.set_module_seed(self.info_space.get_random_seed())
         self.data = None
 

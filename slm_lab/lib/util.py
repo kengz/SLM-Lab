@@ -610,20 +610,6 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
-def set_net_spec_cuda_id(spec, info_space):
-    '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
-    trial_idx = info_space.get('trial') or 0
-    session_idx = info_space.get('session') or 0
-    job_idx = trial_idx * session_idx + session_idx
-    device_count = torch.cuda.device_count()
-    if device_count == 0:
-        cuda_id = 0
-    else:
-        cuda_id = job_idx % device_count
-    for agent_spec in spec['agent']:
-        agent_spec['net']['cuda_id'] = cuda_id
-
-
 def set_module_seed(random_seed):
     '''Set all the module random seeds'''
     torch.cuda.manual_seed_all(random_seed)
@@ -666,6 +652,10 @@ def to_one_hot(data, max_val):
     return np.eye(max_val)[np.array(data)]
 
 
+def to_render():
+    return get_lab_mode() in ('dev', 'enjoy') and os.environ.get('RENDER', 'true') == 'true'
+
+
 def to_torch_batch(batch, device, is_episodic):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
     for k in batch:
@@ -680,6 +670,25 @@ def to_torch_batch(batch, device, is_episodic):
 def to_tuple_list(l):
     '''Returns a copy of the list with its elements as tuples'''
     return [tuple(row) for row in l]
+
+
+def try_set_cuda_id(spec, info_space):
+    '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
+    # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
+    # see issues https://github.com/pytorch/pytorch/issues/334 https://github.com/pytorch/pytorch/issues/3491 https://github.com/pytorch/pytorch/issues/9996
+    for agent_spec in spec['agent']:
+        if not agent_spec['net'].get('gpu'):
+            return
+    trial_idx = info_space.get('trial') or 0
+    session_idx = info_space.get('session') or 0
+    job_idx = trial_idx * session_idx + session_idx
+    device_count = torch.cuda.device_count()
+    if device_count == 0:
+        cuda_id = 0
+    else:
+        cuda_id = job_idx % device_count
+    for agent_spec in spec['agent']:
+        agent_spec['net']['cuda_id'] = cuda_id
 
 
 def write(data, data_path):

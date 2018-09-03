@@ -40,7 +40,7 @@
         "lr_decay_frequency": 500,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -123,7 +123,7 @@
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -206,7 +206,7 @@
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -292,7 +292,7 @@
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -378,7 +378,7 @@
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -474,7 +474,7 @@
         "update_type": "replace",
         "update_frequency": 10000,
         "polyak_coef": 0.9,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -551,7 +551,7 @@
         "update_type": "replace",
         "update_frequency": 10000,
         "polyak_coef": 0.9,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -616,7 +616,7 @@
         "update_type": "replace",
         "update_frequency": 500,
         "polyak_coef": 0.9,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
