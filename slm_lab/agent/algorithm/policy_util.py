@@ -226,7 +226,7 @@ def multi_default(pdparam, algorithm, body_list):
         action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
-    action_a = torch.tensor(action_list, device=pdparam.device).unsqueeze_(dim=1)
+    action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze_(dim=1)
     return action_a, action_pd_a
 
 
@@ -238,7 +238,7 @@ def multi_random(pdparam, algorithm, body_list):
         action, action_pd = random(None, algorithm, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
-    action_a = torch.tensor(action_list, device=pdparam.device).unsqueeze_(dim=1)
+    action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze_(dim=1)
     return action_a, action_pd_a
 
 
@@ -258,7 +258,7 @@ def multi_epsilon_greedy(pdparam, algorithm, body_list):
             action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
-    action_a = torch.tensor(action_list, device=pdparam.device).unsqueeze_(dim=1)
+    action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze_(dim=1)
     return action_a, action_pd_a
 
 
@@ -277,7 +277,7 @@ def multi_boltzmann(pdparam, algorithm, body_list):
         action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
-    action_a = torch.tensor(action_list, device=pdparam.device).unsqueeze_(dim=1)
+    action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze_(dim=1)
     return action_a, action_pd_a
 
 
