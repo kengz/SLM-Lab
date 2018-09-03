@@ -141,6 +141,7 @@ class Reinforce(Algorithm):
         # use simple returns as advs
         advs = math_util.calc_returns(batch, self.gamma)
         advs = math_util.standardize(advs)
+        advs = advs.to(self.net.device)
         logger.debug(f'advs: {advs}')
         assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)

@@ -18,4 +18,6 @@ class Net(ABC):
         self.net_spec = net_spec
         self.in_dim = in_dim
         self.out_dim = out_dim
-        self.device = f'cuda:{net_spec["cuda_id"]}' if (torch.cuda.is_available() and self.net_spec.get('gpu')) else 'cpu'
+        # TODO fix all cuda errors first
+        self.device = 'cpu'
+        # self.device = f'cuda:{net_spec["cuda_id"]}' if (torch.cuda.is_available() and self.net_spec.get('gpu')) else 'cpu'
