@@ -390,34 +390,86 @@ def calc_log_probs(algorithm, net, body, batch):
     return log_probs
 
 
-def update_online_stats(mean, std_dev, state, n):
+def update_online_stats(body, state):
     '''
     Method to calculate the running mean and standard deviation of the state space.
     See https://www.johndcook.com/blog/standard_deviation/ for more details
     for n >= 1
-        M_n = M_n-1 + (state - M_n-1)/n
-        S_n = S_n-1 + (state - M_n-1)(state - M_n)
+        M_n = M_n-1 + (state - M_n-1) / n
+        S_n = S_n-1 + (state - M_n-1) * (state - M_n)
+        variance = S_n / (n - 1)
+        std_dev = sqrt(variance)
     '''
-    if mean is None:
-        assert std_dev is None
-        return state, 0
+    logger.debug(f'Mean: {body.state_mean}, std: {body.state_std_dev}, num examples: {body.state_n}')
+    # Assumes only one state is given
+    assert state.ndim == 1
+    mean = body.state_mean
+    body.state_n += 1
+    if np.isnan(mean).any():
+        assert np.isnan(body.state_std_dev_int)
+        assert np.isnan(body.state_std_dev)
+        body.state_mean = state
+        body.state_std_dev_int = 0
+        body.state_std_dev = 0
     else:
-        new_mean = mean + (state - mean) / n
-        new_std_dev = std_dev + (state - mean) * (state - new_mean)
-        return new_mean, new_std_dev
+        assert body.state_n > 1
+        body.state_mean = mean + (state - mean) / body.state_n
+        body.state_std_dev_int = body.state_std_dev_int + (state - mean) * (state - body.state_mean)
+        body.state_std_dev = np.sqrt(body.state_std_dev_int / (body.state_n - 1))
+        # Guard against very small std devs
+        if (body.state_std_dev < 1e-8).any():
+            body.state_std_dev[np.where(body.state_std_dev < 1e-8)] += 1e-8
+    logger.debug(f'New mean: {body.state_mean}, new std: {body.state_std_dev}, num examples: {body.state_n}')
 
 
-def normalize_state(state, mean, std_dev):
+def normalize_state(body, state):
     '''
-    Normalizes the state using a running mean and new_std_dev
+    Normalizes one or more states using a running mean and new_std_dev
     Details of the normalization from Deep RL Bootcamp, L6
     https://www.youtube.com/watch?v=8EcdaCk9KaQ&feature=youtu.be
     '''
-    return np.clip((state - mean) / std_dev, -10, 10)
+    if np.sum(body.state_std_dev) == 0:
+        return np.clip(state - body.state_mean, -10, 10)
+    else:
+        return np.clip((state - body.state_mean) / body.state_std_dev, -10, 10)
 
 
-def unnormalize_state(state, mean, std_dev):
+def unnormalize_state(body, state):
     '''
-    Un-normalizes the state using a running mean and new_std_dev
+    Un-normalizes one or more states using a running mean and new_std_dev
     '''
-    return state * std_dev + mean
+    return state * body.state_mean + body.state_std_dev
+
+
+def update_online_stats_and_normalize_state(body, state):
+    '''
+    Convenience combination function for updating running state mean and std_dev and normalizing the state in one go.
+    '''
+    logger.debug(f'State: {state}')
+    update_online_stats(body, state)
+    state = normalize_state(body, state)
+    logger.debug(f'Normalized state: {state}')
+    return state
+
+
+def normalize_states_and_next_states(body, batch):
+    '''
+    Convenience function for normalizing the states and next states in a batch of data
+    '''
+    logger.debug(f'States: {batch["states"]}')
+    logger.debug(f'Next states: {batch["next_states"]}')
+    if body.memory.is_episodic:
+        normalized = []
+        for epi in batch['states']:
+            normalized.append(normalize_state(body, epi))
+        batch['states'] = normalized
+        normalized = []
+        for epi in batch['next_states']:
+            normalized.append(normalize_state(body, epi))
+        batch['next_states'] = normalized
+    else:
+        batch['states'] = normalize_state(body, batch['states'])
+        batch['next_states'] = normalize_state(body, batch['next_states'])
+    logger.debug(f'Normalized states: {batch["states"]}')
+    logger.debug(f'Normalized next states: {batch["next_states"]}')
+    return batch
