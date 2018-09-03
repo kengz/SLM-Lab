@@ -11,7 +11,7 @@ test_args = [
     '--log-cli-level=INFO',
     '--log-file-level=INFO',
     '--no-flaky-report',
-    '--timeout=60',
+    '--timeout=120',
     '--cov-report=html',
     '--cov-report=term',
     '--cov-report=xml',

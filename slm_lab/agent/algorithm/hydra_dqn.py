@@ -50,12 +50,9 @@ class MultitaskDQN(DQN):
         for eb, body in util.ndenumerate_nonan(self.agent.body_a):
             state = state_a[eb]
             if self.normalize_state:
-                state = policy_util.update_online_stats_and_normalize_state(
-                    body, state)
+                state = policy_util.update_online_stats_and_normalize_state(body, state)
             states.append(state)
-        state = torch.tensor(states).view(-1).unsqueeze_(0).float()
-        if torch.cuda.is_available() and self.net.gpu:
-            state = state.cuda()
+        state = torch.tensor(states, device=self.net.device).view(-1).unsqueeze_(0).float()
         pdparam = self.calc_pdparam(state, evaluate=False)
         # use multi-policy. note arg change
         action_a, action_pd_a = self.action_policy(pdparam, self, self.agent.nanflat_body_a)
@@ -79,9 +76,8 @@ class MultitaskDQN(DQN):
             if body.is_discrete:
                 body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
             if self.normalize_state:
-                body_batch = policy_util.normalize_states_and_next_states(
-                    body, body_batch)
-            body_batch = util.to_torch_batch(body_batch, self.net.gpu, body.memory.is_episodic)
+                body_batch = policy_util.normalize_states_and_next_states(body, body_batch)
+            body_batch = util.to_torch_batch(body_batch, self.net.device, body.memory.is_episodic)
             batches.append(body_batch)
         # Concat states at dim=1 for feedforward
         batch = {
@@ -116,8 +112,6 @@ class MultitaskDQN(DQN):
             multi_q_targets.append(q_targets)
             start_idx = end_idx
         q_targets = torch.cat(multi_q_targets, dim=1)
-        if torch.cuda.is_available() and self.net.gpu:
-            q_targets = q_targets.cuda()
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
@@ -158,9 +152,8 @@ class HydraDQN(MultitaskDQN):
             if body.is_discrete:
                 body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
             if self.normalize_state:
-                body_batch = policy_util.normalize_states_and_next_states(
-                    body, body_batch)
-            body_batch = util.to_torch_batch(body_batch, self.net.gpu, body.memory.is_episodic)
+                body_batch = policy_util.normalize_states_and_next_states(body, body_batch)
+            body_batch = util.to_torch_batch(body_batch, self.net.device, body.memory.is_episodic)
             batches.append(body_batch)
         # collect per body for feedforward to hydra heads
         batch = {
@@ -185,8 +178,6 @@ class HydraDQN(MultitaskDQN):
             max_q_targets = body_batch['rewards'] + self.gamma * (1 - body_batch['dones']) * max_next_q_preds
             max_q_targets.unsqueeze_(1)
             q_targets = (max_q_targets * body_batch['actions']) + (q_preds[b] * (1 - body_batch['actions']))
-            if torch.cuda.is_available() and self.net.gpu:
-                q_targets = q_targets.cuda()
             multi_q_targets.append(q_targets)
         # return as list for compatibility with net output in training_step
         q_targets = multi_q_targets
@@ -208,7 +199,7 @@ class HydraDQN(MultitaskDQN):
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
         is_per = util.get_class_name(self.agent.nanflat_body_a[0].memory) == 'PrioritizedReplay'
         if self.to_train == 1:
-            total_loss = torch.tensor(0.0)
+            total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
                 batch = self.space_sample()
                 for _ in range(self.training_batch_epoch):
@@ -221,7 +212,7 @@ class HydraDQN(MultitaskDQN):
                             for body in self.agent.nanflat_body_a:
                                 body.memory.update_priorities(errors)
                     loss = self.net.training_step(batch['states'], q_targets, global_net=self.global_nets.get('net'))
-                    total_loss += loss.cpu()
+                    total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0

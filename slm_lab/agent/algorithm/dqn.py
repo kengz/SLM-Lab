@@ -99,8 +99,6 @@ class VanillaDQN(SARSA):
         max_q_targets.unsqueeze_(1)
         # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
         q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
-        if torch.cuda.is_available() and self.net.gpu:
-            q_targets = q_targets.cuda()
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
@@ -117,9 +115,8 @@ class VanillaDQN(SARSA):
         if self.body.is_discrete:
             batch['actions'] = util.to_one_hot(batch['actions'], self.body.action_space.high)
         if self.normalize_state:
-            batch = policy_util.normalize_states_and_next_states(
-                self.body, batch)
-        batch = util.to_torch_batch(batch, self.net.gpu, self.body.memory.is_episodic)
+            batch = policy_util.normalize_states_and_next_states(self.body, batch)
+        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 
     @lab_api
@@ -137,7 +134,7 @@ class VanillaDQN(SARSA):
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
         is_per = util.get_class_name(self.body.memory) == 'PrioritizedReplay'
         if self.to_train == 1:
-            total_loss = torch.tensor(0.0)
+            total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
                 batch = self.sample()
                 for _ in range(self.training_batch_epoch):
@@ -149,7 +146,7 @@ class VanillaDQN(SARSA):
                             errors = errors.sum(dim=1).unsqueeze_(dim=1)
                             self.body.memory.update_priorities(errors)
                     loss = self.net.training_step(batch['states'], q_targets, global_net=self.global_nets.get('net'))
-                    total_loss += loss.cpu()
+                    total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0
@@ -212,8 +209,6 @@ class DQNBase(VanillaDQN):
         max_q_targets.unsqueeze_(1)
         # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
         q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
-        if torch.cuda.is_available() and self.net.gpu:
-            q_targets = q_targets.cuda()
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 

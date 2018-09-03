@@ -144,7 +144,7 @@ class Algorithm(ABC):
         # set body reference back to default
         self.body = self.agent.nanflat_body_a[0]
         batch = util.concat_batches(batches)
-        batch = util.to_torch_batch(batch, self.net.gpu, self.body.memory.is_episodic)
+        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 
     @lab_api

@@ -122,7 +122,7 @@ class PPO(ActorCritic):
         old_log_probs = policy_util.calc_log_probs(self, self.old_net, self.body, batch)
         assert log_probs.shape == old_log_probs.shape
         assert advs.shape[0] == log_probs.shape[0]  # batch size
-        ratios = torch.exp(log_probs - old_log_probs)
+        ratios = torch.exp(log_probs - old_log_probs).detach()
         logger.debug(f'ratios: {ratios}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
@@ -138,8 +138,6 @@ class PPO(ActorCritic):
         logger.debug(f'ent_penalty: {ent_penalty}')
 
         policy_loss = clip_loss + ent_penalty
-        if torch.cuda.is_available() and self.net.gpu:
-            policy_loss = policy_loss.cuda()
         logger.debug(f'PPO Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 
@@ -151,7 +149,7 @@ class PPO(ActorCritic):
             # update old net
             net_util.copy(self.net, self.old_net)
             batch = self.sample()
-            total_loss = torch.tensor(0.0)
+            total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
                 with torch.no_grad():
                     advs, v_targets = self.calc_advs_v_targets(batch)
@@ -160,7 +158,7 @@ class PPO(ActorCritic):
                 loss = policy_loss + val_loss
                 # retain for entropies etc.
                 self.net.training_step(loss=loss, retain_graph=True, global_net=self.global_nets.get('net'))
-                total_loss += loss.cpu()
+                total_loss += loss
             loss = total_loss / self.training_epoch
             # reset
             self.to_train = 0
@@ -192,7 +190,7 @@ class PPO(ActorCritic):
 
     def train_actor(self, batch):
         '''Trains the actor when the actor and critic are separate networks'''
-        total_policy_loss = torch.tensor(0.0)
+        total_policy_loss = torch.tensor(0.0, device=self.net.device)
         for _ in range(self.training_epoch):
             with torch.no_grad():
                 advs, _v_targets = self.calc_advs_v_targets(batch)

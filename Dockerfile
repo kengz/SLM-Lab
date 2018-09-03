@@ -1,10 +1,9 @@
 # run instructions:
-# build image: docker build -t slm_lab .
-# start container: docker run --name my_lab -dt slm_lab
+# build image: docker build -t keng/slm_lab:latest -t keng/slm_lab:v2.0.0 .
+# start container: docker run --name my_lab -dt keng/slm_lab
 # enter container: docker exec -it my_lab bash
 # remove container (forced): docker rm my_lab -f
 # list image: docker images -a
-# tag image: docker tag slm_lab keng/slm_lab
 # push image: docker push keng/slm_lab
 # prune: docker system prune
 

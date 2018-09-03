@@ -3,14 +3,19 @@
 
 Modular Deep Reinforcement Learning framework in PyTorch.
 
-**[Github](https://github.com/kengz/SLM-Lab) | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
+| References |  |
+|------------|--|
+| [Github](https://github.com/kengz/SLM-Lab) | Github repository |
+| [Roadmap](https://github.com/kengz/SLM-Lab/projects) | Research and engineering roadmap |
+| [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | Usage documentation |
+| [Experiment Log](https://lgraesser.gitbooks.io/slm-experiment-log/content/) | Deep RL experiment design and results |
 
 ![dqn cartpole ball2d](https://media.giphy.com/media/l0DAIymuiMS3HyW9G/giphy.gif)
 >A multitask agent solving both OpenAI Cartpole-v0 and Unity Ball2D.
 
 ## Features
 
-SLM Lab is created for deep reinforcement learning research.
+SLM Lab is created for deep reinforcement learning research and applications.
 
 #### Algorithms
 - numerous canonical algorithms (list below)
@@ -31,13 +36,23 @@ SLM Lab is created for deep reinforcement learning research.
 
 ## Implementations
 
-SLM Lab implements most of the recent canonical algorithms and various extensions. These are used as the base of research.
+SLM Lab implements most of the recent canonical algorithms and various extensions. These are used as the base of research. All the implementations follow this design:
+
+- `Agent`: the base class containing all the components. It has the API methods to interface with the environment.
+    - `Algorithm`: the main class containing the implementation details of a specific algorithm. It contains components that are reusable.
+        - `Net`: the neural network for the algorithm. An algorithm can have multiple networks, e.g. Actor-Critic, DDQN.
+    - `Body`: connects the agent-env, and stores the proper agent-env data, such as entropy/log_prob. Multitask agent will have multiple bodies, each handling a specific environment. Conversely, a multiagent environment will accept multiple bodies from different agents. Essentially, each body keeps track of an agent-env pair.
+        - `Memory`: stores the numpy/plain type data produced from the agent-env interactions used for training.
+
+- `BaseEnv`: the environment wrapper class. It has the API methods to interface with the agent. Currently, the Lab contains:
+    - `OpenAIEnv` for [OpenAI gym](https://github.com/openai/gym)
+    - `UnityEnv` for [Unity ML-Agents](https://github.com/Unity-Technologies/ml-agents)
 
 #### Algorithm
 
 code: [slm_lab/agent/algorithm](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/algorithm)
 
-Various algorithms are in fact extensions of some simpler ones, and they are implemented as such. This makes the code very concise.
+Various algorithms are in fact extensions of some simpler ones, and they are implemented as such. This allows for concise and safer code.
 
 **Policy Gradient:**
 - REINFORCE
@@ -73,13 +88,17 @@ Using the lab's unified API, **all the algorithms be ran in a distributed fashio
 - Multitask DQN (multi-environment DQN)
 - Hydra DQN (multi-environment DQN)
 
-As mentioned above, **all these algorithms can be turned into distributed algorithms too**, altough we do not have special names for them.
+As mentioned above, **all these algorithms can be turned into distributed algorithms too**, although we do not have special names for them.
 
 Below are the modular building blocks for the algorithms. They are designed to be general, and are reused extensively.
 
 #### Memory
 
 code: [slm_lab/agent/memory](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/memory)
+
+`Memory` is a numpy/plain type storage of data which gets reused for more efficient computations (without having to call `tensor.detach()` repeatedly). For storing graph tensor with the gradient, use `agent.body`.
+
+Note that some particular types of algorithm/network need particular types of Memory, e.g. `RecurrentNet` needs any of the `SeqReplay`. See the class definition for more.
 
 For on-policy algorithms (policy gradient):
 - OnPolicyReplay
@@ -100,7 +119,7 @@ For off-policy algorithms (value-based)
 
 code: [slm_lab/agent/net](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/net)
 
-These networks are usable for all algorithms.
+These networks are usable for all algorithms, and the lab takes care of the proper initialization with proper input/output sizing. One can swap out the network for any algorithm with just a spec change, e.g. make `DQN` into `DRQN` by substituting the net spec `"type": "MLPNet"` with `"type": "RecurrentNet"`.
 
 - MLPNet (Multi Layer Perceptron, with multi-tails support)
 - HydraMLPNet (multi-heads, multi-tails)
@@ -115,6 +134,8 @@ These networks are usable for Q-learning algorithms. For more details see [this 
 #### Policy
 
 code: [slm_lab/agent/algorithm/policy_util.py](https://github.com/kengz/SLM-Lab/blob/master/slm_lab/agent/algorithm/policy_util.py)
+
+The policy module takes the network output `pdparam`, constructs a probability distribution, and samples for it to produce actions. To use a different distribution, just specify it in the algorithm spec `"action_pdtype"`.
 
 - different probability distributions for sampling actions
 - default policy
@@ -157,7 +178,7 @@ Read on for tutorials, research and results.
 
 ### Setup
 
-A config file `config/default.json` will be created.
+A config file `config/default.json` will be created at installation.
 
 ```json
 {
@@ -165,7 +186,7 @@ A config file `config/default.json` will be created.
 }
 ```
 
-- update `"data_sync_dir"` if you run lab on remote and want to sync data for easy access; it will copy `data/` there.
+- If you run the lab on a remote server and want to sync the `data/` folder for easy access, update `"data_sync_dir"`. When running a job, use a new terminal session to run `yarn watch` for auto-copy .
 
 ### Update
 
@@ -173,8 +194,10 @@ To update SLM Lab, pull the latest git commits and run update:
 
 ```shell
 git pull
-yarn update
+conda env update -f environment.yml; yarn install;
 ```
+
+>Alternatively, use the shorthand command `yarn update` to replace the last line
 
 ### Demo
 
@@ -210,8 +233,10 @@ It is `DQN` in `CartPole-v0`:
 3. launch terminal in the repo directory, run the lab:
     ```shell
     source activate lab
-    yarn start
+    python run_lab.py
     ```
+    >Alternatively, use the shorthand command `yarn start` to replace the last line
+    >To access GUI from remove server, use `-X` flag during ssh like so `ssh -X foo@bar`. See [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html) for more.
 
 4. This demo will run a single trial using the default parameters, and render the environment. After completion, check the output for data `data/dqn_cartpole_2018_06_16_214527/` (timestamp will differ). You should see some healthy graphs.
 

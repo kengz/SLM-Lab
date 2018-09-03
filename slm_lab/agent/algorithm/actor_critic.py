@@ -264,14 +264,14 @@ class ActorCritic(Reinforce):
 
     def train_critic(self, batch):
         '''Trains the critic when the actor and critic are separate networks'''
-        total_val_loss = torch.tensor(0.0)
+        total_val_loss = torch.tensor(0.0, device=self.net.device)
         # training iters only applicable to separate critic network
         for _ in range(self.training_epoch):
             with torch.no_grad():
                 _advs, v_targets = self.calc_advs_v_targets(batch)
             val_loss = self.calc_val_loss(batch, v_targets)
             self.critic.training_step(loss=val_loss, global_net=self.global_nets.get('critic'))
-            total_val_loss += val_loss.cpu()
+            total_val_loss += val_loss
         val_loss = total_val_loss / self.training_epoch
         return val_loss
 
@@ -284,8 +284,6 @@ class ActorCritic(Reinforce):
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.entropy_coef * entropies)
         policy_loss = torch.mean(policy_loss)
-        if torch.cuda.is_available() and self.net.gpu:
-            policy_loss = policy_loss.cuda()
         logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 
@@ -295,8 +293,6 @@ class ActorCritic(Reinforce):
         v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze_(dim=-1)
         assert v_preds.shape == v_targets.shape
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
-        if torch.cuda.is_available() and self.net.gpu:
-            val_loss = val_loss.cuda()
         logger.debug(f'Critic value loss: {val_loss:.4f}')
         return val_loss
 
@@ -317,9 +313,6 @@ class ActorCritic(Reinforce):
         # ensure val for next_state is 0 at done
         next_v_preds = next_v_preds * (1 - batch['dones'])
         adv_targets = math_util.calc_gaes(batch['rewards'], v_preds, next_v_preds, self.gamma, self.lam)
-        if torch.cuda.is_available() and self.net.gpu:
-            adv_targets = adv_targets.cuda()
-            v_targets = v_targets.cuda()
         adv_targets = math_util.standardize(adv_targets)
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
@@ -337,8 +330,6 @@ class ActorCritic(Reinforce):
         v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
         nstep_returns = math_util.calc_nstep_returns(batch, self.gamma, self.num_step_returns, next_v_preds)
         nstep_advs = nstep_returns - v_preds
-        if torch.cuda.is_available() and self.net.gpu:
-            nstep_advs = nstep_advs.cuda()
         adv_targets = nstep_advs
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
@@ -351,8 +342,6 @@ class ActorCritic(Reinforce):
         # Equivalent to 1-step return
         # v targets = r_t + gamma * V(s_(t+1))
         v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
-        if torch.cuda.is_available() and self.net.gpu:
-            v_targets = v_targets.cuda()
         adv_targets = v_targets  # Plain Q estimate, called adv for API consistency
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets

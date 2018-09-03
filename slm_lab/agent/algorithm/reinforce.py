@@ -106,8 +106,7 @@ class Reinforce(Algorithm):
         body = self.body
         logger.debug(f'state: {state}')
         if self.normalize_state:
-            state = policy_util.update_online_stats_and_normalize_state(
-                body, state)
+            state = policy_util.update_online_stats_and_normalize_state(body, state)
         logger.debug(f'mean: {body.state_mean}, std: {body.state_std_dev}, n: {body.state_n}')
         logger.debug(f'state after normalize: {state}')
         action, action_pd = self.action_policy(state, self, body)
@@ -125,9 +124,8 @@ class Reinforce(Algorithm):
         '''Samples a batch from memory'''
         batch = self.body.memory.sample()
         if self.normalize_state:
-            batch = policy_util.normalize_states_and_next_states(
-                self.body, batch)
-        batch = util.to_torch_batch(batch, self.net.gpu, self.body.memory.is_episodic)
+            batch = policy_util.normalize_states_and_next_states(self.body, batch)
+        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 
     @lab_api
@@ -160,8 +158,6 @@ class Reinforce(Algorithm):
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.entropy_coef * entropies)
         policy_loss = torch.sum(policy_loss)
-        if torch.cuda.is_available() and self.net.gpu:
-            policy_loss = policy_loss.cuda()
         logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 

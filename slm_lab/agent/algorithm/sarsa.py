@@ -102,8 +102,7 @@ class SARSA(Algorithm):
         '''Note, SARSA is discrete-only'''
         body = self.body
         if self.normalize_state:
-            state = policy_util.update_online_stats_and_normalize_state(
-                body, state)
+            state = policy_util.update_online_stats_and_normalize_state(body, state)
         action, action_pd = self.action_policy(state, self, body)
         # sum for single and multi-action
         body.entropies.append(action_pd.entropy().sum(dim=0))
@@ -127,8 +126,6 @@ class SARSA(Algorithm):
         act_q_targets.unsqueeze_(1)
         # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
         q_targets = (act_q_targets * batch['one_hot_actions']) + (q_preds * (1 - batch['one_hot_actions']))
-        if torch.cuda.is_available() and self.net.gpu:
-            q_targets = q_targets.cuda()
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
@@ -143,9 +140,8 @@ class SARSA(Algorithm):
         batch['next_actions'] = np.zeros_like(batch['actions'])
         batch['next_actions'][:-1] = batch['actions'][1:]
         if self.normalize_state:
-            batch = policy_util.normalize_states_and_next_states(
-                self.body, batch)
-        batch = util.to_torch_batch(batch, self.net.gpu, self.body.memory.is_episodic)
+            batch = policy_util.normalize_states_and_next_states(self.body, batch)
+        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 
     @lab_api

@@ -9,6 +9,7 @@ import pandas as pd
 import pydash as ps
 import regex as re
 import scipy as sp
+import subprocess
 import torch
 import torch.multiprocessing as mp
 import ujson
@@ -215,6 +216,10 @@ def get_fn_list(a_cls):
     '''
     fn_list = ps.filter_(dir(a_cls), lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
     return fn_list
+
+
+def get_git_sha():
+    return subprocess.check_output(['git', 'rev-parse', 'HEAD'], close_fds=True).decode().strip()
 
 
 def get_lab_mode():
@@ -605,6 +610,20 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
+def set_net_spec_cuda_id(spec, info_space):
+    '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
+    trial_idx = info_space.get('trial') or 0
+    session_idx = info_space.get('session') or 0
+    job_idx = trial_idx * session_idx + session_idx
+    device_count = torch.cuda.device_count()
+    if device_count == 0:
+        cuda_id = 0
+    else:
+        cuda_id = job_idx % device_count
+    for agent_spec in spec['agent']:
+        agent_spec['net']['cuda_id'] = cuda_id
+
+
 def set_module_seed(random_seed):
     '''Set all the module random seeds'''
     torch.cuda.manual_seed_all(random_seed)
@@ -647,16 +666,14 @@ def to_one_hot(data, max_val):
     return np.eye(max_val)[np.array(data)]
 
 
-def to_torch_batch(batch, gpu, is_episodic):
+def to_torch_batch(batch, device, is_episodic):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
     for k in batch:
         if is_episodic:  # for episodic format
             batch[k] = np.concatenate(batch[k])
         elif ps.is_list(batch[k]):
             batch[k] = np.array(batch[k])
-        batch[k] = torch.from_numpy(batch[k].astype('float32')).float()
-        if torch.cuda.is_available() and gpu:
-            batch[k] = batch[k].cuda()
+        batch[k] = torch.from_numpy(batch[k].astype('float32')).to(device)
     return batch
 
 
