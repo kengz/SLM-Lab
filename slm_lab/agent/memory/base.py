@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from collections import deque
 from slm_lab.lib import logger, util
 import numpy as np
@@ -15,14 +15,12 @@ class Memory(ABC):
     Memory is singleton to each body for modularity, and there is no gains to do multi-body memory now. Shall be constructed when body_space is built.
     '''
 
-    def __init__(self, memory_spec, algorithm, body):
+    def __init__(self, memory_spec, body):
         '''
         @param {*} body is the unit that stores its experience in this memory. Each body has a distinct memory.
         '''
         self.memory_spec = memory_spec
-        self.algorithm = algorithm
         self.body = body
-        self.agent_spec = body.agent.agent_spec
 
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']

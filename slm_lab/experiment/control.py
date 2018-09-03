@@ -4,26 +4,17 @@ Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Se
 '''
 from copy import deepcopy
 from importlib import reload
-from slm_lab.agent import AgentSpace
-from slm_lab.env import EnvSpace
+from slm_lab.agent import AgentSpace, Agent
+from slm_lab.env import EnvSpace, make_env
 from slm_lab.experiment import analysis, search
-from slm_lab.experiment.monitor import AEBSpace, InfoSpace
-from slm_lab.lib import logger, util, viz
+from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
+from slm_lab.lib import logger, util
 import numpy as np
 import os
 import pandas as pd
 import pydash as ps
 import torch
 import torch.multiprocessing as mp
-
-
-def init_thread_vars(spec, info_space, unit):
-    '''Initialize thread variables from lab units that do not get carried over properly from master'''
-    if info_space.get(unit) is None:
-        info_space.tick(unit)
-    if logger.to_init(spec, info_space):
-        os.environ['PREPATH'] = util.get_prepath(spec, info_space)
-        reload(logger)
 
 
 class Session:
@@ -35,44 +26,104 @@ class Session:
     then return the session data.
     '''
 
-    def __init__(self, spec, info_space=None, global_nets=None):
-        info_space = info_space or InfoSpace()
-        init_thread_vars(spec, info_space, unit='session')
+    def __init__(self, spec, info_space, global_nets=None):
         self.spec = spec
         self.info_space = info_space
-        self.coor, self.index = self.info_space.get_coor_idx(self)
-        self.random_seed = 100 * (info_space.get('trial') or 0) + self.index
-        torch.cuda.manual_seed_all(self.random_seed)
-        torch.manual_seed(self.random_seed)
-        np.random.seed(self.random_seed)
+        self.index = self.info_space.get('session')
+        util.set_net_spec_cuda_id(self.spec, self.info_space)
+        util.set_module_seed(self.info_space.get_random_seed())
         self.data = None
-        self.aeb_space = AEBSpace(self.spec, self.info_space)
-        self.env_space = EnvSpace(self.spec, self.aeb_space)
-        self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
+
+        # init singleton agent and env
+        self.env = make_env(self.spec)
+        body = Body(self.env, self.spec['agent'])
+        self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
+
+        enable_aeb_space(self)  # to use lab's data analysis framework
         logger.info(util.self_desc(self))
-        self.aeb_space.init_body_space()
-        self.aeb_space.post_body_init()
         logger.info(f'Initialized session {self.index}')
 
-    def run_all_episodes(self):
-        '''
-        Run all episodes, where each env can step and reset at its own clock_speed and timeline. Will terminate when all envs done running max_episode.
-        '''
-        _reward_space, state_space, _done_space = self.env_space.reset()
-        _action_space = self.agent_space.reset(state_space)  # nan action at t=0 for bookkeeping in data_space
-        while True:
-            end_session = self.aeb_space.tick_clocks(self)
-            if end_session:
-                break
-            action_space = self.agent_space.act(state_space)
-            reward_space, state_space, done_space = self.env_space.step(action_space)
-            self.agent_space.update(action_space, reward_space, state_space, done_space)
+    def save_if_ckpt(self, agent, env):
+        '''Save for agent, env if episode is at checkpoint'''
+        epi = env.clock.get('epi')
+        save_this_epi = epi > 0 and hasattr(env, 'save_epi_frequency') and epi % env.save_epi_frequency == 0
+        if save_this_epi:
+            agent.save(epi=epi)
+
+    def run_episode(self):
+        self.env.clock.tick('epi')
+        reward, state, done = self.env.reset()
+        self.agent.reset(state)
+        while not done:
+            self.env.clock.tick('t')
+            action = self.agent.act(state)
+            reward, state, done = self.env.step(action)
+            self.agent.update(action, reward, state, done)
+        self.agent.body.log_summary()
+        self.save_if_ckpt(self.agent, self.env)
 
     def close(self):
         '''
         Close session and clean up.
         Save agent, close env.
-        Prepare self.df.
+        '''
+        self.agent.close()
+        self.env.close()
+        logger.info('Session done, closing.')
+
+    def run(self):
+        while self.env.clock.get('epi') <= self.env.max_episode:
+            self.run_episode()
+        self.data = analysis.analyze_session(self)  # session fitness
+        self.close()
+        return self.data
+
+
+class SpaceSession(Session):
+    '''Session for multi-agent/env setting'''
+
+    def __init__(self, spec, info_space, global_nets=None):
+        self.spec = spec
+        self.info_space = info_space
+        self.index = self.info_space.get('session')
+        util.set_net_spec_cuda_id(self.spec, self.info_space)
+        util.set_module_seed(self.info_space.get_random_seed())
+        self.data = None
+
+        self.aeb_space = AEBSpace(self.spec, self.info_space)
+        self.env_space = EnvSpace(self.spec, self.aeb_space)
+        self.aeb_space.init_body_space()
+        self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
+
+        logger.info(util.self_desc(self))
+        logger.info(f'Initialized session {self.index}')
+
+    def save_if_ckpt(self, agent_space, env_space):
+        '''Save for agent, env if episode is at checkpoint'''
+        for agent in agent_space.agents:
+            for body in agent.nanflat_body_a:
+                env = body.env
+                super(SpaceSession, self).save_if_ckpt(agent, env)
+
+    def run_all_episodes(self):
+        '''
+        Continually run all episodes, where each env can step and reset at its own clock_speed and timeline.
+        Will terminate when all envs done are done.
+        '''
+        all_done = self.aeb_space.tick('epi')
+        reward_space, state_space, done_space = self.env_space.reset()
+        self.agent_space.reset(state_space)
+        while not all_done:
+            all_done = self.aeb_space.tick()
+            action_space = self.agent_space.act(state_space)
+            reward_space, state_space, done_space = self.env_space.step(action_space)
+            self.agent_space.update(action_space, reward_space, state_space, done_space)
+            self.save_if_ckpt(self.agent_space, self.env_space)
+
+    def close(self):
+        '''
+        Close session and clean up.
+        Save agent, close env.
         '''
         self.agent_space.close()
         self.env_space.close()
@@ -88,10 +139,11 @@ class Session:
 class DistSession(mp.Process):
     '''Distributed Session for distributed training'''
 
-    def __init__(self, spec, info_space, global_nets):
+    def __init__(self, DistSessionClass, spec, info_space, global_nets):
         super(DistSession, self).__init__()
         self.name = f'w{info_space.get("session")}'
-        self.session = Session(spec, info_space, global_nets)
+        self.session = DistSessionClass(spec, info_space, global_nets)
+        logger.info(f'Initialized DistSession {self.session.index}')
 
     def run(self):
         return self.session.run()
@@ -106,32 +158,33 @@ class Trial:
     then return the trial data.
     '''
 
-    def __init__(self, spec, info_space=None):
-        info_space = info_space or InfoSpace()
-        init_thread_vars(spec, info_space, unit='trial')
+    def __init__(self, spec, info_space):
         self.spec = spec
         self.info_space = info_space
-        self.coor, self.index = self.info_space.get_coor_idx(self)
+        self.index = self.info_space.get('trial')
         self.session_data_dict = {}
         self.data = None
         analysis.save_spec(spec, info_space, unit='trial')
+        self.is_singleton = len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1  # singleton mode as opposed to multi-agent-env space
+        self.SessionClass = Session if self.is_singleton else SpaceSession
         logger.info(f'Initialized trial {self.index}')
 
     def init_session_and_run(self, info_space):
-        session = Session(self.spec, info_space)
+        session = self.SessionClass(self.spec, info_space)
         session_data = session.run()
         return session_data
 
-    def run_serial_sessions(self):
-        logger.info('Running serial sessions')
-        num_cpus = ps.get(self.spec['meta'], 'resources.num_cpus', util.NUM_CPUS)
+    def run_sessions(self):
+        logger.info('Running sessions')
         info_spaces = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
             info_spaces.append(deepcopy(self.info_space))
+
         if util.get_lab_mode() == 'train' and len(info_spaces) > 1:
-            session_datas = util.parallelize_fn(self.init_session_and_run, info_spaces, num_cpus)
-        else:  # dont parallelize when debugging to allow render
+            # when training a single spec over multiple sessions
+            session_datas = util.parallelize_fn(self.init_session_and_run, info_spaces, ps.get(self.spec['meta'], 'resources.num_cpus', util.NUM_CPUS))
+        else:
             session_datas = []
             for info_space in info_spaces:
                 session_data = self.init_session_and_run(info_space)
@@ -140,36 +193,37 @@ class Trial:
                     break
         return session_datas
 
-    def init_global_nets(self):
-        spec = deepcopy(self.spec)
-        global_session = Session(deepcopy(self.spec))
-        # TODO move away from space
-        global_agent = global_session.agent_space.agents[0]
-        global_session.env_space.close()
+    def make_global_nets(self, agent):
         global_nets = {}
-        for net_name in global_agent.algorithm.net_names:
-            g_net = getattr(global_agent.algorithm, net_name)
-            g_net.share_memory()  # make global sharable
+        for net_name in agent.algorithm.net_names:
+            g_net = getattr(agent.algorithm, net_name)
+            g_net.share_memory()  # make net global
             # TODO also create shared optimizer here
             global_nets[net_name] = g_net
+        return global_nets
+
+    def init_global_nets(self):
+        session = self.SessionClass(deepcopy(self.spec), deepcopy(self.info_space))
+        if self.is_singleton:
+            session.env.close()  # safety
+            global_nets = self.make_global_nets(session.agent)
+        else:
+            session.env_space.close()  # safety
+            global_nets = [self.make_global_nets(agent) for agent in session.agent_space.agents]
         return global_nets
 
     def run_distributed_sessions(self):
         logger.info('Running distributed sessions')
         global_nets = self.init_global_nets()
         workers = []
-        for s in range(self.spec['meta']['max_session']):
+        for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
-            w = DistSession(deepcopy(self.spec), self.info_space, global_nets)
+            w = DistSession(self.SessionClass, deepcopy(self.spec), self.info_space, global_nets)
             w.start()
             workers.append(w)
         for w in workers:
             w.join()
-
-        prepath = util.get_prepath(self.spec, self.info_space)
-        predir = util.prepath_to_predir(prepath)
-        session_datas = analysis.session_data_dict_from_file(predir, self.info_space.get('trial'))
-        session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
+        session_datas = analysis.session_data_dict_for_dist(self.spec, self.info_space)
         return session_datas
 
     def close(self):
@@ -179,7 +233,7 @@ class Trial:
         if self.spec['meta'].get('distributed'):
             session_datas = self.run_distributed_sessions()
         else:
-            session_datas = self.run_serial_sessions()
+            session_datas = self.run_sessions()
         self.session_data_dict = {data.index[0]: data for data in session_datas}
         self.data = analysis.analyze_trial(self)
         self.close()
@@ -199,32 +253,28 @@ class Experiment:
     An experiment then forms a node containing its data in the evolution graph with the evolution link and suggestion at the adjacent possible new experiments
     On the evolution graph level, an experiment and its neighbors could be seen as test/development of traits.
     '''
-    # TODO metaspec to specify specs to run, can be sourced from evolution suggestion
 
-    def __init__(self, spec, info_space=None):
-        info_space = info_space or InfoSpace()
-        init_thread_vars(spec, info_space, unit='experiment')
+    def __init__(self, spec, info_space):
         self.spec = spec
         self.info_space = info_space
-        self.coor, self.index = self.info_space.get_coor_idx(self)
+        self.index = self.info_space.get('experiment')
         self.trial_data_dict = {}
         self.data = None
+        analysis.save_spec(spec, info_space, unit='experiment')
         SearchClass = getattr(search, spec['meta'].get('search'))
         self.search = SearchClass(self)
-        analysis.save_spec(spec, info_space, unit='experiment')
         logger.info(f'Initialized experiment {self.index}')
 
     def init_trial_and_run(self, spec, info_space):
         '''
         Method to run trial with the properly updated info_space (trial_index) from experiment.search.lab_trial.
-        Do not tick info_space below, it is already updated when passed from lab_trial.
         '''
         trial = Trial(spec, info_space)
         trial_data = trial.run()
         return trial_data
 
     def close(self):
-        reload(search)  # to fix ray consecutive run crash due to bad cleanup
+        reload(search)  # fixes ray consecutive run crashing due to bad cleanup
         logger.info('Experiment done, closing.')
 
     def run(self):
@@ -242,4 +292,6 @@ class EvolutionGraph:
     to suggest new experiment via node creation, mutation or combination (no DAG restriction).
     There could be a high level evolution module that guides and optimizes the evolution graph and experiments to achieve SLM.
     '''
-    pass
+
+    def __init__(self, spec, info_space):
+        raise NotImplementedError

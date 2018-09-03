@@ -9,7 +9,6 @@ import json
 import numpy as np
 import os
 import pydash as ps
-import subprocess
 
 SPEC_DIR = 'slm_lab/spec'
 '''
@@ -98,7 +97,7 @@ def check_all():
         for spec_name, spec in spec_dict.items():
             try:
                 spec['name'] = spec_name
-                spec['git_SHA'] = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
+                spec['git_SHA'] = util.get_git_sha()
                 check(spec)
             except Exception as e:
                 logger.exception(f'spec_file {spec_file} fails spec check')
@@ -119,7 +118,7 @@ def get(spec_file, spec_name):
     assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
     spec = spec_dict[spec_name]
     spec['name'] = spec_name
-    spec['git_SHA'] = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()
+    spec['git_SHA'] = util.get_git_sha()
     check(spec)
     return spec
 
@@ -150,8 +149,8 @@ def resolve_aeb(spec):
     aeb_list = spec_util.resolve_aeb(spec)
     # => [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
     '''
-    agent_num = len(spec['agent'])
-    env_num = len(spec['env'])
+    agent_num = len(spec['agent']) if ps.is_list(spec['agent']) else 1
+    env_num = len(spec['env']) if ps.is_list(spec['env']) else 1
     ae_product = ps.get(spec, 'body.product')
     body_num = ps.get(spec, 'body.num')
     body_num_list = body_num if ps.is_list(body_num) else [body_num] * env_num

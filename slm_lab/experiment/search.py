@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from copy import deepcopy
 from deap import creator, base, tools, algorithms
 from ray.tune import grid_search, variant_generator

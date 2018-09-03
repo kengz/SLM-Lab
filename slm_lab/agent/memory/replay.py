@@ -38,14 +38,15 @@ class Replay(Memory):
     }
     '''
 
-    def __init__(self, memory_spec, algorithm, body):
-        super(Replay, self).__init__(memory_spec, algorithm, body)
+    def __init__(self, memory_spec, body):
+        super(Replay, self).__init__(memory_spec, body)
         util.set_attr(self, self.memory_spec, [
             'batch_size',
             'max_size',
             'use_cer',
         ])
         self.state_buffer = deque(maxlen=0)  # for API consistency
+        self.is_episodic = False
         self.batch_idxs = None
         self.true_size = 0  # to number of experiences stored
         self.seen_size = 0  # the number of experiences seen, including those stored and discarded
@@ -134,9 +135,9 @@ class SeqReplay(Replay):
     * seq_len provided by net_spec
     '''
 
-    def __init__(self, memory_spec, algorithm, body):
-        self.seq_len = algorithm.net_spec['seq_len']
-        super(SeqReplay, self).__init__(memory_spec, algorithm, body)
+    def __init__(self, memory_spec, body):
+        super(SeqReplay, self).__init__(memory_spec, body)
+        self.seq_len = self.body.agent.agent_spec['net']['seq_len']
         self.state_buffer = deque(maxlen=self.seq_len)
         # update states_shape and call reset again
         self.states_shape = self.scalar_shape + tuple(np.reshape([self.seq_len, self.body.state_dim], -1))
@@ -178,8 +179,8 @@ class SILReplay(Replay):
     }
     '''
 
-    def __init__(self, memory_spec, algorithm, body):
-        super(SILReplay, self).__init__(memory_spec, algorithm, body)
+    def __init__(self, memory_spec, body):
+        super(SILReplay, self).__init__(memory_spec, body)
         # adds a 'rets' scalar to the data_keys and call reset again
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'rets']
         self.reset()
@@ -209,8 +210,8 @@ class SILSeqReplay(SeqReplay):
     * seq_len provided by net_spec
     '''
 
-    def __init__(self, memory_spec, algorithm, body):
-        super(SILSeqReplay, self).__init__(memory_spec, algorithm, body)
+    def __init__(self, memory_spec, body):
+        super(SILSeqReplay, self).__init__(memory_spec, body)
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'rets']
         self.reset()
 
@@ -225,9 +226,9 @@ class SILSeqReplay(SeqReplay):
         self.rets[self.head] = ret
 
 
-class StackReplay(Replay):
+class ConcatReplay(Replay):
     '''
-    Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as Replay memory
+    Preprocesses a state to be the concatenation of the last n states. Otherwise the same as Replay memory
 
     e.g. memory_spec
     "memory": {
@@ -239,7 +240,7 @@ class StackReplay(Replay):
     }
     '''
 
-    def __init__(self, memory_spec, algorithm, body):
+    def __init__(self, memory_spec, body):
         util.set_attr(self, memory_spec, [
             'batch_size',
             'max_size',
@@ -248,20 +249,20 @@ class StackReplay(Replay):
         ])
         self.raw_state_dim = deepcopy(body.state_dim)  # used for state_buffer
         body.state_dim = body.state_dim * self.stack_len  # modify to use for net init for flattened stacked input
-        super(StackReplay, self).__init__(memory_spec, algorithm, body)
+        super(ConcatReplay, self).__init__(memory_spec, body)
         self.state_buffer = deque(maxlen=self.stack_len)
         self.reset()
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
-        super(StackReplay, self).reset()
+        super(ConcatReplay, self).reset()
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.raw_state_dim))
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
-        super(StackReplay, self).epi_reset(self.preprocess_state(state, append=False))
+        super(ConcatReplay, self).epi_reset(self.preprocess_state(state, append=False))
         # reappend buffer with custom shape
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
@@ -286,7 +287,7 @@ class StackReplay(Replay):
         self.last_state = state
 
 
-class AtariReplay(StackReplay):
+class AtariReplay(ConcatReplay):
     '''
     Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
     Otherwise the same as Replay memory
@@ -301,7 +302,7 @@ class AtariReplay(StackReplay):
     }
     '''
 
-    def __init__(self, memory_spec, algorithm, body):
+    def __init__(self, memory_spec, body):
         self.atari = True  # Memory is specialized for playing Atari games
         util.set_attr(self, memory_spec, [
             'batch_size',
@@ -311,7 +312,7 @@ class AtariReplay(StackReplay):
         ])
         self.raw_state_dim = (84, 84)
         body.state_dim = self.raw_state_dim + (self.stack_len,)  # greyscale downsized, stacked
-        Replay.__init__(self, memory_spec, algorithm, body)
+        Replay.__init__(self, memory_spec, body)
         self.state_buffer = deque(maxlen=self.stack_len)
         self.reset()
 

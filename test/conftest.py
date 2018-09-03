@@ -1,4 +1,4 @@
-from slm_lab.agent import AgentSpace, Body
+from slm_lab.agent import AgentSpace
 from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
 from slm_lab.agent.net.recurrent import RecurrentNet
@@ -32,13 +32,18 @@ def test_spec():
 
 
 @pytest.fixture(scope='session')
+def test_info_space():
+    return InfoSpace()
+
+
+@pytest.fixture(scope='session')
 def test_aeb_space(test_spec):
     global aeb_space
     if aeb_space is None:
         aeb_space = AEBSpace(test_spec, InfoSpace())
         env_space = EnvSpace(test_spec, aeb_space)
-        agent_space = AgentSpace(test_spec, aeb_space)
         aeb_space.init_body_space()
+        agent_space = AgentSpace(test_spec, aeb_space)
     return aeb_space
 
 
@@ -586,9 +591,8 @@ def test_memory(request):
     memspec = util.override_test_spec(memspec)
     aeb_mem_space = AEBSpace(memspec, InfoSpace())
     env_space = EnvSpace(memspec, aeb_mem_space)
-    agent_space = AgentSpace(memspec, aeb_mem_space)
     aeb_mem_space.init_body_space()
-    aeb_mem_space.post_body_init()
+    agent_space = AgentSpace(memspec, aeb_mem_space)
     agent = agent_space.agents[0]
     body = agent.nanflat_body_a[0]
     res = (body.memory, ) + request.param
@@ -615,9 +619,8 @@ def test_on_policy_episodic_memory(request):
     memspec = util.override_test_spec(memspec)
     aeb_mem_space = AEBSpace(memspec, InfoSpace())
     env_space = EnvSpace(memspec, aeb_mem_space)
-    agent_space = AgentSpace(memspec, aeb_mem_space)
     aeb_mem_space.init_body_space()
-    aeb_mem_space.post_body_init()
+    agent_space = AgentSpace(memspec, aeb_mem_space)
     agent = agent_space.agents[0]
     body = agent.nanflat_body_a[0]
     res = (body.memory, ) + request.param
@@ -644,9 +647,8 @@ def test_on_policy_batch_memory(request):
     memspec = util.override_test_spec(memspec)
     aeb_mem_space = AEBSpace(memspec, InfoSpace())
     env_space = EnvSpace(memspec, aeb_mem_space)
-    agent_space = AgentSpace(memspec, aeb_mem_space)
     aeb_mem_space.init_body_space()
-    aeb_mem_space.post_body_init()
+    agent_space = AgentSpace(memspec, aeb_mem_space)
     agent = agent_space.agents[0]
     body = agent.nanflat_body_a[0]
     res = (body.memory, ) + request.param
@@ -673,9 +675,8 @@ def test_prioritized_replay_memory(request):
     memspec = util.override_test_spec(memspec)
     aeb_mem_space = AEBSpace(memspec, InfoSpace())
     env_space = EnvSpace(memspec, aeb_mem_space)
-    agent_space = AgentSpace(memspec, aeb_mem_space)
     aeb_mem_space.init_body_space()
-    aeb_mem_space.post_body_init()
+    agent_space = AgentSpace(memspec, aeb_mem_space)
     agent = agent_space.agents[0]
     body = agent.nanflat_body_a[0]
     res = (body.memory, ) + request.param

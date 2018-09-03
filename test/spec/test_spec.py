@@ -1,5 +1,6 @@
 from flaky import flaky
 from slm_lab.experiment.control import Trial, Session
+from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import os
@@ -11,11 +12,14 @@ import pytest
 def run_trial_test(spec_file, spec_name=False, distributed=False):
     spec = spec_util.get(spec_file, spec_name)
     spec = util.override_test_spec(spec)
+    info_space = InfoSpace()
+    info_space.tick('trial')
     if distributed:
+        return  # TODO disable for now
         spec['meta']['distributed'] = True
         if os.environ.get('CI') != 'true':  # CI has not enough CPU
             spec['meta']['max_session'] = 2
-    trial = Trial(spec)
+    trial = Trial(spec, info_space)
     trial_data = trial.run()
     assert isinstance(trial_data, pd.DataFrame)
 

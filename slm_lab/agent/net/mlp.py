@@ -101,9 +101,8 @@ class MLPNet(Net, nn.Module):
             self.model_tails = nn.ModuleList([nn.Linear(dims[-1], out_d) for out_d in self.out_dim])
 
         net_util.init_layers(self.modules())
-        if torch.cuda.is_available() and self.gpu:
-            for module in self.modules():
-                module.cuda()
+        for module in self.modules():
+            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)
@@ -150,7 +149,7 @@ class MLPNet(Net, nn.Module):
             net_util.pull_global_param(self, global_net)
         if net_util.to_assert_trained():
             model = getattr(self, 'model', None) or getattr(self, 'model_body')
-            assert_trained(model)
+            assert_trained(model, loss)
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
@@ -278,9 +277,8 @@ class HydraMLPNet(Net, nn.Module):
         self.model_tails = self.build_model_tails(out_dim)
 
         net_util.init_layers(self.modules())
-        if torch.cuda.is_available() and self.gpu:
-            for module in self.modules():
-                module.cuda()
+        for module in self.modules():
+            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)
@@ -318,7 +316,7 @@ class HydraMLPNet(Net, nn.Module):
         head_xs = []
         for model_head, x in zip(self.model_heads, xs):
             head_xs.append(model_head(x))
-        head_xs = torch.cat(head_xs, dim=1)
+        head_xs = torch.cat(head_xs, dim=-1)
         body_x = self.model_body(head_xs)
         outs = []
         for model_tail in self.model_tails:
@@ -334,10 +332,10 @@ class HydraMLPNet(Net, nn.Module):
         self.optim.zero_grad()
         if loss is None:
             outs = self(xs)
-            total_loss = torch.tensor(0.0)
+            total_loss = torch.tensor(0.0, device=self.device)
             for out, y in zip(outs, ys):
                 loss = self.loss_fn(out, y)
-                total_loss += loss.cpu()
+                total_loss += loss
             loss = total_loss
         assert not torch.isnan(loss).any(), loss
         if net_util.to_assert_trained():
@@ -353,7 +351,7 @@ class HydraMLPNet(Net, nn.Module):
             self.optim.step()
             net_util.pull_global_param(self, global_net)
         if net_util.to_assert_trained():
-            assert_trained(self.model_body)
+            assert_trained(self.model_body, loss)
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
@@ -446,9 +444,8 @@ class DuelingMLPNet(MLPNet):
         self.v = nn.Linear(dims[-1], 1)  # state value
         self.adv = nn.Linear(dims[-1], out_dim)  # action dependent raw advantage
         net_util.init_layers(self.modules())
-        if torch.cuda.is_available() and self.gpu:
-            for module in self.modules():
-                module.cuda()
+        for module in self.modules():
+            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)

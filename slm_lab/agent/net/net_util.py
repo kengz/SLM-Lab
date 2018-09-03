@@ -227,14 +227,25 @@ def gen_assert_trained(pre_model):
     # ...
     loss.backward()
     optim.step()
-    assert_trained(model)
+    assert_trained(model, loss)
     '''
     pre_weights = [param.clone() for param in pre_model.parameters()]
 
-    def assert_trained(post_model):
+    def assert_trained(post_model, loss):
         post_weights = [param.clone() for param in post_model.parameters()]
-        assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), 'Model parameter is not updated in training_step(), check if your tensor is detached from graph.'
-        assert all(param.grad.norm() < 100.0 for param in post_model.parameters()), 'Gradient norm is > 100, which is bad. Consider using the "clip_grad" and "clip_grad_val" net parameter'
+        if loss == 0:
+            # TODO if without momentum, weights should not change too
+            for p_name, param in post_model.named_parameters():
+                assert param.grad.norm() == 0
+        else:
+            assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), 'Model parameter is not updated in training_step(), check if your tensor is detached from graph.'
+            min_norm = 0
+            max_norm = 1e5
+            for p_name, param in post_model.named_parameters():
+                try:
+                    assert min_norm < param.grad.norm() < max_norm, f'Gradient norm fails the extreme value check {min_norm} < {p_name}:{param.grad.norm()} < {max_norm}, which is bad. Loss: {loss}. Check your network and loss computation. Consider using the "clip_grad" and "clip_grad_val" net parameter.'
+                except Exception as e:
+                    logger.warn(e)
         logger.debug('Passed network weight update assertation in dev lab_mode.')
     return assert_trained
 

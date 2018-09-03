@@ -131,9 +131,8 @@ class ConvNet(Net, nn.Module):
         self.model_tails = nn.ModuleList([nn.Linear(tail_in_dim, out_d) for out_d in self.out_dim])
 
         net_util.init_layers(self.modules())
-        if torch.cuda.is_available() and self.gpu:
-            for module in self.modules():
-                module.cuda()
+        for module in self.modules():
+            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)
@@ -218,7 +217,7 @@ class ConvNet(Net, nn.Module):
             self.optim.step()
             net_util.pull_global_param(self, global_net)
         if net_util.to_assert_trained():
-            assert_trained(self.conv_model)
+            assert_trained(self.conv_model, loss)
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
@@ -367,9 +366,8 @@ class DuelingConvNet(ConvNet):
         self.adv = nn.Linear(tail_in_dim, out_dim[0])  # action dependent raw advantage
 
         net_util.init_layers(self.modules())
-        if torch.cuda.is_available() and self.gpu:
-            for module in self.modules():
-                module.cuda()
+        for module in self.modules():
+            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)

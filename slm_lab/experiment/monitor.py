@@ -19,8 +19,10 @@ DataSpace: a data space storing an AEB data projected to a-axis, and its dual pr
 Object reference (for agent to access env properties, vice versa):
 Agents - AgentSpace - AEBSpace - EnvSpace - Envs
 '''
-from slm_lab.agent import AGENT_DATA_NAMES, Body
-from slm_lab.env import ENV_DATA_NAMES, Clock
+from gym import spaces
+from slm_lab.agent import AGENT_DATA_NAMES
+from slm_lab.agent.algorithm import policy_util
+from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import numpy as np
@@ -39,6 +41,119 @@ COOR_AXES_ORDER = {
 }
 COOR_DIM = len(COOR_AXES)
 logger = logger.get_logger(__name__)
+
+
+def enable_aeb_space(session):
+    '''Enable aeb_space to session use Lab's data-monitor and analysis modules'''
+    session.aeb_space = AEBSpace(session.spec, session.info_space)
+    # make compatible with the generic multiagent setup
+    session.aeb_space.body_space = DataSpace('body', session.aeb_space)
+    body_v = np.full(session.aeb_space.aeb_shape, np.nan, dtype=object)
+    body_v[0, 0, 0] = session.agent.body
+    session.aeb_space.body_space.add(body_v)
+    session.agent.aeb_space = session.aeb_space
+    session.env.aeb_space = session.aeb_space
+
+
+def get_action_type(action_space):
+    '''Method to get the action type to choose prob. dist. to sample actions from NN logits output'''
+    if isinstance(action_space, spaces.Box):
+        shape = action_space.shape
+        assert len(shape) == 1
+        if shape[0] == 1:
+            return 'continuous'
+        else:
+            return 'multi_continuous'
+    elif isinstance(action_space, spaces.Discrete):
+        return 'discrete'
+    elif isinstance(action_space, spaces.MultiDiscrete):
+        return 'multi_discrete'
+    elif isinstance(action_space, spaces.MultiBinary):
+        return 'multi_binary'
+    else:
+        raise NotImplementedError
+
+
+class Body:
+    '''
+    Body of an agent inside an environment. This acts as the main variable storage and bridge between agent and environment to pair them up properly in the generalized multi-agent-env setting.
+    '''
+
+    def __init__(self, env, agent_spec, aeb=(0, 0, 0), aeb_space=None):
+        # essential reference variables
+        self.env = env
+        self.aeb = aeb
+        self.a, self.e, self.b = aeb
+        self.nanflat_a_idx = self.a
+        self.nanflat_e_idx = self.e
+
+        # stats variables
+        self.loss = np.nan  # training losses
+        self.last_loss = np.nan  # the last non-nan loss, for printing
+        # for action policy exploration, so be set in algo during init_algorithm_params()
+        self.explore_var = np.nan
+
+        # diagnostics variables/stats from action_policy prob. dist.
+        self.entropies = []  # check exploration
+        self.log_probs = []  # calculate loss
+
+        if aeb_space is None:  # singleton mode
+            # the specific agent-env interface variables for a body
+            self.observation_space = self.env.observation_space
+            self.action_space = self.env.action_space
+            self.observable_dim = self.env.observable_dim
+            self.state_dim = self.observable_dim['state']
+            self.action_dim = self.env.action_dim
+            self.is_discrete = self.env.is_discrete
+        else:
+            self.space_init(aeb_space)
+
+        self.action_type = get_action_type(self.action_space)
+        self.action_pdtype = agent_spec[self.a]['algorithm'].get('action_pdtype')
+        if self.action_pdtype in (None, 'default'):
+            self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
+
+    def epi_reset(self):
+        '''
+        Handles any body attribute reset at the start of an episode.
+        This method is called automatically at base memory.epi_reset().
+        '''
+        t = self.env.clock.get('t')
+        assert t == 0, f'aeb: {self.aeb}, t: {t}'
+        if hasattr(self, 'aeb_space'):
+            self.space_fix_stats()
+
+    def __str__(self):
+        return 'body: ' + util.to_json(util.get_class_attr(self))
+
+    def log_summary(self):
+        '''Log the summary for this body when its environment is done'''
+        spec = self.agent.spec
+        info_space = self.agent.info_space
+        clock = self.env.clock
+        memory = self.memory
+        msg = f'{spec["name"]} trial {info_space.get("trial")} session {info_space.get("session")} env {self.env.e}, body {self.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {self.last_loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
+        logger.info(msg)
+
+    def space_init(self, aeb_space):
+        '''Post init override for space body. Note that aeb is already correct from __init__'''
+        self.aeb_space = aeb_space
+        # to be reset properly later
+        self.nanflat_a_idx = None
+        self.nanflat_e_idx = None
+
+        self.observation_space = self.env.observation_spaces[self.a]
+        self.action_space = self.env.action_spaces[self.a]
+        self.observable_dim = self.env._get_observable_dim(self.observation_space)
+        self.state_dim = self.observable_dim['state']
+        self.action_dim = self.env._get_action_dim(self.action_space)
+        self.is_discrete = self.env._is_discrete(self.action_space)
+
+    def space_fix_stats(self):
+        '''the space control loop will make agent append stat at done, so to offset for that, pop it at reset'''
+        for action_stat in [self.entropies, self.log_probs]:
+            if len(action_stat) > 0:
+                action_stat.pop()
 
 
 class DataSpace:
@@ -159,11 +274,11 @@ class AEBSpace:
 
     def init_data_s(self, data_names, a=None, e=None):
         '''Shortcut to init data_s_1, data_s_2, ...'''
-        return [self.data_spaces[data_name].init_data_s(a=a, e=e) for data_name in data_names]
+        return tuple(self.data_spaces[data_name].init_data_s(a=a, e=e) for data_name in data_names)
 
     def init_data_v(self, data_names):
         '''Shortcut to init data_v_1, data_v_2, ...'''
-        return [self.data_spaces[data_name].init_data_v() for data_name in data_names]
+        return tuple(self.data_spaces[data_name].init_data_v() for data_name in data_names)
 
     def get_history_v(self, data_name):
         '''Get a data_v history and stack into a data_h_v (history volume)'''
@@ -176,23 +291,17 @@ class AEBSpace:
         body_v = np.full(self.aeb_shape, np.nan, dtype=object)
         for (a, e, b), sig in np.ndenumerate(self.aeb_sig):
             if sig == 1:
-                agent = self.agent_space.get(a)
                 env = self.env_space.get(e)
-                body = Body((a, e, b), agent, env)
+                body = Body(env, self.spec['agent'], aeb=(a, e, b), aeb_space=self)
                 body_v[(a, e, b)] = body
         self.body_space.add(body_v)
-        for agent in self.agent_space.agents:
-            agent.body_a = self.body_space.get(a=agent.a)
+        # complete the backward reference to env_space
         for env in self.env_space.envs:
-            env.body_e = self.body_space.get(e=env.e)
-        return self.body_space
-
-    def post_body_init(self):
-        '''Run init for agent, env components that need bodies to exist first, e.g. memory or architecture.'''
+            body_e = self.body_space.get(e=env.e)
+            env.set_body_e(body_e)
         self.clock = self.env_space.get_base_clock()
         logger.info(util.self_desc(self))
-        self.agent_space.post_body_init()
-        self.env_space.post_body_init()
+        return self.body_space
 
     def add(self, data_name, data_v):
         '''
@@ -207,39 +316,28 @@ class AEBSpace:
             data_space.add(data_v)
             return data_space
         else:
-            return [self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v)]
+            return tuple(self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v))
 
-    def body_done_log(self, body):
-        '''Log the summary for a body when it is done'''
-        env = body.env
-        clock = env.clock
-        memory = body.memory
-        msg = f'{self.spec["name"]} trial {self.info_space.get("trial")} session {self.info_space.get("session")} env {env.e}, body {body.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {body.loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
-        logger.info(msg)
+    def add_single(self, data_names, datas):
+        '''Backward compatible add method for singleton case - single agent, env, body with aeb = 0,0,0'''
+        assert ps.is_iterable(data_names) and ps.is_iterable(datas)
+        data_vs = self.init_data_v(data_names)
+        for data_v, data in zip(data_vs, datas):
+            data_v[0, 0, 0] = data
+        data_spaces = self.add(data_names, data_vs)
+        return data_spaces
 
-    def tick_clocks(self, session):
-        '''Tick all the clock in body_space, and check its own done_space to see if clock should be reset to next episode'''
-        env_dones = []
-        body_end_sessions = []
+    def tick(self, unit=None):
+        '''Tick all the clocks in env_space, and tell if all envs are done'''
+        end_sessions = []
         for env in self.env_space.envs:
-            done = env.done or env.clock.get('t') > env.max_timestep
-            env_dones.append(done)
-            if done:
-                epi = env.clock.get('epi')
-                save_this_epi = 'save_epi_frequency' in env.env_spec and (epi % env.env_spec['save_epi_frequency']) == 0
+            if env.done:
                 for body in env.nanflat_body_e:
-                    self.body_done_log(body)
-                    if epi > 0 and save_this_epi:
-                        body.agent.algorithm.save(epi=epi)
-                env.clock.tick('epi')
-            else:
-                env.clock.tick('t')
-            env_end_session = env.clock.get('epi') > env.max_episode
-            body_end_sessions.append(env_end_session)
-
-        # TODO do an efficient all(env_early_stops)
-        end_session = all(body_end_sessions)
-        return end_session
+                    body.log_summary()
+            env.clock.tick(unit or ('epi' if env.done else 't'))
+            end_session = env.clock.get('epi') > env.max_episode
+            end_sessions.append(end_session)
+        return all(end_sessions)
 
 
 class InfoSpace:
@@ -247,8 +345,6 @@ class InfoSpace:
         '''
         Initialize the coor, the global point in info space that will advance according to experiment progress.
         The coor starts with null first since the coor may not start at the origin.
-        TODO In general, when we parallelize to use multiple coor on a info space, keep a covered space and multiple coors to advance without conflicts.
-        TODO logic to resume from given last_coor
         '''
         self.coor = last_coor or {k: None for k in COOR_AXES}
         self.covered_space = []
@@ -293,24 +389,9 @@ class InfoSpace:
         self.coor[axis] = val
         return self.coor[axis]
 
-    def get_coor_idx(self, lab_comp):
-        '''
-        Get info space coor when initializing lab component, and return its coor and index.
-        Does not apply to AEB entities.
-        @returns {tuple, int} data_coor, index
-        @example
-
-        class Session:
-            def __init__(self, spec):
-                self.coor, self.index = info_space.get_coor_idx(self)
-
-        info_space.tick('session')
-        session = Session(spec, info_space)
-        '''
-        axis = util.get_class_name(lab_comp, lower=True)
-        coor = self.coor.copy()
-        index = coor[axis]
-        return coor, index
+    def get_random_seed(self):
+        '''Standard method to get random seed for a session'''
+        return int(1e5 * (self.get('trial') or 0) + 1e3 * (self.get('session') or 0))
 
 
 class Monitor:

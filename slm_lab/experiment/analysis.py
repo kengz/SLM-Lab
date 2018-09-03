@@ -5,7 +5,6 @@ Handles the analyses of the info and data space for experiment evaluation and de
 from slm_lab.agent import AGENT_DATA_NAMES
 from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.lib import logger, util, viz
-import colorlover as cl
 import numpy as np
 import os
 import pandas as pd
@@ -18,491 +17,11 @@ DATA_AGG_FNS = {
     'explore_var': 'mean',
 }
 FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
+# TODO improve to make it work with any reward mean
 FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
 NOISE_WINDOW = 0.05
 MA_WINDOW = 100
 logger = logger.get_logger(__name__)
-
-
-def calc_mean_fitness(fitness_df):
-    '''Method to calculated mean over all bodies for a fitness_df'''
-    return fitness_df.mean(axis=1, level=3)
-
-
-def get_session_data(session):
-    '''
-    Gather data from session: MDP, Agent, Env data, hashed by aeb; then aggregate.
-    @returns {dict, dict} session_mdp_data, session_data
-    '''
-    data_names = AGENT_DATA_NAMES + ENV_DATA_NAMES
-    mdp_data_names = ['t', 'epi'] + data_names
-    agg_data_names = ['epi'] + list(DATA_AGG_FNS.keys())
-    data_h_v_dict = {data_name: session.aeb_space.get_history_v(data_name) for data_name in data_names}
-    session_mdp_data, session_data = {}, {}
-    for aeb in session.aeb_space.aeb_list:
-        data_h_dict = {data_name: data_h_v[aeb] for data_name, data_h_v in data_h_v_dict.items()}
-        # trim back to remove any incomplete sessions due to multienv termination
-        complete_done_h = np.trim_zeros(data_h_dict['done'], 'b')
-        # offset properly to bin separate episodes
-        reset_bin = np.concatenate([[0.], complete_done_h[:-1]])
-        data_len = len(reset_bin)
-        reset_idx = reset_bin.astype('bool')
-        nonreset_idx = ~reset_idx
-        data_h_dict['t'] = np.ones(reset_idx.shape)
-        data_h_dict['epi'] = reset_idx.astype(int).cumsum()
-        mdp_df = pd.DataFrame({
-            data_name: data_h_dict[data_name][:data_len]
-            for data_name in mdp_data_names})
-        mdp_df = mdp_df.reindex(mdp_data_names, axis=1)
-        aeb_df = mdp_df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
-        aeb_df.reset_index(drop=False, inplace=True)
-        session_mdp_data[aeb], session_data[aeb] = mdp_df, aeb_df
-    logger.debug(f'{session_data}')
-    data_size_in_bytes = util.memory_size(session_mdp_data)
-    logger.debug(f'Size of session data: {data_size_in_bytes} MB')
-    if data_size_in_bytes > 25:
-        logger.warn(f'Session data > 25 MB')
-    return session_mdp_data, session_data
-
-
-def calc_session_fitness_df(session, session_data):
-    '''Calculate the session fitness df'''
-    session_fitness_data = {}
-    for aeb in session_data:
-        aeb_df = session_data[aeb]
-        util.downcast_float32(aeb_df)
-        body = session.aeb_space.body_space.data[aeb]
-        aeb_fitness_sr = calc_aeb_fitness_sr(aeb_df, body.env.name)
-        aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[session.index])
-        aeb_fitness_df = aeb_fitness_df.reindex(FITNESS_COLS[:3], axis=1)
-        session_fitness_data[aeb] = aeb_fitness_df
-    # form multi_index df, then take mean across all bodies
-    session_fitness_df = pd.concat(session_fitness_data, axis=1)
-    mean_fitness_df = calc_mean_fitness(session_fitness_df)
-    session_fitness = calc_fitness(mean_fitness_df)
-    logger.info(f'Session mean fitness: {session_fitness}\n{mean_fitness_df}')
-    return session_fitness_df
-
-
-def is_unfit(fitness_df):
-    '''Check if a fitness_df is unfit. Used to determine of trial should stop running more sessions'''
-    mean_fitness_df = calc_mean_fitness(fitness_df)
-    return mean_fitness_df['strength'].iloc[0] < NOISE_WINDOW
-
-
-def calc_trial_fitness_df(trial):
-    '''
-    Calculate the trial fitness df by aggregating from the collected session_data_dict (session_fitness_df's).
-    Adds a consistency dimension to fitness vector.
-    '''
-    trial_fitness_data = {}
-    all_session_fitness_df = pd.concat(list(trial.session_data_dict.values()))
-    for aeb in util.get_df_aeb_list(all_session_fitness_df):
-        aeb_fitness_df = all_session_fitness_df.loc[:, aeb]
-        aeb_fitness_sr = aeb_fitness_df.mean()
-        consistency = calc_consistency(aeb_fitness_df)
-        aeb_fitness_sr = aeb_fitness_sr.append(pd.Series({'consistency': consistency}))
-        aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[trial.index])
-        aeb_fitness_df = aeb_fitness_df.reindex(FITNESS_COLS, axis=1)
-        trial_fitness_data[aeb] = aeb_fitness_df
-    # form multi_index df, then take mean across all bodies
-    trial_fitness_df = pd.concat(trial_fitness_data, axis=1)
-    mean_fitness_df = calc_mean_fitness(trial_fitness_df)
-    trial_fitness_df = mean_fitness_df
-    trial_fitness = calc_fitness(mean_fitness_df)
-    logger.info(f'Trial mean fitness: {trial_fitness}\n{mean_fitness_df}')
-    return trial_fitness_df
-
-
-def get_palette(aeb_count):
-    '''Get the suitable palette to plot for some number of aeb graphs, where each aeb is a color.'''
-    if aeb_count <= 8:
-        palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
-    else:
-        palette = util.interp(cl.scales['8']['qual']['Set2'], aeb_count)
-    return palette
-
-
-def lower_opacity(rgb, opacity):
-    return rgb.replace('rgb(', 'rgba(').replace(')', f',{opacity})')
-
-
-def plot_session(session_spec, info_space, session_data):
-    '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
-    aeb_count = len(session_data)
-    palette = get_palette(aeb_count)
-    fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
-    for idx, (a, e, b) in enumerate(session_data):
-        aeb_str = f'{a}{e}{b}'
-        aeb_df = session_data[(a, e, b)]
-        aeb_df.fillna(0, inplace=True)  # for saving plot, cant have nan
-        fig_1 = viz.plot_line(aeb_df, 'reward', 'epi', legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
-        fig.append_trace(fig_1.data[0], 1, 1)
-
-        fig_2 = viz.plot_line(aeb_df, ['loss'], 'epi', y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
-        fig.append_trace(fig_2.data[0], 2, 1)
-        fig.append_trace(fig_2.data[1], 3, 1)
-
-    fig.layout['xaxis1'].update(title='epi', zerolinewidth=1)
-    fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
-    fig.layout['yaxis1'].update(domain=[0.55, 1])
-    fig.layout['yaxis2'].update(fig_2.layout['yaxis'])
-    fig.layout['yaxis2'].update(showgrid=False, domain=[0, 0.45])
-    fig.layout['yaxis3'].update(fig_2.layout['yaxis2'])
-    fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
-    fig.layout.update(ps.pick(fig_1.layout, ['legend']))
-    fig.layout.update(title=f'session graph: {session_spec["name"]} t{info_space.get("trial")} s{info_space.get("session")}', width=500, height=600)
-    viz.plot(fig)
-    return fig
-
-
-def gather_aeb_rewards_df(aeb, session_datas):
-    '''Gather rewards from each session for a body into a df'''
-    aeb_session_rewards = {}
-    for s, session_data in session_datas.items():
-        aeb_df = session_data[aeb]
-        aeb_reward_sr = aeb_df['reward']
-        aeb_session_rewards[s] = aeb_reward_sr
-    aeb_rewards_df = pd.DataFrame(aeb_session_rewards)
-    return aeb_rewards_df
-
-
-def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
-    '''Build the aeb_reward envelope figure'''
-    mean_sr = aeb_rewards_df.mean(axis=1)
-    std_sr = aeb_rewards_df.std(axis=1).fillna(0)
-    max_sr = mean_sr + std_sr
-    min_sr = mean_sr - std_sr
-    x = aeb_rewards_df.index.tolist()
-    max_y = max_sr.tolist()
-    min_y = min_sr.tolist()
-
-    envelope_trace = viz.go.Scatter(
-        x=x + x[::-1],
-        y=max_y + min_y[::-1],
-        fill='tozerox',
-        fillcolor=lower_opacity(color, 0.2),
-        line=dict(color='transparent'),
-        showlegend=False,
-        legendgroup=aeb_str,
-    )
-    df = pd.DataFrame({'epi': x, 'mean_reward': mean_sr})
-    fig = viz.plot_line(
-        df, ['mean_reward'], ['epi'], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
-    )
-    fig.data.append(envelope_trace)
-    return fig
-
-
-def plot_trial(trial_spec, info_space):
-    '''Plot the trial graph, 1 pane: mean and error envelope of reward graphs from all sessions. Each aeb_df gets its own color'''
-    prepath = util.get_prepath(trial_spec, info_space)
-    predir = util.prepath_to_predir(prepath)
-    session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
-
-    aeb_count = len(session_datas[0])
-    palette = get_palette(aeb_count)
-    fig = None
-    for idx, (a, e, b) in enumerate(session_datas[0]):
-        aeb = (a, e, b)
-        aeb_str = f'{a}{e}{b}'
-        color = palette[idx]
-        aeb_rewards_df = gather_aeb_rewards_df(aeb, session_datas)
-        aeb_fig = build_aeb_reward_fig(aeb_rewards_df, aeb_str, color)
-        if fig is None:
-            fig = aeb_fig
-        else:
-            fig.data.extend(aeb_fig.data)
-    fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{info_space.get("trial")}', width=500, height=600)
-    viz.plot(fig)
-    return fig
-
-
-def plot_experiment(experiment_spec, experiment_df):
-    '''
-    Plot the variable specs vs fitness vector of an experiment, where each point is a trial.
-    ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
-    '''
-    y_cols = ['fitness'] + FITNESS_COLS
-    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
-
-    fig = viz.tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True)
-    fitness_sr = experiment_df['fitness']
-    min_fitness = fitness_sr.values.min()
-    max_fitness = fitness_sr.values.max()
-    for row_idx, y in enumerate(y_cols):
-        for col_idx, x in enumerate(x_cols):
-            x_sr = experiment_df[x]
-            guard_cat_x = x_sr.astype(str) if x_sr.dtype == 'object' else x_sr
-            trace = viz.go.Scatter(
-                y=experiment_df[y], yaxis=f'y{row_idx+1}',
-                x=guard_cat_x, xaxis=f'x{col_idx+1}',
-                showlegend=False, mode='markers',
-                marker={
-                    'symbol': 'circle-open-dot', 'color': experiment_df['fitness'], 'opacity': 0.5,
-                    # dump first quarter of colorscale that is too bright
-                    'cmin': min_fitness - 0.50 * (max_fitness - min_fitness), 'cmax': max_fitness,
-                    'colorscale': 'YIGnBu', 'reversescale': True
-                },
-            )
-            fig.append_trace(trace, row_idx + 1, col_idx + 1)
-            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
-        fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
-    fig.layout.update(title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 300), height=700)
-    viz.plot(fig)
-    return fig
-
-
-# TODO persist each session's full data to DB from here
-def save_session_data(spec, info_space, session_mdp_data, session_data, session_fitness_df, session_fig):
-    '''
-    Save the session data: session_mdp_df, session_df, session_fitness_df, session_graph.
-    session_data is saved as session_df; multi-indexed with (a,e,b), 3 extra levels
-    to read, use:
-    session_df = util.read(filepath, header=[0, 1, 2, 3])
-    session_data = util.session_df_to_data(session_df)
-    Likewise for session_mdp_df
-    '''
-    prepath = util.get_prepath(spec, info_space, unit='session')
-    logger.info(f'Saving session data to {prepath}')
-    if session_mdp_data is not None:  # not from retro analysis
-        session_mdp_df = pd.concat(session_mdp_data, axis=1)
-        session_df = pd.concat(session_data, axis=1)
-        # TODO reactivate saving when get to the transition matrix research
-        # util.write(session_mdp_df, f'{prepath}_session_mdp_df.csv')
-        util.write(session_df, f'{prepath}_session_df.csv')
-    util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
-    viz.save_image(session_fig, f'{prepath}_session_graph.png')
-
-
-def save_trial_data(spec, info_space, trial_fitness_df, trial_fig):
-    '''Save the trial data: spec, trial_fitness_df.'''
-    prepath = util.get_prepath(spec, info_space, unit='trial')
-    logger.info(f'Saving trial data to {prepath}')
-    util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
-    viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
-
-
-def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
-    '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
-    prepath = util.get_prepath(spec, info_space, unit='experiment')
-    logger.info(f'Saving experiment data to {prepath}')
-    util.write(experiment_df, f'{prepath}_experiment_df.csv')
-    viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
-
-
-def analyze_session(session, session_data=None):
-    '''
-    Gather session data, plot, and return fitness df for high level agg.
-    @returns {DataFrame} session_fitness_df Single-row df of session fitness vector (avg over aeb), indexed with session index.
-    '''
-    logger.info('Analyzing session')
-    if session_data is None:
-        session_mdp_data, session_data = get_session_data(session)
-    else:  # from retro analysis
-        session_mdp_data = None
-    session_fitness_df = calc_session_fitness_df(session, session_data)
-    session_fig = plot_session(session.spec, session.info_space, session_data)
-    save_session_data(session.spec, session.info_space, session_mdp_data, session_data, session_fitness_df, session_fig)
-    return session_fitness_df
-
-
-def analyze_trial(trial):
-    '''
-    Gather trial data, plot, and return trial df for high level agg.
-    @returns {DataFrame} trial_fitness_df Single-row df of trial fitness vector (avg over aeb, sessions), indexed with trial index.
-    '''
-    logger.info('Analyzing trial')
-    trial_fitness_df = calc_trial_fitness_df(trial)
-    trial_fig = plot_trial(trial.spec, trial.info_space)
-    save_trial_data(trial.spec, trial.info_space, trial_fitness_df, trial_fig)
-    return trial_fitness_df
-
-
-def analyze_experiment(experiment):
-    '''
-    Gather experiment trial_data_dict as experiment_df, plot.
-    Search module must return best_spec and experiment_data with format {trial_index: exp_trial_data},
-    where trial_data = {**var_spec, **fitness_vec, fitness}.
-    This is then made into experiment_df.
-    @returns {DataFrame} experiment_df Of var_specs, fitness_vec, fitness for all trials.
-    '''
-    logger.info('Analyzing experiment')
-    experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
-    cols = FITNESS_COLS + ['fitness']
-    config_cols = sorted(ps.difference(experiment_df.columns.tolist(), cols))
-    sorted_cols = config_cols + cols
-    experiment_df = experiment_df.reindex(sorted_cols, axis=1)
-    experiment_df.sort_values(by=['fitness'], ascending=False, inplace=True)
-    logger.info(f'Experiment data:\n{experiment_df}')
-    experiment_fig = plot_experiment(experiment.spec, experiment_df)
-    save_experiment_data(experiment.spec, experiment.info_space, experiment_df, experiment_fig)
-    return experiment_df
-
-
-def save_spec(spec, info_space, unit='experiment'):
-    '''Save spec to proper path. Called at Experiment or Trial init.'''
-    prepath = util.get_prepath(spec, info_space, unit)
-    util.write(spec, f'{prepath}_spec.json')
-
-
-def session_data_from_file(predir, trial_index, session_index):
-    '''Build session.session_data from file'''
-    for filename in os.listdir(predir):
-        if filename.endswith(f'_t{trial_index}_s{session_index}_session_df.csv'):
-            filepath = f'{predir}/{filename}'
-            session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
-            session_data = util.session_df_to_data(session_df)
-            return session_data
-
-
-def session_datas_from_file(predir, trial_spec, trial_index):
-    '''Return a dict of {session_index: session_data} for a trial'''
-    session_datas = {}
-    for s in range(trial_spec['meta']['max_session']):
-        session_data = session_data_from_file(predir, trial_index, s)
-        if session_data is not None:
-            session_datas[s] = session_data
-    return session_datas
-
-
-def session_data_dict_from_file(predir, trial_index):
-    '''Build trial.session_data_dict from file'''
-    session_data_dict = {}
-    for filename in os.listdir(predir):
-        if f'_t{trial_index}_' in filename and filename.endswith('_session_fitness_df.csv'):
-            filepath = f'{predir}/{filename}'
-            fitness_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
-            util.fix_multi_index_dtype(fitness_df)
-            session_index = fitness_df.index[0]
-            session_data_dict[session_index] = fitness_df
-    return session_data_dict
-
-
-def trial_data_dict_from_file(predir):
-    '''Build experiment.trial_data_dict from file'''
-    trial_data_dict = {}
-    for filename in os.listdir(predir):
-        if filename.endswith('_trial_data.json'):
-            filepath = f'{predir}/{filename}'
-            exp_trial_data = util.read(filepath)
-            trial_index = exp_trial_data.pop('trial_index')
-            trial_data_dict[trial_index] = exp_trial_data
-    return trial_data_dict
-
-
-# TODO unify with util method
-def mock_info_space_spec(predir, trial_index=None, session_index=None):
-    '''Helper for retro analysis to build mock info_space and spec'''
-    from slm_lab.experiment.monitor import InfoSpace
-    spec_name = util.prepath_to_spec_name(predir)
-    experiment_ts = util.prepath_to_experiment_ts(predir)
-    info_space = InfoSpace()
-    info_space.experiment_ts = experiment_ts
-    info_space.set('experiment', 0)
-    if trial_index is None:
-        filepath = f'{predir}/{spec_name}_spec.json'
-    else:
-        info_space.set('trial', trial_index)
-        filepath = f'{predir}/{spec_name}_t{trial_index}_spec.json'
-    if session_index is not None:
-        info_space.set('session', session_index)
-    spec = util.read(filepath)
-    return spec, info_space
-
-
-def retro_analyze_sessions(predir):
-    '''Retro-analyze all session level datas.'''
-    logger.info('Retro-analyzing sessions from file')
-    from slm_lab.experiment.control import Session
-    for filename in os.listdir(predir):
-        if filename.endswith('_session_df.csv'):
-            tn, sn = filename.replace('_session_df.csv', '').split('_')[-2:]
-            trial_index, session_index = int(tn[1:]), int(sn[1:])
-            # mock session
-            spec, info_space = mock_info_space_spec(predir, trial_index, session_index)
-            session = Session(spec, info_space)
-            session_data = session_data_from_file(predir, trial_index, session_index)
-            analyze_session(session, session_data)
-
-
-def retro_analyze_trials(predir):
-    '''Retro-analyze all trial level datas.'''
-    logger.info('Retro-analyzing trials from file')
-    from slm_lab.experiment.control import Trial
-    for filename in os.listdir(predir):
-        if filename.endswith('_trial_data.json'):
-            filepath = f'{predir}/{filename}'
-            tn = filename.replace('_trial_data.json', '').split('_')[-1]
-            trial_index = int(tn[1:])
-            # mock trial
-            spec, info_space = mock_info_space_spec(predir, trial_index)
-            trial = Trial(spec, info_space)
-            session_data_dict = session_data_dict_from_file(predir, trial_index)
-            trial.session_data_dict = session_data_dict
-            trial_fitness_df = analyze_trial(trial)
-            # write trial_data that was written from ray search
-            fitness_vec = trial_fitness_df.iloc[0].to_dict()
-            fitness = calc_fitness(trial_fitness_df)
-            trial_data = util.read(filepath)
-            trial_data.update({
-                **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
-            })
-            util.write(trial_data, filepath)
-
-
-def retro_analyze_experiment(predir):
-    '''Retro-analyze all experiment level datas.'''
-    logger.info('Retro-analyzing experiment from file')
-    from slm_lab.experiment.control import Experiment
-    # mock experiment
-    spec, info_space = mock_info_space_spec(predir)
-    experiment = Experiment(spec, info_space)
-    trial_data_dict = trial_data_dict_from_file(predir)
-    experiment.trial_data_dict = trial_data_dict
-    return analyze_experiment(experiment)
-
-
-def retro_analyze(predir):
-    '''
-    Method to analyze experiment from file after it ran.
-    Read from files, constructs lab units, run retro analyses on all lab units.
-    This method has no side-effects, i.e. doesn't overwrite data it should not.
-    @example
-
-    from slm_lab.experiment import analysis
-    predir = 'data/reinforce_cartpole_2018_01_22_211751'
-    analysis.retro_analyze(predir)
-    '''
-    os.environ['PREPATH'] = f'{predir}/retro_analyze'  # to prevent overwriting log file
-    logger.info(f'Retro-analyzing {predir}')
-    retro_analyze_sessions(predir)
-    retro_analyze_trials(predir)
-    retro_analyze_experiment(predir)
-
-
-def plot_session_from_file(session_df_filepath):
-    '''
-    Method to plot session from its session_df file
-    @example
-
-    from slm_lab.experiment import analysis
-    filepath = 'data/reinforce_cartpole_2018_01_22_211751/reinforce_cartpole_t0_s0_session_df.csv'
-    analysis.plot_session_from_file(filepath)
-    '''
-    from slm_lab.experiment.monitor import InfoSpace
-    spec_name = util.prepath_to_spec_name(session_df_filepath)
-    session_spec = {'name': spec_name}
-    session_df = util.read(session_df_filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
-    session_data = util.session_df_to_data(session_df)
-    tn, sn = session_df_filepath.replace('_session_df.csv', '').split('_')[-2:]
-    info_space = InfoSpace()
-    info_space.set('experiment', 0)
-    info_space.set('trial', int(tn[1:]))
-    info_space.set('session', int(sn[1:]))
-    session_fig = plot_session(session_spec, info_space, session_data)
-    viz.save_image(session_fig, session_df_filepath.replace('_session_df.csv', '_session_graph.png'))
-
 
 '''
 Fitness analysis
@@ -671,3 +190,487 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
     aeb_fitness_sr = pd.Series({
         'strength': strength, 'speed': speed, 'stability': stability})
     return aeb_fitness_sr
+
+
+'''
+Analysis interface methods
+'''
+
+
+def save_spec(spec, info_space, unit='experiment'):
+    '''Save spec to proper path. Called at Experiment or Trial init.'''
+    prepath = util.get_prepath(spec, info_space, unit)
+    util.write(spec, f'{prepath}_spec.json')
+
+
+def calc_mean_fitness(fitness_df):
+    '''Method to calculated mean over all bodies for a fitness_df'''
+    return fitness_df.mean(axis=1, level=3)
+
+
+def get_session_data(session):
+    '''
+    Gather data from session: MDP, Agent, Env data, hashed by aeb; then aggregate.
+    @returns {dict, dict} session_mdp_data, session_data
+    '''
+    data_names = AGENT_DATA_NAMES + ENV_DATA_NAMES
+    mdp_data_names = ['t', 'epi'] + data_names
+    agg_data_names = ['epi'] + list(DATA_AGG_FNS.keys())
+    data_h_v_dict = {data_name: session.aeb_space.get_history_v(data_name) for data_name in data_names}
+    session_mdp_data, session_data = {}, {}
+    for aeb in session.aeb_space.aeb_list:
+        data_h_dict = {data_name: data_h_v[aeb] for data_name, data_h_v in data_h_v_dict.items()}
+        # trim back to remove any incomplete sessions due to multienv termination
+        complete_done_h = np.trim_zeros(data_h_dict['done'], 'b')
+        # offset properly to bin separate episodes
+        reset_bin = np.concatenate([[0.], complete_done_h[:-1]])
+        data_len = len(reset_bin)
+        reset_idx = reset_bin.astype('bool')
+        nonreset_idx = ~reset_idx
+        data_h_dict['t'] = np.ones(reset_idx.shape)
+        data_h_dict['epi'] = reset_idx.astype(int).cumsum() + 1  # +1 to start counting from 1
+        mdp_df = pd.DataFrame({
+            data_name: data_h_dict[data_name][:data_len]
+            for data_name in mdp_data_names})
+        mdp_df = mdp_df.reindex(mdp_data_names, axis=1)
+        aeb_df = mdp_df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
+        aeb_df['t'] -= 1  # offset t=0 at reset
+        aeb_df.reset_index(drop=False, inplace=True)
+        session_mdp_data[aeb], session_data[aeb] = mdp_df, aeb_df
+    logger.debug(f'{session_data}')
+    data_size_in_bytes = util.memory_size(session_mdp_data)
+    logger.debug(f'Size of session data: {data_size_in_bytes} MB')
+    if data_size_in_bytes > 25:
+        logger.warn(f'Session data > 25 MB')
+    return session_mdp_data, session_data
+
+
+def calc_session_fitness_df(session, session_data):
+    '''Calculate the session fitness df'''
+    session_fitness_data = {}
+    for aeb in session_data:
+        aeb_df = session_data[aeb]
+        util.downcast_float32(aeb_df)
+        body = session.aeb_space.body_space.data[aeb]
+        aeb_fitness_sr = calc_aeb_fitness_sr(aeb_df, body.env.name)
+        aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[session.index])
+        aeb_fitness_df = aeb_fitness_df.reindex(FITNESS_COLS[:3], axis=1)
+        session_fitness_data[aeb] = aeb_fitness_df
+    # form multi_index df, then take mean across all bodies
+    session_fitness_df = pd.concat(session_fitness_data, axis=1)
+    mean_fitness_df = calc_mean_fitness(session_fitness_df)
+    session_fitness = calc_fitness(mean_fitness_df)
+    logger.info(f'Session mean fitness: {session_fitness}\n{mean_fitness_df}')
+    return session_fitness_df
+
+
+def calc_trial_fitness_df(trial):
+    '''
+    Calculate the trial fitness df by aggregating from the collected session_data_dict (session_fitness_df's).
+    Adds a consistency dimension to fitness vector.
+    '''
+    trial_fitness_data = {}
+    all_session_fitness_df = pd.concat(list(trial.session_data_dict.values()))
+    for aeb in util.get_df_aeb_list(all_session_fitness_df):
+        aeb_fitness_df = all_session_fitness_df.loc[:, aeb]
+        aeb_fitness_sr = aeb_fitness_df.mean()
+        consistency = calc_consistency(aeb_fitness_df)
+        aeb_fitness_sr = aeb_fitness_sr.append(pd.Series({'consistency': consistency}))
+        aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[trial.index])
+        aeb_fitness_df = aeb_fitness_df.reindex(FITNESS_COLS, axis=1)
+        trial_fitness_data[aeb] = aeb_fitness_df
+    # form multi_index df, then take mean across all bodies
+    trial_fitness_df = pd.concat(trial_fitness_data, axis=1)
+    mean_fitness_df = calc_mean_fitness(trial_fitness_df)
+    trial_fitness_df = mean_fitness_df
+    trial_fitness = calc_fitness(mean_fitness_df)
+    logger.info(f'Trial mean fitness: {trial_fitness}\n{mean_fitness_df}')
+    return trial_fitness_df
+
+
+def is_unfit(fitness_df):
+    '''Check if a fitness_df is unfit. Used to determine of trial should stop running more sessions'''
+    # TODO improve to make it work with any reward mean
+    mean_fitness_df = calc_mean_fitness(fitness_df)
+    return mean_fitness_df['strength'].iloc[0] < NOISE_WINDOW
+
+
+def plot_session(session_spec, info_space, session_data):
+    '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
+    aeb_count = len(session_data)
+    palette = viz.get_palette(aeb_count)
+    fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
+    for idx, (a, e, b) in enumerate(session_data):
+        aeb_str = f'{a}{e}{b}'
+        aeb_df = session_data[(a, e, b)]
+        aeb_df.fillna(0, inplace=True)  # for saving plot, cant have nan
+        fig_1 = viz.plot_line(aeb_df, 'reward', 'epi', legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
+        fig.append_trace(fig_1.data[0], 1, 1)
+
+        fig_2 = viz.plot_line(aeb_df, ['loss'], 'epi', y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
+        fig.append_trace(fig_2.data[0], 2, 1)
+        fig.append_trace(fig_2.data[1], 3, 1)
+
+    fig.layout['xaxis1'].update(title='epi', zerolinewidth=1)
+    fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
+    fig.layout['yaxis1'].update(domain=[0.55, 1])
+    fig.layout['yaxis2'].update(fig_2.layout['yaxis'])
+    fig.layout['yaxis2'].update(showgrid=False, domain=[0, 0.45])
+    fig.layout['yaxis3'].update(fig_2.layout['yaxis2'])
+    fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
+    fig.layout.update(ps.pick(fig_1.layout, ['legend']))
+    fig.layout.update(title=f'session graph: {session_spec["name"]} t{info_space.get("trial")} s{info_space.get("session")}', width=500, height=600)
+    viz.plot(fig)
+    return fig
+
+
+def gather_aeb_rewards_df(aeb, session_datas):
+    '''Gather rewards from each session for a body into a df'''
+    aeb_session_rewards = {}
+    for s, session_data in session_datas.items():
+        aeb_df = session_data[aeb]
+        aeb_reward_sr = aeb_df['reward']
+        aeb_session_rewards[s] = aeb_reward_sr
+    aeb_rewards_df = pd.DataFrame(aeb_session_rewards)
+    return aeb_rewards_df
+
+
+def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
+    '''Build the aeb_reward envelope figure'''
+    mean_sr = aeb_rewards_df.mean(axis=1)
+    std_sr = aeb_rewards_df.std(axis=1).fillna(0)
+    max_sr = mean_sr + std_sr
+    min_sr = mean_sr - std_sr
+    x = aeb_rewards_df.index.tolist()
+    max_y = max_sr.tolist()
+    min_y = min_sr.tolist()
+
+    envelope_trace = viz.go.Scatter(
+        x=x + x[::-1],
+        y=max_y + min_y[::-1],
+        fill='tozerox',
+        fillcolor=viz.lower_opacity(color, 0.2),
+        line=dict(color='transparent'),
+        showlegend=False,
+        legendgroup=aeb_str,
+    )
+    df = pd.DataFrame({'epi': x, 'mean_reward': mean_sr})
+    fig = viz.plot_line(
+        df, ['mean_reward'], ['epi'], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
+    )
+    fig.data.append(envelope_trace)
+    return fig
+
+
+def plot_trial(trial_spec, info_space):
+    '''Plot the trial graph, 1 pane: mean and error envelope of reward graphs from all sessions. Each aeb_df gets its own color'''
+    prepath = util.get_prepath(trial_spec, info_space)
+    predir = util.prepath_to_predir(prepath)
+    session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
+
+    aeb_count = len(session_datas[0])
+    palette = viz.get_palette(aeb_count)
+    fig = None
+    for idx, (a, e, b) in enumerate(session_datas[0]):
+        aeb = (a, e, b)
+        aeb_str = f'{a}{e}{b}'
+        color = palette[idx]
+        aeb_rewards_df = gather_aeb_rewards_df(aeb, session_datas)
+        aeb_fig = build_aeb_reward_fig(aeb_rewards_df, aeb_str, color)
+        if fig is None:
+            fig = aeb_fig
+        else:
+            fig.data.extend(aeb_fig.data)
+    fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{info_space.get("trial")}', width=500, height=600)
+    viz.plot(fig)
+    return fig
+
+
+def plot_experiment(experiment_spec, experiment_df):
+    '''
+    Plot the variable specs vs fitness vector of an experiment, where each point is a trial.
+    ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
+    '''
+    y_cols = ['fitness'] + FITNESS_COLS
+    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
+
+    fig = viz.tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True)
+    fitness_sr = experiment_df['fitness']
+    min_fitness = fitness_sr.values.min()
+    max_fitness = fitness_sr.values.max()
+    for row_idx, y in enumerate(y_cols):
+        for col_idx, x in enumerate(x_cols):
+            x_sr = experiment_df[x]
+            guard_cat_x = x_sr.astype(str) if x_sr.dtype == 'object' else x_sr
+            trace = viz.go.Scatter(
+                y=experiment_df[y], yaxis=f'y{row_idx+1}',
+                x=guard_cat_x, xaxis=f'x{col_idx+1}',
+                showlegend=False, mode='markers',
+                marker={
+                    'symbol': 'circle-open-dot', 'color': experiment_df['fitness'], 'opacity': 0.5,
+                    # dump first quarter of colorscale that is too bright
+                    'cmin': min_fitness - 0.50 * (max_fitness - min_fitness), 'cmax': max_fitness,
+                    'colorscale': 'YIGnBu', 'reversescale': True
+                },
+            )
+            fig.append_trace(trace, row_idx + 1, col_idx + 1)
+            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
+        fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
+    fig.layout.update(title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 300), height=700)
+    viz.plot(fig)
+    return fig
+
+
+def save_session_data(spec, info_space, session_mdp_data, session_data, session_fitness_df, session_fig):
+    '''
+    Save the session data: session_mdp_df, session_df, session_fitness_df, session_graph.
+    session_data is saved as session_df; multi-indexed with (a,e,b), 3 extra levels
+    to read, use:
+    session_df = util.read(filepath, header=[0, 1, 2, 3])
+    session_data = util.session_df_to_data(session_df)
+    Likewise for session_mdp_df
+    '''
+    prepath = util.get_prepath(spec, info_space, unit='session')
+    logger.info(f'Saving session data to {prepath}')
+    if session_mdp_data is not None:  # not from retro analysis
+        session_mdp_df = pd.concat(session_mdp_data, axis=1)
+        session_df = pd.concat(session_data, axis=1)
+        # TODO reactivate saving when get to the transition matrix research
+        # util.write(session_mdp_df, f'{prepath}_session_mdp_df.csv')
+        util.write(session_df, f'{prepath}_session_df.csv')
+    util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
+    viz.save_image(session_fig, f'{prepath}_session_graph.png')
+
+
+def save_trial_data(spec, info_space, trial_fitness_df, trial_fig):
+    '''Save the trial data: spec, trial_fitness_df.'''
+    prepath = util.get_prepath(spec, info_space, unit='trial')
+    logger.info(f'Saving trial data to {prepath}')
+    util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
+    viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
+
+
+def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
+    '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
+    prepath = util.get_prepath(spec, info_space, unit='experiment')
+    logger.info(f'Saving experiment data to {prepath}')
+    util.write(experiment_df, f'{prepath}_experiment_df.csv')
+    viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
+
+
+def analyze_session(session, session_data=None):
+    '''
+    Gather session data, plot, and return fitness df for high level agg.
+    @returns {DataFrame} session_fitness_df Single-row df of session fitness vector (avg over aeb), indexed with session index.
+    '''
+    logger.info('Analyzing session')
+    if session_data is None:
+        session_mdp_data, session_data = get_session_data(session)
+    else:  # from retro analysis
+        session_mdp_data = None
+    session_fitness_df = calc_session_fitness_df(session, session_data)
+    session_fig = plot_session(session.spec, session.info_space, session_data)
+    save_session_data(session.spec, session.info_space, session_mdp_data, session_data, session_fitness_df, session_fig)
+    return session_fitness_df
+
+
+def analyze_trial(trial):
+    '''
+    Gather trial data, plot, and return trial df for high level agg.
+    @returns {DataFrame} trial_fitness_df Single-row df of trial fitness vector (avg over aeb, sessions), indexed with trial index.
+    '''
+    logger.info('Analyzing trial')
+    trial_fitness_df = calc_trial_fitness_df(trial)
+    trial_fig = plot_trial(trial.spec, trial.info_space)
+    save_trial_data(trial.spec, trial.info_space, trial_fitness_df, trial_fig)
+    return trial_fitness_df
+
+
+def analyze_experiment(experiment):
+    '''
+    Gather experiment trial_data_dict as experiment_df, plot.
+    Search module must return best_spec and experiment_data with format {trial_index: exp_trial_data},
+    where trial_data = {**var_spec, **fitness_vec, fitness}.
+    This is then made into experiment_df.
+    @returns {DataFrame} experiment_df Of var_specs, fitness_vec, fitness for all trials.
+    '''
+    logger.info('Analyzing experiment')
+    experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
+    cols = FITNESS_COLS + ['fitness']
+    config_cols = sorted(ps.difference(experiment_df.columns.tolist(), cols))
+    sorted_cols = config_cols + cols
+    experiment_df = experiment_df.reindex(sorted_cols, axis=1)
+    experiment_df.sort_values(by=['fitness'], ascending=False, inplace=True)
+    logger.info(f'Experiment data:\n{experiment_df}')
+    experiment_fig = plot_experiment(experiment.spec, experiment_df)
+    save_experiment_data(experiment.spec, experiment.info_space, experiment_df, experiment_fig)
+    return experiment_df
+
+
+'''
+Retro analysis
+'''
+
+
+def session_data_from_file(predir, trial_index, session_index):
+    '''Build session.session_data from file'''
+    for filename in os.listdir(predir):
+        if filename.endswith(f'_t{trial_index}_s{session_index}_session_df.csv'):
+            filepath = f'{predir}/{filename}'
+            session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
+            session_data = util.session_df_to_data(session_df)
+            return session_data
+
+
+def session_datas_from_file(predir, trial_spec, trial_index):
+    '''Return a dict of {session_index: session_data} for a trial'''
+    session_datas = {}
+    for s in range(trial_spec['meta']['max_session']):
+        session_data = session_data_from_file(predir, trial_index, s)
+        if session_data is not None:
+            session_datas[s] = session_data
+    return session_datas
+
+
+def session_data_dict_from_file(predir, trial_index):
+    '''Build trial.session_data_dict from file'''
+    session_data_dict = {}
+    for filename in os.listdir(predir):
+        if f'_t{trial_index}_' in filename and filename.endswith('_session_fitness_df.csv'):
+            filepath = f'{predir}/{filename}'
+            fitness_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
+            util.fix_multi_index_dtype(fitness_df)
+            session_index = fitness_df.index[0]
+            session_data_dict[session_index] = fitness_df
+    return session_data_dict
+
+
+def session_data_dict_for_dist(spec, info_space):
+    '''Method to retrieve session_datas (fitness df, so the same as session_data_dict above) when a trial with distributed sessions is done, to avoid messy multiprocessing data communication'''
+    prepath = util.get_prepath(spec, info_space)
+    predir = util.prepath_to_predir(prepath)
+    session_datas = session_data_dict_from_file(predir, info_space.get('trial'))
+    session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
+    return session_datas
+
+
+def trial_data_dict_from_file(predir):
+    '''Build experiment.trial_data_dict from file'''
+    trial_data_dict = {}
+    for filename in os.listdir(predir):
+        if filename.endswith('_trial_data.json'):
+            filepath = f'{predir}/{filename}'
+            exp_trial_data = util.read(filepath)
+            trial_index = exp_trial_data.pop('trial_index')
+            trial_data_dict[trial_index] = exp_trial_data
+    return trial_data_dict
+
+
+def mock_spec_info_space(predir, trial_index=None, session_index=None):
+    '''Helper for retro analysis to build mock info_space and spec'''
+    from slm_lab.experiment.monitor import InfoSpace
+    spec_name = util.prepath_to_spec_name(predir)
+    experiment_ts = util.prepath_to_experiment_ts(predir)
+    info_space = InfoSpace()
+    info_space.experiment_ts = experiment_ts
+    info_space.set('experiment', 0)
+    if trial_index is None:
+        filepath = f'{predir}/{spec_name}_spec.json'
+    else:
+        info_space.set('trial', trial_index)
+        filepath = f'{predir}/{spec_name}_t{trial_index}_spec.json'
+    if session_index is not None:
+        info_space.set('session', session_index)
+    spec = util.read(filepath)
+    return spec, info_space
+
+
+def retro_analyze_sessions(predir):
+    '''Retro-analyze all session level datas.'''
+    logger.info('Retro-analyzing sessions from file')
+    from slm_lab.experiment.control import Session
+    for filename in os.listdir(predir):
+        if filename.endswith('_session_df.csv'):
+            tn, sn = filename.replace('_session_df.csv', '').split('_')[-2:]
+            trial_index, session_index = int(tn[1:]), int(sn[1:])
+            # mock session
+            spec, info_space = mock_spec_info_space(predir, trial_index, session_index)
+            session = Session(spec, info_space)
+            session_data = session_data_from_file(predir, trial_index, session_index)
+            analyze_session(session, session_data)
+
+
+def retro_analyze_trials(predir):
+    '''Retro-analyze all trial level datas.'''
+    logger.info('Retro-analyzing trials from file')
+    from slm_lab.experiment.control import Trial
+    for filename in os.listdir(predir):
+        if filename.endswith('_trial_data.json'):
+            filepath = f'{predir}/{filename}'
+            tn = filename.replace('_trial_data.json', '').split('_')[-1]
+            trial_index = int(tn[1:])
+            # mock trial
+            spec, info_space = mock_spec_info_space(predir, trial_index)
+            trial = Trial(spec, info_space)
+            trial.session_data_dict = session_data_dict_from_file(predir, trial_index)
+            trial_fitness_df = analyze_trial(trial)
+            # write trial_data that was written from ray search
+            fitness_vec = trial_fitness_df.iloc[0].to_dict()
+            fitness = calc_fitness(trial_fitness_df)
+            trial_data = util.read(filepath)
+            trial_data.update({
+                **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
+            })
+            util.write(trial_data, filepath)
+
+
+def retro_analyze_experiment(predir):
+    '''Retro-analyze all experiment level datas.'''
+    logger.info('Retro-analyzing experiment from file')
+    from slm_lab.experiment.control import Experiment
+    # mock experiment
+    spec, info_space = mock_spec_info_space(predir)
+    experiment = Experiment(spec, info_space)
+    experiment.trial_data_dict = trial_data_dict_from_file(predir)
+    return analyze_experiment(experiment)
+
+
+def retro_analyze(predir):
+    '''
+    Method to analyze experiment from file after it ran.
+    Read from files, constructs lab units, run retro analyses on all lab units.
+    This method has no side-effects, i.e. doesn't overwrite data it should not.
+    @example
+
+    from slm_lab.experiment import analysis
+    predir = 'data/reinforce_cartpole_2018_01_22_211751'
+    analysis.retro_analyze(predir)
+    '''
+    os.environ['PREPATH'] = f'{predir}/retro_analyze'  # to prevent overwriting log file
+    logger.info(f'Retro-analyzing {predir}')
+    retro_analyze_sessions(predir)
+    retro_analyze_trials(predir)
+    retro_analyze_experiment(predir)
+
+
+def plot_session_from_file(session_df_filepath):
+    '''
+    Method to plot session from its session_df file
+    @example
+
+    from slm_lab.experiment import analysis
+    filepath = 'data/reinforce_cartpole_2018_01_22_211751/reinforce_cartpole_t0_s0_session_df.csv'
+    analysis.plot_session_from_file(filepath)
+    '''
+    from slm_lab.experiment.monitor import InfoSpace
+    spec_name = util.prepath_to_spec_name(session_df_filepath)
+    session_spec = {'name': spec_name}
+    session_df = util.read(session_df_filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
+    session_data = util.session_df_to_data(session_df)
+    tn, sn = session_df_filepath.replace('_session_df.csv', '').split('_')[-2:]
+    info_space = InfoSpace()
+    info_space.set('experiment', 0)
+    info_space.set('trial', int(tn[1:]))
+    info_space.set('session', int(sn[1:]))
+    session_fig = plot_session(session_spec, info_space, session_data)
+    viz.save_image(session_fig, session_df_filepath.replace('_session_df.csv', '_session_graph.png'))

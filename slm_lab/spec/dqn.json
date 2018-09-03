@@ -582,7 +582,7 @@
         "training_min_timestep": 100
       },
       "memory": {
-        "name": "StackReplay",
+        "name": "ConcatReplay",
         "batch_size": 32,
         "max_size": 100000,
         "stack_len": 4,

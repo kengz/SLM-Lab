@@ -35,10 +35,10 @@ class OnPolicyReplay(Memory):
     }
     '''
 
-    def __init__(self, memory_spec, algorithm, body):
-        super(OnPolicyReplay, self).__init__(memory_spec, algorithm, body)
+    def __init__(self, memory_spec, body):
+        super(OnPolicyReplay, self).__init__(memory_spec, body)
         # NOTE for OnPolicy replay, frequency = episode; for other classes below frequency = frames
-        util.set_attr(self, self.agent_spec['algorithm'], ['training_frequency'])
+        util.set_attr(self, self.body.agent.agent_spec['algorithm'], ['training_frequency'])
         self.state_buffer = deque(maxlen=0)  # for API consistency
         # Don't want total experiences reset when memory is
         self.is_episodic = True
@@ -121,9 +121,9 @@ class OnPolicySeqReplay(OnPolicyReplay):
     * seq_len provided by net_spec
     '''
 
-    def __init__(self, memory_spec, algorithm, body):
-        self.seq_len = algorithm.net_spec['seq_len']
-        super(OnPolicySeqReplay, self).__init__(memory_spec, algorithm, body)
+    def __init__(self, memory_spec, body):
+        super(OnPolicySeqReplay, self).__init__(memory_spec, body)
+        self.seq_len = self.body.agent.agent_spec['net']['seq_len']
         self.state_buffer = deque(maxlen=self.seq_len)
 
     def preprocess_state(self, state, append=True):
@@ -195,8 +195,8 @@ class OnPolicyBatchReplay(OnPolicyReplay):
     * batch_size is training_frequency provided by algorithm_spec
     '''
 
-    def __init__(self, memory_spec, algorithm, body):
-        super(OnPolicyBatchReplay, self).__init__(memory_spec, algorithm, body)
+    def __init__(self, memory_spec, body):
+        super(OnPolicyBatchReplay, self).__init__(memory_spec, body)
         self.is_episodic = False
 
     def add_experience(self, state, action, reward, next_state, done):
@@ -241,10 +241,10 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
     * batch_size is training_frequency provided by algorithm_spec
     '''
 
-    def __init__(self, memory_spec, algorithm, body):
+    def __init__(self, memory_spec, body):
+        super(OnPolicySeqBatchReplay, self).__init__(memory_spec, body)
         self.is_episodic = False
-        self.seq_len = algorithm.net_spec['seq_len']
-        super(OnPolicySeqBatchReplay, self).__init__(memory_spec, algorithm, body)
+        self.seq_len = self.body.agent.agent_spec['net']['seq_len']
         self.state_buffer = deque(maxlen=self.seq_len)
 
     def reset(self):

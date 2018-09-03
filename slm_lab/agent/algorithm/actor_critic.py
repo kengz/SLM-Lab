@@ -74,14 +74,6 @@ class ActorCritic(Reinforce):
     '''
 
     @lab_api
-    def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
-        self.init_algorithm_params()
-        self.init_nets()
-        logger.info(util.self_desc(self))
-
-    @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         # set default
@@ -118,8 +110,7 @@ class ActorCritic(Reinforce):
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        for body in self.agent.nanflat_body_a:
-            body.explore_var = self.explore_var_start
+        self.body.explore_var = self.explore_var_start
         # Select appropriate methods to calculate adv_targets and v_targets for training
         if self.use_gae:
             self.calc_advs_v_targets = self.calc_gae_advs_v_targets
@@ -238,8 +229,9 @@ class ActorCritic(Reinforce):
             self.body.log_probs = []
             self.body.entropies = []
             logger.debug(f'Total loss: {loss:.4f}')
-            self.last_loss = loss.item()
-        return self.last_loss
+            return loss.item()
+        else:
+            return np.nan
 
     def train_separate(self):
         '''
@@ -256,8 +248,9 @@ class ActorCritic(Reinforce):
             self.body.entropies = []
             self.body.log_probs = []
             logger.debug(f'Total loss: {loss:.4f}')
-            self.last_loss = loss.item()
-        return self.last_loss
+            return loss.item()
+        else:
+            return np.nan
 
     def train_actor(self, batch):
         '''Trains the actor when the actor and critic are separate networks'''
@@ -269,14 +262,14 @@ class ActorCritic(Reinforce):
 
     def train_critic(self, batch):
         '''Trains the critic when the actor and critic are separate networks'''
-        total_val_loss = torch.tensor(0.0)
+        total_val_loss = torch.tensor(0.0, device=self.net.device)
         # training iters only applicable to separate critic network
         for _ in range(self.training_epoch):
             with torch.no_grad():
                 _advs, v_targets = self.calc_advs_v_targets(batch)
             val_loss = self.calc_val_loss(batch, v_targets)
             self.critic.training_step(loss=val_loss, global_net=self.global_nets.get('critic'))
-            total_val_loss += val_loss.cpu()
+            total_val_loss += val_loss
         val_loss = total_val_loss / self.training_epoch
         return val_loss
 
@@ -289,8 +282,6 @@ class ActorCritic(Reinforce):
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.entropy_coef * entropies)
         policy_loss = torch.mean(policy_loss)
-        if torch.cuda.is_available() and self.net.gpu:
-            policy_loss = policy_loss.cuda()
         logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 
@@ -300,8 +291,6 @@ class ActorCritic(Reinforce):
         v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze_(dim=-1)
         assert v_preds.shape == v_targets.shape
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
-        if torch.cuda.is_available() and self.net.gpu:
-            val_loss = val_loss.cuda()
         logger.debug(f'Critic value loss: {val_loss:.4f}')
         return val_loss
 
@@ -322,9 +311,6 @@ class ActorCritic(Reinforce):
         # ensure val for next_state is 0 at done
         next_v_preds = next_v_preds * (1 - batch['dones'])
         adv_targets = math_util.calc_gaes(batch['rewards'], v_preds, next_v_preds, self.gamma, self.lam)
-        if torch.cuda.is_available() and self.net.gpu:
-            adv_targets = adv_targets.cuda()
-            v_targets = v_targets.cuda()
         adv_targets = math_util.standardize(adv_targets)
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
@@ -342,8 +328,6 @@ class ActorCritic(Reinforce):
         v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
         nstep_returns = math_util.calc_nstep_returns(batch, self.gamma, self.num_step_returns, next_v_preds)
         nstep_advs = nstep_returns - v_preds
-        if torch.cuda.is_available() and self.net.gpu:
-            nstep_advs = nstep_advs.cuda()
         adv_targets = nstep_advs
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
@@ -356,18 +340,14 @@ class ActorCritic(Reinforce):
         # Equivalent to 1-step return
         # v targets = r_t + gamma * V(s_(t+1))
         v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
-        if torch.cuda.is_available() and self.net.gpu:
-            v_targets = v_targets.cuda()
         adv_targets = v_targets  # Plain Q estimate, called adv for API consistency
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
     @lab_api
     def update(self):
-        space_clock = util.s_get(self, 'aeb_space.clock')
-        nets = [self.net] if self.shared else [self.net, self.critic]
-        for net in nets:
-            net.update_lr(space_clock)
-        explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
-        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
-        return explore_var_a
+        for net_name in self.net_names:
+            net = getattr(self, net_name)
+            net.update_lr(self.body.env.clock)
+        explore_var = self.action_policy_update(self, self.body)
+        return explore_var

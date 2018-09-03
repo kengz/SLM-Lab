@@ -41,14 +41,6 @@ class Reinforce(Algorithm):
     '''
 
     @lab_api
-    def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
-        self.init_algorithm_params()
-        self.init_nets()
-        logger.info(util.self_desc(self))
-
-    @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters'''
         # set default
@@ -76,8 +68,7 @@ class Reinforce(Algorithm):
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        for body in self.agent.nanflat_body_a:
-            body.explore_var = self.explore_var_start
+        self.body.explore_var = self.explore_var_start
 
     @lab_api
     def init_nets(self):
@@ -109,7 +100,8 @@ class Reinforce(Algorithm):
         return pdparam
 
     @lab_api
-    def body_act(self, body, state):
+    def act(self, state):
+        body = self.body
         action, action_pd = self.action_policy(state, self, body)
         # sum for single and multi-action
         body.entropies.append(action_pd.entropy().sum(dim=0))
@@ -123,9 +115,8 @@ class Reinforce(Algorithm):
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
-        batches = [body.memory.sample() for body in self.agent.nanflat_body_a]
-        batch = util.concat_batches(batches)
-        batch = util.to_torch_batch(batch, self.net.gpu)
+        batch = self.body.memory.sample()
+        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 
     @lab_api
@@ -141,8 +132,9 @@ class Reinforce(Algorithm):
             self.body.log_probs = []
             self.body.entropies = []
             logger.debug(f'Policy loss: {loss}')
-            self.last_loss = loss.item()
-        return self.last_loss
+            return loss.item()
+        else:
+            return np.nan
 
     def calc_policy_loss(self, batch):
         '''Calculate the policy loss for a batch of data.'''
@@ -157,16 +149,13 @@ class Reinforce(Algorithm):
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.entropy_coef * entropies)
         policy_loss = torch.sum(policy_loss)
-        if torch.cuda.is_available() and self.net.gpu:
-            policy_loss = policy_loss.cuda()
         logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
 
     @lab_api
     def update(self):
-        space_clock = util.s_get(self, 'aeb_space.clock')
-        for net in [self.net]:
-            net.update_lr(space_clock)
-        explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
-        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
-        return explore_var_a
+        for net_name in self.net_names:
+            net = getattr(self, net_name)
+            net.update_lr(self.body.env.clock)
+        explore_var = self.action_policy_update(self, self.body)
+        return explore_var

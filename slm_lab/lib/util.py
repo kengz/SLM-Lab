@@ -1,29 +1,19 @@
-from collections import deque
 from datetime import datetime
-from functools import wraps
-from gym import spaces
-from itertools import chain
 from slm_lab import ROOT_DIR
-from sys import getsizeof, stderr
-import colorlover as cl
+from sys import getsizeof
 import cv2
 import json
-import math
 import numpy as np
 import os
 import pandas as pd
 import pydash as ps
 import regex as re
 import scipy as sp
-import time
+import subprocess
 import torch
 import torch.multiprocessing as mp
 import ujson
 import yaml
-try:
-    from reprlib import repr
-except ImportError:
-    pass
 
 NUM_CPUS = mp.cpu_count()
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
@@ -88,13 +78,14 @@ def concat_batches(batches):
     Also concat any nested epi sub-batches into flat batch
     {k: arr1} + {k: arr2} = {k: arr1 + arr2}
     '''
-    episodic = is_episodic(batches[0])
+    # if is nested, then is episodic
+    is_episodic = isinstance(batches[0]['dones'][0], (list, np.ndarray))
     concat_batch = {}
     for k in batches[0]:
         datas = []
         for batch in batches:
             data = batch[k]
-            if episodic:  # make into plain batch instead of nested
+            if is_episodic:  # make into plain batch instead of nested
                 data = np.concatenate(data)
             datas.append(data)
         concat_batch[k] = np.concatenate(datas)
@@ -176,25 +167,6 @@ def gen_isnan(v):
         return v is None
 
 
-def get_action_type(action_space):
-    '''Method to get the action type to choose prob. dist. to sample actions from NN logits output'''
-    if isinstance(action_space, spaces.Box):
-        shape = action_space.shape
-        assert len(shape) == 1
-        if shape[0] == 1:
-            return 'continuous'
-        else:
-            return 'multi_continuous'
-    elif isinstance(action_space, spaces.Discrete):
-        return 'discrete'
-    elif isinstance(action_space, spaces.MultiDiscrete):
-        return 'multi_discrete'
-    elif isinstance(action_space, spaces.MultiBinary):
-        return 'multi_binary'
-    else:
-        raise NotImplementedError
-
-
 def get_df_aeb_list(session_df):
     '''Get the aeb list for session_df for iterating.'''
     aeb_list = sorted(ps.uniq([(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
@@ -246,6 +218,10 @@ def get_fn_list(a_cls):
     return fn_list
 
 
+def get_git_sha():
+    return subprocess.check_output(['git', 'rev-parse', 'HEAD'], close_fds=True).decode().strip()
+
+
 def get_lab_mode():
     return os.environ.get('lab_mode')
 
@@ -284,92 +260,10 @@ def guard_data_a(cls, data_a, data_name):
     '''Guard data_a in case if it scalar, create a data_a and fill.'''
     if np.isscalar(data_a):
         new_data_a, = s_get(cls, 'aeb_space').init_data_s([data_name], a=cls.a)
-        for (e, b), body in ndenumerate_nonan(cls.body_a):
-            new_data_a[(e, b)] = data_a
+        for eb, body in ndenumerate_nonan(cls.body_a):
+            new_data_a[eb] = data_a
         data_a = new_data_a
     return data_a
-
-
-def interp(scl, r):
-    '''
-    Replacement for colorlover.interp
-    Interpolate a color scale "scl" to a new one with length "r"
-    Fun usage in IPython notebook:
-    HTML( to_html( to_hsl( interp( cl.scales['11']['qual']['Paired'], 5000 ) ) ) )
-    '''
-    c = []
-    SCL_FI = len(scl) - 1  # final index of color scale
-    # garyfeng:
-    # the following line is buggy.
-    # r = [x * 0.1 for x in range(r)] if isinstance( r, int ) else r
-    r = [x * 1.0 * SCL_FI / r for x in range(r)] if isinstance(r, int) else r
-    # end garyfeng
-
-    scl = cl.to_numeric(scl)
-
-    def interp3(fraction, start, end):
-        '''Interpolate between values of 2, 3-member tuples'''
-        def intp(f, s, e):
-            return s + (e - s) * f
-        return tuple([intp(fraction, start[i], end[i]) for i in range(3)])
-
-    def rgb_to_hsl(rgb):
-        '''
-        Adapted from M Bostock's RGB to HSL converter in d3.js
-        https://github.com/mbostock/d3/blob/master/src/color/rgb.js
-        '''
-        r, g, b = float(rgb[0]) / 255.0,\
-            float(rgb[1]) / 255.0,\
-            float(rgb[2]) / 255.0
-        mx = max(r, g, b)
-        mn = min(r, g, b)
-        h = s = l = (mx + mn) / 2
-        if mx == mn:  # achromatic
-            h = 0
-            s = 0 if l > 0 and l < 1 else h
-        else:
-            d = mx - mn
-            s = d / (mx + mn) if l < 0.5 else d / (2 - mx - mn)
-            if mx == r:
-                h = (g - b) / d + (6 if g < b else 0)
-            elif mx == g:
-                h = (b - r) / d + 2
-            else:
-                h = r - g / d + 4
-
-        return (int(round(h * 60, 4)), int(round(s * 100, 4)), int(round(l * 100, 4)))
-
-    for i in r:
-        # garyfeng: c_i could be rounded up so scl[c_i+1] will go off range
-        # c_i = int(i*math.floor(SCL_FI)/round(r[-1])) # start color index
-        # c_i = int(math.floor(i*math.floor(SCL_FI)/round(r[-1]))) # start color index
-        # c_i = if c_i < len(scl)-1 else hsl_o
-
-        c_i = int(math.floor(i))
-        section_min = math.floor(i)
-        section_max = math.ceil(i)
-        fraction = (i - section_min)  # /(section_max-section_min)
-
-        hsl_o = rgb_to_hsl(scl[c_i])  # convert rgb to hls
-        hsl_f = rgb_to_hsl(scl[c_i + 1])
-        # section_min = c_i*r[-1]/SCL_FI
-        # section_max = (c_i+1)*(r[-1]/SCL_FI)
-        # fraction = (i-section_min)/(section_max-section_min)
-        hsl = interp3(fraction, hsl_o, hsl_f)
-        c.append('hsl' + str(hsl))
-
-    return cl.to_hsl(c)
-
-
-def is_episodic(batch):
-    '''
-    Check if batch is episodic or is plain
-    episodic: {k: [[*data_epi1], [*data_epi2], ...]}
-    plain: {k: [*data]}
-    '''
-    dones = batch['dones']  # the most reliable, scalar
-    # if is nested, then is episodic
-    return isinstance(dones[0], (list, np.ndarray))
 
 
 def is_jupyter():
@@ -444,46 +338,9 @@ def is_sub_dict(sub_dict, super_dict):
     return True
 
 
-def memory_size(o, handlers={}, verbose=False, divisor=1e6):
-    '''
-    Returns the approximate memory footprint an object and all of its contents. In MB by default.
-
-    Automatically finds the contents of the following builtin containers and
-    their subclasses:  tuple, list, deque, dict, set and frozenset.
-    To search other containers, add handlers to iterate over their contents:
-
-        handlers = {SomeContainerClass: iter,
-                    OtherContainerClass: OtherContainerClass.get_elements}
-    Source: https://code.activestate.com/recipes/577504/
-    '''
-    def lambda_fn(d):
-        return chain.from_iterable(d.items())
-    dict_handler = lambda_fn
-    all_handlers = {
-        tuple: iter,
-        list: iter,
-        deque: iter,
-        dict: dict_handler,
-        set: iter,
-        frozenset: iter,
-    }
-    all_handlers.update(handlers)  # user handlers take precedence
-    seen = set()  # track which object id's have already been seen
-    default_size = getsizeof(0)  # estimate sizeof object without __sizeof__
-
-    def sizeof(o):
-        if id(o) in seen:  # do not double count the same object
-            return 0
-        seen.add(id(o))
-        s = getsizeof(o, default_size)
-        if verbose:
-            print(s, type(o), repr(o), file=stderr)
-        for typ, handler in all_handlers.items():
-            if isinstance(o, typ):
-                s += sum(map(sizeof, handler(o)))
-                break
-        return s
-    return sizeof(o) / divisor
+def memory_size(obj, divisor=1e6):
+    '''Return the size of object, in MB by default'''
+    return getsizeof(obj) / divisor
 
 
 def monkey_patch(base_cls, extend_cls):
@@ -536,6 +393,20 @@ def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
     return results
 
 
+def prepath_split(prepath):
+    '''Split prepath into prefolder and prename'''
+    prepath = prepath.strip('_')
+    tail = prepath.split('data/')[-1]
+    prefolder, prename = tail.split('/')
+    return prefolder, prename
+
+
+def prepath_to_experiment_ts(prepath):
+    predir = prepath_to_predir(prepath)
+    experiment_ts = RE_FILE_TS.findall(predir)[0]
+    return experiment_ts
+
+
 def prepath_to_info_space(prepath):
     '''Create info_space from prepath such that it returns the same prepath with spec'''
     from slm_lab.experiment.monitor import InfoSpace
@@ -548,27 +419,6 @@ def prepath_to_info_space(prepath):
     info_space.set('trial', trial_index)
     info_space.set('session', session_index)
     return info_space
-
-
-def prepath_split(prepath):
-    '''Split prepath into prefolder and prename'''
-    prepath = prepath.strip('_')
-    tail = prepath.split('data/')[-1]
-    prefolder, prename = tail.split('/')
-    return prefolder, prename
-
-
-def prepath_to_predir(prepath):
-    tail = prepath.split('data/')[-1]
-    prefolder = tail.split('/')[0]
-    predir = f'data/{prefolder}'
-    return predir
-
-
-def prepath_to_experiment_ts(prepath):
-    predir = prepath_to_predir(prepath)
-    experiment_ts = RE_FILE_TS.findall(predir)[0]
-    return experiment_ts
 
 
 def prepath_to_idxs(prepath):
@@ -588,6 +438,13 @@ def prepath_to_idxs(prepath):
         assert sidx.startswith('s')
         session_index = int(sidx.strip('s'))
     return trial_index, session_index
+
+
+def prepath_to_predir(prepath):
+    tail = prepath.split('data/')[-1]
+    prefolder = tail.split('/')[0]
+    predir = f'data/{prefolder}'
+    return predir
 
 
 def prepath_to_spec_name(prepath):
@@ -753,6 +610,27 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
+def set_net_spec_cuda_id(spec, info_space):
+    '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
+    trial_idx = info_space.get('trial') or 0
+    session_idx = info_space.get('session') or 0
+    job_idx = trial_idx * session_idx + session_idx
+    device_count = torch.cuda.device_count()
+    if device_count == 0:
+        cuda_id = 0
+    else:
+        cuda_id = job_idx % device_count
+    for agent_spec in spec['agent']:
+        agent_spec['net']['cuda_id'] = cuda_id
+
+
+def set_module_seed(random_seed):
+    '''Set all the module random seeds'''
+    torch.cuda.manual_seed_all(random_seed)
+    torch.manual_seed(random_seed)
+    np.random.seed(random_seed)
+
+
 def smart_path(data_path, as_dir=False):
     '''
     Resolve data_path into abspath with fallback to join from ROOT_DIR
@@ -788,12 +666,14 @@ def to_one_hot(data, max_val):
     return np.eye(max_val)[np.array(data)]
 
 
-def to_torch_batch(batch, gpu):
+def to_torch_batch(batch, device, is_episodic):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
     for k in batch:
-        batch[k] = torch.from_numpy(batch[k].astype('float32')).float()
-        if torch.cuda.is_available() and gpu:
-            batch[k] = batch[k].cuda()
+        if is_episodic:  # for episodic format
+            batch[k] = np.concatenate(batch[k])
+        elif ps.is_list(batch[k]):
+            batch[k] = np.array(batch[k])
+        batch[k] = torch.from_numpy(batch[k].astype('float32')).to(device)
     return batch
 
 
@@ -895,15 +775,3 @@ def debug_image(im):
     '''Use this method to render image the agent sees; waits for a key press before continuing'''
     cv2.imshow('image', im)
     cv2.waitKey(0)
-
-
-def fn_timer(function):
-    '''Decorator to time the execution of a function. Useful for debugging slow training'''
-    @wraps(function)
-    def function_timer(*args, **kwargs):
-        t0 = time.time()
-        result = function(*args, **kwargs)
-        t1 = time.time()
-        print("Time %s %s: %s seconds" % (function, function.__name__, str(t1 - t0)))
-        return result
-    return function_timer

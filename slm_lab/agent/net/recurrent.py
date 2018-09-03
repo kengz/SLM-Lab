@@ -121,9 +121,8 @@ class RecurrentNet(Net, nn.Module):
         self.model_tails = nn.ModuleList([nn.Linear(self.rnn_hidden_size, out_d) for out_d in self.out_dim])
 
         net_util.init_layers(self.modules())
-        if torch.cuda.is_available() and self.gpu:
-            for module in self.modules():
-                module.cuda()
+        for module in self.modules():
+            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)
@@ -133,8 +132,7 @@ class RecurrentNet(Net, nn.Module):
 
     def init_hidden(self, batch_size):
         hid = torch.zeros(self.rnn_num_layers, batch_size, self.rnn_hidden_size)
-        if torch.cuda.is_available() and self.gpu:
-            hid = hid.cuda()
+        hid = hid.to(self.device)
         return hid
 
     def forward(self, x):
@@ -179,7 +177,7 @@ class RecurrentNet(Net, nn.Module):
             self.optim.step()
             net_util.pull_global_param(self, global_net)
         if net_util.to_assert_trained():
-            assert_trained(self.rnn_model)
+            assert_trained(self.rnn_model, loss)
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 

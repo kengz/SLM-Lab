@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -20,20 +20,17 @@ class Algorithm(ABC):
         @param {*} agent is the container for algorithm and related components, and interfaces with env.
         '''
         self.agent = agent
-        self.global_nets = global_nets or {}
-        self.agent_spec = agent.agent_spec
-        self.algorithm_spec = self.agent_spec['algorithm']
-        self.memory_spec = self.agent_spec['memory']
-        self.net_spec = self.agent_spec['net']
-        self.last_loss = np.nan  # to record the loss from the last train() step
-
-    @abstractmethod
-    @lab_api
-    def post_body_init(self):
-        '''Initializes the part of algorithm needing a body to exist first.'''
+        if ps.is_list(global_nets):  # multiagent
+            self.global_nets = global_nets[agent.a]
+        else:
+            self.global_nets = global_nets or {}
+        self.algorithm_spec = agent.agent_spec['algorithm']
+        self.memory_spec = agent.agent_spec['memory']
+        self.net_spec = agent.agent_spec['net']
+        self.body = self.agent.body
         self.init_algorithm_params()
         self.init_nets()
-        raise NotImplementedError
+        logger.info(util.self_desc(self))
 
     @abstractmethod
     @lab_api
@@ -51,7 +48,7 @@ class Algorithm(ABC):
     def post_init_nets(self):
         '''
         Method to conditionally load models.
-        Call at the end of init_net() after setting self.net_names
+        Call at the end of init_nets() after setting self.net_names
         '''
         assert hasattr(self, 'net_names')
         if not ps.is_empty(self.global_nets):
@@ -70,30 +67,20 @@ class Algorithm(ABC):
         '''
         raise NotImplementedError
 
-    @lab_api
-    def body_act(self, body, state):
-        '''Standard atomic body_act method. Atomic body logic should be implemented in submethods.'''
-        raise NotImplementedError
-        return action
-
-    @lab_api
-    def act(self, state_a):
-        '''Interface-level agent act method for all its bodies. Resolves state to state; get action and compose into action.'''
-        data_names = ['action']
-        action_a, = self.agent.agent_space.aeb_space.init_data_s(data_names, a=self.agent.a)
-        for (e, b), body in util.ndenumerate_nonan(self.agent.body_a):
-            state = state_a[(e, b)]
-            action_a[(e, b)] = self.body_act(body, state)
-        return action_a
-
     def nanflat_to_data_a(self, data_name, nanflat_data_a):
         '''Reshape nanflat_data_a, e.g. action_a, from a single pass back into the API-conforming data_a'''
-        data_names = [data_name]
+        data_names = (data_name,)
         data_a, = self.agent.agent_space.aeb_space.init_data_s(data_names, a=self.agent.a)
         for body, data in zip(self.agent.nanflat_body_a, nanflat_data_a):
             e, b = body.e, body.b
             data_a[(e, b)] = data
         return data_a
+
+    @lab_api
+    def act(self, state):
+        '''Standard act method.'''
+        raise NotImplementedError
+        return action
 
     @abstractmethod
     @lab_api
@@ -131,3 +118,55 @@ class Algorithm(ABC):
             logger.info('No net declared in self.net_names in init_nets(); no models to load.')
         else:
             net_util.load_algorithm(self)
+
+    # extension for multi-agent-env space
+
+    @lab_api
+    def space_act(self, state_a):
+        '''Interface-level agent act method for all its bodies. Resolves state to state; get action and compose into action.'''
+        data_names = ('action',)
+        action_a, = self.agent.agent_space.aeb_space.init_data_s(data_names, a=self.agent.a)
+        for eb, body in util.ndenumerate_nonan(self.agent.body_a):
+            state = state_a[eb]
+            self.body = body
+            action_a[eb] = self.act(state)
+        # set body reference back to default
+        self.body = self.agent.nanflat_body_a[0]
+        return action_a
+
+    @lab_api
+    def space_sample(self):
+        '''Samples a batch from memory'''
+        batches = []
+        for body in self.agent.nanflat_body_a:
+            self.body = body
+            batches.append(self.sample())
+        # set body reference back to default
+        self.body = self.agent.nanflat_body_a[0]
+        batch = util.concat_batches(batches)
+        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
+        return batch
+
+    @lab_api
+    def space_train(self):
+        if util.get_lab_mode() == 'enjoy':
+            return np.nan
+        losses = []
+        for body in self.agent.nanflat_body_a:
+            self.body = body
+            losses.append(self.train())
+        # set body reference back to default
+        self.body = self.agent.nanflat_body_a[0]
+        loss_a = self.nanflat_to_data_a('loss', losses)
+        return loss_a
+
+    @lab_api
+    def space_update(self):
+        explore_vars = []
+        for body in self.agent.nanflat_body_a:
+            self.body = body
+            explore_vars.append(self.update())
+        # set body reference back to default
+        self.body = self.agent.nanflat_body_a[0]
+        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
+        return explore_var_a

@@ -18,9 +18,7 @@ Agent components:
 - algorithm (with net, policy)
 - memory (per body)
 '''
-from collections import deque
 from slm_lab.agent import algorithm, memory
-from slm_lab.agent.algorithm import policy_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -30,64 +28,6 @@ AGENT_DATA_NAMES = ['action', 'loss', 'explore_var']
 logger = logger.get_logger(__name__)
 
 
-class Body:
-    '''
-    Body is the handler with proper info to reference the single-agent-single-environment unit in this generalized multi-agent-env setting.
-    '''
-
-    def __init__(self, aeb, agent, env):
-        # essential reference variables
-        self.aeb = aeb
-        self.agent = agent
-        self.env = env
-        self.a, self.e, self.b = aeb
-        self.nanflat_a_idx = None
-        self.nanflat_e_idx = None
-
-        # TODO generalize and make state_space to include observables
-        # the specific agent-env interface variables for a body
-        self.observable_dim = self.env.get_observable_dim(self.a)
-        self.state_dim = self.observable_dim['state']
-        self.observation_space = self.env.get_observation_space(self.a)
-        self.action_dim = self.env.get_action_dim(self.a)
-        self.action_space = self.env.get_action_space(self.a)
-        self.action_type = util.get_action_type(self.action_space)
-        self.action_pdtype = self.agent.agent_spec['algorithm'].get('action_pdtype')
-        if self.action_pdtype in (None, 'default'):
-            self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
-        self.is_discrete = self.env.is_discrete(self.a)
-
-        self.loss = np.nan  # training losses
-        # for action policy exploration, so be set in algo during init_algorithm_params()
-        self.explore_var = np.nan
-
-        # diagnostics variables from action_policy prob. dist.
-        self.entropies = []  # check exploration
-        self.log_probs = []  # calculate loss
-        self.kls = []  # to compare old and new nets
-
-        # every body has its own memory for ease of computation
-        memory_spec = self.agent.agent_spec['memory']
-        memory_name = memory_spec['name']
-        MemoryClass = getattr(memory, memory_name)
-        self.memory = MemoryClass(memory_spec, self.agent.algorithm, self)
-
-    def epi_reset(self):
-        '''
-        Agent will still produce action (and the action stat) at terminal step and feed to env.step() at t=0. Remove them at epi_reset.
-        This method is called automatically at base memory.epi_reset().
-        '''
-        assert self.env.clock.get('t') == 0
-        action_stats = [self.entropies, self.log_probs, self.kls]
-        for action_stat in action_stats:
-            # use pop instead of clear for cross-epi training
-            if len(action_stat) > 0:
-                action_stat.pop()
-
-    def __str__(self):
-        return 'body: ' + util.to_json(util.get_class_attr(self))
-
-
 class Agent:
     '''
     Class for all Agents.
@@ -95,64 +35,113 @@ class Agent:
     Access Envs properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    def __init__(self, agent_spec, agent_space, a=0, global_nets=None):
-        self.agent_spec = agent_spec
-        self.agent_space = agent_space
-        self.a = a
-        self.spec = agent_space.spec
-        self.info_space = agent_space.info_space
+    def __init__(self, spec, info_space, body, a=None, agent_space=None, global_nets=None):
+        self.spec = spec
+        self.info_space = info_space
+        self.a = a or 0  # for compatibility with agent_space
+        self.agent_spec = spec['agent'][self.a]
         self.name = self.agent_spec['name']
-        self.body_a = None
-        self.nanflat_body_a = None  # nanflatten version of bodies
-        self.body_num = None
+        if agent_space is None:  # singleton mode
+            self.body = body
+            body.agent = self
+            MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
+            self.body.memory = MemoryClass(self.agent_spec['memory'], self.body)
+            AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
+            self.algorithm = AlgorithmClass(self, global_nets)
+        else:
+            self.space_init(agent_space, body, global_nets)
 
-        AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
-        self.algorithm = AlgorithmClass(self, global_nets)
-
-    @lab_api
-    def post_body_init(self):
-        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        self.nanflat_body_a = util.nanflatten(self.body_a)
-        for idx, body in enumerate(self.nanflat_body_a):
-            body.nanflat_a_idx = idx
-        self.body_num = len(self.nanflat_body_a)
-        self.algorithm.post_body_init()
         logger.info(util.self_desc(self))
 
     @lab_api
-    def reset(self, state_a):
+    def reset(self, state):
         '''Do agent reset per session, such as memory pointer'''
         logger.debug(f'Agent {self.a} reset')
-        for (e, b), body in util.ndenumerate_nonan(self.body_a):
-            body.memory.epi_reset(state_a[(e, b)])
+        self.body.memory.epi_reset(state)
+        self.aeb_space.add_single(AGENT_DATA_NAMES, (np.nan, np.nan, np.nan))
 
     @lab_api
-    def act(self, state_a):
+    def act(self, state):
         '''Standard act method from algorithm.'''
-        action_a = self.algorithm.act(state_a)
+        action = self.algorithm.act(state)
+        logger.debug(f'Agent {self.a} act: {action}')
+        self.aeb_space.add_single(('action',), (action,))
+        return action
+
+    @lab_api
+    def update(self, action, reward, state, done):
+        '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
+        self.body.memory.update(action, reward, state, done)
+        self.body.loss = loss = self.algorithm.train()
+        if not np.isnan(loss):  # set for log_summary()
+            self.body.last_loss = loss
+        explore_var = self.algorithm.update()
+        logger.debug(f'Agent {self.a} loss: {loss}, explore_var {explore_var}')
+        self.aeb_space.add_single(('loss', 'explore_var'), (loss, explore_var))
+        return loss, explore_var
+
+    @lab_api
+    def save(self):
+        '''Save agent'''
+        self.algorithm.save()
+
+    @lab_api
+    def close(self):
+        '''Close and cleanup agent at the end of a session, e.g. save model'''
+        self.save()
+
+    @lab_api
+    def space_init(self, agent_space, body_a, global_nets):
+        '''Post init override for space env. Note that aeb is already correct from __init__'''
+        self.agent_space = agent_space
+        self.body_a = body_a
+        self.aeb_space = agent_space.aeb_space
+        self.nanflat_body_a = util.nanflatten(self.body_a)
+        for idx, body in enumerate(self.nanflat_body_a):
+            if idx == 0:  # NOTE set default body
+                self.body = body
+            body.agent = self
+            body.nanflat_a_idx = idx
+            MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
+            body.memory = MemoryClass(self.agent_spec['memory'], body)
+        self.body_num = len(self.nanflat_body_a)
+        AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
+        self.algorithm = AlgorithmClass(self, global_nets)
+        # after algo init, transfer any missing variables from default body
+        for idx, body in enumerate(self.nanflat_body_a):
+            for k, v in vars(self.body).items():
+                if util.gen_isnan(getattr(body, k, None)):
+                    setattr(body, k, v)
+
+    @lab_api
+    def space_reset(self, state_a):
+        '''Do agent reset per session, such as memory pointer'''
+        logger.debug(f'Agent {self.a} reset')
+        for eb, body in util.ndenumerate_nonan(self.body_a):
+            body.memory.epi_reset(state_a[eb])
+
+    @lab_api
+    def space_act(self, state_a):
+        '''Standard act method from algorithm.'''
+        action_a = self.algorithm.space_act(state_a)
         logger.debug(f'Agent {self.a} act: {action_a}')
         return action_a
 
     @lab_api
-    def update(self, action_a, reward_a, state_a, done_a):
-        '''
-        Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net
-        '''
-        for (e, b), body in util.ndenumerate_nonan(self.body_a):
-            body.memory.update(action_a[(e, b)], reward_a[(e, b)], state_a[(e, b)], done_a[(e, b)])
-        loss_a = self.algorithm.train()
+    def space_update(self, action_a, reward_a, state_a, done_a):
+        '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
+        for eb, body in util.ndenumerate_nonan(self.body_a):
+            body.memory.update(action_a[eb], reward_a[eb], state_a[eb], done_a[eb])
+        loss_a = self.algorithm.space_train()
         loss_a = util.guard_data_a(self, loss_a, 'loss')
-        for (e, b), body in util.ndenumerate_nonan(self.body_a):
-            body.loss = loss_a[(e, b)]
-        explore_var_a = self.algorithm.update()
+        for eb, body in util.ndenumerate_nonan(self.body_a):
+            body.loss = loss_a[eb]
+            if not np.isnan(body.loss):  # set for log_summary()
+                body.last_loss = body.loss
+        explore_var_a = self.algorithm.space_update()
         explore_var_a = util.guard_data_a(self, explore_var_a, 'explore_var')
         logger.debug(f'Agent {self.a} loss: {loss_a}, explore_var_a {explore_var_a}')
         return loss_a, explore_var_a
-
-    @lab_api
-    def close(self):
-        '''Close agent at the end of a session, e.g. save model'''
-        self.algorithm.save()
 
 
 class AgentSpace:
@@ -165,16 +154,14 @@ class AgentSpace:
         self.spec = spec
         self.aeb_space = aeb_space
         aeb_space.agent_space = self
-        self.agent_spec = spec['agent']
         self.info_space = aeb_space.info_space
         self.aeb_shape = aeb_space.aeb_shape
-        self.agents = [Agent(agent_spec, self, a, global_nets) for a, agent_spec in enumerate(self.agent_spec)]
-
-    @lab_api
-    def post_body_init(self):
-        '''Run init for components that need bodies to exist first, e.g. memory or architecture.'''
-        for agent in self.agents:
-            agent.post_body_init()
+        assert ps.is_list(self.spec['agent'])
+        self.agents = []
+        for a in range(len(self.spec['agent'])):
+            body_a = self.aeb_space.body_space.get(a=a)
+            agent = Agent(self.spec, self.info_space, body=body_a, a=a, agent_space=self, global_nets=global_nets)
+            self.agents.append(agent)
         logger.info(util.self_desc(self))
 
     def get(self, a):
@@ -186,27 +173,27 @@ class AgentSpace:
         _action_v, _loss_v, _explore_var_v = self.aeb_space.init_data_v(AGENT_DATA_NAMES)
         for agent in self.agents:
             state_a = state_space.get(a=agent.a)
-            agent.reset(state_a)
-        _action_space, _loss_space, _explore_var_space = self.aeb_space.add(AGENT_DATA_NAMES, [_action_v, _loss_v, _explore_var_v])
+            agent.space_reset(state_a)
+        _action_space, _loss_space, _explore_var_space = self.aeb_space.add(AGENT_DATA_NAMES, (_action_v, _loss_v, _explore_var_v))
         logger.debug3(f'action_space: {_action_space}')
         return _action_space
 
     @lab_api
     def act(self, state_space):
-        data_names = ['action']
+        data_names = ('action',)
         action_v, = self.aeb_space.init_data_v(data_names)
         for agent in self.agents:
             a = agent.a
             state_a = state_space.get(a=a)
-            action_a = agent.act(state_a)
+            action_a = agent.space_act(state_a)
             action_v[a, 0:len(action_a)] = action_a
-        action_space, = self.aeb_space.add(data_names, [action_v])
+        action_space, = self.aeb_space.add(data_names, (action_v,))
         logger.debug3(f'\naction_space: {action_space}')
         return action_space
 
     @lab_api
     def update(self, action_space, reward_space, state_space, done_space):
-        data_names = ['loss', 'explore_var']
+        data_names = ('loss', 'explore_var')
         loss_v, explore_var_v = self.aeb_space.init_data_v(data_names)
         for agent in self.agents:
             a = agent.a
@@ -214,10 +201,10 @@ class AgentSpace:
             reward_a = reward_space.get(a=a)
             state_a = state_space.get(a=a)
             done_a = done_space.get(a=a)
-            loss_a, explore_var_a = agent.update(action_a, reward_a, state_a, done_a)
+            loss_a, explore_var_a = agent.space_update(action_a, reward_a, state_a, done_a)
             loss_v[a, 0:len(loss_a)] = loss_a
             explore_var_v[a, 0:len(explore_var_a)] = explore_var_a
-        loss_space, explore_var_space = self.aeb_space.add(data_names, [loss_v, explore_var_v])
+        loss_space, explore_var_space = self.aeb_space.add(data_names, (loss_v, explore_var_v))
         logger.debug3(f'\nloss_space: {loss_space}\nexplore_var_space: {explore_var_space}')
         return loss_space, explore_var_space
 

@@ -40,19 +40,6 @@ class SARSA(Algorithm):
     '''
 
     @lab_api
-    def post_body_init(self):
-        '''
-        Initializes the part of algorithm needing a body to exist first. A body is a part of an Agent. Agents may have 1 to k bodies. Bodies do the acting in environments, and contain:
-            - Memory (holding experiences obtained by acting in the environment)
-            - State and action dimensions for an environment
-            - Boolean var for if the action space is discrete
-        '''
-        self.body = self.agent.nanflat_body_a[0]  # single-body algo
-        self.init_algorithm_params()
-        self.init_nets()
-        logger.info(util.self_desc(self))
-
-    @lab_api
     def init_algorithm_params(self):
         '''Initialize other algorithm parameters.'''
         # set default
@@ -79,8 +66,7 @@ class SARSA(Algorithm):
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        for body in self.agent.nanflat_body_a:
-            body.explore_var = self.explore_var_start
+        self.body.explore_var = self.explore_var_start
 
     @lab_api
     def init_nets(self):
@@ -110,8 +96,9 @@ class SARSA(Algorithm):
         return pdparam
 
     @lab_api
-    def body_act(self, body, state):
+    def act(self, state):
         '''Note, SARSA is discrete-only'''
+        body = self.body
         action, action_pd = self.action_policy(state, self, body)
         # sum for single and multi-action
         body.entropies.append(action_pd.entropy().sum(dim=0))
@@ -135,26 +122,20 @@ class SARSA(Algorithm):
         act_q_targets.unsqueeze_(1)
         # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
         q_targets = (act_q_targets * batch['one_hot_actions']) + (q_preds * (1 - batch['one_hot_actions']))
-        if torch.cuda.is_available() and self.net.gpu:
-            q_targets = q_targets.cuda()
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
-        batches = []
-        for body in self.agent.nanflat_body_a:
-            body_batch = body.memory.sample()
-            # one-hot actions to calc q_targets
-            if body.is_discrete:
-                body_batch['one_hot_actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
-            batches.append(body_batch)
-        batch = util.concat_batches(batches)
+        batch = self.body.memory.sample()
+        # one-hot actions to calc q_targets
+        if self.body.is_discrete:
+            batch['one_hot_actions'] = util.to_one_hot(batch['actions'], self.body.action_space.high)
         # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['dones'])
         batch['next_actions'] = np.zeros_like(batch['actions'])
         batch['next_actions'][:-1] = batch['actions'][1:]
-        batch = util.to_torch_batch(batch, self.net.gpu)
+        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 
     @lab_api
@@ -175,15 +156,15 @@ class SARSA(Algorithm):
             self.body.log_probs = []
             self.body.entropies = []
             logger.debug(f'Loss: {loss}')
-            self.last_loss = loss.item()
-        return self.last_loss
+            return loss.item()
+        else:
+            return np.nan
 
     @lab_api
     def update(self):
         '''Update the agent after training'''
-        space_clock = util.s_get(self, 'aeb_space.clock')
-        for net in [self.net]:
-            net.update_lr(space_clock)
-        explore_vars = [self.action_policy_update(self, body) for body in self.agent.nanflat_body_a]
-        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
-        return explore_var_a
+        for net_name in self.net_names:
+            net = getattr(self, net_name)
+            net.update_lr(self.body.env.clock)
+        explore_var = self.action_policy_update(self, self.body)
+        return explore_var
