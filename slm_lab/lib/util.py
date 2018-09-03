@@ -9,6 +9,7 @@ import pandas as pd
 import pydash as ps
 import regex as re
 import scipy as sp
+import subprocess
 import torch
 import torch.multiprocessing as mp
 import ujson
@@ -215,6 +216,10 @@ def get_fn_list(a_cls):
     '''
     fn_list = ps.filter_(dir(a_cls), lambda fn: not fn.endswith('__') and callable(getattr(a_cls, fn)))
     return fn_list
+
+
+def get_git_sha():
+    return subprocess.check_output(['git', 'rev-parse', 'HEAD'], close_fds=True).decode().strip()
 
 
 def get_lab_mode():
