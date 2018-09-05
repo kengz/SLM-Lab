@@ -246,10 +246,10 @@ It is `DQN` in `CartPole-v0`:
     ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
     >Session graph showing total rewards, exploration variable and loss for the episodes.
 
-5. Enjoy mode - when a session ends, a model file will automatically save. You can find the session `prepath` that ends in its trial and session numbers. The example above is trial 1 session 0, and you can see a pyotrch model saved at `data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_model_net.pth`. Use the prepath at `config/experiments.json` to run eval mode:
+5. Enjoy mode - when a session ends, a model file will automatically save. You can find the session `prepath` that ends in its trial and session numbers. The example above is trial 1 session 0, and you can see a pyotrch model saved at `data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_model_net.pth`. Use the prepath at `config/experiments.json` to run enjoy mode:
     ```json
     "demo.json": {
-      "dqn_cartpole": "eval@data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0"
+      "dqn_cartpole": "enjoy@data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0"
     }
     ```
     >enjoy mode will automatically disable learning and exploration. Graphs will still save.
