@@ -155,7 +155,7 @@ def periodic_decay(net, clock):
 
 def save(net, model_path):
     '''Save model weights to path'''
-    torch.save(net.state_dict(), model_path)
+    torch.save(net.state_dict(), util.smart_path(model_path))
     logger.info(f'Saved model to {model_path}')
 
 
@@ -177,7 +177,7 @@ def save_algorithm(algorithm, epi=None):
 
 def load(net, model_path):
     '''Save model weights from a path into a net module'''
-    net.load_state_dict(torch.load(model_path))
+    net.load_state_dict(torch.load(util.smart_path(model_path)))
     logger.info(f'Loaded model from {model_path}')
 
 

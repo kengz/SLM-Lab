@@ -69,7 +69,7 @@ class Session:
         '''
         self.agent.close()
         self.env.close()
-        logger.info('Session done, closing.')
+        logger.info('Session done and closed.')
 
     def run(self):
         while self.env.clock.get('epi') <= self.env.max_episode:
@@ -127,7 +127,7 @@ class SpaceSession(Session):
         '''
         self.agent_space.close()
         self.env_space.close()
-        logger.info('Session done, closing.')
+        logger.info('Session done and closed.')
 
     def run(self):
         self.run_all_episodes()
@@ -227,7 +227,7 @@ class Trial:
         return session_datas
 
     def close(self):
-        logger.info('Trial done, closing.')
+        logger.info('Trial done and closed.')
 
     def run(self):
         if self.spec['meta'].get('distributed'):
@@ -275,7 +275,7 @@ class Experiment:
 
     def close(self):
         reload(search)  # fixes ray consecutive run crashing due to bad cleanup
-        logger.info('Experiment done, closing.')
+        logger.info('Experiment done and closed.')
 
     def run(self):
         self.trial_data_dict = self.search.run()

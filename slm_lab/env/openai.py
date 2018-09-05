@@ -49,7 +49,7 @@ class OpenAIEnv(BaseEnv):
     def close(self):
         self.u_env.close()
 
-    # extension for multi-agent-env space
+    # NOTE optional extension for multi-agent-env
 
     @lab_api
     def space_init(self, env_space):
