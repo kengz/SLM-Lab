@@ -119,7 +119,7 @@ class Algorithm(ABC):
         else:
             net_util.load_algorithm(self)
 
-    # extension for multi-agent-env space
+    # NOTE optional extension for multi-agent-env
 
     @lab_api
     def space_act(self, state_a):
