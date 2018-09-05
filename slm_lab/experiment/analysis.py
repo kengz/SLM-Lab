@@ -270,7 +270,10 @@ def calc_trial_fitness_df(trial):
     Adds a consistency dimension to fitness vector.
     '''
     trial_fitness_data = {}
-    all_session_fitness_df = pd.concat(list(trial.session_data_dict.values()))
+    try:
+        all_session_fitness_df = pd.concat(list(trial.session_data_dict.values()))
+    except ValueError as e:
+        logger.exception('Sessions failed, no data to analyze. Check stack trace above')
     for aeb in util.get_df_aeb_list(all_session_fitness_df):
         aeb_fitness_df = all_session_fitness_df.loc[:, aeb]
         aeb_fitness_sr = aeb_fitness_df.mean()
