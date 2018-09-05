@@ -170,7 +170,7 @@ Read on for tutorials, research and results.
     cd SLM-Lab/
     bin/setup
     yarn install
-    source activate lab
+    conda activate lab
     ```
 
 >Alternatively, run the content of `bin/setup_macOS` or `bin/setup_ubuntu` on your terminal manually.
@@ -232,7 +232,7 @@ It is `DQN` in `CartPole-v0`:
 
 3. launch terminal in the repo directory, run the lab:
     ```shell
-    source activate lab
+    conda activate lab
     python run_lab.py
     ```
     >Alternatively, use the shorthand command `yarn start` to replace the last line
