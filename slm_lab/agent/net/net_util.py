@@ -169,9 +169,9 @@ def save_algorithm(algorithm, ckpt=None):
     logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{prepath}_model_{net_name}.pth'
+        model_path = f'{prepath}_{net_name}_model.pth'
         save(net, model_path)
-        optim_path = f'{prepath}_optim_{net_name}.pth'
+        optim_path = f'{prepath}_{net_name}_optim.pth'
         save(net.optim, optim_path)
 
 
@@ -189,9 +189,9 @@ def load_algorithm(algorithm):
     logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names}')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{prepath}_model_{net_name}.pth'
+        model_path = f'{prepath}_{net_name}_model.pth'
         load(net, model_path)
-        optim_path = f'{prepath}_optim_{net_name}.pth'
+        optim_path = f'{prepath}_{net_name}_optim.pth'
         load(net.optim, optim_path)
 
 
