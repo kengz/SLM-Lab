@@ -27,6 +27,8 @@ class Session:
     '''
 
     def __init__(self, spec, info_space, global_nets=None):
+        os.environ['PREPATH'] = util.get_prepath(spec, info_space, unit='session')
+        reload(logger)  # to set session-specific logger
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
@@ -85,6 +87,8 @@ class SpaceSession(Session):
     '''Session for multi-agent/env setting'''
 
     def __init__(self, spec, info_space, global_nets=None):
+        os.environ['PREPATH'] = util.get_prepath(spec, info_space, unit='session')
+        reload(logger)  # to set session-specific logger
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
