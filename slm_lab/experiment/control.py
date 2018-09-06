@@ -52,7 +52,7 @@ class Session:
 
     def run_episode(self):
         self.env.clock.tick('epi')
-        logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode: {self.env.clock.get("epi")}')
+        logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.env.clock.get("epi")}')
         reward, state, done = self.env.reset()
         self.agent.reset(state)
         while not done:
