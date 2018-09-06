@@ -125,7 +125,7 @@ def fn_decay_lr(net, clock, fn):
     '''
     total_t = clock.get('total_t')
     start_val, end_val = net.optim_spec['lr'], 1e-6
-    anneal_total_t = net.lr_anneal_timestep or max(10e6, 60 * net.lr_decay_frequency)
+    anneal_total_t = net.lr_anneal_timestep or max(1e6, 60 * net.lr_decay_frequency)
 
     if total_t >= net.lr_decay_min_timestep and total_t % net.lr_decay_frequency == 0:
         logger.debug(f'anneal_total_t: {anneal_total_t}, total_t: {total_t}')
