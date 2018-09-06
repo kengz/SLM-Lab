@@ -20,7 +20,7 @@
       "memory": {
         "name": "AtariReplay",
         "batch_size": 32,
-        "max_size": 1000000,
+        "max_size": 500000,
         "stack_len": 4,
         "use_cer": false
       },
@@ -97,7 +97,7 @@
       "memory": {
         "name": "AtariReplay",
         "batch_size": 32,
-        "max_size": 1000000,
+        "max_size": 500000,
         "stack_len": 4,
         "use_cer": false
       },
