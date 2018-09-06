@@ -48,10 +48,12 @@ class Session:
         epi = env.clock.get('epi')
         save_this_epi = epi > 0 and hasattr(env, 'save_epi_frequency') and epi % env.save_epi_frequency == 0
         if save_this_epi:
-            agent.save(epi=epi)
+            agent.save(ckpt='last')
+            analysis.analyze_session(self)
 
     def run_episode(self):
         self.env.clock.tick('epi')
+        logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.env.clock.get("epi")}')
         reward, state, done = self.env.reset()
         self.agent.reset(state)
         while not done:

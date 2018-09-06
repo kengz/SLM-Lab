@@ -25,6 +25,7 @@ class Algorithm(ABC):
         else:
             self.global_nets = global_nets or {}
         self.algorithm_spec = agent.agent_spec['algorithm']
+        self.name = self.algorithm_spec['name']
         self.memory_spec = agent.agent_spec['memory']
         self.net_spec = agent.agent_spec['net']
         self.body = self.agent.body
@@ -104,12 +105,12 @@ class Algorithm(ABC):
         raise NotImplementedError
 
     @lab_api
-    def save(self, epi=None):
+    def save(self, ckpt=None):
         '''Save net models for algorithm given the required property self.net_names'''
         if not hasattr(self, 'net_names'):
             logger.info('No net declared in self.net_names in init_nets(); no models to save.')
         else:
-            net_util.save_algorithm(self, epi=epi)
+            net_util.save_algorithm(self, ckpt=ckpt)
 
     @lab_api
     def load(self):

@@ -81,9 +81,9 @@ class Agent:
         return loss, explore_var
 
     @lab_api
-    def save(self):
+    def save(self, ckpt=None):
         '''Save agent'''
-        self.algorithm.save()
+        self.algorithm.save(ckpt=ckpt)
 
     @lab_api
     def close(self):

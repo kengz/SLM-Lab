@@ -158,7 +158,8 @@ class SIL(ActorCritic):
                     total_sil_loss += sil_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
-            logger.debug(f'Loss: {loss:.4f}')
+            logger.info(f'Trained {self.name} at t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+
             return loss.item()
         else:
             return np.nan
@@ -181,7 +182,8 @@ class SIL(ActorCritic):
                     total_sil_loss += sil_policy_loss + sil_val_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
-            logger.debug(f'Loss: {loss:.4f}')
+            logger.info(f'Trained {self.name} at t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+
             return loss.item()
         else:
             return np.nan

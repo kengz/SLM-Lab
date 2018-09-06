@@ -125,7 +125,7 @@ def fn_decay_lr(net, clock, fn):
     '''
     total_t = clock.get('total_t')
     start_val, end_val = net.optim_spec['lr'], 1e-6
-    anneal_total_t = net.lr_anneal_timestep or max(10e6, 60 * net.lr_decay_frequency)
+    anneal_total_t = net.lr_anneal_timestep or max(1e6, 60 * net.lr_decay_frequency)
 
     if total_t >= net.lr_decay_min_timestep and total_t % net.lr_decay_frequency == 0:
         logger.debug(f'anneal_total_t: {anneal_total_t}, total_t: {total_t}')
@@ -159,19 +159,19 @@ def save(net, model_path):
     logger.info(f'Saved model to {model_path}')
 
 
-def save_algorithm(algorithm, epi=None):
+def save_algorithm(algorithm, ckpt=None):
     '''Save all the nets for an algorithm'''
     agent = algorithm.agent
     net_names = algorithm.net_names
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
-    if epi is not None:
-        prepath = f'{prepath}_epi{epi}'
+    if ckpt is not None:
+        prepath = f'{prepath}_ckpt{ckpt}'
     logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{prepath}_model_{net_name}.pth'
+        model_path = f'{prepath}_{net_name}_model.pth'
         save(net, model_path)
-        optim_path = f'{prepath}_optim_{net_name}.pth'
+        optim_path = f'{prepath}_{net_name}_optim.pth'
         save(net.optim, optim_path)
 
 
@@ -189,9 +189,9 @@ def load_algorithm(algorithm):
     logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names}')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{prepath}_model_{net_name}.pth'
+        model_path = f'{prepath}_{net_name}_model.pth'
         load(net, model_path)
-        optim_path = f'{prepath}_optim_{net_name}.pth'
+        optim_path = f'{prepath}_{net_name}_optim.pth'
         load(net.optim, optim_path)
 
 

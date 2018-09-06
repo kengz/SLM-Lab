@@ -1,0 +1,230 @@
+{
+  "dqn_breamrider": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.01,
+        "explore_anneal_epi": 600,
+        "gamma": 0.99,
+        "training_batch_epoch": 1,
+        "training_epoch": 1,
+        "training_frequency": 4,
+        "training_min_timestep": 10000,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "AtariReplay",
+        "batch_size": 32,
+        "max_size": 500000,
+        "stack_len": 4,
+        "use_cer": false
+      },
+      "net": {
+        "type": "ConvNet",
+        "hid_layers": [
+          [
+            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [32, 64, [4, 4], 2, 0, [1, 1]],
+            [64, 64, [3, 3], 1, 0, [1, 1]]
+          ],
+          [512]
+        ],
+        "hid_layers_activation": "relu",
+        "batch_norm": false,
+        "clip_grad": true,
+        "clip_grad_val": 5.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "RMSprop",
+          "lr": 0.00025,
+          "alpha": 0.99,
+          "eps": 1e-6,
+          "momentum": 0.0,
+          "centered": false
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 20000,
+        "lr_anneal_timestep": 1000000,
+        "update_type": "replace",
+        "update_frequency": 10000,
+        "polyak_coef": 0.9,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "BeamRiderDeterministic-v4",
+      "max_timestep": null,
+      "max_episode": 20000,
+      "save_epi_frequency": 50
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    }
+  },
+  "ddqn_breamrider": {
+    "agent": [{
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.01,
+        "explore_anneal_epi": 600,
+        "gamma": 0.99,
+        "training_batch_epoch": 1,
+        "training_epoch": 1,
+        "training_frequency": 4,
+        "training_min_timestep": 10000,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "AtariReplay",
+        "batch_size": 32,
+        "max_size": 500000,
+        "stack_len": 4,
+        "use_cer": false
+      },
+      "net": {
+        "type": "ConvNet",
+        "hid_layers": [
+          [
+            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [32, 64, [4, 4], 2, 0, [1, 1]],
+            [64, 64, [3, 3], 1, 0, [1, 1]]
+          ],
+          [512]
+        ],
+        "hid_layers_activation": "relu",
+        "batch_norm": false,
+        "clip_grad": true,
+        "clip_grad_val": 5.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "RMSprop",
+          "lr": 0.00025,
+          "alpha": 0.99,
+          "eps": 1e-6,
+          "momentum": 0.0,
+          "centered": false
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 20000,
+        "lr_anneal_timestep": 1000000,
+        "update_type": "replace",
+        "update_frequency": 30000,
+        "polyak_coef": 0.9,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "BeamRiderDeterministic-v4",
+      "max_timestep": null,
+      "max_episode": 20000,
+      "save_epi_frequency": 50
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    }
+  },
+  "ppo_conv_shared_beamrider": {
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.99,
+        "lam": 1.0,
+        "clip_eps": 0.10,
+        "entropy_coef": 0.01,
+        "val_loss_coef": 0.1,
+        "training_frequency": 1,
+        "training_epoch": 1,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "ConvNet",
+        "shared": true,
+        "hid_layers": [
+          [
+            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [32, 64, [4, 4], 2, 0, [1, 1]],
+            [64, 64, [3, 3], 1, 0, [1, 1]]
+          ],
+          [512]
+        ],
+        "hid_layers_activation": "relu",
+        "batch_norm": false,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "RMSprop",
+          "lr": 0.00025,
+          "alpha": 0.99,
+          "eps": 1e-6,
+          "momentum": 0.0,
+          "centered": false
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 20000,
+        "lr_anneal_timestep": 1000000,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "BeamRiderDeterministic-v4",
+      "max_timestep": null,
+      "max_episode": 20000,
+      "save_epi_frequency": 50
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    }
+  }
+}

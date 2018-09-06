@@ -159,9 +159,10 @@ class SARSA(Algorithm):
             loss = self.net.training_step(batch['states'], q_targets, global_net=self.global_nets.get('net'))
             # reset
             self.to_train = 0
-            self.body.log_probs = []
             self.body.entropies = []
-            logger.debug(f'Loss: {loss}')
+            self.body.log_probs = []
+            logger.info(f'Trained {self.name} at t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+
             return loss.item()
         else:
             return np.nan

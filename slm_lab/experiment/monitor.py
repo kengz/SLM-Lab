@@ -132,13 +132,19 @@ class Body:
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
 
-    def log_summary(self):
-        '''Log the summary for this body when its environment is done'''
+    def get_log_prefix(self):
+        '''Get the prefix for logging'''
         spec = self.agent.spec
         info_space = self.agent.info_space
         clock = self.env.clock
+        prefix = f'{spec["name"]}_t{info_space.get("trial")}_s{info_space.get("session")}, aeb{self.aeb}, epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}'
+        return prefix
+
+    def log_summary(self):
+        '''Log the summary for this body when its environment is done'''
+        prefix = self.get_log_prefix()
         memory = self.memory
-        msg = f'{spec["name"]} trial {info_space.get("trial")} session {info_space.get("session")} env {self.env.e}, body {self.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {self.last_loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
+        msg = f'{prefix}, loss: {self.last_loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
         logger.info(msg)
 
     def space_init(self, aeb_space):
