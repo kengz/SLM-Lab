@@ -1,6 +1,6 @@
 {
   "name": "slm_lab",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "description": "Modular Deep Reinforcement Learning framework in PyTorch.",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "watch": "if pgrep grunt >/dev/null 2>&1; then echo 'Grunt file watch-sync already running'; else node_modules/grunt/bin/grunt; fi",
     "analyze": "python3 -c 'import sys; from slm_lab.experiment import analysis; analysis.retro_analyze(sys.argv[1])'",
     "reset": "rm -rf data/* .cache __pycache__ */__pycache__ *egg-info .pytest* htmlcov .coverage* *.xml",
-    "kill": "pkill -f slm-env; pkill -f ipykernel; pkill -f run_lab.py; pkill -f graph; ray stop;",
+    "kill": "pkill -f run_lab; pkill -f graph; pkill -f slm-env; pkill -f ipykernel; pkill -f ray;",
     "update": "conda env update -f environment.yml; yarn install;",
     "export-env": "conda env export > environment.yml",
     "test": "python3 setup.py test"
