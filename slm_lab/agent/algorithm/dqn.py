@@ -152,7 +152,7 @@ class VanillaDQN(SARSA):
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.info(f'Trained {self.name}, loss: {loss:.4f}')
+            logger.info(f'Trained {self.name} at t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
             return loss.item()
         else:
             return np.nan
