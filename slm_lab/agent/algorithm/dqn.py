@@ -150,9 +150,9 @@ class VanillaDQN(SARSA):
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0
-            self.body.log_probs = []
             self.body.entropies = []
-            logger.debug(f'Loss: {loss}')
+            self.body.log_probs = []
+            logger.info(f'Trained {self.name}, loss: {loss:.4f}')
             return loss.item()
         else:
             return np.nan

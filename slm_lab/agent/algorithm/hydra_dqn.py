@@ -217,9 +217,9 @@ class HydraDQN(MultitaskDQN):
             # reset
             self.to_train = 0
             for body in self.agent.nanflat_body_a:
-                body.log_probs = []
                 body.entropies = []
-            logger.debug(f'Loss: {loss}')
+                body.log_probs = []
+            logger.info(f'Trained {self.name}, loss: {loss:.4f}')
             return loss.item()
         else:
             return np.nan

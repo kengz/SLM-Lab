@@ -25,6 +25,7 @@ class Algorithm(ABC):
         else:
             self.global_nets = global_nets or {}
         self.algorithm_spec = agent.agent_spec['algorithm']
+        self.name = self.algorithm_spec['name']
         self.memory_spec = agent.agent_spec['memory']
         self.net_spec = agent.agent_spec['net']
         self.body = self.agent.body

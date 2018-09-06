@@ -219,6 +219,9 @@ class ActorCritic(Reinforce):
         loss = self.policy_loss_coef * policy_loss + self.val_loss_coef * val_loss
         '''
         if self.to_train == 1:
+            msg = f'{spec["name"]} trial {info_space.get("trial")} session {info_space.get("session")} env {self.env.e}, body {self.aeb}, epi {clock.get("epi")}, t {clock.get("t")}, loss: {self.last_loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
+
+            logger.info('Training algorithm')
             batch = self.sample()
             with torch.no_grad():
                 advs, v_targets = self.calc_advs_v_targets(batch)
@@ -228,9 +231,9 @@ class ActorCritic(Reinforce):
             self.net.training_step(loss=loss, global_net=self.global_nets.get('net'))
             # reset
             self.to_train = 0
-            self.body.log_probs = []
             self.body.entropies = []
-            logger.debug(f'Total loss: {loss:.4f}')
+            self.body.log_probs = []
+            logger.info(f'Trained {self.name}, loss: {loss:.4f}')
             return loss.item()
         else:
             return np.nan
@@ -249,7 +252,7 @@ class ActorCritic(Reinforce):
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Total loss: {loss:.4f}')
+            logger.info(f'Trained {self.name}, loss: {loss:.4f}')
             return loss.item()
         else:
             return np.nan
