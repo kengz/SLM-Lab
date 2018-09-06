@@ -48,7 +48,7 @@ class Session:
         epi = env.clock.get('epi')
         save_this_epi = epi > 0 and hasattr(env, 'save_epi_frequency') and epi % env.save_epi_frequency == 0
         if save_this_epi:
-            agent.save(ckpt=epi)
+            agent.save(ckpt='last')
 
     def run_episode(self):
         self.env.clock.tick('epi')
