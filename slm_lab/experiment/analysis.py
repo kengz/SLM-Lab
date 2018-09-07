@@ -274,6 +274,7 @@ def is_unfit(fitness_df):
 
 def plot_session(session_spec, info_space, session_data):
     '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
+    graph_x = session_spec['meta'].get('graph_x')
     aeb_count = len(session_data)
     palette = viz.get_palette(aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
@@ -281,14 +282,14 @@ def plot_session(session_spec, info_space, session_data):
         aeb_str = f'{a}{e}{b}'
         aeb_df = session_data[(a, e, b)]
         aeb_df.fillna(0, inplace=True)  # for saving plot, cant have nan
-        fig_1 = viz.plot_line(aeb_df, 'reward', 'epi', legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
+        fig_1 = viz.plot_line(aeb_df, 'reward', graph_x, legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
         fig.append_trace(fig_1.data[0], 1, 1)
 
-        fig_2 = viz.plot_line(aeb_df, ['loss'], 'epi', y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
+        fig_2 = viz.plot_line(aeb_df, ['loss'], graph_x, y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
         fig.append_trace(fig_2.data[0], 2, 1)
         fig.append_trace(fig_2.data[1], 3, 1)
 
-    fig.layout['xaxis1'].update(title='epi', zerolinewidth=1)
+    fig.layout['xaxis1'].update(title=graph_x, zerolinewidth=1)
     fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
     fig.layout['yaxis1'].update(domain=[0.55, 1])
     fig.layout['yaxis2'].update(fig_2.layout['yaxis'])
