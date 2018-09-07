@@ -144,7 +144,7 @@ class Body:
         '''Log the summary for this body when its environment is done'''
         prefix = self.get_log_prefix()
         memory = self.memory
-        msg = f'{prefix}, loss: {self.last_loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
+        msg = f'{prefix}, loss: {self.last_loss:.8f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
         logger.info(msg)
 
     def space_init(self, aeb_space):

@@ -1,7 +1,6 @@
 from datetime import datetime
 from importlib import reload
 from slm_lab import ROOT_DIR
-from sys import getsizeof
 import cv2
 import json
 import numpy as np
@@ -11,6 +10,7 @@ import pydash as ps
 import regex as re
 import scipy as sp
 import subprocess
+import sys
 import torch
 import torch.multiprocessing as mp
 import ujson
@@ -339,11 +339,6 @@ def is_sub_dict(sub_dict, super_dict):
     return True
 
 
-def memory_size(obj, divisor=1e6):
-    '''Return the size of object, in MB by default'''
-    return getsizeof(obj) / divisor
-
-
 def monkey_patch(base_cls, extend_cls):
     '''Monkey patch a base class with methods from extend_cls'''
     ext_fn_list = get_fn_list(extend_cls)
@@ -622,6 +617,32 @@ def set_session_logger(spec, info_space, logger):
     '''Set the logger for a session give its spec and info_space'''
     os.environ['PREPATH'] = get_prepath(spec, info_space, unit='session')
     reload(logger)  # to set session-specific logger
+
+
+def _sizeof(obj, seen=None):
+    '''Recursively finds size of objects'''
+    size = sys.getsizeof(obj)
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0
+    # Important mark as seen *before* entering recursion to gracefully handle
+    # self-referential objects
+    seen.add(obj_id)
+    if isinstance(obj, dict):
+        size += sum([_sizeof(v, seen) for v in obj.values()])
+        size += sum([_sizeof(k, seen) for k in obj.keys()])
+    elif hasattr(obj, '__dict__'):
+        size += _sizeof(obj.__dict__, seen)
+    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+        size += sum([_sizeof(i, seen) for i in obj])
+    return size
+
+
+def sizeof(obj, divisor=1e6):
+    '''Return the size of object, in MB by default'''
+    return _sizeof(obj) / divisor
 
 
 def smart_path(data_path, as_dir=False):

@@ -79,4 +79,4 @@ class Memory(ABC):
         '''Prints size of all of the memory arrays'''
         for k in self.data_keys:
             d = getattr(self, k)
-            logger.info(f'Memory for body {self.body.aeb}: {k} :shape: {d.shape}, dtype: {d.dtype}, size: {util.memory_size(d)}MB')
+            logger.info(f'Memory for body {self.body.aeb}: {k} :shape: {d.shape}, dtype: {d.dtype}, size: {util.sizeof(d)}MB')
