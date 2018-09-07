@@ -92,6 +92,8 @@ class Body:
         self.last_loss = np.nan  # the last non-nan loss, for printing
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
+        self.df = pd.DataFrame(columns=['epi', 'total_t', 't', 'reward', 'loss', 'explore_var'])
+        self.df[['epi', 'total_t', 't']] = self.df[['epi', 'total_t', 't']].astype(int)
 
         # diagnostics variables/stats from action_policy prob. dist.
         self.entropies = []  # check exploration
@@ -128,6 +130,20 @@ class Body:
         assert t == 0, f'aeb: {self.aeb}, t: {t}'
         if hasattr(self, 'aeb_space'):
             self.space_fix_stats()
+
+    def epi_update(self):
+        '''Update to append data at the end of an episode (when env.done is true)'''
+        assert self.env.done
+        clock = self.env.clock
+        row = {k: self.env.clock.get(k) for k in ['epi', 'total_t', 't']}
+        row.update({
+            'reward': self.memory.total_reward,
+            'loss': self.last_loss,
+            'explore_var': self.explore_var,
+        })
+        # append efficiently to df
+        self.df.loc[len(self.df)] = row
+        return row
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
