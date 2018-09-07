@@ -116,7 +116,6 @@ class UnityEnv(BaseEnv):
         state = env_info_a.states[b]
         self.done = done = False
         logger.debug(f'Env {self.e} reset reward: {_reward}, state: {state}, done: {done}')
-        self.aeb_space.add_single(ENV_DATA_NAMES, (_reward, state, done))
         return _reward, state, done
 
     @lab_api
@@ -129,7 +128,6 @@ class UnityEnv(BaseEnv):
         done = env_info_a.local_done[b]
         self.done = done = done or self.clock.get('t') > self.max_timestep
         logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
-        self.aeb_space.add_single(ENV_DATA_NAMES, (reward, state, done))
         return reward, state, done
 
     @lab_api

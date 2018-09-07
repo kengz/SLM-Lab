@@ -30,7 +30,6 @@ class OpenAIEnv(BaseEnv):
         if util.to_render():
             self.u_env.render()
         logger.debug(f'Env {self.e} reset reward: {_reward}, state: {state}, done: {done}')
-        self.aeb_space.add_single(ENV_DATA_NAMES, (_reward, state, done))
         return _reward, state, done
 
     @lab_api
@@ -42,7 +41,6 @@ class OpenAIEnv(BaseEnv):
             self.u_env.render()
         self.done = done = done or self.clock.get('t') > self.max_timestep
         logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
-        self.aeb_space.add_single(ENV_DATA_NAMES, (reward, state, done))
         return reward, state, done
 
     @lab_api

@@ -335,15 +335,6 @@ class AEBSpace:
         else:
             return tuple(self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v))
 
-    def add_single(self, data_names, datas):
-        '''Backward compatible add method for singleton case - single agent, env, body with aeb = 0,0,0'''
-        assert ps.is_iterable(data_names) and ps.is_iterable(datas)
-        data_vs = self.init_data_v(data_names)
-        for data_v, data in zip(data_vs, datas):
-            data_v[0, 0, 0] = data
-        data_spaces = self.add(data_names, data_vs)
-        return data_spaces
-
     def tick(self, unit=None):
         '''Tick all the clocks in env_space, and tell if all envs are done'''
         end_sessions = []
