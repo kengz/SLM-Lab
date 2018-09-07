@@ -289,8 +289,8 @@ class ConcatReplay(Replay):
 
 class AtariReplay(ConcatReplay):
     '''
-    Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-1, 1] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
-    Otherwise the same as Replay memory
+    Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-10, 10] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
+    Note: Playing Atari with Deep RL clips the rewards to + / - 1
 
     e.g. memory_spec
     "memory": {
@@ -333,6 +333,6 @@ class AtariReplay(ConcatReplay):
         self.base_update(action, reward, state, done)
         state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
-            reward = max(-1, min(1, reward))
+            reward = max(-10, min(10, reward))
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
