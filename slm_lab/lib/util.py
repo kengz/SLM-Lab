@@ -1,4 +1,5 @@
 from datetime import datetime
+from importlib import reload
 from slm_lab import ROOT_DIR
 from sys import getsizeof
 import cv2
@@ -615,6 +616,12 @@ def set_module_seed(random_seed):
     torch.cuda.manual_seed_all(random_seed)
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
+
+
+def set_session_logger(spec, info_space, logger):
+    '''Set the logger for a session give its spec and info_space'''
+    os.environ['PREPATH'] = get_prepath(spec, info_space, unit='session')
+    reload(logger)  # to set session-specific logger
 
 
 def smart_path(data_path, as_dir=False):
