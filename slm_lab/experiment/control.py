@@ -75,7 +75,7 @@ class Session:
         logger.info('Session done and closed.')
 
     def run(self):
-        while self.env.clock.get('epi') <= self.env.max_episode:
+        while self.env.clock.get('epi') < self.env.max_episode:
             self.run_episode()
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
