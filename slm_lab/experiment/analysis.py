@@ -315,6 +315,7 @@ def gather_aeb_rewards_df(aeb, session_datas):
 
 def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
     '''Build the aeb_reward envelope figure'''
+    # TODO need enable total_t for trial graph, and line up signals at the common total_t
     mean_sr = aeb_rewards_df.mean(axis=1)
     std_sr = aeb_rewards_df.std(axis=1).fillna(0)
     max_sr = mean_sr + std_sr
