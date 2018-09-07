@@ -213,36 +213,10 @@ def get_session_data(session):
     Gather data from session: MDP, Agent, Env data, hashed by aeb; then aggregate.
     @returns {dict, dict} session_mdp_data, session_data
     '''
-    data_names = AGENT_DATA_NAMES + ENV_DATA_NAMES
-    mdp_data_names = ['t', 'epi'] + data_names
-    agg_data_names = ['epi'] + list(DATA_AGG_FNS.keys())
-    data_h_v_dict = {data_name: session.aeb_space.get_history_v(data_name) for data_name in data_names}
-    session_mdp_data, session_data = {}, {}
-    for aeb in session.aeb_space.aeb_list:
-        data_h_dict = {data_name: data_h_v[aeb] for data_name, data_h_v in data_h_v_dict.items()}
-        # trim back to remove any incomplete sessions due to multienv termination
-        complete_done_h = np.trim_zeros(data_h_dict['done'], 'b')
-        # offset properly to bin separate episodes
-        reset_bin = np.concatenate([[0.], complete_done_h[:-1]])
-        data_len = len(reset_bin)
-        reset_idx = reset_bin.astype('bool')
-        nonreset_idx = ~reset_idx
-        data_h_dict['t'] = np.ones(reset_idx.shape)
-        data_h_dict['epi'] = reset_idx.astype(int).cumsum() + 1  # +1 to start counting from 1
-        mdp_df = pd.DataFrame({
-            data_name: data_h_dict[data_name][:data_len]
-            for data_name in mdp_data_names})
-        mdp_df = mdp_df.reindex(mdp_data_names, axis=1)
-        aeb_df = mdp_df[agg_data_names].groupby('epi').agg(DATA_AGG_FNS)
-        aeb_df['t'] -= 1  # offset t=0 at reset
-        aeb_df.reset_index(drop=False, inplace=True)
-        session_mdp_data[aeb], session_data[aeb] = mdp_df, aeb_df
-    logger.debug(f'{session_data}')
-    data_size_in_bytes = util.sizeof(session_mdp_data)
-    logger.debug(f'Size of session data: {data_size_in_bytes} MB')
-    if data_size_in_bytes > 25:
-        logger.warn(f'Session data > 25 MB')
-    return session_mdp_data, session_data
+    session_data = {}
+    for aeb, body in util.ndenumerate_nonan(session.aeb_space.body_space.data):
+        session_data[aeb] = body.df
+    return session_data
 
 
 def calc_session_fitness_df(session, session_data):
@@ -424,22 +398,18 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
-def save_session_data(spec, info_space, session_mdp_data, session_data, session_fitness_df, session_fig):
+def save_session_data(spec, info_space, session_data, session_fitness_df, session_fig):
     '''
-    Save the session data: session_mdp_df, session_df, session_fitness_df, session_graph.
+    Save the session data: session_df, session_fitness_df, session_graph.
     session_data is saved as session_df; multi-indexed with (a,e,b), 3 extra levels
     to read, use:
     session_df = util.read(filepath, header=[0, 1, 2, 3])
     session_data = util.session_df_to_data(session_df)
-    Likewise for session_mdp_df
     '''
     prepath = util.get_prepath(spec, info_space, unit='session')
     logger.info(f'Saving session data to {prepath}')
-    if session_mdp_data is not None:  # not from retro analysis
-        session_mdp_df = pd.concat(session_mdp_data, axis=1)
+    if 'retro_analyze' not in os.environ['PREPATH']:
         session_df = pd.concat(session_data, axis=1)
-        # TODO reactivate saving when get to the transition matrix research
-        # util.write(session_mdp_df, f'{prepath}_session_mdp_df.csv')
         util.write(session_df, f'{prepath}_session_df.csv')
     util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
     viz.save_image(session_fig, f'{prepath}_session_graph.png')
@@ -467,13 +437,11 @@ def analyze_session(session, session_data=None):
     @returns {DataFrame} session_fitness_df Single-row df of session fitness vector (avg over aeb), indexed with session index.
     '''
     logger.info('Analyzing session')
-    if session_data is None:
-        session_mdp_data, session_data = get_session_data(session)
-    else:  # from retro analysis
-        session_mdp_data = None
+    if session_data is None:  # not from retro analysis
+        session_data = get_session_data(session)
     session_fitness_df = calc_session_fitness_df(session, session_data)
     session_fig = plot_session(session.spec, session.info_space, session_data)
-    save_session_data(session.spec, session.info_space, session_mdp_data, session_data, session_fitness_df, session_fig)
+    save_session_data(session.spec, session.info_space, session_data, session_fitness_df, session_fig)
     return session_fitness_df
 
 
