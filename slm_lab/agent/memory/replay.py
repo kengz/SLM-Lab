@@ -333,7 +333,6 @@ class AtariReplay(ConcatReplay):
         self.base_update(action, reward, state, done)
         state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
-            if not np.isnan(reward):
-                reward = max(-1, min(1, reward))
+            reward = max(-1, min(1, reward))
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
