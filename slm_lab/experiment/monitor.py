@@ -202,7 +202,6 @@ class DataSpace:
         self.data_type = object if self.data_name in ['state', 'action'] else np.float32
         self.data = None  # standard data in aeb_shape
         self.swap_data = None
-        self.data_history = []  # index = clock.total_t
 
     def __str__(self):
         if self.data is None:
@@ -235,7 +234,7 @@ class DataSpace:
 
     def add(self, data_v):
         '''
-        Take raw data from RL system and construct numpy object self.data, then add to self.data_history.
+        Take raw data from RL system and construct numpy object self.data.
         If data is from env, auto-swap the data to aeb standard shape.
         @param {[x: [y: [body_v]]} data_v As collected in RL sytem.
         @returns {array} data Tensor in standard aeb shape.
@@ -247,11 +246,6 @@ class DataSpace:
         else:
             self.data = new_data
             self.swap_data = new_data.swapaxes(0, 1)
-        # Do not store states with more than 10 dimensions total. It places too much burden on the memory
-        if self.data_name == 'state' and self.data[(0, 0, 0)].size > 10:
-            self.data_history.append(np.zeros_like(self.data))
-        else:
-            self.data_history.append(self.data)
         return self.data
 
     def get(self, a=None, e=None):
@@ -307,11 +301,6 @@ class AEBSpace:
     def init_data_v(self, data_names):
         '''Shortcut to init data_v_1, data_v_2, ...'''
         return tuple(self.data_spaces[data_name].init_data_v() for data_name in data_names)
-
-    def get_history_v(self, data_name):
-        '''Get a data_v history and stack into a data_h_v (history volume)'''
-        data_h_v = np.stack(self.data_spaces[data_name].data_history, axis=3)
-        return data_h_v
 
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
