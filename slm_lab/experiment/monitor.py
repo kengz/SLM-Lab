@@ -92,8 +92,7 @@ class Body:
         self.last_loss = np.nan  # the last non-nan loss, for printing
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
-        self.df = pd.DataFrame(columns=['epi', 'total_t', 't', 'reward', 'loss', 'explore_var'])
-        self.df[['epi', 'total_t', 't']] = self.df[['epi', 'total_t', 't']].astype(int)
+        self.df = pd.DataFrame(columns=['epi', 't', 'reward', 'loss', 'explore_var'])
 
         # diagnostics variables/stats from action_policy prob. dist.
         self.entropies = []  # check exploration
@@ -135,7 +134,7 @@ class Body:
         '''Update to append data at the end of an episode (when env.done is true)'''
         assert self.env.done
         clock = self.env.clock
-        row = {k: self.env.clock.get(k) for k in ['epi', 'total_t', 't']}
+        row = {k: self.env.clock.get(k) for k in ['epi', 't']}
         row.update({
             'reward': self.memory.total_reward,
             'loss': self.last_loss,
