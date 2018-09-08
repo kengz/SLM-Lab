@@ -1,5 +1,5 @@
 {
-  "dqn_breamrider": {
+  "dqn_beamrider": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -77,7 +77,7 @@
       "search": "RandomSearch"
     }
   },
-  "ddqn_breamrider": {
+  "ddqn_beamrider": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {
