@@ -141,6 +141,7 @@ class Body:
             'loss': self.last_loss,
             'explore_var': self.explore_var,
         })
+        assert all(k in self.df.columns for k in row), f'{self.df.columns} vs {row.keys()}'
         # append efficiently to df
         self.df.loc[len(self.df)] = row
         return row
