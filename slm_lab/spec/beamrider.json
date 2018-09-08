@@ -1,5 +1,5 @@
 {
-  "dqn_breamrider": {
+  "dqn_beamrider": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -20,7 +20,7 @@
       "memory": {
         "name": "AtariReplay",
         "batch_size": 32,
-        "max_size": 500000,
+        "max_size": 1000000,
         "stack_len": 4,
         "use_cer": false
       },
@@ -71,12 +71,13 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 4,
+      "graph_x": "total_t",
+      "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
     }
   },
-  "ddqn_breamrider": {
+  "ddqn_beamrider": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {
@@ -97,7 +98,7 @@
       "memory": {
         "name": "AtariReplay",
         "batch_size": 32,
-        "max_size": 500000,
+        "max_size": 1000000,
         "stack_len": 4,
         "use_cer": false
       },
@@ -148,7 +149,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 4,
+      "graph_x": "total_t",
+      "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
     }
@@ -222,7 +224,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 4,
+      "graph_x": "total_t",
+      "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
     }

@@ -1,20 +1,14 @@
 from slm_lab.agent import AgentSpace
-from slm_lab.agent.memory import Replay
 from slm_lab.agent.net.convnet import ConvNet
-from slm_lab.agent.net.recurrent import RecurrentNet
 from slm_lab.agent.net.mlp import MLPNet, HydraMLPNet
+from slm_lab.agent.net.recurrent import RecurrentNet
 from slm_lab.env import EnvSpace
-# from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 import numpy as np
 import pandas as pd
 import pytest
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 
 
 spec = None

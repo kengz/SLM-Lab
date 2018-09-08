@@ -1,14 +1,14 @@
 from flaky import flaky
-from slm_lab.experiment.control import Trial, Session
+from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import InfoSpace
-from slm_lab.lib import logger, util
+from slm_lab.lib import util
 from slm_lab.spec import spec_util
 import os
 import pandas as pd
 import pytest
 
 
-# helper method to run all tests below, split for parallelization
+# helper method to run all tests in test_spec
 def run_trial_test(spec_file, spec_name=False, distributed=False):
     spec = spec_util.get(spec_file, spec_name)
     spec = util.override_test_spec(spec)

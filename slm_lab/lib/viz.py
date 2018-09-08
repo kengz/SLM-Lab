@@ -302,7 +302,7 @@ def save_image(figure, filepath=None):
         logger.info(f'Graph saved to {dirname}/{filename}')
     except Exception as e:
         logger.exception(
-            'Please install orca for plotly and run retro-analysis to generate graphs.')
+            'Failed to generate graph. Fix the issue and run retro-analysis to generate graphs.')
 
 
 def stack_cumsum(df, y_col):

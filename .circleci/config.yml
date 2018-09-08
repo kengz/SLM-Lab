@@ -66,6 +66,7 @@ jobs:
             fi
             conda activate lab
             conda env update -f environment.yml
+            pip uninstall -y tensorflow tensorboard
             conda clean --all -y
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}

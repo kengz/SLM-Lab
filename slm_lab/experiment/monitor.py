@@ -92,6 +92,7 @@ class Body:
         self.last_loss = np.nan  # the last non-nan loss, for printing
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
+        self.df = pd.DataFrame(columns=['epi', 't', 'reward', 'loss', 'explore_var'])
 
         # diagnostics variables/stats from action_policy prob. dist.
         self.entropies = []  # check exploration
@@ -129,6 +130,20 @@ class Body:
         if hasattr(self, 'aeb_space'):
             self.space_fix_stats()
 
+    def epi_update(self):
+        '''Update to append data at the end of an episode (when env.done is true)'''
+        assert self.env.done
+        clock = self.env.clock
+        row = {k: self.env.clock.get(k) for k in ['epi', 't']}
+        row.update({
+            'reward': self.memory.total_reward,
+            'loss': self.last_loss,
+            'explore_var': self.explore_var,
+        })
+        # append efficiently to df
+        self.df.loc[len(self.df)] = pd.Series(row, dtype=np.float32)
+        return row
+
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
 
@@ -144,7 +159,7 @@ class Body:
         '''Log the summary for this body when its environment is done'''
         prefix = self.get_log_prefix()
         memory = self.memory
-        msg = f'{prefix}, loss: {self.last_loss:.4f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
+        msg = f'{prefix}, loss: {self.last_loss:.8f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
         logger.info(msg)
 
     def space_init(self, aeb_space):
@@ -186,7 +201,6 @@ class DataSpace:
         self.data_type = object if self.data_name in ['state', 'action'] else np.float32
         self.data = None  # standard data in aeb_shape
         self.swap_data = None
-        self.data_history = []  # index = clock.total_t
 
     def __str__(self):
         if self.data is None:
@@ -219,7 +233,7 @@ class DataSpace:
 
     def add(self, data_v):
         '''
-        Take raw data from RL system and construct numpy object self.data, then add to self.data_history.
+        Take raw data from RL system and construct numpy object self.data.
         If data is from env, auto-swap the data to aeb standard shape.
         @param {[x: [y: [body_v]]} data_v As collected in RL sytem.
         @returns {array} data Tensor in standard aeb shape.
@@ -231,11 +245,6 @@ class DataSpace:
         else:
             self.data = new_data
             self.swap_data = new_data.swapaxes(0, 1)
-        # Do not store states with more than 10 dimensions total. It places too much burden on the memory
-        if self.data_name == 'state' and self.data[(0, 0, 0)].size > 10:
-            self.data_history.append(np.nan)
-        else:
-            self.data_history.append(self.data)
         return self.data
 
     def get(self, a=None, e=None):
@@ -292,11 +301,6 @@ class AEBSpace:
         '''Shortcut to init data_v_1, data_v_2, ...'''
         return tuple(self.data_spaces[data_name].init_data_v() for data_name in data_names)
 
-    def get_history_v(self, data_name):
-        '''Get a data_v history and stack into a data_h_v (history volume)'''
-        data_h_v = np.stack(self.data_spaces[data_name].data_history, axis=3)
-        return data_h_v
-
     def init_body_space(self):
         '''Initialize the body_space (same class as data_space) used for AEB body resolution, and set reference in agents and envs'''
         self.body_space = DataSpace('body', self)
@@ -329,15 +333,6 @@ class AEBSpace:
             return data_space
         else:
             return tuple(self.add(d_name, d_v) for d_name, d_v in zip(data_name, data_v))
-
-    def add_single(self, data_names, datas):
-        '''Backward compatible add method for singleton case - single agent, env, body with aeb = 0,0,0'''
-        assert ps.is_iterable(data_names) and ps.is_iterable(datas)
-        data_vs = self.init_data_v(data_names)
-        for data_v, data in zip(data_vs, datas):
-            data_v[0, 0, 0] = data
-        data_spaces = self.add(data_names, data_vs)
-        return data_spaces
 
     def tick(self, unit=None):
         '''Tick all the clocks in env_space, and tell if all envs are done'''
