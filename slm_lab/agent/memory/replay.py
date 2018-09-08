@@ -67,12 +67,12 @@ class Replay(Memory):
             elif k == 'actions':
                 setattr(self, k, np.zeros(self.actions_shape, dtype=self.body.action_space.dtype))
             else:
-                setattr(self, k, np.zeros(self.scalar_shape, dtype=np.float16))
+                setattr(self, k, np.zeros(self.scalar_shape))
         self.true_size = 0
         self.head = -1
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim, dtype=np.float16))
+            self.state_buffer.append(np.zeros(self.body.state_dim))
 
     @lab_api
     def update(self, action, reward, state, done):
@@ -258,7 +258,7 @@ class ConcatReplay(Replay):
         super(ConcatReplay, self).reset()
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.raw_state_dim, dtype=np.float16))
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
@@ -266,7 +266,7 @@ class ConcatReplay(Replay):
         # reappend buffer with custom shape
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.raw_state_dim, dtype=np.float16))
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
