@@ -58,7 +58,7 @@ class OnPolicyReplay(Memory):
         self.true_size = 0  # Size of the current memory
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim))
+            self.state_buffer.append(np.zeros(self.body.state_dim, dtype=np.float16))
 
     @lab_api
     def update(self, action, reward, state, done):
@@ -252,7 +252,7 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
         super(OnPolicySeqBatchReplay, self).reset()
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim))
+            self.state_buffer.append(np.zeros(self.body.state_dim, dtype=np.float16))
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
