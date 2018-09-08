@@ -116,6 +116,8 @@ def downcast_float32(df):
 
 def fast_uniform_sample(mem_size, batch_size):
     '''Fast uniform sampling for large memory size (indices) by binning the number line and sampling from each bin'''
+    if mem_size <= batch_size:
+        return np.random.randint(mem_size, size=batch_size)
     num_base = math.floor(mem_size / batch_size)
     bin_start = np.arange(batch_size, dtype=np.int) * num_base
     bin_idx = np.random.randint(num_base, size=batch_size)
