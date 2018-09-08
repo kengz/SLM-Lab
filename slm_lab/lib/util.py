@@ -699,7 +699,6 @@ def to_render():
 
 def to_torch_batch(batch, device, is_episodic):
     '''Mutate a batch (dict) to make its values from numpy into PyTorch tensor'''
-    # TODO Fix for OnPolicyAtariReplay memory
     for k in batch:
         if is_episodic:  # for episodic format
             batch[k] = np.concatenate(batch[k])

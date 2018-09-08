@@ -327,6 +327,7 @@ class OnPolicyAtariReplay(OnPolicyReplay):
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
+        state = self.preprocess_state(state, append=False)
         super(OnPolicyAtariReplay, self).epi_reset(state)
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
