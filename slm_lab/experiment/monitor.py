@@ -141,7 +141,7 @@ class Body:
             'explore_var': self.explore_var,
         })
         # append efficiently to df
-        self.df.loc[len(self.df)] = row
+        self.df.loc[len(self.df)] = pd.Series(row, dtype=np.float32)
         return row
 
     def __str__(self):
