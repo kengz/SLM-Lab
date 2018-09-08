@@ -72,7 +72,7 @@ class Replay(Memory):
         self.head = -1
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body, dtype=np.float16.state_dim))
+            self.state_buffer.append(np.zeros(self.body.state_dim, dtype=np.float16))
 
     @lab_api
     def update(self, action, reward, state, done):
