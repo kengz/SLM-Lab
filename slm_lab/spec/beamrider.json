@@ -176,7 +176,8 @@
         "normalize_state": true
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyAtariReplay",
+        "stack_len": 4
       },
       "net": {
         "type": "ConvNet",

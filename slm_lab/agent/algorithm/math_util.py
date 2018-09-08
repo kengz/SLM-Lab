@@ -61,12 +61,17 @@ def calc_nstep_returns(batch, gamma, n, next_v_preds):
         then add v_pred for n as final term
     '''
     rets = batch['rewards'].clone()  # prevent mutation
+    next_v_preds = next_v_preds.clone()  # prevent mutation
     nstep_rets = torch.zeros_like(rets) + rets
     cur_gamma = gamma
     for i in range(1, n):
         # Shift returns by one and zero last element of each episode
         rets[:-1] = rets[1:]
         rets *= (1 - batch['dones'])
+        # Also shift V(s_t+1) so final terms use V(s_t+n)
+        next_v_preds[:-1] = next_v_preds[1:]
+        next_v_preds *= (1 - batch['dones'])
+        # Accumulate return
         nstep_rets += cur_gamma * rets
         # Update current gamma
         cur_gamma *= cur_gamma

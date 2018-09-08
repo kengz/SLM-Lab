@@ -297,3 +297,59 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
         for i in range(len(data)):
             data_seq.append(padded_data[i:i + self.seq_len])
         return data_seq
+
+
+class OnPolicyAtariReplay(OnPolicyReplay):
+    '''
+    Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-10, 10] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
+    Note: Playing Atari with Deep RL clips the rewards to + / - 1
+    Otherwise the same as OnPolicyReplay memory
+    '''
+
+    def __init__(self, memory_spec, body):
+        self.atari = True  # Memory is specialized for playing Atari games
+        util.set_attr(self, memory_spec, [
+            'stack_len',  # number of stack states
+        ])
+        self.raw_state_dim = (84, 84)
+        body.state_dim = self.raw_state_dim + (self.stack_len,)  # greyscale downsized, stacked
+        OnPolicyReplay.__init__(self, memory_spec, body)
+        self.state_buffer = deque(maxlen=self.stack_len)
+        self.reset()
+
+    @lab_api
+    def reset(self):
+        '''Initializes the memory arrays, size and head pointer'''
+        super(OnPolicyAtariReplay, self).reset()
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
+
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        state = self.preprocess_state(state, append=False)
+        super(OnPolicyAtariReplay, self).epi_reset(state)
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
+
+    def preprocess_state(self, state, append=True):
+        '''Transforms the raw state into format that is fed into the network'''
+        state = util.transform_image(state)
+        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
+        if append:
+            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
+            self.state_buffer.append(state)
+        processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
+        assert processed_state.shape == self.body.state_dim
+        return processed_state
+
+    @lab_api
+    def update(self, action, reward, state, done):
+        '''Interface method to update memory'''
+        self.base_update(action, reward, state, done)
+        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
+        if not np.isnan(reward):  # not the start of episode
+            reward = max(-10, min(10, reward))
+            self.add_experience(self.last_state, action, reward, state, done)
+        self.last_state = state
