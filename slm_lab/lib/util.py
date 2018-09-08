@@ -740,7 +740,7 @@ def try_set_cuda_id(spec, info_space):
             return
     trial_idx = info_space.get('trial') or 0
     session_idx = info_space.get('session') or 0
-    job_idx = trial_idx * session_idx + session_idx
+    job_idx = trial_idx * spec['meta']['max_session'] + session_idx
     device_count = torch.cuda.device_count()
     if device_count == 0:
         cuda_id = 0
