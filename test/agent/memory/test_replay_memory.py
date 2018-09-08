@@ -20,7 +20,6 @@ class TestMemory:
         assert memory.states.shape == (memory.max_size, memory.body.state_dim)
         assert memory.actions.shape == (memory.max_size,)
         assert memory.rewards.shape == (memory.max_size,)
-        assert memory.next_states.shape == (memory.max_size, memory.body.state_dim)
         assert memory.dones.shape == (memory.max_size,)
 
     def test_add_experience(self, test_memory):
@@ -36,7 +35,6 @@ class TestMemory:
         assert np.array_equal(memory.states[memory.head], exp[0])
         assert memory.actions[memory.head] == exp[1]
         assert memory.rewards[memory.head] == exp[2]
-        assert np.array_equal(memory.next_states[memory.head], exp[3])
         assert memory.dones[memory.head] == exp[4]
 
     def test_wrap(self, test_memory):
@@ -85,6 +83,12 @@ class TestMemory:
             assert old_idx != new_idx
             old_idx = deepcopy(memory.batch_idxs).tolist()
 
+    def test_sample_next_states(self, test_memory):
+        memory = test_memory[0]
+        idxs = np.array(range(memory.true_size))
+        next_states = memory._sample_next_states(idxs)
+        assert np.array_equal(next_states[len(next_states) - 1], memory.latest_next_state)
+
     def test_reset(self, test_memory):
         '''Tests memory reset. Adds 2 experiences, then resets the memory and checks if all appropriate values have been zeroed'''
         memory = test_memory[0]
@@ -99,7 +103,6 @@ class TestMemory:
         assert np.sum(memory.states) == 0
         assert np.sum(memory.actions) == 0
         assert np.sum(memory.rewards) == 0
-        assert np.sum(memory.next_states) == 0
         assert np.sum(memory.dones) == 0
 
     @pytest.mark.skip(reason="Not implemented yet")

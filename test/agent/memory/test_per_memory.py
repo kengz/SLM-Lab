@@ -20,7 +20,6 @@ class TestPERMemory:
         assert memory.states.shape == (memory.max_size, memory.body.state_dim)
         assert memory.actions.shape == (memory.max_size,)
         assert memory.rewards.shape == (memory.max_size,)
-        assert memory.next_states.shape == (memory.max_size, memory.body.state_dim)
         assert memory.dones.shape == (memory.max_size,)
         assert memory.priorities.shape == (memory.max_size,)
         assert memory.tree.write == 0
@@ -41,7 +40,6 @@ class TestPERMemory:
         assert np.array_equal(memory.states[memory.head], exp[0])
         assert memory.actions[memory.head] == exp[1]
         assert memory.rewards[memory.head] == exp[2]
-        assert np.array_equal(memory.next_states[memory.head], exp[3])
         assert memory.dones[memory.head] == exp[4]
         assert memory.priorities[memory.head] == 100000
 
@@ -105,7 +103,6 @@ class TestPERMemory:
         assert np.sum(memory.states) == 0
         assert np.sum(memory.actions) == 0
         assert np.sum(memory.rewards) == 0
-        assert np.sum(memory.next_states) == 0
         assert np.sum(memory.dones) == 0
         assert np.sum(memory.priorities) == 0
         assert memory.tree.write == 0

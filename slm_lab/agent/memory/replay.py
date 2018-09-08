@@ -62,8 +62,11 @@ class Replay(Memory):
         '''Initializes the memory arrays, size and head pointer'''
         # set data keys as self.{data_keys}
         for k in self.data_keys:
-            if 'states' in k:
+            if k == 'states':
                 setattr(self, k, np.zeros(self.states_shape, dtype=np.float16))
+            elif k == 'next_states':
+                # don't store next_states, but create a place holder to track it for sampling
+                self.latest_next_state = None
             elif k == 'actions':
                 setattr(self, k, np.zeros(self.actions_shape, dtype=self.body.action_space.dtype))
             else:
@@ -89,7 +92,7 @@ class Replay(Memory):
         self.states[self.head] = state
         self.actions[self.head] = action
         self.rewards[self.head] = reward
-        self.next_states[self.head] = next_state
+        self.latest_next_state = next_state
         self.dones[self.head] = done
         # Actually occupied size of memory
         if self.true_size < self.max_size:
@@ -110,8 +113,29 @@ class Replay(Memory):
             'dones'      : dones}
         '''
         self.batch_idxs = self.sample_idxs(self.batch_size)
-        batch = {k: getattr(self, k)[self.batch_idxs] for k in self.data_keys}
+        batch = {}
+        for k in self.data_keys:
+            if k == 'next_states':
+                batch[k] = self._sample_next_states(self.batch_idxs)
+            else:
+                batch[k] = getattr(self, k)[self.batch_idxs]
         return batch
+
+    def _sample_next_states(self, batch_idxs):
+        '''Method to sample next_states from states, with proper guard for last idx (out of bound)'''
+        # idxs for next state is state idxs + 1
+        ns_batch_idxs = batch_idxs + 1
+        # find the locations to be replaced with latest_next_state
+        latest_ns_locs = np.argwhere(ns_batch_idxs == self.true_size).flatten()
+        to_replace = latest_ns_locs.size != 0
+        # set to 0, a safe sentinel for ns_batch_idxs due to the +1 above
+        # then sample safely from self.states, and replace at locs with latest_next_state
+        if to_replace:
+            ns_batch_idxs[latest_ns_locs] = 0
+        next_states = self.states[ns_batch_idxs]
+        if to_replace:
+            next_states[latest_ns_locs] = self.latest_next_state
+        return next_states
 
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
