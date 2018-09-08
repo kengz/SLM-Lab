@@ -133,7 +133,6 @@ class Body:
 
     def epi_update(self):
         '''Update to append data at the end of an episode (when env.done is true)'''
-        assert self.env.done
         clock = self.env.clock
         row = {k: self.env.clock.get(k) for k in ['epi', 'total_t', 't']}
         row.update({
