@@ -3,6 +3,7 @@ from importlib import reload
 from slm_lab import ROOT_DIR
 import cv2
 import json
+import math
 import numpy as np
 import os
 import pandas as pd
@@ -111,6 +112,15 @@ def downcast_float32(df):
         if df[col].dtype == 'float':
             df[col] = df[col].astype('float32')
     return df
+
+
+def fast_uniform_sample(mem_size, batch_size):
+    '''Fast uniform sampling for large memory size (indices) by binning the number line and sampling from each bin'''
+    num_base = math.floor(mem_size / batch_size)
+    bin_start = np.arange(batch_size, dtype=np.int) * num_base
+    bin_idx = np.random.randint(num_base, size=batch_size)
+    bin_idx += bin_start
+    return bin_idx
 
 
 def flatten_dict(obj, delim='.'):

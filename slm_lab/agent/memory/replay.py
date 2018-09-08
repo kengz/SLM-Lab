@@ -115,7 +115,7 @@ class Replay(Memory):
 
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
-        batch_idxs = np.random.choice(range(self.true_size), batch_size)
+        batch_idxs = util.fast_uniform_sample(self.true_size, batch_size)
         if self.use_cer:  # add the latest sample
             batch_idxs[-1] = self.head
         return batch_idxs
