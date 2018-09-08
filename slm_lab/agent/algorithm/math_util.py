@@ -61,17 +61,22 @@ def calc_nstep_returns(batch, gamma, n, next_v_preds):
         then add v_pred for n as final term
     '''
     rets = batch['rewards'].clone()  # prevent mutation
+    _next_v_preds = next_v_preds.clone()  # prevent mutation
     nstep_rets = torch.zeros_like(rets) + rets
     cur_gamma = gamma
     for i in range(1, n):
         # Shift returns by one and zero last element of each episode
         rets[:-1] = rets[1:]
         rets *= (1 - batch['dones'])
+        # Also shift V(s_t+1) so final terms use V(s_t+n)
+        _next_v_preds[:-1] = _next_v_preds[1:]
+        _next_v_preds *= (1 - batch['dones'])
+        # Accumulate return
         nstep_rets += cur_gamma * rets
         # Update current gamma
         cur_gamma *= cur_gamma
     # Add final terms. Note no next state if epi is done
-    final_terms = cur_gamma * next_v_preds * (1 - batch['dones'])
+    final_terms = cur_gamma * _next_v_preds * (1 - batch['dones'])
     nstep_rets += final_terms
     return nstep_rets
 
