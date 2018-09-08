@@ -141,7 +141,7 @@ class Agent:
         explore_var_a = util.guard_data_a(self, explore_var_a, 'explore_var')
         logger.debug(f'Agent {self.a} loss: {loss_a}, explore_var_a {explore_var_a}')
         for eb, body in util.ndenumerate_nonan(self.body_a):
-            if done_a[eb]:
+            if body.env.done:
                 body.epi_update()
         return loss_a, explore_var_a
 
