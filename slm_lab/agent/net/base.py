@@ -19,6 +19,9 @@ class Net(ABC):
         self.in_dim = in_dim
         self.out_dim = out_dim
         if self.net_spec.get('gpu'):
-            self.device = f'cuda:{net_spec.get("cuda_id", 0)}'
+            if torch.cuda.device_count():
+                self.device = f'cuda:{net_spec.get("cuda_id", 0)}'
+            else:
+                self.device = 'cpu'
         else:
             self.device = 'cpu'

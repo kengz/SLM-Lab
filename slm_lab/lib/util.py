@@ -743,9 +743,11 @@ def try_set_cuda_id(spec, info_space):
     job_idx = trial_idx * spec['meta']['max_session'] + session_idx
     device_count = torch.cuda.device_count()
     if device_count == 0:
-        cuda_id = 0
+        cuda_id = None
     else:
         cuda_id = job_idx % device_count
+        cuda_id += int(os.environ.get('CUDA_ID_OFFSET', 0))
+
     for agent_spec in spec['agent']:
         agent_spec['net']['cuda_id'] = cuda_id
 
