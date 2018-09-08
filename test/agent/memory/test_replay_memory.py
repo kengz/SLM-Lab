@@ -83,6 +83,12 @@ class TestMemory:
             assert old_idx != new_idx
             old_idx = deepcopy(memory.batch_idxs).tolist()
 
+    def test_sample_next_states(self, test_memory):
+        memory = test_memory[0]
+        idxs = np.array(range(memory.true_size))
+        next_states = memory._sample_next_states(idxs)
+        assert np.array_equal(next_states[len(next_states) - 1], memory.latest_next_state)
+
     def test_reset(self, test_memory):
         '''Tests memory reset. Adds 2 experiences, then resets the memory and checks if all appropriate values have been zeroed'''
         memory = test_memory[0]
