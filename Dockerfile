@@ -53,11 +53,11 @@ RUN yarn install && \
     yarn global add electron@1.8.4 orca
 
 COPY environment.yml environment.yml
-RUN conda env update -f environment.yml
 
 # Mac uses box2d-kengz, ubuntu uses box2d
 RUN . /opt/conda/etc/profile.d/conda.sh && \
     conda activate lab && \
+    conda env update -f environment.yml && \
     pip uninstall -y tensorflow tensorboard && \
     pip uninstall -y box2d-kengz && \
     pip install box2d
