@@ -33,6 +33,7 @@ def test_reinforce(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
+@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('reinforce.json', 'reinforce_mlp_cartpole'),
