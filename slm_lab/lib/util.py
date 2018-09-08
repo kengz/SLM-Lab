@@ -1,5 +1,6 @@
 from datetime import datetime
 from importlib import reload
+from scipy import misc
 from slm_lab import ROOT_DIR
 import cv2
 import json

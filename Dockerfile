@@ -58,6 +58,7 @@ RUN conda env update -f environment.yml
 # Mac uses box2d-kengz, ubuntu uses box2d
 RUN . /opt/conda/etc/profile.d/conda.sh && \
     conda activate lab && \
+    pip uninstall -y tensorflow tensorboard && \
     pip uninstall -y box2d-kengz && \
     pip install box2d
 
