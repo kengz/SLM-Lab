@@ -63,7 +63,7 @@ class Replay(Memory):
         # set data keys as self.{data_keys}
         for k in self.data_keys:
             if 'states' in k:
-                setattr(self, k, np.zeros(self.states_shape))
+                setattr(self, k, np.zeros(self.states_shape, dtype=np.float16))
             elif k == 'actions':
                 setattr(self, k, np.zeros(self.actions_shape, dtype=self.body.action_space.dtype))
             else:
@@ -115,7 +115,7 @@ class Replay(Memory):
 
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
-        batch_idxs = np.random.choice(range(self.true_size), batch_size)
+        batch_idxs = util.fast_uniform_sample(self.true_size, batch_size)
         if self.use_cer:  # add the latest sample
             batch_idxs[-1] = self.head
         return batch_idxs

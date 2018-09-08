@@ -1,5 +1,5 @@
 {
-  "dqn_breamrider": {
+  "dqn_beamrider": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -71,12 +71,13 @@
     },
     "meta": {
       "distributed": false,
+      "graph_x": "total_t",
       "max_session": 4,
       "max_trial": 1,
       "search": "RandomSearch"
     }
   },
-  "ddqn_breamrider": {
+  "ddqn_beamrider": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {
@@ -148,6 +149,7 @@
     },
     "meta": {
       "distributed": false,
+      "graph_x": "total_t",
       "max_session": 4,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -222,6 +224,7 @@
     },
     "meta": {
       "distributed": false,
+      "graph_x": "total_t",
       "max_session": 4,
       "max_trial": 1,
       "search": "RandomSearch"

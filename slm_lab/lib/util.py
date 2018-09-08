@@ -1,9 +1,9 @@
 from datetime import datetime
 from importlib import reload
 from slm_lab import ROOT_DIR
-from sys import getsizeof
 import cv2
 import json
+import math
 import numpy as np
 import os
 import pandas as pd
@@ -11,6 +11,7 @@ import pydash as ps
 import regex as re
 import scipy as sp
 import subprocess
+import sys
 import torch
 import torch.multiprocessing as mp
 import ujson
@@ -111,6 +112,17 @@ def downcast_float32(df):
         if df[col].dtype == 'float':
             df[col] = df[col].astype('float32')
     return df
+
+
+def fast_uniform_sample(mem_size, batch_size):
+    '''Fast uniform sampling for large memory size (indices) by binning the number line and sampling from each bin'''
+    if mem_size <= batch_size:
+        return np.random.randint(mem_size, size=batch_size)
+    num_base = math.floor(mem_size / batch_size)
+    bin_start = np.arange(batch_size, dtype=np.int) * num_base
+    bin_idx = np.random.randint(num_base, size=batch_size)
+    bin_idx += bin_start
+    return bin_idx
 
 
 def flatten_dict(obj, delim='.'):
@@ -337,11 +349,6 @@ def is_sub_dict(sub_dict, super_dict):
             if sub_k not in super_dict:
                 return False
     return True
-
-
-def memory_size(obj, divisor=1e6):
-    '''Return the size of object, in MB by default'''
-    return getsizeof(obj) / divisor
 
 
 def monkey_patch(base_cls, extend_cls):
@@ -624,6 +631,32 @@ def set_session_logger(spec, info_space, logger):
     reload(logger)  # to set session-specific logger
 
 
+def _sizeof(obj, seen=None):
+    '''Recursively finds size of objects'''
+    size = sys.getsizeof(obj)
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0
+    # Important mark as seen *before* entering recursion to gracefully handle
+    # self-referential objects
+    seen.add(obj_id)
+    if isinstance(obj, dict):
+        size += sum([_sizeof(v, seen) for v in obj.values()])
+        size += sum([_sizeof(k, seen) for k in obj.keys()])
+    elif hasattr(obj, '__dict__'):
+        size += _sizeof(obj.__dict__, seen)
+    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+        size += sum([_sizeof(i, seen) for i in obj])
+    return size
+
+
+def sizeof(obj, divisor=1e6):
+    '''Return the size of object, in MB by default'''
+    return _sizeof(obj) / divisor
+
+
 def smart_path(data_path, as_dir=False):
     '''
     Resolve data_path into abspath with fallback to join from ROOT_DIR
@@ -679,6 +712,25 @@ def to_tuple_list(l):
     return [tuple(row) for row in l]
 
 
+def track_mem(obj):
+    '''Debug method to track memory footprint of object and its attributes'''
+    global MEMTRACKER
+    if not isinstance(MEMTRACKER, dict):
+        MEMTRACKER = {}
+    obj_name = get_class_name(obj)
+    for k in dir(obj):
+        if not k.startswith('_'):
+            hash_k = f'{obj_name}.{k}'
+            size = sizeof(getattr(obj, k))
+            if hash_k not in MEMTRACKER:
+                MEMTRACKER[hash_k] = size
+            else:
+                diff = size - MEMTRACKER[hash_k]
+                MEMTRACKER[hash_k] = size
+                if (diff > 1e-4) or (size > 1.0):
+                    print(f'{hash_k} diff: {diff:.6f}, size: {size:.6f}')
+
+
 def try_set_cuda_id(spec, info_space):
     '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
     # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
@@ -688,7 +740,7 @@ def try_set_cuda_id(spec, info_space):
             return
     trial_idx = info_space.get('trial') or 0
     session_idx = info_space.get('session') or 0
-    job_idx = trial_idx * session_idx + session_idx
+    job_idx = trial_idx * spec['meta']['max_session'] + session_idx
     device_count = torch.cuda.device_count()
     if device_count == 0:
         cuda_id = 0
