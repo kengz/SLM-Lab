@@ -274,7 +274,7 @@ def is_unfit(fitness_df):
 
 def plot_session(session_spec, info_space, session_data):
     '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
-    graph_x = session_spec['meta'].get('graph_x')
+    graph_x = session_spec['meta'].get('graph_x', 'epi')
     aeb_count = len(session_data)
     palette = viz.get_palette(aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
