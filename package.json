@@ -26,7 +26,6 @@
     "grunt-contrib-watch": "^1.0.0",
     "grunt-sync": "^0.8.0",
     "load-grunt-tasks": "^3.5.2",
-    "lodash": "^3.10.1",
     "resolve-dir": "^1.0.1",
     "slm-env-2dball": "^2.0.0",
     "slm-env-3dball": "^2.0.0",
