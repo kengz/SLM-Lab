@@ -14,7 +14,7 @@
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_min_timestep": 10000,
+        "training_min_timestep": 1000,
         "normalize_state": true
       },
       "memory": {
@@ -54,7 +54,7 @@
         "lr_decay_min_timestep": 20000,
         "lr_anneal_timestep": 1000000,
         "update_type": "replace",
-        "update_frequency": 10000,
+        "update_frequency": 1000,
         "polyak_coef": 0.9,
         "gpu": true
       }
@@ -92,7 +92,7 @@
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_min_timestep": 10000,
+        "training_min_timestep": 1000,
         "normalize_state": true
       },
       "memory": {
