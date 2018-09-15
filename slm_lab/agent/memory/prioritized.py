@@ -138,7 +138,7 @@ class PrioritizedReplay(Replay):
 
     def get_priority(self, error):
         '''Takes in the error of one or more examples and returns the proportional priority'''
-        p = torch.pow(error + self.epsilon.to(error.device), self.alpha.to(error.device))
+        p = torch.pow(error.cpu() + self.epsilon, self.alpha)
         return p.squeeze_().cpu().numpy()
 
     def sample_idxs(self, batch_size):
