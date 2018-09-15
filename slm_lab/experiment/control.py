@@ -16,8 +16,6 @@ import pydash as ps
 import torch
 import torch.multiprocessing as mp
 
-mp.set_start_method('spawn', force=True)  # for distributed pytorch to work
-
 
 class Session:
     '''
