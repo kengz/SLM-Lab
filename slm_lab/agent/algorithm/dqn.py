@@ -132,7 +132,7 @@ class VanillaDQN(SARSA):
             return np.nan
         total_t = self.body.env.clock.get('total_t')
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
-        is_per = util.get_class_name(self.body.memory) == 'PrioritizedReplay'
+        is_per = 'Prioritized' in util.get_class_name(self.body.memory)
         if self.to_train == 1:
             total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):

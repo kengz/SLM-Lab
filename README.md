@@ -114,6 +114,7 @@ For off-policy algorithms (value-based)
 - ConcatReplay
 - AtariReplay
 - PrioritizedReplay
+- AtariPrioritizedReplay
 
 #### Neural Network
 
