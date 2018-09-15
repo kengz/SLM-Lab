@@ -394,8 +394,7 @@ def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
         # you can never be too safe in multiprocessing gc
         import gc
         gc.collect()
-    pool = mp.Pool(num_cpus,
-                   initializer=pool_init, maxtasksperchild=1)
+    pool = mp.Pool(num_cpus, initializer=pool_init, maxtasksperchild=1)
     results = pool.map(fn, args)
     pool.close()
     pool.join()

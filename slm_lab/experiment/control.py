@@ -46,9 +46,6 @@ class Session:
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-        if self.spec['meta']['distributed'] and self.info_space.get('session') is not None:
-            self.run()  # not global net init
-
     def save_if_ckpt(self, agent, env):
         '''Save for agent, env if episode is at checkpoint'''
         epi = env.clock.get('epi')
@@ -107,9 +104,6 @@ class SpaceSession(Session):
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-        if self.spec['meta']['distributed'] and self.info_space.get('session') is not None:
-            self.run()  # not global net init
-
     def save_if_ckpt(self, agent_space, env_space):
         '''Save for agent, env if episode is at checkpoint'''
         for agent in agent_space.agents:
@@ -148,6 +142,18 @@ class SpaceSession(Session):
         return self.data
 
 
+def init_run_session(*args):
+    '''Runner for multiprocessing'''
+    session = Session(*args)
+    return session.run()
+
+
+def init_run_space_session(*args):
+    '''Runner for multiprocessing'''
+    session = SpaceSession(*args)
+    return session.run()
+
+
 class Trial:
     '''
     The base unit of an experiment.
@@ -166,6 +172,7 @@ class Trial:
         analysis.save_spec(spec, info_space, unit='trial')
         self.is_singleton = len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1  # singleton mode as opposed to multi-agent-env space
         self.SessionClass = Session if self.is_singleton else SpaceSession
+        self.mp_runner = init_run_session if self.is_singleton else init_run_space_session
         logger.info(f'Initialized trial {self.index}')
 
     def init_session_and_run(self, info_space):
@@ -217,7 +224,7 @@ class Trial:
         workers = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
-            w = mp.Process(target=self.SessionClass, args=(deepcopy(self.spec), self.info_space, global_nets))
+            w = mp.Process(target=self.mp_runner, args=(deepcopy(self.spec), self.info_space, global_nets))
             w.start()
             workers.append(w)
         for w in workers:
