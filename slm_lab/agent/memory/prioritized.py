@@ -115,7 +115,7 @@ class PrioritizedReplay(Replay):
         ])
         super(PrioritizedReplay, self).__init__(memory_spec, body)
 
-        self.device = self.body.algorithm.net.device
+        self.device = self.body.agent.algorithm.net.device
         self.epsilon = torch.full((1,), self.epsilon).to(self.device)
         self.alpha = torch.full((1,), self.alpha).to(self.device)
         # adds a 'priorities' scalar to the data_keys and call reset again

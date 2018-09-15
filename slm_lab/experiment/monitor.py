@@ -81,6 +81,7 @@ class Body:
 
     def __init__(self, env, agent_spec, aeb=(0, 0, 0), aeb_space=None):
         # essential reference variables
+        self.agent = None  # set later
         self.env = env
         self.aeb = aeb
         self.a, self.e, self.b = aeb
