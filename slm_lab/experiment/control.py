@@ -16,6 +16,8 @@ import pydash as ps
 import torch
 import torch.multiprocessing as mp
 
+mp.set_start_method('spawn', force=True)  # for distributed pytorch to work
+
 
 class Session:
     '''
@@ -43,8 +45,9 @@ class Session:
         enable_aeb_space(self)  # to use lab's data analysis framework
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
-        if self.spec['meta'] and self.info_space.get('session') is not None:
-            self.run()
+
+        if self.spec['meta']['distributed'] and self.info_space.get('session') is not None:
+            self.run()  # not global net init
 
     def save_if_ckpt(self, agent, env):
         '''Save for agent, env if episode is at checkpoint'''
@@ -104,6 +107,9 @@ class SpaceSession(Session):
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
+        if self.spec['meta']['distributed'] and self.info_space.get('session') is not None:
+            self.run()  # not global net init
+
     def save_if_ckpt(self, agent_space, env_space):
         '''Save for agent, env if episode is at checkpoint'''
         for agent in agent_space.agents:
@@ -140,19 +146,6 @@ class SpaceSession(Session):
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
         return self.data
-
-
-class DistSession(mp.Process):
-    '''Distributed Session for distributed training'''
-
-    def __init__(self, spec, info_space, global_nets):
-        super(DistSession, self).__init__()
-        self.name = f'w{info_space.get("session")}'
-        self.session = Session(spec, info_space, global_nets)
-        logger.info(f'Initialized DistSession {self.session.index}')
-
-    def run(self):
-        return self.session.run()
 
 
 class Trial:
@@ -224,8 +217,7 @@ class Trial:
         workers = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
-            w = mp.Process(target=Session, args=(deepcopy(self.spec), self.info_space, global_nets))
-            # w = DistSession(deepcopy(self.spec), self.info_space, global_nets)
+            w = mp.Process(target=self.SessionClass, args=(deepcopy(self.spec), self.info_space, global_nets))
             w.start()
             workers.append(w)
         for w in workers:
