@@ -115,8 +115,9 @@ class PrioritizedReplay(Replay):
         ])
         super(PrioritizedReplay, self).__init__(memory_spec, body)
 
-        self.epsilon = torch.full((1,), self.epsilon)
-        self.alpha = torch.full((1,), self.alpha)
+        self.device = self.body.algorithm.net.device
+        self.epsilon = torch.full((1,), self.epsilon).to(self.device)
+        self.alpha = torch.full((1,), self.alpha).to(self.device)
         # adds a 'priorities' scalar to the data_keys and call reset again
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
         self.reset()
@@ -131,7 +132,7 @@ class PrioritizedReplay(Replay):
         All experiences are added with a high priority to increase the likelihood that they are sampled at least once.
         '''
         super(PrioritizedReplay, self).add_experience(state, action, reward, next_state, done)
-        error = torch.zeros(1).fill_(error)
+        error = torch.zeros(1).fill_(error).to(self.device)
         priority = self.get_priority(error)
         self.priorities[self.head] = priority
         self.tree.add(priority, self.head)
