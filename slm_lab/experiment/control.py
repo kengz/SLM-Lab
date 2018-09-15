@@ -143,10 +143,10 @@ class SpaceSession(Session):
 class DistSession(mp.Process):
     '''Distributed Session for distributed training'''
 
-    def __init__(self, DistSessionClass, spec, info_space, global_nets):
+    def __init__(self, spec, info_space, global_nets):
         super(DistSession, self).__init__()
         self.name = f'w{info_space.get("session")}'
-        self.session = DistSessionClass(spec, info_space, global_nets)
+        self.session = Session(spec, info_space, global_nets)
         logger.info(f'Initialized DistSession {self.session.index}')
 
     def run(self):
@@ -222,7 +222,7 @@ class Trial:
         workers = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
-            w = DistSession(self.SessionClass, deepcopy(self.spec), self.info_space, global_nets)
+            w = DistSession(deepcopy(self.spec), self.info_space, global_nets)
             w.start()
             workers.append(w)
         for w in workers:
