@@ -43,6 +43,8 @@ class Session:
         enable_aeb_space(self)  # to use lab's data analysis framework
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
+        if self.spec['meta'] and self.info_space.get('session') is not None:
+            self.run()
 
     def save_if_ckpt(self, agent, env):
         '''Save for agent, env if episode is at checkpoint'''
@@ -222,7 +224,8 @@ class Trial:
         workers = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
-            w = DistSession(deepcopy(self.spec), self.info_space, global_nets)
+            w = mp.Process(target=Session, args=(deepcopy(self.spec), self.info_space, global_nets))
+            # w = DistSession(deepcopy(self.spec), self.info_space, global_nets)
             w.start()
             workers.append(w)
         for w in workers:
