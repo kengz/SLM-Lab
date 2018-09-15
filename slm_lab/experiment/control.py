@@ -140,17 +140,16 @@ class SpaceSession(Session):
         return self.data
 
 
-class DistSession(mp.Process):
-    '''Distributed Session for distributed training'''
+def init_run_session(*args):
+    '''Runner for multiprocessing'''
+    session = Session(*args)
+    return session.run()
 
-    def __init__(self, DistSessionClass, spec, info_space, global_nets):
-        super(DistSession, self).__init__()
-        self.name = f'w{info_space.get("session")}'
-        self.session = DistSessionClass(spec, info_space, global_nets)
-        logger.info(f'Initialized DistSession {self.session.index}')
 
-    def run(self):
-        return self.session.run()
+def init_run_space_session(*args):
+    '''Runner for multiprocessing'''
+    session = SpaceSession(*args)
+    return session.run()
 
 
 class Trial:
@@ -171,6 +170,7 @@ class Trial:
         analysis.save_spec(spec, info_space, unit='trial')
         self.is_singleton = len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1  # singleton mode as opposed to multi-agent-env space
         self.SessionClass = Session if self.is_singleton else SpaceSession
+        self.mp_runner = init_run_session if self.is_singleton else init_run_space_session
         logger.info(f'Initialized trial {self.index}')
 
     def init_session_and_run(self, info_space):
@@ -222,7 +222,7 @@ class Trial:
         workers = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
-            w = DistSession(self.SessionClass, deepcopy(self.spec), self.info_space, global_nets)
+            w = mp.Process(target=self.mp_runner, args=(deepcopy(self.spec), self.info_space, global_nets))
             w.start()
             workers.append(w)
         for w in workers:

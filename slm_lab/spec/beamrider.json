@@ -14,13 +14,15 @@
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_min_timestep": 1000,
+        "training_min_timestep": 10000,
         "normalize_state": true
       },
       "memory": {
-        "name": "AtariReplay",
+        "name": "AtariPrioritizedReplay",
+        "alpha": 0.6,
+        "epsilon": 1e-6,
         "batch_size": 32,
-        "max_size": 1000000,
+        "max_size": 50000,
         "stack_len": 4,
         "use_cer": false
       },
@@ -37,17 +39,13 @@
         "hid_layers_activation": "relu",
         "batch_norm": false,
         "clip_grad": true,
-        "clip_grad_val": 5.0,
+        "clip_grad_val": 10.0,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "RMSprop",
-          "lr": 0.00025,
-          "alpha": 0.99,
-          "eps": 1e-6,
-          "momentum": 0.0,
-          "centered": false
+          "name": "Adam",
+          "lr": 1e-4
         },
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
