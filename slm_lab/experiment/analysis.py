@@ -154,6 +154,16 @@ def calc_consistency(aeb_fitness_df):
     return consistency
 
 
+def calc_100_epi_reward_avg(aeb_df):
+    '''
+    Calculates the a 100-episode moving average of the episode rewards
+    and adds it to the session dataframe.
+    '''
+    rewards = aeb_df['reward']
+    aeb_df['reward_100_epi_avg'] = rewards.rolling(window=100, min_periods=0, center=False).mean()
+    return aeb_df
+
+
 def calc_fitness(fitness_vec):
     '''
     Takes a vector of qualifying standardized dimensions of fitness and compute the normalized length as fitness
@@ -224,6 +234,7 @@ def calc_session_fitness_df(session, session_data):
     session_fitness_data = {}
     for aeb in session_data:
         aeb_df = session_data[aeb]
+        aeb_df = calc_100_epi_reward_avg(aeb_df)
         util.downcast_float32(aeb_df)
         body = session.aeb_space.body_space.data[aeb]
         aeb_fitness_sr = calc_aeb_fitness_sr(aeb_df, body.env.name)
