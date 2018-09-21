@@ -442,7 +442,7 @@ def prepath_to_idxs(prepath):
     if len(idxs_strs) == 1:  # has session
         session_index = None
     else:
-        sidx = idxs_strs[0]
+        sidx = idxs_strs[1]
         assert sidx.startswith('s')
         session_index = int(sidx.strip('s'))
     return trial_index, session_index
