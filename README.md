@@ -6,9 +6,11 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 | References |  |
 |------------|--|
 | [Github](https://github.com/kengz/SLM-Lab) | Github repository |
-| [Roadmap](https://github.com/kengz/SLM-Lab/projects) | Research and engineering roadmap |
 | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | Usage documentation |
 | [Experiment Log](https://lgraesser.gitbooks.io/slm-experiment-log/content/) | Deep RL experiment design and results |
+| [Issues](https://github.com/kengz/SLM-Lab/issues) | Issues |
+| [Roadmap](https://github.com/kengz/SLM-Lab/projects) | Research and engineering roadmap |
+| [Gitter](https://gitter.im/SLM-Lab/SLM-Lab) | SLM Lab user chatroom |
 
 ![dqn cartpole ball2d](https://media.giphy.com/media/l0DAIymuiMS3HyW9G/giphy.gif)
 >A multitask agent solving both OpenAI Cartpole-v0 and Unity Ball2D.
