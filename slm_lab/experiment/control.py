@@ -173,25 +173,29 @@ class Trial:
         self.mp_runner = init_run_session if self.is_singleton else init_run_space_session
         logger.info(f'Initialized trial {self.index}')
 
-    def init_session_and_run(self, info_space):
-        session = self.SessionClass(self.spec, info_space)
-        session_data = session.run()
-        return session_data
+    def parallelize_sessions(self, global_nets=None):
+        workers = []
+        for _s in range(self.spec['meta']['max_session']):
+            self.info_space.tick('session')
+            w = mp.Process(target=self.mp_runner, args=(deepcopy(self.spec), self.info_space, global_nets))
+            w.start()
+            workers.append(w)
+        for w in workers:
+            w.join()
+        session_datas = analysis.session_data_dict_for_dist(self.spec, self.info_space)
+        return session_datas
 
     def run_sessions(self):
         logger.info('Running sessions')
-        info_spaces = []
-        for _s in range(self.spec['meta']['max_session']):
-            self.info_space.tick('session')
-            info_spaces.append(deepcopy(self.info_space))
-
-        if util.get_lab_mode() == 'train' and len(info_spaces) > 1:
+        if util.get_lab_mode() == 'train' and self.spec['meta']['max_session'] > 1:
             # when training a single spec over multiple sessions
-            session_datas = util.parallelize_fn(self.init_session_and_run, info_spaces, ps.get(self.spec['meta'], 'resources.num_cpus', util.NUM_CPUS))
+            session_datas = self.parallelize_sessions()
         else:
             session_datas = []
-            for info_space in info_spaces:
-                session_data = self.init_session_and_run(info_space)
+            for _s in range(self.spec['meta']['max_session']):
+                self.info_space.tick('session')
+                session = self.SessionClass(self.spec, self.info_space)
+                session_data = session.run()
                 session_datas.append(session_data)
                 if analysis.is_unfit(session_data):
                     break
@@ -219,15 +223,7 @@ class Trial:
     def run_distributed_sessions(self):
         logger.info('Running distributed sessions')
         global_nets = self.init_global_nets()
-        workers = []
-        for _s in range(self.spec['meta']['max_session']):
-            self.info_space.tick('session')
-            w = mp.Process(target=self.mp_runner, args=(deepcopy(self.spec), self.info_space, global_nets))
-            w.start()
-            workers.append(w)
-        for w in workers:
-            w.join()
-        session_datas = analysis.session_data_dict_for_dist(self.spec, self.info_space)
+        session_datas = self.parallelize_sessions(global_nets)
         return session_datas
 
     def close(self):
