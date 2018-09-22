@@ -30,7 +30,7 @@ Even if your experiments produce negative results, please report it too! *It can
 
 ## Run Benchmark Experiments
 
-The next major milestone for SLM Lab is to provide a set of benchmark results on the implemented algorithms in a variety of environments. The aim is to populate this [table](BENCHMARK.md). We encourage contributors to own benchmarking for one or more algorithm-environment combinations. Let us know what you are working on and we will update the benchmark table accordingly.
+The next major milestone for SLM Lab is to provide a set of benchmark results on the implemented algorithms in a variety of environments. The aim is to populate this [table](BENCHMARK.md). We encourage contributors to own benchmarking for one or more algorithm-environment combinations. Let us know what you are working on and we will add your name to the benchmark table.
 
 One approach could be to go deep on a single algorithm and tune it for different environments. This can be an excellent way for newcomers to deep RL to learn in depth about a particular algorithm. A high level workflow could go as follows
 - Get familiar with the Lab; run the demo, read the [docs](https://kengz.gitbooks.io/slm-lab/content/), look though a couple of [spec files](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/spec)
