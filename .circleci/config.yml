@@ -32,7 +32,7 @@ jobs:
             if which yarn >/dev/null; then
               echo "Yarn is already installed"
             else
-              sudo npm install --unsafe-perm=true --allow-root -g yarn electron@1.8.4 orca
+              sudo npm install --unsafe-perm=true --allow-root -g yarn
             fi
             yarn install
       - save_cache:
