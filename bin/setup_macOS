@@ -29,7 +29,6 @@ if which node >/dev/null; then
 else
   brew install node
   brew install yarn
-  npm install --unsafe-perm=true --allow-root -g electron@1.8.4 orca
 fi
 
 echo "--- Installing npm modules for Lab interface ---"

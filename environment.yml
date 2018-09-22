@@ -1,5 +1,6 @@
 name: lab
 channels:
+  - plotly
   - pytorch
   - conda-forge
   - defaults
@@ -21,6 +22,7 @@ dependencies:
   - pillow=5.0.0=py36_0
   - pip=9.0.1=py36_1
   - plotly=2.2.3=py36_0
+  - psutil=5.4.7
   - pycodestyle=2.3.1=py36_0
   - pydash=4.2.1=py_0
   - pytest=3.6.0=py36_0
@@ -41,6 +43,7 @@ dependencies:
   - pytorch=0.4.1
   - torchvision=0.2.1
   - libgcc
+  - plotly-orca=1.1.1
   - pip:
     - atari-py==0.1.1
     - box2d-kengz==2.3.3
@@ -52,7 +55,6 @@ dependencies:
     - gym[box2d]
     - gym[classic_control]
     - opencv-python==3.4.0.12
-    - psutil==5.4.3
     - pyopengl==3.1.0
     - ray==0.3.1
     - redis==2.10.6
