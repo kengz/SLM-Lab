@@ -49,8 +49,7 @@ WORKDIR /opt/SLM-Lab
 
 # install dependencies, only retrigger on dependency changes
 COPY package.json package.json
-RUN yarn install && \
-    yarn global add electron@1.8.4 orca
+RUN yarn install
 
 COPY environment.yml environment.yml
 
