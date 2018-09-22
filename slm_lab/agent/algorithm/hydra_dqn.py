@@ -52,8 +52,8 @@ class MultitaskDQN(DQN):
             if self.normalize_state:
                 state = policy_util.update_online_stats_and_normalize_state(body, state)
             states.append(state)
-        state = torch.tensor(states, device=self.net.device).view(-1).unsqueeze_(0).float()
-        pdparam = self.calc_pdparam(state, evaluate=False)
+        xs = [torch.from_numpy(state).float() for state in states]
+        pdparam = self.calc_pdparam(xs, evaluate=False)
         # use multi-policy. note arg change
         action_a, action_pd_a = self.action_policy(states, self, self.agent.nanflat_body_a, pdparam)
         for idx, body in enumerate(self.agent.nanflat_body_a):
@@ -134,12 +134,11 @@ class HydraDQN(MultitaskDQN):
         self.eval_net = self.target_net
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True, net=None):
+    def calc_pdparam(self, xs, evaluate=True, net=None):
         '''
         Calculate pdparams for multi-action by chunking the network logits output
         '''
-        x = torch.cat(torch.split(x, self.state_dims, dim=1)).unsqueeze_(dim=1)
-        pdparam = SARSA.calc_pdparam(self, x, evaluate=evaluate, net=net)
+        pdparam = SARSA.calc_pdparam(self, xs, evaluate=evaluate, net=net)
         return pdparam
 
     @lab_api

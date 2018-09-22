@@ -183,5 +183,91 @@
         }
       }]
     }
+  },
+  "hydra_dqn_epsilon_greedy_cartpole_2dball": {
+    "agent": [{
+      "name": "HydraDQN",
+      "algorithm": {
+        "name": "HydraDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "multi_epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.01,
+        "explore_anneal_epi": 200,
+        "gamma": 0.99,
+        "training_batch_epoch": 8,
+        "training_epoch": 4,
+        "training_frequency": 32,
+        "training_min_timestep": 32,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "HydraMLPNet",
+        "hid_layers": [
+          [
+            [32],
+            [32]
+          ],
+          [64],
+          []
+        ],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.002
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 1000,
+        "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 100000,
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 500,
+      "save_epi_frequency": 2000
+    }, {
+      "name": "2DBall",
+      "max_timestep": 500,
+      "max_episode": 500,
+      "save_epi_frequency": 2000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 1,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          }
+        }
+      }]
+    }
   }
 }
