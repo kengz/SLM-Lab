@@ -55,7 +55,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -131,7 +131,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -215,7 +215,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -299,7 +299,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -389,7 +389,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -476,7 +476,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -564,7 +564,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -649,7 +649,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -740,7 +740,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -829,7 +829,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -918,7 +918,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -1003,7 +1003,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -1094,7 +1094,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -1183,7 +1183,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -1268,7 +1268,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -1349,7 +1349,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -1436,7 +1436,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -1521,7 +1521,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -1617,7 +1617,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -1710,7 +1710,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -1809,7 +1809,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -1906,7 +1906,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -1995,7 +1995,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -2081,7 +2081,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -2177,7 +2177,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -2271,7 +2271,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -2350,7 +2350,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -2421,7 +2421,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -2495,7 +2495,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -2570,7 +2570,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -2648,7 +2648,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -2728,7 +2728,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -2809,7 +2809,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -2893,7 +2893,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -2978,7 +2978,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -3060,7 +3060,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -3141,7 +3141,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -3225,7 +3225,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -3310,7 +3310,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -3392,7 +3392,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {
@@ -3473,7 +3473,7 @@
       "max_trial": 100,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 27
+        "num_cpus": 25
       }
     },
     "search": {

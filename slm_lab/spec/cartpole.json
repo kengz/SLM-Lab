@@ -53,7 +53,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -126,7 +129,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -207,7 +213,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -288,7 +297,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -375,7 +387,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -459,7 +474,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -544,7 +562,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -625,7 +646,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -712,7 +736,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -797,7 +824,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -882,7 +912,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -964,7 +997,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -1052,7 +1088,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -1138,7 +1177,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -1220,7 +1262,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -1298,7 +1343,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -1382,7 +1430,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -1464,7 +1515,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -1557,7 +1611,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -1647,7 +1704,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -1743,7 +1803,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -1837,7 +1900,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -1923,7 +1989,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2006,7 +2075,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2099,7 +2171,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2190,7 +2265,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2266,7 +2344,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2334,7 +2415,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2405,7 +2489,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2477,7 +2564,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2552,7 +2642,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2629,7 +2722,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2707,7 +2803,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2788,7 +2887,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2870,7 +2972,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -2949,7 +3054,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -3027,7 +3135,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -3108,7 +3219,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -3190,7 +3304,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -3269,7 +3386,10 @@
       "distributed": false,
       "max_session": 1,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
@@ -3347,7 +3467,10 @@
       "distributed": false,
       "max_session": 4,
       "max_trial": 100,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 25
+      }
     },
     "search": {
       "agent": [{
