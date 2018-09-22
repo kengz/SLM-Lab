@@ -2706,7 +2706,7 @@
         "lr_decay_frequency": 80000,
         "lr_decay_min_timestep": 80000,
         "lr_anneal_timestep": 400000,
-        "update_type": "replace",
+        "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
         "gpu": true
@@ -2787,7 +2787,7 @@
         "lr_decay_frequency": 80000,
         "lr_decay_min_timestep": 80000,
         "lr_anneal_timestep": 400000,
-        "update_type": "replace",
+        "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
         "gpu": true
@@ -2871,7 +2871,7 @@
         "lr_decay_frequency": 80000,
         "lr_decay_min_timestep": 80000,
         "lr_anneal_timestep": 400000,
-        "update_type": "replace",
+        "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
         "gpu": true
@@ -2956,7 +2956,7 @@
         "lr_decay_frequency": 80000,
         "lr_decay_min_timestep": 80000,
         "lr_anneal_timestep": 400000,
-        "update_type": "replace",
+        "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
         "gpu": true
@@ -3038,7 +3038,7 @@
         "lr_decay_frequency": 80000,
         "lr_decay_min_timestep": 80000,
         "lr_anneal_timestep": 400000,
-        "update_type": "replace",
+        "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
         "gpu": true
@@ -3119,7 +3119,7 @@
         "lr_decay_frequency": 80000,
         "lr_decay_min_timestep": 80000,
         "lr_anneal_timestep": 400000,
-        "update_type": "replace",
+        "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
         "gpu": true
@@ -3203,7 +3203,7 @@
         "lr_decay_frequency": 80000,
         "lr_decay_min_timestep": 80000,
         "lr_anneal_timestep": 400000,
-        "update_type": "replace",
+        "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
         "gpu": true
@@ -3288,7 +3288,7 @@
         "lr_decay_frequency": 80000,
         "lr_decay_min_timestep": 80000,
         "lr_anneal_timestep": 400000,
-        "update_type": "replace",
+        "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
         "gpu": true
@@ -3370,7 +3370,7 @@
         "lr_decay_frequency": 80000,
         "lr_decay_min_timestep": 80000,
         "lr_anneal_timestep": 400000,
-        "update_type": "replace",
+        "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
         "gpu": true
@@ -3451,7 +3451,7 @@
         "lr_decay_frequency": 80000,
         "lr_decay_min_timestep": 80000,
         "lr_anneal_timestep": 400000,
-        "update_type": "replace",
+        "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
         "gpu": true
