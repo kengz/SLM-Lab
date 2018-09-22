@@ -2,10 +2,11 @@
 
 :+1::tada: First off, thanks for taking the time to contribute! :tada::+1:
 
-SLM Lab has the following goals:
-1. make RL reproducible: all you need is the spec file and a git SHA to reproduce a result
-2. make research easier and more accessible: reuse well-tested components and only focus on the relevant work
-3. make learning RL easier: learning the components piece-wise is easier than building an entire algorithm from scratch
+SLM Lab has the following principles:
+- modularity: components get reused maximally, which means less code, more tests, fewer bugs
+- simplicity: the components are designed to closely correspond to the way papers or books discuss RL
+- analytical clarity: hyper-parameter search results are analyzed automatically and presented hierarchically, in increasingly granular detail
+- reproducibility: only the spec file and a git SHA are needed to completely reproduce an experiment
 
 We believe that deep RL stands at a wonderful intersection of research and engineering. Hence, all forms of contributions are welcome. If you need a hint on what to contribute, feel free to check out our wish list below.
 
