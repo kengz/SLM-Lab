@@ -294,7 +294,7 @@ It is `DQN` in `CartPole-v0`:
 
 Now the lab is ready for usage.
 
-**Read on: [Github](https://github.com/kengz/SLM-Lab) | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
+**Read on: [Github](https://github.com/kengz/SLM-Lab) | [Documentation](https://kengz.gitbooks.io/slm-lab/content/)**
 
 ## Citing
 
