@@ -1,18 +1,5 @@
 ## Benchmarks
 
-#### Discrete environments
-- Cartpole
-- 3d ball
-- Lunar Lander
-- Grid World
-- Beamrider (Atari)
-
-### Continuous environments
-- Pendulum
-- Acrobot
-- Bipedal Walker
-- Car Racing
-
 | Algorithm: *Owner*  | [CartPole](https://gym.openai.com/envs/CartPole-v0/) | 3d Ball | [Lunar Lander](https://gym.openai.com/envs/LunarLander-v2/) | Grid World | [Beamrider](https://gym.openai.com/envs/BeamRider-v0/)| [Pendulum](https://gym.openai.com/envs/Pendulum-v0/) | [Acrobot](https://gym.openai.com/envs/Acrobot-v1/) | [Bipedal Walker](https://gym.openai.com/envs/BipedalWalker-v2/) | [Car Racing](https://gym.openai.com/envs/CarRacing-v0/) |
 |------------|--|--|--|--|--|--|--|--|--|
 | [DQN](https://arxiv.org/abs/1312.5602): *[WLK](https://github.com/kengz)* | | | | | | n/a | n/a | n/a | n/a |
@@ -34,8 +21,7 @@
 | DST [PPO](https://arxiv.org/abs/1707.06347) | | | | | | | | | |
 | [PPO](https://arxiv.org/abs/1707.06347) + [SIL](https://arxiv.org/abs/1806.05635) | | | | | | | | | ||
 
-## Terminology
-
+### Terminology
 - DQN: Deep Q-learning
 - DDQN: Double Deep Q-Learning
 - PER: Prioritized experience replay
@@ -46,3 +32,16 @@
 - GAE: Generalized advantage estimation
 - PPO: Proximal policy optimization
 - SIL: Self imitation learning
+
+### Discrete environments
+- Cartpole
+- 3d ball
+- Lunar Lander
+- Grid World
+- Beamrider (Atari)
+
+### Continuous environments
+- Pendulum
+- Acrobot
+- Bipedal Walker
+- Car Racing
