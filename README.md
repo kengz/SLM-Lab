@@ -7,7 +7,7 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 |------------|--|
 | [Github](https://github.com/kengz/SLM-Lab) | Github repository |
 | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | Usage documentation |
-| [Experiment Log](https://lgraesser.gitbooks.io/slm-experiment-log/content/) | Deep RL experiment design and results |
+| [Contributing](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md)| How to contribute |
 | [Issues](https://github.com/kengz/SLM-Lab/issues) | Issues |
 | [Roadmap](https://github.com/kengz/SLM-Lab/projects) | Research and engineering roadmap |
 | [Gitter](https://gitter.im/SLM-Lab/SLM-Lab) | SLM Lab user chatroom |
@@ -15,9 +15,34 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 ![dqn cartpole ball2d](https://media.giphy.com/media/l0DAIymuiMS3HyW9G/giphy.gif)
 >A multitask agent solving both OpenAI Cartpole-v0 and Unity Ball2D.
 
-## Features
+SLM Lab is created for deep reinforcement learning research and applications. The design was guided by four principles
+- modularity
+- simplicity
+- analytical clarity
+- reproducibility
 
-SLM Lab is created for deep reinforcement learning research and applications.
+#### Modularity
+
+- makes research easier and more accessible: reuse well-tested components and only focus on the relevant work
+- makes learning deep RL easier: the algorithms are complex. SLM Lab breaks them into components that are more manageable to digest
+- components get reused maximally, which means less code, more tests, fewer bugs
+
+#### Simplicity
+
+- the components are designed to closely correspond to the way papers or books discuss RL
+- modular libraries are not necessarily simple. Simplicity balances modularity to prevent overly complex abstractions that are difficult to understand and use
+
+#### Analytical clarity
+
+- hyper-parameter search results are analyzed automatically and presented hierarchically, in increasingly granular detail
+- it should take less than 1 minute to understand if an experiment yielded a successful result. For example using the [experiment graph](https://kengz.gitbooks.io/slm-lab/content/analytics/experiment-graph.html)
+- it should take less than 5 minutes to find and review the top 3 parameter settings. For example using the [trial](https://kengz.gitbooks.io/slm-lab/content/analytics/trial-graph.html) and [session](https://kengz.gitbooks.io/slm-lab/content/analytics/session-graph.html) graphs
+
+#### Reproducibility
+
+- only the spec file and a git SHA are needed to completely reproduce an experiment
+
+## Features
 
 #### Algorithms
 - numerous canonical algorithms (list below)
@@ -269,7 +294,7 @@ It is `DQN` in `CartPole-v0`:
 
 Now the lab is ready for usage.
 
-**Read on: [Github](https://github.com/kengz/SLM-Lab) | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | [Experiment Log](https://lgraesser.gitbooks.io/slm-experiment-log/content/)**
+**Read on: [Github](https://github.com/kengz/SLM-Lab) | [Documentation](https://kengz.gitbooks.io/slm-lab/content/)**
 
 ## Citing
 
@@ -288,7 +313,7 @@ If you use `SLM-Lab` in your research, please cite below:
 
 ## Contributing
 
-SLM Lab is an MIT-licensed open source project. Contributions are very much welcome, no matter if it's a quick bug-fix or new feature addition.
+SLM Lab is an MIT-licensed open source project. Contributions are very much welcome, no matter if it's a quick bug-fix or new feature addition. Please see the [contributing guidelines](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md) for more info.
 
 If you have an idea for a new algorithm, environment support, analytics, benchmarking, or new experiment design, let us know.
 
