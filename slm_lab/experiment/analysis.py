@@ -9,6 +9,7 @@ import numpy as np
 import os
 import pandas as pd
 import pydash as ps
+import shutil
 
 DATA_AGG_FNS = {
     't': 'sum',
@@ -439,6 +440,10 @@ def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
     logger.info(f'Saving experiment data to {prepath}')
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
+    # zip for ease of upload
+    predir = util.prepath_to_predir(prepath)
+    shutil.make_archive(predir, 'zip', predir)
+    logger.info(f'All experiment data zipped to {predir}.zip')
 
 
 def analyze_session(session, session_data=None):

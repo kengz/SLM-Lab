@@ -6,7 +6,7 @@ set -e
 trap "exit" INT
 
 echo "--- Installing system dependencies ---"
-sudo pacman -Suy 
+sudo pacman -Suy
 sudo pacman -Sy --needed git cmake gcc
 sudo pacman -Sy --needed zlib libjpeg-turbo xorg-server-xvfb gst-libav xorg-server-devel python-opengl boost sdl swig base-devel gcc-libs hdf5 openblas
 
@@ -15,7 +15,7 @@ if which node >/dev/null; then
   echo "Nodejs is already installed"
 else
   sudo pacman -Sy --needed nodejs npm
-  sudo npm install --unsafe-perm=true --allow-root -g yarn electron@1.8.4 orca
+  sudo npm install --unsafe-perm=true --allow-root -g yarn
 fi
 
 echo "--- Installing npm modules for Lab interface ---"
