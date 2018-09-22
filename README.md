@@ -313,7 +313,7 @@ If you use `SLM-Lab` in your research, please cite below:
 
 ## Contributing
 
-SLM Lab is an MIT-licensed open source project. Contributions are very much welcome, no matter if it's a quick bug-fix or new feature addition.
+SLM Lab is an MIT-licensed open source project. Contributions are very much welcome, no matter if it's a quick bug-fix or new feature addition. Please see the [contributing guidelines](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md) for more info.
 
 If you have an idea for a new algorithm, environment support, analytics, benchmarking, or new experiment design, let us know.
 
