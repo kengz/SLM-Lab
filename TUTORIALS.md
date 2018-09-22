@@ -1,6 +1,6 @@
 # Reinforcement Learning Tutorials
 
->Please bear in mind that the SLM-Lab is written in PyTorch. Many of these tutorials use other neural network libraries such as Tensorflow. Feel free to reference them but we ask that code is written using PyTorch.
+>Please bear in mind that the SLM Lab is written in PyTorch. Many of these tutorials use other neural network libraries such as Tensorflow. Feel free to reference them but we ask that code is written using PyTorch.
 
 ## Introductory
 
