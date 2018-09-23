@@ -3,10 +3,10 @@
 :+1::tada: First off, thanks for taking the time to contribute! :tada::+1:
 
 SLM Lab has the following principles:
-- modularity: components get reused maximally, which means less code, more tests, fewer bugs
-- simplicity: the components are designed to closely correspond to the way papers or books discuss RL
-- analytical clarity: hyper-parameter search results are analyzed automatically and presented hierarchically, in increasingly granular detail
-- reproducibility: only the spec file and a git SHA are needed to completely reproduce an experiment
+- **modularity**: components get reused maximally, which means less code, more tests, fewer bugs
+- **simplicity**: the components are designed to closely correspond to the way papers or books discuss RL
+- **analytical clarity**: hyper-parameter search results are analyzed automatically and presented hierarchically, in increasingly granular detail
+- **reproducibility**: only the spec file and a git SHA are needed to completely reproduce an experiment
 
 We believe that deep RL stands at a wonderful intersection of research and engineering. Hence, all forms of contributions are welcome. If you need a hint on what to contribute, feel free to check out our wish list below.
 
@@ -20,7 +20,7 @@ Reproducibility is crucial to deep RL, thus it is very valuable to have multiple
 1. a spec file
 2. a git SHA: check out the SLM Lab to the appropriate branch or commit
 
-An example experiment is [here](todo-pending)
+An example experiment is [here](https://github.com/kengz/SLM-Lab/pull/180).
 
 >The only aspect of experiments that are not reproducible are the random seeds. This is by design. Good algorithms and hyper-parameter settings should be reasonably stable across different random seeds.
 
