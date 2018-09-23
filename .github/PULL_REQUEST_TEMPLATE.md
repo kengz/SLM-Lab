@@ -22,9 +22,10 @@ Briefly describe the experiment (existing implementation, or a research idea). E
 
 - [ ] 1. full experiment data zip: *(email the `experiment.zip` to us)*
 - [ ] 2. experiment graph:
-- [ ] 3. best trial JSON spec:
-- [ ] 4. best trial graph:
-- [ ] 5. [optional] best session graph:
+- [ ] 3. max fitness:
+- [ ] 4. best trial JSON spec:
+- [ ] 5. best trial graph:
+- [ ] 6. [optional] best session graph:
 
 ## Observations (optional)
 
