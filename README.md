@@ -46,10 +46,9 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 ## Features
 
 #### Algorithms
-- numerous canonical algorithms (list below)
-- reusable modular components: algorithm, policy, network, memory
-- ease and speed of building new algorithms
-- clear and unified design; production-grade code
+- numerous canonical algorithms ([listed below](#algorithm))
+- reusable and well-tested modular components: algorithm, network, memory, policy
+- simple and easy to use for building new algorithms
 
 #### Environments
 - works with [OpenAI gym](https://github.com/openai/gym), [Unity environments](https://github.com/Unity-Technologies/ml-agents), and more soon
@@ -57,10 +56,9 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 - API for adding custom environments
 
 #### Experimentation
-- scalable hyperparameter search with [ray](https://github.com/ray-project/ray)
-- graphs and analytics
-- fitness function for comparing experiments
-- open science - [Log Book](https://lgraesser.gitbooks.io/slm-experiment-log/content/)
+- scalable hyperparameter search using [ray](https://github.com/ray-project/ray)
+- analytical clarity with auto-generated results and graphs at session, trial, experiment levels
+- fitness function for comparing huge experiments
 
 ## Implementations
 
@@ -99,7 +97,7 @@ Various algorithms are in fact extensions of some simpler ones, and they are imp
 - PPOSIL
     - SIL with PPO instead of A2C
 
-Using the lab's unified API, **all the algorithms be ran in a distributed fashion**, with Session (DistSession in fact) taking the role of workers under a Trial. Some of the distributed algorithms have their own name:
+Using the lab's unified API, **all the algorithms can be distributed hogwild-style**. Session takes the role of workers under a Trial. Some of the distributed algorithms have their own name:
 
 - A3C (Asynchronous A2C / distributed A2C)
 - DPPO (Distributed PPO)
@@ -108,7 +106,7 @@ Using the lab's unified API, **all the algorithms be ran in a distributed fashio
 - SARSA
 - DQN (Deep Q Learning)
     - boltzmann or epsilon-greedy policy
-- DRQN (Recurrent DQN)
+- DRQN (DQN + Recurrent Network)
 - Dueling DQN
 - DDQN (Double DQN)
 - DDRQN
@@ -174,7 +172,7 @@ The policy module takes the network output `pdparam`, constructs a probability d
 
 ## Experimentation framework
 
-Deep Reinforcement Learning is very empirical. The systematic building blocks above need a experimentation framework to study variables systematically. The experiment framework completes the lab.
+Deep Reinforcement Learning is highly empirical. The lab enables rapid and massive experimentations, hence it needs a way to quickly analyze data from many trials. The experiment  and analytics framework is the scientific method of the lab.
 
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_experiment_graph.png)
 >Experiment graph summarizing the trials in hyperparameter search.
