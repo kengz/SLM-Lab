@@ -177,7 +177,7 @@ class Trial:
         workers = []
         for _s in range(self.spec['meta']['max_session']):
             self.info_space.tick('session')
-            w = mp.Process(target=self.mp_runner, args=(deepcopy(self.spec), self.info_space, global_nets))
+            w = mp.Process(target=self.mp_runner, args=(deepcopy(self.spec), deepcopy(self.info_space), global_nets))
             w.start()
             workers.append(w)
         for w in workers:
@@ -194,7 +194,7 @@ class Trial:
             session_datas = []
             for _s in range(self.spec['meta']['max_session']):
                 self.info_space.tick('session')
-                session = self.SessionClass(self.spec, self.info_space)
+                session = self.SessionClass(deepcopy(self.spec), deepcopy(self.info_space))
                 session_data = session.run()
                 session_datas.append(session_data)
                 if analysis.is_unfit(session_data):
