@@ -27,7 +27,9 @@
 
 ## Results
 
-- [ ] 1. full experiment data zip: *(email the `experiment.zip` to `rlaibeast [at] gmail [dot] com`)*
+*All the results contributed will be added to the [benchmark](BENCHMARK.md), and made [publicly available in Dropbox.](https://www.dropbox.com/sh/y738zvzj3nxthn1/AAAg1e6TxXVf3krD81TD5V0Ra?dl=0)*
+
+- [ ] 1. full experiment data zip: *(please find our contact in README and request a "Dropbox file request" to upload it to the public benchmark folder.)*
 - [ ] 2. experiment graph:
 - [ ] 3. max fitness score and experiment_df:
 - [ ] 4. best trial JSON spec:
