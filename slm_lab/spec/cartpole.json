@@ -30,9 +30,9 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -42,7 +42,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency":300
     }],
     "body": {
@@ -51,8 +51,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -106,9 +106,9 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -118,7 +118,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -127,8 +127,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -179,7 +179,7 @@
       "net": {
         "type": "MLPNet",
         "shared": true,
-        "hid_layers": [64],
+        "hid_layers": [32],
         "hid_layers_activation": "tanh",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -202,7 +202,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 300,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -252,10 +252,10 @@
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 4,
-        "normalize_state": false
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -263,7 +263,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [32],
+        "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -276,7 +276,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
@@ -286,7 +286,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 300,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -362,7 +362,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -372,7 +372,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -381,8 +381,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -450,7 +450,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -460,7 +460,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -514,10 +514,10 @@
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 4,
-        "normalize_state": false
+        "training_epoch": 8,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -548,7 +548,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 300,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -598,10 +598,10 @@
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 4,
-        "normalize_state": false
+        "training_epoch": 8,
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -609,7 +609,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [32],
+        "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -632,7 +632,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 300,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -708,7 +708,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -718,7 +718,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -727,8 +727,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -797,7 +797,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -807,7 +807,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -816,8 +816,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -882,7 +882,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -892,7 +892,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -901,8 +901,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -963,7 +963,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -973,7 +973,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -982,8 +982,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -1050,7 +1050,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -1060,7 +1060,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1069,8 +1069,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -1135,7 +1135,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -1145,7 +1145,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1154,8 +1154,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -1231,7 +1231,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -1241,7 +1241,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1250,8 +1250,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -1324,7 +1324,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -1334,7 +1334,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1343,8 +1343,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -1423,7 +1423,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -1433,7 +1433,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1442,8 +1442,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -1520,7 +1520,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -1530,7 +1530,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1539,8 +1539,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -1609,7 +1609,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -1619,7 +1619,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1628,8 +1628,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -1695,7 +1695,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -1705,7 +1705,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1714,8 +1714,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -1791,7 +1791,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -1801,7 +1801,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1810,8 +1810,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -1885,7 +1885,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -1895,7 +1895,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1904,8 +1904,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -1962,9 +1962,9 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -1974,7 +1974,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1983,8 +1983,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -2033,9 +2033,9 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -2045,7 +2045,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -2054,8 +2054,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -2107,9 +2107,9 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -2119,7 +2119,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -2128,8 +2128,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -2182,9 +2182,9 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -2194,7 +2194,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -2203,8 +2203,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -2262,7 +2262,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -2272,7 +2272,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -2281,8 +2281,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -2339,7 +2339,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -2352,7 +2352,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -2361,8 +2361,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -2420,7 +2420,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -2433,7 +2433,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -2442,8 +2442,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -2504,7 +2504,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -2517,7 +2517,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -2526,8 +2526,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -2589,7 +2589,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -2602,7 +2602,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -2611,8 +2611,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -2671,7 +2671,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -2684,7 +2684,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -2693,8 +2693,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -2752,7 +2752,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -2765,7 +2765,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -2774,8 +2774,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -2836,7 +2836,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -2849,7 +2849,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -2858,8 +2858,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -2921,7 +2921,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -2934,7 +2934,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -2943,8 +2943,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -3003,7 +3003,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -3016,7 +3016,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -3026,7 +3026,7 @@
     "meta": {
       "distributed": false,
       "max_session": 1,
-      "max_trial": 16,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -3084,7 +3084,7 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
+        "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 1000,
         "lr_anneal_timestep": 100000,
@@ -3097,7 +3097,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 800,
+      "max_episode": 400,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -3106,8 +3106,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
