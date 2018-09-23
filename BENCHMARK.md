@@ -13,8 +13,8 @@
 | DDQN + [PER](https://arxiv.org/abs/1511.05952) + [CER](https://arxiv.org/abs/1712.01275) | | | | | | n/a | n/a | n/a | n/a |
 | [DST DQN](https://arxiv.org/abs/1602.01783) | | | | | | n/a | n/a | n/a | n/a |
 | Reinforce | | | | | | | | | |
-| A2C: *[LG](https://github.com/lgraesser)* | | | | | | | | | |
-| A2C + [GAE](https://arxiv.org/abs/1506.02438) | | | | | | | | | |
+| A2C | | | | | | | | | |
+| A2C + [GAE](https://arxiv.org/abs/1506.02438): *[Laura](https://github.com/lgraesser)* | [1.20](https://github.com/lgraesser) | | | | | | | | |
 | [A3C](https://arxiv.org/abs/1602.01783) | | | | | | | | | |
 | [A3C](https://arxiv.org/abs/1602.01783) + [GAE](https://arxiv.org/abs/1506.02438) | | | | | | | | | |
 | [PPO](https://arxiv.org/abs/1707.06347) | | | | | | | | | |
