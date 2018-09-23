@@ -33,8 +33,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -109,8 +109,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -193,7 +193,7 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
+        "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
@@ -277,7 +277,7 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
+        "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
@@ -363,8 +363,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -451,8 +451,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -709,8 +709,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -798,8 +798,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -883,8 +883,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -964,8 +964,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -1051,8 +1051,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -1136,8 +1136,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -1232,8 +1232,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -1325,8 +1325,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -1424,8 +1424,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -1521,8 +1521,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -1610,8 +1610,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -1696,8 +1696,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -1792,8 +1792,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -1886,8 +1886,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -1965,8 +1965,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -2036,8 +2036,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -2110,8 +2110,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -2185,8 +2185,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -2263,8 +2263,8 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -2340,11 +2340,11 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "update_type": "polyak",
-        "update_frequency": 100,
+        "update_frequency": 1,
         "polyak_coef": 0,
         "gpu": false
       }
@@ -2421,11 +2421,11 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "update_type": "polyak",
-        "update_frequency": 100,
+        "update_frequency": 1,
         "polyak_coef": 0,
         "gpu": false
       }
@@ -2505,11 +2505,11 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "update_type": "polyak",
-        "update_frequency": 100,
+        "update_frequency": 1,
         "polyak_coef": 0,
         "gpu": false
       }
@@ -2590,11 +2590,11 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "update_type": "polyak",
-        "update_frequency": 100,
+        "update_frequency": 1,
         "polyak_coef": 0,
         "gpu": false
       }
@@ -2672,11 +2672,11 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "update_type": "polyak",
-        "update_frequency": 100,
+        "update_frequency": 1,
         "polyak_coef": 0,
         "gpu": false
       }
@@ -2753,11 +2753,11 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "update_type": "polyak",
-        "update_frequency": 100,
+        "update_frequency": 1,
         "polyak_coef": 0,
         "gpu": false
       }
@@ -2837,11 +2837,11 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "update_type": "polyak",
-        "update_frequency": 100,
+        "update_frequency": 1,
         "polyak_coef": 0,
         "gpu": false
       }
@@ -2922,11 +2922,11 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "update_type": "polyak",
-        "update_frequency": 100,
+        "update_frequency": 1,
         "polyak_coef": 0,
         "gpu": false
       }
@@ -3004,11 +3004,11 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "update_type": "polyak",
-        "update_frequency": 100,
+        "update_frequency": 1,
         "polyak_coef": 0,
         "gpu": false
       }
@@ -3025,7 +3025,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
@@ -3085,11 +3085,11 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "update_type": "polyak",
-        "update_frequency": 100,
+        "update_frequency": 1,
         "polyak_coef": 0,
         "gpu": false
       }
