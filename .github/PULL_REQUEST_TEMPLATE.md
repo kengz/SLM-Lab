@@ -10,7 +10,7 @@
 
 >*The data files to upload below are all created automatically in the `data/` folder.*
 
->*Github does not support JSON upload now, but `.txt` works. Please rename the `.json` files to `.txt` before uploading.*
+>*Github does not support `.json` and `.csv` upload, but `.txt`. Please rename those files `.txt` before uploading.*
 
 ## Abstract
 
@@ -29,7 +29,7 @@
 
 - [ ] 1. full experiment data zip: *(email the `experiment.zip` to `rlaibeast [at] gmail [dot] com`)*
 - [ ] 2. experiment graph:
-- [ ] 3. max fitness:
+- [ ] 3. experiment_df:
 - [ ] 4. best trial JSON spec:
 - [ ] 5. best trial graph:
 - [ ] 6. [optional] best session graph:
