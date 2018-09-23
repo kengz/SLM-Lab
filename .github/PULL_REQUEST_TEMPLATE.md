@@ -4,8 +4,9 @@
 
 *----------- USE ABOVE FOR FEATURE PR, BELOW FOR EXPERIMENT RESULT -----------*
 
-
 # Experiment Result
+
+>See [PR #180](https://github.com/kengz/SLM-Lab/pull/180) for an example
 
 ## Abstract
 Briefly describe the experiment (existing implementation, or a research idea). Explain the hypothesis, design, outcome and conclusion as needed.
@@ -19,7 +20,12 @@ Briefly describe the experiment (existing implementation, or a research idea). E
 
 ## Result
 
-1. experiment graph:
-2. best trial graph:
-3. best trial JSON spec:
-4. full experiment data zip: (email the `experiment.zip` to us)
+- [ ] 1. full experiment data zip: *(email the `experiment.zip` to us)*
+- [ ] 2. experiment graph:
+- [ ] 3. best trial JSON spec:
+- [ ] 4. best trial graph:
+- [ ] 5. [optional] best session graph:
+
+## Observations (optional)
+
+Describe some useful observations from the experiment.
