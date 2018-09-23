@@ -20,7 +20,7 @@ Reproducibility is crucial to deep RL, thus it is very valuable to have multiple
 1. a spec file
 2. a git SHA: check out the SLM Lab to the appropriate branch or commit
 
-An example experiment is [here](todo)
+An example experiment is [here](todo-pending)
 
 >The only aspect of experiments that are not reproducible are the random seeds. This is by design. Good algorithms and hyper-parameter settings should be reasonably stable across different random seeds.
 
