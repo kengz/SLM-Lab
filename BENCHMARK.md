@@ -1,5 +1,9 @@
 ## Benchmarks
 
+The numbers in the table are fitness scores, which is a high level metric summarizing the strength, speed, stability and consistency of a trial.
+
+An experiment generates many specs to search through; each spec is ran in a trial, and each trial runs multiple repeated sessions for reproducibility. For more, see [analytics](https://kengz.gitbooks.io/slm-lab/content/analytics/analytics.html).
+
 | Algorithm / *Owner* | [DQN](https://arxiv.org/abs/1312.5602) / *[Keng](https://github.com/kengz)* | DQN + RNN | [DDQN](https://arxiv.org/abs/1509.06461) | DDQN + RNN | [Dueling DQN](https://arxiv.org/abs/1511.06581) | DQN + [PER](https://arxiv.org/abs/1511.05952) | DDQN + [PER](https://arxiv.org/abs/1511.05952) | DQN + [CER](https://arxiv.org/abs/1712.01275) | DDQN + [CER](https://arxiv.org/abs/1712.01275) | [DIST DQN](https://arxiv.org/abs/1602.01783) | REINFORCE | A2C | A2C + [GAE](https://arxiv.org/abs/1506.02438) / *[Laura](https://github.com/lgraesser)* | A2C + [GAE](https://arxiv.org/abs/1506.02438) + [SIL](https://arxiv.org/abs/1806.05635) | [A3C](https://arxiv.org/abs/1602.01783) | [A3C](https://arxiv.org/abs/1602.01783) + [GAE](https://arxiv.org/abs/1506.02438) | [PPO](https://arxiv.org/abs/1707.06347) | [PPO](https://arxiv.org/abs/1707.06347) + [SIL](https://arxiv.org/abs/1806.05635) | [DPPO](https://arxiv.org/pdf/1707.02286.pdf) |
 |------------|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
 |[CartPole-v0](https://gym.openai.com/envs/CartPole-v0/)| | | | | | | | | | | | | [1.20](https://github.com/kengz/SLM-Lab/pull/180) | | | | | | |

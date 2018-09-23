@@ -29,7 +29,7 @@
 
 - [ ] 1. full experiment data zip: *(email the `experiment.zip` to `rlaibeast [at] gmail [dot] com`)*
 - [ ] 2. experiment graph:
-- [ ] 3. experiment_df:
+- [ ] 3. max fitness score and experiment_df:
 - [ ] 4. best trial JSON spec:
 - [ ] 5. best trial graph:
 - [ ] 6. [optional] best session graph:
