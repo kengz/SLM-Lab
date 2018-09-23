@@ -14,7 +14,7 @@
 | [DST DQN](https://arxiv.org/abs/1602.01783) | | | | | | n/a | n/a | n/a | n/a |
 | Reinforce | | | | | | | | | |
 | A2C | | | | | | | | | |
-| A2C + [GAE](https://arxiv.org/abs/1506.02438): *[Laura](https://github.com/lgraesser)* | [1.20](https://github.com/lgraesser) | | | | | | | | |
+| A2C + [GAE](https://arxiv.org/abs/1506.02438): *[Laura](https://github.com/lgraesser)* | [1.20](https://github.com/kengz/SLM-Lab/pull/180) | | | | | | | | |
 | [A3C](https://arxiv.org/abs/1602.01783) | | | | | | | | | |
 | [A3C](https://arxiv.org/abs/1602.01783) + [GAE](https://arxiv.org/abs/1506.02438) | | | | | | | | | |
 | [PPO](https://arxiv.org/abs/1707.06347) | | | | | | | | | |
