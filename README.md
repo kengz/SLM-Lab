@@ -7,6 +7,7 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 |------------|--|
 | [Github](https://github.com/kengz/SLM-Lab) | Github repository |
 | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | Usage documentation |
+| [Benchmark](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md)| Benchmark results |
 | [Contributing](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md)| How to contribute |
 | [Issues](https://github.com/kengz/SLM-Lab/issues) | Issues |
 | [Roadmap](https://github.com/kengz/SLM-Lab/projects) | Research and engineering roadmap |
@@ -16,10 +17,10 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 >A multitask agent solving both OpenAI Cartpole-v0 and Unity Ball2D.
 
 SLM Lab is created for deep reinforcement learning research and applications. The design was guided by four principles
-- modularity
-- simplicity
-- analytical clarity
-- reproducibility
+- **modularity**
+- **simplicity**
+- **analytical clarity**
+- **reproducibility**
 
 #### Modularity
 
