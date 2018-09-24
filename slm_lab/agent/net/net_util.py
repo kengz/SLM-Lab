@@ -178,7 +178,7 @@ def save_algorithm(algorithm, ckpt=None):
 
     if ckpt != 'last':  # remove checkpoint files at the end
         ckpt_path = f'{prepath}_ckptlast*.pth'
-        subprocess.run(f'rm {ckpt_path}', close_fds=True, cwd=ROOT_DIR, shell=True)
+        subprocess.run(f'rm {ckpt_path}', cwd=ROOT_DIR, shell=True, stderr=DEVNULL, stdout=DEVNULL, close_fds=True)
         logger.info(f'Removed all checkpoint model files {ckpt_path}')
 
 
