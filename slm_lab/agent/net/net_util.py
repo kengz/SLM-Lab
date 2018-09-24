@@ -1,7 +1,9 @@
+from slm_lab import ROOT_DIR
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.lib import logger, util
 import os
 import pydash as ps
+import subprocess
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -173,6 +175,11 @@ def save_algorithm(algorithm, ckpt=None):
         save(net, model_path)
         optim_path = f'{prepath}_{net_name}_optim.pth'
         save(net.optim, optim_path)
+
+    if ckpt != 'last':  # remove checkpoint files at the end
+        ckpt_path = f'{prepath}_ckptlast*.pth'
+        subprocess.run(f'rm {ckpt_path}', close_fds=True, cwd=ROOT_DIR, shell=True)
+        logger.info(f'Removed all checkpoint model files {ckpt_path}')
 
 
 def load(net, model_path):
