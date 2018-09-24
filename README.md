@@ -42,6 +42,9 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 #### Reproducibility
 
 - only the spec file and a git SHA are needed to completely reproduce an experiment
+- all the results are in [BENCHMARK.md](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md)
+- experiment reproduction instructions are submitted to the Lab via [`result` Pull Requests](https://github.com/kengz/SLM-Lab/pulls?utf8=%E2%9C%93&q=is%3Apr+label%3Aresult+)
+- the full experiment datas contributed are [public on Dropbox ](https://www.dropbox.com/sh/y738zvzj3nxthn1/AAAg1e6TxXVf3krD81TD5V0Ra?dl=0)
 
 ## Features
 
