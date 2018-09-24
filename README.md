@@ -319,4 +319,4 @@ SLM Lab is an MIT-licensed open source project. Contributions are very much welc
 
 If you have an idea for a new algorithm, environment support, analytics, benchmarking, or new experiment design, let us know.
 
-If you're interested in using the lab for **research, teaching or applications**, please contact the [authors](https://twitter.com/kengzwl).
+If you're interested in using the lab for **research, teaching or applications**, please contact the [authors](https://twitter.com/kengzwl). 
