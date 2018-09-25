@@ -1,0 +1,188 @@
+{
+  "a2c_gae_mlp_separate_pendulum": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.99,
+        "use_gae": true,
+        "lam": 0.97,
+        "use_nstep": false,
+        "num_step_returns": 1,
+        "add_entropy": true,
+        "entropy_coef": 0.01,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "training_frequency": 1,
+        "training_epoch": 8,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [64],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 5000,
+        "lr_decay_min_timestep": 10000,
+        "lr_anneal_timestep": 100000,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "max_timestep": null,
+      "max_episode": 2500,
+      "save_epi_frequency": 5000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 2,
+      "max_trial": 300,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 16
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__choice": [0.9, 0.95, 0.99, 0.999],
+          "normalize_state__choice": [true, false],
+          "lam__uniform": [0.8, 1.0],
+          "training_frequency__choice": [1, 2, 3, 4, 5],
+          "training_epoch": [1, 2, 4, 8],
+          "entropy_coef__uniform": [0.01, 1.0],
+        },
+        "net": {
+          "hid_layers_activation__choice": ["tanh", "relu", "selu"],
+          "hid_layers__choice": [[32], [64], [128], [64, 32], [128, 64], [256, 128]],
+          "actor_optim_spec": {
+            "lr__uniform": [0.00001, 0.01]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.00001, 0.01]
+          },
+          "lr_decay_frequency__choice": [5000, 10000, 20000, 30000, 40000, 50000]
+        }
+      }]
+    }
+  },
+  "a2c_nstep_mlp_separate_pendulum": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.99,
+        "use_gae": false,
+        "lam": 0.97,
+        "use_nstep": true,
+        "num_step_returns": 2,
+        "add_entropy": false,
+        "entropy_coef": 0.005,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "training_frequency": 4,
+        "training_epoch": 4,
+        "normalize_state": false
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [64, 32],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.0005
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.0005
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 10000,
+        "lr_decay_min_timestep": 100000,
+        "lr_anneal_timestep": 100000,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "max_timestep": null,
+      "max_episode": 2500,
+      "save_epi_frequency": 5000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 2,
+      "max_trial": 300,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 16
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__choice": [0.9, 0.95, 0.99, 0.999],
+          "normalize_state__choice": [true, false],
+          "num_step_returns__choice": [1, 2, 4, 8, 16],
+          "training_frequency__choice": [1, 2, 3, 4, 5],
+          "training_epoch": [1, 2, 4, 8],
+          "entropy_coef__uniform": [0.01, 1.0],
+        },
+        "net": {
+          "hid_layers_activation__choice": ["tanh", "relu", "selu"],
+          "hid_layers__choice": [[32], [64], [128], [64, 32], [128, 64], [256, 128]],
+          "actor_optim_spec": {
+            "lr__uniform": [0.00001, 0.01]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.00001, 0.01]
+          },
+          "lr_decay_frequency__choice": [5000, 10000, 20000, 30000, 40000, 50000]
+        }
+      }]
+    }
+  },
+}

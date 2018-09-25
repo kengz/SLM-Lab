@@ -255,10 +255,10 @@
         "add_entropy": true,
         "entropy_coef": 0.01,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.01,
+        "val_loss_coef": 1.0,
         "training_frequency": 1,
         "training_epoch": 4,
-        "normalize_state": false
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -289,8 +289,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1000
+      "max_episode": 1200,
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -298,8 +298,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 64,
+      "max_session": 4,
+      "max_trial": 80,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -308,15 +308,16 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "normalize_state__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
-          "lam__uniform": [0.9, 1.0]
+          "training_frequency__choice": [1, 2, 3],
+          "training_epoch__choice": [4, 6, 8],
+          "entropy_coef__uniform": [0.003, 0.1],
+          "lam__uniform": [0.9, 0.95]
         },
         "net": {
-          "lr_decay_frequency__choice": [50000, 60000, 80000, 100000],
-          "hid_layers_activation__choice": ["tanh", "relu", "selu"],
+          "hid_layers__choice": [[256, 128], [400, 200]],
+          "lr_decay_frequency__choice": [60000, 100000],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.01]
+            "lr__uniform": [0.001, 0.01]
           }
         }
       }]
@@ -467,8 +468,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1000
+      "max_episode": 1200,
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -477,27 +478,27 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 80,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 16
       }
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef__uniform": [0.01, 1.0],
-          "val_loss_coef__uniform": [0.01, 1.0],
-          "lam__uniform": [0.9, 1.0]
+          "training_frequency__choice": [1, 2, 3],
+          "training_epoch__choice": [4, 6, 8],
+          "entropy_coef__uniform": [0.003, 0.1],
+          "lam__uniform": [0.9, 0.95]
         },
         "net": {
-          "hid_layers_activation__choice": ["tanh", "relu", "selu"],
+          "hid_layers__choice": [[256, 128], [400, 200]],
+          "lr_decay_frequency__choice": [60000, 100000],
           "rnn_hidden_size__choice": [16, 32, 64],
+          "seq_len__choice": [2, 4, 6, 8],
           "actor_optim_spec": {
-            "lr__uniform": [0.00001, 0.01]
-          },
-          "critic_optim_spec": {
-            "lr__uniform": [0.00001, 0.01]
+            "lr__uniform": [0.001, 0.01]
           }
         }
       }]
@@ -612,7 +613,7 @@
         "val_loss_coef": 1.0,
         "training_frequency": 1,
         "training_epoch": 4,
-        "normalize_state": false
+        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -621,7 +622,7 @@
         "type": "MLPNet",
         "shared": false,
         "hid_layers": [256, 128],
-        "hid_layers_activation": "relu",
+        "hid_layers_activation": "tanh",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "use_same_optim": true,
@@ -643,8 +644,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1000
+      "max_episode": 1200,
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -652,8 +653,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 64,
+      "max_session": 4,
+      "max_trial": 80,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16
@@ -662,15 +663,16 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "normalize_state__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
-          "num_step_returns__choice": [1, 2, 5, 10]
+          "training_frequency__choice": [1, 2, 3],
+          "training_epoch__choice": [4, 6, 8],
+          "entropy_coef__uniform": [0.05, 0.1],
+          "num_step_returns__choice": [1, 4, 5]
         },
         "net": {
-          "lr_decay_frequency__choice": [50000, 60000, 80000, 100000],
-          "hid_layers_activation__choice": ["tanh", "relu", "selu"],
+          "hid_layers__choice": [[256, 128], [400, 200]],
+          "lr_decay_frequency__choice": [80000, 100000],
           "actor_optim_spec": {
-            "lr__uniform": [0.0001, 0.01]
+            "lr__uniform": [0.008, 0.001]
           }
         }
       }]
