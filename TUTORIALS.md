@@ -42,3 +42,10 @@
 - [Generalized Advantage Estimation](https://arxiv.org/abs/1506.02438) (GAE)
 - [Proximal Policy Optimization](https://arxiv.org/abs/1707.06347) (PPO)
 - [Self Imitation Learning](https://arxiv.org/abs/1806.05635) (SIL)
+
+## SLM Lab tutorials
+
+- [Fast Implementation of Self-Imitation Learning](https://medium.com/@kengz/fast-implementation-of-self-imitation-learning-ffcd0b2b6c6b): a showcase of how an algorithm can be implemented quickly in the Lab.
+- [Deep Reinforcement Learning with SLM Lab](https://medium.com/@kengz/deep-reinforcement-learning-with-slm-lab-bebf87f531ac): introduction to the features and demo run-through of v2.x.
+- [pip module for RL agents in SLM Lab](https://medium.com/@kengz/pip-module-for-rl-agents-in-slm-lab-50e73872445d): how you can import SLM Lab as a pip module in your application to use the algorithms and components.
+- [Multi-inheritance magic in SLM Lab](https://medium.com/@kengz/multi-inheritance-magic-in-slm-lab-35c666739b03): how the modular design of SLM Lab allows us to implement many things with little or no new code.

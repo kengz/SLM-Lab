@@ -8,6 +8,7 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 | [Github](https://github.com/kengz/SLM-Lab) | Github repository |
 | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | Usage documentation |
 | [Benchmark](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md)| Benchmark results |
+| [Tutorials](https://github.com/kengz/SLM-Lab/blob/master/TUTORIALS.md)| Tutorial links |
 | [Contributing](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md)| How to contribute |
 | [Issues](https://github.com/kengz/SLM-Lab/issues) | Issues |
 | [Roadmap](https://github.com/kengz/SLM-Lab/projects) | Research and engineering roadmap |
