@@ -8,6 +8,7 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 | [Github](https://github.com/kengz/SLM-Lab) | Github repository |
 | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | Usage documentation |
 | [Benchmark](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md)| Benchmark results |
+| [Tutorials](https://github.com/kengz/SLM-Lab/blob/master/TUTORIALS.md)| Tutorial links |
 | [Contributing](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md)| How to contribute |
 | [Issues](https://github.com/kengz/SLM-Lab/issues) | Issues |
 | [Roadmap](https://github.com/kengz/SLM-Lab/projects) | Research and engineering roadmap |
@@ -25,8 +26,8 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 #### Modularity
 
 - makes research easier and more accessible: reuse well-tested components and only focus on the relevant work
-- makes learning deep RL easier: the algorithms are complex. SLM Lab breaks them into components that are more manageable to digest
-- components get reused maximally, which means less code, more tests, fewer bugs
+- makes learning deep RL easier: the algorithms are complex; SLM Lab breaks them down into more manageable, digestible components
+- components get reused maximally, which means less code, more tests, and fewer bugs
 
 #### Simplicity
 
@@ -35,13 +36,13 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 
 #### Analytical clarity
 
-- hyper-parameter search results are analyzed automatically and presented hierarchically, in increasingly granular detail
-- it should take less than 1 minute to understand if an experiment yielded a successful result. For example using the [experiment graph](https://kengz.gitbooks.io/slm-lab/content/analytics/experiment-graph.html)
-- it should take less than 5 minutes to find and review the top 3 parameter settings. For example using the [trial](https://kengz.gitbooks.io/slm-lab/content/analytics/trial-graph.html) and [session](https://kengz.gitbooks.io/slm-lab/content/analytics/session-graph.html) graphs
+- hyperparameter search results are automatically analyzed and presented hierarchically in increasingly granular detail
+- it should take less than 1 minute to understand if an experiment yielded a successful result using the [experiment graph](https://kengz.gitbooks.io/slm-lab/content/analytics/experiment-graph.html)
+- it should take less than 5 minutes to find and review the top 3 parameter settings using the [trial](https://kengz.gitbooks.io/slm-lab/content/analytics/trial-graph.html) and [session](https://kengz.gitbooks.io/slm-lab/content/analytics/session-graph.html) graphs
 
 #### Reproducibility
 
-- only the spec file and a git SHA are needed to completely reproduce an experiment
+- only the spec file and a git SHA are needed to fully reproduce an experiment
 - all the results are recorded in [BENCHMARK.md](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md)
 - experiment reproduction instructions are submitted to the Lab via [`result` Pull Requests](https://github.com/kengz/SLM-Lab/pulls?utf8=%E2%9C%93&q=is%3Apr+label%3Aresult+)
 - the full experiment datas contributed are [public on Dropbox ](https://www.dropbox.com/sh/y738zvzj3nxthn1/AAAg1e6TxXVf3krD81TD5V0Ra?dl=0)
@@ -61,7 +62,7 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 #### Experimentation
 - scalable hyperparameter search using [ray](https://github.com/ray-project/ray)
 - analytical clarity with auto-generated results and graphs at session, trial, experiment levels
-- fitness function for comparing huge experiments
+- fitness metric as a richer measurement of an algorithm's performance
 
 ## Implementations
 
