@@ -194,7 +194,7 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 3.0,
         "explore_var_end": 1.0,
-        "explore_anneal_epi": 50,
+        "explore_anneal_epi": 150,
         "gamma": 0.99,
         "training_batch_epoch": 4,
         "training_epoch": 4,
@@ -241,12 +241,12 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 150,
+      "max_episode": 300,
       "save_epi_frequency": 1000
     }, {
       "name": "2DBall",
       "max_timestep": 1000,
-      "max_episode": 150,
+      "max_episode": 300,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -264,9 +264,9 @@
         "net": {
           "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "optim_spec": {
-            "lr__uniform": [0.0001, 0.02]
+            "lr__uniform": [0.0001, 0.01]
           },
-          "lr_decay_frequency__choice": [1000, 2000, 3000, 4000, 5000]
+          "lr_decay_frequency__choice": [1000, 2000, 4000]
         },
         "memory": {
           "use_cer__choice": [true, false],
