@@ -184,7 +184,7 @@
       }]
     }
   },
-  "hydra_dqn_epsilon_greedy_cartpole_2dball": {
+  "hydra_dqn_boltzmann_cartpole_2dball": {
     "agent": [{
       "name": "HydraDQN",
       "algorithm": {
@@ -230,7 +230,7 @@
         },
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
+        "lr_decay_min_timestep": 4000,
         "lr_anneal_timestep": 100000,
         "update_type": "polyak",
         "update_frequency": 1,
@@ -255,8 +255,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 1,
-      "max_trial": 100,
+      "max_session": 2,
+      "max_trial": 40,
       "search": "RandomSearch"
     },
     "search": {
@@ -264,8 +264,13 @@
         "net": {
           "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
           "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
-          }
+            "lr__uniform": [0.0001, 0.02]
+          },
+          "lr_decay_frequency__choice": [1000, 2000, 3000, 4000, 5000]
+        },
+        "memory": {
+          "use_cer__choice": [true, false],
+          "max_size__choice": [5000, 10000, 15000, 20000]
         }
       }]
     }
