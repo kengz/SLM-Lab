@@ -266,7 +266,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -289,8 +289,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200
+      "max_episode": 1000,
+      "save_epi_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -298,7 +298,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
@@ -308,17 +308,15 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "add_entropy": [true, false],
-          "training_frequency__choice": [1, 2, 3],
+          "training_frequency__choice": [1, 2],
           "training_epoch__choice": [4, 6, 8],
-          "entropy_coef__uniform": [0.003, 0.1],
-          "lam__uniform": [0.9, 0.95]
+          "entropy_coef__uniform": [0.04, 0.09],
+          "lam__uniform": [0.9, 1.0]
         },
         "net": {
-          "hid_layers__choice": [[256, 128], [400, 200]],
           "lr_decay_frequency__choice": [40000, 60000, 80000, 100000],
           "actor_optim_spec": {
-            "lr__uniform": [0.001, 0.01]
+            "lr__uniform": [0.004, 0.008]
           }
         }
       }]
