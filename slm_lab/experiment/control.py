@@ -47,7 +47,7 @@ class Session:
     def save_if_ckpt(self, agent, env):
         '''Save for agent, env if episode is at checkpoint'''
         epi = env.clock.get('epi')
-        save_this_epi = epi != env.max_episode and epi > 0 and hasattr(env, 'save_epi_frequency') and epi % env.save_epi_frequency == 0
+        save_this_epi = env.done and epi != env.max_episode and epi > 0 and hasattr(env, 'save_epi_frequency') and epi % env.save_epi_frequency == 0
         if save_this_epi:
             agent.save(ckpt='last')
             analysis.analyze_session(self)
@@ -168,7 +168,7 @@ class Trial:
         self.session_data_dict = {}
         self.data = None
         analysis.save_spec(spec, info_space, unit='trial')
-        self.is_singleton = len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1  # singleton mode as opposed to multi-agent-env space
+        self.is_singleton = util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
         self.SessionClass = Session if self.is_singleton else SpaceSession
         self.mp_runner = init_run_session if self.is_singleton else init_run_space_session
         logger.info(f'Initialized trial {self.index}')

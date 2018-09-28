@@ -574,14 +574,15 @@ def mock_spec_info_space(predir, trial_index=None, session_index=None):
 def retro_analyze_sessions(predir):
     '''Retro-analyze all session level datas.'''
     logger.info('Retro-analyzing sessions from file')
-    from slm_lab.experiment.control import Session
+    from slm_lab.experiment.control import Session, SpaceSession
     for filename in os.listdir(predir):
         if filename.endswith('_session_df.csv'):
             tn, sn = filename.replace('_session_df.csv', '').split('_')[-2:]
             trial_index, session_index = int(tn[1:]), int(sn[1:])
             # mock session
             spec, info_space = mock_spec_info_space(predir, trial_index, session_index)
-            session = Session(spec, info_space)
+            SessionClass = Session if util.is_singleton(spec) else SpaceSession
+            session = SessionClass(spec, info_space)
             session_data = session_data_from_file(predir, trial_index, session_index)
             analyze_session(session, session_data)
 

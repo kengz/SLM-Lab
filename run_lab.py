@@ -7,6 +7,7 @@ import os
 # NOTE increase if needed. Pytorch thread overusage https://github.com/pytorch/pytorch/issues/975
 os.environ['OMP_NUM_THREADS'] = '1'
 from importlib import reload
+from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
@@ -36,6 +37,7 @@ def run_by_mode(spec_file, spec_name, lab_mode):
     logger.info(f'Running lab in mode: {lab_mode}')
     spec = spec_util.get(spec_file, spec_name)
     info_space = InfoSpace()
+    analysis.save_spec(spec, info_space, unit='experiment')
     os.environ['PREPATH'] = util.get_prepath(spec, info_space)
     reload(logger)  # to set PREPATH properly
     # expose to runtime, '@' is reserved for 'enjoy@{prepath}'
