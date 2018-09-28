@@ -315,6 +315,11 @@ def is_outlier(points, thres=3.5):
         return modified_z_score > thres
 
 
+def is_singleton(spec):
+    '''Check if spec uses a singleton Session'''
+    return len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1
+
+
 def is_sub_dict(sub_dict, super_dict):
     '''
     Check if sub_dict is a congruent subset of super_dict
