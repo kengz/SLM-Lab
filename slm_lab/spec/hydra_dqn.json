@@ -242,12 +242,14 @@
       "name": "CartPole-v0",
       "max_timestep": null,
       "max_episode": 300,
-      "save_epi_frequency": 1000
+      "reward_scale": 1,
+      "save_epi_frequency": 10000
     }, {
       "name": "2DBall",
       "max_timestep": 1000,
       "max_episode": 300,
-      "save_epi_frequency": 1000
+      "reward_scale": 10,
+      "save_epi_frequency": 10000
     }],
     "body": {
       "product": "outer",

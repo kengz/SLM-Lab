@@ -123,7 +123,7 @@ class UnityEnv(BaseEnv):
         env_info_dict = self.u_env.step(action)
         a, b = 0, 0  # default singleton aeb
         env_info_a = self._get_env_info(env_info_dict, a)
-        reward = env_info_a.rewards[b] * 10
+        reward = env_info_a.rewards[b] * self.reward_scale
         state = env_info_a.states[b]
         done = env_info_a.local_done[b]
         self.done = done = done or self.clock.get('t') > self.max_timestep
@@ -169,7 +169,7 @@ class UnityEnv(BaseEnv):
         reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self._get_env_info(env_info_dict, a)
-            reward_e[(a, b)] = env_info_a.rewards[b] * 10
+            reward_e[(a, b)] = env_info_a.rewards[b] * self.reward_scale
             state_e[(a, b)] = env_info_a.states[b]
             done_e[(a, b)] = env_info_a.local_done[b]
         self.done = (util.nonan_all(done_e) or self.clock.get('t') > self.max_timestep)

@@ -69,10 +69,14 @@ class BaseEnv(ABC):
         self.clock = Clock(self.clock_speed)
         self.done = False
         self.env_spec = spec['env'][self.e]
+        util.set_attr(self, dict(
+            reward_scale=1.0,
+        ))
         util.set_attr(self, self.env_spec, [
             'name',
             'max_timestep',
             'max_episode',
+            'reward_scale',
             'save_epi_frequency',
         ])
 
