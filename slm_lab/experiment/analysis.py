@@ -338,7 +338,7 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
         y=max_y + min_y[::-1],
         fill='tozerox',
         fillcolor=viz.lower_opacity(color, 0.2),
-        line=dict(color='transparent'),
+        line=dict(color='rgba(0, 0, 0, 0)'),
         showlegend=False,
         legendgroup=aeb_str,
     )
@@ -346,7 +346,7 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
     fig = viz.plot_line(
         df, ['mean_reward'], ['epi'], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
     )
-    fig.data.append(envelope_trace)
+    fig.add_traces([envelope_trace])
     return fig
 
 
@@ -398,7 +398,7 @@ def plot_experiment(experiment_spec, experiment_df):
                     'symbol': 'circle-open-dot', 'color': experiment_df['fitness'], 'opacity': 0.5,
                     # dump first quarter of colorscale that is too bright
                     'cmin': min_fitness - 0.50 * (max_fitness - min_fitness), 'cmax': max_fitness,
-                    'colorscale': 'YIGnBu', 'reversescale': True
+                    'colorscale': 'YlGnBu', 'reversescale': True
                 },
             )
             fig.append_trace(trace, row_idx + 1, col_idx + 1)
