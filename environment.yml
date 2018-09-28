@@ -21,7 +21,6 @@ dependencies:
   - pandas=0.22.0=py36_0
   - pillow=5.0.0=py36_0
   - pip=9.0.1=py36_1
-  - plotly=3.2.1=py_0
   - psutil=5.4.7
   - pycodestyle=2.3.1=py36_0
   - pydash=4.2.1=py_0
@@ -55,6 +54,7 @@ dependencies:
     - gym[box2d]
     - gym[classic_control]
     - opencv-python==3.4.0.12
+    - plotly==3.2.1
     - pyopengl==3.1.0
     - ray==0.3.1
     - redis==2.10.6
