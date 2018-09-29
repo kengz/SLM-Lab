@@ -37,6 +37,7 @@ class OpenAIEnv(BaseEnv):
         if not self.is_discrete:  # guard for continuous
             action = np.array([action])
         state, reward, done, _info = self.u_env.step(action)
+        reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
         self.done = done = done or self.clock.get('t') > self.max_timestep
@@ -77,6 +78,7 @@ class OpenAIEnv(BaseEnv):
         if not self.is_discrete:
             action = np.array([action])
         (state, reward, done, _info) = self.u_env.step(action)
+        reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
         self.done = done = done or self.clock.get('t') > self.max_timestep
