@@ -161,7 +161,7 @@
           "explore_anneal_epi__choice": [100, 150, 200]
         },
         "memory": {
-          "name": ["Replay", "ConcatReplay"],
+          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "training_batch_epoch__choice": [1, 2, 3, 4],
@@ -250,7 +250,7 @@
           "explore_anneal_epi__choice": [100, 150, 200]
         },
         "memory": {
-          "name": ["Replay", "ConcatReplay"],
+          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "training_batch_epoch__choice": [1, 2, 3, 4],
