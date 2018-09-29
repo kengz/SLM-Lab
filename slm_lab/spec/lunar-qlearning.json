@@ -63,7 +63,7 @@
       "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 31
       }
     },
     "search": {
@@ -151,7 +151,7 @@
       "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 31
       }
     },
     "search": {
@@ -240,7 +240,7 @@
       "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 31
       }
     },
     "search": {
@@ -332,7 +332,7 @@
       "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 31
       }
     },
     "search": {
