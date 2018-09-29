@@ -355,9 +355,9 @@
       }]
     }
   },
-  "ddrqn_epsilon_greedy_lunar": {
+  "double_drqn_epsilon_greedy_lunar": {
     "agent": [{
-      "name": "DDRQN",
+      "name": "DoubleDRQN",
       "algorithm": {
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
