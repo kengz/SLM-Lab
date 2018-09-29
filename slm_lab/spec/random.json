@@ -6,16 +6,41 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 250
+      "max_episode": 100
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 5,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    }
+  },
+  "random_pendulum": {
+    "agent": [{
+      "name": "Random",
+      "algorithm": {
+        "name": "Random"
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {}
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "max_timestep": null,
+      "max_episode": 100
     }],
     "body": {
       "product": "outer",
@@ -35,16 +60,14 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
     "env": [{
       "name": "2DBall",
-      "max_timestep": 200,
-      "max_episode": 250
+      "max_timestep": 1000,
+      "max_episode": 100
     }],
     "body": {
       "product": "outer",

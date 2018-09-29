@@ -475,6 +475,7 @@ def test_dqn_breakout(spec_file, spec_name):
     ('base.json', 'base_case_unity'),
     ('base.json', 'base_case_openai'),
     ('random.json', 'random_cartpole'),
+    ('random.json', 'random_pendulum'),
     # ('base.json', 'multi_agent'),
     # ('base.json', 'multi_agent_multi_env'),
 ])

@@ -34,6 +34,7 @@ class Random(Algorithm):
 
     @lab_api
     def sample(self):
+        self.body.memory.sample()
         batch = np.nan
         return batch
 

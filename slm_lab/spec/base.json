@@ -6,9 +6,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
@@ -56,9 +54,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
@@ -205,9 +201,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
@@ -234,9 +228,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }, {
@@ -245,9 +237,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
@@ -274,9 +264,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
@@ -307,9 +295,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }, {
@@ -318,9 +304,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
@@ -351,9 +335,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }, {
@@ -362,9 +344,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
@@ -395,9 +375,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }, {
@@ -406,9 +384,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
@@ -439,9 +415,7 @@
         "name": "Random"
       },
       "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 5000
+        "name": "OnPolicyReplay"
       },
       "net": {}
     }],
