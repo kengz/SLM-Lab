@@ -918,7 +918,7 @@
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
           "actor_optim_spec": {
-            "lr__uniform": [0.00001, 0.01]
+            "lr__uniform": [0.0001, 0.01]
           }
         }
       }]
@@ -999,10 +999,10 @@
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
           "actor_optim_spec": {
-            "lr__uniform": [0.00001, 0.01]
+            "lr__uniform": [0.0001, 0.01]
           },
           "critic_optim_spec": {
-            "lr__uniform": [0.00001, 0.01]
+            "lr__uniform": [0.0001, 0.01]
           }
         }
       }]
