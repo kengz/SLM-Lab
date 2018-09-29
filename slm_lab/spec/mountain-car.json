@@ -73,7 +73,7 @@
           "explore_anneal_epi__choice": [300, 400, 500]
         },
         "memory": {
-          "max_size": [10000, 50000, 100000],
+          "max_size__choice": [10000, 50000, 100000],
         },
         "net": {
           "training_epoch__choice": [1, 2, 3, 4],
@@ -161,7 +161,7 @@
           "explore_anneal_epi__choice": [300, 400, 500]
         },
         "memory": {
-          "max_size": [10000, 50000, 100000],
+          "max_size__choice": [10000, 50000, 100000],
         },
         "net": {
           "rnn_hidden_size__choice": [32, 64],
@@ -248,7 +248,7 @@
           "explore_anneal_epi__choice": [300, 400, 500]
         },
         "memory": {
-          "max_size": [10000, 50000, 100000],
+          "max_size__choice": [10000, 50000, 100000],
         },
         "net": {
           "training_epoch__choice": [1, 2, 3, 4],
@@ -336,7 +336,7 @@
           "explore_anneal_epi__choice": [300, 400, 500]
         },
         "memory": {
-          "max_size": [10000, 50000, 100000],
+          "max_size__choice": [10000, 50000, 100000],
         },
         "net": {
           "rnn_hidden_size__choice": [32, 64],
