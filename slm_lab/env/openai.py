@@ -9,9 +9,11 @@ logger = logger.get_logger(__name__)
 
 def guard_reward(reward):
     '''Some gym environments have buggy format and reward is in a np array'''
-    if isinstance(reward, np.ndarray):  # some gym envs have weird reward format
+    if np.isscalar(reward):
+        return reward
+    else:  # some gym envs have weird reward format
         assert len(reward) == 1
-    return reward[0]
+        return reward[0]
 
 
 class OpenAIEnv(BaseEnv):
