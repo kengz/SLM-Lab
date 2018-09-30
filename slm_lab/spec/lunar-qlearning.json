@@ -63,7 +63,7 @@
       "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 31
       }
     },
     "search": {
@@ -151,7 +151,7 @@
       "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 31
       }
     },
     "search": {
@@ -161,7 +161,7 @@
           "explore_anneal_epi__choice": [100, 150, 200]
         },
         "memory": {
-          "name": ["Replay", "ConcatReplay"],
+          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "training_batch_epoch__choice": [1, 2, 3, 4],
@@ -240,7 +240,7 @@
       "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 31
       }
     },
     "search": {
@@ -250,7 +250,7 @@
           "explore_anneal_epi__choice": [100, 150, 200]
         },
         "memory": {
-          "name": ["Replay", "ConcatReplay"],
+          "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
           "training_batch_epoch__choice": [1, 2, 3, 4],
@@ -332,7 +332,97 @@
       "max_trial": 64,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 31
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "normalize_state__choice": [true, false],
+          "explore_anneal_epi__choice": [100, 150, 200]
+        },
+        "net": {
+          "seq_len__choice": [2, 4, 6, 8],
+          "training_batch_epoch__choice": [1, 2, 3, 4],
+          "training_epoch__choice": [1, 2, 3, 4],
+          "lr_decay_frequency__choice": [50000, 60000, 70000, 80000, 90000, 100000],
+          "polyak_coef__choice": [0, 0.9, 0.99, 0.999],
+          "hid_layers_activation__choice": ["tanh", "relu", "sigmoid"],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          }
+        }
+      }]
+    }
+  },
+  "double_drqn_epsilon_greedy_lunar": {
+    "agent": [{
+      "name": "DoubleDRQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.08,
+        "explore_anneal_epi": 100,
+        "gamma": 0.99,
+        "training_batch_epoch": 3,
+        "training_epoch": 4,
+        "training_frequency": 4,
+        "training_min_timestep": 32,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "SeqReplay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false,
+        "concat_len": 4,
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "hid_layers": [400, 128],
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 80000,
+        "lr_decay_min_timestep": 40000,
+        "lr_anneal_timestep": 400000,
+        "update_type": "polyak",
+        "update_frequency": 200,
+        "polyak_coef": 0,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 800,
+      "save_epi_frequency": 800
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 64,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 31
       }
     },
     "search": {
