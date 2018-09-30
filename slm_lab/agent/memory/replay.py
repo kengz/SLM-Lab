@@ -78,9 +78,15 @@ class Replay(Memory):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
     @lab_api
+    def preprocess_state(self, state, append=True):
+        '''API method, does not preprocess'''
+        return state
+
+    @lab_api
     def update(self, action, reward, state, done):
-        '''Interface method to update memory.'''
+        '''Interface method to update memory'''
         self.base_update(action, reward, state, done)
+        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
@@ -180,15 +186,6 @@ class SeqReplay(Replay):
         processed_state = np.stack(self.state_buffer)
         return processed_state
 
-    @lab_api
-    def update(self, action, reward, state, done):
-        '''Interface method to update memory'''
-        self.base_update(action, reward, state, done)
-        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
-        if not np.isnan(reward):  # not the start of episode
-            self.add_experience(self.last_state, action, reward, state, done)
-        self.last_state = state
-
 
 class SILReplay(Replay):
     '''
@@ -211,7 +208,7 @@ class SILReplay(Replay):
 
     @lab_api
     def update(self, action, reward, state, done):
-        '''Interface method to update memory.'''
+        '''Interface method to update memory'''
         raise AssertionError('Do not call SIL memory in main API control loop')
 
     def add_experience(self, state, action, reward, next_state, done, ret):
@@ -241,7 +238,7 @@ class SILSeqReplay(SeqReplay):
 
     @lab_api
     def update(self, action, reward, state, done):
-        '''Interface method to update memory.'''
+        '''Interface method to update memory'''
         raise AssertionError('Do not call SIL memory in main API control loop')
 
     def add_experience(self, state, action, reward, next_state, done, ret):
@@ -300,15 +297,6 @@ class ConcatReplay(Replay):
             self.state_buffer.append(state)
         processed_state = np.concatenate(self.state_buffer)
         return processed_state
-
-    @lab_api
-    def update(self, action, reward, state, done):
-        '''Interface method to update memory'''
-        self.base_update(action, reward, state, done)
-        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
-        if not np.isnan(reward):  # not the start of episode
-            self.add_experience(self.last_state, action, reward, state, done)
-        self.last_state = state
 
 
 class AtariReplay(ConcatReplay):
