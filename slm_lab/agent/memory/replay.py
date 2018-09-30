@@ -82,11 +82,6 @@ class Replay(Memory):
         super(Replay, self).epi_reset(self.preprocess_state(state, append=False))
 
     @lab_api
-    def preprocess_state(self, state, append=True):
-        '''API method for descendent classes, does not preprocess'''
-        return state
-
-    @lab_api
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
         self.base_update(action, reward, state, done)
@@ -180,9 +175,7 @@ class SeqReplay(Replay):
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
         # append when state is first seen when acting in policy_util, don't append elsewhere in memory
-        if append:
-            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
-            self.state_buffer.append(state)
+        self.preprocess_append(state, append)
         processed_state = np.stack(self.state_buffer)
         return processed_state
 
@@ -292,9 +285,7 @@ class ConcatReplay(Replay):
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
         # append when state is first seen when acting in policy_util, don't append elsewhere in memory
-        if append:
-            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
-            self.state_buffer.append(state)
+        self.preprocess_append(state, append)
         processed_state = np.concatenate(self.state_buffer)
         return processed_state
 
@@ -332,9 +323,7 @@ class AtariReplay(ConcatReplay):
         '''Transforms the raw state into format that is fed into the network'''
         state = util.transform_image(state)
         # append when state is first seen when acting in policy_util, don't append elsewhere in memory
-        if append:
-            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
-            self.state_buffer.append(state)
+        self.preprocess_append(state, append)
         processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
         assert processed_state.shape == self.body.state_dim
         return processed_state

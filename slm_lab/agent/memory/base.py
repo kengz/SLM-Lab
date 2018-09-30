@@ -75,6 +75,16 @@ class Memory(ABC):
         '''Implement memory sampling mechanism'''
         raise NotImplementedError
 
+    def preprocess_append(self, state, append=True):
+        '''Method to conditionally append to state buffer'''
+        if append:
+            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
+            self.state_buffer.append(state)
+
+    def preprocess_state(self, state, append=True):
+        '''Transforms the raw state into format that is fed into the network'''
+        return state
+
     def print_memory_info(self):
         '''Prints size of all of the memory arrays'''
         for k in self.data_keys:
