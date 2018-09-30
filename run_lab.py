@@ -49,8 +49,16 @@ def run_by_mode(spec_file, spec_name, lab_mode):
         info_space.tick('experiment')
         Experiment(spec, info_space).run()
     elif lab_mode == 'train':
-        info_space.tick('trial')
+        if '@' in lab_mode:
+            prepath = lab_mode.split('@')[1]
+            spec, info_space = util.prepath_to_spec_info_space(prepath)
+        else:
+            info_space.tick('trial')
         Trial(spec, info_space).run()
+    elif lab_mode.startswith('enjoy'):
+        prepath = lab_mode.split('@')[1]
+        spec, info_space = util.prepath_to_spec_info_space(prepath)
+        Session(spec, info_space).run()
     elif lab_mode.startswith('enjoy'):
         prepath = lab_mode.split('@')[1]
         spec, info_space = util.prepath_to_spec_info_space(prepath)
