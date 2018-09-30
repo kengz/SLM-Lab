@@ -132,8 +132,7 @@ class OnPolicySeqReplay(OnPolicyReplay):
         NOTE for onpolicy memory this method only gets called in policy util, not here.
         '''
         self.preprocess_append(state, append)
-        processed_state = np.stack(self.state_buffer)
-        return processed_state
+        return np.stack(self.state_buffer)
 
     def sample(self):
         '''
@@ -258,8 +257,7 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
         self.preprocess_append(state, append)
-        processed_state = np.stack(self.state_buffer)
-        return processed_state
+        return np.stack(self.state_buffer)
 
     def sample(self):
         '''

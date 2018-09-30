@@ -176,8 +176,7 @@ class SeqReplay(Replay):
         '''Transforms the raw state into format that is fed into the network'''
         # append when state is first seen when acting in policy_util, don't append elsewhere in memory
         self.preprocess_append(state, append)
-        processed_state = np.stack(self.state_buffer)
-        return processed_state
+        return np.stack(self.state_buffer)
 
 
 class SILReplay(Replay):
@@ -286,8 +285,7 @@ class ConcatReplay(Replay):
         '''Transforms the raw state into format that is fed into the network'''
         # append when state is first seen when acting in policy_util, don't append elsewhere in memory
         self.preprocess_append(state, append)
-        processed_state = np.concatenate(self.state_buffer)
-        return processed_state
+        return np.concatenate(self.state_buffer)
 
 
 class AtariReplay(ConcatReplay):
