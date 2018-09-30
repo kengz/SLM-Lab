@@ -6,6 +6,7 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 | References |  |
 |------------|--|
 | [Github](https://github.com/kengz/SLM-Lab) | Github repository |
+| [Installation](#installation) | How to install SLM Lab |
 | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | Usage documentation |
 | [Benchmark](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md)| Benchmark results |
 | [Tutorials](https://github.com/kengz/SLM-Lab/blob/master/TUTORIALS.md)| Tutorial resources |
@@ -46,19 +47,19 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 - experiment reproduction instructions are submitted to the Lab via [`result` Pull Requests](https://github.com/kengz/SLM-Lab/pulls?utf8=%E2%9C%93&q=is%3Apr+label%3Aresult+)
 - the full experiment datas contributed are [public on Dropbox ](https://www.dropbox.com/sh/y738zvzj3nxthn1/AAAg1e6TxXVf3krD81TD5V0Ra?dl=0)
 
-## Features
 
-#### Algorithms
+#### [Algorithms](#algorithms)
 - numerous canonical algorithms ([listed below](#algorithm))
 - reusable and well-tested modular components: algorithm, network, memory, policy
 - simple and easy to use for building new algorithms
 
 #### Environments
 - works with [OpenAI gym](https://github.com/openai/gym), [Unity environments](https://github.com/Unity-Technologies/ml-agents), and more soon
+- comes with pre-built Unity binaries
 - supports multi-agents, multi-environments
 - API for adding custom environments
 
-#### Experimentation
+#### [Experimentation](#experimentation)
 - scalable hyperparameter search using [ray](https://github.com/ray-project/ray)
 - analytical clarity with auto-generated results and graphs at session, trial, experiment levels
 - fitness metric as a richer measurement of an algorithm's performance
@@ -77,6 +78,7 @@ SLM Lab implements most of the recent canonical algorithms and various extension
     - `OpenAIEnv` for [OpenAI gym](https://github.com/openai/gym)
     - `UnityEnv` for [Unity ML-Agents](https://github.com/Unity-Technologies/ml-agents)
 
+<a name="algorithms"></a>
 #### Algorithm
 
 code: [slm_lab/agent/algorithm](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/algorithm)
@@ -173,6 +175,7 @@ The policy module takes the network output `pdparam`, constructs a probability d
 - Epsilon-greedy policy
 - numerous rate decay methods
 
+<a name="experimentation"></a>
 ## Experimentation framework
 
 Deep Reinforcement Learning is highly empirical. The lab enables rapid and massive experimentations, hence it needs a way to quickly analyze data from many trials. The experiment  and analytics framework is the scientific method of the lab.
@@ -188,6 +191,7 @@ Deep Reinforcement Learning is highly empirical. The lab enables rapid and massi
 
 Read on for tutorials, research and results.
 
+<a name="installation"></a>
 ## Installation
 
 1. Clone the [SLM-Lab repo](https://github.com/kengz/SLM-Lab):
