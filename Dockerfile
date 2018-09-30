@@ -34,9 +34,7 @@ RUN curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.s
 
 # install Python and Conda dependencies
 RUN . /opt/conda/etc/profile.d/conda.sh && \
-    conda config --add channels conda-forge && \
-    conda config --add channels pytorch && \
-    conda create -n lab python=3.6 ipykernel -c conda-forge -c pytorch -y && \
+    conda create -n lab python=3.6 ipykernel -y && \
     conda activate lab && \
     python -m ipykernel install --user --name lab
 
