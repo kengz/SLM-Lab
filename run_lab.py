@@ -29,6 +29,8 @@ def run_benchmark(spec_file):
         # run only if not already exist; benchmark mode only
         if not any(spec_name in filename for filename in os.listdir('data')):
             run_by_mode(spec_file, spec_name, 'search')
+        else:
+            logger.info(f'{spec_name} is already ran and present in data/')
 
 
 def run_by_mode(spec_file, spec_name, lab_mode):
