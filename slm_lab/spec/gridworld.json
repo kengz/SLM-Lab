@@ -1,5 +1,5 @@
 {
-  "a2c_gae_mlp_separate_mountain_car": {
+  "a2c_gae_mlp_separate_gridworld": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -91,7 +91,7 @@
       }]
     }
   },
-  "a2c_gae_rnn_separate_mountain_car": {
+  "a2c_gae_rnn_separate_gridworld": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -186,7 +186,7 @@
       }]
     }
   },
-  "a2c_nstep_mlp_separate_mountain_car": {
+  "a2c_nstep_mlp_separate_gridworld": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -278,7 +278,7 @@
       }]
     }
   },
-  "a2c_nstep_rnn_separate_mountain_car": {
+  "a2c_nstep_rnn_separate_gridworld": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -373,7 +373,7 @@
       }]
     }
   },
-  "dqn_boltzmann_mountain_car": {
+  "dqn_boltzmann_gridworld": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -459,7 +459,7 @@
       }]
     }
   },
-  "drqn_boltzmann_mountain_car": {
+  "drqn_boltzmann_gridworld": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -550,7 +550,7 @@
       }]
     }
   },
-  "ddqn_boltzmann_mountain_car": {
+  "ddqn_boltzmann_gridworld": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {
@@ -636,7 +636,7 @@
       }]
     }
   },
-  "ddrqn_boltzmann_mountain_car": {
+  "ddrqn_boltzmann_gridworld": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {
