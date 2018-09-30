@@ -48,7 +48,7 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 - the full experiment datas contributed are [public on Dropbox ](https://www.dropbox.com/sh/y738zvzj3nxthn1/AAAg1e6TxXVf3krD81TD5V0Ra?dl=0)
 
 
-#### [Algorithms](#algorithms)
+#### [Algorithms](#algos)
 - numerous canonical algorithms ([listed below](#algorithm))
 - reusable and well-tested modular components: algorithm, network, memory, policy
 - simple and easy to use for building new algorithms
@@ -59,7 +59,7 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 - supports multi-agents, multi-environments
 - API for adding custom environments
 
-#### [Experimentation](#experimentation)
+#### [Experimentation](#exps)
 - scalable hyperparameter search using [ray](https://github.com/ray-project/ray)
 - analytical clarity with auto-generated results and graphs at session, trial, experiment levels
 - fitness metric as a richer measurement of an algorithm's performance
@@ -78,7 +78,7 @@ SLM Lab implements most of the recent canonical algorithms and various extension
     - `OpenAIEnv` for [OpenAI gym](https://github.com/openai/gym)
     - `UnityEnv` for [Unity ML-Agents](https://github.com/Unity-Technologies/ml-agents)
 
-<a name="algorithms"></a>
+<a name="algos"></a>
 #### Algorithm
 
 code: [slm_lab/agent/algorithm](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/algorithm)
@@ -175,7 +175,7 @@ The policy module takes the network output `pdparam`, constructs a probability d
 - Epsilon-greedy policy
 - numerous rate decay methods
 
-<a name="experimentation"></a>
+<a name="exps"></a>
 ## Experimentation framework
 
 Deep Reinforcement Learning is highly empirical. The lab enables rapid and massive experimentations, hence it needs a way to quickly analyze data from many trials. The experiment  and analytics framework is the scientific method of the lab.
