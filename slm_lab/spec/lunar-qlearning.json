@@ -60,7 +60,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 64,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 31
@@ -148,7 +148,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 64,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 31
@@ -237,7 +237,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 64,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 31
@@ -329,7 +329,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 64,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 31
@@ -419,7 +419,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 64,
+      "max_trial": 62,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 31
