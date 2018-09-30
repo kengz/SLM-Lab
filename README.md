@@ -188,8 +188,6 @@ Deep Reinforcement Learning is highly empirical. The lab enables rapid and massi
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
 >Session graph showing total rewards, exploration variable and loss for the episodes.
 
-Read on for tutorials, research and results.
-
 ## Installation
 
 1. Clone the [SLM-Lab repo](https://github.com/kengz/SLM-Lab):
