@@ -77,9 +77,13 @@ class Replay(Memory):
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(Replay, self).epi_reset(self.preprocess_state(state, append=False))
+
     @lab_api
     def preprocess_state(self, state, append=True):
-        '''API method, does not preprocess'''
+        '''API method for descendent classes, does not preprocess'''
         return state
 
     @lab_api
@@ -172,10 +176,6 @@ class SeqReplay(Replay):
         # update states_shape and call reset again
         self.states_shape = self.scalar_shape + tuple(np.reshape([self.seq_len, self.body.state_dim], -1))
         self.reset()
-
-    def epi_reset(self, state):
-        '''Method to reset at new episode'''
-        super(SeqReplay, self).epi_reset(self.preprocess_state(state, append=False))
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
@@ -283,7 +283,7 @@ class ConcatReplay(Replay):
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
-        super(ConcatReplay, self).epi_reset(self.preprocess_state(state, append=False))
+        super(ConcatReplay, self).epi_reset(state)
         # reappend buffer with custom shape
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
