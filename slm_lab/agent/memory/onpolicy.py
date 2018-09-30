@@ -127,10 +127,11 @@ class OnPolicySeqReplay(OnPolicyReplay):
         self.state_buffer = deque(maxlen=self.seq_len)
 
     def preprocess_state(self, state, append=True):
-        '''Transforms the raw state into format that is fed into the network'''
-        if append:
-            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
-            self.state_buffer.append(state)
+        '''
+        Transforms the raw state into format that is fed into the network
+        NOTE for onpolicy memory this method only gets called in policy util, not here.
+        '''
+        self.preprocess_append(state, append)
         processed_state = np.stack(self.state_buffer)
         return processed_state
 
@@ -256,9 +257,7 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
-        if append:
-            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
-            self.state_buffer.append(state)
+        self.preprocess_append(state, append)
         processed_state = np.stack(self.state_buffer)
         return processed_state
 
@@ -337,9 +336,7 @@ class OnPolicyAtariReplay(OnPolicyReplay):
         '''Transforms the raw state into format that is fed into the network'''
         state = util.transform_image(state)
         # append when state is first seen when acting in policy_util, don't append elsewhere in memory
-        if append:
-            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
-            self.state_buffer.append(state)
+        self.preprocess_append(state, append)
         processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
         assert processed_state.shape == self.body.state_dim
         return processed_state
