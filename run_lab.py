@@ -12,6 +12,7 @@ from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+import sys
 import torch.multiprocessing as mp
 
 
@@ -63,6 +64,12 @@ def run_by_mode(spec_file, spec_name, lab_mode):
 
 
 def main():
+    if len(sys.argv) > 1:
+        args = sys.argv[1:]
+        assert len(args) == 3, f'To use sys args, specify spec_file, spec_name, lab_mode'
+        run_by_mode(*args)
+        return
+
     experiments = util.read('config/experiments.json')
     for spec_file in experiments:
         for spec_name, lab_mode in experiments[spec_file].items():
