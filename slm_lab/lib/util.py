@@ -320,43 +320,6 @@ def is_singleton(spec):
     return len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1
 
 
-def is_sub_dict(sub_dict, super_dict):
-    '''
-    Check if sub_dict is a congruent subset of super_dict
-    @param {dict} sub_dict The sub dictionary
-    @param {dict} super_dict The super dictionary
-    @returns {bool}
-    @example
-
-    sub_dict = {'a': 1, 'b': 2}
-    super_dict = {'a': 0, 'b': 0, 'c': 0}
-    util.is_sub_dict(sub_dict, super_dict)
-    # => True
-
-    nested_sub_dict = {'a': {'b': 1}, 'c': 2}
-    nested_super_dict = {'a': {'b': 0}, 'c': 0, 'd': 0}
-    util.is_sub_dict(nested_sub_dict, nested_super_dict)
-    # => True
-
-    incon_nested_super_dict = {'a': {'b': 0}, 'c': {'d': 0}}
-    util.is_sub_dict(nested_sub_dict, incon_nested_super_dict)
-    # => False
-    '''
-    for sub_k, sub_v in sub_dict.items():
-        if sub_k not in super_dict:
-            return False
-        super_v = super_dict[sub_k]
-        if type(sub_v) != type(super_v):
-            return False
-        if ps.is_dict(sub_v):
-            if not is_sub_dict(sub_v, super_v):
-                return False
-        else:
-            if sub_k not in super_dict:
-                return False
-    return True
-
-
 def monkey_patch(base_cls, extend_cls):
     '''Monkey patch a base class with methods from extend_cls'''
     ext_fn_list = get_fn_list(extend_cls)

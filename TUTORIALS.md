@@ -45,6 +45,8 @@
 
 ## SLM Lab tutorials
 
+>If you write about using SLM Lab, feel free to let us know to include it below
+
 - [Fast Implementation of Self-Imitation Learning](https://medium.com/@kengz/fast-implementation-of-self-imitation-learning-ffcd0b2b6c6b): a showcase of how an algorithm can be implemented quickly in the Lab.
 - [Deep Reinforcement Learning with SLM Lab](https://medium.com/@kengz/deep-reinforcement-learning-with-slm-lab-bebf87f531ac): introduction to the features and demo run-through of v2.x.
 - [pip module for RL agents in SLM Lab](https://medium.com/@kengz/pip-module-for-rl-agents-in-slm-lab-50e73872445d): how you can import SLM Lab as a pip module in your application to use the algorithms and components.
