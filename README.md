@@ -6,11 +6,11 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 | References |  |
 |------------|--|
 | [Github](https://github.com/kengz/SLM-Lab) | Github repository |
+| [Installation](#installation) | How to install SLM Lab |
 | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | Usage documentation |
 | [Benchmark](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md)| Benchmark results |
-| [Tutorials](https://github.com/kengz/SLM-Lab/blob/master/TUTORIALS.md)| Tutorial links |
+| [Tutorials](https://github.com/kengz/SLM-Lab/blob/master/TUTORIALS.md)| Tutorial resources |
 | [Contributing](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md)| How to contribute |
-| [Issues](https://github.com/kengz/SLM-Lab/issues) | Issues |
 | [Roadmap](https://github.com/kengz/SLM-Lab/projects) | Research and engineering roadmap |
 | [Gitter](https://gitter.im/SLM-Lab/SLM-Lab) | SLM Lab user chatroom |
 
@@ -47,19 +47,19 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 - experiment reproduction instructions are submitted to the Lab via [`result` Pull Requests](https://github.com/kengz/SLM-Lab/pulls?utf8=%E2%9C%93&q=is%3Apr+label%3Aresult+)
 - the full experiment datas contributed are [public on Dropbox ](https://www.dropbox.com/sh/y738zvzj3nxthn1/AAAg1e6TxXVf3krD81TD5V0Ra?dl=0)
 
-## Features
 
-#### Algorithms
+#### [Algorithms](#link-algos)
 - numerous canonical algorithms ([listed below](#algorithm))
 - reusable and well-tested modular components: algorithm, network, memory, policy
 - simple and easy to use for building new algorithms
 
 #### Environments
 - works with [OpenAI gym](https://github.com/openai/gym), [Unity environments](https://github.com/Unity-Technologies/ml-agents), and more soon
+- comes with pre-built Unity binaries
 - supports multi-agents, multi-environments
 - API for adding custom environments
 
-#### Experimentation
+#### [Experimentation](#experimentation-framework)
 - scalable hyperparameter search using [ray](https://github.com/ray-project/ray)
 - analytical clarity with auto-generated results and graphs at session, trial, experiment levels
 - fitness metric as a richer measurement of an algorithm's performance
@@ -78,6 +78,7 @@ SLM Lab implements most of the recent canonical algorithms and various extension
     - `OpenAIEnv` for [OpenAI gym](https://github.com/openai/gym)
     - `UnityEnv` for [Unity ML-Agents](https://github.com/Unity-Technologies/ml-agents)
 
+<a name="link-algos"></a>
 #### Algorithm
 
 code: [slm_lab/agent/algorithm](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/algorithm)
@@ -187,8 +188,6 @@ Deep Reinforcement Learning is highly empirical. The lab enables rapid and massi
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
 >Session graph showing total rewards, exploration variable and loss for the episodes.
 
-Read on for tutorials, research and results.
-
 ## Installation
 
 1. Clone the [SLM-Lab repo](https://github.com/kengz/SLM-Lab):
@@ -206,6 +205,8 @@ Read on for tutorials, research and results.
 
 >Alternatively, run the content of `bin/setup_macOS` or `bin/setup_ubuntu` on your terminal manually.
 >Docker image and Dockerfile with instructions are also available
+
+>Useful reference: [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html)
 
 ### Setup
 
@@ -316,7 +317,7 @@ If you use `SLM-Lab` in your research, please cite below:
 
 ## Contributing
 
-SLM Lab is an MIT-licensed open source project. Contributions are very much welcome, no matter if it's a quick bug-fix or new feature addition. Please see the [contributing guidelines](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md) for more info.
+SLM Lab is an MIT-licensed open source project. Contributions are very much welcome, no matter if it's a quick bug-fix or new feature addition. Please see [CONTRIBUTING.md](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md) for more info.
 
 If you have an idea for a new algorithm, environment support, analytics, benchmarking, or new experiment design, let us know.
 

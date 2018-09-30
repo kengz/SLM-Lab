@@ -5,8 +5,9 @@ plugins:
     enabled: true
     config:
       languages:
-      - javascript
-      - python
+        python:
+          python_version: 3
+          mass_threshold: 40
   eslint:
     enabled: true
   fixme:

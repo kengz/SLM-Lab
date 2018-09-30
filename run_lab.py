@@ -11,7 +11,8 @@ from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
-from slm_lab.spec import spec_util, benchmarker
+from slm_lab.spec import spec_util
+import sys
 import torch.multiprocessing as mp
 
 
@@ -22,15 +23,15 @@ debug_level = 'DEBUG'
 logger.toggle_debug(debug_modules, debug_level)
 
 
-def run_benchmark(spec, const):
-    benchmark_specs = benchmarker.generate_specs(spec, const)
+def run_benchmark(spec_file):
     logger.info('Running benchmark')
-    for spec_name, benchmark_spec in benchmark_specs.items():
+    spec_dict = util.read(f'{spec_util.SPEC_DIR}/{spec_file}')
+    for spec_name in spec_dict:
         # run only if not already exist; benchmark mode only
         if not any(spec_name in filename for filename in os.listdir('data')):
-            info_space = InfoSpace()
-            info_space.tick('experiment')
-            Experiment(benchmark_spec, info_space).run()
+            run_by_mode(spec_file, spec_name, 'search')
+        else:
+            logger.info(f'{spec_name} is already ran and present in data/')
 
 
 def run_by_mode(spec_file, spec_name, lab_mode):
@@ -38,10 +39,12 @@ def run_by_mode(spec_file, spec_name, lab_mode):
     spec = spec_util.get(spec_file, spec_name)
     info_space = InfoSpace()
     analysis.save_spec(spec, info_space, unit='experiment')
+
+    # '@' is reserved for 'enjoy@{prepath}'
+    os.environ['lab_mode'] = lab_mode.split('@')[0]
     os.environ['PREPATH'] = util.get_prepath(spec, info_space)
     reload(logger)  # to set PREPATH properly
-    # expose to runtime, '@' is reserved for 'enjoy@{prepath}'
-    os.environ['lab_mode'] = lab_mode.split('@')[0]
+
     if lab_mode == 'search':
         info_space.tick('experiment')
         Experiment(spec, info_space).run()
@@ -52,11 +55,6 @@ def run_by_mode(spec_file, spec_name, lab_mode):
         prepath = lab_mode.split('@')[1]
         spec, info_space = util.prepath_to_spec_info_space(prepath)
         Session(spec, info_space).run()
-    elif lab_mode == 'generate_benchmark':
-        benchmarker.generate_specs(spec, const='agent')
-    elif lab_mode == 'benchmark':
-        # TODO allow changing const to env
-        run_benchmark(spec, const='agent')
     elif lab_mode == 'dev':
         spec = util.override_dev_spec(spec)
         info_space.tick('trial')
@@ -66,10 +64,19 @@ def run_by_mode(spec_file, spec_name, lab_mode):
 
 
 def main():
+    if len(sys.argv) > 1:
+        args = sys.argv[1:]
+        assert len(args) == 3, f'To use sys args, specify spec_file, spec_name, lab_mode'
+        run_by_mode(*args)
+        return
+
     experiments = util.read('config/experiments.json')
     for spec_file in experiments:
         for spec_name, lab_mode in experiments[spec_file].items():
-            run_by_mode(spec_file, spec_name, lab_mode)
+            if lab_mode == 'benchmark':
+                run_benchmark(spec_file)
+            else:
+                run_by_mode(spec_file, spec_name, lab_mode)
 
 
 if __name__ == '__main__':
