@@ -33,12 +33,14 @@ def build_config_space(experiment):
 
     If any key uses `grid_search`, it will be combined exhaustively in combination with other random sampling.
     '''
+    space_types = ('grid_search', 'choice', 'randint', 'uniform', 'normal')
     config_space = {}
     for k, v in util.flatten_dict(experiment.spec['search']).items():
         if '__' in k:
             key, space_type = k.split('__')
         else:
             key, space_type = k, 'grid_search'
+        assert space_type in space_types, f'Please specify your search variable as {key}__<space_type> in one of {space_types}'
         if space_type == 'grid_search':
             config_space[key] = grid_search(v)
         elif space_type == 'choice':
