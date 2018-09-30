@@ -209,7 +209,7 @@ class SILReplay(Replay):
         self.rets[self.head] = ret
 
 
-class SILSeqReplay(SeqReplay):
+class SILSeqReplay(SILReplay, SeqReplay):
     '''
     Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as SILReplay memory
 
@@ -222,21 +222,7 @@ class SILSeqReplay(SeqReplay):
     }
     * seq_len provided by net_spec
     '''
-
-    def __init__(self, memory_spec, body):
-        super(SILSeqReplay, self).__init__(memory_spec, body)
-        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'rets']
-        self.reset()
-
-    @lab_api
-    def update(self, action, reward, state, done):
-        '''Interface method to update memory'''
-        raise AssertionError('Do not call SIL memory in main API control loop')
-
-    def add_experience(self, state, action, reward, next_state, done, ret):
-        '''Used to add memory from onpolicy memory'''
-        super(SILSeqReplay, self).add_experience(state, action, reward, next_state, done)
-        self.rets[self.head] = ret
+    pass
 
 
 class ConcatReplay(Replay):
