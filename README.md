@@ -207,6 +207,8 @@ Read on for tutorials, research and results.
 >Alternatively, run the content of `bin/setup_macOS` or `bin/setup_ubuntu` on your terminal manually.
 >Docker image and Dockerfile with instructions are also available
 
+>Useful reference: [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html)
+
 ### Setup
 
 A config file `config/default.json` will be created at installation.
