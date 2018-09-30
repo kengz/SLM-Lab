@@ -47,11 +47,11 @@
   "LunarLander-v2": {
     "rand_epi_reward": -250,
     "std_epi_reward": 200,
-    "std_timestep": 60000
+    "std_timestep": 150000
   },
   "LunarLanderContinuous-v2": {
     "rand_epi_reward": -250,
     "std_epi_reward": 200,
-    "std_timestep": 60000
+    "std_timestep": 150000
   }
 }
