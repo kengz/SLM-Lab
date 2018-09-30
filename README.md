@@ -8,9 +8,8 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 | [Github](https://github.com/kengz/SLM-Lab) | Github repository |
 | [Documentation](https://kengz.gitbooks.io/slm-lab/content/) | Usage documentation |
 | [Benchmark](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md)| Benchmark results |
-| [Tutorials](https://github.com/kengz/SLM-Lab/blob/master/TUTORIALS.md)| Tutorial links |
+| [Tutorials](https://github.com/kengz/SLM-Lab/blob/master/TUTORIALS.md)| Tutorial resources |
 | [Contributing](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md)| How to contribute |
-| [Issues](https://github.com/kengz/SLM-Lab/issues) | Issues |
 | [Roadmap](https://github.com/kengz/SLM-Lab/projects) | Research and engineering roadmap |
 | [Gitter](https://gitter.im/SLM-Lab/SLM-Lab) | SLM Lab user chatroom |
 
@@ -318,7 +317,7 @@ If you use `SLM-Lab` in your research, please cite below:
 
 ## Contributing
 
-SLM Lab is an MIT-licensed open source project. Contributions are very much welcome, no matter if it's a quick bug-fix or new feature addition. Please see the [contributing guidelines](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md) for more info.
+SLM Lab is an MIT-licensed open source project. Contributions are very much welcome, no matter if it's a quick bug-fix or new feature addition. Please see [CONTRIBUTING.md](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md) for more info.
 
 If you have an idea for a new algorithm, environment support, analytics, benchmarking, or new experiment design, let us know.
 
