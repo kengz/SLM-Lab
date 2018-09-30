@@ -47,6 +47,7 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 - experiment reproduction instructions are submitted to the Lab via [`result` Pull Requests](https://github.com/kengz/SLM-Lab/pulls?utf8=%E2%9C%93&q=is%3Apr+label%3Aresult+)
 - the full experiment datas contributed are [public on Dropbox ](https://www.dropbox.com/sh/y738zvzj3nxthn1/AAAg1e6TxXVf3krD81TD5V0Ra?dl=0)
 
+## Features
 
 #### [Algorithms](#link-algos)
 - numerous canonical algorithms ([listed below](#algorithm))
@@ -78,8 +79,8 @@ SLM Lab implements most of the recent canonical algorithms and various extension
     - `OpenAIEnv` for [OpenAI gym](https://github.com/openai/gym)
     - `UnityEnv` for [Unity ML-Agents](https://github.com/Unity-Technologies/ml-agents)
 
-<a name="link-algos"></a>
-#### Algorithm
+
+#### Algorithm<a name="link-algos"></a>
 
 code: [slm_lab/agent/algorithm](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/algorithm)
 
