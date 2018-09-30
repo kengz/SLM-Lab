@@ -48,7 +48,7 @@ def run_by_mode(spec_file, spec_name, lab_mode):
     if lab_mode == 'search':
         info_space.tick('experiment')
         Experiment(spec, info_space).run()
-    elif lab_mode == 'train':
+    elif lab_mode.startswith('train'):
         if '@' in lab_mode:
             prepath = lab_mode.split('@')[1]
             spec, info_space = util.prepath_to_spec_info_space(prepath)
