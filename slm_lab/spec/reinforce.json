@@ -10,9 +10,9 @@
         "explore_var_start": null,
         "explore_var_end": null,
         "explore_anneal_epi": null,
-        "gamma": 0.99,
+        "gamma": 0.98,
         "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef": 0.003,
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -22,7 +22,7 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [64],
-        "hid_layers_activation": "relu",
+        "hid_layers_activation": "tanh",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -30,11 +30,11 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.004
         },
         "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -42,8 +42,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 500,
-      "save_epi_frequency": 1000
+      "max_episode": 400,
+      "save_epi_frequency": 300
     }],
     "body": {
       "product": "outer",
