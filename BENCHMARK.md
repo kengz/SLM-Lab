@@ -10,7 +10,7 @@ All the results below link to their respective PRs with the full experiment repo
 |------------|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
 |[CartPole-v0](https://gym.openai.com/envs/CartPole-v0/)|[4.79](https://github.com/kengz/SLM-Lab/pull/184) | | | | | | | | | | |[44.7](https://github.com/kengz/SLM-Lab/pull/185) | [1.20](https://github.com/kengz/SLM-Lab/pull/180) | | | | | | |
 |[3dball](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#3dball-3d-balance-ball)| | | | | | | | | | | | | | | | | | | |
-|[LunarLander-v2](https://gym.openai.com/envs/LunarLander-v2/)|[1.14](https://github.com/kengz/SLM-Lab/pull/191)| | | | | | | | | | | | | | | | | | |
+|[LunarLander-v2](https://gym.openai.com/envs/LunarLander-v2/)|[1.14](https://github.com/kengz/SLM-Lab/pull/191)| |1.15| | | | | | | | | | | | | | | | |
 |[gridworld](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Learning-Environment-Examples.md#gridworld)| | | | | | | | | | | | | | | | | | | |
 |[BeamRider-v0](https://gym.openai.com/envs/BeamRider-v0/)| | | | | | | | | | | | | | | | | | | |
 |[Pendulum-v0](https://gym.openai.com/envs/Pendulum-v0/)| n/a | n/a | n/a | n/a| n/a | n/a | n/a | n/a | n/a | n/a | | | | | | | | | |
