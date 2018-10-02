@@ -1,4 +1,87 @@
 {
+  "a3c_nstep_mlp_shared_cartpole": {
+    "agent": [{
+      "name": "A3C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.99,
+        "use_gae": false,
+        "lam": 1.0,
+        "use_nstep": true,
+        "num_step_returns": 8,
+        "add_entropy": true,
+        "entropy_coef": 0.07,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 0.96,
+        "training_frequency": 1,
+        "training_epoch": 8,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.001
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.005
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
+        "lr_anneal_timestep": 100000,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_timestep": null,
+      "max_episode": 500,
+      "save_epi_frequency": 1000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": true,
+      "max_session": 4,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
+        },
+        "net": {
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
+          }
+        }
+      }]
+    }
+  },
   "a3c_gae_mlp_shared_cartpole": {
     "agent": [{
       "name": "A3C",
