@@ -124,10 +124,10 @@ class PPO(ActorCritic):
         assert advs.shape[0] == log_probs.shape[0]  # batch size
         ratios = torch.exp(log_probs - old_log_probs).detach()
         logger.debug(f'ratios: {ratios}')
-        sur_1 = ratios * advs
-        sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
         # flip sign because need to maximize
-        clip_loss = -torch.mean(torch.min(sur_1, sur_2))
+        sur_1 = -ratios * advs
+        sur_2 = -torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
+        clip_loss = torch.mean(torch.max(sur_1, sur_2))
         logger.debug(f'clip_loss: {clip_loss}')
 
         # L^VF (inherit from ActorCritic)
