@@ -79,14 +79,14 @@ def test_a2c(spec_file, spec_name):
 @pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('a3c.json', 'a3c_mlp_shared_cartpole'),
-    ('a3c.json', 'a3c_mlp_separate_cartpole'),
-    ('a3c.json', 'a3c_rnn_shared_cartpole'),
-    ('a3c.json', 'a3c_rnn_separate_cartpole'),
-    # ('a3c.json', 'a3c_conv_shared_breakout'),
-    # ('a3c.json', 'a3c_conv_separate_breakout'),
+    ('a3c.json', 'a3c_gae_mlp_shared_cartpole'),
+    ('a3c.json', 'a3c_gae_mlp_separate_cartpole'),
+    ('a3c.json', 'a3c_gae_rnn_shared_cartpole'),
+    ('a3c.json', 'a3c_gae_rnn_separate_cartpole'),
+    # ('a3c.json', 'a3c_gae_conv_shared_breakout'),
+    # ('a3c.json', 'a3c_gae_conv_separate_breakout'),
 ])
-def test_a3c(spec_file, spec_name):
+def test_a3c_gae_(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
@@ -104,12 +104,12 @@ def test_a2c_cont(spec_file, spec_name):
 @pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('a3c.json', 'a3c_mlp_shared_pendulum'),
-    ('a3c.json', 'a3c_mlp_separate_pendulum'),
-    ('a3c.json', 'a3c_rnn_shared_pendulum'),
-    ('a3c.json', 'a3c_rnn_separate_pendulum'),
+    ('a3c.json', 'a3c_gae_mlp_shared_pendulum'),
+    ('a3c.json', 'a3c_gae_mlp_separate_pendulum'),
+    ('a3c.json', 'a3c_gae_rnn_shared_pendulum'),
+    ('a3c.json', 'a3c_gae_rnn_separate_pendulum'),
 ])
-def test_a3c_cont(spec_file, spec_name):
+def test_a3c_gae_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
