@@ -687,7 +687,7 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.97,
         "clip_eps": 0.10,
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
@@ -702,17 +702,17 @@
         "type": "MLPNet",
         "shared": false,
         "hid_layers": [64],
-        "hid_layers_activation": "relu",
+        "hid_layers_activation": "tanh",
         "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.01
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.05
         },
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
@@ -744,7 +744,7 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [4, 8, 16],
-          "training_epoch__choice": [4, 8, 16],
+          "lam__uniform": [0.95, 0.99],
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -835,7 +835,7 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [4, 8, 16],
-          "training_epoch__choice": [4, 8, 16],
+          "lam__uniform": [0.95, 0.99],
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
