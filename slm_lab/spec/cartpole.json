@@ -1560,7 +1560,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 200,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
