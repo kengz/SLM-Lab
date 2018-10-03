@@ -1158,13 +1158,12 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100],
-          "polyak_coef__uniform": [0.0, 0.9]
+          "explore_anneal_epi__choice": [10, 50, 100]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
           "optim_spec": {
-            "lr__uniform": [0.001, 0.1]
+            "lr__uniform": [0.0001, 0.01]
           }
         }
       }]
@@ -1239,8 +1238,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100],
-          "polyak_coef__uniform": [0.0, 0.9]
+          "explore_anneal_epi__choice": [10, 50, 100]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -1323,8 +1321,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100],
-          "polyak_coef__uniform": [0.0, 0.9]
+          "explore_anneal_epi__choice": [10, 50, 100]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -1405,13 +1402,12 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100],
-          "polyak_coef__uniform": [0.0, 0.9]
+          "explore_anneal_epi__choice": [10, 50, 100]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
           "optim_spec": {
-            "lr__uniform": [0.001, 0.1]
+            "lr__uniform": [0.0001, 0.01]
           }
         }
       }]
@@ -1489,8 +1485,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100],
-          "polyak_coef__uniform": [0.0, 0.9]
+          "explore_anneal_epi__choice": [10, 50, 100]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -1571,8 +1566,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100],
-          "polyak_coef__uniform": [0.0, 0.9]
+          "explore_anneal_epi__choice": [10, 50, 100]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
