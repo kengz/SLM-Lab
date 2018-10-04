@@ -43,7 +43,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -52,10 +52,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -119,7 +119,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -128,10 +128,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -203,7 +203,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -211,11 +211,11 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 64,
+      "max_session": 4,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -270,7 +270,7 @@
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
-        "use_same_optim": true,
+        "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.02
@@ -289,8 +289,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1000
+      "max_episode": 1200,
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -299,10 +299,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 64,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 4
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -315,9 +315,110 @@
         },
         "net": {
           "lr_decay_frequency__choice": [40000, 60000, 80000, 100000],
+          "lr_anneal_timestep__choice": [200000, 250000, 300000, 350000, 400000],
           "actor_optim_spec": {
             "lr__uniform": [0.004, 0.008]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.001]
           }
+        }
+      }]
+    }
+  },
+  "a2csil_gae_mlp_separate_lunar": {
+    "agent": [{
+      "name": "A2CSIL",
+      "algorithm": {
+        "name": "SIL",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.99,
+        "use_gae": true,
+        "lam": 0.97,
+        "use_nstep": false,
+        "num_step_returns": 1,
+        "add_entropy": true,
+        "entropy_coef": 0.01,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "training_frequency": 1,
+        "training_epoch": 4,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicyReplay",
+        "sil_replay_name": "SILReplay",
+        "batch_size": 32,
+        "max_size": 50000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [400, 200],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 80000,
+        "lr_decay_min_timestep": 40000,
+        "lr_anneal_timestep": 400000,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 1200,
+      "save_epi_frequency": 1200
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 91,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 91,
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "training_frequency__choice": [1, 2],
+          "training_epoch__choice": [4, 6, 8],
+          "entropy_coef__uniform": [0.04, 0.09],
+          "lam__uniform": [0.9, 1.0]
+        },
+        "net": {
+          "lr_decay_frequency__choice": [40000, 60000, 80000, 100000],
+          "lr_anneal_timestep__choice": [200000, 250000, 300000, 350000, 400000],
+          "actor_optim_spec": {
+            "lr__uniform": [0.004, 0.008]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.001]
+          }
+        },
+        "memory": {
+          "use_cer__choice": [true, false],
         }
       }]
     }
@@ -379,7 +480,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -388,10 +489,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -441,14 +542,14 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
         "clip_grad_val": 1.0,
-        "use_same_optim": true,
+        "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.02
@@ -476,29 +577,30 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 64,
+      "max_session": 4,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 91,
       }
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "add_entropy": [true, false],
           "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [4, 6, 8],
           "entropy_coef__uniform": [0.003, 0.1],
-          "lam__uniform": [0.9, 0.95]
+          "lam__uniform": [0.9, 1.0]
         },
         "net": {
-          "hid_layers__choice": [[256, 128], [400, 200]],
           "lr_decay_frequency__choice": [40000, 60000, 80000, 100000],
-          "rnn_hidden_size__choice": [32, 64],
+          "lr_anneal_timestep__choice": [200000, 250000, 300000, 350000, 400000],
           "seq_len__choice": [2, 4, 6, 8],
           "actor_optim_spec": {
             "lr__uniform": [0.001, 0.01]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.001]
           }
         }
       }]
@@ -558,7 +660,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -567,10 +669,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 80,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -621,11 +723,11 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "hid_layers": [400, 200],
         "hid_layers_activation": "tanh",
         "clip_grad": false,
         "clip_grad_val": 1.0,
-        "use_same_optim": true,
+        "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.02
@@ -653,28 +755,127 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 64,
+      "max_session": 4,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 91,
       }
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "add_entropy": [true, false],
           "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [4, 6, 8],
-          "entropy_coef__uniform": [0.05, 0.1],
+          "entropy_coef__uniform": [0.01, 0.1],
           "num_step_returns__choice": [1, 4, 5]
         },
         "net": {
-          "hid_layers__choice": [[256, 128], [400, 200]],
           "lr_decay_frequency__choice": [40000, 60000, 80000, 100000],
+          "lr_anneal_timestep__choice": [200000, 250000, 300000, 350000, 400000],
           "actor_optim_spec": {
             "lr__uniform": [0.001, 0.008]
-          }
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.001]
+          },
+        }
+      }]
+    }
+  },
+  "a2csil_nstep_mlp_separate_lunar": {
+    "agent": [{
+      "name": "A2CSIL",
+      "algorithm": {
+        "name": "SIL",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.99,
+        "use_gae": false,
+        "lam": 0.97,
+        "use_nstep": true,
+        "num_step_returns": 1,
+        "add_entropy": true,
+        "entropy_coef": 0.01,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "training_frequency": 1,
+        "training_epoch": 4,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicyReplay",
+        "sil_replay_name": "SILReplay",
+        "batch_size": 32,
+        "max_size": 50000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [400, 200],
+        "hid_layers_activation": "tanh",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 80000,
+        "lr_decay_min_timestep": 40000,
+        "lr_anneal_timestep": 400000,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "max_timestep": null,
+      "max_episode": 1200,
+      "save_epi_frequency": 1200
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 91,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 91,
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "training_frequency__choice": [1, 2, 3],
+          "training_epoch__choice": [4, 6, 8],
+          "entropy_coef__uniform": [0.01, 0.1],
+          "num_step_returns__choice": [1, 4, 5]
+        },
+        "net": {
+          "lr_decay_frequency__choice": [40000, 60000, 80000, 100000],
+          "lr_anneal_timestep__choice": [200000, 250000, 300000, 350000, 400000],
+          "actor_optim_spec": {
+            "lr__uniform": [0.001, 0.008]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.001]
+          },
+        },
+        "memory": {
+          "use_cer__choice": [true, false],
         }
       }]
     }
@@ -736,7 +937,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -745,10 +946,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -798,14 +999,14 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "hid_layers": [400, 200],
         "hid_layers_activation": "tanh",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
         "clip_grad_val": 1.0,
-        "use_same_optim": true,
+        "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
           "lr": 0.02
@@ -825,7 +1026,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -833,30 +1034,30 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
-      "max_trial": 64,
+      "max_session": 4,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 91,
       }
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "add_entropy": [true, false],
           "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [4, 6, 8],
-          "entropy_coef__uniform": [0.05, 0.1],
+          "entropy_coef__uniform": [0.01, 0.1],
           "num_step_returns__choice": [1, 4, 5]
         },
         "net": {
-          "hid_layers__choice": [[256, 128], [400, 200]],
-          "rnn_hidden_size__choice": [32, 64],
           "seq_len__choice": [2, 4, 6, 8],
-          "lr_decay_frequency__choice": [40000, 60000, 80000, 100000],
+          "lr_anneal_timestep__choice": [200000, 250000, 300000, 350000, 400000],
           "actor_optim_spec": {
             "lr__uniform": [0.001, 0.008]
-          }
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.001]
+          },
         }
       }]
     }
@@ -911,7 +1112,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -920,10 +1121,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -992,7 +1193,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -1001,10 +1202,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -1079,7 +1280,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -1088,10 +1289,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -1164,7 +1365,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -1173,10 +1374,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -1260,7 +1461,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -1269,10 +1470,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -1353,7 +1554,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -1362,10 +1563,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -1452,7 +1653,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -1461,10 +1662,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -1549,7 +1750,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -1558,10 +1759,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -1638,7 +1839,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -1647,10 +1848,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -1724,7 +1925,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -1733,10 +1934,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -1820,7 +2021,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -1829,10 +2030,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -1914,7 +2115,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -1923,10 +2124,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -1993,7 +2194,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2002,10 +2203,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -2064,7 +2265,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2073,10 +2274,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -2138,7 +2339,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2147,10 +2348,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -2213,7 +2414,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2222,10 +2423,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -2291,7 +2492,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2300,10 +2501,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -2371,7 +2572,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2380,10 +2581,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -2452,7 +2653,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2461,10 +2662,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -2536,7 +2737,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2545,10 +2746,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -2621,7 +2822,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2630,10 +2831,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -2703,7 +2904,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2712,10 +2913,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -2784,7 +2985,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2793,10 +2994,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -2868,7 +3069,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2877,10 +3078,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -2953,7 +3154,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -2962,10 +3163,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -3035,7 +3236,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -3043,11 +3244,11 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 1,
-      "max_trial": 100,
+      "max_session": 4,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
@@ -3116,7 +3317,7 @@
       "name": "LunarLander-v2",
       "max_timestep": null,
       "max_episode": 1200,
-      "save_epi_frequency": 1000
+      "save_epi_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -3125,10 +3326,10 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 91,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 25
+        "num_cpus": 91,
       }
     },
     "search": {
