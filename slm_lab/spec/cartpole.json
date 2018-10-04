@@ -1574,7 +1574,8 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100]
+          "explore_anneal_epi__choice": [10, 50, 100],
+          "lr_decay_frequency__choice": [400, 600, 800]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
