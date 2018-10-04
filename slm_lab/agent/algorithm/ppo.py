@@ -179,7 +179,7 @@ class PPO(ActorCritic):
             batch = self.sample()
             policy_loss = self.train_actor(batch)
             val_loss = self.train_critic(batch)
-            loss = val_loss + abs(policy_loss)
+            loss = val_loss + policy_loss
             # reset
             self.to_train = 0
             self.body.entropies = []
