@@ -35,7 +35,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -112,7 +112,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -196,7 +196,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -280,7 +280,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -367,7 +367,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -457,7 +457,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -544,7 +544,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -629,7 +629,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -717,7 +717,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -806,7 +806,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -860,7 +860,7 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.97,
         "clip_eps": 0.10,
         "entropy_coef": 0.01,
         "val_loss_coef": 0.1,
@@ -875,22 +875,22 @@
         "type": "MLPNet",
         "shared": false,
         "hid_layers": [64],
-        "hid_layers_activation": "relu",
+        "hid_layers_activation": "tanh",
         "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.01
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.05
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_decay_frequency": 400,
+        "lr_decay_min_timestep": 1400,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -907,7 +907,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 200,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -917,7 +917,8 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [4, 8, 16],
-          "training_epoch__choice": [4, 8, 16],
+          "lr_decay_frequency__choice": [400, 600, 800],
+          "lam__uniform": [0.95, 0.99],
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -979,9 +980,9 @@
           "lr": 0.02
         },
         "lr_decay": "rate_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_decay_frequency": 400,
+        "lr_decay_min_timestep": 1400,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -998,7 +999,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 200,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -1008,7 +1009,8 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [4, 8, 16],
-          "training_epoch__choice": [4, 8, 16],
+          "lr_decay_frequency__choice": [400, 600, 800],
+          "lam__uniform": [0.95, 0.99],
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -1076,7 +1078,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -1153,7 +1155,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -1227,7 +1229,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "gpu": false
       }
     }],
@@ -1275,7 +1277,7 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 3.0,
         "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_anneal_epi": 50,
         "gamma": 0.99,
         "training_batch_epoch": 10,
         "training_epoch": 4,
@@ -1300,12 +1302,12 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.001
+          "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_decay_frequency": 600,
+        "lr_decay_min_timestep": 1400,
+        "lr_anneal_timestep": 10000,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1325,7 +1327,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 200,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -1385,7 +1387,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1414,7 +1416,8 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100]
+          "explore_anneal_epi__choice": [10, 50, 100],
+          "lr_decay_frequency__choice": [400, 600, 800]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -1463,9 +1466,9 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_decay_frequency": 600,
+        "lr_decay_min_timestep": 1400,
+        "lr_anneal_timestep": 10000,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1494,7 +1497,8 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100]
+          "explore_anneal_epi__choice": [10, 50, 100],
+          "lr_decay_frequency__choice": [400, 600, 800]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -1548,7 +1552,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1627,9 +1631,9 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_decay_frequency": 600,
+        "lr_decay_min_timestep": 1400,
+        "lr_anneal_timestep": 10000,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1649,7 +1653,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 200,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -1658,7 +1662,8 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100]
+          "explore_anneal_epi__choice": [10, 50, 100],
+          "lr_decay_frequency__choice": [400, 600, 800]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -1712,7 +1717,7 @@
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 2000,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_anneal_timestep": 10000,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1791,9 +1796,9 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_decay_frequency": 600,
+        "lr_decay_min_timestep": 1400,
+        "lr_anneal_timestep": 10000,
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1822,7 +1827,8 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100]
+          "explore_anneal_epi__choice": [10, 50, 100],
+          "lr_decay_frequency__choice": [400, 600, 800]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],

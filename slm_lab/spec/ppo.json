@@ -93,11 +93,11 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.95,
         "clip_eps": 0.10,
         "entropy_coef": 0.01,
-        "val_loss_coef": 0.1,
-        "training_frequency": 8,
+        "val_loss_coef": 0.85,
+        "training_frequency": 4,
         "training_epoch": 8,
         "normalize_state": true
       },
@@ -107,7 +107,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [32],
+        "hid_layers": [64],
         "hid_layers_activation": "tanh",
         "clip_grad": true,
         "clip_grad_val": 10.0,
