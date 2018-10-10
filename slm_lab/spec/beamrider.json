@@ -304,7 +304,7 @@
     "meta": {
       "distributed": true,
       "graph_x": "total_t",
-      "max_session": 16,
+      "max_session": 8,
       "max_trial": 1,
       "search": "RandomSearch"
     }
