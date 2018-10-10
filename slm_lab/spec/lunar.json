@@ -258,18 +258,18 @@
         "explore_anneal_epi": null,
         "gamma": 0.99,
         "use_gae": true,
-        "lam": 0.97,
+        "lam": 0.922,
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
+        "entropy_coef_start": 0.03,
         "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_anneal_epi": 500,
+        "entropy_anneal_start_epi": 500,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
-        "training_frequency": 1,
-        "training_epoch": 4,
+        "training_frequency": 3,
+        "training_epoch": 8,
         "normalize_state": true
       },
       "memory": {
@@ -278,22 +278,22 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
-        "use_same_optim": true,
+        "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.008
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.009
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 80000,
+        "lr_decay_frequency": 40000,
+        "lr_decay_min_timestep": 40000,
         "lr_anneal_timestep": 400000,
         "gpu": true
       }
@@ -311,24 +311,23 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 80,
+      "max_trial": 47,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 47
       }
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "training_frequency__choice": [1, 2, 3],
-          "training_epoch__choice": [4, 6, 8],
-          "entropy_coef_start__uniform": [0.003, 0.1],
+          "gamma__uniform": [0.99, 0.999],
+          "entropy_coef_start__uniform": [0.003, 0.01],
+          "entropy_anneal_epi__choice": [100, 200, 300, 400, 500, 600],
+          "entropy_anneal_start_epi__choice": [300, 400, 500, 600],
           "lam__uniform": [0.9, 0.95]
         },
         "net": {
-          "hid_layers__choice": [[256, 128], [400, 200]],
-          "lr_decay_frequency__choice": [60000, 100000],
-          "actor_optim_spec": {
+          "critic_optim_spec": {
             "lr__uniform": [0.001, 0.01]
           }
         }
@@ -440,17 +439,17 @@
         "explore_anneal_epi": null,
         "gamma": 0.99,
         "use_gae": true,
-        "lam": 0.97,
+        "lam": 0.922,
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
+        "entropy_coef_start": 0.03,
         "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_anneal_epi": 500,
+        "entropy_anneal_start_epi": 500,
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.01,
-        "training_frequency": 1,
+        "val_loss_coef": 1.0,
+        "training_frequency": 3,
         "training_epoch": 8,
         "normalize_state": true
       },
@@ -460,25 +459,25 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
         "clip_grad": false,
         "clip_grad_val": 1.0,
-        "use_same_optim": false,
+        "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.009
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.009
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 80000,
+        "lr_decay_frequency": 40000,
+        "lr_decay_min_timestep": 40000,
         "lr_anneal_timestep": 400000,
         "gpu": true
       }
@@ -496,26 +495,23 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 80,
+      "max_trial": 47,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 47
       }
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "training_frequency__choice": [1, 2, 3],
-          "training_epoch__choice": [4, 6, 8],
-          "entropy_coef_start__uniform": [0.003, 0.1],
+          "gamma__uniform": [0.99, 0.999],
+          "entropy_coef_start__uniform": [0.003, 0.01],
+          "entropy_anneal_epi__choice": [100, 200, 300, 400, 500, 600],
+          "entropy_anneal_start_epi__choice": [300, 400, 500, 600],
           "lam__uniform": [0.9, 0.95]
         },
         "net": {
-          "hid_layers__choice": [[256, 128], [400, 200]],
-          "lr_decay_frequency__choice": [60000, 100000],
-          "rnn_hidden_size__choice": [16, 32, 64],
-          "seq_len__choice": [2, 4, 6, 8],
-          "actor_optim_spec": {
+          "critic_optim_spec": {
             "lr__uniform": [0.001, 0.01]
           }
         }
