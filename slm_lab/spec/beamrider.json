@@ -47,7 +47,7 @@
           "name": "Adam",
           "lr": 1e-4
         },
-        "lr_decay": "linear_decay",
+        "lr_decay": "no_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 20000,
         "lr_anneal_timestep": 1000000,
@@ -270,8 +270,8 @@
         ],
         "hid_layers_activation": "relu",
         "batch_norm": false,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad": true,
+        "clip_grad_val": 10.0,
         "use_same_optim": false,
         "loss_spec": {
           "name": "MSELoss"
@@ -284,7 +284,7 @@
           "momentum": 0.0,
           "centered": false
         },
-        "lr_decay": "linear_decay",
+        "lr_decay": "no_decay",
         "lr_decay_frequency": 10000,
         "lr_decay_min_timestep": 20000,
         "lr_anneal_timestep": 1000000,
