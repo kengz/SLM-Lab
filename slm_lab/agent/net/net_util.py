@@ -261,7 +261,7 @@ def gen_assert_trained(pre_model):
 def push_global_grad(local_net, global_net):
     '''Push local gradient to global for distributed training'''
     for lp, gp in zip(local_net.parameters(), global_net.parameters()):
-        gp._grad = lp.grad
+        gp._grad = lp.grad.to(global_net.device)
 
 
 def pull_global_param(local_net, global_net):
