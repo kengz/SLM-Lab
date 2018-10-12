@@ -21,14 +21,14 @@
         "name": "AtariReplay",
         "batch_size": 32,
         "max_size": 50000,
-        "stack_len": 1,
+        "stack_len": 4,
         "use_cer": true
       },
       "net": {
         "type": "ConvNet",
         "hid_layers": [
           [
-            [1, 32, [8, 8], 4, 0, [1, 1]],
+            [4, 32, [8, 8], 4, 0, [1, 1]],
             [32, 64, [4, 4], 2, 0, [1, 1]],
             [64, 64, [3, 3], 1, 0, [1, 1]]
           ],
