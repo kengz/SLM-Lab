@@ -23,14 +23,14 @@
         "epsilon": 1e-6,
         "batch_size": 32,
         "max_size": 50000,
-        "stack_len": 4,
+        "stack_len": 1,
         "use_cer": true
       },
       "net": {
         "type": "ConvNet",
         "hid_layers": [
           [
-            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [1, 32, [8, 8], 4, 0, [1, 1]],
             [32, 64, [4, 4], 2, 0, [1, 1]],
             [64, 64, [3, 3], 1, 0, [1, 1]]
           ],
@@ -97,14 +97,14 @@
         "name": "AtariReplay",
         "batch_size": 32,
         "max_size": 1000000,
-        "stack_len": 4,
+        "stack_len": 1,
         "use_cer": false
       },
       "net": {
         "type": "ConvNet",
         "hid_layers": [
           [
-            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [1, 32, [8, 8], 4, 0, [1, 1]],
             [32, 64, [4, 4], 2, 0, [1, 1]],
             [64, 64, [3, 3], 1, 0, [1, 1]]
           ],
@@ -175,14 +175,14 @@
       },
       "memory": {
         "name": "OnPolicyAtariReplay",
-        "stack_len": 4
+        "stack_len": 1
       },
       "net": {
         "type": "ConvNet",
         "shared": true,
         "hid_layers": [
           [
-            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [1, 32, [8, 8], 4, 0, [1, 1]],
             [32, 64, [4, 4], 2, 0, [1, 1]],
             [64, 64, [3, 3], 1, 0, [1, 1]]
           ],
@@ -255,7 +255,7 @@
       },
       "memory": {
         "name": "OnPolicyAtariReplay",
-        "stack_len": 4
+        "stack_len": 1
       },
       "net": {
         "type": "ConvNet",
