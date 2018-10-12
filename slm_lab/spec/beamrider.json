@@ -9,7 +9,7 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
         "explore_var_end": 0.01,
-        "explore_anneal_epi": 600,
+        "explore_anneal_epi": 1200,
         "gamma": 0.99,
         "training_batch_epoch": 1,
         "training_epoch": 1,
@@ -18,9 +18,7 @@
         "normalize_state": true
       },
       "memory": {
-        "name": "AtariPrioritizedReplay",
-        "alpha": 0.6,
-        "epsilon": 1e-6,
+        "name": "AtariReplay",
         "batch_size": 32,
         "max_size": 50000,
         "stack_len": 1,
