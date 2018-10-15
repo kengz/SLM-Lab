@@ -75,7 +75,6 @@ class MLPNet(Net, nn.Module):
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
-            'separate',
             'hid_layers',
             'hid_layers_activation',
             'clip_grad',
