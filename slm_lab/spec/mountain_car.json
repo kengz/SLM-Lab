@@ -62,7 +62,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 200,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -71,14 +71,16 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_frequency__choice": [1, 2, 3],
-          "training_epoch__choice": [1, 2, 3, 4],
-          "add_entropy__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
+          "normalize_state__choice": [true, false],
+          "training_frequency__choice": [2, 4, 8],
+          "training_epoch__choice": [2, 4, 8],
           "lam__uniform": [0.9, 0.99]
         },
         "net": {
-          "lr_decay_frequency__choice": [120000, 140000, 160000, 180000, 200000],
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[100], [200], [400], [200, 100]],
           "actor_optim_spec": {
             "lr__uniform": [0.001, 0.01]
           },
@@ -155,7 +157,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 200,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -164,14 +166,18 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_frequency__choice": [1, 2, 3],
-          "training_epoch__choice": [1, 2, 3, 4],
-          "add_entropy__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
-          "lam__uniform": [0.9, 0.99]
+          "normalize_state__choice": [true, false],
+          "training_frequency__choice": [2, 4, 8],
+          "training_epoch__choice": [2, 4, 8],
+          "lam__uniform": [0.9, 0.99],
         },
         "net": {
-          "lr_decay_frequency__choice": [120000, 140000, 160000, 180000, 200000],
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[], [100], [200]],
+          "rnn_hidden_size__choice": [32, 64, 128],
+          "seq_len__choice": [2, 3, 4, 5, 6],
           "actor_optim_spec": {
             "lr__uniform": [0.001, 0.01]
           },
@@ -245,7 +251,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 200,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -254,14 +260,16 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_frequency__choice": [1, 2, 3],
-          "training_epoch__choice": [1, 2, 3, 4],
-          "add_entropy__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
-          "num_step_returns__choice": [1, 2, 3, 5, 10]
+          "normalize_state__choice": [true, false],
+          "training_frequency__choice": [2, 4, 8],
+          "training_epoch__choice": [2, 4, 8],
+          "num_step_returns__choice": [2, 4, 8]
         },
         "net": {
-          "lr_decay_frequency__choice": [120000, 140000, 160000, 180000, 200000],
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[100], [200], [400], [200, 100]],
           "actor_optim_spec": {
             "lr__uniform": [0.001, 0.01]
           },
@@ -338,7 +346,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 200,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -347,14 +355,18 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_frequency__choice": [1, 2, 3],
-          "training_epoch__choice": [1, 2, 3, 4],
-          "add_entropy__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
-          "num_step_returns__choice": [1, 2, 3, 5, 10]
+          "normalize_state__choice": [true, false],
+          "training_frequency__choice": [2, 4, 8],
+          "training_epoch__choice": [2, 4, 8],
+          "lam__uniform": [0.9, 0.99],
         },
         "net": {
-          "lr_decay_frequency__choice": [120000, 140000, 160000, 180000, 200000],
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[], [100], [200]],
+          "rnn_hidden_size__choice": [32, 64, 128],
+          "seq_len__choice": [2, 3, 4, 5, 6],
           "actor_optim_spec": {
             "lr__uniform": [0.001, 0.01]
           },
@@ -426,7 +438,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 200,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -436,16 +448,17 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_anneal_epi__choice": [300, 400, 500]
-        },
-        "memory": {
-          "max_size__choice": [10000, 50000, 100000],
+          "explore_anneal_epi__choice": [200, 400, 800]
         },
         "net": {
-          "training_epoch__choice": [1, 2, 3, 4],
-          "lr_decay_frequency__choice": [120000, 140000, 160000, 180000, 200000],
-          "polyak_coef__choice": [0, 0.9, 0.99, 0.999],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "polyak_coef__uniform": [0.8, 1.0],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
         }
       }]
     }
@@ -514,7 +527,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 200,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -524,18 +537,19 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_anneal_epi__choice": [300, 400, 500]
-        },
-        "memory": {
-          "max_size__choice": [10000, 50000, 100000],
+          "explore_anneal_epi__choice": [200, 400, 800]
         },
         "net": {
-          "rnn_hidden_size__choice": [32, 64],
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "polyak_coef__uniform": [0.8, 1.0],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[], [100], [200]],
+          "rnn_hidden_size__choice": [32, 64, 128],
           "seq_len__choice": [2, 3, 4, 5, 6],
-          "training_epoch__choice": [1, 2, 3, 4],
-          "lr_decay_frequency__choice": [120000, 140000, 160000, 180000, 200000],
-          "polyak_coef__choice": [0, 0.9, 0.99, 0.999],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
         }
       }]
     }
@@ -549,10 +563,10 @@
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
         "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
+        "explore_var_end": 1.0,
         "explore_anneal_epi": 400,
         "gamma": 0.999,
-        "training_batch_epoch": 3,
+        "training_batch_epoch": 4,
         "training_epoch": 4,
         "training_frequency": 4,
         "training_min_timestep": 32,
@@ -601,7 +615,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 200,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -611,16 +625,17 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_anneal_epi__choice": [300, 400, 500]
-        },
-        "memory": {
-          "max_size__choice": [10000, 50000, 100000],
+          "explore_anneal_epi__choice": [200, 400, 800]
         },
         "net": {
-          "training_epoch__choice": [1, 2, 3, 4],
-          "lr_decay_frequency__choice": [120000, 140000, 160000, 180000, 200000],
-          "polyak_coef__choice": [0, 0.9, 0.99, 0.999],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "polyak_coef__uniform": [0.8, 1.0],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
         }
       }]
     }
@@ -634,10 +649,10 @@
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
         "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
+        "explore_var_end": 1.0,
         "explore_anneal_epi": 400,
         "gamma": 0.999,
-        "training_batch_epoch": 3,
+        "training_batch_epoch": 4,
         "training_epoch": 4,
         "training_frequency": 4,
         "training_min_timestep": 32,
@@ -689,7 +704,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 95,
+      "max_trial": 200,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95
@@ -699,18 +714,19 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_anneal_epi__choice": [300, 400, 500]
-        },
-        "memory": {
-          "max_size__choice": [10000, 50000, 100000],
+          "explore_anneal_epi__choice": [200, 400, 800]
         },
         "net": {
-          "rnn_hidden_size__choice": [32, 64],
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "polyak_coef__uniform": [0.8, 1.0],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[], [100], [200]],
+          "rnn_hidden_size__choice": [32, 64, 128],
           "seq_len__choice": [2, 3, 4, 5, 6],
-          "training_epoch__choice": [1, 2, 3, 4],
-          "lr_decay_frequency__choice": [120000, 140000, 160000, 180000, 200000],
-          "polyak_coef__choice": [0, 0.9, 0.99, 0.999],
-          "hid_layers_activation__choice": ["relu", "sigmoid"],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
         }
       }]
     }
