@@ -10,7 +10,7 @@ SLM Lab has the following principles:
 
 We believe that deep RL stands at a wonderful intersection of research and engineering. Hence, all forms of contributions are welcome. If you need a hint on what to contribute, feel free to check out our wish list below.
 
-Contributions are merged into SLM Lab via Pull Requests (PRs). If you are not familiar with it, [don't be shy, here's a guide](https://opensource.guide/how-to-contribute/#opening-a-pull-request). Also, feel free to reach us at the [Gitter channel](https://gitter.im/SLM-Lab/SLM-Lab).
+Contributions are merged into SLM Lab via Pull Requests (PRs). If you are not familiar with it, [don't be shy, here's a guide](https://www.digitalocean.com/community/tutorials/how-to-create-a-pull-request-on-github). Also, feel free to reach us at the [Gitter channel](https://gitter.im/SLM-Lab/SLM-Lab).
 
 Contributors may follow any of these tracks. They are roughly ordered in increasing difficulty.
 

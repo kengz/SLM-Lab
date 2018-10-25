@@ -7,14 +7,14 @@
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
-        "explore_var_start": 1.5,
-        "explore_var_end": 0.3,
-        "explore_anneal_epi": 20,
+        "explore_var_start": 3.0,
+        "explore_var_end": 1.0,
+        "explore_anneal_epi": 50,
         "gamma": 0.99,
-        "training_batch_epoch": 8,
+        "training_batch_epoch": 10,
         "training_epoch": 4,
-        "training_frequency": 32,
-        "training_min_timestep": 10,
+        "training_frequency": 8,
+        "training_min_timestep": 32,
         "normalize_state": true
       },
       "memory": {
@@ -25,8 +25,8 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [32],
-        "hid_layers_activation": "relu",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -34,23 +34,23 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.0002
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.9,
+        "polyak_coef": 0,
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 250,
-      "save_epi_frequency": 1000
+      "max_episode": 400,
+      "save_epi_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -65,18 +65,12 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 30, 50, 100]
+          "explore_anneal_epi__choice": [10, 50, 100]
         },
         "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "hid_layers_activation__choice": ["tanh", "relu", "selu"],
           "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [0.0001, 0.01]
           }
         }
       }]

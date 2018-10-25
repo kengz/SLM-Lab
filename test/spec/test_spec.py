@@ -65,56 +65,6 @@ def test_reinforce_cont_dist(spec_file, spec_name):
 
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('ac.json', 'ac_mlp_shared_cartpole'),
-    ('ac.json', 'ac_mlp_separate_cartpole'),
-    ('ac.json', 'ac_rnn_shared_cartpole'),
-    ('ac.json', 'ac_rnn_separate_cartpole'),
-    # ('ac.json', 'ac_conv_shared_breakout'),
-    # ('ac.json', 'ac_conv_separate_breakout'),
-])
-def test_ac(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
-@flaky
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('ac.json', 'ac_mlp_shared_cartpole'),
-    ('ac.json', 'ac_mlp_separate_cartpole'),
-    ('ac.json', 'ac_rnn_shared_cartpole'),
-    ('ac.json', 'ac_rnn_separate_cartpole'),
-    # ('ac.json', 'ac_conv_shared_breakout'),
-    # ('ac.json', 'ac_conv_separate_breakout'),
-])
-def test_ac_dist(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name, distributed=True)
-
-
-@flaky
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('ac.json', 'ac_mlp_shared_pendulum'),
-    ('ac.json', 'ac_mlp_separate_pendulum'),
-    ('ac.json', 'ac_rnn_shared_pendulum'),
-    ('ac.json', 'ac_rnn_separate_pendulum'),
-])
-def test_ac_cont(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
-@flaky
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('ac.json', 'ac_mlp_shared_pendulum'),
-    ('ac.json', 'ac_mlp_separate_pendulum'),
-    ('ac.json', 'ac_rnn_shared_pendulum'),
-    ('ac.json', 'ac_rnn_separate_pendulum'),
-])
-def test_ac_cont_dist(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name, distributed=True)
-
-
-@flaky
-@pytest.mark.parametrize('spec_file,spec_name', [
     ('a2c.json', 'a2c_mlp_shared_cartpole'),
     ('a2c.json', 'a2c_mlp_separate_cartpole'),
     ('a2c.json', 'a2c_rnn_shared_cartpole'),
@@ -129,14 +79,14 @@ def test_a2c(spec_file, spec_name):
 @pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('a3c.json', 'a3c_mlp_shared_cartpole'),
-    ('a3c.json', 'a3c_mlp_separate_cartpole'),
-    ('a3c.json', 'a3c_rnn_shared_cartpole'),
-    ('a3c.json', 'a3c_rnn_separate_cartpole'),
-    # ('a3c.json', 'a3c_conv_shared_breakout'),
-    # ('a3c.json', 'a3c_conv_separate_breakout'),
+    ('a3c.json', 'a3c_gae_mlp_shared_cartpole'),
+    ('a3c.json', 'a3c_gae_mlp_separate_cartpole'),
+    ('a3c.json', 'a3c_gae_rnn_shared_cartpole'),
+    ('a3c.json', 'a3c_gae_rnn_separate_cartpole'),
+    # ('a3c.json', 'a3c_gae_conv_shared_breakout'),
+    # ('a3c.json', 'a3c_gae_conv_separate_breakout'),
 ])
-def test_a3c(spec_file, spec_name):
+def test_a3c_gae_(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
@@ -154,12 +104,12 @@ def test_a2c_cont(spec_file, spec_name):
 @pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('a3c.json', 'a3c_mlp_shared_pendulum'),
-    ('a3c.json', 'a3c_mlp_separate_pendulum'),
-    ('a3c.json', 'a3c_rnn_shared_pendulum'),
-    ('a3c.json', 'a3c_rnn_separate_pendulum'),
+    ('a3c.json', 'a3c_gae_mlp_shared_pendulum'),
+    ('a3c.json', 'a3c_gae_mlp_separate_pendulum'),
+    ('a3c.json', 'a3c_gae_rnn_shared_pendulum'),
+    ('a3c.json', 'a3c_gae_rnn_separate_pendulum'),
 ])
-def test_a3c_cont(spec_file, spec_name):
+def test_a3c_gae_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
@@ -475,6 +425,7 @@ def test_dqn_breakout(spec_file, spec_name):
     ('base.json', 'base_case_unity'),
     ('base.json', 'base_case_openai'),
     ('random.json', 'random_cartpole'),
+    ('random.json', 'random_pendulum'),
     # ('base.json', 'multi_agent'),
     # ('base.json', 'multi_agent_multi_env'),
 ])
