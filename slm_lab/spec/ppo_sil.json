@@ -105,12 +105,12 @@
         "lam": 1.0,
         "clip_eps": 0.10,
         "entropy_coef": 0.01,
-        "val_loss_coef": 0.1,
+        "val_loss_coef": 0.4,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
-        "training_frequency": 1,
+        "training_frequency": 4,
         "training_batch_epoch": 8,
-        "training_epoch": 8,
+        "training_epoch": 4,
         "normalize_state": true
       },
       "memory": {
@@ -123,22 +123,22 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [32],
+        "hid_layers": [64],
         "hid_layers_activation": "tanh",
         "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.0005
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 0.02
+          "lr": 0.002
         },
         "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
+        "lr_decay_frequency": 2000,
+        "lr_decay_min_timestep": 5000,
         "lr_anneal_timestep": 100000,
         "gpu": false
       }
@@ -146,8 +146,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 500,
-      "save_epi_frequency": 1000
+      "max_episode": 400,
+      "save_epi_frequency": 300
     }],
     "body": {
       "product": "outer",
