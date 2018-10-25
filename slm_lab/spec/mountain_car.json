@@ -387,13 +387,13 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 5.0,
         "explore_var_end": 0.5,
-        "explore_anneal_epi": 400,
+        "explore_anneal_epi": 800,
         "gamma": 0.999,
         "training_batch_epoch": 3,
         "training_epoch": 4,
         "training_frequency": 4,
         "training_min_timestep": 32,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
@@ -404,8 +404,8 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [200],
-        "hid_layers_activation": "sigmoid",
+        "hid_layers": [200, 100],
+        "hid_layers_activation": "relu",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -413,16 +413,17 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.006
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 160000,
+        "lr_decay_frequency": 50000,
         "lr_decay_min_timestep": 100000,
         "lr_anneal_timestep": 400000,
         "update_type": "polyak",
         "update_frequency": 200,
-        "polyak_coef": 0,
-        "gpu": false
+        "polyak_coef": 0.8,
+        "gpu": false,
+        "training_epoch": 2
       }
     }],
     "env": [{
