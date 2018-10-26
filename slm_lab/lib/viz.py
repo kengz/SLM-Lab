@@ -9,6 +9,7 @@ from plotly import (
 )
 from slm_lab.lib import logger, util
 from subprocess import Popen, DEVNULL
+from xvfbwrapper import Xvfb
 import colorlover as cl
 import math
 import os
@@ -290,8 +291,9 @@ def save_image(figure, filepath=None):
         filepath = f'{PLOT_FILEDIR}/{ps.get(figure, "layout.title")}.png'
     filepath = util.smart_path(filepath)
     try:
-        pio.write_image(figure, filepath)
-        logger.info(f'Graph saved to {filepath}')
+        with Xvfb() as xvfb:
+            pio.write_image(figure, filepath)
+            logger.info(f'Graph saved to {filepath}')
     except Exception as e:
         logger.exception(
             'Failed to generate graph. Fix the issue and run retro-analysis to generate graphs.')
