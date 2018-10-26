@@ -59,3 +59,4 @@ dependencies:
     - ray==0.3.1
     - redis==2.10.6
     - unityagents==0.2.0
+    - xvfbwrapper==0.2.9
