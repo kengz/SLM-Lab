@@ -368,7 +368,7 @@ def plot_trial(trial_spec, info_space):
         if fig is None:
             fig = aeb_fig
         else:
-            fig.data.extend(aeb_fig.data)
+            fig.add_traces(aeb_fig.data)
     fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{info_space.get("trial")}', width=500, height=600)
     viz.plot(fig)
     return fig
