@@ -25,6 +25,8 @@ if util.is_jupyter():
     py.init_notebook_mode(connected=True)
 logger = logger.get_logger(__name__)
 
+vdisplay = Xvfb()
+vdisplay.start()
 
 def create_label(
         y_col, x_col,
@@ -291,9 +293,8 @@ def save_image(figure, filepath=None):
         filepath = f'{PLOT_FILEDIR}/{ps.get(figure, "layout.title")}.png'
     filepath = util.smart_path(filepath)
     try:
-        with Xvfb() as xvfb:
-            pio.write_image(figure, filepath)
-            logger.info(f'Graph saved to {filepath}')
+        pio.write_image(figure, filepath)
+        logger.info(f'Graph saved to {filepath}')
     except Exception as e:
         logger.exception(
             'Failed to generate graph. Fix the issue and run retro-analysis to generate graphs.')
