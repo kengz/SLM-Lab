@@ -179,7 +179,7 @@ def random(state, algorithm, body):
     if body.action_type == 'discrete':
         action_pd = distributions.Categorical(logits=torch.ones(body.action_space.high, device=algorithm.net.device))
     if body.action_type == 'continuous':
-        # TODO: should this have a 'device' set?
+        # Possibly this should this have a 'device' set
         action_pd = distributions.Uniform(low=torch.tensor(body.action_space.low).float(),
                                           high=torch.tensor(body.action_space.high).float())
     elif body.action_type == 'multi_discrete':

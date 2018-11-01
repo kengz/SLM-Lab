@@ -11,13 +11,14 @@ class VizDoomEnv(Env):
     Wrapper for vizdoom to use as an OpenAI gym environment.
     """
     metadata = {'render.modes': ['human', 'rgb_array']}
+
     def __init__(self, cfg_name, repeat=1):
         super(VizDoomEnv, self).__init__()
         self.game = DoomGame()
         self.game.load_config('./slm_lab/env/vizdoom/cfgs/' + cfg_name + '.cfg')
         self._viewer = None
         self.repeat = 1
-        # TODO: update action to handle (continuous) DELTA buttons using gym's Box space
+        # In future, need to update action to handle (continuous) DELTA buttons using gym's Box space
         self.action_space = spaces.MultiDiscrete([2] * self.game.get_available_buttons_size())
         self.action_space.dtype = 'uint8'
         output_shape = (self.game.get_screen_height(), self.game.get_screen_width(), self.game.get_screen_channels())
@@ -68,10 +69,9 @@ class VizDoomEnv(Env):
         elif mode is 'human':
             if self._viewer is None:
                 self._viewer = rendering.SimpleImageViewer()
-            self._viewer.imshow(img.transpose(1,2,0))
+            self._viewer.imshow(img.transpose(1, 2, 0))
 
     def _get_game_variables(self, state_variables):
-        # TODO: this isn't going to work
         info = {}
         if state_variables is not None:
             info['KILLCOUNT'] = state_variables[0]

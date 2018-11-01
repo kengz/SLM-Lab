@@ -5,6 +5,7 @@ from gym.envs.registration import register
 Register additional environments for OpenAI gym.
 """
 
+
 def register_env(spec):
     env_name = spec['env'][0]['name']
 
