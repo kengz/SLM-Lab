@@ -176,10 +176,21 @@ def default(state, algorithm, body):
 def random(state, algorithm, body):
     '''Random action sampling that returns the same data format as default(), but without forward pass. Uses gym.space.sample()'''
     state = try_preprocess(state, algorithm, body, append=True)  # for consistency with init_action_pd inner logic
-    if body.is_discrete:
+    if body.action_type == 'discrete':
         action_pd = distributions.Categorical(logits=torch.ones(body.action_space.high, device=algorithm.net.device))
+    if body.action_type == 'continuous':
+        # TODO: should this have a 'device' set?
+        action_pd = distributions.Uniform(low=torch.tensor(body.action_space.low).float(),
+                                          high=torch.tensor(body.action_space.high).float())
+    elif body.action_type == 'multi_discrete':
+        action_pd = distributions.Categorical(
+            logits=torch.ones(body.action_space.high.size, body.action_space.high[0], device=algorithm.net.device))
+    elif body.action_type == 'multi_continuous':
+        raise NotImplementedError
+    elif body.action_type == 'multi_binary':
+        raise NotImplementedError
     else:
-        action_pd = distributions.Uniform(low=torch.tensor(body.action_space.low).float(), high=torch.tensor(body.action_space.high).float())
+        raise NotImplementedError
     sample = body.action_space.sample()
     action = torch.tensor(sample, device=algorithm.net.device)
     return action, action_pd
@@ -413,7 +424,7 @@ def update_online_stats(body, state):
     elif getattr(body.memory, 'raw_state_dim', False):
         assert state.size == body.memory.raw_state_dim
     else:
-        assert state.size == body.state_dim
+        assert state.size == body.state_dim or state.shape == body.state_dim
     mean = body.state_mean
     body.state_n += 1
     if np.isnan(mean).any():
@@ -445,6 +456,10 @@ def normalize_state(body, state):
         # never normalize atari, it has its own normalization step
         logger.debug('skipping normalizing for Atari, already handled by preprocess')
         return state
+    elif ("Replay" in body.memory.__class__.__name__) and has_preprocess:
+        # normalization handled by preprocess_state function in the memory
+        logger.debug('skipping normalizing, already handled by preprocess')
+        return state
     elif same_shape:
         # if not atari, always normalize the state the first time we see it during act
         # if the shape is not transformed in some way
@@ -452,10 +467,6 @@ def normalize_state(body, state):
             return np.clip(state - body.state_mean, -10, 10)
         else:
             return np.clip((state - body.state_mean) / body.state_std_dev, -10, 10)
-    elif ("Replay" in body.memory.__class__.__name__) and has_preprocess:
-        # normalization handled by preprocess_state function in the memory
-        logger.debug('skipping normalizing, already handled by preprocess')
-        return state
     else:
         # broadcastable sample from an un-normalized memory so we should normalize
         logger.debug('normalizing sample from memory')
