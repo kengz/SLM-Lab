@@ -64,6 +64,7 @@ class MLPNet(Net, nn.Module):
         super(MLPNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
+            init_fxn='xavier_uniform_',
             clip_grad=False,
             clip_grad_val=1.0,
             loss_spec={'name': 'MSELoss'},
@@ -78,6 +79,7 @@ class MLPNet(Net, nn.Module):
             'separate',
             'hid_layers',
             'hid_layers_activation',
+            'init_fxn',
             'clip_grad',
             'clip_grad_val',
             'loss_spec',
@@ -100,7 +102,7 @@ class MLPNet(Net, nn.Module):
         else:  # if more than 1 output, add last layer as tails separate from main model
             self.model_tails = nn.ModuleList([nn.Linear(dims[-1], out_d) for out_d in self.out_dim])
 
-        net_util.init_layers(self.modules())
+        net_util.init_layers(self, self.init_fxn)
         for module in self.modules():
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
