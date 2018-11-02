@@ -85,16 +85,6 @@ def get_out_dim(body, add_critic=False):
     return out_dim
 
 
-def init_gru_layer(layer):
-    '''Initializes a GRU layer in with xavier_uniform initialization and 0 biases'''
-    for layer_p in layer._all_weights:
-        for p in layer_p:
-            if 'weight' in p:
-                torch.nn.init.xavier_uniform_(layer.__getattr__(p))
-            elif 'bias' in p:
-                torch.nn.init.constant_(layer.__getattr__(p), 0.0)
-
-
 def init_layers(net, init_fxn):
     if init_fxn == 'xavier_uniform_':
         try:
@@ -131,7 +121,6 @@ def init_parameters(module, init_fxn):
     elif 'Linear' in classname or ('Conv' in classname and 'Net' not in classname):
         init_fxn(module.weight)
         torch.nn.init.constant_(module.bias, bias_init)
-
 
 
 # lr decay methods
