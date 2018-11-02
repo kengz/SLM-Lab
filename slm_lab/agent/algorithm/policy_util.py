@@ -178,7 +178,7 @@ def random(state, algorithm, body):
     state = try_preprocess(state, algorithm, body, append=True)  # for consistency with init_action_pd inner logic
     if body.action_type == 'discrete':
         action_pd = distributions.Categorical(logits=torch.ones(body.action_space.high, device=algorithm.net.device))
-    if body.action_type == 'continuous':
+    elif body.action_type == 'continuous':
         # Possibly this should this have a 'device' set
         action_pd = distributions.Uniform(low=torch.tensor(body.action_space.low).float(),
                                           high=torch.tensor(body.action_space.high).float())
