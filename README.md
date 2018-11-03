@@ -214,18 +214,6 @@ Deep Reinforcement Learning is highly empirical. The lab enables rapid and massi
 
 >Useful reference: [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html)
 
-### Setup
-
-A config file `config/default.json` will be created at installation.
-
-```json
-{
-  "data_sync_dir": "~/Dropbox/SLM-Lab/data"
-}
-```
-
-- If you run the lab on a remote server and want to sync the `data/` folder for easy access, update `"data_sync_dir"`. When running a job, use a new terminal session to run `yarn watch` for auto-copy .
-
 ### Update
 
 To update SLM Lab, pull the latest git commits and run update:
