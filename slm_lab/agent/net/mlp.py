@@ -15,6 +15,32 @@ class MLPNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized feedforward neural network
     If more than 1 output tensors, will create a self.model_tails instead of making last layer part of self.model
+
+    e.g. net_spec
+    "net": {
+        "type": "MLPNet",
+        "shared": true,
+        "hid_layers": [32],
+        "hid_layers_activation": "relu",
+        "init_fxn": "xavier_uniform_",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 500,
+        "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 1000000,
+        "update_type": "replace",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
+        "gpu": true
+    }
     '''
 
     def __init__(self, net_spec, in_dim, out_dim):
@@ -22,6 +48,7 @@ class MLPNet(Net, nn.Module):
         net_spec:
         hid_layers: list containing dimensions of the hidden layers
         hid_layers_activation: activation function for the hidden layers
+        init_fxn: weight initialization function
         clip_grad: whether to clip the gradient
         clip_grad_val: the clip value
         loss_spec: measure of error between model predictions and correct outputs
@@ -34,31 +61,6 @@ class MLPNet(Net, nn.Module):
         update_frequency: how many total timesteps per update
         polyak_coef: ratio of polyak weight update
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
-
-        e.g. net_spec
-        "net": {
-            "type": "MLPNet",
-            "shared": true,
-            "hid_layers": [32],
-            "hid_layers_activation": "relu",
-            "clip_grad": false,
-            "clip_grad_val": 1.0,
-            "loss_spec": {
-              "name": "MSELoss"
-            },
-            "optim_spec": {
-              "name": "Adam",
-              "lr": 0.02
-            },
-            "lr_decay": "rate_decay",
-            "lr_decay_frequency": 500,
-            "lr_decay_min_timestep": 1000,
-            "lr_anneal_timestep": 1000000,
-            "update_type": "replace",
-            "update_frequency": 1,
-            "polyak_coef": 0.9,
-            "gpu": true
-        }
         '''
         nn.Module.__init__(self)
         super(MLPNet, self).__init__(net_spec, in_dim, out_dim)
@@ -187,6 +189,7 @@ class HydraMLPNet(Net, nn.Module):
             [] # tail, no hidden layers
         ],
         "hid_layers_activation": "relu",
+        "init_fxn": "xavier_uniform_",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -235,6 +238,7 @@ class HydraMLPNet(Net, nn.Module):
         super(HydraMLPNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
+            init_fxn='xavier_uniform_',
             clip_grad=False,
             clip_grad_val=1.0,
             loss_spec={'name': 'MSELoss'},
@@ -248,6 +252,7 @@ class HydraMLPNet(Net, nn.Module):
         util.set_attr(self, self.net_spec, [
             'hid_layers',
             'hid_layers_activation',
+            'init_fxn',
             'clip_grad',
             'clip_grad_val',
             'loss_spec',
@@ -278,7 +283,7 @@ class HydraMLPNet(Net, nn.Module):
         self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
         self.model_tails = self.build_model_tails(out_dim)
 
-        net_util.init_layers(self.modules())
+        net_util.init_layers(self, self.init_fxn)
         for module in self.modules():
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
@@ -386,6 +391,7 @@ class DuelingMLPNet(MLPNet):
         "type": "DuelingMLPNet",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
+        "init_fxn": "xavier_uniform_",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -411,6 +417,7 @@ class DuelingMLPNet(MLPNet):
         Net.__init__(self, net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
+            init_fxn='xavier_uniform_',
             clip_grad=False,
             clip_grad_val=1.0,
             loss_spec={'name': 'MSELoss'},
@@ -424,6 +431,7 @@ class DuelingMLPNet(MLPNet):
         util.set_attr(self, self.net_spec, [
             'hid_layers',
             'hid_layers_activation',
+            'init_fxn',
             'clip_grad',
             'clip_grad_val',
             'loss_spec',
@@ -445,7 +453,7 @@ class DuelingMLPNet(MLPNet):
         # output layers
         self.v = nn.Linear(dims[-1], 1)  # state value
         self.adv = nn.Linear(dims[-1], out_dim)  # action dependent raw advantage
-        net_util.init_layers(self.modules())
+        net_util.init_layers(self, self.init_fxn)
         for module in self.modules():
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
