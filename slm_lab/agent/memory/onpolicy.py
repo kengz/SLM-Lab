@@ -351,10 +351,10 @@ class OnPolicyAtariReplay(OnPolicyReplay):
 
 
 class OnPolicyImageReplay(OnPolicyReplay):
-    """
+    '''
     An on policy replay buffer that normalizes (preprocesses) images through
     division by 256 and subtraction of 0.5.
-    """
+    '''
 
     def __init__(self, memory_spec, body):
         super(OnPolicyImageReplay, self).__init__(memory_spec, body)

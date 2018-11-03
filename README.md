@@ -134,12 +134,14 @@ Note that some particular types of algorithm/network need particular types of Me
 
 For on-policy algorithms (policy gradient):
 - OnPolicyReplay
+- OnPolicyImageReplay (credit to joelouismarino)
 - OnPolicySeqReplay
 - OnPolicyBatchReplay
 - OnPolicyBatchSeqReplay
 
 For off-policy algorithms (value-based)
 - Replay
+- ImageReplay
 - SeqReplay
 - SILReplay (special Replay for SIL)
 - SILSeqReplay (special SeqReplay for SIL)
