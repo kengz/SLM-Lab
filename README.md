@@ -55,8 +55,11 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 - simple and easy to use for building new algorithms
 
 #### Environments
-- works with [OpenAI gym](https://github.com/openai/gym), [Unity environments](https://github.com/Unity-Technologies/ml-agents), and more soon
-- comes with pre-built Unity binaries
+- supports multiple environments:
+    - [OpenAI gym](https://github.com/openai/gym)
+    - [VizDoom](https://github.com/mwydmuch/ViZDoom#documentation) (credit: joelouismarino)
+    - [Unity environments](https://github.com/Unity-Technologies/ml-agents) with prebuilt binaries
+    - *contributions welcome!*
 - supports multi-agents, multi-environments
 - API for adding custom environments
 
@@ -80,7 +83,7 @@ SLM Lab implements most of the recent canonical algorithms and various extension
     - `UnityEnv` for [Unity ML-Agents](https://github.com/Unity-Technologies/ml-agents)
 
 
-#### Algorithm<a name="link-algos"></a>
+### Algorithm<a name="link-algos"></a>
 
 code: [slm_lab/agent/algorithm](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/algorithm)
 
@@ -124,7 +127,7 @@ As mentioned above, **all these algorithms can be turned into distributed algori
 
 Below are the modular building blocks for the algorithms. They are designed to be general, and are reused extensively.
 
-#### Memory
+### Memory
 
 code: [slm_lab/agent/memory](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/memory)
 
@@ -134,12 +137,14 @@ Note that some particular types of algorithm/network need particular types of Me
 
 For on-policy algorithms (policy gradient):
 - OnPolicyReplay
+- OnPolicyImageReplay (credit: joelouismarino)
 - OnPolicySeqReplay
 - OnPolicyBatchReplay
 - OnPolicyBatchSeqReplay
 
 For off-policy algorithms (value-based)
 - Replay
+- ImageReplay
 - SeqReplay
 - SILReplay (special Replay for SIL)
 - SILSeqReplay (special SeqReplay for SIL)
@@ -148,7 +153,7 @@ For off-policy algorithms (value-based)
 - PrioritizedReplay
 - AtariPrioritizedReplay
 
-#### Neural Network
+### Neural Network
 
 code: [slm_lab/agent/net](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/net)
 
@@ -164,7 +169,7 @@ These networks are usable for Q-learning algorithms. For more details see [this 
 - DuelingMLPNet
 - DuelingConvNet
 
-#### Policy
+### Policy
 
 code: [slm_lab/agent/algorithm/policy_util.py](https://github.com/kengz/SLM-Lab/blob/master/slm_lab/agent/algorithm/policy_util.py)
 

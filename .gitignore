@@ -26,6 +26,9 @@ node_modules/
 # Gym
 gym/
 
+# VizDoom
+*.ini
+
 # System
 .DS_Store
 
@@ -44,3 +47,6 @@ nb.py
 *.xls
 *.xlsx
 *checkpoint*
+
+# IDEs
+.idea/
