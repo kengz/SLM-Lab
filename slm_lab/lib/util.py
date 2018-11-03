@@ -462,7 +462,6 @@ def read(data_path, **kwargs):
     - {.json} to dict, list
     - {.yml} to dict
     - {*} to str
-    - TODO {db-query} to dict, DataFrame
     @param {str} data_path The data path to read from
     @returns {data} The read data in sensible format
     @example
@@ -680,25 +679,6 @@ def to_tuple_list(l):
     return [tuple(row) for row in l]
 
 
-def track_mem(obj):
-    '''Debug method to track memory footprint of object and its attributes'''
-    global MEMTRACKER
-    if not isinstance(MEMTRACKER, dict):
-        MEMTRACKER = {}
-    obj_name = get_class_name(obj)
-    for k in dir(obj):
-        if not k.startswith('_'):
-            hash_k = f'{obj_name}.{k}'
-            size = sizeof(getattr(obj, k))
-            if hash_k not in MEMTRACKER:
-                MEMTRACKER[hash_k] = size
-            else:
-                diff = size - MEMTRACKER[hash_k]
-                MEMTRACKER[hash_k] = size
-                if (diff > 1e-4) or (size > 1.0):
-                    print(f'{hash_k} diff: {diff:.6f}, size: {size:.6f}')
-
-
 def try_set_cuda_id(spec, info_space):
     '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
     # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
@@ -727,7 +707,6 @@ def write(data, data_path):
     - {.json} from dict, list
     - {.yml} from dict
     - {*} from str(*)
-    - TODO {db-query} from dict, DataFrame
     @param {*} data The data to write
     @param {str} data_path The data path to write to
     @returns {data_path} The data path written to
