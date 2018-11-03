@@ -33,7 +33,7 @@ class ConvNet(Net, nn.Module):
           [512]
         ],
         "hid_layers_activation": "relu",
-        "init_fxn": "xavier_uniform_",
+        "init_fn": "xavier_uniform_",
         "batch_norm": false,
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -70,7 +70,7 @@ class ConvNet(Net, nn.Module):
 
             2. flat_hid: list of dense layers following the convolutional layers
         hid_layers_activation: activation function for the hidden layers
-        init_fxn: weight initialization function
+        init_fn: weight initialization function
         batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
         clip_grad: whether to clip the gradient
         clip_grad_val: the clip value
@@ -93,7 +93,7 @@ class ConvNet(Net, nn.Module):
         super(ConvNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fxn='xavier_uniform_',
+            init_fn='xavier_uniform_',
             batch_norm=True,
             clip_grad=False,
             clip_grad_val=1.0,
@@ -108,7 +108,7 @@ class ConvNet(Net, nn.Module):
         util.set_attr(self, self.net_spec, [
             'hid_layers',
             'hid_layers_activation',
-            'init_fxn',
+            'init_fn',
             'batch_norm',
             'clip_grad',
             'clip_grad_val',
@@ -134,7 +134,7 @@ class ConvNet(Net, nn.Module):
         tail_in_dim = self.dense_hid_layers[-1] if len(self.dense_hid_layers) > 0 else self.conv_out_dim
         self.model_tails = nn.ModuleList([nn.Linear(tail_in_dim, out_d) for out_d in self.out_dim])
 
-        net_util.init_layers(self, self.init_fxn)
+        net_util.init_layers(self, self.init_fn)
         for module in self.modules():
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
@@ -267,7 +267,7 @@ class DuelingConvNet(ConvNet):
           [512]
         ],
         "hid_layers_activation": "relu",
-        "init_fxn": "xavier_uniform_",
+        "init_fn": "xavier_uniform_",
         "batch_norm": false,
         "clip_grad": false,
         "clip_grad_val": 1.0,
@@ -304,7 +304,7 @@ class DuelingConvNet(ConvNet):
 
             2. flat_hid: list of dense layers following the convolutional layers
         hid_layers_activation: activation function for the hidden layers
-        init_fxn: weight initialization function
+        init_fn: weight initialization function
         batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
         clip_grad: whether to clip the gradient
         clip_grad_val: the clip value
@@ -327,7 +327,7 @@ class DuelingConvNet(ConvNet):
         Net.__init__(self, net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fxn='xavier_uniform_',
+            init_fn='xavier_uniform_',
             batch_norm=True,
             clip_grad=False,
             clip_grad_val=1.0,
@@ -342,7 +342,7 @@ class DuelingConvNet(ConvNet):
         util.set_attr(self, self.net_spec, [
             'hid_layers',
             'hid_layers_activation',
-            'init_fxn',
+            'init_fn',
             'batch_norm',
             'clip_grad',
             'clip_grad_val',
@@ -373,7 +373,7 @@ class DuelingConvNet(ConvNet):
         self.v = nn.Linear(tail_in_dim, 1)  # state value
         self.adv = nn.Linear(tail_in_dim, out_dim[0])  # action dependent raw advantage
 
-        net_util.init_layers(self, self.init_fxn)
+        net_util.init_layers(self, self.init_fn)
         for module in self.modules():
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)

@@ -1,5 +1,4 @@
 from functools import partial
-
 from slm_lab import ROOT_DIR
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.lib import logger, util
@@ -85,41 +84,41 @@ def get_out_dim(body, add_critic=False):
     return out_dim
 
 
-def init_layers(net, init_fxn):
-    if init_fxn == 'xavier_uniform_':
+def init_layers(net, init_fn):
+    if init_fn == 'xavier_uniform_':
         try:
             gain = torch.nn.init.calculate_gain(net.hid_layers_activation)
         except ValueError:
             gain = 1
-        init_fxn = partial(torch.nn.init.xavier_uniform_, gain=gain)
-    elif 'kaiming' in init_fxn:
+        init_fn = partial(torch.nn.init.xavier_uniform_, gain=gain)
+    elif 'kaiming' in init_fn:
         assert net.hid_layers_activation in ['relu', 'leaky_relu'], f'Kaiming initialization not supported for {net.hid_layers_activation}'
-        init_fxn = torch.nn.init.__dict__[init_fxn]
-        init_fxn = partial(init_fxn, nonlinearity=net.hid_layers_activation)
+        init_fn = torch.nn.init.__dict__[init_fn]
+        init_fn = partial(init_fn, nonlinearity=net.hid_layers_activation)
     else:
-        init_fxn = torch.nn.init.__dict__[init_fxn]
-    net.apply(partial(init_parameters, init_fxn=init_fxn))
+        init_fn = torch.nn.init.__dict__[init_fn]
+    net.apply(partial(init_parameters, init_fn=init_fn))
 
 
-def init_parameters(module, init_fxn):
+def init_parameters(module, init_fn):
     '''
-    Initializes module's weights using init_fxn, which is the name of function from from torch.nn.init
+    Initializes module's weights using init_fn, which is the name of function from from torch.nn.init
     Initializes module's biases to either 0.01 or 0.0, depending on module
     The only exception is BatchNorm layers, for which we use uniform initialization
     '''
     bias_init = 0.01
     classname = module.__class__.__name__
     if 'BatchNorm' in classname:
-        init_fxn(module.weight)
+        init_fn(module.weight)
         torch.nn.init.constant_(module.bias, bias_init)
     elif 'GRU' in classname:
         for name, param in module.named_parameters():
             if 'weight' in name:
-                init_fxn(param)
+                init_fn(param)
             elif 'bias' in name:
                 torch.nn.init.constant_(param, 0.0)
     elif 'Linear' in classname or ('Conv' in classname and 'Net' not in classname):
-        init_fxn(module.weight)
+        init_fn(module.weight)
         torch.nn.init.constant_(module.bias, bias_init)
 
 

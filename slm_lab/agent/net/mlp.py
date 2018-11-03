@@ -22,7 +22,7 @@ class MLPNet(Net, nn.Module):
         "shared": true,
         "hid_layers": [32],
         "hid_layers_activation": "relu",
-        "init_fxn": "xavier_uniform_",
+        "init_fn": "xavier_uniform_",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -48,7 +48,7 @@ class MLPNet(Net, nn.Module):
         net_spec:
         hid_layers: list containing dimensions of the hidden layers
         hid_layers_activation: activation function for the hidden layers
-        init_fxn: weight initialization function
+        init_fn: weight initialization function
         clip_grad: whether to clip the gradient
         clip_grad_val: the clip value
         loss_spec: measure of error between model predictions and correct outputs
@@ -66,7 +66,7 @@ class MLPNet(Net, nn.Module):
         super(MLPNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fxn='xavier_uniform_',
+            init_fn='xavier_uniform_',
             clip_grad=False,
             clip_grad_val=1.0,
             loss_spec={'name': 'MSELoss'},
@@ -81,7 +81,7 @@ class MLPNet(Net, nn.Module):
             'separate',
             'hid_layers',
             'hid_layers_activation',
-            'init_fxn',
+            'init_fn',
             'clip_grad',
             'clip_grad_val',
             'loss_spec',
@@ -104,7 +104,7 @@ class MLPNet(Net, nn.Module):
         else:  # if more than 1 output, add last layer as tails separate from main model
             self.model_tails = nn.ModuleList([nn.Linear(dims[-1], out_d) for out_d in self.out_dim])
 
-        net_util.init_layers(self, self.init_fxn)
+        net_util.init_layers(self, self.init_fn)
         for module in self.modules():
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
@@ -189,7 +189,7 @@ class HydraMLPNet(Net, nn.Module):
             [] # tail, no hidden layers
         ],
         "hid_layers_activation": "relu",
-        "init_fxn": "xavier_uniform_",
+        "init_fn": "xavier_uniform_",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -238,7 +238,7 @@ class HydraMLPNet(Net, nn.Module):
         super(HydraMLPNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fxn='xavier_uniform_',
+            init_fn='xavier_uniform_',
             clip_grad=False,
             clip_grad_val=1.0,
             loss_spec={'name': 'MSELoss'},
@@ -252,7 +252,7 @@ class HydraMLPNet(Net, nn.Module):
         util.set_attr(self, self.net_spec, [
             'hid_layers',
             'hid_layers_activation',
-            'init_fxn',
+            'init_fn',
             'clip_grad',
             'clip_grad_val',
             'loss_spec',
@@ -283,7 +283,7 @@ class HydraMLPNet(Net, nn.Module):
         self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
         self.model_tails = self.build_model_tails(out_dim)
 
-        net_util.init_layers(self, self.init_fxn)
+        net_util.init_layers(self, self.init_fn)
         for module in self.modules():
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
@@ -391,7 +391,7 @@ class DuelingMLPNet(MLPNet):
         "type": "DuelingMLPNet",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
-        "init_fxn": "xavier_uniform_",
+        "init_fn": "xavier_uniform_",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -417,7 +417,7 @@ class DuelingMLPNet(MLPNet):
         Net.__init__(self, net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fxn='xavier_uniform_',
+            init_fn='xavier_uniform_',
             clip_grad=False,
             clip_grad_val=1.0,
             loss_spec={'name': 'MSELoss'},
@@ -431,7 +431,7 @@ class DuelingMLPNet(MLPNet):
         util.set_attr(self, self.net_spec, [
             'hid_layers',
             'hid_layers_activation',
-            'init_fxn',
+            'init_fn',
             'clip_grad',
             'clip_grad_val',
             'loss_spec',
@@ -453,7 +453,7 @@ class DuelingMLPNet(MLPNet):
         # output layers
         self.v = nn.Linear(dims[-1], 1)  # state value
         self.adv = nn.Linear(dims[-1], out_dim)  # action dependent raw advantage
-        net_util.init_layers(self, self.init_fxn)
+        net_util.init_layers(self, self.init_fn)
         for module in self.modules():
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)

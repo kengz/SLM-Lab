@@ -28,7 +28,7 @@ class RecurrentNet(Net, nn.Module):
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "init_fxn": "xavier_uniform_",
+        "init_fn": "xavier_uniform_",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -57,7 +57,7 @@ class RecurrentNet(Net, nn.Module):
         rnn_hidden_size: rnn hidden_size
         rnn_num_layers: number of recurrent layers
         seq_len: length of the history of being passed to the net
-        init_fxn: weight initialization function
+        init_fn: weight initialization function
         clip_grad: whether to clip the gradient
         clip_grad_val: the clip value
         loss_spec: measure of error between model predictions and correct outputs
@@ -77,7 +77,7 @@ class RecurrentNet(Net, nn.Module):
         super(RecurrentNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fxn='xavier_uniform_',
+            init_fn='xavier_uniform_',
             rnn_num_layers=1,
             clip_grad=False,
             clip_grad_val=1.0,
@@ -95,7 +95,7 @@ class RecurrentNet(Net, nn.Module):
             'rnn_hidden_size',
             'rnn_num_layers',
             'seq_len',
-            'init_fxn',
+            'init_fn',
             'clip_grad',
             'clip_grad_val',
             'loss_spec',
@@ -124,7 +124,7 @@ class RecurrentNet(Net, nn.Module):
         # tails
         self.model_tails = nn.ModuleList([nn.Linear(self.rnn_hidden_size, out_d) for out_d in self.out_dim])
 
-        net_util.init_layers(self, self.init_fxn)
+        net_util.init_layers(self, self.init_fn)
         for module in self.modules():
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
