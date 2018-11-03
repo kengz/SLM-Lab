@@ -1,3 +1,4 @@
+from functools import partial
 from slm_lab import ROOT_DIR
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.lib import logger, util
@@ -83,34 +84,42 @@ def get_out_dim(body, add_critic=False):
     return out_dim
 
 
-def init_gru_layer(layer):
-    '''Initializes a GRU layer in with xavier_uniform initialization and 0 biases'''
-    for layer_p in layer._all_weights:
-        for p in layer_p:
-            if 'weight' in p:
-                torch.nn.init.xavier_uniform_(layer.__getattr__(p))
-            elif 'bias' in p:
-                torch.nn.init.constant_(layer.__getattr__(p), 0.0)
+def init_layers(net, init_fn):
+    if init_fn == 'xavier_uniform_':
+        try:
+            gain = torch.nn.init.calculate_gain(net.hid_layers_activation)
+        except ValueError:
+            gain = 1
+        init_fn = partial(torch.nn.init.xavier_uniform_, gain=gain)
+    elif 'kaiming' in init_fn:
+        assert net.hid_layers_activation in ['relu', 'leaky_relu'], f'Kaiming initialization not supported for {net.hid_layers_activation}'
+        init_fn = torch.nn.init.__dict__[init_fn]
+        init_fn = partial(init_fn, nonlinearity=net.hid_layers_activation)
+    else:
+        init_fn = torch.nn.init.__dict__[init_fn]
+    net.apply(partial(init_parameters, init_fn=init_fn))
 
 
-def init_layers(layers):
+def init_parameters(module, init_fn):
     '''
-    Initializes all of the layers of type 'Linear', 'Conv', or 'GRU', using xavier uniform initialization for the weights and 0.01 for the biases, 0.0 for the biases of the GRU.
-    Initializes all layers of type 'BatchNorm' using uniform initialization for the weights and the same as above for the biases
+    Initializes module's weights using init_fn, which is the name of function from from torch.nn.init
+    Initializes module's biases to either 0.01 or 0.0, depending on module
+    The only exception is BatchNorm layers, for which we use uniform initialization
     '''
     bias_init = 0.01
-    for layer in layers:
-        classname = layer.__class__.__name__
-        if 'BatchNorm' in classname:
-            torch.nn.init.uniform_(layer.weight.data)
-            torch.nn.init.constant_(layer.bias.data, bias_init)
-        elif 'GRU' in classname:
-            init_gru_layer(layer)
-        elif 'Linear' in classname:
-            torch.nn.init.xavier_uniform_(layer.weight.data)
-            torch.nn.init.constant_(layer.bias.data, bias_init)
-        else:
-            pass
+    classname = module.__class__.__name__
+    if 'BatchNorm' in classname:
+        init_fn(module.weight)
+        torch.nn.init.constant_(module.bias, bias_init)
+    elif 'GRU' in classname:
+        for name, param in module.named_parameters():
+            if 'weight' in name:
+                init_fn(param)
+            elif 'bias' in name:
+                torch.nn.init.constant_(param, 0.0)
+    elif 'Linear' in classname or ('Conv' in classname and 'Net' not in classname):
+        init_fn(module.weight)
+        torch.nn.init.constant_(module.bias, bias_init)
 
 
 # lr decay methods
