@@ -452,11 +452,11 @@ def normalize_state(body, state):
     '''
     same_shape = False if type(state) == list else state.shape == body.state_mean.shape
     has_preprocess = getattr(body.memory, 'preprocess_state', False)
-    if ("Atari" in body.memory.__class__.__name__):
+    if ('Atari' in body.memory.__class__.__name__):
         # never normalize atari, it has its own normalization step
         logger.debug('skipping normalizing for Atari, already handled by preprocess')
         return state
-    elif ("Replay" in body.memory.__class__.__name__) and has_preprocess:
+    elif ('Replay' in body.memory.__class__.__name__) and has_preprocess:
         # normalization handled by preprocess_state function in the memory
         logger.debug('skipping normalizing, already handled by preprocess')
         return state

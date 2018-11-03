@@ -1,9 +1,9 @@
 import gym
 from gym.envs.registration import register
 
-"""
+'''
 Register additional environments for OpenAI gym.
-"""
+'''
 
 
 def register_env(spec):
