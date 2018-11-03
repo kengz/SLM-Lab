@@ -7,9 +7,9 @@ from vizdoom import DoomGame
 
 
 class VizDoomEnv(Env):
-    """
+    '''
     Wrapper for vizdoom to use as an OpenAI gym environment.
-    """
+    '''
     metadata = {'render.modes': ['human', 'rgb_array']}
 
     def __init__(self, cfg_name, repeat=1):
@@ -18,7 +18,7 @@ class VizDoomEnv(Env):
         self.game.load_config('./slm_lab/env/vizdoom/cfgs/' + cfg_name + '.cfg')
         self._viewer = None
         self.repeat = 1
-        # In future, need to update action to handle (continuous) DELTA buttons using gym's Box space
+        # TODO In future, need to update action to handle (continuous) DELTA buttons using gym's Box space
         self.action_space = spaces.MultiDiscrete([2] * self.game.get_available_buttons_size())
         self.action_space.dtype = 'uint8'
         output_shape = (self.game.get_screen_height(), self.game.get_screen_width(), self.game.get_screen_channels())
