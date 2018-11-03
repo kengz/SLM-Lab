@@ -1,6 +1,7 @@
 from slm_lab.env.base import BaseEnv, ENV_DATA_NAMES
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
+from slm_lab.env.registration import register_env
 import gym
 import numpy as np
 
@@ -21,6 +22,7 @@ class OpenAIEnv(BaseEnv):
 
     def __init__(self, spec, e=None, env_space=None):
         super(OpenAIEnv, self).__init__(spec, e, env_space)
+        register_env(spec)  # register any additional environments first
         self.u_env = gym.make(self.name)
         self._set_attr_from_u_env(self.u_env)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
@@ -50,7 +52,9 @@ class OpenAIEnv(BaseEnv):
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
-        self.done = done = done or self.clock.get('t') > self.max_timestep
+        if self.max_timestep is not None:
+            done = done or self.clock.get('t') > self.max_timestep
+        self.done = done
         logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
         return reward, state, done
 
