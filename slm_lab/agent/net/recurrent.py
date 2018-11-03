@@ -28,6 +28,7 @@ class RecurrentNet(Net, nn.Module):
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
+        "init_fxn": "xavier_uniform_",
         "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -56,6 +57,7 @@ class RecurrentNet(Net, nn.Module):
         rnn_hidden_size: rnn hidden_size
         rnn_num_layers: number of recurrent layers
         seq_len: length of the history of being passed to the net
+        init_fxn: weight initialization function
         clip_grad: whether to clip the gradient
         clip_grad_val: the clip value
         loss_spec: measure of error between model predictions and correct outputs
