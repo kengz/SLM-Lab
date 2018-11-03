@@ -62,8 +62,6 @@ RUN . /opt/conda/etc/profile.d/conda.sh && \
 # copy file at last to not trigger changes above unnecessarily
 COPY . .
 
-RUN ./bin/copy_config
-
 RUN . /opt/conda/etc/profile.d/conda.sh && \
     find . -name "__pycache__" -print0 | xargs -0 rm -rf && \
     find . -name "*.pyc" -print0 | xargs -0 rm -rf && \

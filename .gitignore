@@ -36,7 +36,6 @@ gym/
 *.app
 
 # Data files
-config/
 data/
 model/
 nb.py
