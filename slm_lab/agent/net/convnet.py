@@ -91,6 +91,7 @@ class ConvNet(Net, nn.Module):
         super(ConvNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
+            init_fxn='xavier_uniform_',
             batch_norm=True,
             clip_grad=False,
             clip_grad_val=1.0,
@@ -106,6 +107,7 @@ class ConvNet(Net, nn.Module):
             'hid_layers',
             'hid_layers_activation',
             'batch_norm',
+            'init_fxn',
             'clip_grad',
             'clip_grad_val',
             'loss_spec',
@@ -130,7 +132,7 @@ class ConvNet(Net, nn.Module):
         tail_in_dim = self.dense_hid_layers[-1] if len(self.dense_hid_layers) > 0 else self.conv_out_dim
         self.model_tails = nn.ModuleList([nn.Linear(tail_in_dim, out_d) for out_d in self.out_dim])
 
-        net_util.init_layers(self.modules())
+        net_util.init_layers(self, self.init_fxn)
         for module in self.modules():
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)

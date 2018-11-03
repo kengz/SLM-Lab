@@ -75,6 +75,7 @@ class RecurrentNet(Net, nn.Module):
         super(RecurrentNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
+            init_fxn='xavier_uniform_',
             rnn_num_layers=1,
             clip_grad=False,
             clip_grad_val=1.0,
@@ -92,6 +93,7 @@ class RecurrentNet(Net, nn.Module):
             'rnn_hidden_size',
             'rnn_num_layers',
             'seq_len',
+            'init_fxn',
             'clip_grad',
             'clip_grad_val',
             'loss_spec',
@@ -120,7 +122,7 @@ class RecurrentNet(Net, nn.Module):
         # tails
         self.model_tails = nn.ModuleList([nn.Linear(self.rnn_hidden_size, out_d) for out_d in self.out_dim])
 
-        net_util.init_layers(self.modules())
+        net_util.init_layers(self, self.init_fxn)
         for module in self.modules():
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
