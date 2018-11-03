@@ -261,9 +261,7 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
 
     def sample(self):
         '''
-        Returns all the examples from memory in a single batch. Batch is stored as a dict.
-        Keys are the names of the different elements of an experience. Values are a list of the corresponding sampled elements.
-        states and next_states have are further nested into sequences containing the previous `seq_len` - 1 relevant states
+        Batched version of OnPolicySeqBatchReplay.sample()
         e.g.
         let s_seq_0 be [0, ..., s0] (zero-padded), s_seq_k be [s_{k-seq_len}, ..., s_k], so the states are nested for passing into RNN.
         batch = {
