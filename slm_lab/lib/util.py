@@ -10,7 +10,6 @@ import os
 import pandas as pd
 import pydash as ps
 import regex as re
-import scipy as sp
 import subprocess
 import sys
 import torch
@@ -762,33 +761,70 @@ def write_as_plain(data, data_path):
     return data_path
 
 
-def resize_image(im):
-    return sp.misc.imresize(im, (110, 84))
+# Atari image transformation
+
+def weighted_greyscale_image(im):
+    '''Greyscale image with special weights applied to RGB different colors blending together'''
+    return np.dot(im[..., :3], [0.299, 0.587, 0.114])
+
+
+def resize_image(im, w_h):
+    return cv2.resize(im, w_h, interpolation=cv2.INTER_AREA)
 
 
 def crop_image(im):
-    return im[-84:, :]
+    '''Crop away the unused top-bottom game borders of Atari'''
+    return im[-92:-8, :]
 
 
 def normalize_image(im):
     return np.divide(im, 255.0)
 
 
-def transform_image(im):
+def nature_transform_image(im):
     '''
     Image preprocessing from the paper "Playing Atari with Deep Reinforcement Learning, 2013, Mnih et al"
-    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84, taking bottomost rows of the image.
+    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84 without the game border, then normalize
     '''
     if im.ndim != 3:
         print(f'Unexpected image dimension: {im.ndim}, {im.shape}')
-    im = np.dot(im[..., :3], [0.299, 0.587, 0.114])
-    im = resize_image(im)
+    im = weighted_greyscale_image(im)
+    im = resize_image(im, (84, 110))
     im = crop_image(im)
     im = normalize_image(im)
     return im
+
+
+def openai_transform_image(im):
+    '''
+    Image transformation using OpenAI's baselines method: greyscale, resize, normalize
+    Instead of cropping as done in nature_transform_image(), this resizes and stretches the image.
+    '''
+    im = cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
+    im = resize_image(im, (84, 84))
+    im = normalize_image(im)
+    return im
+
+
+def transform_image(im, method='openai'):
+    '''Apply image transformation using nature or openai method'''
+    if method == 'nature':
+        return nature_transform_image(im)
+    elif method == 'openai':
+        return openai_transform_image(im)
+    else:
+        raise ValueError('method must be one of: nature, openai')
 
 
 def debug_image(im):
     '''Use this method to render image the agent sees; waits for a key press before continuing'''
     cv2.imshow('image', im)
     cv2.waitKey(0)
+
+
+def mpl_debug_image(im):
+    '''Uses matplotlib to plot image with bigger size, axes, and false color on greyscaled images'''
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.imshow(im)
+    plt.show()
