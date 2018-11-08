@@ -9,7 +9,7 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
         "explore_var_end": 0.01,
-        "explore_anneal_epi": 1200,
+        "explore_anneal_epi": 1000,
         "gamma": 0.99,
         "training_batch_epoch": 1,
         "training_epoch": 1,
@@ -20,9 +20,9 @@
       "memory": {
         "name": "AtariReplay",
         "batch_size": 32,
-        "max_size": 10000,
+        "max_size": 50000,
         "stack_len": 4,
-        "use_cer": true
+        "use_cer": false
       },
       "net": {
         "type": "ConvNet",
@@ -32,7 +32,7 @@
             [32, 64, [4, 4], 2, 0, [1, 1]],
             [64, 64, [3, 3], 1, 0, [1, 1]]
           ],
-          [512]
+          [256]
         ],
         "hid_layers_activation": "relu",
         "init_fn": "kaiming_uniform_",
@@ -84,7 +84,7 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
         "explore_var_end": 0.01,
-        "explore_anneal_epi": 600,
+        "explore_anneal_epi": 1000,
         "gamma": 0.99,
         "training_batch_epoch": 1,
         "training_epoch": 1,
@@ -95,7 +95,7 @@
       "memory": {
         "name": "AtariReplay",
         "batch_size": 32,
-        "max_size": 10000,
+        "max_size": 50000,
         "stack_len": 1,
         "use_cer": false
       },
@@ -107,30 +107,26 @@
             [32, 64, [4, 4], 2, 0, [1, 1]],
             [64, 64, [3, 3], 1, 0, [1, 1]]
           ],
-          [512]
+          [256]
         ],
         "hid_layers_activation": "relu",
         "init_fn": "kaiming_uniform_",
         "batch_norm": false,
         "clip_grad": true,
-        "clip_grad_val": 5.0,
+        "clip_grad_val": 10.0,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "RMSprop",
-          "lr": 0.00025,
-          "alpha": 0.99,
-          "eps": 1e-6,
-          "momentum": 0.0,
-          "centered": false
+          "name": "Adam",
+          "lr": 1e-4
         },
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 20000,
         "lr_anneal_timestep": 1000000,
         "update_type": "replace",
-        "update_frequency": 30000,
+        "update_frequency": 1000,
         "polyak_coef": 0.9,
         "gpu": true
       }
