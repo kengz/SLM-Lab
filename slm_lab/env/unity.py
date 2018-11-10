@@ -1,5 +1,6 @@
 from gym import spaces
 from slm_lab.env.base import BaseEnv, ENV_DATA_NAMES, set_gym_space_attr
+from slm_lab.env.registration import get_env_path
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from unityagents import brain, UnityEnvironment
@@ -47,7 +48,7 @@ class UnityEnv(BaseEnv):
         super(UnityEnv, self).__init__(spec, e, env_space)
         util.set_attr(self, self.env_spec, ['unity'])
         worker_id = int(f'{os.getpid()}{self.e+int(ps.unique_id())}'[-4:])
-        self.u_env = UnityEnvironment(file_name=util.get_env_path(self.name), worker_id=worker_id)
+        self.u_env = UnityEnvironment(file_name=get_env_path(self.name), worker_id=worker_id)
         self.patch_gym_spaces(self.u_env)
         self._set_attr_from_u_env(self.u_env)
         if env_space is None:  # singleton mode

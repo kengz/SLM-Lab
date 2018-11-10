@@ -16,6 +16,7 @@ import plotly.io as pio
 import pydash as ps
 import sys
 
+
 PLOT_FILEDIR = util.smart_path('data')
 os.makedirs(PLOT_FILEDIR, exist_ok=True)
 if util.is_jupyter():

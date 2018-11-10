@@ -1,7 +1,7 @@
 from slm_lab.env.base import BaseEnv, ENV_DATA_NAMES
+from slm_lab.env.registration import register_env
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
-from slm_lab.env.registration import register_env
 import gym
 import numpy as np
 

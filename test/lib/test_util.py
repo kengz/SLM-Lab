@@ -121,11 +121,6 @@ def test_gen_isnan(v, isnan):
     assert util.gen_isnan(v) == isnan
 
 
-def test_get_env_path():
-    assert 'node_modules/slm-env-3dball/build/3dball' in util.get_env_path(
-        '3dball')
-
-
 def test_get_fn_list():
     fn_list = util.get_fn_list(Agent)
     assert 'reset' in fn_list
