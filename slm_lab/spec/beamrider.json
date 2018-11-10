@@ -32,7 +32,7 @@
             [32, 64, [4, 4], 2, 0, [1, 1]],
             [64, 64, [3, 3], 1, 0, [1, 1]]
           ],
-          [512]
+          [256]
         ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
@@ -55,7 +55,7 @@
         "lr_decay_min_timestep": 20000,
         "lr_anneal_timestep": 1000000,
         "update_type": "replace",
-        "update_frequency": 10000,
+        "update_frequency": 1000,
         "polyak_coef": 0.9,
         "gpu": true
       }
