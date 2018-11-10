@@ -19,7 +19,8 @@ def guard_reward(reward):
 
 class MaxAndSkipEnv(gym.Wrapper):
     '''
-    OpenAI max-skipframe wrapper from baselines (not available from gym itsel)
+    OpenAI max-skipframe wrapper from baselines (not available from gym itself)
+    from https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
     '''
 
     def __init__(self, env, skip=4):
