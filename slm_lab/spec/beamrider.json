@@ -14,13 +14,13 @@
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_min_timestep": 10000,
+        "training_min_timestep": 30000,
         "normalize_state": true
       },
       "memory": {
         "name": "AtariReplay",
         "batch_size": 32,
-        "max_size": 100000,
+        "max_size": 250000,
         "stack_len": 4,
         "use_cer": false
       },
@@ -32,26 +32,30 @@
             [32, 64, [4, 4], 2, 0, [1, 1]],
             [64, 64, [3, 3], 1, 0, [1, 1]]
           ],
-          [256]
+          [512]
         ],
         "hid_layers_activation": "relu",
-        "init_fn": "kaiming_uniform_",
+        "init_fn": "orthogonal_",
         "batch_norm": false,
         "clip_grad": true,
         "clip_grad_val": 10.0,
         "loss_spec": {
-          "name": "SmoothL1Loss"
+          "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 1e-4
+          "name": "RMSprop",
+          "lr": 2.5e-4,
+          "alpha": 0.95,
+          "eps": 1e-1,
+          "momentum": 0.95,
+          "centered": false
         },
         "lr_decay": "no_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 20000,
         "lr_anneal_timestep": 1000000,
         "update_type": "replace",
-        "update_frequency": 1000,
+        "update_frequency": 10000,
         "polyak_coef": 0.9,
         "gpu": true
       }
