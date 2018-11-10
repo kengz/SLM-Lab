@@ -35,7 +35,7 @@
           [512]
         ],
         "hid_layers_activation": "relu",
-        "init_fn": "kaiming_uniform_",
+        "init_fn": "orthogonal_",
         "batch_norm": false,
         "clip_grad": true,
         "clip_grad_val": 10.0,
