@@ -400,25 +400,3 @@ class InfoSpace:
     def get_random_seed(self):
         '''Standard method to get random seed for a session'''
         return int(1e5 * (self.get('trial') or 0) + 1e3 * (self.get('session') or 0))
-
-
-class Monitor:
-    '''
-    Monitors agents, environments, sessions, trials, experiments, evolutions.
-    Has standardized input/output data structure, methods.
-    Persists data to DB, and to viz module for plots or Tensorboard.
-    Pipes data to Controller for evolution.
-    TODO Possibly unify this with logger module.
-    TODO shove monitor reporting into control loop
-    '''
-
-    def __init__(self):
-        logger.debug('Monitor initialized.')
-
-    def update_stage(self, axis):
-        pass
-
-    def update(self):
-        # TODO hook monitor to agent, env, then per update, auto fetches all that is in background
-        # TODO call update in session, trial, experiment loops to collect data visible there too, for unit_data
-        return

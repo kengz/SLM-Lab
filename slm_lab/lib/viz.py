@@ -8,7 +8,6 @@ from plotly import (
     tools,
 )
 from slm_lab.lib import logger, util
-from xvfbwrapper import Xvfb
 import colorlover as cl
 import math
 import os
@@ -17,16 +16,12 @@ import plotly.io as pio
 import pydash as ps
 import sys
 
+
 PLOT_FILEDIR = util.smart_path('data')
 os.makedirs(PLOT_FILEDIR, exist_ok=True)
 if util.is_jupyter():
     py.init_notebook_mode(connected=True)
 logger = logger.get_logger(__name__)
-
-# launch xvfb for Plotly if not on MacOSX
-if sys.platform != 'darwin':
-    vdisplay = Xvfb()
-    vdisplay.start()
 
 
 def create_label(

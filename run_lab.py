@@ -12,6 +12,7 @@ from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+from xvfbwrapper import Xvfb
 import sys
 import torch.multiprocessing as mp
 
@@ -89,4 +90,5 @@ def main():
 
 if __name__ == '__main__':
     mp.set_start_method('spawn')  # for distributed pytorch to work
-    main()
+    with Xvfb() as xvfb:  # safety context for headless machines
+        main()

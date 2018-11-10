@@ -20,7 +20,6 @@ NUM_CPUS = mp.cpu_count()
 DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
-RE_INDENT = re.compile('(^\n)|(?!\n)\s{2,}|(\n\s+)$')
 SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
 
 
@@ -68,11 +67,6 @@ def cast_list(val):
         return [val]
 
 
-def compact_dict(d):
-    '''Return dict without None or np.nan values'''
-    return {k: v for k, v in d.items() if not gen_isnan(v)}
-
-
 def concat_batches(batches):
     '''
     Concat batch objects from body.memory.sample() into one batch, when all bodies experience similar envs
@@ -98,11 +92,6 @@ def count_nonan(arr):
         return np.count_nonzero(~np.isnan(arr))
     except Exception:
         return len(filter_nonan(arr))
-
-
-def dedent(string):
-    '''Method to dedent the broken python multiline string'''
-    return RE_INDENT.sub('', string)
 
 
 def downcast_float32(df):
@@ -166,11 +155,6 @@ def nanflatten(arr):
     return filter_nonan(flat_arr)
 
 
-def flatten_once(arr):
-    '''Flatten np array only once instead if all the way by flatten()'''
-    return arr.reshape(-1, *arr.shape[2:])
-
-
 def gen_isnan(v):
     '''Check isnan for general type (np.isnan is only operable on np type)'''
     try:
@@ -207,14 +191,6 @@ def get_class_attr(obj):
             val = v
         attr_dict[k] = val
     return attr_dict
-
-
-def get_env_path(env_name):
-    '''Get the path to Unity env binaries distributed via npm'''
-    env_path = smart_path(f'node_modules/slm-env-{env_name}/build/{env_name}')
-    env_dir = os.path.dirname(env_path)
-    assert os.path.exists(env_dir), f'Missing {env_path}. See README to install from yarn.'
-    return env_path
 
 
 def get_file_ext(data_path):
@@ -670,11 +646,6 @@ def to_torch_batch(batch, device, is_episodic):
             batch[k] = np.array(batch[k])
         batch[k] = torch.from_numpy(batch[k].astype('float32')).to(device)
     return batch
-
-
-def to_tuple_list(l):
-    '''Returns a copy of the list with its elements as tuples'''
-    return [tuple(row) for row in l]
 
 
 def try_set_cuda_id(spec, info_space):
