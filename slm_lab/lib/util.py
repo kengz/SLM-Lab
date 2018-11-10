@@ -67,11 +67,6 @@ def cast_list(val):
         return [val]
 
 
-def compact_dict(d):
-    '''Return dict without None or np.nan values'''
-    return {k: v for k, v in d.items() if not gen_isnan(v)}
-
-
 def concat_batches(batches):
     '''
     Concat batch objects from body.memory.sample() into one batch, when all bodies experience similar envs
@@ -158,11 +153,6 @@ def nanflatten(arr):
     '''Flatten np array while ignoring nan, like np.nansum etc.'''
     flat_arr = arr.reshape(-1)
     return filter_nonan(flat_arr)
-
-
-def flatten_once(arr):
-    '''Flatten np array only once instead if all the way by flatten()'''
-    return arr.reshape(-1, *arr.shape[2:])
 
 
 def gen_isnan(v):
@@ -656,11 +646,6 @@ def to_torch_batch(batch, device, is_episodic):
             batch[k] = np.array(batch[k])
         batch[k] = torch.from_numpy(batch[k].astype('float32')).to(device)
     return batch
-
-
-def to_tuple_list(l):
-    '''Returns a copy of the list with its elements as tuples'''
-    return [tuple(row) for row in l]
 
 
 def try_set_cuda_id(spec, info_space):

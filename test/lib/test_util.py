@@ -31,15 +31,6 @@ def test_cast_list(test_list, test_str):
     assert ps.is_list(util.cast_list(test_str))
 
 
-@pytest.mark.parametrize('d,res_d', [
-    ({'a': 0, 'b': 1}, {'a': 0, 'b': 1}),
-    ({'a': None, 'b': 1}, {'b': 1}),
-    ({'a': np.nan, 'b': 1}, {'b': 1}),
-])
-def test_compact_dict(d, res_d):
-    assert util.compact_dict(d) == res_d
-
-
 @pytest.mark.parametrize('arr,arr_len', [
     ([0, 1, 2], 3),
     ([0, 1, 2, None], 3),
