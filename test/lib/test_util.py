@@ -52,11 +52,6 @@ def test_count_nonan(arr, arr_len):
     assert util.count_nonan(np.array(arr)) == arr_len
 
 
-def test_dedent(test_multiline_str):
-    dedented_string = util.dedent(test_multiline_str)
-    assert dedented_string == 'lorem ipsum dolor\nsit amet\n\nconsectetur adipiscing elit'
-
-
 @pytest.mark.parametrize('d,flat_d', [
     ({'a': 1}, {'a': 1}),
     ({'a': {'b': 1}}, {'a.b': 1}),

@@ -45,14 +45,6 @@ else:
     lab_logger.setLevel('INFO')
 
 
-class DedentFormatter(logging.Formatter):
-    '''The formatter to dedent broken python multiline string'''
-
-    def format(self, record):
-        record.msg = util.dedent(record.msg)
-        return super(DedentFormatter, self).format(record)
-
-
 def to_init(spec, info_space):
     '''
     Whether the lab's logger had been initialized:
