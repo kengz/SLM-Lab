@@ -35,12 +35,12 @@
           [512]
         ],
         "hid_layers_activation": "relu",
-        "init_fn": "orthogonal_",
+        "init_fn": "kaiming_uniform_",
         "batch_norm": false,
         "clip_grad": true,
         "clip_grad_val": 10.0,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "smooth_l1_loss"
         },
         "optim_spec": {
           "name": "RMSprop",
