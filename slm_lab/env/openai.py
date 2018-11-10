@@ -59,7 +59,7 @@ class OpenAIEnv(BaseEnv):
         register_env(spec)  # register any additional environments first
         self.u_env = gym.make(self.name)
         if spec['env'][0]['name'].endswith('NoFrameskip-v4'):
-            env = MaxAndSkipEnv(env, skip=4)  # custom for Atari
+            self.u_env = MaxAndSkipEnv(self.u_env, skip=4)  # custom for Atari
         self._set_attr_from_u_env(self.u_env)
         self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
         if env_space is None:  # singleton mode
