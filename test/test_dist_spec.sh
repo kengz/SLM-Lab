@@ -10,20 +10,20 @@ echo "Running distributed algorithm tests separately"
 # log cmd
 set -x
 
-pytest --verbose test/spec/test_dist_spec.py::test_reinforce_dist
-pytest --verbose test/spec/test_dist_spec.py::test_reinforce_dist
-pytest --verbose test/spec/test_dist_spec.py::test_reinforce_cont_dist
-pytest --verbose test/spec/test_dist_spec.py::test_a3c_gae_dist
-pytest --verbose test/spec/test_dist_spec.py::test_a3c_gae_cont_dist
-pytest --verbose test/spec/test_dist_spec.py::test_dppo_dist
-pytest --verbose test/spec/test_dist_spec.py::test_ppo_cont_dist
-pytest --verbose test/spec/test_dist_spec.py::test_ppo_sil_dist
-pytest --verbose test/spec/test_dist_spec.py::test_ppo_sil_cont_dist
-pytest --verbose test/spec/test_dist_spec.py::test_sil_dist
-pytest --verbose test/spec/test_dist_spec.py::test_sil_cont_dist
-pytest --verbose test/spec/test_dist_spec.py::test_sarsa_dist
-pytest --verbose test/spec/test_dist_spec.py::test_dqn_dist
-pytest --verbose test/spec/test_dist_spec.py::test_ddqn_dist
-pytest --verbose test/spec/test_dist_spec.py::test_dueling_dqn_dist
-pytest --verbose test/spec/test_dist_spec.py::test_multitask_dqn_dist
-pytest --verbose test/spec/test_dist_spec.py::test_multitask_dqn_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_reinforce_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_reinforce_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_reinforce_cont_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_a3c_gae_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_a3c_gae_cont_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_dppo_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_ppo_cont_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_ppo_sil_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_ppo_sil_cont_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_sil_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_sil_cont_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_sarsa_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_dqn_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_ddqn_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_dueling_dqn_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_multitask_dqn_dist
+pytest --verbose --no-flaky-report test/spec/test_dist_spec.py::test_multitask_dqn_dist
