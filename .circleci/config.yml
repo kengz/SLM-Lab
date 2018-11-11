@@ -69,7 +69,6 @@ jobs:
             ./cc-test-reporter before-build
             conda activate lab
             python setup.py test
-            pytest --verbose --no-flaky-report test/spec/test_dist_spec.py
             cat coverage.xml
             ./cc-test-reporter after-build -d -p ~/SLM-Lab --exit-code $?
       - store_test_results:
