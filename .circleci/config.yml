@@ -32,6 +32,9 @@ jobs:
           name: Install Python dependencies with Conda
           command: |
             conda env update -f environment.yml
+            pip uninstall -y tensorflow tensorboard
+            pip uninstall -y box2d-kengz
+            pip install box2d
             conda clean -y --all
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}
