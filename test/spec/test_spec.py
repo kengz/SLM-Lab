@@ -35,7 +35,7 @@ def test_reinforce(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('reinforce.json', 'reinforce_mlp_cartpole'),
@@ -55,7 +55,7 @@ def test_reinforce_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('reinforce.json', 'reinforce_mlp_pendulum'),
@@ -78,7 +78,7 @@ def test_a2c(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('a3c.json', 'a3c_gae_mlp_shared_cartpole'),
@@ -103,7 +103,7 @@ def test_a2c_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('a3c.json', 'a3c_gae_mlp_shared_pendulum'),
@@ -128,7 +128,7 @@ def test_ppo(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('dppo.json', 'dppo_mlp_shared_cartpole'),
@@ -153,7 +153,7 @@ def test_ppo_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ppo.json', 'ppo_mlp_shared_pendulum'),
@@ -176,7 +176,7 @@ def test_ppo_sil(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ppo_sil.json', 'ppo_sil_mlp_shared_cartpole'),
@@ -199,7 +199,7 @@ def test_ppo_sil_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ppo_sil.json', 'ppo_sil_mlp_shared_pendulum'),
@@ -224,7 +224,7 @@ def test_sil(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('sil.json', 'sil_mlp_shared_cartpole'),
@@ -249,7 +249,7 @@ def test_sil_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('sil.json', 'sil_mlp_shared_pendulum'),
@@ -274,7 +274,7 @@ def test_sarsa(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('sarsa.json', 'sarsa_mlp_boltzmann_cartpole'),
@@ -305,7 +305,7 @@ def test_dqn(spec_file, spec_name):
 
 
 @flaky
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('dqn.json', 'vanilla_dqn_cartpole'),
@@ -334,7 +334,7 @@ def test_ddqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ddqn.json', 'ddqn_boltzmann_cartpole'),
@@ -359,7 +359,7 @@ def test_dueling_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('dueling_dqn.json', 'dueling_dqn_boltzmann_cartpole'),
@@ -380,7 +380,7 @@ def test_multitask_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('multitask_dqn.json', 'multitask_dqn_boltzmann_cartpole'),
@@ -400,7 +400,7 @@ def test_multitask_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI process spawning clash")
+@pytest.mark.skip(reason="Pytest multiprocessing fail")
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('hydra_dqn.json', 'hydra_dqn_boltzmann_cartpole'),
