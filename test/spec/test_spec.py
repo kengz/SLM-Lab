@@ -414,9 +414,6 @@ def test_multitask_dqn_dist(spec_file, spec_name):
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('dqn.json', 'dqn_boltzmann_breakout'),
-    ('dqn.json', 'dqn_epsilon_greedy_breakout'),
-    ('ddqn.json', 'ddqn_boltzmann_breakout'),
-    ('ddqn.json', 'ddqn_epsilon_greedy_breakout'),
 ])
 def test_dqn_breakout(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
