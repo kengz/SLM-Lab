@@ -15,7 +15,7 @@ def run_trial_test(spec_file, spec_name=False, distributed=False):
     info_space = InfoSpace()
     info_space.tick('trial')
     if distributed:
-        logger.info('Pytest is now incompatible with multiprocessing. Distributed tests shall be ran from command line separately with: `pytest -q -s test/spec/test_spec.py::test_reinforce_dist`')
+        print('Pytest is now incompatible with multiprocessing. Distributed tests shall be ran from command line separately with: `pytest -q -s test/spec/test_spec.py::test_reinforce_dist`')
         return True
         # spec['meta']['distributed'] = True
         # if os.environ.get('CI') != 'true':  # CI has not enough CPU
