@@ -1,5 +1,5 @@
 {
-  "dqn_beamrider": {
+  "dqn_beamrider_nature": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -8,19 +8,19 @@
         "action_policy": "epsilon_greedy",
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
-        "explore_var_end": 0.01,
-        "explore_anneal_epi": 1000,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 2500,
         "gamma": 0.99,
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_min_timestep": 30000,
+        "training_min_timestep": 50000,
         "normalize_state": true
       },
       "memory": {
         "name": "AtariReplay",
         "batch_size": 32,
-        "max_size": 250000,
+        "max_size": 1e6,
         "stack_len": 4,
         "use_cer": false
       },
@@ -32,7 +32,7 @@
             [32, 64, [4, 4], 2, 0, [1, 1]],
             [64, 64, [3, 3], 1, 0, [1, 1]]
           ],
-          [256]
+          [512]
         ],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
@@ -51,19 +51,15 @@
           "centered": false
         },
         "lr_decay": "no_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 20000,
-        "lr_anneal_timestep": 1000000,
         "update_type": "replace",
-        "update_frequency": 1000,
-        "polyak_coef": 0.9,
+        "update_frequency": 10000,
         "gpu": true
       }
     }],
     "env": [{
       "name": "BeamRiderNoFrameskip-v4",
-      "max_timestep": null,
-      "max_episode": 20000,
+      "max_timestep": 3e6,
+      "max_episode": null,
       "save_epi_frequency": 100
     }],
     "body": {
