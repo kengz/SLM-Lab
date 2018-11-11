@@ -15,9 +15,11 @@ def run_trial_test(spec_file, spec_name=False, distributed=False):
     info_space = InfoSpace()
     info_space.tick('trial')
     if distributed:
-        spec['meta']['distributed'] = True
-        if os.environ.get('CI') != 'true':  # CI has not enough CPU
-            spec['meta']['max_session'] = 2
+        logger.info('Pytest is now incompatible with multiprocessing. Distributed tests shall be ran from command line separately with: `pytest -q -s test/spec/test_spec.py::test_reinforce_dist`')
+        return
+        # spec['meta']['distributed'] = True
+        # if os.environ.get('CI') != 'true':  # CI has not enough CPU
+        #     spec['meta']['max_session'] = 2
     trial = Trial(spec, info_space)
     trial_data = trial.run()
     assert isinstance(trial_data, pd.DataFrame)

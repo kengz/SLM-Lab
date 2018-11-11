@@ -60,6 +60,7 @@ COPY . .
 RUN . ~/miniconda3/etc/profile.d/conda.sh && \
     conda activate lab && \
     yarn test && \
+    bash test/test_dist_spec.sh && \
     yarn reset
 
 CMD ["/bin/bash"]
