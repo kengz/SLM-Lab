@@ -58,8 +58,8 @@
     }],
     "env": [{
       "name": "BeamRiderNoFrameskip-v4",
-      "max_timestep": 10000000,
-      "max_episode": null,
+      "max_timestep": null,
+      "max_episode": 5000,
       "save_epi_frequency": 100
     }],
     "body": {
