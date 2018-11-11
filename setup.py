@@ -17,6 +17,7 @@ test_args = [
     '--cov-report=xml',
     '--cov=slm_lab',
     '--ignore=test/agent/net',
+    '--ignore=test/spec/test_dist_spec.py',
     'test',
 ]
 
