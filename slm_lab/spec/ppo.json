@@ -834,5 +834,75 @@
       "max_trial": 1,
       "search": "RandomSearch"
     }
+  },
+  "ppo_conv_separate_vizdoom": {
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.99,
+        "lam": 1.0,
+        "clip_eps": 0.10,
+        "entropy_coef": 0.02,
+        "val_loss_coef": 0.1,
+        "training_frequency": 5,
+        "training_epoch": 8,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicyImageReplay"
+      },
+      "net": {
+        "type": "ConvNet",
+        "shared": false,
+        "hid_layers": [
+          [
+            [3, 16, [5, 5], 2, 0, [1, 1]],
+            [16, 32, [5, 5], 2, 0, [2, 2]],
+            [32, 32, [5, 5], 2, 0, [2, 2]]
+          ],
+          [128, 64]
+        ],
+        "hid_layers_activation": "relu",
+        "batch_norm": false,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_decay": "rate_decay",
+        "lr_decay_frequency": 500,
+        "lr_decay_min_timestep": 1000,
+        "lr_anneal_timestep": 1000000,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "vizdoom-v0",
+      "cfg_name": "take_cover",
+      "max_timestep": null,
+      "max_episode": 100
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 1,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    }
   }
 }

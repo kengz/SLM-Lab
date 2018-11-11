@@ -96,18 +96,6 @@ def test_str():
     return data
 
 
-@pytest.fixture
-def test_multiline_str():
-    data = '''
-        lorem ipsum dolor
-        sit amet
-
-        consectetur adipiscing elit
-        '''
-    assert isinstance(data, str)
-    return data
-
-
 @pytest.fixture(scope="class", params=[
     (
         MLPNet,

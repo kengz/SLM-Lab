@@ -8,14 +8,14 @@ from plotly import (
     tools,
 )
 from slm_lab.lib import logger, util
-from subprocess import Popen, DEVNULL
 import colorlover as cl
 import math
 import os
 import plotly
+import plotly.io as pio
 import pydash as ps
 import sys
-import ujson as json
+
 
 PLOT_FILEDIR = util.smart_path('data')
 os.makedirs(PLOT_FILEDIR, exist_ok=True)
@@ -56,7 +56,7 @@ def create_layout(
         yaxis=dict(rangemode='tozero', title=y_title),
         xaxis=dict(type=x_type, title=x_title),
         width=width, height=height,
-        margin=go.Margin(l=60, r=60, t=60, b=60),
+        margin=go.layout.Margin(l=60, r=60, t=60, b=60),
     )
     layout.update(layout_kwargs)
     return layout
@@ -288,18 +288,9 @@ def save_image(figure, filepath=None):
     if filepath is None:
         filepath = f'{PLOT_FILEDIR}/{ps.get(figure, "layout.title")}.png'
     filepath = util.smart_path(filepath)
-    dirname, filename = os.path.split(filepath)
     try:
-        cmd = f'orca graph -o {filename} \'{json.dumps(figure)}\''
-        if 'linux' in sys.platform:
-            cmd = 'xvfb-run -a -s "-screen 0 1400x900x24" -- ' + cmd
-        proc = Popen(cmd, cwd=dirname, shell=True, stderr=DEVNULL, stdout=DEVNULL, close_fds=True)
-        try:
-            outs, errs = proc.communicate(timeout=20)
-        except TimeoutExpired:
-            proc.kill()
-            outs, errs = proc.communicate()
-        logger.info(f'Graph saved to {dirname}/{filename}')
+        pio.write_image(figure, filepath)
+        logger.info(f'Graph saved to {filepath}')
     except Exception as e:
         logger.exception(
             'Failed to generate graph. Fix the issue and run retro-analysis to generate graphs.')

@@ -321,3 +321,17 @@ class AtariReplay(ConcatReplay):
             reward = max(-10, min(10, reward))
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
+
+
+class ImageReplay(Replay):
+    '''
+    An off policy replay buffer that normalizes (preprocesses) images through
+    division by 256 and subtraction of 0.5.
+    '''
+
+    def __init__(self, memory_spec, body):
+        super(ImageReplay, self).__init__(memory_spec, body)
+
+    def preprocess_state(self, state, append=True):
+        state = (state.astype('float32') / 256.) - 0.5
+        return state
