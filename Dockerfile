@@ -17,7 +17,7 @@ SHELL ["/bin/bash", "-c"]
 # basic system dependencies for dev, PyTorch, OpenAI gym
 RUN apt-get update && \
     apt-get install -y build-essential \
-    curl nano git libstdc++6 \
+    curl nano git wget zip libstdc++6 \
     python3-dev zlib1g-dev libjpeg-dev cmake swig python-pyglet python3-opengl libboost-all-dev libsdl2-dev libosmesa6-dev patchelf ffmpeg xvfb && \
     rm -rf /var/lib/apt/lists/*
 
