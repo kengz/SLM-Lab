@@ -74,6 +74,91 @@
       "search": "RandomSearch"
     }
   },
+  "dqn_beamrider_search": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 2500,
+        "gamma": 0.99,
+        "training_batch_epoch": 1,
+        "training_epoch": 1,
+        "training_frequency": 4,
+        "training_min_timestep": 50000,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "AtariReplay",
+        "batch_size": 32,
+        "max_size": 1000000,
+        "stack_len": 4,
+        "use_cer": false
+      },
+      "net": {
+        "type": "ConvNet",
+        "hid_layers": [
+          [
+            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [32, 64, [4, 4], 2, 0, [1, 1]],
+            [64, 64, [3, 3], 1, 0, [1, 1]]
+          ],
+          [512]
+        ],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "batch_norm": false,
+        "clip_grad": true,
+        "clip_grad_val": 10.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "RMSprop",
+          "lr": 2.5e-4,
+          "alpha": 0.95,
+          "eps": 1e-1,
+          "momentum": 0.95,
+          "centered": false
+        },
+        "lr_decay": "no_decay",
+        "update_type": "replace",
+        "update_frequency": 10000,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "BeamRiderNoFrameskip-v4",
+      "max_timestep": null,
+      "max_episode": 3000,
+      "save_epi_frequency": 100
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "graph_x": "total_t",
+      "max_session": 1,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "memory": {
+          "max_size__grid_search": [100000, 500000, 1000000]
+        },
+        "net": {
+          "update_frequency__grid_search": [1000, 5000, 10000]
+        }
+      }]
+    }
+  },
   "ddqn_beamrider": {
     "agent": [{
       "name": "DoubleDQN",
