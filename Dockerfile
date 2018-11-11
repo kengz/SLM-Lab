@@ -55,7 +55,7 @@ RUN . ~/miniconda3/etc/profile.d/conda.sh && \
     conda clean -y --all
 
 # copy file at last to not trigger changes above unnecessarily
-RUN git clone https://github.com/kengz/SLM-Lab.git .
+RUN . .
 
 RUN . ~/miniconda3/etc/profile.d/conda.sh && \
     conda activate lab && \
