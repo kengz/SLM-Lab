@@ -9,6 +9,8 @@ echo "Running distributed algorithm tests separately"
 pytest --verbose test/spec/test_spec.py::test_reinforce_dist
 pytest --verbose test/spec/test_spec.py::test_reinforce_dist
 pytest --verbose test/spec/test_spec.py::test_reinforce_cont_dist
+pytest --verbose test/spec/test_spec.py::test_a3c_gae_dist
+pytest --verbose test/spec/test_spec.py::test_a3c_gae_cont_dist
 pytest --verbose test/spec/test_spec.py::test_dppo_dist
 pytest --verbose test/spec/test_spec.py::test_ppo_cont_dist
 pytest --verbose test/spec/test_spec.py::test_ppo_sil_dist
