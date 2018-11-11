@@ -30,15 +30,16 @@ RUN curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.s
     bash Miniconda3-latest-Linux-x86_64.sh -b && \
     rm Miniconda3-latest-Linux-x86_64.sh && \
     echo '. ~/miniconda3/etc/profile.d/conda.sh' >> ~/.bashrc && \
-    source ~/.bashrc && conda --version
+    . ~/miniconda3/etc/profile.d/conda.sh && \
+    conda --version
 
 # create and set the working directory
-RUN mkdir -p /opt/SLM-Lab
+RUN mkdir -p /root/SLM-Lab
 
-WORKDIR /opt/SLM-Lab
+WORKDIR /root/SLM-Lab
 
 # install dependencies, only retrigger on dependency changes
-COPY package.json package.json
+COPY package.json yarn.lock ./
 RUN yarn install
 
 COPY environment.yml environment.yml
