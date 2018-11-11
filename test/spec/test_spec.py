@@ -139,7 +139,7 @@ def test_ppo(spec_file, spec_name):
     # ('dppo.json', 'dppo_conv_separate_breakout'),
 ])
 def test_dppo_dist(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
+    run_trial_test(spec_file, spec_name, distributed=True)
 
 
 @flaky
