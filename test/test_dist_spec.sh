@@ -6,6 +6,10 @@ set -e
 trap "exit" INT
 
 echo "Running distributed algorithm tests separately"
+
+# log cmd
+set -x
+
 pytest --verbose test/spec/test_spec.py::test_reinforce_dist
 pytest --verbose test/spec/test_spec.py::test_reinforce_dist
 pytest --verbose test/spec/test_spec.py::test_reinforce_cont_dist
