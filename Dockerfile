@@ -59,8 +59,8 @@ COPY . .
 
 RUN . ~/miniconda3/etc/profile.d/conda.sh && \
     conda activate lab && \
-    yarn test && \
-    bash test/test_dist_spec.sh && \
+    python setup.py test && \
+    pytest --verbose --no-flaky-report test/spec/test_dist_spec.py && \
     yarn reset
 
 CMD ["/bin/bash"]
