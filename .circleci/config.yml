@@ -33,6 +33,7 @@ jobs:
           name: Install Python dependencies with Conda
           command: |
             conda env update -f environment.yml
+            conda activate lab
             pip uninstall -y tensorflow tensorboard
             pip uninstall -y box2d-kengz
             pip install box2d
