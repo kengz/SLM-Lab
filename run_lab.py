@@ -90,5 +90,9 @@ def main():
 
 if __name__ == '__main__':
     mp.set_start_method('spawn')  # for distributed pytorch to work
-    with Xvfb() as xvfb:  # safety context for headless machines
+    if sys.platform == 'darwin':
+        # avoid xvfb for MacOS: https://github.com/nipy/nipype/issues/1400
         main()
+    else:
+        with Xvfb() as xvfb:  # safety context for headless machines
+            main()

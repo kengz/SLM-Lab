@@ -13,6 +13,7 @@
     "kill": "pkill -f run_lab; pkill -f graph; pkill -f slm-env; pkill -f ipykernel; pkill -f ray;",
     "update": "conda env update -f environment.yml; yarn install;",
     "export-env": "conda env export > environment.yml",
+    "build": "docker build -t kengz/slm_lab:latest -t kengz/slm_lab:v$v .",
     "test": "python3 setup.py test"
   },
   "repository": "https://github.com/kengz/SLM-Lab.git",

@@ -1,5 +1,6 @@
 # run instructions:
 # build image: docker build -t kengz/slm_lab:latest -t kengz/slm_lab:v2.0.0 .
+# or use: v=2.0.0 yarn build
 # start container: docker run --name lab -dt kengz/slm_lab
 # enter container: docker exec -it lab bash
 # remove container (forced): docker rm lab -f
@@ -52,7 +53,8 @@ RUN . ~/miniconda3/etc/profile.d/conda.sh && \
     pip uninstall -y tensorflow tensorboard && \
     pip uninstall -y box2d-kengz && \
     pip install box2d && \
-    conda clean -y --all
+    conda clean -y --all && \
+    rm -rf ~/.cache/pip
 
 # copy file at last to not trigger changes above unnecessarily
 COPY . .
