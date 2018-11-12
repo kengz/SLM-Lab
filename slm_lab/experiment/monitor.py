@@ -154,7 +154,7 @@ class Body:
             'lr': self.get_net_avg_lrs(),
             'action_ent': self.mean_entropy,
             'ent_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
-            'grad_norms': mean(self.grad_norms) if self.grad_norms else np.nan,
+            'grad_norm': mean(self.grad_norms) if self.grad_norms else np.nan,
         })
         # append efficiently to df
         self.df.loc[len(self.df)] = pd.Series(row, dtype=np.float32)
