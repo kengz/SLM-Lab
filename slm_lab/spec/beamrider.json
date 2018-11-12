@@ -38,7 +38,7 @@
         "init_fn": "orthogonal_",
         "batch_norm": false,
         "clip_grad": true,
-        "clip_grad_val": 10.0,
+        "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
