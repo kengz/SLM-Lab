@@ -18,20 +18,6 @@ else
   sudo npm install --unsafe-perm=true --allow-root -g yarn
 fi
 
-echo "--- Installing npm modules for Lab interface ---"
-if [ -d ./node_modules ]; then
-  echo "Npm modules are already installed"
-else
-  yarn install
-fi
-
-echo "--- Installing Python for Lab backend ---"
-if which python3 >/dev/null; then
-  echo "Python3 is already installed"
-else
-  sudo pacman -Sy --needed python python-numpy python-pip python-setuptools
-fi
-
 echo "--- Installing Conda ---"
 if which conda >/dev/null; then
   echo "Conda is already installed"
@@ -41,13 +27,19 @@ else
   source ~/.bashrc
 fi
 
+echo "--- Installing npm modules for Lab interface ---"
+if [ -d ./node_modules ]; then
+  echo "Npm modules are already installed"
+else
+  yarn install
+fi
+
 echo "--- Installing Conda environment ---"
 if conda env list | grep "^lab " >/dev/null; then
   echo "conda env lab is already installed"
 else
-  conda create -n lab python=3.6 ipykernel -y
+  conda create -n lab python=3.6 -y
   conda activate lab
-  python -m ipykernel install --user --name lab
 fi
 
 # remove for reset:

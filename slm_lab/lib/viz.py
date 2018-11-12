@@ -292,8 +292,8 @@ def save_image(figure, filepath=None):
         pio.write_image(figure, filepath)
         logger.info(f'Graph saved to {filepath}')
     except Exception as e:
-        logger.exception(
-            'Failed to generate graph. Fix the issue and run retro-analysis to generate graphs.')
+        logger.warn(
+            '{e}\nFailed to generate graph. Fix the issue and run retro-analysis to generate graphs.')
 
 
 def stack_cumsum(df, y_col):

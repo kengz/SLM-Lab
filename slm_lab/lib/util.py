@@ -17,7 +17,6 @@ import ujson
 import yaml
 
 NUM_CPUS = mp.cpu_count()
-DF_FILE_EXT = ['.csv', '.xlsx', '.xls']
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
@@ -194,6 +193,7 @@ def get_class_attr(obj):
 
 
 def get_file_ext(data_path):
+    '''get the `.ext` of file.ext'''
     return os.path.splitext(data_path)[-1]
 
 
@@ -432,7 +432,7 @@ def prepath_to_spec_info_space(prepath):
 def read(data_path, **kwargs):
     '''
     Universal data reading method with smart data parsing
-    - {.csv, .xlsx, .xls} to DataFrame
+    - {.csv} to DataFrame
     - {.json} to dict, list
     - {.yml} to dict
     - {*} to str
@@ -441,8 +441,6 @@ def read(data_path, **kwargs):
     @example
 
     data_df = util.read('test/fixture/lib/util/test_df.csv')
-    data_df = util.read('test/fixture/lib/util/test_df.xls')
-    data_df = util.read('test/fixture/lib/util/test_df.xlsx')
     # => <DataFrame>
 
     data_dict = util.read('test/fixture/lib/util/test_dict.json')
@@ -461,7 +459,7 @@ def read(data_path, **kwargs):
     except AssertionError:
         raise FileNotFoundError(data_path)
     ext = get_file_ext(data_path)
-    if ext in DF_FILE_EXT:
+    if ext == '.csv':
         data = read_as_df(data_path, **kwargs)
     else:
         data = read_as_plain(data_path, **kwargs)
@@ -471,10 +469,7 @@ def read(data_path, **kwargs):
 def read_as_df(data_path, **kwargs):
     '''Submethod to read data as DataFrame'''
     ext = get_file_ext(data_path)
-    if ext in ['.xlsx', '.xls']:
-        data = pd.read_excel(data_path, **kwargs)
-    else:  # .csv
-        data = pd.read_csv(data_path, **kwargs)
+    data = pd.read_csv(data_path, **kwargs)
     return data
 
 
@@ -672,7 +667,7 @@ def try_set_cuda_id(spec, info_space):
 def write(data, data_path):
     '''
     Universal data writing method with smart data parsing
-    - {.csv, .xlsx, .xls} from DataFrame
+    - {.csv} from DataFrame
     - {.json} from dict, list
     - {.yml} from dict
     - {*} from str(*)
@@ -682,8 +677,6 @@ def write(data, data_path):
     @example
 
     data_path = util.write(data_df, 'test/fixture/lib/util/test_df.csv')
-    data_path = util.write(data_df, 'test/fixture/lib/util/test_df.xls')
-    data_path = util.write(data_df, 'test/fixture/lib/util/test_df.xlsx')
 
     data_path = util.write(data_dict, 'test/fixture/lib/util/test_dict.json')
     data_path = util.write(data_dict, 'test/fixture/lib/util/test_dict.yml')
@@ -696,7 +689,7 @@ def write(data, data_path):
     data_dir = os.path.dirname(data_path)
     os.makedirs(data_dir, exist_ok=True)
     ext = get_file_ext(data_path)
-    if ext in DF_FILE_EXT:
+    if ext == '.csv':
         write_as_df(data, data_path)
     else:
         write_as_plain(data, data_path)
@@ -707,13 +700,7 @@ def write_as_df(data, data_path):
     '''Submethod to write data as DataFrame'''
     df = cast_df(data)
     ext = get_file_ext(data_path)
-    if ext in ['.xlsx', 'xls']:
-        writer = pd.ExcelWriter(data_path)
-        df.to_excel(writer)
-        writer.save()
-        writer.close()
-    else:  # .csv
-        df.to_csv(data_path)
+    df.to_csv(data_path)
     return data_path
 
 
