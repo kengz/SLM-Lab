@@ -1,49 +1,5 @@
 version: 2
 jobs:
-  build:
-    environment:
-      CC_TEST_REPORTER_ID: ff1651bfca53185e6d295b5989f89074b87fd7d68c6d1f938f19ea9186572a81
-
-    working_directory: ~/SLM-Lab
-
-    docker:
-      - image: kengz/slm_lab:latest
-
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "yarn.lock" }}
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "environment.yml" }}
-
-      - run:
-          name: Install NodeJS dependencies
-          command: |
-            yarn install
-      - save_cache:
-          paths:
-            - node_modules
-            - ~/.cache/yarn
-          key: v1-dependencies-{{ checksum "yarn.lock" }}
-
-      - run: echo '. ~/miniconda3/etc/profile.d/conda.sh' >> $BASH_ENV
-      - run:
-          name: Install Python dependencies with Conda
-          command: |
-            conda env update -f environment.yml
-            conda activate lab
-            pip uninstall -y tensorflow tensorboard
-            pip uninstall -y box2d-kengz
-            pip install box2d
-            conda clean -y --all
-      - save_cache:
-          key: v1-dependencies-{{ checksum "environment.yml" }}
-          paths:
-            - ~/miniconda3
-            - ~/.cache/pip
-
   test:
     environment:
       PY_ENV: test
@@ -55,15 +11,17 @@ jobs:
       - image: kengz/slm_lab:latest
 
     steps:
-      - checkout
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "yarn.lock" }}
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "environment.yml" }}
+      - run:
+          name: Install NodeJS dependencies
+          command: |
+            yarn install
 
       - run: echo '. ~/miniconda3/etc/profile.d/conda.sh' >> $BASH_ENV
+      - run:
+          name: Install Python dependencies with Conda
+          command: |
+            conda env update -f environment.yml
+
       - run:
           name: Run Python tests
           command: |
@@ -79,9 +37,6 @@ jobs:
 
 workflows:
   version: 2
-  build-test:
+  test:
     jobs:
-      - build
-      - test:
-          requires:
-            - build
+      - test
