@@ -274,9 +274,10 @@ def calc_trial_fitness_df(trial):
     return trial_fitness_df
 
 
-def is_unfit(fitness_df):
+def is_unfit(fitness_df, session):
     '''Check if a fitness_df is unfit. Used to determine of trial should stop running more sessions'''
-    # TODO improve to make it work with any reward mean
+    if FITNESS_STD.get(session.spec['env'][0]['name']) is None:
+        return False  # fitness not known
     mean_fitness_df = calc_mean_fitness(fitness_df)
     return mean_fitness_df['strength'].iloc[0] < NOISE_WINDOW
 
@@ -324,7 +325,6 @@ def gather_aeb_rewards_df(aeb, session_datas):
 
 def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
     '''Build the aeb_reward envelope figure'''
-    # TODO need enable total_t for trial graph, and line up signals at the common total_t
     mean_sr = aeb_rewards_df.mean(axis=1)
     std_sr = aeb_rewards_df.std(axis=1).fillna(0)
     max_sr = mean_sr + std_sr
@@ -432,6 +432,10 @@ def save_trial_data(spec, info_space, trial_fitness_df, trial_fig):
     logger.info(f'Saving trial data to {prepath}')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
+    if util.get_lab_mode() == 'train':
+        predir = util.prepath_to_predir(prepath)
+        shutil.make_archive(predir, 'zip', predir)
+        logger.info(f'All trial data zipped to {predir}.zip')
 
 
 def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
