@@ -101,8 +101,9 @@ class Body:
         self.entropies = []  # check exploration
         self.log_probs = []  # calculate loss
 
-        # store grad_norms each training step for debugging
+        # store grad_norms and mean entropy of action dist each training step for debugging
         self.grad_norms = []
+        self.mean_entropy = np.nan
 
         # stores running mean and std dev of states
         self.state_mean = np.nan
@@ -136,19 +137,22 @@ class Body:
         if hasattr(self, 'aeb_space'):
             self.space_fix_stats()
         self.grad_norms = []
-        logger.info('Resetting grad norms')
 
     def epi_update(self):
         '''Update to append data at the end of an episode (when env.done is true)'''
         assert self.env.done
         clock = self.env.clock
         row = {k: self.env.clock.get(k) for k in ['epi', 't']}
+        # logger.info(f'Grad norms at epi_update: {self.grad_norms}')
+        # logger.info(f'Mean norms at epi_update: {mean(self.grad_norms)}')
+        # logger.info(f'Entropies epi_update: {self.entropies}')
+        # logger.info(f'Latest entropies epi_update: {self.mean_entropy}')
         row.update({
             'reward': self.memory.total_reward,
             'loss': self.last_loss,
             'explore_var': self.explore_var,
             'lr': self.get_net_avg_lrs(),
-            'action_ent': mean(self.entropies),
+            'action_ent': self.mean_entropy,
             'ent_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
             'grad_norms': mean(self.grad_norms) if self.grad_norms else np.nan,
         })

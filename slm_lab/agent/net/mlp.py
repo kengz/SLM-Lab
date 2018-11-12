@@ -184,7 +184,6 @@ class MLPNet(Net, nn.Module):
         for p_name, param in self.named_parameters():
             norms.append(param.grad.norm().item())
         self.grad_norms = norms
-        logger.info(f'grad_norms: {self.grad_norms}')
 
 
 class HydraMLPNet(Net, nn.Module):
