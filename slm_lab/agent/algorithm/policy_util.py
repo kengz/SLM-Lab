@@ -362,6 +362,23 @@ def periodic_decay(algorithm, body):
     '''Apply _periodic_decay to explore_var'''
     return fn_decay_explore_var(algorithm, body, _periodic_decay)
 
+# entropy coefficient decay methods
+# currently only linear decay supported
+
+
+def entropy_linear_decay(algorithm, body):
+    '''Apply a function to decay entropy_coef'''
+    epi = body.env.clock.get('epi')
+    # Offset the start of the decay
+    if epi < algorithm.entropy_anneal_start_epi:
+        return body.entropy_coef
+    else:
+        epi_offset = epi - algorithm.entropy_anneal_start_epi
+        body.entropy_coef = _linear_decay(algorithm.entropy_coef_start,
+                                          algorithm.entropy_coef_end,
+                                          algorithm.entropy_anneal_epi,
+                                          epi_offset)
+        return body.entropy_coef
 
 # misc calc methods
 
