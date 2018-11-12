@@ -53,7 +53,8 @@ RUN . ~/miniconda3/etc/profile.d/conda.sh && \
     pip uninstall -y tensorflow tensorboard && \
     pip uninstall -y box2d-kengz && \
     pip install box2d && \
-    conda clean -y --all
+    conda clean -y --all && \
+    rm -rf ~/.cache/pip
 
 # copy file at last to not trigger changes above unnecessarily
 COPY . .
