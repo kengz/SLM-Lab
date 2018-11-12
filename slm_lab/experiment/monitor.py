@@ -25,6 +25,7 @@ from slm_lab.agent.algorithm import policy_util
 from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+from statistics import mean
 import numpy as np
 import pandas as pd
 import pydash as ps
@@ -93,11 +94,15 @@ class Body:
         self.last_loss = np.nan  # the last non-nan loss, for printing
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
-        self.df = pd.DataFrame(columns=['epi', 't', 'reward', 'loss', 'explore_var'])
+        self.df = pd.DataFrame(columns=['epi', 't', 'reward', 'loss', 'explore_var',
+                                        'lr', 'action_ent', 'ent_coef', 'grad_norm'])
 
         # diagnostics variables/stats from action_policy prob. dist.
         self.entropies = []  # check exploration
         self.log_probs = []  # calculate loss
+
+        # store grad_norms each training step for debugging
+        self.grad_norms = []
 
         # stores running mean and std dev of states
         self.state_mean = np.nan
@@ -130,6 +135,8 @@ class Body:
         assert t == 0, f'aeb: {self.aeb}, t: {t}'
         if hasattr(self, 'aeb_space'):
             self.space_fix_stats()
+        self.grad_norms = []
+        logger.info('Resetting grad norms')
 
     def epi_update(self):
         '''Update to append data at the end of an episode (when env.done is true)'''
@@ -140,6 +147,10 @@ class Body:
             'reward': self.memory.total_reward,
             'loss': self.last_loss,
             'explore_var': self.explore_var,
+            'lr': self.get_net_avg_lrs(),
+            'action_ent': mean(self.entropies),
+            'ent_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
+            'grad_norms': mean(self.grad_norms) if self.grad_norms else np.nan,
         })
         # append efficiently to df
         self.df.loc[len(self.df)] = pd.Series(row, dtype=np.float32)
@@ -147,6 +158,15 @@ class Body:
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
+
+    def get_net_avg_lrs(self):
+        '''Gets the average current learning rate of the algorithm's nets.'''
+        lrs = []
+        for net_name in self.agent.algorithm.net_names:
+            net = getattr(self.agent.algorithm, net_name)
+            lr = net.optim_spec['lr']
+            lrs.append(lr)
+        return mean(lrs)
 
     def get_log_prefix(self):
         '''Get the prefix for logging'''
