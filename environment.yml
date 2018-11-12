@@ -37,7 +37,6 @@ dependencies:
   - scipy=1.0.0=py36_blas_openblas_201
   - setuptools=38.4.0=py36_0
   - six=1.11.0=py36_1
-  - torchvision=0.2.1
   - ujson=1.35=py36_0
   - urllib3=1.22=py36_0
   - wheel=0.30.0=py36_2
