@@ -45,8 +45,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency":300
+      "max_episode": 200,
+      "save_epi_frequency": 300
     }],
     "body": {
       "product": "outer",
