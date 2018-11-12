@@ -89,7 +89,7 @@
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_min_timestep": 50000,
+        "training_min_timestep": 25000,
         "normalize_state": true
       },
       "memory": {
@@ -118,12 +118,16 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 1e-4,
+          "name": "RMSprop",
+          "lr": 2.5e-4,
+          "alpha": 0.95,
+          "eps": 1e-1,
+          "momentum": 0.95,
+          "centered": false
         },
         "lr_decay": "no_decay",
         "update_type": "replace",
-        "update_frequency": 5000,
+        "update_frequency": 2000,
         "gpu": true
       }
     }],
