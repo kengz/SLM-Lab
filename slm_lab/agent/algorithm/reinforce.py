@@ -179,10 +179,10 @@ class Reinforce(Algorithm):
             grad_norms.extend(net.grad_norms)
         if grad_norms:
             self.body.grad_norms.append(mean(grad_norms))
-            logger.info('Body grad_norms: {self.body.grad_norms}')
+            logger.info(f'Body grad_norms: {self.body.grad_norms}')
         explore_var = self.action_policy_update(self, self.body)
         if hasattr(self, 'entropy_anneal_epi'):
             self.body.entropy_coef = self.entropy_decay_fn(self, self.body)
             if self.body.env.clock.get('t') == 1:
-                logger.info(f'entropy coefficient decayed to {self.body.entropy_coef}')
+                logger.debug(f'entropy coefficient decayed to {self.body.entropy_coef}')
         return explore_var
