@@ -276,7 +276,7 @@ def calc_trial_fitness_df(trial):
 
 def is_unfit(fitness_df, session):
     '''Check if a fitness_df is unfit. Used to determine of trial should stop running more sessions'''
-    if FITNESS_STD.get(session.env.name) is None:
+    if FITNESS_STD.get(session.spec['env'][0]['name']) is None:
         return False  # fitness not known
     mean_fitness_df = calc_mean_fitness(fitness_df)
     return mean_fitness_df['strength'].iloc[0] < NOISE_WINDOW
