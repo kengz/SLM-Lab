@@ -1,44 +1,34 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.egg*
-*.manifest
-.cache
-build/
-dist/
-src/
-htmlcov/
-coverage.xml
-.coverage*
-.env
-.venv
-venv/
-ml-agents/
+# System
+**/.DS_Store
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# IDEs
+**/.idea
+
+# Python
+**/__pycache__
+**/*.py[cod]
+**/*$py.class
+**/*.egg*
+**/*.manifest
+**/.pytest*
+**/.cache
+**/dist/
+**/src
+**/htmlcov
+**/coverage.xml
+**/.coverage*
+**/.env
 
 # NodeJS
-node_modules/
+**/node_modules
 
-# Gym
-gym/
-
-# System
-.DS_Store
-
-# Unity environment
-*.app
+# VizDoom
+**/*.ini
 
 # Data files
-data/
-model/
-nb.py
-*.html
-*.log
-*.meta
-*.tfl*
-*.xls
-*.xlsx
-*checkpoint*
+**/data
+**/model
+**/nb.py
+**/*.html
+**/*.log
+**/*.meta
