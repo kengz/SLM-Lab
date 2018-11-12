@@ -74,6 +74,77 @@
       "search": "RandomSearch"
     }
   },
+  "dqn_beamrider_light": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 2500,
+        "gamma": 0.99,
+        "training_batch_epoch": 1,
+        "training_epoch": 1,
+        "training_frequency": 4,
+        "training_min_timestep": 50000,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "AtariReplay",
+        "batch_size": 32,
+        "max_size": 250000,
+        "stack_len": 4,
+        "use_cer": false
+      },
+      "net": {
+        "type": "ConvNet",
+        "hid_layers": [
+          [
+            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [32, 64, [4, 4], 2, 0, [1, 1]],
+            [64, 64, [3, 3], 1, 0, [1, 1]]
+          ],
+          [256]
+        ],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "batch_norm": false,
+        "clip_grad": true,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 1e-4,
+        },
+        "lr_decay": "no_decay",
+        "update_type": "replace",
+        "update_frequency": 5000,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "BeamRiderNoFrameskip-v4",
+      "max_timestep": null,
+      "max_episode": 5000,
+      "save_epi_frequency": 100
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "graph_x": "total_t",
+      "max_session": 1,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    }
+  },
   "dqn_beamrider_search": {
     "agent": [{
       "name": "DQN",
