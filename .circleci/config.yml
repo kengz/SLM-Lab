@@ -22,7 +22,7 @@ jobs:
           command: |
             conda env update -f environment.yml
             conda activate lab
-            pip uninstall -y box2d-kengz
+            pip uninstall -y box2d-kengz box2d
             pip install box2d
 
       - run:
