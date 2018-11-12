@@ -13,9 +13,9 @@
         "gamma": 0.99,
         "add_entropy": true,
         "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_end": 0.0001,
+        "entropy_anneal_epi": 100,
+        "entropy_anneal_start_epi": 25,
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -36,9 +36,9 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
+        "lr_decay_frequency": 400,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_anneal_timestep": 20000,
         "gpu": false
       }
     }],
@@ -893,9 +893,9 @@
         "lam": 0.97,
         "clip_eps": 0.10,
         "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_end": 0.0001,
+        "entropy_anneal_epi": 100,
+        "entropy_anneal_start_epi": 25,
         "val_loss_coef": 0.1,
         "training_frequency": 8,
         "training_epoch": 8,
@@ -922,8 +922,8 @@
         },
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 400,
-        "lr_decay_min_timestep": 1400,
-        "lr_anneal_timestep": 10000,
+        "lr_decay_min_timestep": 5000,
+        "lr_anneal_timestep": 20000,
         "gpu": false
       }
     }],
