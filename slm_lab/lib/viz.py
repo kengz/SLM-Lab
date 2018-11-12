@@ -9,7 +9,6 @@ from plotly import (
 )
 from slm_lab.lib import logger, util
 import colorlover as cl
-import math
 import os
 import plotly
 import plotly.io as pio
@@ -67,79 +66,8 @@ def get_palette(aeb_count):
     if aeb_count <= 8:
         palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
     else:
-        palette = interp(cl.scales['8']['qual']['Set2'], aeb_count)
+        palette = cl.interp(cl.scales['8']['qual']['Set2'], aeb_count)
     return palette
-
-
-def interp(scl, r):
-    '''
-    Replacement for colorlover.interp
-    Interpolate a color scale "scl" to a new one with length "r"
-    Fun usage in IPython notebook:
-    HTML( to_html( to_hsl( interp( cl.scales['11']['qual']['Paired'], 5000 ) ) ) )
-    '''
-    c = []
-    SCL_FI = len(scl) - 1  # final index of color scale
-    # garyfeng:
-    # the following line is buggy.
-    # r = [x * 0.1 for x in range(r)] if isinstance( r, int ) else r
-    r = [x * 1.0 * SCL_FI / r for x in range(r)] if isinstance(r, int) else r
-    # end garyfeng
-
-    scl = cl.to_numeric(scl)
-
-    def interp3(fraction, start, end):
-        '''Interpolate between values of 2, 3-member tuples'''
-        def intp(f, s, e):
-            return s + (e - s) * f
-        return tuple([intp(fraction, start[i], end[i]) for i in range(3)])
-
-    def rgb_to_hsl(rgb):
-        '''
-        Adapted from M Bostock's RGB to HSL converter in d3.js
-        https://github.com/mbostock/d3/blob/master/src/color/rgb.js
-        '''
-        r, g, b = float(rgb[0]) / 255.0,\
-            float(rgb[1]) / 255.0,\
-            float(rgb[2]) / 255.0
-        mx = max(r, g, b)
-        mn = min(r, g, b)
-        h = s = l = (mx + mn) / 2
-        if mx == mn:  # achromatic
-            h = 0
-            s = 0 if l > 0 and l < 1 else h
-        else:
-            d = mx - mn
-            s = d / (mx + mn) if l < 0.5 else d / (2 - mx - mn)
-            if mx == r:
-                h = (g - b) / d + (6 if g < b else 0)
-            elif mx == g:
-                h = (b - r) / d + 2
-            else:
-                h = r - g / d + 4
-
-        return (int(round(h * 60, 4)), int(round(s * 100, 4)), int(round(l * 100, 4)))
-
-    for i in r:
-        # garyfeng: c_i could be rounded up so scl[c_i+1] will go off range
-        # c_i = int(i*math.floor(SCL_FI)/round(r[-1])) # start color index
-        # c_i = int(math.floor(i*math.floor(SCL_FI)/round(r[-1]))) # start color index
-        # c_i = if c_i < len(scl)-1 else hsl_o
-
-        c_i = int(math.floor(i))
-        section_min = math.floor(i)
-        section_max = math.ceil(i)
-        fraction = (i - section_min)  # /(section_max-section_min)
-
-        hsl_o = rgb_to_hsl(scl[c_i])  # convert rgb to hls
-        hsl_f = rgb_to_hsl(scl[c_i + 1])
-        # section_min = c_i*r[-1]/SCL_FI
-        # section_max = (c_i+1)*(r[-1]/SCL_FI)
-        # fraction = (i-section_min)/(section_max-section_min)
-        hsl = interp3(fraction, hsl_o, hsl_f)
-        c.append('hsl' + str(hsl))
-
-    return cl.to_hsl(c)
 
 
 def lower_opacity(rgb, opacity):
