@@ -7,7 +7,7 @@ jobs:
     working_directory: ~/SLM-Lab
 
     docker:
-      - image: circleci/node:9
+      - image: kengz/slm_lab:latest
 
     steps:
       - checkout
@@ -19,21 +19,8 @@ jobs:
           - v1-dependencies-{{ checksum "environment.yml" }}
 
       - run:
-          name: Install apt-get packages for lab
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y python-numpy python-dev cmake libhdf5-dev libopenblas-dev zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
-          environment:
-            LD_PRELOAD: /usr/lib/libtcmalloc_minimal.so.4
-
-      - run:
           name: Install NodeJS dependencies
           command: |
-            if which yarn >/dev/null; then
-              echo "Yarn is already installed"
-            else
-              sudo npm install --unsafe-perm=true --allow-root -g yarn
-            fi
             yarn install
       - save_cache:
           paths:
@@ -43,29 +30,14 @@ jobs:
 
       - run: echo '. ~/miniconda3/etc/profile.d/conda.sh' >> $BASH_ENV
       - run:
-          name: Install Conda
-          command: |
-            if which conda >/dev/null; then
-              echo "Conda is already installed"
-            else
-              curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-              bash Miniconda3-latest-Linux-x86_64.sh -b -u
-            fi
-
-      - run:
           name: Install Python dependencies with Conda
           command: |
-            if conda env list | grep "^lab " >/dev/null; then
-              echo "conda env lab is already installed"
-            else
-              conda create -n lab python=3.6 ipykernel -y
-              conda activate lab
-              python -m ipykernel install --user --name lab
-            fi
-            conda activate lab
             conda env update -f environment.yml
+            conda activate lab
             pip uninstall -y tensorflow tensorboard
-            conda clean --all -y
+            pip uninstall -y box2d-kengz
+            pip install box2d
+            conda clean -y --all
       - save_cache:
           key: v1-dependencies-{{ checksum "environment.yml" }}
           paths:
@@ -80,7 +52,7 @@ jobs:
     working_directory: ~/SLM-Lab
 
     docker:
-      - image: circleci/node:8
+      - image: kengz/slm_lab:latest
 
     steps:
       - checkout
@@ -91,18 +63,10 @@ jobs:
           keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
 
-      - run:
-          name: Install apt-get packages for lab
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y python-numpy python-dev cmake libhdf5-dev libopenblas-dev zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig build-essential libstdc++6
       - run: echo '. ~/miniconda3/etc/profile.d/conda.sh' >> $BASH_ENV
       - run:
           name: Run Python tests
           command: |
-            # hack to fix https://github.com/tensorflow/tensorflow/issues/6968
-            sudo apt-get install libtcmalloc-minimal4
-            export LD_PRELOAD="/usr/lib/libtcmalloc_minimal.so.4"
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
             ./cc-test-reporter before-build

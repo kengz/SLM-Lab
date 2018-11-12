@@ -38,13 +38,6 @@ else
   yarn install
 fi
 
-echo "--- Installing Python for Lab backend ---"
-if which python3 >/dev/null; then
-  echo "Python3 is already installed"
-else
-  brew install python3
-fi
-
 echo "--- Installing Conda ---"
 if which conda >/dev/null; then
   echo "Conda is already installed"
