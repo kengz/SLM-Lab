@@ -28,6 +28,7 @@ jobs:
             - ~/.cache/yarn
           key: v1-dependencies-{{ checksum "yarn.lock" }}
 
+      - run: echo '. ~/miniconda3/etc/profile.d/conda.sh' >> $BASH_ENV
       - run:
           name: Install Python dependencies with Conda
           command: |
@@ -61,6 +62,7 @@ jobs:
           keys:
           - v1-dependencies-{{ checksum "environment.yml" }}
 
+      - run: echo '. ~/miniconda3/etc/profile.d/conda.sh' >> $BASH_ENV
       - run:
           name: Run Python tests
           command: |
