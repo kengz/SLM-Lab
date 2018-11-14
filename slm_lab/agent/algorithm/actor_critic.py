@@ -293,6 +293,8 @@ class ActorCritic(Reinforce):
         if self.add_entropy:
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.body.entropy_coef * entropies)
+            # Store mean entropy for debug logging
+            self.body.mean_entropy = torch.mean(torch.tensor(self.body.entropies)).item()
         policy_loss = torch.mean(policy_loss)
         logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
