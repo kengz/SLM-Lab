@@ -197,7 +197,7 @@ class Trial:
                 session = self.SessionClass(deepcopy(self.spec), deepcopy(self.info_space))
                 session_data = session.run()
                 session_datas.append(session_data)
-                if analysis.is_unfit(session_data):
+                if analysis.is_unfit(session_data, session):
                     break
         return session_datas
 
