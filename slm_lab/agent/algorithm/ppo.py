@@ -156,6 +156,7 @@ class PPO(ActorCritic):
         '''
         if self.to_train == 1:
             # update old net
+            torch.cuda.empty_cache()
             net_util.copy(self.net, self.old_net)
             batch = self.sample()
             total_loss = torch.tensor(0.0, device=self.net.device)
@@ -184,6 +185,7 @@ class PPO(ActorCritic):
         Trains the network when the actor and critic share parameters
         '''
         if self.to_train == 1:
+            torch.cuda.empty_cache()
             net_util.copy(self.net, self.old_net)
             batch = self.sample()
             policy_loss = self.train_actor(batch)
