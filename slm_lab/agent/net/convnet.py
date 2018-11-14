@@ -233,6 +233,7 @@ class ConvNet(Net, nn.Module):
         return self(x)
 
     def update_lr(self, clock):
+        return
         assert 'lr' in self.optim_spec
         old_lr = self.optim_spec['lr']
         new_lr = self.lr_decay(self, clock)
