@@ -143,10 +143,6 @@ class Body:
         assert self.env.done
         clock = self.env.clock
         row = {k: self.env.clock.get(k) for k in ['epi', 't']}
-        # logger.info(f'Grad norms at epi_update: {self.grad_norms}')
-        # logger.info(f'Mean norms at epi_update: {mean(self.grad_norms)}')
-        # logger.info(f'Entropies epi_update: {self.entropies}')
-        # logger.info(f'Latest entropies epi_update: {self.mean_entropy}')
         row.update({
             'reward': self.memory.total_reward,
             'loss': self.last_loss,
