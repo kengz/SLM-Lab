@@ -367,5 +367,5 @@ class ActorCritic(Reinforce):
         if hasattr(self, 'entropy_anneal_epi'):
             self.body.entropy_coef = self.entropy_decay_fn(self, self.body)
             if self.body.env.clock.get('t') == 1:
-                logger.info(f'entropy coefficient decayed to {self.body.entropy_coef}')
+                logger.debug(f'entropy coefficient decayed to {self.body.entropy_coef}')
         return explore_var
