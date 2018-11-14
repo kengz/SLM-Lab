@@ -110,6 +110,8 @@ class MLPNet(Net, nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)
+        # store grad norms for debugging
+        self.grad_norms = []
 
     def __str__(self):
         return super(MLPNet, self).__str__() + f'\noptim: {self.optim}'
@@ -151,6 +153,7 @@ class MLPNet(Net, nn.Module):
             net_util.push_global_grad(self, global_net)
             self.optim.step()
             net_util.pull_global_param(self, global_net)
+        self.store_grad_norms()
         if net_util.to_assert_trained():
             model = getattr(self, 'model', None) or getattr(self, 'model_body')
             assert_trained(model, loss)
@@ -174,6 +177,13 @@ class MLPNet(Net, nn.Module):
         self.optim_spec['lr'] = new_lr
         logger.debug(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)
+
+    def store_grad_norms(self):
+        '''Stores the gradient norms for debugging.'''
+        norms = []
+        for p_name, param in self.named_parameters():
+            norms.append(param.grad.norm().item())
+        self.grad_norms = norms
 
 
 class HydraMLPNet(Net, nn.Module):
@@ -289,6 +299,8 @@ class HydraMLPNet(Net, nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)
+        # store grad norms for debugging
+        self.grad_norms = []
 
     def __str__(self):
         return super(HydraMLPNet, self).__str__() + f'\noptim: {self.optim}'
@@ -357,6 +369,7 @@ class HydraMLPNet(Net, nn.Module):
             net_util.push_global_grad(self, global_net)
             self.optim.step()
             net_util.pull_global_param(self, global_net)
+        self.store_grad_norms()
         if net_util.to_assert_trained():
             assert_trained(self.model_body, loss)
         logger.debug(f'Net training_step loss: {loss}')
@@ -379,6 +392,13 @@ class HydraMLPNet(Net, nn.Module):
         self.optim_spec['lr'] = new_lr
         logger.debug(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)
+
+    def store_grad_norms(self):
+        '''Stores the gradient norms for debugging.'''
+        norms = []
+        for p_name, param in self.named_parameters():
+            norms.append(param.grad.norm().item())
+        self.grad_norms = norms
 
 
 class DuelingMLPNet(MLPNet):
@@ -459,6 +479,8 @@ class DuelingMLPNet(MLPNet):
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)
+        # store grad norms for debugging
+        self.grad_norms = []
 
     def forward(self, x):
         '''The feedforward step'''

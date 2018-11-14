@@ -45,8 +45,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency":300
+      "max_episode": 200,
+      "save_epi_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -262,8 +262,8 @@
         "add_entropy": true,
         "entropy_coef_start": 0.01,
         "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_anneal_epi": 100,
+        "entropy_anneal_start_epi": 25,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,

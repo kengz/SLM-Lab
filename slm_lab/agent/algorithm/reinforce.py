@@ -164,6 +164,8 @@ class Reinforce(Algorithm):
         if self.add_entropy:
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.body.entropy_coef * entropies)
+            # Store mean entropy for debug logging
+            self.body.mean_entropy = torch.mean(torch.tensor(self.body.entropies)).item()
         policy_loss = torch.sum(policy_loss)
         logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
@@ -173,9 +175,11 @@ class Reinforce(Algorithm):
         for net_name in self.net_names:
             net = getattr(self, net_name)
             net.update_lr(self.body.env.clock)
+            self.body.grad_norms.extend(net.grad_norms)
+        # logger.info(f'Body grad_norms: {self.body.grad_norms}')
         explore_var = self.action_policy_update(self, self.body)
         if hasattr(self, 'entropy_anneal_epi'):
             self.body.entropy_coef = self.entropy_decay_fn(self, self.body)
             if self.body.env.clock.get('t') == 1:
-                logger.info(f'entropy coefficient decayed to {self.body.entropy_coef}')
+                logger.debug(f'entropy coefficient decayed to {self.body.entropy_coef}')
         return explore_var
