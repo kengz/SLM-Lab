@@ -45,10 +45,12 @@
           "name": "Adam",
           "lr": 0.005
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -131,10 +133,12 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -217,10 +221,12 @@
           "name": "Adam",
           "lr": 0.007
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -306,10 +312,12 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -395,10 +403,12 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -481,10 +491,12 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -567,10 +579,12 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -656,10 +670,12 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -745,10 +761,12 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -838,10 +856,12 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 600,
-        "lr_anneal_timestep": 1000000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 1000,
+          "gamma": 0.9,
+          "last_epoch": 1000000
+        },
         "gpu": false
       }
     }],
@@ -914,10 +934,12 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 600,
-        "lr_anneal_timestep": 1000000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 1000,
+          "gamma": 0.9,
+          "last_epoch": 1000000
+        },
         "gpu": false
       }
     }],

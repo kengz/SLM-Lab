@@ -36,10 +36,12 @@
           "name": "Adam",
           "lr": 0.002
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 1000,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,

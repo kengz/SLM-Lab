@@ -26,8 +26,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "tanh",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -35,10 +34,12 @@
           "name": "Adam",
           "lr": 0.004
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -102,8 +103,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -111,10 +111,12 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -175,8 +177,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -184,10 +185,12 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -251,8 +254,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -260,10 +262,12 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -332,8 +336,7 @@
         ],
         "hid_layers_activation": "relu",
         "batch_norm": false,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
@@ -341,10 +344,12 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 600,
-        "lr_anneal_timestep": 1000000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 1000,
+          "gamma": 0.9,
+          "last_epoch": 100000
+        },
         "gpu": false
       }
     }],
@@ -400,8 +405,7 @@
         ],
         "hid_layers_activation": "relu",
         "batch_norm": false,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
@@ -409,10 +413,12 @@
           "name": "Adam",
           "lr": 0.001
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 600,
-        "lr_anneal_timestep": 1000000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 1000,
+          "gamma": 0.9,
+          "last_epoch": 1000000
+        },
         "gpu": true
       }
     }],

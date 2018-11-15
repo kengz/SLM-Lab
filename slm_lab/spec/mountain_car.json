@@ -45,10 +45,12 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 160000,
-        "lr_decay_min_timestep": 100000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+          "last_epoch": 400000
+        },
         "gpu": false
       }
     }],
@@ -81,7 +83,6 @@
         },
         "net": {
           "training_epoch__choice": [2, 4, 8],
-          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
           "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
           "hid_layers__choice": [[100], [200], [400], [200, 100]],
           "actor_optim_spec": {
@@ -143,10 +144,18 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 160000,
-        "lr_decay_min_timestep": 100000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+          "last_epoch": 400000
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+          "last_epoch": 400000
+        },
         "gpu": false
       }
     }],
@@ -240,10 +249,12 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 160000,
-        "lr_decay_min_timestep": 100000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+          "last_epoch": 400000
+        },
         "gpu": false
       }
     }],
@@ -338,10 +349,12 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 160000,
-        "lr_decay_min_timestep": 100000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+          "last_epoch": 400000
+        },
         "gpu": false
       }
     }],
@@ -427,10 +440,12 @@
           "name": "Adam",
           "lr": 0.006
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 50000,
-        "lr_decay_min_timestep": 100000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+          "last_epoch": 400000
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0.8,
@@ -517,10 +532,12 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 160000,
-        "lr_decay_min_timestep": 100000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+          "last_epoch": 400000
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -605,10 +622,12 @@
           "name": "Adam",
           "lr": 0.004
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 5000,
-        "lr_decay_min_timestep": 100000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+          "last_epoch": 400000
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0.8,
@@ -695,10 +714,12 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 160000,
-        "lr_decay_min_timestep": 100000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+          "last_epoch": 400000
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
