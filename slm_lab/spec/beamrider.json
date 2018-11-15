@@ -26,14 +26,12 @@
       },
       "net": {
         "type": "ConvNet",
-        "hid_layers": [
-          [
-            [4, 32, [8, 8], 4, 0, [1, 1]],
-            [32, 64, [4, 4], 2, 0, [1, 1]],
-            [64, 64, [3, 3], 1, 0, [1, 1]]
-          ],
-          [512]
+        "conv_hid_layers": [
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
+          [64, 3, 1, 0, 1]
         ],
+        "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "batch_norm": false,
@@ -100,14 +98,12 @@
       },
       "net": {
         "type": "ConvNet",
-        "hid_layers": [
-          [
-            [4, 32, [8, 8], 4, 0, [1, 1]],
-            [32, 64, [4, 4], 2, 0, [1, 1]],
-            [64, 64, [3, 3], 1, 0, [1, 1]]
-          ],
-          [256]
+        "conv_hid_layers": [
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
+          [64, 3, 1, 0, 1]
         ],
+        "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "batch_norm": false,
@@ -174,14 +170,12 @@
       },
       "net": {
         "type": "ConvNet",
-        "hid_layers": [
-          [
-            [4, 32, [8, 8], 4, 0, [1, 1]],
-            [32, 64, [4, 4], 2, 0, [1, 1]],
-            [64, 64, [3, 3], 1, 0, [1, 1]]
-          ],
-          [256]
+        "conv_hid_layers": [
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
+          [64, 3, 1, 0, 1]
         ],
+        "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "batch_norm": false,
