@@ -15,7 +15,7 @@
         "training_epoch": 1,
         "training_frequency": 4,
         "training_min_timestep": 50000,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "AtariReplay",
@@ -87,7 +87,7 @@
         "training_epoch": 1,
         "training_frequency": 4,
         "training_min_timestep": 25000,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "AtariReplay",
@@ -159,7 +159,7 @@
         "training_epoch": 1,
         "training_frequency": 4,
         "training_min_timestep": 50000,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "AtariReplay",
