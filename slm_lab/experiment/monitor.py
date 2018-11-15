@@ -150,7 +150,7 @@ class Body:
             'lr': self.get_net_avg_lrs(),
             'action_ent': self.mean_entropy,
             'ent_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
-            'grad_norm': mean(self.grad_norms) if self.grad_norms else np.nan,
+            'grad_norm': np.mean(self.grad_norms) if self.grad_norms else np.nan,
         })
         # append efficiently to df
         self.df.loc[len(self.df)] = pd.Series(row, dtype=np.float32)
@@ -161,12 +161,14 @@ class Body:
 
     def get_net_avg_lrs(self):
         '''Gets the average current learning rate of the algorithm's nets.'''
+        if not hasattr(self.agent.algorithm, 'net_names'):
+            return np.nan
         lrs = []
         for net_name in self.agent.algorithm.net_names:
             net = getattr(self.agent.algorithm, net_name)
             lr = net.optim_spec['lr']
             lrs.append(lr)
-        return mean(lrs)
+        return np.mean(lrs)
 
     def get_log_prefix(self):
         '''Get the prefix for logging'''
