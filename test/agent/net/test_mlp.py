@@ -1,3 +1,4 @@
+from copy import deepcopy
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.mlp import MLPNet
 import torch
@@ -63,11 +64,12 @@ def test_training_step():
 def test_no_lr_scheduler():
     nopo_lrs_net_spec = deepcopy(net_spec)
     nopo_lrs_net_spec['lr_scheduler_spec'] = None
-    net = MLPNet(net_spec, in_dim, out_dim)
+    net = MLPNet(nopo_lrs_net_spec, in_dim, out_dim)
     assert isinstance(net, nn.Module)
     assert hasattr(net, 'model')
     assert hasattr(net, 'model_tail')
     assert not hasattr(net, 'model_tails')
+    assert isinstance(net.lr_scheduler, net_util.NoOpLRScheduler)
 
     y = net.forward(x)
     assert y.shape == (batch_size, out_dim)
