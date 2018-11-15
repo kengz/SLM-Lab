@@ -320,7 +320,7 @@ class HydraMLPNet(Net, nn.Module):
         if net_util.to_assert_trained():
             assert_trained = net_util.gen_assert_trained(self)
         loss.backward(retain_graph=retain_graph)
-        if self.clip_grad:
+        if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()
         if net_util.to_assert_trained():

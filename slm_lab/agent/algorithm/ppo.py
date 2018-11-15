@@ -90,9 +90,6 @@ class PPO(ActorCritic):
             'training_epoch',
             'normalize_state',
         ])
-        # use the same annealing epi as lr
-        # TODO fix with entropy anneal generalization
-        self.clip_eps_anneal_epi = self.net_spec['entropy_anneal_epi']
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
@@ -125,7 +122,8 @@ class PPO(ActorCritic):
         3. S = E[ entropy ]
         '''
         # decay clip_eps by episode
-        clip_eps = policy_util._linear_decay(self.clip_eps, 0.1 * self.clip_eps, self.clip_eps_anneal_epi, self.body.env.clock.get('epi'))
+        # TODO decay clip_eps along with entropy
+        clip_eps = self.clip_eps
 
         # L^CLIP
         log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
