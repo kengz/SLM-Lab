@@ -1,0 +1,748 @@
+{
+  "a2c_gae_mlp_separate_mountain_car": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.999,
+        "use_gae": true,
+        "lam": 0.97,
+        "use_nstep": false,
+        "num_step_returns": 1,
+        "add_entropy": true,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "training_frequency": 1,
+        "training_epoch": 4,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [200],
+        "hid_layers_activation": "sigmoid",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 160000,
+        "lr_decay_min_timestep": 100000,
+        "lr_anneal_timestep": 400000,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_timestep": null,
+      "max_episode": 2600,
+      "save_epi_frequency": 3000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "normalize_state__choice": [true, false],
+          "training_frequency__choice": [2, 4, 8],
+          "training_epoch__choice": [2, 4, 8],
+          "lam__uniform": [0.9, 0.99]
+        },
+        "net": {
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "actor_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          }
+        }
+      }]
+    }
+  },
+  "a2c_gae_rnn_separate_mountain_car": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.999,
+        "use_gae": true,
+        "lam": 0.97,
+        "use_nstep": false,
+        "num_step_returns": 1,
+        "add_entropy": true,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "training_frequency": 1,
+        "training_epoch": 4,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicySeqReplay"
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "shared": false,
+        "hid_layers": [200],
+        "hid_layers_activation": "sigmoid",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 160000,
+        "lr_decay_min_timestep": 100000,
+        "lr_anneal_timestep": 400000,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_timestep": null,
+      "max_episode": 2600,
+      "save_epi_frequency": 3000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "normalize_state__choice": [true, false],
+          "training_frequency__choice": [2, 4, 8],
+          "training_epoch__choice": [2, 4, 8],
+          "lam__uniform": [0.9, 0.99],
+        },
+        "net": {
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[], [100], [200]],
+          "rnn_hidden_size__choice": [32, 64, 128],
+          "seq_len__choice": [2, 3, 4, 5, 6],
+          "actor_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          }
+        }
+      }]
+    }
+  },
+  "a2c_nstep_mlp_separate_mountain_car": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.999,
+        "use_gae": false,
+        "lam": 0.97,
+        "use_nstep": true,
+        "num_step_returns": 1,
+        "add_entropy": true,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "training_frequency": 1,
+        "training_epoch": 4,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [200],
+        "hid_layers_activation": "sigmoid",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 160000,
+        "lr_decay_min_timestep": 100000,
+        "lr_anneal_timestep": 400000,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_timestep": null,
+      "max_episode": 2600,
+      "save_epi_frequency": 3000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "normalize_state__choice": [true, false],
+          "training_frequency__choice": [2, 4, 8],
+          "training_epoch__choice": [2, 4, 8],
+          "num_step_returns__choice": [2, 4, 8]
+        },
+        "net": {
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "actor_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          }
+        }
+      }]
+    }
+  },
+  "a2c_nstep_rnn_separate_mountain_car": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "action_policy_update": "no_update",
+        "explore_var_start": null,
+        "explore_var_end": null,
+        "explore_anneal_epi": null,
+        "gamma": 0.999,
+        "use_gae": false,
+        "lam": 0.97,
+        "use_nstep": true,
+        "num_step_returns": 1,
+        "add_entropy": true,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "training_frequency": 1,
+        "training_epoch": 4,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "OnPolicySeqReplay"
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "shared": false,
+        "hid_layers": [200],
+        "hid_layers_activation": "sigmoid",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 160000,
+        "lr_decay_min_timestep": 100000,
+        "lr_anneal_timestep": 400000,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_timestep": null,
+      "max_episode": 2600,
+      "save_epi_frequency": 3000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "normalize_state__choice": [true, false],
+          "training_frequency__choice": [2, 4, 8],
+          "training_epoch__choice": [2, 4, 8],
+          "lam__uniform": [0.9, 0.99],
+        },
+        "net": {
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[], [100], [200]],
+          "rnn_hidden_size__choice": [32, 64, 128],
+          "seq_len__choice": [2, 3, 4, 5, 6],
+          "actor_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          }
+        }
+      }]
+    }
+  },
+  "dqn_boltzmann_mountain_car": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 5.0,
+        "explore_var_end": 0.5,
+        "explore_anneal_epi": 800,
+        "gamma": 0.999,
+        "training_batch_epoch": 3,
+        "training_epoch": 4,
+        "training_frequency": 4,
+        "training_min_timestep": 32,
+        "normalize_state": false
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false,
+        "concat_len": 4,
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [200, 100],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.006
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 50000,
+        "lr_decay_min_timestep": 100000,
+        "lr_anneal_timestep": 400000,
+        "update_type": "polyak",
+        "update_frequency": 200,
+        "polyak_coef": 0.8,
+        "gpu": false,
+        "training_epoch": 2
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_timestep": null,
+      "max_episode": 1400,
+      "save_epi_frequency": 1600
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "normalize_state__choice": [true, false],
+          "explore_anneal_epi__choice": [200, 400, 800]
+        },
+        "net": {
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "polyak_coef__uniform": [0.8, 1.0],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+        }
+      }]
+    }
+  },
+  "drqn_boltzmann_mountain_car": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 5.0,
+        "explore_var_end": 0.5,
+        "explore_anneal_epi": 400,
+        "gamma": 0.999,
+        "training_batch_epoch": 3,
+        "training_epoch": 4,
+        "training_frequency": 4,
+        "training_min_timestep": 32,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "SeqReplay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false,
+        "concat_len": 4,
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "hid_layers": [200],
+        "hid_layers_activation": "sigmoid",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 160000,
+        "lr_decay_min_timestep": 100000,
+        "lr_anneal_timestep": 400000,
+        "update_type": "polyak",
+        "update_frequency": 200,
+        "polyak_coef": 0,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_timestep": null,
+      "max_episode": 1400,
+      "save_epi_frequency": 1600
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "normalize_state__choice": [true, false],
+          "explore_anneal_epi__choice": [200, 400, 800]
+        },
+        "net": {
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "polyak_coef__uniform": [0.8, 1.0],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[], [100], [200]],
+          "rnn_hidden_size__choice": [32, 64, 128],
+          "seq_len__choice": [2, 3, 4, 5, 6],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+        }
+      }]
+    }
+  },
+  "ddqn_boltzmann_mountain_car": {
+    "agent": [{
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 5.0,
+        "explore_var_end": 1.0,
+        "explore_anneal_epi": 400,
+        "gamma": 0.999,
+        "training_batch_epoch": 4,
+        "training_epoch": 4,
+        "training_frequency": 4,
+        "training_min_timestep": 32,
+        "normalize_state": false
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false,
+        "concat_len": 4,
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [200, 100],
+        "hid_layers_activation": "relu",
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.004
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 5000,
+        "lr_decay_min_timestep": 100000,
+        "lr_anneal_timestep": 400000,
+        "update_type": "polyak",
+        "update_frequency": 200,
+        "polyak_coef": 0.8,
+        "gpu": false,
+        "training_epoch": 8
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_timestep": null,
+      "max_episode": 1400,
+      "save_epi_frequency": 1600
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "normalize_state__choice": [true, false],
+          "explore_anneal_epi__choice": [200, 400, 800]
+        },
+        "net": {
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "polyak_coef__uniform": [0.8, 1.0],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+        }
+      }]
+    }
+  },
+  "ddrqn_boltzmann_mountain_car": {
+    "agent": [{
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "boltzmann",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 5.0,
+        "explore_var_end": 1.0,
+        "explore_anneal_epi": 400,
+        "gamma": 0.999,
+        "training_batch_epoch": 4,
+        "training_epoch": 4,
+        "training_frequency": 4,
+        "training_min_timestep": 32,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "SeqReplay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false,
+        "concat_len": 4,
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "hid_layers": [200],
+        "hid_layers_activation": "sigmoid",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad": false,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_decay": "linear_decay",
+        "lr_decay_frequency": 160000,
+        "lr_decay_min_timestep": 100000,
+        "lr_anneal_timestep": 400000,
+        "update_type": "polyak",
+        "update_frequency": 200,
+        "polyak_coef": 0,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_timestep": null,
+      "max_episode": 1400,
+      "save_epi_frequency": 1600
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "normalize_state__choice": [true, false],
+          "explore_anneal_epi__choice": [200, 400, 800]
+        },
+        "net": {
+          "training_epoch__choice": [2, 4, 8],
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "polyak_coef__uniform": [0.8, 1.0],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[], [100], [200]],
+          "rnn_hidden_size__choice": [32, 64, 128],
+          "seq_len__choice": [2, 3, 4, 5, 6],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+        }
+      }]
+    }
+  },
+}

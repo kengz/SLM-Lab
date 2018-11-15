@@ -1,3 +1,9 @@
+# System
+.DS_Store
+
+# IDEs
+.idea/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -6,41 +12,23 @@ __pycache__/
 *.manifest
 .pytest*
 .cache
-build/
 dist/
 src/
 htmlcov/
 coverage.xml
 .coverage*
 .env
-.venv
-venv/
-ml-agents/
-
-# Jupyter Notebook
-.ipynb_checkpoints
 
 # NodeJS
 node_modules/
 
-# Gym
-gym/
-
-# System
-.DS_Store
-
-# Unity environment
-*.app
+# VizDoom
+*.ini
 
 # Data files
-config/
 data/
 model/
 nb.py
 *.html
 *.log
 *.meta
-*.tfl*
-*.xls
-*.xlsx
-*checkpoint*

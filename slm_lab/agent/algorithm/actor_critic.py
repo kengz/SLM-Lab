@@ -59,7 +59,10 @@ class ActorCritic(Reinforce):
         "use_nstep": false,
         "num_step_returns": 100,
         "add_entropy": false,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 100,
+        "entropy_anneal_start_epi": 10
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -102,7 +105,10 @@ class ActorCritic(Reinforce):
             'use_nstep',
             'num_step_returns',
             'add_entropy',
-            'entropy_coef',
+            'entropy_coef_start',
+            'entropy_coef_end',
+            'entropy_anneal_epi',
+            'entropy_anneal_start_epi',
             'policy_loss_coef',
             'val_loss_coef',
             'training_frequency',
@@ -113,6 +119,9 @@ class ActorCritic(Reinforce):
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
         self.body.explore_var = self.explore_var_start
+        self.body.entropy_coef = self.entropy_coef_start
+        if getattr(self, 'entropy_anneal_epi'):
+            self.entropy_decay_fn = policy_util.entropy_linear_decay
         # Select appropriate methods to calculate adv_targets and v_targets for training
         if self.use_gae:
             self.calc_advs_v_targets = self.calc_gae_advs_v_targets
@@ -283,7 +292,9 @@ class ActorCritic(Reinforce):
         policy_loss = - self.policy_loss_coef * log_probs * advs
         if self.add_entropy:
             entropies = torch.stack(self.body.entropies)
-            policy_loss += (-self.entropy_coef * entropies)
+            policy_loss += (-self.body.entropy_coef * entropies)
+            # Store mean entropy for debug logging
+            self.body.mean_entropy = torch.mean(torch.tensor(self.body.entropies)).item()
         policy_loss = torch.mean(policy_loss)
         logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
@@ -353,4 +364,8 @@ class ActorCritic(Reinforce):
             net = getattr(self, net_name)
             net.update_lr(self.body.env.clock)
         explore_var = self.action_policy_update(self, self.body)
+        if hasattr(self, 'entropy_anneal_epi'):
+            self.body.entropy_coef = self.entropy_decay_fn(self, self.body)
+            if self.body.env.clock.get('t') == 1:
+                logger.debug(f'entropy coefficient decayed to {self.body.entropy_coef}')
         return explore_var

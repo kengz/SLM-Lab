@@ -8,21 +8,21 @@
         "action_policy": "epsilon_greedy",
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
-        "explore_var_end": 0.01,
-        "explore_anneal_epi": 1200,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 2500,
         "gamma": 0.99,
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_min_timestep": 10000,
+        "training_min_timestep": 50000,
         "normalize_state": true
       },
       "memory": {
         "name": "AtariReplay",
         "batch_size": 32,
-        "max_size": 50000,
+        "max_size": 1000000,
         "stack_len": 4,
-        "use_cer": true
+        "use_cer": false
       },
       "net": {
         "type": "ConvNet",
@@ -35,30 +35,31 @@
           [512]
         ],
         "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
         "batch_norm": false,
         "clip_grad": true,
-        "clip_grad_val": 10.0,
+        "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "Adam",
-          "lr": 1e-4
+          "name": "RMSprop",
+          "lr": 2.5e-4,
+          "alpha": 0.95,
+          "eps": 1e-1,
+          "momentum": 0.95,
+          "centered": false
         },
         "lr_decay": "no_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 20000,
-        "lr_anneal_timestep": 1000000,
         "update_type": "replace",
-        "update_frequency": 1000,
-        "polyak_coef": 0.9,
+        "update_frequency": 10000,
         "gpu": true
       }
     }],
     "env": [{
-      "name": "BeamRiderDeterministic-v4",
+      "name": "BeamRiderNoFrameskip-v4",
       "max_timestep": null,
-      "max_episode": 20000,
+      "max_episode": 5000,
       "save_epi_frequency": 100
     }],
     "body": {
@@ -73,6 +74,166 @@
       "search": "RandomSearch"
     }
   },
+  "dqn_beamrider_light": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.05,
+        "explore_anneal_epi": 1500,
+        "gamma": 0.99,
+        "training_batch_epoch": 1,
+        "training_epoch": 1,
+        "training_frequency": 4,
+        "training_min_timestep": 25000,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "AtariReplay",
+        "batch_size": 32,
+        "max_size": 250000,
+        "stack_len": 4,
+        "use_cer": false
+      },
+      "net": {
+        "type": "ConvNet",
+        "hid_layers": [
+          [
+            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [32, 64, [4, 4], 2, 0, [1, 1]],
+            [64, 64, [3, 3], 1, 0, [1, 1]]
+          ],
+          [256]
+        ],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "batch_norm": false,
+        "clip_grad": true,
+        "clip_grad_val": 1.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "RMSprop",
+          "lr": 2.5e-4,
+          "alpha": 0.95,
+          "eps": 1e-1,
+          "momentum": 0.95,
+          "centered": false
+        },
+        "lr_decay": "no_decay",
+        "update_type": "replace",
+        "update_frequency": 2000,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "BeamRiderNoFrameskip-v4",
+      "max_timestep": null,
+      "max_episode": 5000,
+      "save_epi_frequency": 100
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "graph_x": "total_t",
+      "max_session": 1,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    }
+  },
+  "dqn_beamrider_search": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "action_policy_update": "linear_decay",
+        "explore_var_start": 1.0,
+        "explore_var_end": 0.1,
+        "explore_anneal_epi": 2500,
+        "gamma": 0.99,
+        "training_batch_epoch": 1,
+        "training_epoch": 1,
+        "training_frequency": 4,
+        "training_min_timestep": 50000,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "AtariReplay",
+        "batch_size": 32,
+        "max_size": 1000000,
+        "stack_len": 4,
+        "use_cer": false
+      },
+      "net": {
+        "type": "ConvNet",
+        "hid_layers": [
+          [
+            [4, 32, [8, 8], 4, 0, [1, 1]],
+            [32, 64, [4, 4], 2, 0, [1, 1]],
+            [64, 64, [3, 3], 1, 0, [1, 1]]
+          ],
+          [256]
+        ],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "batch_norm": false,
+        "clip_grad": true,
+        "clip_grad_val": 10.0,
+        "loss_spec": {
+          "name": "SmoothL1Loss"
+        },
+        "optim_spec": {
+          "name": "RMSprop",
+          "lr": 2.5e-4,
+          "alpha": 0.95,
+          "eps": 1e-1,
+          "momentum": 0.95,
+          "centered": false
+        },
+        "lr_decay": "no_decay",
+        "update_type": "replace",
+        "update_frequency": 10000,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "BeamRiderNoFrameskip-v4",
+      "max_timestep": null,
+      "max_episode": 3000,
+      "save_epi_frequency": 100
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "graph_x": "total_t",
+      "max_session": 1,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "memory": {
+          "max_size__grid_search": [100000, 500000, 1000000]
+        },
+        "net": {
+          "update_frequency__grid_search": [1000, 5000, 10000]
+        }
+      }]
+    }
+  },
   "ddqn_beamrider": {
     "agent": [{
       "name": "DoubleDQN",
@@ -83,7 +244,7 @@
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
         "explore_var_end": 0.01,
-        "explore_anneal_epi": 600,
+        "explore_anneal_epi": 1000,
         "gamma": 0.99,
         "training_batch_epoch": 1,
         "training_epoch": 1,
@@ -94,7 +255,7 @@
       "memory": {
         "name": "AtariReplay",
         "batch_size": 32,
-        "max_size": 1000000,
+        "max_size": 50000,
         "stack_len": 1,
         "use_cer": false
       },
@@ -106,35 +267,32 @@
             [32, 64, [4, 4], 2, 0, [1, 1]],
             [64, 64, [3, 3], 1, 0, [1, 1]]
           ],
-          [512]
+          [256]
         ],
         "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
         "batch_norm": false,
         "clip_grad": true,
-        "clip_grad_val": 5.0,
+        "clip_grad_val": 10.0,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "RMSprop",
-          "lr": 0.00025,
-          "alpha": 0.99,
-          "eps": 1e-6,
-          "momentum": 0.0,
-          "centered": false
+          "name": "Adam",
+          "lr": 1e-4
         },
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 1000,
         "lr_decay_min_timestep": 20000,
         "lr_anneal_timestep": 1000000,
         "update_type": "replace",
-        "update_frequency": 30000,
+        "update_frequency": 1000,
         "polyak_coef": 0.9,
         "gpu": true
       }
     }],
     "env": [{
-      "name": "BeamRiderDeterministic-v4",
+      "name": "BeamRiderNoFrameskip-v4",
       "max_timestep": null,
       "max_episode": 20000,
       "save_epi_frequency": 100
@@ -163,56 +321,57 @@
         "explore_var_end": null,
         "explore_anneal_epi": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.95,
         "clip_eps": 0.10,
-        "entropy_coef": 0.01,
-        "val_loss_coef": 0.1,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 500,
+        "entropy_anneal_start_epi": 200,
+        "val_loss_coef": 0.5,
         "training_frequency": 1,
-        "training_epoch": 1,
+        "training_epoch": 8,
         "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyAtariReplay",
-        "stack_len": 1
+        "stack_len": 4
       },
       "net": {
         "type": "ConvNet",
         "shared": true,
         "hid_layers": [
           [
-            [1, 32, [8, 8], 4, 0, [1, 1]],
+            [4, 32, [8, 8], 4, 0, [1, 1]],
             [32, 64, [4, 4], 2, 0, [1, 1]],
             [64, 64, [3, 3], 1, 0, [1, 1]]
           ],
           [512]
         ],
         "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
         "batch_norm": false,
-        "clip_grad": false,
+        "clip_grad": true,
         "clip_grad_val": 1.0,
         "use_same_optim": false,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "RMSprop",
-          "lr": 0.00025,
-          "alpha": 0.99,
-          "eps": 1e-6,
-          "momentum": 0.0,
-          "centered": false
+          "name": "Adam",
+          "lr": 2.5e-4,
+          "eps": 1e-5,
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 1000,
+        "lr_decay_frequency": 10000,
         "lr_decay_min_timestep": 20000,
-        "lr_anneal_timestep": 1000000,
+        "lr_anneal_timestep": 2000000,
         "gpu": true
       }
     }],
     "env": [{
-      "name": "BeamRiderDeterministic-v4",
+      "name": "BeamRiderNoFrameskip-v4",
       "max_timestep": null,
-      "max_episode": 20000,
+      "max_episode": 5000,
       "save_epi_frequency": 100
     }],
     "body": {
@@ -237,7 +396,10 @@
         "action_policy_update": "no_update",
         "explore_var_start": null,
         "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 500,
+        "entropy_anneal_start_epi": 200,
         "gamma": 0.99,
         "use_gae": true,
         "lam": 0.97,
@@ -290,7 +452,7 @@
       }
     }],
     "env": [{
-      "name": "BeamRiderDeterministic-v4",
+      "name": "BeamRiderNoFrameskip-v4",
       "max_timestep": null,
       "max_episode": 20000,
       "save_epi_frequency": 100

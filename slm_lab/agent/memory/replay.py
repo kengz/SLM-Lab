@@ -318,6 +318,20 @@ class AtariReplay(ConcatReplay):
         self.base_update(action, reward, state, done)
         state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
-            reward = max(-10, min(10, reward))
+            reward = np.sign(reward)
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
+
+
+class ImageReplay(Replay):
+    '''
+    An off policy replay buffer that normalizes (preprocesses) images through
+    division by 256 and subtraction of 0.5.
+    '''
+
+    def __init__(self, memory_spec, body):
+        super(ImageReplay, self).__init__(memory_spec, body)
+
+    def preprocess_state(self, state, append=True):
+        state = (state.astype('float32') / 256.) - 0.5
+        return state

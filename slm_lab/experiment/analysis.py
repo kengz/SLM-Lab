@@ -274,9 +274,10 @@ def calc_trial_fitness_df(trial):
     return trial_fitness_df
 
 
-def is_unfit(fitness_df):
+def is_unfit(fitness_df, session):
     '''Check if a fitness_df is unfit. Used to determine of trial should stop running more sessions'''
-    # TODO improve to make it work with any reward mean
+    if FITNESS_STD.get(session.spec['env'][0]['name']) is None:
+        return False  # fitness not known
     mean_fitness_df = calc_mean_fitness(fitness_df)
     return mean_fitness_df['strength'].iloc[0] < NOISE_WINDOW
 
@@ -324,7 +325,6 @@ def gather_aeb_rewards_df(aeb, session_datas):
 
 def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
     '''Build the aeb_reward envelope figure'''
-    # TODO need enable total_t for trial graph, and line up signals at the common total_t
     mean_sr = aeb_rewards_df.mean(axis=1)
     std_sr = aeb_rewards_df.std(axis=1).fillna(0)
     max_sr = mean_sr + std_sr
@@ -338,7 +338,7 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
         y=max_y + min_y[::-1],
         fill='tozerox',
         fillcolor=viz.lower_opacity(color, 0.2),
-        line=dict(color='transparent'),
+        line=dict(color='rgba(0, 0, 0, 0)'),
         showlegend=False,
         legendgroup=aeb_str,
     )
@@ -346,7 +346,7 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
     fig = viz.plot_line(
         df, ['mean_reward'], ['epi'], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
     )
-    fig.data.append(envelope_trace)
+    fig.add_traces([envelope_trace])
     return fig
 
 
@@ -368,7 +368,7 @@ def plot_trial(trial_spec, info_space):
         if fig is None:
             fig = aeb_fig
         else:
-            fig.data.extend(aeb_fig.data)
+            fig.add_traces(aeb_fig.data)
     fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{info_space.get("trial")}', width=500, height=600)
     viz.plot(fig)
     return fig
@@ -398,7 +398,7 @@ def plot_experiment(experiment_spec, experiment_df):
                     'symbol': 'circle-open-dot', 'color': experiment_df['fitness'], 'opacity': 0.5,
                     # dump first quarter of colorscale that is too bright
                     'cmin': min_fitness - 0.50 * (max_fitness - min_fitness), 'cmax': max_fitness,
-                    'colorscale': 'YIGnBu', 'reversescale': True
+                    'colorscale': 'YlGnBu', 'reversescale': True
                 },
             )
             fig.append_trace(trace, row_idx + 1, col_idx + 1)
@@ -432,6 +432,10 @@ def save_trial_data(spec, info_space, trial_fitness_df, trial_fig):
     logger.info(f'Saving trial data to {prepath}')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
+    if util.get_lab_mode() == 'train':
+        predir = util.prepath_to_predir(prepath)
+        shutil.make_archive(predir, 'zip', predir)
+        logger.info(f'All trial data zipped to {predir}.zip')
 
 
 def save_experiment_data(spec, info_space, experiment_df, experiment_fig):

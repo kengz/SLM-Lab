@@ -12,7 +12,10 @@
         "explore_anneal_epi": null,
         "gamma": 0.99,
         "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.0001,
+        "entropy_anneal_epi": 100,
+        "entropy_anneal_start_epi": 25,
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -33,17 +36,17 @@
           "lr": 0.02
         },
         "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
+        "lr_decay_frequency": 400,
         "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_anneal_timestep": 20000,
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency":300
+      "max_episode": 200,
+      "save_epi_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -62,7 +65,7 @@
       "agent": [{
         "algorithm": {
           "gamma__uniform": [0.95, 0.99],
-          "entropy_coef__uniform": [0.001, 0.1]
+          "entropy_coef_start__uniform": [0.001, 0.1]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -86,7 +89,10 @@
         "explore_anneal_epi": null,
         "gamma": 0.99,
         "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -139,7 +145,7 @@
       "agent": [{
         "algorithm": {
           "gamma__uniform": [0.95, 0.99],
-          "entropy_coef__uniform": [0.001, 0.1]
+          "entropy_coef_start__uniform": [0.001, 0.1]
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -167,7 +173,10 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef": 0.1,
+        "entropy_coef_start": 0.1,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -222,7 +231,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef__uniform": [0.001, 0.1],
+          "entropy_coef_start__uniform": [0.001, 0.1],
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -251,7 +260,10 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 100,
+        "entropy_anneal_start_epi": 25,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -306,7 +318,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef__uniform": [0.001, 0.1],
+          "entropy_coef_start__uniform": [0.001, 0.1],
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -338,7 +350,10 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -393,7 +408,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef__uniform": [0.001, 0.1],
+          "entropy_coef_start__uniform": [0.001, 0.1],
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -425,7 +440,10 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -483,7 +501,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef__uniform": [0.001, 0.1],
+          "entropy_coef_start__uniform": [0.001, 0.1],
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -515,7 +533,10 @@
         "use_nstep": true,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -571,7 +592,7 @@
       "agent": [{
         "algorithm": {
           "num_step_returns__choice": [1, 2, 4, 8],
-          "entropy_coef__uniform": [0.001, 0.1],
+          "entropy_coef_start__uniform": [0.001, 0.1],
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -600,7 +621,10 @@
         "use_nstep": true,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -656,7 +680,7 @@
       "agent": [{
         "algorithm": {
           "num_step_returns__choice": [1, 2, 4, 8],
-          "entropy_coef__uniform": [0.001, 0.1],
+          "entropy_coef_start__uniform": [0.001, 0.1],
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -688,7 +712,10 @@
         "use_nstep": true,
         "num_step_returns": 8,
         "add_entropy": true,
-        "entropy_coef": 0.07,
+        "entropy_coef_start": 0.07,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -774,7 +801,10 @@
         "use_nstep": true,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -833,7 +863,7 @@
       "agent": [{
         "algorithm": {
           "num_step_returns__choice": [1, 2, 4, 8],
-          "entropy_coef__uniform": [0.001, 0.1],
+          "entropy_coef_start__uniform": [0.001, 0.1],
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -862,7 +892,10 @@
         "gamma": 0.99,
         "lam": 0.97,
         "clip_eps": 0.10,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.0001,
+        "entropy_anneal_epi": 100,
+        "entropy_anneal_start_epi": 25,
         "val_loss_coef": 0.1,
         "training_frequency": 8,
         "training_epoch": 8,
@@ -889,8 +922,8 @@
         },
         "lr_decay": "linear_decay",
         "lr_decay_frequency": 400,
-        "lr_decay_min_timestep": 1400,
-        "lr_anneal_timestep": 10000,
+        "lr_decay_min_timestep": 5000,
+        "lr_anneal_timestep": 20000,
         "gpu": false
       }
     }],
@@ -947,7 +980,10 @@
         "gamma": 0.99,
         "lam": 1.0,
         "clip_eps": 0.10,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
@@ -1042,7 +1078,10 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 50,
+        "entropy_anneal_start_epi": 10,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
@@ -1104,7 +1143,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef__uniform": [0.001, 0.1],
+          "entropy_coef_start__uniform": [0.001, 0.1],
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]

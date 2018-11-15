@@ -22,7 +22,7 @@ def set_gym_space_attr(gym_space):
         setattr(gym_space, 'high', np.full(gym_space.n, 2))
     elif isinstance(gym_space, spaces.MultiDiscrete):
         setattr(gym_space, 'is_discrete', True)
-        setattr(gym_space, 'low', np.zeros_like(nvec))
+        setattr(gym_space, 'low', np.zeros_like(gym_space.nvec))
         setattr(gym_space, 'high', np.array(gym_space.nvec))
     else:
         raise ValueError('gym_space not recognized')

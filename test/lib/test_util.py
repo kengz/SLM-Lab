@@ -31,15 +31,6 @@ def test_cast_list(test_list, test_str):
     assert ps.is_list(util.cast_list(test_str))
 
 
-@pytest.mark.parametrize('d,res_d', [
-    ({'a': 0, 'b': 1}, {'a': 0, 'b': 1}),
-    ({'a': None, 'b': 1}, {'b': 1}),
-    ({'a': np.nan, 'b': 1}, {'b': 1}),
-])
-def test_compact_dict(d, res_d):
-    assert util.compact_dict(d) == res_d
-
-
 @pytest.mark.parametrize('arr,arr_len', [
     ([0, 1, 2], 3),
     ([0, 1, 2, None], 3),
@@ -50,11 +41,6 @@ def test_compact_dict(d, res_d):
 ])
 def test_count_nonan(arr, arr_len):
     assert util.count_nonan(np.array(arr)) == arr_len
-
-
-def test_dedent(test_multiline_str):
-    dedented_string = util.dedent(test_multiline_str)
-    assert dedented_string == 'lorem ipsum dolor\nsit amet\n\nconsectetur adipiscing elit'
 
 
 @pytest.mark.parametrize('d,flat_d', [
@@ -124,11 +110,6 @@ def test_nanflatten(arr, res):
 ])
 def test_gen_isnan(v, isnan):
     assert util.gen_isnan(v) == isnan
-
-
-def test_get_env_path():
-    assert 'node_modules/slm-env-3dball/build/3dball' in util.get_env_path(
-        '3dball')
 
 
 def test_get_fn_list():
@@ -205,7 +186,6 @@ def test_smart_path():
 
 @pytest.mark.parametrize('filename,dtype', [
     ('test_df.csv', pd.DataFrame),
-    # ('test_df.xls', pd.DataFrame),
 ])
 def test_write_read_as_df(test_df, filename, dtype):
     data_path = f'test/fixture/lib/util/{filename}'

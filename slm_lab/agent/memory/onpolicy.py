@@ -261,9 +261,7 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
 
     def sample(self):
         '''
-        Returns all the examples from memory in a single batch. Batch is stored as a dict.
-        Keys are the names of the different elements of an experience. Values are a list of the corresponding sampled elements.
-        states and next_states have are further nested into sequences containing the previous `seq_len` - 1 relevant states
+        Batched version of OnPolicySeqBatchReplay.sample()
         e.g.
         let s_seq_0 be [0, ..., s0] (zero-padded), s_seq_k be [s_{k-seq_len}, ..., s_k], so the states are nested for passing into RNN.
         batch = {
@@ -345,6 +343,20 @@ class OnPolicyAtariReplay(OnPolicyReplay):
         self.base_update(action, reward, state, done)
         state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
-            reward = max(-10, min(10, reward))
+            reward = np.sign(reward)
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
+
+
+class OnPolicyImageReplay(OnPolicyReplay):
+    '''
+    An on policy replay buffer that normalizes (preprocesses) images through
+    division by 256 and subtraction of 0.5.
+    '''
+
+    def __init__(self, memory_spec, body):
+        super(OnPolicyImageReplay, self).__init__(memory_spec, body)
+
+    def preprocess_state(self, state, append=True):
+        state = (state.astype('float32') / 256.) - 0.5
+        return state

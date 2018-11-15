@@ -35,7 +35,10 @@ class Reinforce(Algorithm):
         "explore_anneal_epi": null,
         "gamma": 0.99,
         "add_entropy": false,
-        "entropy_coef": 0.01,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 100,
+        "entropy_anneal_start_epi": 10
         "training_frequency": 1,
         "normalize_state": true
     }
@@ -63,7 +66,10 @@ class Reinforce(Algorithm):
             'explore_anneal_epi',
             'gamma',  # the discount factor
             'add_entropy',
-            'entropy_coef',
+            'entropy_coef_start',
+            'entropy_coef_end',
+            'entropy_anneal_epi',
+            'entropy_anneal_start_epi',
             'training_frequency',
             'normalize_state',
         ])
@@ -71,6 +77,9 @@ class Reinforce(Algorithm):
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
         self.body.explore_var = self.explore_var_start
+        self.body.entropy_coef = self.entropy_coef_start
+        if getattr(self, 'entropy_anneal_epi'):
+            self.entropy_decay_fn = policy_util.entropy_linear_decay
 
     @lab_api
     def init_nets(self):
@@ -154,7 +163,9 @@ class Reinforce(Algorithm):
         policy_loss = - log_probs * advs
         if self.add_entropy:
             entropies = torch.stack(self.body.entropies)
-            policy_loss += (-self.entropy_coef * entropies)
+            policy_loss += (-self.body.entropy_coef * entropies)
+            # Store mean entropy for debug logging
+            self.body.mean_entropy = torch.mean(torch.tensor(self.body.entropies)).item()
         policy_loss = torch.sum(policy_loss)
         logger.debug(f'Actor policy loss: {policy_loss:.4f}')
         return policy_loss
@@ -164,5 +175,11 @@ class Reinforce(Algorithm):
         for net_name in self.net_names:
             net = getattr(self, net_name)
             net.update_lr(self.body.env.clock)
+            self.body.grad_norms.extend(net.grad_norms)
+        # logger.info(f'Body grad_norms: {self.body.grad_norms}')
         explore_var = self.action_policy_update(self, self.body)
+        if hasattr(self, 'entropy_anneal_epi'):
+            self.body.entropy_coef = self.entropy_decay_fn(self, self.body)
+            if self.body.env.clock.get('t') == 1:
+                logger.debug(f'entropy coefficient decayed to {self.body.entropy_coef}')
         return explore_var

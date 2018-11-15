@@ -41,7 +41,10 @@ class PPO(ActorCritic):
         "gamma": 0.99,
         "lam": 1.0,
         "clip_eps": 0.10,
-        "entropy_coef": 0.02,
+        "entropy_coef_start": 0.01,
+        "entropy_coef_end": 0.001,
+        "entropy_anneal_epi": 100,
+        "entropy_anneal_start_epi": 10
         "training_frequency": 1,
         "training_epoch": 8,
         "normalize_state": true
@@ -78,7 +81,10 @@ class PPO(ActorCritic):
             'gamma',
             'lam',
             'clip_eps',
-            'entropy_coef',
+            'entropy_coef_start',
+            'entropy_coef_end',
+            'entropy_anneal_epi',
+            'entropy_anneal_start_epi',
             'val_loss_coef',
             'training_frequency',  # horizon
             'training_epoch',
@@ -90,6 +96,9 @@ class PPO(ActorCritic):
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
         self.body.explore_var = self.explore_var_start
+        self.body.entropy_coef = self.entropy_coef_start
+        if getattr(self, 'entropy_anneal_epi'):
+            self.entropy_decay_fn = policy_util.entropy_linear_decay
         # PPO uses GAE
         self.calc_advs_v_targets = self.calc_gae_advs_v_targets
 
@@ -134,8 +143,10 @@ class PPO(ActorCritic):
 
         # S entropy bonus
         entropies = torch.stack(self.body.entropies)
-        ent_penalty = torch.mean(-self.entropy_coef * entropies)
+        ent_penalty = torch.mean(-self.body.entropy_coef * entropies)
         logger.debug(f'ent_penalty: {ent_penalty}')
+        # Store mean entropy for debug logging
+        self.body.mean_entropy = torch.mean(torch.tensor(self.body.entropies)).item()
 
         policy_loss = clip_loss + ent_penalty
         logger.debug(f'PPO Actor policy loss: {policy_loss:.4f}')
@@ -147,6 +158,7 @@ class PPO(ActorCritic):
         '''
         if self.to_train == 1:
             # update old net
+            torch.cuda.empty_cache()
             net_util.copy(self.net, self.old_net)
             batch = self.sample()
             total_loss = torch.tensor(0.0, device=self.net.device)
@@ -175,6 +187,7 @@ class PPO(ActorCritic):
         Trains the network when the actor and critic share parameters
         '''
         if self.to_train == 1:
+            torch.cuda.empty_cache()
             net_util.copy(self.net, self.old_net)
             batch = self.sample()
             policy_loss = self.train_actor(batch)

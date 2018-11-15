@@ -22,7 +22,6 @@ Press enter to continue, Ctrl+c to quit:
 
 # copy config file if not already exist
 BIN_DIR=`pwd`/bin
-$BIN_DIR/copy_config
 
 # Run setup by OS
 if [ $(uname) == "Darwin" ]; then
