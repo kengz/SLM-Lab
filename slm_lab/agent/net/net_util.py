@@ -8,15 +8,22 @@ import pydash as ps
 import subprocess
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 NN_LOWCASE_LOOKUP = {nn_name.lower(): nn_name for nn_name in nn.__dict__}
 logger = logger.get_logger(__name__)
 
 
+class NoOpLRScheduler:
+    '''Symbolic LRScheduler class for API consistency'''
+
+    def step(self, epoch=None):
+        pass
+
+
 def build_sequential(dims, activation):
     '''Build the Sequential model by interleaving nn.Linear and activation_fn'''
+    assert len(dims) >= 2, 'dims need to at least contain input, output'
     dim_pairs = list(zip(dims[:-1], dims[1:]))
     layers = []
     for in_d, out_d in dim_pairs:
@@ -47,6 +54,17 @@ def get_optim(cls, optim_spec):
     optim_spec = ps.omit(optim_spec, 'name')
     optim = OptimClass(cls.parameters(), **optim_spec)
     return optim
+
+
+def get_lr_scheduler(cls, lr_scheduler_spec):
+    '''Helper to parse lr_scheduler param and construct Pytorch optim.lr_scheduler'''
+    if ps.is_empty(lr_scheduler_spec):
+        lr_scheduler = NoOpLRScheduler()
+    else:
+        LRSchedulerClass = getattr(torch.optim.lr_scheduler, lr_scheduler_spec['name'])
+        lr_scheduler_spec = ps.omit(lr_scheduler_spec, 'name')
+        lr_scheduler = LRSchedulerClass(cls.optim, **lr_scheduler_spec)
+        return lr_scheduler
 
 
 def get_policy_out_dim(body):
@@ -87,22 +105,22 @@ def get_out_dim(body, add_critic=False):
 def init_layers(net, init_fn):
     if init_fn == 'xavier_uniform_':
         try:
-            gain = torch.nn.init.calculate_gain(net.hid_layers_activation)
+            gain = nn.init.calculate_gain(net.hid_layers_activation)
         except ValueError:
             gain = 1
-        init_fn = partial(torch.nn.init.xavier_uniform_, gain=gain)
+        init_fn = partial(nn.init.xavier_uniform_, gain=gain)
     elif 'kaiming' in init_fn:
         assert net.hid_layers_activation in ['relu', 'leaky_relu'], f'Kaiming initialization not supported for {net.hid_layers_activation}'
-        init_fn = torch.nn.init.__dict__[init_fn]
+        init_fn = nn.init.__dict__[init_fn]
         init_fn = partial(init_fn, nonlinearity=net.hid_layers_activation)
     else:
-        init_fn = torch.nn.init.__dict__[init_fn]
+        init_fn = nn.init.__dict__[init_fn]
     net.apply(partial(init_parameters, init_fn=init_fn))
 
 
 def init_parameters(module, init_fn):
     '''
-    Initializes module's weights using init_fn, which is the name of function from from torch.nn.init
+    Initializes module's weights using init_fn, which is the name of function from from nn.init
     Initializes module's biases to either 0.01 or 0.0, depending on module
     The only exception is BatchNorm layers, for which we use uniform initialization
     '''
@@ -110,16 +128,16 @@ def init_parameters(module, init_fn):
     classname = module.__class__.__name__
     if 'BatchNorm' in classname:
         init_fn(module.weight)
-        torch.nn.init.constant_(module.bias, bias_init)
+        nn.init.constant_(module.bias, bias_init)
     elif 'GRU' in classname:
         for name, param in module.named_parameters():
             if 'weight' in name:
                 init_fn(param)
             elif 'bias' in name:
-                torch.nn.init.constant_(param, 0.0)
+                nn.init.constant_(param, 0.0)
     elif 'Linear' in classname or ('Conv' in classname and 'Net' not in classname):
         init_fn(module.weight)
-        torch.nn.init.constant_(module.bias, bias_init)
+        nn.init.constant_(module.bias, bias_init)
 
 
 # lr decay methods
@@ -130,6 +148,7 @@ def no_decay(net, clock):
     return net.optim_spec['lr']
 
 
+# TODO retire these
 def fn_decay_lr(net, clock, fn):
     '''
     Decay learning rate for net module, only returns the new lr for user to set to appropriate nets
@@ -265,6 +284,8 @@ def gen_assert_trained(pre_model):
                     logger.warn(e)
         logger.debug('Passed network weight update assertation in dev lab_mode.')
     return assert_trained
+
+# TODO remove
 
 
 def push_global_grad(local_net, global_net):

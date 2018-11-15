@@ -1,5 +1,5 @@
 from slm_lab.agent import AgentSpace
-from slm_lab.agent.net.convnet import ConvNet
+from slm_lab.agent.net.conv import ConvNet
 from slm_lab.agent.net.mlp import MLPNet, HydraMLPNet
 from slm_lab.agent.net.recurrent import RecurrentNet
 from slm_lab.env import EnvSpace
