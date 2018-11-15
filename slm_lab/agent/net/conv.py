@@ -332,7 +332,7 @@ class DuelingConvNet(ConvNet):
             x = x.permute(0, 3, 1, 2)
         x = self.conv_model(x)
         x = x.view(x.size(0), -1)  # to (batch_size, -1)
-        f hasattr(self, 'fc_model'):
+        if hasattr(self, 'fc_model'):
             x = self.fc_model(x)
         state_value = self.v(x)
         raw_advantages = self.adv(x)
