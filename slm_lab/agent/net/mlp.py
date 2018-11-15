@@ -101,8 +101,6 @@ class MLPNet(Net, nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
-        # store grad norms for debugging
-        self.grad_norms = []
 
     def __str__(self):
         return super(MLPNet, self).__str__() + f'\noptim: {self.optim}'
@@ -133,18 +131,14 @@ class MLPNet(Net, nn.Module):
             loss = self.loss_fn(out, y)
         assert not torch.isnan(loss).any(), loss
         if net_util.to_assert_trained():
-            # to accommodate split model in inherited classes
-            model = getattr(self, 'model', None) or getattr(self, 'model_body')
-            assert_trained = net_util.gen_assert_trained(model)
+            assert_trained = net_util.gen_assert_trained(self)
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()
-        # TODO debug
-        # self.store_grad_norms()
         if net_util.to_assert_trained():
-            model = getattr(self, 'model', None) or getattr(self, 'model_body')
-            assert_trained(model, loss)
+            assert_trained(self, loss)
+            self.store_grad_norms()
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
@@ -155,13 +149,6 @@ class MLPNet(Net, nn.Module):
         '''
         self.eval()
         return self(x)
-
-    def store_grad_norms(self):
-        '''Stores the gradient norms for debugging.'''
-        norms = []
-        for p_name, param in self.named_parameters():
-            norms.append(param.grad.norm().item())
-        self.grad_norms = norms
 
 
 class HydraMLPNet(Net, nn.Module):
@@ -277,8 +264,6 @@ class HydraMLPNet(Net, nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)
-        # store grad norms for debugging
-        self.grad_norms = []
 
     def __str__(self):
         return super(HydraMLPNet, self).__str__() + f'\noptim: {self.optim}'
@@ -336,7 +321,7 @@ class HydraMLPNet(Net, nn.Module):
             loss = total_loss
         assert not torch.isnan(loss).any(), loss
         if net_util.to_assert_trained():
-            assert_trained = net_util.gen_assert_trained(self.model_body)
+            assert_trained = net_util.gen_assert_trained(self)
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad:
             logger.debug(f'Clipping gradient: {self.clip_grad_val}')
@@ -347,9 +332,9 @@ class HydraMLPNet(Net, nn.Module):
             net_util.push_global_grad(self, global_net)
             self.optim.step()
             net_util.pull_global_param(self, global_net)
-        self.store_grad_norms()
         if net_util.to_assert_trained():
-            assert_trained(self.model_body, loss)
+            assert_trained(self, loss)
+            self.store_grad_norms()
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
@@ -370,13 +355,6 @@ class HydraMLPNet(Net, nn.Module):
         self.optim_spec['lr'] = new_lr
         logger.debug(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
         self.optim = net_util.get_optim(self, self.optim_spec)
-
-    def store_grad_norms(self):
-        '''Stores the gradient norms for debugging.'''
-        norms = []
-        for p_name, param in self.named_parameters():
-            norms.append(param.grad.norm().item())
-        self.grad_norms = norms
 
 
 class DuelingMLPNet(MLPNet):
@@ -457,8 +435,6 @@ class DuelingMLPNet(MLPNet):
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_decay = getattr(net_util, self.lr_decay)
-        # store grad norms for debugging
-        self.grad_norms = []
 
     def forward(self, x):
         '''The feedforward step'''

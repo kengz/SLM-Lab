@@ -134,8 +134,6 @@ class RecurrentNet(Net, nn.Module):
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
-        # store grad norms for debugging
-        self.grad_norms = []
 
     def __str__(self):
         return super(RecurrentNet, self).__str__() + f'\noptim: {self.optim}'
@@ -175,13 +173,14 @@ class RecurrentNet(Net, nn.Module):
             loss = self.loss_fn(out, y)
         assert not torch.isnan(loss).any(), loss
         if net_util.to_assert_trained():
-            assert_trained = net_util.gen_assert_trained(self.rnn_model)
+            assert_trained = net_util.gen_assert_trained(self)
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()
         if net_util.to_assert_trained():
-            assert_trained(self.rnn_model, loss)
+            assert_trained(self, loss)
+            self.store_grad_norms()
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
@@ -191,10 +190,3 @@ class RecurrentNet(Net, nn.Module):
         '''
         self.eval()
         return self(x)
-
-    def store_grad_norms(self):
-        '''Stores the gradient norms for debugging.'''
-        norms = []
-        for p_name, param in self.named_parameters():
-            norms.append(param.grad.norm().item())
-        self.grad_norms = norms

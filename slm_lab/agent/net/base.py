@@ -25,3 +25,8 @@ class Net(ABC):
                 self.device = 'cpu'
         else:
             self.device = 'cpu'
+
+    def store_grad_norms(self):
+        '''Stores the gradient norms for debugging.'''
+        norms = [param.grad.norm().item() for param in self.parameters()]
+        self.grad_norms = norms
