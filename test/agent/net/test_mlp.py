@@ -60,6 +60,19 @@ def test_training_step():
     assert_trained(net, loss)
 
 
+def test_no_lr_scheduler():
+    nopo_lrs_net_spec = deepcopy(net_spec)
+    nopo_lrs_net_spec['lr_scheduler_spec'] = None
+    net = MLPNet(net_spec, in_dim, out_dim)
+    assert isinstance(net, nn.Module)
+    assert hasattr(net, 'model')
+    assert hasattr(net, 'model_tail')
+    assert not hasattr(net, 'model_tails')
+
+    y = net.forward(x)
+    assert y.shape == (batch_size, out_dim)
+
+
 def test_multitails():
     net = MLPNet(net_spec, in_dim, [3, 4])
     assert isinstance(net, nn.Module)

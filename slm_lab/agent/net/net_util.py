@@ -64,7 +64,7 @@ def get_lr_scheduler(cls, lr_scheduler_spec):
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, lr_scheduler_spec['name'])
         lr_scheduler_spec = ps.omit(lr_scheduler_spec, 'name')
         lr_scheduler = LRSchedulerClass(cls.optim, **lr_scheduler_spec)
-        return lr_scheduler
+    return lr_scheduler
 
 
 def get_policy_out_dim(body):
