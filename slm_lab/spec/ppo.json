@@ -30,7 +30,6 @@
         "shared": true,
         "hid_layers": [32],
         "hid_layers_activation": "relu",
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -117,7 +116,6 @@
         "shared": false,
         "hid_layers": [64],
         "hid_layers_activation": "tanh",
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -207,7 +205,6 @@
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -297,7 +294,6 @@
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -384,7 +380,6 @@
         "shared": true,
         "hid_layers": [32],
         "hid_layers_activation": "relu",
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -471,7 +466,6 @@
         "shared": false,
         "hid_layers": [32],
         "hid_layers_activation": "relu",
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -561,7 +555,6 @@
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -651,7 +644,6 @@
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -746,7 +738,6 @@
         ],
         "hid_layers_activation": "relu",
         "batch_norm": false,
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "loss_spec": {
@@ -820,7 +811,6 @@
         ],
         "hid_layers_activation": "relu",
         "batch_norm": false,
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "loss_spec": {
@@ -891,8 +881,7 @@
         ],
         "hid_layers_activation": "relu",
         "batch_norm": false,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "loss_spec": {
           "name": "SmoothL1Loss"

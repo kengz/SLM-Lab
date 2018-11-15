@@ -27,8 +27,7 @@
         "type": "MLPNet",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -109,8 +108,7 @@
         "type": "MLPNet",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -194,8 +192,7 @@
         "type": "MLPNet",
         "hid_layers": [32],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -282,8 +279,7 @@
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -370,8 +366,7 @@
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -464,8 +459,7 @@
         ],
         "hid_layers_activation": "relu",
         "batch_norm": false,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
@@ -543,8 +537,7 @@
         ],
         "hid_layers_activation": "relu",
         "batch_norm": false,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
@@ -614,8 +607,7 @@
         "type": "MLPNet",
         "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },

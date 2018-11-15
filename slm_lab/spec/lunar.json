@@ -26,8 +26,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "selu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -107,8 +106,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -194,8 +192,7 @@
         "shared": true,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -286,8 +283,7 @@
         "shared": false,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -380,8 +376,7 @@
         "shared": false,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -481,8 +476,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -575,8 +569,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -671,8 +664,7 @@
         "shared": true,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -763,8 +755,7 @@
         "shared": false,
         "hid_layers": [400, 200],
         "hid_layers_activation": "tanh",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -862,8 +853,7 @@
         "shared": false,
         "hid_layers": [400, 200],
         "hid_layers_activation": "tanh",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -963,8 +953,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1057,8 +1046,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1148,8 +1136,7 @@
         "shared": true,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1234,8 +1221,7 @@
         "shared": false,
         "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1326,8 +1312,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1416,8 +1401,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1517,8 +1501,7 @@
         "shared": true,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1615,8 +1598,7 @@
         "shared": false,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1719,8 +1701,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1821,8 +1802,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1915,8 +1895,7 @@
         "shared": true,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -2006,8 +1985,7 @@
         "shared": false,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -2107,8 +2085,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -2206,8 +2183,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -2289,8 +2265,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2362,8 +2337,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2438,8 +2412,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2515,8 +2488,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2595,8 +2567,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2674,8 +2645,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2757,8 +2727,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2843,8 +2812,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2930,8 +2898,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -3014,8 +2981,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -3097,8 +3063,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -3183,8 +3148,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -3270,8 +3234,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -3354,8 +3317,7 @@
         "type": "DuelingMLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -3437,8 +3399,7 @@
         "type": "DuelingMLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },

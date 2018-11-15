@@ -34,8 +34,7 @@
         "shared": false,
         "hid_layers": [200],
         "hid_layers_activation": "sigmoid",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -133,8 +132,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -238,8 +236,7 @@
         "shared": false,
         "hid_layers": [200],
         "hid_layers_activation": "sigmoid",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -338,8 +335,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -431,8 +427,7 @@
         "type": "MLPNet",
         "hid_layers": [200, 100],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -523,8 +518,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -613,8 +607,7 @@
         "type": "MLPNet",
         "hid_layers": [200, 100],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -705,8 +698,7 @@
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },

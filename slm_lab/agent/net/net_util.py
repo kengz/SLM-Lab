@@ -238,7 +238,7 @@ def gen_assert_trained(pre_model):
             max_norm = 1e5
             for p_name, param in post_model.named_parameters():
                 try:
-                    assert min_norm < param.grad.norm() < max_norm, f'Gradient norm fails the extreme value check {min_norm} < {p_name}:{param.grad.norm()} < {max_norm}, which is bad. Loss: {loss}. Check your network and loss computation. Consider using the "clip_grad" and "clip_grad_val" net parameter.'
+                    assert min_norm < param.grad.norm() < max_norm, f'Gradient norm fails the extreme value check {min_norm} < {p_name}:{param.grad.norm()} < {max_norm}, which is bad. Loss: {loss}. Check your network and loss computation. Consider using the "clip_grad_val" net parameter.'
                 except Exception as e:
                     logger.warn(e)
         logger.debug('Passed network weight update assertation in dev lab_mode.')

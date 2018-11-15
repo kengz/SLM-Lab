@@ -37,7 +37,6 @@
         "shared": true,
         "hid_layers": [64],
         "hid_layers_activation": "tanh",
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -133,7 +132,6 @@
         "shared": false,
         "hid_layers": [64],
         "hid_layers_activation": "tanh",
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -232,7 +230,6 @@
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -331,7 +328,6 @@
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -427,7 +423,6 @@
         "shared": true,
         "hid_layers": [64],
         "hid_layers_activation": "tanh",
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -523,7 +518,6 @@
         "shared": false,
         "hid_layers": [32],
         "hid_layers_activation": "tanh",
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -622,7 +616,6 @@
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -721,7 +714,6 @@
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {

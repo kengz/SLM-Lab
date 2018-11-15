@@ -34,8 +34,7 @@
           []
         ],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -127,8 +126,7 @@
           []
         ],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -223,8 +221,7 @@
           []
         ],
         "hid_layers_activation": "tanh",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
