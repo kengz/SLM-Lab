@@ -11,6 +11,7 @@ jobs:
       - image: kengz/slm_lab:latest
 
     steps:
+      - checkout
       - run:
           name: Install NodeJS dependencies
           command: |
