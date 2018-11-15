@@ -346,16 +346,6 @@ class HydraMLPNet(Net, nn.Module):
         self.eval()
         return self(x)
 
-    def update_lr(self, clock):
-        assert 'lr' in self.optim_spec
-        old_lr = self.optim_spec['lr']
-        new_lr = self.lr_decay(self, clock)
-        if new_lr == old_lr:
-            return
-        self.optim_spec['lr'] = new_lr
-        logger.debug(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
-        self.optim = net_util.get_optim(self, self.optim_spec)
-
 
 class DuelingMLPNet(MLPNet):
     '''

@@ -172,6 +172,6 @@ class SARSA(Algorithm):
         '''Update the agent after training'''
         for net_name in self.net_names:
             net = getattr(self, net_name)
-            net.update_lr(self.body.env.clock)
+            self.body.grad_norms.extend(net.grad_norms)
         explore_var = self.action_policy_update(self, self.body)
         return explore_var

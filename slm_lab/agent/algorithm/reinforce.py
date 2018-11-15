@@ -174,9 +174,7 @@ class Reinforce(Algorithm):
     def update(self):
         for net_name in self.net_names:
             net = getattr(self, net_name)
-            net.update_lr(self.body.env.clock)
             self.body.grad_norms.extend(net.grad_norms)
-        # logger.info(f'Body grad_norms: {self.body.grad_norms}')
         explore_var = self.action_policy_update(self, self.body)
         if hasattr(self, 'entropy_anneal_epi'):
             self.body.entropy_coef = self.entropy_decay_fn(self, self.body)
