@@ -101,7 +101,8 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -471,7 +472,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": true,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -564,7 +566,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [400, 200],
+        "cell_type": "GRU",
+        "fc_hid_layers": [400, 200],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -948,7 +951,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": true,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -1041,7 +1045,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [400, 200],
+        "cell_type": "GRU",
+        "fc_hid_layers": [400, 200],
         "hid_layers_activation": "tanh",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -1307,7 +1312,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": true,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -1396,7 +1402,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -1696,7 +1703,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": true,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -1797,7 +1805,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -2080,7 +2089,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": true,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -2178,7 +2188,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -2407,7 +2418,8 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -2483,7 +2495,8 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -2807,7 +2820,8 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -2893,7 +2907,8 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -3143,7 +3158,8 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
@@ -3229,7 +3245,8 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,

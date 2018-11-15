@@ -191,7 +191,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": true,
-        "hid_layers": [],
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
@@ -277,7 +278,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [],
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
@@ -529,7 +531,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": true,
-        "hid_layers": [],
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
@@ -615,7 +618,8 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [],
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
