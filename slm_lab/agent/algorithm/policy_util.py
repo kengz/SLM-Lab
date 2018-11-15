@@ -343,7 +343,7 @@ def no_update(algorithm, body):
 
 def fn_decay_explore_var(algorithm, body, fn):
     '''Apply a function to decay explore_var'''
-    epi = body.env.clock.get('epi')
+    epi = body.env.clock.get('total_t')
     body.explore_var = fn(algorithm.explore_var_start, algorithm.explore_var_end, algorithm.explore_anneal_epi, epi)
     return body.explore_var
 
