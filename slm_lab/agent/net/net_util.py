@@ -140,47 +140,6 @@ def init_parameters(module, init_fn):
         nn.init.constant_(module.bias, bias_init)
 
 
-# lr decay methods
-
-
-def no_decay(net, clock):
-    '''No update'''
-    return net.optim_spec['lr']
-
-
-# TODO retire these
-def fn_decay_lr(net, clock, fn):
-    '''
-    Decay learning rate for net module, only returns the new lr for user to set to appropriate nets
-    In the future, might add more flexible lr adjustment, like boosting and decaying on need.
-    '''
-    total_t = clock.get('total_t')
-    start_val, end_val = net.optim_spec['lr'], 1e-6
-    anneal_total_t = net.lr_anneal_timestep or max(1e6, 60 * net.lr_decay_frequency)
-
-    if total_t >= net.lr_decay_min_timestep and total_t % net.lr_decay_frequency == 0:
-        logger.debug(f'anneal_total_t: {anneal_total_t}, total_t: {total_t}')
-        new_lr = fn(start_val, end_val, anneal_total_t, total_t)
-        return new_lr
-    else:
-        return no_decay(net, clock)
-
-
-def linear_decay(net, clock):
-    '''Apply _linear_decay to lr'''
-    return fn_decay_lr(net, clock, policy_util._linear_decay)
-
-
-def rate_decay(net, clock):
-    '''Apply _rate_decay to lr'''
-    return fn_decay_lr(net, clock, policy_util._rate_decay)
-
-
-def periodic_decay(net, clock):
-    '''Apply _periodic_decay to lr'''
-    return fn_decay_lr(net, clock, policy_util._periodic_decay)
-
-
 # params methods
 
 
@@ -284,16 +243,3 @@ def gen_assert_trained(pre_model):
                     logger.warn(e)
         logger.debug('Passed network weight update assertation in dev lab_mode.')
     return assert_trained
-
-# TODO remove
-
-
-def push_global_grad(local_net, global_net):
-    '''Push local gradient to global for distributed training'''
-    for lp, gp in zip(local_net.parameters(), global_net.parameters()):
-        gp._grad = lp.grad.to(global_net.device)
-
-
-def pull_global_param(local_net, global_net):
-    '''Pull global param to local network for distributed training'''
-    copy(local_net, global_net)

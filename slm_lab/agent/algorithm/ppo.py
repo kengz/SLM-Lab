@@ -91,7 +91,8 @@ class PPO(ActorCritic):
             'normalize_state',
         ])
         # use the same annealing epi as lr
-        self.clip_eps_anneal_epi = self.net_spec['lr_decay_min_timestep'] + self.net_spec['lr_decay_frequency'] * 20
+        # TODO fix with entropy anneal generalization
+        self.clip_eps_anneal_epi = self.net_spec['entropy_anneal_epi']
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
