@@ -116,14 +116,14 @@ class MLPNet(Net, nn.Module):
         else:
             return self.model_tail(x)
 
-    def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_t=None):
+    def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_clock=None):
         '''
         Takes a single training step: one forward and one backwards pass
         More most RL usage, we have custom, often complicated, loss functions. Compute its value and put it in a pytorch tensor then pass it in as loss
         '''
         if hasattr(self, 'model_tails') and x is not None:
             raise ValueError('Loss computation from x,y not supported for multitails')
-        self.lr_scheduler.step(epoch=lr_t)
+        self.lr_scheduler.step(epoch=lr_clock.get('total_t'))
         self.train()
         self.optim.zero_grad()
         if loss is None:
@@ -302,11 +302,11 @@ class HydraMLPNet(Net, nn.Module):
             outs.append(model_tail(body_x))
         return outs
 
-    def training_step(self, xs=None, ys=None, loss=None, retain_graph=False, lr_t=None):
+    def training_step(self, xs=None, ys=None, loss=None, retain_graph=False, lr_clock=None):
         '''
         Takes a single training step: one forward and one backwards pass. Both x and y are lists of the same length, one x and y per environment
         '''
-        self.lr_scheduler.step(epoch=lr_t)
+        self.lr_scheduler.step(epoch=lr_clock.get('total_t'))
         self.train()
         self.optim.zero_grad()
         if loss is None:
