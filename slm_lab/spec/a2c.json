@@ -48,7 +48,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 100000
         },
         "gpu": false
       }
@@ -135,7 +134,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 100000
         },
         "gpu": false
       }
@@ -226,7 +224,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 100000
         },
         "gpu": false
       }
@@ -317,7 +314,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 100000
         },
         "gpu": false
       }
@@ -404,7 +400,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 100000
         },
         "gpu": false
       }
@@ -491,7 +486,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 100000
         },
         "gpu": false
       }
@@ -582,7 +576,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 100000
         },
         "gpu": false
       }
@@ -673,7 +666,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 100000
         },
         "gpu": false
       }
@@ -765,7 +757,6 @@
           "name": "StepLR",
           "step_size": 1000,
           "gamma": 0.9,
-          "last_epoch": 1000000
         },
         "gpu": false
       }
@@ -840,7 +831,6 @@
           "name": "StepLR",
           "step_size": 1000,
           "gamma": 0.9,
-          "last_epoch": 1000000
         },
         "gpu": false
       }

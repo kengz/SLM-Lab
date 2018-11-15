@@ -48,7 +48,6 @@
           "name": "StepLR",
           "step_size": 160000,
           "gamma": 0.9,
-          "last_epoch": 400000
         },
         "gpu": false
       }
@@ -147,13 +146,11 @@
           "name": "StepLR",
           "step_size": 160000,
           "gamma": 0.9,
-          "last_epoch": 400000
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 160000,
           "gamma": 0.9,
-          "last_epoch": 400000
         },
         "gpu": false
       }
@@ -251,7 +248,6 @@
           "name": "StepLR",
           "step_size": 160000,
           "gamma": 0.9,
-          "last_epoch": 400000
         },
         "gpu": false
       }
@@ -351,7 +347,6 @@
           "name": "StepLR",
           "step_size": 160000,
           "gamma": 0.9,
-          "last_epoch": 400000
         },
         "gpu": false
       }
@@ -441,7 +436,6 @@
           "name": "StepLR",
           "step_size": 160000,
           "gamma": 0.9,
-          "last_epoch": 400000
         },
         "update_type": "polyak",
         "update_frequency": 200,
@@ -533,7 +527,6 @@
           "name": "StepLR",
           "step_size": 160000,
           "gamma": 0.9,
-          "last_epoch": 400000
         },
         "update_type": "polyak",
         "update_frequency": 200,
@@ -622,7 +615,6 @@
           "name": "StepLR",
           "step_size": 160000,
           "gamma": 0.9,
-          "last_epoch": 400000
         },
         "update_type": "polyak",
         "update_frequency": 200,
@@ -714,7 +706,6 @@
           "name": "StepLR",
           "step_size": 160000,
           "gamma": 0.9,
-          "last_epoch": 400000
         },
         "update_type": "polyak",
         "update_frequency": 200,

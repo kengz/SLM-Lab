@@ -39,7 +39,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 20000
         },
         "update_type": "polyak",
         "update_frequency": 1,
@@ -117,7 +116,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 20000
         },
         "update_type": "polyak",
         "update_frequency": 1,
@@ -205,7 +203,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 20000
         },
         "update_type": "polyak",
         "update_frequency": 1,
@@ -293,7 +290,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 20000
         },
         "update_type": "polyak",
         "update_frequency": 1,
@@ -388,7 +384,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 20000
         },
         "update_type": "replace",
         "update_frequency": 10000,
@@ -464,7 +459,6 @@
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
-          "last_epoch": 20000
         },
         "update_type": "replace",
         "update_frequency": 10000,
