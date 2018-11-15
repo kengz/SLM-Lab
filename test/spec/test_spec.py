@@ -186,11 +186,17 @@ def test_multitask_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skipif(os.environ.get('CI') == 'true', reason="CI has not enough RAM")
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('dqn.json', 'dqn_boltzmann_breakout'),
 ])
 def test_dqn_breakout(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
+    ('reinforce.json', 'reinforce_conv_vizdoom'),
+])
+def test_reinforce_vizdoom(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
