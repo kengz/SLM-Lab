@@ -30,14 +30,13 @@ dependencies:
   - pytest-timeout=1.2.1=py_0
   - pytest=3.6.0=py36_0
   - python=3.6.4=0
-  - pytorch=0.4.1
+  - pytorch-nightly=1.0.0.dev20181112
   - pyyaml=3.12=py36_1
   - regex=2017.12.12=py36_0
   - requests=2.18.4=py36_1
   - scipy=1.0.0=py36_blas_openblas_201
   - setuptools=38.4.0=py36_0
   - six=1.11.0=py36_1
-  - torchvision=0.2.1
   - ujson=1.35=py36_0
   - urllib3=1.22=py36_0
   - wheel=0.30.0=py36_2
