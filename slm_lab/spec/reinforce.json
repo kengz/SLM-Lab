@@ -370,7 +370,7 @@
       "algorithm": {
         "name": "Reinforce",
         "action_pdtype": "default",
-        "action_policy": "boltzmann",
+        "action_policy": "default",
         "action_policy_update": "no_update",
         "explore_var_start": null,
         "explore_var_end": null,
