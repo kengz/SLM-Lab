@@ -234,34 +234,29 @@ class DuelingConvNet(ConvNet):
     e.g. net_spec
     "net": {
         "type": "DuelingConvNet",
-        "hid_layers": [
-          [
-            [4, 32, [8, 8], 4, 0, [1, 1]],
-            [32, 64, [4, 4], 2, 0, [1, 1]],
-            [64, 64, [3, 3], 1, 0, [1, 1]]
-          ],
-          [512]
+        "shared": true,
+        "conv_hid_layers": [
+            [32, 8, 4, 0, 1],
+            [64, 4, 2, 0, 1],
+            [64, 3, 1, 0, 1]
         ],
+        "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
         "init_fn": "xavier_uniform_",
         "batch_norm": false,
-        "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "RMSprop",
-          "lr": 0.00025,
-          "alpha": 0.95,
-          "eps": 0.01,
-          "momentum": 0.0,
-          "centered": true
+          "name": "Adam",
+          "lr": 0.02
         },
-        "lr_decay": "no_decay",
-        "lr_decay_frequency": 400,
-        "lr_decay_min_timestep": 1400,
-        "lr_anneal_timestep": 1000000,
+        "lr_scheduler_spec": {
+            "name": "StepLR",
+            "step_size": 30,
+            "gamma": 0.1
+        },
         "update_type": "replace",
         "update_frequency": 10000,
         "polyak_coef": 0.9,
@@ -270,64 +265,33 @@ class DuelingConvNet(ConvNet):
     '''
 
     def __init__(self, net_spec, in_dim, out_dim):
-        '''
-        net_spec:
-        hid_layers: list with tuple consisting of two elements. (conv_hid, flat_hid)
-                    Note: tuple must contain two elements, use empty list if no such layers.
-            1. conv_hid: list containing dimensions of the convolutional hidden layers. Asssumed to all come before the flat layers.
-                Note: a convolutional layer should specify the in_channel, out_channels, kernel_size, stride (of kernel steps), padding, and dilation (spacing between kernel points) E.g. [3, 16, (5, 5), 1, 0, (2, 2)]
-                For more details, see http://pytorch.org/docs/master/nn.html#conv2d and https://github.com/vdumoulin/conv_arithmetic/blob/master/README.md
-
-            2. flat_hid: list of fc layers following the convolutional layers
-        hid_layers_activation: activation function for the hidden layers
-        init_fn: weight initialization function
-        batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
-        clip_grad: whether to clip the gradient
-        clip_grad_val: the clip value
-        loss_spec: measure of error between model predictions and correct outputs
-        optim_spec: parameters for initializing the optimizer
-        lr_decay: function to decay learning rate
-        lr_decay_frequency: how many total timesteps per decay
-        lr_decay_min_timestep: minimum amount of total timesteps before starting decay
-        lr_anneal_timestep: timestep to anneal lr decay
-        update_type: method to update network weights: 'replace' or 'polyak'
-        update_frequency: how many total timesteps per update
-        polyak_coef: ratio of polyak weight update
-        gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
-        '''
         # OpenAI gym provides images as W x H x C, pyTorch expects C x W x H
         in_dim = np.roll(in_dim, 1)
-        # use generic multi-output for Convnet
-        out_dim = np.reshape(out_dim, -1).tolist()
         nn.Module.__init__(self)
         Net.__init__(self, net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             init_fn='xavier_uniform_',
             batch_norm=True,
-            clip_grad=False,
-            clip_grad_val=1.0,
+            clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},
-            lr_decay='no_decay',
+            lr_scheduler_spec=None,
             update_type='replace',
             update_frequency=1,
             polyak_coef=0.0,
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
-            'hid_layers',
+            'conv_hid_layers',
+            'fc_hid_layers',
             'hid_layers_activation',
             'init_fn',
             'batch_norm',
-            'clip_grad',
             'clip_grad_val',
             'loss_spec',
             'optim_spec',
-            'lr_decay',
-            'lr_decay_frequency',
-            'lr_decay_min_timestep',
-            'lr_anneal_timestep',
+            'lr_scheduler_spec',
             'update_type',
             'update_frequency',
             'polyak_coef',
@@ -335,17 +299,21 @@ class DuelingConvNet(ConvNet):
         ])
 
         # Guard against inappropriate algorithms and environments
-        assert len(out_dim) == 1
-        # Build model
-        self.conv_hid_layers = self.hid_layers[0]
-        self.fc_hid_layers = self.hid_layers[1]
+        assert isinstance(out_dim, int)
+
         # conv layer
         self.conv_model = self.build_conv_layers(self.conv_hid_layers)
-        # fc layer from flattened conv
-        self.fc_model = self.build_fc_layers(self.fc_hid_layers)
-        # tails
-        tail_in_dim = self.fc_hid_layers[-1] if len(self.fc_hid_layers) > 0 else self.conv_out_dim
-        # output layers
+        self.conv_out_dim = self.get_conv_output_size()
+
+        # fc layer
+        if not ps.is_empty(self.fc_hid_layers):
+            # fc layer from flattened conv
+            self.fc_model = self.build_fc_layers(self.fc_hid_layers)
+            tail_in_dim = self.fc_hid_layers[-1]
+        else:
+            tail_in_dim = self.conv_out_dim
+
+        # tails. avoid list for single-tail for compute speed
         self.v = nn.Linear(tail_in_dim, 1)  # state value
         self.adv = nn.Linear(tail_in_dim, out_dim[0])  # action dependent raw advantage
 
@@ -354,18 +322,18 @@ class DuelingConvNet(ConvNet):
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_decay = getattr(net_util, self.lr_decay)
+        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
 
     def forward(self, x):
         '''The feedforward step'''
         if x.dim() == 3:
-            x = x.permute(2, 0, 1).clone()
-            x.unsqueeze_(dim=0)
+            x = x.permute(2, 0, 1).unsqueeze(dim=0)
         elif x.dim() == 4:
             x = x.permute(0, 3, 1, 2)
         x = self.conv_model(x)
-        x = x.view(-1, self.conv_out_dim)
-        x = self.fc_model(x)
+        x = x.view(x.size(0), -1)  # to (batch_size, -1)
+        f hasattr(self, 'fc_model'):
+            x = self.fc_model(x)
         state_value = self.v(x)
         raw_advantages = self.adv(x)
         out = math_util.calc_q_value_logits(state_value, raw_advantages)

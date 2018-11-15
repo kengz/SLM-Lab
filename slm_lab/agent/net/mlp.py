@@ -158,6 +158,7 @@ class HydraMLPNet(Net, nn.Module):
     e.g. net_spec
     "net": {
         "type": "HydraMLPNet",
+        "shared": true,
         "hid_layers": [
             [[32],[32]], # 2 heads with hidden layers
             [64], # body
@@ -165,7 +166,6 @@ class HydraMLPNet(Net, nn.Module):
         ],
         "hid_layers_activation": "relu",
         "init_fn": "xavier_uniform_",
-        "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "MSELoss"
@@ -174,10 +174,11 @@ class HydraMLPNet(Net, nn.Module):
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 1000000,
+        "lr_scheduler_spec": {
+            "name": "StepLR",
+            "step_size": 30,
+            "gamma": 0.1
+        },
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0.9,
@@ -214,28 +215,24 @@ class HydraMLPNet(Net, nn.Module):
         # set default
         util.set_attr(self, dict(
             init_fn='xavier_uniform_',
-            clip_grad=False,
-            clip_grad_val=1.0,
+            clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},
-            lr_decay='no_decay',
+            lr_scheduler_spec=None,
             update_type='replace',
             update_frequency=1,
             polyak_coef=0.0,
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
+            'shared',
             'hid_layers',
             'hid_layers_activation',
             'init_fn',
-            'clip_grad',
             'clip_grad_val',
             'loss_spec',
             'optim_spec',
-            'lr_decay',
-            'lr_decay_frequency',
-            'lr_decay_min_timestep',
-            'lr_anneal_timestep',
+            'lr_scheduler_spec',
             'update_type',
             'update_frequency',
             'polyak_coef',
@@ -263,7 +260,7 @@ class HydraMLPNet(Net, nn.Module):
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_decay = getattr(net_util, self.lr_decay)
+        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
 
     def __str__(self):
         return super(HydraMLPNet, self).__str__() + f'\noptim: {self.optim}'
@@ -305,12 +302,12 @@ class HydraMLPNet(Net, nn.Module):
             outs.append(model_tail(body_x))
         return outs
 
-    def training_step(self, xs=None, ys=None, loss=None, retain_graph=False, global_net=None):
+    def training_step(self, xs=None, ys=None, loss=None, retain_graph=False, lr_t=None):
         '''
         Takes a single training step: one forward and one backwards pass. Both x and y are lists of the same length, one x and y per environment
         '''
+        self.lr_scheduler.step(epoch=lr_t)
         self.train()
-        self.zero_grad()
         self.optim.zero_grad()
         if loss is None:
             outs = self(xs)
@@ -324,14 +321,8 @@ class HydraMLPNet(Net, nn.Module):
             assert_trained = net_util.gen_assert_trained(self)
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad:
-            logger.debug(f'Clipping gradient: {self.clip_grad_val}')
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
-        if global_net is None:
-            self.optim.step()
-        else:  # distributed training with global net
-            net_util.push_global_grad(self, global_net)
-            self.optim.step()
-            net_util.pull_global_param(self, global_net)
+        self.optim.step()
         if net_util.to_assert_trained():
             assert_trained(self, loss)
             self.store_grad_norms()
@@ -355,10 +346,10 @@ class DuelingMLPNet(MLPNet):
     e.g. net_spec
     "net": {
         "type": "DuelingMLPNet",
+        "shared": true,
         "hid_layers": [32],
         "hid_layers_activation": "relu",
         "init_fn": "xavier_uniform_",
-        "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "MSELoss"
@@ -367,10 +358,11 @@ class DuelingMLPNet(MLPNet):
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 1000000,
+        "lr_scheduler_spec": {
+            "name": "StepLR",
+            "step_size": 30,
+            "gamma": 0.1
+        },
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0.9,
@@ -384,28 +376,24 @@ class DuelingMLPNet(MLPNet):
         # set default
         util.set_attr(self, dict(
             init_fn='xavier_uniform_',
-            clip_grad=False,
-            clip_grad_val=1.0,
+            clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},
-            lr_decay='no_decay',
+            lr_scheduler_spec=None,
             update_type='replace',
             update_frequency=1,
             polyak_coef=0.0,
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
+            'shared',
             'hid_layers',
             'hid_layers_activation',
             'init_fn',
-            'clip_grad',
             'clip_grad_val',
             'loss_spec',
             'optim_spec',
-            'lr_decay',
-            'lr_decay_frequency',
-            'lr_decay_min_timestep',
-            'lr_anneal_timestep',
+            'lr_scheduler_spec',
             'update_type',
             'update_frequency',
             'polyak_coef',
@@ -424,7 +412,7 @@ class DuelingMLPNet(MLPNet):
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_decay = getattr(net_util, self.lr_decay)
+        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
 
     def forward(self, x):
         '''The feedforward step'''
