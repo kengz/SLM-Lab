@@ -19,9 +19,12 @@ env = None
 def test_xvfb():
     '''provide xvfb in test environment'''
     vdisplay = Xvfb()
-    vdisplay.start()
-    yield vdisplay
-    vdisplay.stop()
+    try:  # guard for multiprocessing dist test
+        vdisplay.start()
+        yield vdisplay
+        vdisplay.stop()
+    except Exception as e:
+        yield vdisplay
 
 
 @pytest.fixture(scope='session')
