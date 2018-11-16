@@ -317,7 +317,7 @@
         "entropy_anneal_epi": 50,
         "entropy_anneal_start_epi": 10,
         "training_frequency": 1,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -370,7 +370,7 @@
       "algorithm": {
         "name": "Reinforce",
         "action_pdtype": "default",
-        "action_policy": "boltzmann",
+        "action_policy": "default",
         "action_policy_update": "no_update",
         "explore_var_start": null,
         "explore_var_end": null,
@@ -382,7 +382,7 @@
         "entropy_anneal_epi": 50,
         "entropy_anneal_start_epi": 10,
         "training_frequency": 1,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyAtariReplay",

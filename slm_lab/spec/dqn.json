@@ -510,7 +510,7 @@
         "training_epoch": 4,
         "training_frequency": 100,
         "training_min_timestep": 100,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "AtariReplay",

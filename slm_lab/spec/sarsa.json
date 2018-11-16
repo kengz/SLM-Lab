@@ -316,7 +316,7 @@
         "explore_anneal_epi": 20,
         "gamma": 0.99,
         "training_frequency": 100,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -376,7 +376,7 @@
         "explore_anneal_epi": 20,
         "gamma": 0.99,
         "training_frequency": 100,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
