@@ -12,7 +12,7 @@
         "explore_anneal_epi": 200000,
         "gamma": 0.99,
         "training_batch_epoch": 1,
-        "training_epoch": 4,
+        "training_epoch": 1,
         "training_frequency": 4,
         "training_min_timestep": 10000,
         "normalize_state": false
@@ -38,7 +38,6 @@
         "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "SmoothL1Loss",
-          "reduction": "sum"
         },
         "optim_spec": {
           "name": "Adam",

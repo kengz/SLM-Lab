@@ -10,7 +10,7 @@ import torch
 
 logger = logger.get_logger(__name__)
 
-
+# TODO rewrite Q-value loss compute to use max
 class VanillaDQN(SARSA):
     '''
     Implementation of a simple DQN algorithm.
