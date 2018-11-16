@@ -1,11 +1,9 @@
 from slm_lab.agent import AgentSpace
-from slm_lab.agent.net.conv import ConvNet
-from slm_lab.agent.net.mlp import MLPNet, HydraMLPNet
-from slm_lab.agent.net.recurrent import RecurrentNet
 from slm_lab.env import EnvSpace
 from slm_lab.experiment.monitor import AEBSpace, InfoSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
+from xvfbwrapper import Xvfb
 import numpy as np
 import pandas as pd
 import pytest
@@ -15,6 +13,15 @@ spec = None
 aeb_space = None
 agent = None
 env = None
+
+
+@pytest.fixture(scope='session', autouse=True)
+def test_xvfb():
+    '''provide xvfb in test environment'''
+    vdisplay = Xvfb()
+    vdisplay.start()
+    yield vdisplay
+    vdisplay.stop()
 
 
 @pytest.fixture(scope='session')

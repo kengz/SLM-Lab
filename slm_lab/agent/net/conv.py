@@ -164,7 +164,6 @@ class ConvNet(Net, nn.Module):
         Builds all of the fc layers in the network and store in a Sequential model
         '''
         assert not ps.is_empty(fc_hid_layers)
-        self.conv_out_dim = self.get_conv_output_size()
         dims = [self.conv_out_dim] + fc_hid_layers
         fc_model = net_util.build_sequential(dims, self.hid_layers_activation)
         return fc_model
