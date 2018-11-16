@@ -151,7 +151,7 @@ class RecurrentNet(Net, nn.Module):
             _output, (h_n, c_n) = self.rnn_model(x)
         else:
             _output, h_n = self.rnn_model(x)
-        hid_x = h_n[-1:].squeeze_(dim=0)  # get final time-layer
+        hid_x = h_n[-1]  # get final time-layer
         # return tensor if single tail, else list of tail tensors
         if hasattr(self, 'model_tails'):
             outs = []
