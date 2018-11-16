@@ -1,3 +1,5 @@
+from slm_lab.agent.net import net_util
+from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import util
@@ -15,8 +17,17 @@ def run_trial_test_dist(spec_file, spec_name=False):
     info_space.tick('trial')
     spec['meta']['distributed'] = True
     spec['meta']['max_session'] = 2
+
     trial = Trial(spec, info_space)
-    trial_data = trial.run()
+    # manually run the logic to obtain global nets for testing to ensure global net gets updated
+    global_nets = trial.init_global_nets()
+    net = list(global_nets.values())[0]
+    assert_trained = net_util.gen_assert_trained(net)
+    session_datas = trial.parallelize_sessions(global_nets)
+    assert_trained(net, loss=1.0)
+    trial.session_data_dict = {data.index[0]: data for data in session_datas}
+    trial_data = analysis.analyze_trial(trial)
+    trial.close()
     assert isinstance(trial_data, pd.DataFrame)
 
 
