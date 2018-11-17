@@ -114,7 +114,7 @@
         "val_loss_coef": 0.4,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
-        "training_frequency": 4,
+        "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4,
         "normalize_state": true
