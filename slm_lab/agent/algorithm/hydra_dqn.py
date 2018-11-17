@@ -18,16 +18,20 @@ class MultitaskDQN(DQN):
     '''
 
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''Initialize nets with multi-task dimensions, and set net params'''
         self.state_dims = [body.state_dim for body in self.agent.nanflat_body_a]
         self.action_dims = [body.action_dim for body in self.agent.nanflat_body_a]
-        in_dim = sum(self.state_dims)
-        out_dim = sum(self.action_dims)
-        NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
-        self.target_net = NetClass(self.net_spec, in_dim, out_dim)
-        self.net_names = ['net', 'target_net']
+        if global_nets is None:
+            in_dim = sum(self.state_dims)
+            out_dim = sum(self.action_dims)
+            NetClass = getattr(net, self.net_spec['type'])
+            self.net = NetClass(self.net_spec, in_dim, out_dim)
+            self.target_net = NetClass(self.net_spec, in_dim, out_dim)
+            self.net_names = ['net', 'target_net']
+        else:
+            util.set_attr(global_nets, self)
+            self.net_names = list(global_nets.keys())
         self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
@@ -120,15 +124,19 @@ class HydraDQN(MultitaskDQN):
     '''Multi-task DQN with separate state and action processors per environment'''
 
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''Initialize nets with multi-task dimensions, and set net params'''
         # NOTE: Separate init from MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
         self.state_dims = in_dims = [body.state_dim for body in self.agent.nanflat_body_a]
         self.action_dims = out_dims = [body.action_dim for body in self.agent.nanflat_body_a]
-        NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dims, out_dims)
-        self.target_net = NetClass(self.net_spec, in_dims, out_dims)
-        self.net_names = ['net', 'target_net']
+        if global_nets is None:
+            NetClass = getattr(net, self.net_spec['type'])
+            self.net = NetClass(self.net_spec, in_dims, out_dims)
+            self.target_net = NetClass(self.net_spec, in_dims, out_dims)
+            self.net_names = ['net', 'target_net']
+        else:
+            util.set_attr(global_nets, self)
+            self.net_names = list(global_nets.keys())
         self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net

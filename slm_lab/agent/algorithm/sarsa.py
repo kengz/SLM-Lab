@@ -71,15 +71,19 @@ class SARSA(Algorithm):
         self.body.explore_var = self.explore_var_start
 
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''Initialize the neural network used to learn the Q function from the spec'''
         if 'Recurrent' in self.net_spec['type']:
             self.net_spec.update(seq_len=self.net_spec['seq_len'])
-        in_dim = self.body.state_dim
-        out_dim = net_util.get_out_dim(self.body)
-        NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
-        self.net_names = ['net']
+        if global_nets is None:
+            in_dim = self.body.state_dim
+            out_dim = net_util.get_out_dim(self.body)
+            NetClass = getattr(net, self.net_spec['type'])
+            self.net = NetClass(self.net_spec, in_dim, out_dim)
+            self.net_names = ['net']
+        else:
+            util.set_attr(global_nets, self)
+            self.net_names = list(global_nets.keys())
         self.post_init_nets()
 
     @lab_api

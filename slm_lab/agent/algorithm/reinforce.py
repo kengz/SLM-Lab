@@ -82,18 +82,22 @@ class Reinforce(Algorithm):
             self.entropy_decay_fn = policy_util.entropy_linear_decay
 
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''
         Initialize the neural network used to learn the policy function from the spec
         Below we automatically select an appropriate net for a discrete or continuous action space if the setting is of the form 'MLPNet'. Otherwise the correct type of network is assumed to be specified in the spec.
         Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
         Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
         '''
-        in_dim = self.body.state_dim
-        out_dim = net_util.get_out_dim(self.body)
-        NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
-        self.net_names = ['net']
+        if global_nets is None:
+            in_dim = self.body.state_dim
+            out_dim = net_util.get_out_dim(self.body)
+            NetClass = getattr(net, self.net_spec['type'])
+            self.net = NetClass(self.net_spec, in_dim, out_dim)
+            self.net_names = ['net']
+        else:
+            util.set_attr(global_nets, self)
+            self.net_names = list(global_nets.keys())
         self.post_init_nets()
 
     @lab_api

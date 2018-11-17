@@ -11,6 +11,8 @@ import torch
 logger = logger.get_logger(__name__)
 
 # TODO rewrite Q-value loss compute to use max
+
+
 class VanillaDQN(SARSA):
     '''
     Implementation of a simple DQN algorithm.
@@ -78,15 +80,19 @@ class VanillaDQN(SARSA):
         super(VanillaDQN, self).init_algorithm_params()
 
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''Initialize the neural network used to learn the Q function from the spec'''
         if self.algorithm_spec['name'] == 'VanillaDQN':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for VanillaDQN; use DQN.'
-        in_dim = self.body.state_dim
-        out_dim = net_util.get_out_dim(self.body)
-        NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
-        self.net_names = ['net']
+        if global_nets is None:
+            in_dim = self.body.state_dim
+            out_dim = net_util.get_out_dim(self.body)
+            NetClass = getattr(net, self.net_spec['type'])
+            self.net = NetClass(self.net_spec, in_dim, out_dim)
+            self.net_names = ['net']
+        else:
+            util.set_attr(global_nets, self)
+            self.net_names = list(global_nets.keys())
         self.post_init_nets()
 
     def calc_q_targets(self, batch):
@@ -180,16 +186,20 @@ class DQNBase(VanillaDQN):
     '''
 
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''Initialize networks'''
         if self.algorithm_spec['name'] == 'DQNBase':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for DQNBase; use DQN.'
-        in_dim = self.body.state_dim
-        out_dim = net_util.get_out_dim(self.body)
-        NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
-        self.target_net = NetClass(self.net_spec, in_dim, out_dim)
-        self.net_names = ['net', 'target_net']
+        if global_nets is None:
+            in_dim = self.body.state_dim
+            out_dim = net_util.get_out_dim(self.body)
+            NetClass = getattr(net, self.net_spec['type'])
+            self.net = NetClass(self.net_spec, in_dim, out_dim)
+            self.target_net = NetClass(self.net_spec, in_dim, out_dim)
+            self.net_names = ['net', 'target_net']
+        else:
+            util.set_attr(global_nets, self)
+            self.net_names = list(global_nets.keys())
         self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
@@ -256,8 +266,8 @@ class DQN(DQNBase):
     }
     '''
     @lab_api
-    def init_nets(self):
-        super(DQN, self).init_nets()
+    def init_nets(self, global_nets=None):
+        super(DQN, self).init_nets(global_nets)
 
 
 class DoubleDQN(DQN):
@@ -281,8 +291,8 @@ class DoubleDQN(DQN):
     }
     '''
     @lab_api
-    def init_nets(self):
-        super(DoubleDQN, self).init_nets()
+    def init_nets(self, global_nets=None):
+        super(DoubleDQN, self).init_nets(global_nets)
         self.online_net = self.net
         self.eval_net = self.target_net
 

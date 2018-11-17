@@ -131,7 +131,7 @@ class ActorCritic(Reinforce):
             self.calc_advs_v_targets = self.calc_td_advs_v_targets
 
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''
         Initialize the neural networks used to learn the actor and critic from the spec
         Below we automatically select an appropriate net based on two different conditions
@@ -162,18 +162,21 @@ class ActorCritic(Reinforce):
         if critic_net_spec['use_same_optim']:
             critic_net_spec = actor_net_spec
 
-        in_dim = self.body.state_dim
-        out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
-        # main actor network, may contain out_dim self.shared == True
-        NetClass = getattr(net, actor_net_spec['type'])
-        self.net = NetClass(actor_net_spec, in_dim, out_dim)
-        self.net_names = ['net']
-        if not self.shared:  # add separate network for critic
-            critic_out_dim = 1
-            CriticNetClass = getattr(net, critic_net_spec['type'])
-            self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
-            self.net_names.append('critic')
-
+        if global_nets is None:
+            in_dim = self.body.state_dim
+            out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
+            # main actor network, may contain out_dim self.shared == True
+            NetClass = getattr(net, actor_net_spec['type'])
+            self.net = NetClass(actor_net_spec, in_dim, out_dim)
+            self.net_names = ['net']
+            if not self.shared:  # add separate network for critic
+                critic_out_dim = 1
+                CriticNetClass = getattr(net, critic_net_spec['type'])
+                self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
+                self.net_names.append('critic')
+        else:
+            util.set_attr(global_nets, self)
+            self.net_names = list(global_nets.keys())
         self.post_init_nets()
 
     @lab_api

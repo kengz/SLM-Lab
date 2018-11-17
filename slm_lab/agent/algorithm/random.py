@@ -22,7 +22,7 @@ class Random(Algorithm):
         self.training_frequency = 1
 
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''Initialize the neural network from the spec'''
         pass
 

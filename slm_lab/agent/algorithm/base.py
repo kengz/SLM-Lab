@@ -20,17 +20,13 @@ class Algorithm(ABC):
         @param {*} agent is the container for algorithm and related components, and interfaces with env.
         '''
         self.agent = agent
-        if ps.is_list(global_nets):  # multiagent
-            self.global_nets = global_nets[agent.a]
-        else:
-            self.global_nets = global_nets or {}
         self.algorithm_spec = agent.agent_spec['algorithm']
         self.name = self.algorithm_spec['name']
         self.memory_spec = agent.agent_spec['memory']
         self.net_spec = agent.agent_spec['net']
         self.body = self.agent.body
         self.init_algorithm_params()
-        self.init_nets()
+        self.init_nets(global_nets)
         logger.info(util.self_desc(self))
 
     @abstractmethod
@@ -41,7 +37,7 @@ class Algorithm(ABC):
 
     @abstractmethod
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''Initialize the neural network from the spec'''
         raise NotImplementedError
 
