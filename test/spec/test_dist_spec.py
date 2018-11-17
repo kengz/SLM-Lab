@@ -23,9 +23,11 @@ def run_trial_test_dist(spec_file, spec_name=False):
     trial = Trial(spec, info_space)
     # manually run the logic to obtain global nets for testing to ensure global net gets updated
     global_nets = trial.init_global_nets()
+    # only test first network
     if ps.is_list(global_nets):  # multiagent only test first
-        global_nets = global_nets[0]
-    net = list(global_nets.values())[0] # only test first network
+        net = list(global_nets[0].values())[0]
+    else:
+        net = list(global_nets.values())[0]
     assert_trained = net_util.gen_assert_trained(net)
     session_datas = trial.parallelize_sessions(global_nets)
     assert_trained(net, loss=1.0)
