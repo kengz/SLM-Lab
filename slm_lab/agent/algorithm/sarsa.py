@@ -117,22 +117,6 @@ class SARSA(Algorithm):
         else:
             return action.cpu().numpy()
 
-    def calc_q_targets(self, batch):
-        '''Computes the target Q values for a batch of experiences'''
-        q_preds = self.net.wrap_eval(batch['states'])
-        next_q_preds = self.net.wrap_eval(batch['next_states'])
-        action_idxs = batch['next_actions'].long()
-        # Get the q value for the next action that was actually taken
-        batch_size = len(batch['dones'])
-        act_next_q_preds = next_q_preds[range(batch_size), action_idxs]
-        # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
-        act_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * act_next_q_preds
-        act_q_targets.unsqueeze_(1)
-        # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
-        q_targets = (act_q_targets * batch['one_hot_actions']) + (q_preds * (1 - batch['one_hot_actions']))
-        logger.debug(f'q_targets: {q_targets}')
-        return q_targets
-
     def calc_q_loss(self, batch):
         q_preds = self.net.wrap_eval(batch['states'])
         act_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
@@ -146,9 +130,6 @@ class SARSA(Algorithm):
     def sample(self):
         '''Samples a batch from memory'''
         batch = self.body.memory.sample()
-        # one-hot actions to calc q_targets
-        if self.body.is_discrete:
-            batch['one_hot_actions'] = util.to_one_hot(batch['actions'], self.body.action_space.high)
         # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['dones'])
         batch['next_actions'] = np.zeros_like(batch['actions'])
         batch['next_actions'][:-1] = batch['actions'][1:]
