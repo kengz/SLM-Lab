@@ -38,6 +38,7 @@ class Session:
         # init singleton agent and env
         self.env = make_env(self.spec)
         body = Body(self.env, self.spec['agent'])
+        assert not ps.is_list(global_nets), 'single agent global_nets must be a dict'
         self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
 
         enable_aeb_space(self)  # to use lab's data analysis framework
@@ -97,6 +98,7 @@ class SpaceSession(Session):
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.aeb_space.init_body_space()
+        assert not ps.is_dict(global_nets), 'multi agent global_nets must be a list of dicts'
         self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
 
         logger.info(util.self_desc(self))
