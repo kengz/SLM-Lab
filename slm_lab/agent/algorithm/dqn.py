@@ -108,11 +108,11 @@ class VanillaDQN(SARSA):
 
     def calc_q_loss(self, batch):
         q_preds = self.net.wrap_eval(batch['states'])
+        act_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
         next_q_preds = self.net.wrap_eval(batch['next_states'])
         # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
         max_next_q_preds, _ = next_q_preds.max(dim=1, keepdim=True)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
-        act_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
         return q_loss
 
@@ -155,6 +155,7 @@ class VanillaDQN(SARSA):
                 for _ in range(self.training_batch_epoch):
                     loss = self.calc_q_loss(batch)
                     self.net.training_step(loss=loss, lr_clock=self.body.env.clock)
+                    # TODO restore per
                     # with torch.no_grad():
                     #     q_targets = self.calc_q_targets(batch)
                     #     if is_per:
@@ -235,6 +236,7 @@ class DQNBase(VanillaDQN):
 
     def calc_q_loss(self, batch):
         q_preds = self.net.wrap_eval(batch['states'])
+        act_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
         # Use online_net to select actions in next state
         online_next_q_preds = self.online_net.wrap_eval(batch['next_states'])
         # Use eval_net to calculate next_q_preds for actions chosen by online_net
@@ -244,7 +246,6 @@ class DQNBase(VanillaDQN):
         # estimated_return = max_q_targets
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
         # print(batch['actions'])
-        act_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
         return q_loss
 

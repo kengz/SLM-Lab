@@ -135,10 +135,10 @@ class SARSA(Algorithm):
 
     def calc_q_loss(self, batch):
         q_preds = self.net.wrap_eval(batch['states'])
+        act_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
         next_q_preds = self.net.wrap_eval(batch['next_states'])
         act_next_q_preds = q_preds.gather(1, batch['next_actions'].long().unsqueeze(1)).squeeze(1)
         act_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * act_next_q_preds
-        act_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
         q_loss = self.net.loss_fn(act_q_preds, act_q_targets)
         return q_loss
 
