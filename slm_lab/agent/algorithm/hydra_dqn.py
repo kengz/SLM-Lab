@@ -63,44 +63,34 @@ class HydraDQN(DQN):
     @lab_api
     def space_sample(self):
         '''Samples a batch per body, which may experience different environment'''
-        batches = []
+        batch = {k: [] for k in self.body.memory.data_keys}
         for body in self.agent.nanflat_body_a:
             body_batch = body.memory.sample()
-            # one-hot actions to calc q_targets
-            if body.is_discrete:
-                body_batch['actions'] = util.to_one_hot(body_batch['actions'], body.action_space.high)
             if self.normalize_state:
                 body_batch = policy_util.normalize_states_and_next_states(body, body_batch)
             body_batch = util.to_torch_batch(body_batch, self.net.device, body.memory.is_episodic)
-            batches.append(body_batch)
-        # collect per body for feedforward to hydra heads
-        batch = {
-            'states': [body_batch['states'] for body_batch in batches],
-            'next_states': [body_batch['next_states'] for body_batch in batches],
-        }
-        # retain body-batches for body-wise q_targets calc
-        batch['body_batches'] = batches
+            for k, arr in batch.items():
+                arr.append(body_batch[k])
         return batch
 
-    def calc_q_targets(self, batch):
-        '''Compute the target Q values for hydra network by iterating through the tails corresponding to bodies, and computing the singleton function'''
-        q_preds = self.net.wrap_eval(batch['states'])
-        online_next_q_preds = self.online_net.wrap_eval(batch['next_states'])
-        next_q_preds = self.eval_net.wrap_eval(batch['next_states'])
-        multi_q_targets = []
-        # iterate over body, use proper output tail
-        for b, body_batch in enumerate(batch['body_batches']):
-            _, action_idxs = torch.max(online_next_q_preds[b], dim=1)
-            batch_size = len(body_batch['dones'])
-            max_next_q_preds = next_q_preds[b][range(batch_size), action_idxs]
-            max_q_targets = body_batch['rewards'] + self.gamma * (1 - body_batch['dones']) * max_next_q_preds
-            max_q_targets.unsqueeze_(1)
-            q_targets = (max_q_targets * body_batch['actions']) + (q_preds[b] * (1 - body_batch['actions']))
-            multi_q_targets.append(q_targets)
-        # return as list for compatibility with net output in training_step
-        q_targets = multi_q_targets
-        logger.debug(f'q_targets: {q_targets}')
-        return q_targets
+    def calc_q_loss(self, batch):
+        '''Compute the Q value loss for Hydra network by apply the singleton logic on generalized aggregate.'''
+        q_preds = torch.stack(self.net.wrap_eval(batch['states']))
+        act_q_preds = q_preds.gather(-1, torch.stack(batch['actions']).long().unsqueeze(-1)).squeeze(-1)
+        # Use online_net to select actions in next state
+        online_next_q_preds = torch.stack(self.online_net.wrap_eval(batch['next_states']))
+        # Use eval_net to calculate next_q_preds for actions chosen by online_net
+        next_q_preds = torch.stack(self.eval_net.wrap_eval(batch['next_states']))
+        max_next_q_preds = online_next_q_preds.gather(-1, next_q_preds.argmax(dim=-1, keepdim=True)).squeeze(-1)
+        max_q_targets = torch.stack(batch['rewards']) + self.gamma * (1 - torch.stack(batch['dones'])) * max_next_q_preds
+        q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
+
+        # TODO use the same loss_fn but do not reduce yet
+        for body in self.agent.nanflat_body_a:
+            if 'Prioritized' in util.get_class_name(body.memory):  # PER
+                errors = torch.abs(max_q_targets - act_q_preds)
+                body.memory.update_priorities(errors)
+        return q_loss
 
     @lab_api
     def space_train(self):
@@ -115,21 +105,13 @@ class HydraDQN(DQN):
             return np.nan
         total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
-        is_per = util.get_class_name(self.agent.nanflat_body_a[0].memory) == 'PrioritizedReplay'
         if self.to_train == 1:
             total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
                 batch = self.space_sample()
                 for _ in range(self.training_batch_epoch):
-                    with torch.no_grad():
-                        q_targets = self.calc_q_targets(batch)
-                        if is_per:
-                            q_preds = self.net.wrap_eval(batch['states'])
-                            errors = torch.abs(q_targets - q_preds)
-                            errors = errors.sum(dim=1).unsqueeze_(dim=1)
-                            for body in self.agent.nanflat_body_a:
-                                body.memory.update_priorities(errors)
-                    loss = self.net.training_step(batch['states'], q_targets, lr_clock=self.body.env.clock)
+                    loss = self.calc_q_loss(batch)
+                    self.net.training_step(loss=loss, lr_clock=self.body.env.clock)
                     total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset

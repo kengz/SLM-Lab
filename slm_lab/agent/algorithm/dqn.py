@@ -94,6 +94,7 @@ class VanillaDQN(SARSA):
         self.post_init_nets()
 
     def calc_q_loss(self, batch):
+        '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
         q_preds = self.net.wrap_eval(batch['states'])
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         next_q_preds = self.net.wrap_eval(batch['next_states'])
@@ -195,6 +196,7 @@ class DQNBase(VanillaDQN):
         self.eval_net = self.target_net
 
     def calc_q_loss(self, batch):
+        '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
         q_preds = self.net.wrap_eval(batch['states'])
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         # Use online_net to select actions in next state

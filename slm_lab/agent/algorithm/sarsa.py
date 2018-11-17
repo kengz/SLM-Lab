@@ -118,6 +118,7 @@ class SARSA(Algorithm):
             return action.cpu().numpy()
 
     def calc_q_loss(self, batch):
+        '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
         q_preds = self.net.wrap_eval(batch['states'])
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         next_q_preds = self.net.wrap_eval(batch['next_states'])
