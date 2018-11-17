@@ -108,6 +108,16 @@ class VanillaDQN(SARSA):
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
+    def calc_q_loss(self, batch):
+        q_preds = self.net.wrap_eval(batch['states'])
+        next_q_preds = self.net.wrap_eval(batch['next_states'])
+        # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
+        max_next_q_preds, _ = next_q_preds.max(dim=1, keepdim=True)
+        max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
+        action_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
+        q_loss = self.net.loss_fn(action_q_preds, max_q_targets)
+        return q_loss
+
     @lab_api
     def act(self, state):
         '''Selects and returns a discrete action for body using the action policy'''
@@ -146,7 +156,7 @@ class VanillaDQN(SARSA):
                 batch = self.sample()
                 for _ in range(self.training_batch_epoch):
                     loss = self.calc_q_loss(batch)
-                    loss = self.net.training_step(loss=loss, lr_clock=self.body.env.clock)
+                    self.net.training_step(loss=loss, lr_clock=self.body.env.clock)
                     # with torch.no_grad():
                     #     q_targets = self.calc_q_targets(batch)
                     #     if is_per:
@@ -231,15 +241,14 @@ class DQNBase(VanillaDQN):
         online_next_q_preds = self.online_net.wrap_eval(batch['next_states'])
         # Use eval_net to calculate next_q_preds for actions chosen by online_net
         next_q_preds = self.eval_net.wrap_eval(batch['next_states'])
-        # values = max_next_q_preds ?
-        values = online_next_q_preds.gather(1, next_q_preds.argmax(dim=1, keepdim=True)).squeeze(1)
-        estimated_return = batch['rewards'] + self.gamma * (1 - batch['dones']) * values
+        # values = max_next_q_preds
+        max_next_q_preds = online_next_q_preds.gather(1, next_q_preds.argmax(dim=1, keepdim=True)).squeeze(1)
+        # estimated_return = max_q_targets
+        max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
         # print(batch['actions'])
-        q_selected = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
-        # print(f'q_selected {q_selected.shape}')
-        # print(f'estimated_return {estimated_return.shape}')
-        loss = self.net.loss_fn(q_selected, estimated_return)
-        return loss
+        action_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
+        q_loss = self.net.loss_fn(action_q_preds, max_q_targets)
+        return q_loss
 
     def update_nets(self):
         total_t = self.body.env.clock.get('total_t')
