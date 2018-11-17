@@ -1,3 +1,4 @@
+from flaky import flaky
 from slm_lab.agent.net import net_util
 from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Trial
@@ -92,6 +93,7 @@ def test_ppo_cont_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ppo_sil.json', 'ppo_sil_mlp_shared_cartpole'),
     ('ppo_sil.json', 'ppo_sil_mlp_separate_cartpole'),
@@ -102,6 +104,7 @@ def test_ppo_sil_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ppo_sil.json', 'ppo_sil_mlp_shared_pendulum'),
     ('ppo_sil.json', 'ppo_sil_mlp_separate_pendulum'),
@@ -112,6 +115,7 @@ def test_ppo_sil_cont_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('sil.json', 'sil_mlp_shared_cartpole'),
     ('sil.json', 'sil_mlp_separate_cartpole'),
@@ -124,6 +128,7 @@ def test_sil_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('sil.json', 'sil_mlp_shared_pendulum'),
     ('sil.json', 'sil_mlp_separate_pendulum'),

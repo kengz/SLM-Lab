@@ -1,3 +1,4 @@
+from flaky import flaky
 from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import util
@@ -79,6 +80,7 @@ def test_ppo_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ppo_sil.json', 'ppo_sil_mlp_shared_cartpole'),
     ('ppo_sil.json', 'ppo_sil_mlp_separate_cartpole'),
@@ -89,6 +91,7 @@ def test_ppo_sil(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ppo_sil.json', 'ppo_sil_mlp_shared_pendulum'),
     ('ppo_sil.json', 'ppo_sil_mlp_separate_pendulum'),
@@ -99,6 +102,7 @@ def test_ppo_sil_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('sil.json', 'sil_mlp_shared_cartpole'),
     ('sil.json', 'sil_mlp_separate_cartpole'),
@@ -111,6 +115,7 @@ def test_sil(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('sil.json', 'sil_mlp_shared_pendulum'),
     ('sil.json', 'sil_mlp_separate_pendulum'),
