@@ -193,16 +193,8 @@ def test_dueling_dqn_dist(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('multitask_dqn.json', 'multitask_dqn_boltzmann_cartpole'),
-    ('multitask_dqn.json', 'multitask_dqn_epsilon_greedy_cartpole'),
-])
-def test_multitask_dqn_dist(spec_file, spec_name):
-    run_trial_test_dist(spec_file, spec_name)
-
-
-@pytest.mark.parametrize('spec_file,spec_name', [
     ('hydra_dqn.json', 'hydra_dqn_boltzmann_cartpole'),
     ('hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole'),
 ])
-def test_multitask_dqn_dist(spec_file, spec_name):
+def test_hydra_dqn_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)
