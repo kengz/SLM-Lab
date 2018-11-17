@@ -187,7 +187,7 @@ class ConvNet(Net, nn.Module):
         else:
             return self.model_tail(x)
 
-    def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_clock=None, global_net=None):
+    def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_clock=None):
         '''Takes a single training step: one forward and one backwards pass'''
         if hasattr(self, 'model_tails') and x is not None:
             raise ValueError('Loss computation from x,y not supported for multitails')

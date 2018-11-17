@@ -168,7 +168,7 @@ class PPO(ActorCritic):
                 val_loss = self.calc_val_loss(batch, v_targets)  # from critic
                 loss = policy_loss + val_loss
                 # retain for entropies etc.
-                self.net.training_step(loss=loss, lr_clock=self.body.env.clock, retain_graph=True, global_net=self.global_nets.get('net'))
+                self.net.training_step(loss=loss, lr_clock=self.body.env.clock, retain_graph=True)
                 total_loss += loss
             loss = total_loss / self.training_epoch
             # reset
@@ -210,6 +210,6 @@ class PPO(ActorCritic):
                 advs, _v_targets = self.calc_advs_v_targets(batch)
             policy_loss = self.calc_policy_loss(batch, advs)
             # retain for entropies etc.
-            self.net.training_step(loss=policy_loss, lr_clock=self.body.env.clock, retain_graph=True, global_net=self.global_nets.get('net'))
+            self.net.training_step(loss=policy_loss, lr_clock=self.body.env.clock, retain_graph=True)
         val_loss = total_policy_loss / self.training_epoch
         return policy_loss

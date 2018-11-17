@@ -116,7 +116,7 @@ class MLPNet(Net, nn.Module):
         else:
             return self.model_tail(x)
 
-    def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_clock=None, global_net=None):
+    def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_clock=None):
         '''
         Takes a single training step: one forward and one backwards pass
         More most RL usage, we have custom, often complicated, loss functions. Compute its value and put it in a pytorch tensor then pass it in as loss
@@ -302,7 +302,7 @@ class HydraMLPNet(Net, nn.Module):
             outs.append(model_tail(body_x))
         return outs
 
-    def training_step(self, xs=None, ys=None, loss=None, retain_graph=False, lr_clock=None, global_net=None):
+    def training_step(self, xs=None, ys=None, loss=None, retain_graph=False, lr_clock=None):
         '''
         Takes a single training step: one forward and one backwards pass. Both x and y are lists of the same length, one x and y per environment
         '''

@@ -210,7 +210,7 @@ class HydraDQN(MultitaskDQN):
                             errors = errors.sum(dim=1).unsqueeze_(dim=1)
                             for body in self.agent.nanflat_body_a:
                                 body.memory.update_priorities(errors)
-                    loss = self.net.training_step(batch['states'], q_targets, lr_clock=self.body.env.clock, global_net=self.global_nets.get('net'))
+                    loss = self.net.training_step(batch['states'], q_targets, lr_clock=self.body.env.clock)
                     total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
