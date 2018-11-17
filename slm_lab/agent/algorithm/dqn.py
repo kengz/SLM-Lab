@@ -119,7 +119,8 @@ class VanillaDQN(SARSA):
         batch = self.body.memory.sample()
         # one-hot actions to calc q_targets
         if self.body.is_discrete:
-            batch['actions'] = util.to_one_hot(batch['actions'], self.body.action_space.high)
+            pass
+            # batch['actions'] = util.to_one_hot(batch['actions'], self.body.action_space.high)
         if self.normalize_state:
             batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
@@ -144,14 +145,16 @@ class VanillaDQN(SARSA):
             for _ in range(self.training_epoch):
                 batch = self.sample()
                 for _ in range(self.training_batch_epoch):
-                    with torch.no_grad():
-                        q_targets = self.calc_q_targets(batch)
-                        if is_per:
-                            q_preds = self.net.wrap_eval(batch['states'])
-                            errors = torch.abs(q_targets - q_preds)
-                            errors = errors.sum(dim=1).unsqueeze_(dim=1)
-                            self.body.memory.update_priorities(errors)
-                    loss = self.net.training_step(batch['states'], q_targets, lr_clock=self.body.env.clock)
+                    loss = self.calc_q_loss(batch)
+                    loss = self.net.training_step(loss=loss, lr_clock=self.body.env.clock)
+                    # with torch.no_grad():
+                    #     q_targets = self.calc_q_targets(batch)
+                    #     if is_per:
+                    #         q_preds = self.net.wrap_eval(batch['states'])
+                    #         errors = torch.abs(q_targets - q_preds)
+                    #         errors = errors.sum(dim=1).unsqueeze_(dim=1)
+                    #         self.body.memory.update_priorities(errors)
+                    # loss = self.net.training_step(batch['states'], q_targets, lr_clock=self.body.env.clock)
                     total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
@@ -221,6 +224,22 @@ class DQNBase(VanillaDQN):
         q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
+
+    def calc_q_loss(self, batch):
+        q_preds = self.net.wrap_eval(batch['states'])
+        # Use online_net to select actions in next state
+        online_next_q_preds = self.online_net.wrap_eval(batch['next_states'])
+        # Use eval_net to calculate next_q_preds for actions chosen by online_net
+        next_q_preds = self.eval_net.wrap_eval(batch['next_states'])
+        # values = max_next_q_preds ?
+        values = online_next_q_preds.gather(1, next_q_preds.argmax(dim=1, keepdim=True)).squeeze(1)
+        estimated_return = batch['rewards'] + self.gamma * (1 - batch['dones']) * values
+        # print(batch['actions'])
+        q_selected = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
+        # print(f'q_selected {q_selected.shape}')
+        # print(f'estimated_return {estimated_return.shape}')
+        loss = self.net.loss_fn(q_selected, estimated_return)
+        return loss
 
     def update_nets(self):
         total_t = self.body.env.clock.get('total_t')
