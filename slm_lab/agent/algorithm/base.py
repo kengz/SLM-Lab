@@ -48,8 +48,6 @@ class Algorithm(ABC):
         Call at the end of init_nets() after setting self.net_names
         '''
         assert hasattr(self, 'net_names')
-        if not ps.is_empty(self.global_nets):
-            assert all(k in self.net_names for k in self.global_nets), f'Provided global_nets keys: {list(self.global_nets.keys())} are inconsistent with self.net_names: {self.net_names}'
         if util.get_lab_mode() == 'enjoy':
             logger.info('Loaded algorithm models for lab_mode: enjoy')
             self.load()

@@ -96,7 +96,7 @@ class Reinforce(Algorithm):
             self.net = NetClass(self.net_spec, in_dim, out_dim)
             self.net_names = ['net']
         else:
-            util.set_attr(global_nets, self)
+            util.set_attr(self, global_nets)
             self.net_names = list(global_nets.keys())
         self.post_init_nets()
 

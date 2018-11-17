@@ -164,6 +164,8 @@ class AgentSpace:
             body_a = self.aeb_space.body_space.get(a=a)
             if global_nets is not None:
                 agent_global_nets = global_nets[a]
+            else:
+                agent_global_nets = None
             agent = Agent(self.spec, self.info_space, body=body_a, a=a, agent_space=self, global_nets=agent_global_nets)
             self.agents.append(agent)
         logger.info(util.self_desc(self))
