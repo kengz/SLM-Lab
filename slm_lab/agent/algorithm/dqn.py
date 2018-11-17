@@ -10,8 +10,6 @@ import torch
 
 logger = logger.get_logger(__name__)
 
-# TODO rewrite Q-value loss compute to use max
-
 
 class VanillaDQN(SARSA):
     '''
@@ -114,8 +112,8 @@ class VanillaDQN(SARSA):
         # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
         max_next_q_preds, _ = next_q_preds.max(dim=1, keepdim=True)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
-        action_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
-        q_loss = self.net.loss_fn(action_q_preds, max_q_targets)
+        act_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
+        q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
         return q_loss
 
     @lab_api
@@ -246,8 +244,8 @@ class DQNBase(VanillaDQN):
         # estimated_return = max_q_targets
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
         # print(batch['actions'])
-        action_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
-        q_loss = self.net.loss_fn(action_q_preds, max_q_targets)
+        act_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
+        q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
         return q_loss
 
     def update_nets(self):

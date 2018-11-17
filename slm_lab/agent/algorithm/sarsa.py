@@ -133,6 +133,15 @@ class SARSA(Algorithm):
         logger.debug(f'q_targets: {q_targets}')
         return q_targets
 
+    def calc_q_loss(self, batch):
+        q_preds = self.net.wrap_eval(batch['states'])
+        next_q_preds = self.net.wrap_eval(batch['next_states'])
+        act_next_q_preds = q_preds.gather(1, batch['next_actions'].long().unsqueeze(1)).squeeze(1)
+        act_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * act_next_q_preds
+        act_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
+        q_loss = self.net.loss_fn(act_q_preds, act_q_targets)
+        return q_loss
+
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
@@ -158,9 +167,8 @@ class SARSA(Algorithm):
             return np.nan
         if self.to_train == 1:
             batch = self.sample()
-            with torch.no_grad():
-                q_targets = self.calc_q_targets(batch)
-            loss = self.net.training_step(batch['states'], q_targets, lr_clock=self.body.env.clock)
+            loss = self.calc_q_loss(batch)
+            self.net.training_step(loss=loss, lr_clock=self.body.env.clock)
             # reset
             self.to_train = 0
             self.body.entropies = []
