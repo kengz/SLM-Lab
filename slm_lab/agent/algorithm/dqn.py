@@ -93,19 +93,6 @@ class VanillaDQN(SARSA):
             self.net_names = list(global_nets.keys())
         self.post_init_nets()
 
-    def calc_q_targets(self, batch):
-        '''Computes the target Q values for a batch of experiences'''
-        q_preds = self.net.wrap_eval(batch['states'])
-        next_q_preds = self.net.wrap_eval(batch['next_states'])
-        # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
-        max_next_q_preds, _ = torch.max(next_q_preds, dim=1)
-        max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
-        max_q_targets.unsqueeze_(1)
-        # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
-        q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
-        logger.debug(f'q_targets: {q_targets}')
-        return q_targets
-
     def calc_q_loss(self, batch):
         q_preds = self.net.wrap_eval(batch['states'])
         act_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
@@ -114,6 +101,11 @@ class VanillaDQN(SARSA):
         max_next_q_preds, _ = next_q_preds.max(dim=1, keepdim=True)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
+
+        # TODO use the same loss_fn but do not reduce yet
+        if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
+            errors = torch.abs(max_q_targets - act_q_preds)
+            self.body.memory.update_priorities(errors)
         return q_loss
 
     @lab_api
@@ -125,10 +117,6 @@ class VanillaDQN(SARSA):
     def sample(self):
         '''Samples a batch from memory of size self.memory_spec['batch_size']'''
         batch = self.body.memory.sample()
-        # one-hot actions to calc q_targets
-        if self.body.is_discrete:
-            pass
-            # batch['actions'] = util.to_one_hot(batch['actions'], self.body.action_space.high)
         if self.normalize_state:
             batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
@@ -147,7 +135,6 @@ class VanillaDQN(SARSA):
             return np.nan
         total_t = self.body.env.clock.get('total_t')
         self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
-        is_per = 'Prioritized' in util.get_class_name(self.body.memory)
         if self.to_train == 1:
             total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
@@ -155,15 +142,6 @@ class VanillaDQN(SARSA):
                 for _ in range(self.training_batch_epoch):
                     loss = self.calc_q_loss(batch)
                     self.net.training_step(loss=loss, lr_clock=self.body.env.clock)
-                    # TODO restore per
-                    # with torch.no_grad():
-                    #     q_targets = self.calc_q_targets(batch)
-                    #     if is_per:
-                    #         q_preds = self.net.wrap_eval(batch['states'])
-                    #         errors = torch.abs(q_targets - q_preds)
-                    #         errors = errors.sum(dim=1).unsqueeze_(dim=1)
-                    #         self.body.memory.update_priorities(errors)
-                    # loss = self.net.training_step(batch['states'], q_targets, lr_clock=self.body.env.clock)
                     total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
@@ -216,24 +194,6 @@ class DQNBase(VanillaDQN):
         self.online_net = self.target_net
         self.eval_net = self.target_net
 
-    def calc_q_targets(self, batch):
-        '''Computes the target Q values for a batch of experiences. Note that the net references may differ based on algorithm.'''
-        q_preds = self.net.wrap_eval(batch['states'])
-        # Use online_net to select actions in next state
-        online_next_q_preds = self.online_net.wrap_eval(batch['next_states'])
-        # Use eval_net to calculate next_q_preds for actions chosen by online_net
-        next_q_preds = self.eval_net.wrap_eval(batch['next_states'])
-        # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
-        _, action_idxs = torch.max(online_next_q_preds, dim=1)
-        batch_size = len(batch['dones'])
-        max_next_q_preds = next_q_preds[range(batch_size), action_idxs]
-        max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
-        max_q_targets.unsqueeze_(1)
-        # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
-        q_targets = (max_q_targets * batch['actions']) + (q_preds * (1 - batch['actions']))
-        logger.debug(f'q_targets: {q_targets}')
-        return q_targets
-
     def calc_q_loss(self, batch):
         q_preds = self.net.wrap_eval(batch['states'])
         act_q_preds = q_preds.gather(1, batch['actions'].long().unsqueeze(1)).squeeze(1)
@@ -241,12 +201,14 @@ class DQNBase(VanillaDQN):
         online_next_q_preds = self.online_net.wrap_eval(batch['next_states'])
         # Use eval_net to calculate next_q_preds for actions chosen by online_net
         next_q_preds = self.eval_net.wrap_eval(batch['next_states'])
-        # values = max_next_q_preds
         max_next_q_preds = online_next_q_preds.gather(1, next_q_preds.argmax(dim=1, keepdim=True)).squeeze(1)
-        # estimated_return = max_q_targets
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
-        # print(batch['actions'])
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
+
+        # TODO use the same loss_fn but do not reduce yet
+        if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
+            errors = torch.abs(max_q_targets - act_q_preds)
+            self.body.memory.update_priorities(errors)
         return q_loss
 
     def update_nets(self):
