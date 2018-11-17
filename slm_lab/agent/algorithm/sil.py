@@ -137,7 +137,7 @@ class SIL(ActorCritic):
         returns = batch['rets']
         v_preds = self.calc_v(batch['states'], evaluate=False)
         clipped_advs = torch.clamp(returns - v_preds, min=0.0)
-        log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch).detach()
+        log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
 
         sil_policy_loss = self.sil_policy_loss_coef * torch.mean(- log_probs * clipped_advs)
         sil_val_loss = self.sil_val_loss_coef * torch.pow(clipped_advs, 2) / 2
