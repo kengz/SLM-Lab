@@ -100,6 +100,7 @@
       },
       "net": {
         "type": "ConvNet",
+        "shared": false,
         "conv_hid_layers": [
           [32, 8, 4, 0, 1],
           [64, 4, 2, 0, 1],
