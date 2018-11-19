@@ -101,11 +101,12 @@ class VanillaDQN(SARSA):
         # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
         max_next_q_preds, _ = next_q_preds.max(dim=-1, keepdim=True)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
+        max_q_targets = max_q_targets.detach()
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
         # TODO use the same loss_fn but do not reduce yet
         if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
-            errors = torch.abs(max_q_targets - act_q_preds)
+            errors = torch.abs(max_q_targets - act_q_preds.detach())
             self.body.memory.update_priorities(errors)
         return q_loss
 
@@ -203,13 +204,14 @@ class DQNBase(VanillaDQN):
         online_next_q_preds = self.online_net.wrap_eval(batch['next_states'])
         # Use eval_net to calculate next_q_preds for actions chosen by online_net
         next_q_preds = self.eval_net.wrap_eval(batch['next_states'])
-        max_next_q_preds = online_next_q_preds.gather(-1, next_q_preds.argmax(dim=-1, keepdim=True)).squeeze(-1)
+        max_next_q_preds = next_q_preds.gather(-1, online_next_q_preds.argmax(dim=-1, keepdim=True)).squeeze(-1)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
+        max_q_targets = max_q_targets.detach()
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
         # TODO use the same loss_fn but do not reduce yet
         if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
-            errors = torch.abs(max_q_targets - act_q_preds)
+            errors = torch.abs(max_q_targets - act_q_preds.detach())
             self.body.memory.update_priorities(errors)
         return q_loss
 
