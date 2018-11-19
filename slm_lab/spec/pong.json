@@ -63,8 +63,22 @@
       "distributed": false,
       "graph_x": "total_t",
       "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
+      "max_trial": 16,
+      "search": "RandomSearch",
+      "num_cpus": 16,
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "name__choice": ["DQN", "DDQN"]
+        },
+        "net": {
+          "update_frequency__choice": [250, 1000, 2000, 5000],
+          "optim_spec": {
+            "lr__choice": [1e-5, 1e-4, 1e-3]
+          }
+        }
+      }]
     }
   },
   "a3c_conv_separate_cartpole": {
