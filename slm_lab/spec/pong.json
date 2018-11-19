@@ -8,12 +8,12 @@
         "action_policy": "epsilon_greedy",
         "action_policy_update": "linear_decay",
         "explore_var_start": 1.0,
-        "explore_var_end": 0.05,
-        "explore_anneal_epi": 200000,
+        "explore_var_end": 0.02,
+        "explore_anneal_epi": 210000,
         "gamma": 0.99,
         "training_batch_epoch": 1,
         "training_epoch": 1,
-        "training_frequency": 4,
+        "training_frequency": 1,
         "training_min_timestep": 10000,
         "normalize_state": false
       },
@@ -35,17 +35,17 @@
         "hid_layers_activation": "relu",
         "init_fn": "kaiming_uniform_",
         "batch_norm": false,
-        "clip_grad_val": 0.5,
+        "clip_grad_val": 10.0,
         "loss_spec": {
           "name": "SmoothL1Loss",
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 1e-3,
+          "lr": 1e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "replace",
-        "update_frequency": 1000,
+        "update_frequency": 250,
         "gpu": true
       }
     }],
