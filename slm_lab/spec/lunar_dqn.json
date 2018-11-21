@@ -1,1226 +1,1247 @@
 {
-  "vanilla_dqn_lunar": {
-    "agent": [
-    {
-      "name": "VanillaDQN",
-      "algorithm": {
-        "name": "VanillaDQN",
-        "action_pdtype": "Argmax",
-        "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.08,
-        "explore_anneal_epi": 100,
-        "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
-        "training_frequency": 4,
-        "training_min_timestep": 32,
-        "normalize_state": true
-      },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4
-      },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [
-          400,
-          200
-        ],
-        "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
-        "gpu": false
-        }
-      }
-    ],
-    "env": [
-      {
-        "name": "LunarLander-v2",
-        "max_timestep": null,
-        "max_episode": 800,
-        "save_epi_frequency": 800
-      }
-    ],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "max_session": 4,
-      "max_trial": 128,
-      "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
-    },
-    "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "normalize_state__choice": [
-              true,
-              false
-            ],
-            "explore_anneal_epi__choice": [
-              100,
-              150,
-              200,
-              250,
-            ]
-          },
-          "memory": {
-            "name": [
-              "Replay",
-              "ConcatReplay"
-            ]
-          },
-          "net": {
-            "training_batch_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "training_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "lr_decay_frequency__choice": [
-              50000,
-              60000,
-              70000,
-              80000,
-              90000,
-              100000
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
+   "vanilla_dqn_lunar":{
+      "agent":[
+         {
+            "name":"VanillaDQN",
+            "algorithm":{
+               "name":"VanillaDQN",
+               "action_pdtype":"Argmax",
+               "action_policy":"epsilon_greedy",
+               "action_policy_update":"linear_decay",
+               "explore_var_start":1.0,
+               "explore_var_end":0.08,
+               "explore_anneal_epi":100,
+               "gamma":0.99,
+               "training_batch_epoch":3,
+               "training_epoch":4,
+               "training_frequency":4,
+               "training_min_timestep":32,
+               "normalize_state":true
+            },
+            "memory":{
+               "name":"Replay",
+               "batch_size":32,
+               "max_size":100000,
+               "use_cer":false,
+               "concat_len":4
+            },
+            "net":{
+               "type":"MLPNet",
+               "hid_layers":[
+                  400,
+                  200
+               ],
+               "hid_layers_activation":"relu",
+               "clip_grad":false,
+               "clip_grad_val":1.0,
+               "loss_spec":{
+                  "name":"MSELoss"
+               },
+               "optim_spec":{
+                  "name":"Adam",
+                  "lr":0.02
+               },
+               "lr_decay":"linear_decay",
+               "lr_decay_frequency":80000,
+               "lr_decay_min_timestep":40000,
+               "lr_anneal_timestep":400000,
+               "gpu":false
             }
-          }
-        }
-      ]
-    }
-  },
-  "dqn_boltzmann_poly_lunar": {
-    "agent": [
-    {
-      "name": "DQNBoltzmann",
-      "algorithm": {
-        "name": "DQN",
-        "action_pdtype": "Argmax",
-        "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
-        "explore_anneal_epi": 100,
-        "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
-        "training_frequency": 4,
-        "training_min_timestep": 32,
-        "normalize_state": true
+         }
+      ],
+      "env":[
+         {
+            "name":"LunarLander-v2",
+            "max_timestep":null,
+            "max_episode":800,
+            "save_epi_frequency":800
+         }
+      ],
+      "body":{
+         "product":"outer",
+         "num":1
       },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4
+      "meta":{
+         "distributed":false,
+         "max_session":4,
+         "max_trial":128,
+         "search":"RandomSearch",
+         "resources":{
+            "num_cpus":95
+         }
       },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [
-          400,
-          200
-        ],
-        "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
-        "update_type": "polyak",
-        "polyak_coef": 0.99,
-        "gpu": false
-        }
-      }
-    ],
-    "env": [
-      {
-        "name": "LunarLander-v2",
-        "max_timestep": null,
-        "max_episode": 800,
-        "save_epi_frequency": 800
-      }
-    ],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "max_session": 4,
-      "max_trial": 128,
-      "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
-    },
-    "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "normalize_state__choice": [
-              true,
-              false
-            ],
-            "explore_anneal_epi__choice": [
-              100,
-              150,
-              200,
-              250,
-            ],
-            "gamma__choice": [
-              0.99,
-              0.993
-            ],
-          },
-          "memory": {
-            "name": [
-              "Replay",
-              "ConcatReplay"
-            ]
-          },
-          "net": {
-            "training_batch_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "training_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "lr_decay_frequency__choice": [
-              50000,
-              60000,
-              70000,
-              80000,
-              90000,
-              100000
-            ],
-            "polyak_coef__choice": [
-              0,
-              0.9,
-              0.95,
-              0.99,
-              0.995,
-              0.999
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
+      "search":{
+         "agent":[
+            {
+               "algorithm":{
+                  "normalize_state__choice":[
+                     true,
+                     false
+                  ],
+                  "explore_anneal_epi__choice":[
+                     100,
+                     150,
+                     200,
+                     250,
+
+                  ]
+               },
+               "memory":{
+                  "name":[
+                     "Replay",
+                     "ConcatReplay"
+                  ]
+               },
+               "net":{
+                  "training_batch_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "training_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "lr_decay_frequency__choice":[
+                     50000,
+                     60000,
+                     70000,
+                     80000,
+                     90000,
+                     100000
+                  ],
+                  "optim_spec":{
+                     "lr__uniform":[
+                        0.001,
+                        0.01
+                     ]
+                  }
+               }
             }
-          }
-        }
-      ]
-    }
-  },
-  "dqn_boltzmann_replace_lunar": {
-    "agent": [
-    {
-      "name": "DQNBoltzmann",
-      "algorithm": {
-        "name": "DQN",
-        "action_pdtype": "Argmax",
-        "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
-        "explore_anneal_epi": 100,
-        "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
-        "training_frequency": 4,
-        "training_min_timestep": 32,
-        "normalize_state": true
-      },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4
-      },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [
-          400,
-          200
-        ],
-        "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
-        "update_type": "replace",
-        "update_frequency": 1000,
-        "gpu": false
-        }
+         ]
       }
-    ],
-    "env": [
-      {
-        "name": "LunarLander-v2",
-        "max_timestep": null,
-        "max_episode": 800,
-        "save_epi_frequency": 800
-      }
-    ],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "max_session": 4,
-      "max_trial": 128,
-      "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
-    },
-    "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "normalize_state__choice": [
-              true,
-              false
-            ],
-            "explore_anneal_epi__choice": [
-              100,
-              150,
-              200,
-              250,
-            ],
-            "gamma__choice": [
-              0.99,
-              0.993
-            ],
-          },
-          "memory": {
-            "name": [
-              "Replay",
-              "ConcatReplay"
-            ]
-          },
-          "net": {
-            "training_batch_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "training_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "lr_decay_frequency__choice": [
-              50000,
-              60000,
-              70000,
-              80000,
-              90000,
-              100000
-            ],
-            "update_frequency__choice": [
-              1,
-              100,
-              500,
-              1000,
-              2000,
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
+   },
+   "dqn_boltzmann_poly_lunar":{
+      "agent":[
+         {
+            "name":"DQNBoltzmann",
+            "algorithm":{
+               "name":"DQN",
+               "action_pdtype":"Argmax",
+               "action_policy":"boltzmann",
+               "action_policy_update":"linear_decay",
+               "explore_var_start":5.0,
+               "explore_var_end":0.5,
+               "explore_anneal_epi":100,
+               "gamma":0.99,
+               "training_batch_epoch":3,
+               "training_epoch":4,
+               "training_frequency":4,
+               "training_min_timestep":32,
+               "normalize_state":true
+            },
+            "memory":{
+               "name":"Replay",
+               "batch_size":32,
+               "max_size":100000,
+               "use_cer":false,
+               "concat_len":4
+            },
+            "net":{
+               "type":"MLPNet",
+               "hid_layers":[
+                  400,
+                  200
+               ],
+               "hid_layers_activation":"relu",
+               "clip_grad":false,
+               "clip_grad_val":1.0,
+               "loss_spec":{
+                  "name":"MSELoss"
+               },
+               "optim_spec":{
+                  "name":"Adam",
+                  "lr":0.02
+               },
+               "lr_decay":"linear_decay",
+               "lr_decay_frequency":80000,
+               "lr_decay_min_timestep":40000,
+               "lr_anneal_timestep":400000,
+               "update_type":"polyak",
+               "polyak_coef":0.99,
+               "gpu":false
             }
-          }
-        }
-      ]
-    }
-  },
-  "dqn_epsilon_poly_lunar": {
-    "agent": [
-    {
-      "name": "DQNEpsilon",
-      "algorithm": {
-        "name": "DQN",
-        "action_pdtype": "Argmax",
-        "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.08,
-        "explore_anneal_epi": 100,
-        "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
-        "training_frequency": 4,
-        "training_min_timestep": 32,
-        "normalize_state": true
+         }
+      ],
+      "env":[
+         {
+            "name":"LunarLander-v2",
+            "max_timestep":null,
+            "max_episode":800,
+            "save_epi_frequency":800
+         }
+      ],
+      "body":{
+         "product":"outer",
+         "num":1
       },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4
+      "meta":{
+         "distributed":false,
+         "max_session":4,
+         "max_trial":128,
+         "search":"RandomSearch",
+         "resources":{
+            "num_cpus":95
+         }
       },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [
-          400,
-          200
-        ],
-        "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
-        "update_type": "polyak",
-        "polyak_coef": 0.99,
-        "gpu": false
-        }
-      }
-    ],
-    "env": [
-      {
-        "name": "LunarLander-v2",
-        "max_timestep": null,
-        "max_episode": 800,
-        "save_epi_frequency": 800
-      }
-    ],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "max_session": 4,
-      "max_trial": 128,
-      "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
-    },
-    "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "normalize_state__choice": [
-              true,
-              false
-            ],
-            "explore_anneal_epi__choice": [
-              100,
-              150,
-              200,
-              250,
-            ],
-            "gamma__choice": [
-              0.99,
-              0.993
-            ],
-          },
-          "memory": {
-            "name": [
-              "Replay",
-              "ConcatReplay"
-            ]
-          },
-          "net": {
-            "training_batch_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "training_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "lr_decay_frequency__choice": [
-              50000,
-              60000,
-              70000,
-              80000,
-              90000,
-              100000
-            ],
-            "polyak_coef__choice": [
-              0,
-              0.9,
-              0.95,
-              0.99,
-              0.995,
-              0.999
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
+      "search":{
+         "agent":[
+            {
+               "algorithm":{
+                  "normalize_state__choice":[
+                     true,
+                     false
+                  ],
+                  "explore_anneal_epi__choice":[
+                     100,
+                     150,
+                     200,
+                     250,
+
+                  ],
+                  "gamma__choice":[
+                     0.99,
+                     0.993
+                  ],
+
+               },
+               "memory":{
+                  "name":[
+                     "Replay",
+                     "ConcatReplay"
+                  ]
+               },
+               "net":{
+                  "training_batch_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "training_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "lr_decay_frequency__choice":[
+                     50000,
+                     60000,
+                     70000,
+                     80000,
+                     90000,
+                     100000
+                  ],
+                  "polyak_coef__choice":[
+                     0,
+                     0.9,
+                     0.95,
+                     0.99,
+                     0.995,
+                     0.999
+                  ],
+                  "optim_spec":{
+                     "lr__uniform":[
+                        0.001,
+                        0.01
+                     ]
+                  }
+               }
             }
-          }
-        }
-      ]
-    }
-  },
-  "dqn_epsilon_replace_lunar": {
-    "agent": [
-    {
-      "name": "DQNEpsilon",
-      "algorithm": {
-        "name": "DQN",
-        "action_pdtype": "Argmax",
-        "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.08,
-        "explore_anneal_epi": 100,
-        "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
-        "training_frequency": 4,
-        "training_min_timestep": 32,
-        "normalize_state": true
-      },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4
-      },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [
-          400,
-          200
-        ],
-        "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
-        "update_type": "replace",
-        "update_frequency": 1000,
-        "gpu": false
-        }
+         ]
       }
-    ],
-    "env": [
-      {
-        "name": "LunarLander-v2",
-        "max_timestep": null,
-        "max_episode": 800,
-        "save_epi_frequency": 800
-      }
-    ],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "max_session": 4,
-      "max_trial": 128,
-      "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
-    },
-    "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "normalize_state__choice": [
-              true,
-              false
-            ],
-            "explore_anneal_epi__choice": [
-              100,
-              150,
-              200,
-              250,
-            ],
-            "gamma__choice": [
-              0.99,
-              0.993
-            ],
-          },
-          "memory": {
-            "name": [
-              "Replay",
-              "ConcatReplay"
-            ]
-          },
-          "net": {
-            "training_batch_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "training_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "lr_decay_frequency__choice": [
-              50000,
-              60000,
-              70000,
-              80000,
-              90000,
-              100000
-            ],
-            "update_frequency__choice": [
-              1,
-              100,
-              500,
-              1000,
-              2000,
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
+   },
+   "dqn_boltzmann_replace_lunar":{
+      "agent":[
+         {
+            "name":"DQNBoltzmann",
+            "algorithm":{
+               "name":"DQN",
+               "action_pdtype":"Argmax",
+               "action_policy":"boltzmann",
+               "action_policy_update":"linear_decay",
+               "explore_var_start":5.0,
+               "explore_var_end":0.5,
+               "explore_anneal_epi":100,
+               "gamma":0.99,
+               "training_batch_epoch":3,
+               "training_epoch":4,
+               "training_frequency":4,
+               "training_min_timestep":32,
+               "normalize_state":true
+            },
+            "memory":{
+               "name":"Replay",
+               "batch_size":32,
+               "max_size":100000,
+               "use_cer":false,
+               "concat_len":4
+            },
+            "net":{
+               "type":"MLPNet",
+               "hid_layers":[
+                  400,
+                  200
+               ],
+               "hid_layers_activation":"relu",
+               "clip_grad":false,
+               "clip_grad_val":1.0,
+               "loss_spec":{
+                  "name":"MSELoss"
+               },
+               "optim_spec":{
+                  "name":"Adam",
+                  "lr":0.02
+               },
+               "lr_decay":"linear_decay",
+               "lr_decay_frequency":80000,
+               "lr_decay_min_timestep":40000,
+               "lr_anneal_timestep":400000,
+               "update_type":"replace",
+               "update_frequency":1000,
+               "gpu":false
             }
-          }
-        }
-      ]
-    }
-  },
-  "ddqn_boltzmann_poly_lunar": {
-    "agent": [
-    {
-      "name": "DDQNBoltzmann",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Argmax",
-        "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
-        "explore_anneal_epi": 100,
-        "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
-        "training_frequency": 4,
-        "training_min_timestep": 32,
-        "normalize_state": true
+         }
+      ],
+      "env":[
+         {
+            "name":"LunarLander-v2",
+            "max_timestep":null,
+            "max_episode":800,
+            "save_epi_frequency":800
+         }
+      ],
+      "body":{
+         "product":"outer",
+         "num":1
       },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4
+      "meta":{
+         "distributed":false,
+         "max_session":4,
+         "max_trial":128,
+         "search":"RandomSearch",
+         "resources":{
+            "num_cpus":95
+         }
       },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [
-          400,
-          200
-        ],
-        "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
-        "update_type": "polyak",
-        "polyak_coef": 0.99,
-        "gpu": false
-        }
-      }
-    ],
-    "env": [
-      {
-        "name": "LunarLander-v2",
-        "max_timestep": null,
-        "max_episode": 1200,
-        "save_epi_frequency": 800
-      }
-    ],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "max_session": 4,
-      "max_trial": 128,
-      "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
-    },
-    "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "normalize_state__choice": [
-              true,
-              false
-            ],
-            "explore_anneal_epi__choice": [
-              100,
-              150,
-              200,
-              250,
-            ],
-            "gamma__choice": [
-              0.99,
-              0.993
-            ],
-          },
-          "memory": {
-            "name": [
-              "Replay",
-              "ConcatReplay"
-            ]
-          },
-          "net": {
-            "training_batch_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "training_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "lr_decay_frequency__choice": [
-              50000,
-              60000,
-              70000,
-              80000,
-              90000,
-              100000
-            ],
-            "polyak_coef__choice": [
-              0,
-              0.9,
-              0.95,
-              0.99,
-              0.995,
-              0.999
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
+      "search":{
+         "agent":[
+            {
+               "algorithm":{
+                  "normalize_state__choice":[
+                     true,
+                     false
+                  ],
+                  "explore_anneal_epi__choice":[
+                     100,
+                     150,
+                     200,
+                     250,
+
+                  ],
+                  "gamma__choice":[
+                     0.99,
+                     0.993
+                  ],
+
+               },
+               "memory":{
+                  "name":[
+                     "Replay",
+                     "ConcatReplay"
+                  ]
+               },
+               "net":{
+                  "training_batch_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "training_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "lr_decay_frequency__choice":[
+                     50000,
+                     60000,
+                     70000,
+                     80000,
+                     90000,
+                     100000
+                  ],
+                  "update_frequency__choice":[
+                     1,
+                     100,
+                     500,
+                     1000,
+                     2000,
+
+                  ],
+                  "optim_spec":{
+                     "lr__uniform":[
+                        0.001,
+                        0.01
+                     ]
+                  }
+               }
             }
-          }
-        }
-      ]
-    }
-  },
-  "ddqn_boltzmann_replace_lunar": {
-    "agent": [
-    {
-      "name": "DDQNBoltzmann",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Argmax",
-        "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
-        "explore_anneal_epi": 100,
-        "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
-        "training_frequency": 4,
-        "training_min_timestep": 32,
-        "normalize_state": true
-      },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4
-      },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [
-          400,
-          200
-        ],
-        "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
-        "update_type": "replace",
-        "update_frequency": 1000,
-        "gpu": false
-        }
+         ]
       }
-    ],
-    "env": [
-      {
-        "name": "LunarLander-v2",
-        "max_timestep": null,
-        "max_episode": 1200,
-        "save_epi_frequency": 800
-      }
-    ],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "max_session": 4,
-      "max_trial": 128,
-      "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
-    },
-    "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "normalize_state__choice": [
-              true,
-              false
-            ],
-            "explore_anneal_epi__choice": [
-              100,
-              150,
-              200,
-              250,
-            ],
-            "gamma__choice": [
-              0.99,
-              0.993
-            ],
-          },
-          "memory": {
-            "name": [
-              "Replay",
-              "ConcatReplay"
-            ]
-          },
-          "net": {
-            "training_batch_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "training_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "lr_decay_frequency__choice": [
-              50000,
-              60000,
-              70000,
-              80000,
-              90000,
-              100000
-            ],
-            "update_frequency__choice": [
-              1,
-              100,
-              500,
-              1000,
-              2000,
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
+   },
+   "dqn_epsilon_poly_lunar":{
+      "agent":[
+         {
+            "name":"DQNEpsilon",
+            "algorithm":{
+               "name":"DQN",
+               "action_pdtype":"Argmax",
+               "action_policy":"epsilon_greedy",
+               "action_policy_update":"linear_decay",
+               "explore_var_start":1.0,
+               "explore_var_end":0.08,
+               "explore_anneal_epi":100,
+               "gamma":0.99,
+               "training_batch_epoch":3,
+               "training_epoch":4,
+               "training_frequency":4,
+               "training_min_timestep":32,
+               "normalize_state":true
+            },
+            "memory":{
+               "name":"Replay",
+               "batch_size":32,
+               "max_size":100000,
+               "use_cer":false,
+               "concat_len":4
+            },
+            "net":{
+               "type":"MLPNet",
+               "hid_layers":[
+                  400,
+                  200
+               ],
+               "hid_layers_activation":"relu",
+               "clip_grad":false,
+               "clip_grad_val":1.0,
+               "loss_spec":{
+                  "name":"MSELoss"
+               },
+               "optim_spec":{
+                  "name":"Adam",
+                  "lr":0.02
+               },
+               "lr_decay":"linear_decay",
+               "lr_decay_frequency":80000,
+               "lr_decay_min_timestep":40000,
+               "lr_anneal_timestep":400000,
+               "update_type":"polyak",
+               "polyak_coef":0.99,
+               "gpu":false
             }
-          }
-        }
-      ]
-    }
-  },
-  "ddqn_epsilon_poly_lunar": {
-    "agent": [
-    {
-      "name": "DDQNEpsilon",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Argmax",
-        "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.08,
-        "explore_anneal_epi": 100,
-        "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
-        "training_frequency": 4,
-        "training_min_timestep": 32,
-        "normalize_state": true
+         }
+      ],
+      "env":[
+         {
+            "name":"LunarLander-v2",
+            "max_timestep":null,
+            "max_episode":800,
+            "save_epi_frequency":800
+         }
+      ],
+      "body":{
+         "product":"outer",
+         "num":1
       },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4
+      "meta":{
+         "distributed":false,
+         "max_session":4,
+         "max_trial":128,
+         "search":"RandomSearch",
+         "resources":{
+            "num_cpus":95
+         }
       },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [
-          400,
-          200
-        ],
-        "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
-        "update_type": "polyak",
-        "polyak_coef": 0.99,
-        "gpu": false
-        }
-      }
-    ],
-    "env": [
-      {
-        "name": "LunarLander-v2",
-        "max_timestep": null,
-        "max_episode": 1200,
-        "save_epi_frequency": 800
-      }
-    ],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "max_session": 4,
-      "max_trial": 128,
-      "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
-    },
-    "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "normalize_state__choice": [
-              true,
-              false
-            ],
-            "explore_anneal_epi__choice": [
-              100,
-              150,
-              200,
-              250,
-            ],
-            "gamma__choice": [
-              0.99,
-              0.993
-            ],
-          },
-          "memory": {
-            "name": [
-              "Replay",
-              "ConcatReplay"
-            ]
-          },
-          "net": {
-            "training_batch_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "training_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "lr_decay_frequency__choice": [
-              50000,
-              60000,
-              70000,
-              80000,
-              90000,
-              100000
-            ],
-            "polyak_coef__choice": [
-              0,
-              0.9,
-              0.95,
-              0.99,
-              0.995,
-              0.999
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
+      "search":{
+         "agent":[
+            {
+               "algorithm":{
+                  "normalize_state__choice":[
+                     true,
+                     false
+                  ],
+                  "explore_anneal_epi__choice":[
+                     100,
+                     150,
+                     200,
+                     250,
+
+                  ],
+                  "gamma__choice":[
+                     0.99,
+                     0.993
+                  ],
+
+               },
+               "memory":{
+                  "name":[
+                     "Replay",
+                     "ConcatReplay"
+                  ]
+               },
+               "net":{
+                  "training_batch_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "training_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "lr_decay_frequency__choice":[
+                     50000,
+                     60000,
+                     70000,
+                     80000,
+                     90000,
+                     100000
+                  ],
+                  "polyak_coef__choice":[
+                     0,
+                     0.9,
+                     0.95,
+                     0.99,
+                     0.995,
+                     0.999
+                  ],
+                  "optim_spec":{
+                     "lr__uniform":[
+                        0.001,
+                        0.01
+                     ]
+                  }
+               }
             }
-          }
-        }
-      ]
-    }
-  },
-  "ddqn_epsilon_replace_lunar": {
-    "agent": [
-    {
-      "name": "DDQNEpsilon",
-      "algorithm": {
-        "name": "DoubleDQN",
-        "action_pdtype": "Argmax",
-        "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.08,
-        "explore_anneal_epi": 100,
-        "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
-        "training_frequency": 4,
-        "training_min_timestep": 32,
-        "normalize_state": true
-      },
-      "memory": {
-        "name": "Replay",
-        "batch_size": 32,
-        "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4
-      },
-      "net": {
-        "type": "MLPNet",
-        "hid_layers": [
-          400,
-          200
-        ],
-        "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.02
-        },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
-        "update_type": "replace",
-        "update_frequency": 1000,
-        "gpu": false
-        }
+         ]
       }
-    ],
-    "env": [
-      {
-        "name": "LunarLander-v2",
-        "max_timestep": null,
-        "max_episode": 1200,
-        "save_epi_frequency": 800
-      }
-    ],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "max_session": 4,
-      "max_trial": 128,
-      "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
-    },
-    "search": {
-      "agent": [
-        {
-          "algorithm": {
-            "normalize_state__choice": [
-              true,
-              false
-            ],
-            "explore_anneal_epi__choice": [
-              100,
-              150,
-              200,
-              250,
-            ],
-            "gamma__choice": [
-              0.99,
-              0.993
-            ],
-          },
-          "memory": {
-            "name": [
-              "Replay",
-              "ConcatReplay"
-            ]
-          },
-          "net": {
-            "training_batch_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "training_epoch__choice": [
-              1,
-              2,
-              3,
-              4
-            ],
-            "lr_decay_frequency__choice": [
-              50000,
-              60000,
-              70000,
-              80000,
-              90000,
-              100000
-            ],
-            "update_frequency__choice": [
-              1,
-              100,
-              500,
-              1000,
-              2000,
-            ],
-            "optim_spec": {
-              "lr__uniform": [
-                0.001,
-                0.01
-              ]
+   },
+   "dqn_epsilon_replace_lunar":{
+      "agent":[
+         {
+            "name":"DQNEpsilon",
+            "algorithm":{
+               "name":"DQN",
+               "action_pdtype":"Argmax",
+               "action_policy":"epsilon_greedy",
+               "action_policy_update":"linear_decay",
+               "explore_var_start":1.0,
+               "explore_var_end":0.08,
+               "explore_anneal_epi":100,
+               "gamma":0.99,
+               "training_batch_epoch":3,
+               "training_epoch":4,
+               "training_frequency":4,
+               "training_min_timestep":32,
+               "normalize_state":true
+            },
+            "memory":{
+               "name":"Replay",
+               "batch_size":32,
+               "max_size":100000,
+               "use_cer":false,
+               "concat_len":4
+            },
+            "net":{
+               "type":"MLPNet",
+               "hid_layers":[
+                  400,
+                  200
+               ],
+               "hid_layers_activation":"relu",
+               "clip_grad":false,
+               "clip_grad_val":1.0,
+               "loss_spec":{
+                  "name":"MSELoss"
+               },
+               "optim_spec":{
+                  "name":"Adam",
+                  "lr":0.02
+               },
+               "lr_decay":"linear_decay",
+               "lr_decay_frequency":80000,
+               "lr_decay_min_timestep":40000,
+               "lr_anneal_timestep":400000,
+               "update_type":"replace",
+               "update_frequency":1000,
+               "gpu":false
             }
-          }
-        }
-      ]
-    }
-  },
+         }
+      ],
+      "env":[
+         {
+            "name":"LunarLander-v2",
+            "max_timestep":null,
+            "max_episode":800,
+            "save_epi_frequency":800
+         }
+      ],
+      "body":{
+         "product":"outer",
+         "num":1
+      },
+      "meta":{
+         "distributed":false,
+         "max_session":4,
+         "max_trial":128,
+         "search":"RandomSearch",
+         "resources":{
+            "num_cpus":95
+         }
+      },
+      "search":{
+         "agent":[
+            {
+               "algorithm":{
+                  "normalize_state__choice":[
+                     true,
+                     false
+                  ],
+                  "explore_anneal_epi__choice":[
+                     100,
+                     150,
+                     200,
+                     250,
+
+                  ],
+                  "gamma__choice":[
+                     0.99,
+                     0.993
+                  ],
+
+               },
+               "memory":{
+                  "name":[
+                     "Replay",
+                     "ConcatReplay"
+                  ]
+               },
+               "net":{
+                  "training_batch_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "training_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "lr_decay_frequency__choice":[
+                     50000,
+                     60000,
+                     70000,
+                     80000,
+                     90000,
+                     100000
+                  ],
+                  "update_frequency__choice":[
+                     1,
+                     100,
+                     500,
+                     1000,
+                     2000,
+
+                  ],
+                  "optim_spec":{
+                     "lr__uniform":[
+                        0.001,
+                        0.01
+                     ]
+                  }
+               }
+            }
+         ]
+      }
+   },
+   "ddqn_boltzmann_poly_lunar":{
+      "agent":[
+         {
+            "name":"DDQNBoltzmann",
+            "algorithm":{
+               "name":"DoubleDQN",
+               "action_pdtype":"Argmax",
+               "action_policy":"boltzmann",
+               "action_policy_update":"linear_decay",
+               "explore_var_start":5.0,
+               "explore_var_end":0.5,
+               "explore_anneal_epi":100,
+               "gamma":0.99,
+               "training_batch_epoch":3,
+               "training_epoch":4,
+               "training_frequency":4,
+               "training_min_timestep":32,
+               "normalize_state":true
+            },
+            "memory":{
+               "name":"Replay",
+               "batch_size":32,
+               "max_size":100000,
+               "use_cer":false,
+               "concat_len":4
+            },
+            "net":{
+               "type":"MLPNet",
+               "hid_layers":[
+                  400,
+                  200
+               ],
+               "hid_layers_activation":"relu",
+               "clip_grad":false,
+               "clip_grad_val":1.0,
+               "loss_spec":{
+                  "name":"MSELoss"
+               },
+               "optim_spec":{
+                  "name":"Adam",
+                  "lr":0.02
+               },
+               "lr_decay":"linear_decay",
+               "lr_decay_frequency":80000,
+               "lr_decay_min_timestep":40000,
+               "lr_anneal_timestep":400000,
+               "update_type":"polyak",
+               "polyak_coef":0.99,
+               "gpu":false
+            }
+         }
+      ],
+      "env":[
+         {
+            "name":"LunarLander-v2",
+            "max_timestep":null,
+            "max_episode":1200,
+            "save_epi_frequency":800
+         }
+      ],
+      "body":{
+         "product":"outer",
+         "num":1
+      },
+      "meta":{
+         "distributed":false,
+         "max_session":4,
+         "max_trial":128,
+         "search":"RandomSearch",
+         "resources":{
+            "num_cpus":95
+         }
+      },
+      "search":{
+         "agent":[
+            {
+               "algorithm":{
+                  "normalize_state__choice":[
+                     true,
+                     false
+                  ],
+                  "explore_anneal_epi__choice":[
+                     100,
+                     150,
+                     200,
+                     250,
+
+                  ],
+                  "gamma__choice":[
+                     0.99,
+                     0.993
+                  ],
+
+               },
+               "memory":{
+                  "name":[
+                     "Replay",
+                     "ConcatReplay"
+                  ]
+               },
+               "net":{
+                  "training_batch_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "training_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "lr_decay_frequency__choice":[
+                     50000,
+                     60000,
+                     70000,
+                     80000,
+                     90000,
+                     100000
+                  ],
+                  "polyak_coef__choice":[
+                     0,
+                     0.9,
+                     0.95,
+                     0.99,
+                     0.995,
+                     0.999
+                  ],
+                  "optim_spec":{
+                     "lr__uniform":[
+                        0.001,
+                        0.01
+                     ]
+                  }
+               }
+            }
+         ]
+      }
+   },
+   "ddqn_boltzmann_replace_lunar":{
+      "agent":[
+         {
+            "name":"DDQNBoltzmann",
+            "algorithm":{
+               "name":"DoubleDQN",
+               "action_pdtype":"Argmax",
+               "action_policy":"boltzmann",
+               "action_policy_update":"linear_decay",
+               "explore_var_start":5.0,
+               "explore_var_end":0.5,
+               "explore_anneal_epi":100,
+               "gamma":0.99,
+               "training_batch_epoch":3,
+               "training_epoch":4,
+               "training_frequency":4,
+               "training_min_timestep":32,
+               "normalize_state":true
+            },
+            "memory":{
+               "name":"Replay",
+               "batch_size":32,
+               "max_size":100000,
+               "use_cer":false,
+               "concat_len":4
+            },
+            "net":{
+               "type":"MLPNet",
+               "hid_layers":[
+                  400,
+                  200
+               ],
+               "hid_layers_activation":"relu",
+               "clip_grad":false,
+               "clip_grad_val":1.0,
+               "loss_spec":{
+                  "name":"MSELoss"
+               },
+               "optim_spec":{
+                  "name":"Adam",
+                  "lr":0.02
+               },
+               "lr_decay":"linear_decay",
+               "lr_decay_frequency":80000,
+               "lr_decay_min_timestep":40000,
+               "lr_anneal_timestep":400000,
+               "update_type":"replace",
+               "update_frequency":1000,
+               "gpu":false
+            }
+         }
+      ],
+      "env":[
+         {
+            "name":"LunarLander-v2",
+            "max_timestep":null,
+            "max_episode":1200,
+            "save_epi_frequency":800
+         }
+      ],
+      "body":{
+         "product":"outer",
+         "num":1
+      },
+      "meta":{
+         "distributed":false,
+         "max_session":4,
+         "max_trial":128,
+         "search":"RandomSearch",
+         "resources":{
+            "num_cpus":95
+         }
+      },
+      "search":{
+         "agent":[
+            {
+               "algorithm":{
+                  "normalize_state__choice":[
+                     true,
+                     false
+                  ],
+                  "explore_anneal_epi__choice":[
+                     100,
+                     150,
+                     200,
+                     250,
+
+                  ],
+                  "gamma__choice":[
+                     0.99,
+                     0.993
+                  ],
+
+               },
+               "memory":{
+                  "name":[
+                     "Replay",
+                     "ConcatReplay"
+                  ]
+               },
+               "net":{
+                  "training_batch_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "training_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "lr_decay_frequency__choice":[
+                     50000,
+                     60000,
+                     70000,
+                     80000,
+                     90000,
+                     100000
+                  ],
+                  "update_frequency__choice":[
+                     1,
+                     100,
+                     500,
+                     1000,
+                     2000,
+
+                  ],
+                  "optim_spec":{
+                     "lr__uniform":[
+                        0.001,
+                        0.01
+                     ]
+                  }
+               }
+            }
+         ]
+      }
+   },
+   "ddqn_epsilon_poly_lunar":{
+      "agent":[
+         {
+            "name":"DDQNEpsilon",
+            "algorithm":{
+               "name":"DoubleDQN",
+               "action_pdtype":"Argmax",
+               "action_policy":"epsilon_greedy",
+               "action_policy_update":"linear_decay",
+               "explore_var_start":1.0,
+               "explore_var_end":0.08,
+               "explore_anneal_epi":100,
+               "gamma":0.99,
+               "training_batch_epoch":3,
+               "training_epoch":4,
+               "training_frequency":4,
+               "training_min_timestep":32,
+               "normalize_state":true
+            },
+            "memory":{
+               "name":"Replay",
+               "batch_size":32,
+               "max_size":100000,
+               "use_cer":false,
+               "concat_len":4
+            },
+            "net":{
+               "type":"MLPNet",
+               "hid_layers":[
+                  400,
+                  200
+               ],
+               "hid_layers_activation":"relu",
+               "clip_grad":false,
+               "clip_grad_val":1.0,
+               "loss_spec":{
+                  "name":"MSELoss"
+               },
+               "optim_spec":{
+                  "name":"Adam",
+                  "lr":0.02
+               },
+               "lr_decay":"linear_decay",
+               "lr_decay_frequency":80000,
+               "lr_decay_min_timestep":40000,
+               "lr_anneal_timestep":400000,
+               "update_type":"polyak",
+               "polyak_coef":0.99,
+               "gpu":false
+            }
+         }
+      ],
+      "env":[
+         {
+            "name":"LunarLander-v2",
+            "max_timestep":null,
+            "max_episode":1200,
+            "save_epi_frequency":800
+         }
+      ],
+      "body":{
+         "product":"outer",
+         "num":1
+      },
+      "meta":{
+         "distributed":false,
+         "max_session":4,
+         "max_trial":128,
+         "search":"RandomSearch",
+         "resources":{
+            "num_cpus":95
+         }
+      },
+      "search":{
+         "agent":[
+            {
+               "algorithm":{
+                  "normalize_state__choice":[
+                     true,
+                     false
+                  ],
+                  "explore_anneal_epi__choice":[
+                     100,
+                     150,
+                     200,
+                     250,
+
+                  ],
+                  "gamma__choice":[
+                     0.99,
+                     0.993
+                  ],
+
+               },
+               "memory":{
+                  "name":[
+                     "Replay",
+                     "ConcatReplay"
+                  ]
+               },
+               "net":{
+                  "training_batch_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "training_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "lr_decay_frequency__choice":[
+                     50000,
+                     60000,
+                     70000,
+                     80000,
+                     90000,
+                     100000
+                  ],
+                  "polyak_coef__choice":[
+                     0,
+                     0.9,
+                     0.95,
+                     0.99,
+                     0.995,
+                     0.999
+                  ],
+                  "optim_spec":{
+                     "lr__uniform":[
+                        0.001,
+                        0.01
+                     ]
+                  }
+               }
+            }
+         ]
+      }
+   },
+   "ddqn_epsilon_replace_lunar":{
+      "agent":[
+         {
+            "name":"DDQNEpsilon",
+            "algorithm":{
+               "name":"DoubleDQN",
+               "action_pdtype":"Argmax",
+               "action_policy":"epsilon_greedy",
+               "action_policy_update":"linear_decay",
+               "explore_var_start":1.0,
+               "explore_var_end":0.08,
+               "explore_anneal_epi":100,
+               "gamma":0.99,
+               "training_batch_epoch":3,
+               "training_epoch":4,
+               "training_frequency":4,
+               "training_min_timestep":32,
+               "normalize_state":true
+            },
+            "memory":{
+               "name":"Replay",
+               "batch_size":32,
+               "max_size":100000,
+               "use_cer":false,
+               "concat_len":4
+            },
+            "net":{
+               "type":"MLPNet",
+               "hid_layers":[
+                  400,
+                  200
+               ],
+               "hid_layers_activation":"relu",
+               "clip_grad":false,
+               "clip_grad_val":1.0,
+               "loss_spec":{
+                  "name":"MSELoss"
+               },
+               "optim_spec":{
+                  "name":"Adam",
+                  "lr":0.02
+               },
+               "lr_decay":"linear_decay",
+               "lr_decay_frequency":80000,
+               "lr_decay_min_timestep":40000,
+               "lr_anneal_timestep":400000,
+               "update_type":"replace",
+               "update_frequency":1000,
+               "gpu":false
+            }
+         }
+      ],
+      "env":[
+         {
+            "name":"LunarLander-v2",
+            "max_timestep":null,
+            "max_episode":1200,
+            "save_epi_frequency":800
+         }
+      ],
+      "body":{
+         "product":"outer",
+         "num":1
+      },
+      "meta":{
+         "distributed":false,
+         "max_session":4,
+         "max_trial":128,
+         "search":"RandomSearch",
+         "resources":{
+            "num_cpus":95
+         }
+      },
+      "search":{
+         "agent":[
+            {
+               "algorithm":{
+                  "normalize_state__choice":[
+                     true,
+                     false
+                  ],
+                  "explore_anneal_epi__choice":[
+                     100,
+                     150,
+                     200,
+                     250,
+
+                  ],
+                  "gamma__choice":[
+                     0.99,
+                     0.993
+                  ],
+
+               },
+               "memory":{
+                  "name":[
+                     "Replay",
+                     "ConcatReplay"
+                  ]
+               },
+               "net":{
+                  "training_batch_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "training_epoch__choice":[
+                     1,
+                     2,
+                     3,
+                     4
+                  ],
+                  "lr_decay_frequency__choice":[
+                     50000,
+                     60000,
+                     70000,
+                     80000,
+                     90000,
+                     100000
+                  ],
+                  "update_frequency__choice":[
+                     1,
+                     100,
+                     500,
+                     1000,
+                     2000,
+
+                  ],
+                  "optim_spec":{
+                     "lr__uniform":[
+                        0.001,
+                        0.01
+                     ]
+                  }
+               }
+            }
+         ]
+      }
+   },
 }
