@@ -165,5 +165,5 @@ class SARSA(Algorithm):
         for net_name in self.net_names:
             net = getattr(self, net_name)
             self.body.grad_norms.extend(net.grad_norms)
-        self.body.explore_var = self.explore_var_scheduler.update(self, self.body)
+        self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
         return self.body.explore_var

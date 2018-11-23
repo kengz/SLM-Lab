@@ -331,11 +331,11 @@ class VarScheduler:
             'end_step',
         ])
 
-    def update(self, algorithm, body):
+    def update(self, algorithm, clock):
         '''Get an updated value for var'''
         if self._updater_name == 'no_decay':
             return self.start_val
-        step = body.env.clock.get(self.clock_unit)
+        step = clock.get(self.clock_unit)
         val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
         return val
 

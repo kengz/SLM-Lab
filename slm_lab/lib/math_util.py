@@ -12,7 +12,6 @@ logger = logger.get_logger(__name__)
 # Policy Gradient calc
 # advantage functions
 
-
 def calc_returns(batch, gamma):
     '''
     Calculate the simple returns (full rollout) for advantage
