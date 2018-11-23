@@ -38,10 +38,14 @@ class PPO(ActorCritic):
         "gamma": 0.99,
         "lam": 1.0,
         "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 10
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "training_epoch": 8,
         "normalize_state": true
@@ -62,6 +66,8 @@ class PPO(ActorCritic):
             action_pdtype='default',
             action_policy='default',
             explore_var_spec=None,
+            add_entropy=True,
+            entropy_coef_spec=None,
             val_loss_coef=1.0,
         ))
         util.set_attr(self, self.algorithm_spec, [
@@ -72,10 +78,7 @@ class PPO(ActorCritic):
             'gamma',
             'lam',
             'clip_eps',
-            'entropy_coef_start',
-            'entropy_coef_end',
-            'entropy_anneal_epi',
-            'entropy_anneal_start_epi',
+            'entropy_coef_spec',
             'val_loss_coef',
             'training_frequency',  # horizon
             'training_epoch',
@@ -85,9 +88,11 @@ class PPO(ActorCritic):
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
-        self.body.entropy_coef = self.entropy_coef_start
-        if getattr(self, 'entropy_anneal_epi'):
-            self.entropy_decay_fn = policy_util.entropy_linear_decay
+        # TODO check all param consistency
+        # TODO fill comment example entropy coef
+        if self.add_entropy:
+            self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
+            self.body.entropy_coef = self.entropy_coef_scheduler.start_val
         # PPO uses GAE
         self.calc_advs_v_targets = self.calc_gae_advs_v_targets
 

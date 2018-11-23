@@ -31,11 +31,15 @@ class Reinforce(Algorithm):
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": false,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 10
+        "add_entropy": true,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": true
     }
@@ -49,6 +53,8 @@ class Reinforce(Algorithm):
             action_pdtype='default',
             action_policy='default',
             explore_var_spec=None,
+            add_entropy=False,
+            entropy_coef_spec=None,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -57,10 +63,7 @@ class Reinforce(Algorithm):
             'explore_var_spec',
             'gamma',  # the discount factor
             'add_entropy',
-            'entropy_coef_start',
-            'entropy_coef_end',
-            'entropy_anneal_epi',
-            'entropy_anneal_start_epi',
+            'entropy_coef_spec',
             'training_frequency',
             'normalize_state',
         ])
@@ -68,9 +71,9 @@ class Reinforce(Algorithm):
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
-        self.body.entropy_coef = self.entropy_coef_start
-        if getattr(self, 'entropy_anneal_epi'):
-            self.entropy_decay_fn = policy_util.entropy_linear_decay
+        if self.add_entropy:
+            self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
+            self.body.entropy_coef = self.entropy_coef_scheduler.start_val
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -170,10 +173,7 @@ class Reinforce(Algorithm):
         for net_name in self.net_names:
             net = getattr(self, net_name)
             self.body.grad_norms.extend(net.grad_norms)
-        # TODO standardize
-        if hasattr(self, 'entropy_anneal_epi'):
-            self.body.entropy_coef = self.entropy_decay_fn(self, self.body)
-            if self.body.env.clock.get('t') == 1:
-                logger.debug(f'entropy coefficient decayed to {self.body.entropy_coef}')
         self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
+        if self.add_entropy:
+            self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
         return self.body.explore_var
