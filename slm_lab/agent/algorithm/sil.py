@@ -21,7 +21,6 @@ class SIL(ActorCritic):
         "name": "SIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
         "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": true,
@@ -66,7 +65,6 @@ class SIL(ActorCritic):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
-            action_policy_update='no_update',
             explore_var_spec=None,
             policy_loss_coef=1.0,
             val_loss_coef=1.0,
@@ -75,7 +73,6 @@ class SIL(ActorCritic):
             'action_pdtype',
             'action_policy',
             # theoretically, AC does not have policy update; but in this implementation we have such option
-            'action_policy_update',
             'explore_var_spec',
             'gamma',  # the discount factor
             'use_gae',
@@ -198,7 +195,6 @@ class PPOSIL(SIL, PPO):
         "name": "PPOSIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 1.0,

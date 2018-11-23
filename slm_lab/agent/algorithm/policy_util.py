@@ -318,10 +318,11 @@ class VarScheduler:
     '''
 
     def __init__(self, var_decay_spec=None):
-        if var_decay_spec is not None:
-            assert var_decay_spec['name'] != 'no_decay', 'active var_spec must provide a name that is not "no_decay"'
-        _updater_name = ps.get(var_decay_spec, 'name', 'no_decay')
-        self._updater = getattr(math_util, _updater_name)
+        self._updater_name = 'no_decay' if var_decay_spec is None else var_decay_spec['name']
+        self._updater = getattr(math_util, self._updater_name)
+        util.set_attr(self, dict(
+            start_val=np.nan,
+        ))
         util.set_attr(self, var_decay_spec, [
             'clock_unit',
             'start_val',
@@ -332,6 +333,8 @@ class VarScheduler:
 
     def update(self, algorithm, body):
         '''Get an updated value for var'''
+        if self._updater_name == 'no_decay':
+            return self.start_val
         step = body.env.clock.get(self.clock_unit)
         val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
         return val

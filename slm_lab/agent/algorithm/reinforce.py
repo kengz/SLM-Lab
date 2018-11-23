@@ -29,7 +29,6 @@ class Reinforce(Algorithm):
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
         "explore_var_spec": null,
         "gamma": 0.99,
         "add_entropy": false,
@@ -49,14 +48,12 @@ class Reinforce(Algorithm):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
-            action_policy_update='no_update',
             explore_var_spec=None,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
             'action_policy',
             # theoretically, REINFORCE does not have policy update; but in this implementation we have such option
-            'action_policy_update',
             'explore_var_spec',
             'gamma',  # the discount factor
             'add_entropy',
@@ -69,8 +66,8 @@ class Reinforce(Algorithm):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        self.body.explore_var = self.explore_var_spec.get('start_val')
+        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.body.explore_var = self.explore_var_scheduler.start_val
         self.body.entropy_coef = self.entropy_coef_start
         if getattr(self, 'entropy_anneal_epi'):
             self.entropy_decay_fn = policy_util.entropy_linear_decay
@@ -173,10 +170,10 @@ class Reinforce(Algorithm):
         for net_name in self.net_names:
             net = getattr(self, net_name)
             self.body.grad_norms.extend(net.grad_norms)
-        explore_var = self.action_policy_update(self, self.body)
+        self.body.explore_var = self.explore_var_scheduler.update(self, self.body)
         # TODO standardize
         if hasattr(self, 'entropy_anneal_epi'):
             self.body.entropy_coef = self.entropy_decay_fn(self, self.body)
             if self.body.env.clock.get('t') == 1:
                 logger.debug(f'entropy coefficient decayed to {self.body.entropy_coef}')
-        return explore_var
+        return self.body.explore_var

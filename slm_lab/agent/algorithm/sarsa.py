@@ -30,8 +30,8 @@ class SARSA(Algorithm):
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
         "explore_var_spec": {
+            "name": "linear_decay",
             "clock_unit": "total_t",
             "start_val": 1.0,
             "end_val": 0.1,
@@ -51,13 +51,11 @@ class SARSA(Algorithm):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
-            action_policy_update='no_update',
             explore_var_spec=None,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
             'action_policy',
-            'action_policy_update',
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_spec',
@@ -67,8 +65,8 @@ class SARSA(Algorithm):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        self.body.explore_var = self.explore_var_spec.get('start_val')
+        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.body.explore_var = self.explore_var_scheduler.start_val
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -167,5 +165,5 @@ class SARSA(Algorithm):
         for net_name in self.net_names:
             net = getattr(self, net_name)
             self.body.grad_norms.extend(net.grad_norms)
-        explore_var = self.action_policy_update(self, self.body)
-        return explore_var
+        self.body.explore_var = self.explore_var_scheduler.update(self, self.body)
+        return self.body.explore_var

@@ -34,7 +34,6 @@ class PPO(ActorCritic):
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 1.0,
@@ -62,7 +61,6 @@ class PPO(ActorCritic):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
-            action_policy_update='no_update',
             explore_var_spec=None,
             val_loss_coef=1.0,
         ))
@@ -70,7 +68,6 @@ class PPO(ActorCritic):
             'action_pdtype',
             'action_policy',
             # theoretically, PPO does not have policy update; but in this implementation we have such option
-            'action_policy_update',
             'explore_var_spec',
             'gamma',
             'lam',
@@ -86,8 +83,8 @@ class PPO(ActorCritic):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        self.body.explore_var = self.explore_var_spec.get('start_val')
+        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.body.explore_var = self.explore_var_scheduler.start_val
         self.body.entropy_coef = self.entropy_coef_start
         if getattr(self, 'entropy_anneal_epi'):
             self.entropy_decay_fn = policy_util.entropy_linear_decay

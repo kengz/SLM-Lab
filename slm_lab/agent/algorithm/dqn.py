@@ -35,8 +35,8 @@ class VanillaDQN(SARSA):
         "name": "VanillaDQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
         "explore_var_spec": {
+            "name": "linear_decay",
             "clock_unit": "total_t",
             "start_val": 1.0,
             "end_val": 0.1,
@@ -58,13 +58,11 @@ class VanillaDQN(SARSA):
         util.set_attr(self, dict(
             action_pdtype='Argmax',
             action_policy='epsilon_greedy',
-            action_policy_update='linear_decay',
             explore_var_spec=None,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
             'action_policy',
-            'action_policy_update',
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
             'explore_var_spec',
@@ -245,8 +243,8 @@ class DQN(DQNBase):
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
         "explore_var_spec": {
+            "name": "linear_decay",
             "clock_unit": "total_t",
             "start_val": 1.0,
             "end_val": 0.1,
@@ -274,8 +272,8 @@ class DoubleDQN(DQN):
         "name": "DDQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
         "explore_var_spec": {
+            "name": "linear_decay",
             "clock_unit": "total_t",
             "start_val": 1.0,
             "end_val": 0.1,
