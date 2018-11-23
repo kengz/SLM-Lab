@@ -6,8 +6,8 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
         "explore_var_spec": {
+          "name": "linear_decay",
           "clock_unit": "total_t",
           "start_val": 1.0,
           "end_val": 0.1,

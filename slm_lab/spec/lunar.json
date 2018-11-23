@@ -2165,10 +2165,14 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_frequency": 20,
         "normalize_state": true
@@ -2218,7 +2222,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -2236,10 +2242,14 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_frequency": 20,
         "normalize_state": true
@@ -2289,7 +2299,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -2307,10 +2319,14 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_frequency": 20,
         "normalize_state": true
@@ -2364,7 +2380,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -2383,10 +2401,14 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_frequency": 20,
         "normalize_state": true
@@ -2440,7 +2462,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -2459,10 +2483,14 @@
         "name": "VanillaDQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
@@ -2518,7 +2546,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -2536,10 +2566,14 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
@@ -2598,7 +2632,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -2617,10 +2653,14 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
@@ -2679,7 +2719,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -2698,10 +2740,14 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
@@ -2764,7 +2810,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -2784,10 +2832,14 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
@@ -2850,7 +2902,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -2870,10 +2924,14 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
@@ -2932,7 +2990,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -2951,10 +3011,14 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
@@ -3013,7 +3077,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -3032,10 +3098,14 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
@@ -3098,7 +3168,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -3118,10 +3190,14 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
@@ -3184,7 +3260,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -3204,10 +3282,14 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
@@ -3266,7 +3348,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -3285,10 +3369,14 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
@@ -3347,7 +3435,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
