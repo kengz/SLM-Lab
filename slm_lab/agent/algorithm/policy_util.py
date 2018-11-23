@@ -302,32 +302,40 @@ def multi_boltzmann(states, algorithm, body_list, pdparam):
 
 # action policy update methods
 
-def no_update(algorithm, body):
-    '''No update, but exists for API consistency'''
-    return body.explore_var
+class VarScheduler:
+    '''
+    Variable scheduler for decaying variables such as explore_var (epsilon, tau) and entropy
 
+    e.g. spec
+    "explore_var_spec": {
+        "name": "linear_decay",
+        "clock_unit": "total_t",
+        "start_val": 1.0,
+        "end_val": 0.1,
+        "start_step": 0,
+        "end_step": 800,
+    },
+    '''
 
-def fn_decay_explore_var(algorithm, body, fn):
-    '''Apply a function to decay explore_var'''
-    spec = algorithm.explore_var_spec
-    step = body.env.clock.get(spec['clock_unit'])
-    body.explore_var = fn(spec['start_val'], spec['end_val'], spec['start_step'], spec['end_step'], step)
-    return body.explore_var
+    def __init__(self, var_decay_spec=None):
+        if var_decay_spec is not None:
+            assert var_decay_spec['name'] != 'no_decay', 'active var_spec must provide a name that is not "no_decay"'
+        _updater_name = ps.get(var_decay_spec, 'name', 'no_decay')
+        self._updater = getattr(math_util, _updater_name)
+        util.set_attr(self, var_decay_spec, [
+            'clock_unit',
+            'start_val',
+            'end_val',
+            'start_step',
+            'end_step',
+        ])
 
+    def update(self, algorithm, body):
+        '''Get an updated value for var'''
+        step = body.env.clock.get(self.clock_unit)
+        val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
+        return val
 
-def linear_decay(algorithm, body):
-    '''Apply linear_decay to explore_var'''
-    return fn_decay_explore_var(algorithm, body, math_util.linear_decay)
-
-
-def rate_decay(algorithm, body):
-    '''Apply rate_decay to explore_var'''
-    return fn_decay_explore_var(algorithm, body, math_util.rate_decay)
-
-
-def periodic_decay(algorithm, body):
-    '''Apply periodic_decay to explore_var'''
-    return fn_decay_explore_var(algorithm, body, math_util.periodic_decay)
 
 # entropy coefficient decay methods
 # currently only linear decay supported

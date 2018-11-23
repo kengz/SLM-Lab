@@ -116,6 +116,11 @@ def standardize(v):
 # generic variable decay methods
 
 
+def no_decay(start_val, end_val, start_step, end_step, step):
+    '''dummy method for API consistency'''
+    return start_val
+
+
 def linear_decay(start_val, end_val, start_step, end_step, step):
     '''Simple linear decay with annealing'''
     if step < start_step:
