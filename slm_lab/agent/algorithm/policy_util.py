@@ -13,6 +13,7 @@ action, action_pd = sample_action_pd(ActionPD, pdparam, body)
 We can also augment pdparam before sampling - as in the case of Boltzmann sampling,
 or do epsilon-greedy to use pdparam-sampling or random sampling.
 '''
+from slm_lab.agent.algorithm import math_util
 from slm_lab.lib import logger, util
 from torch import distributions
 import numpy as np
@@ -299,46 +300,6 @@ def multi_boltzmann(states, algorithm, body_list, pdparam):
     return action_a, action_pd_a
 
 
-# generic rate decay methods
-
-
-def _linear_decay(start_val, end_val, start_step, end_step, step):
-    '''Simple linear decay with annealing'''
-    if step < start_step:
-        return start_val
-    slope = (end_val - start_val) / (end_step - start_step)
-    val = max(slope * step + start_val, end_val)
-    return val
-
-
-def _rate_decay(start_val, end_val, start_step, end_step, step, decay_rate=0.9, frequency=20.):
-    '''Compounding rate decay that anneals in 20 decay iterations until end_step'''
-    if step < start_step:
-        return start_val
-    step_per_decay = (end_step - start_step) / frequency
-    decay_step = step / step_per_decay
-    val = max(np.power(decay_rate, decay_step) * start_val, end_val)
-    return val
-
-
-def _periodic_decay(start_val, end_val, start_step, end_step, step, frequency=60.):
-    '''
-    Linearly decaying sinusoid that decays in roughly 10 iterations until explore_anneal_epi
-    Plot the equation below to see the pattern
-    suppose sinusoidal decay, start_val = 1, end_val = 0.2, stop after 60 unscaled x steps
-    then we get 0.2+0.5*(1-0.2)(1 + cos x)*(1-x/60)
-    '''
-    if step < start_step:
-        return start_val
-    x_freq = frequency
-    step_per_decay = (end_step - start_step) / x_freq
-    x = step / step_per_decay
-    unit = start_val - end_val
-    val = end_val * 0.5 * unit * (1 + np.cos(x) * (1 - x / x_freq))
-    val = max(val, end_val)
-    return val
-
-
 # action policy update methods
 
 def no_update(algorithm, body):
@@ -355,18 +316,18 @@ def fn_decay_explore_var(algorithm, body, fn):
 
 
 def linear_decay(algorithm, body):
-    '''Apply linear decay to explore_var'''
-    return fn_decay_explore_var(algorithm, body, _linear_decay)
+    '''Apply linear_decay to explore_var'''
+    return fn_decay_explore_var(algorithm, body, math_util.linear_decay)
 
 
 def rate_decay(algorithm, body):
-    '''Apply _rate_decay to explore_var'''
-    return fn_decay_explore_var(algorithm, body, _rate_decay)
+    '''Apply rate_decay to explore_var'''
+    return fn_decay_explore_var(algorithm, body, math_util.rate_decay)
 
 
 def periodic_decay(algorithm, body):
-    '''Apply _periodic_decay to explore_var'''
-    return fn_decay_explore_var(algorithm, body, _periodic_decay)
+    '''Apply periodic_decay to explore_var'''
+    return fn_decay_explore_var(algorithm, body, math_util.periodic_decay)
 
 # entropy coefficient decay methods
 # currently only linear decay supported

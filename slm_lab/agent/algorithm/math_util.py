@@ -3,11 +3,9 @@ Calculations used by algorithms
 All calculations for training shall have a standard API that takes in `batch` from algorithm.sample() method and return np array for calculation.
 `batch` is a dict containing keys to any data type you wish, e.g. {rewards: np.array([...])}
 '''
-from slm_lab.lib import logger, util
-import copy
+from slm_lab.lib import logger
 import numpy as np
 import torch
-import pydash as ps
 
 logger = logger.get_logger(__name__)
 
@@ -114,3 +112,42 @@ def standardize(v):
     v_std += 1e-08  # division guard
     v = (v - v.mean()) / v_std
     return v
+
+# generic variable decay methods
+
+
+def linear_decay(start_val, end_val, start_step, end_step, step):
+    '''Simple linear decay with annealing'''
+    if step < start_step:
+        return start_val
+    slope = (end_val - start_val) / (end_step - start_step)
+    val = max(slope * step + start_val, end_val)
+    return val
+
+
+def rate_decay(start_val, end_val, start_step, end_step, step, decay_rate=0.9, frequency=20.):
+    '''Compounding rate decay that anneals in 20 decay iterations until end_step'''
+    if step < start_step:
+        return start_val
+    step_per_decay = (end_step - start_step) / frequency
+    decay_step = step / step_per_decay
+    val = max(np.power(decay_rate, decay_step) * start_val, end_val)
+    return val
+
+
+def periodic_decay(start_val, end_val, start_step, end_step, step, frequency=60.):
+    '''
+    Linearly decaying sinusoid that decays in roughly 10 iterations until explore_anneal_epi
+    Plot the equation below to see the pattern
+    suppose sinusoidal decay, start_val = 1, end_val = 0.2, stop after 60 unscaled x steps
+    then we get 0.2+0.5*(1-0.2)(1 + cos x)*(1-x/60)
+    '''
+    if step < start_step:
+        return start_val
+    x_freq = frequency
+    step_per_decay = (end_step - start_step) / x_freq
+    x = step / step_per_decay
+    unit = start_val - end_val
+    val = end_val * 0.5 * unit * (1 + np.cos(x) * (1 - x / x_freq))
+    val = max(val, end_val)
+    return val
