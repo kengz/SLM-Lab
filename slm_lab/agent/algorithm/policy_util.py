@@ -13,8 +13,7 @@ action, action_pd = sample_action_pd(ActionPD, pdparam, body)
 We can also augment pdparam before sampling - as in the case of Boltzmann sampling,
 or do epsilon-greedy to use pdparam-sampling or random sampling.
 '''
-from slm_lab.agent.algorithm import math_util
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from torch import distributions
 import numpy as np
 import pydash as ps
@@ -181,8 +180,9 @@ def random(state, algorithm, body):
         action_pd = distributions.Categorical(logits=torch.ones(body.action_space.high, device=algorithm.net.device))
     elif body.action_type == 'continuous':
         # Possibly this should this have a 'device' set
-        action_pd = distributions.Uniform(low=torch.tensor(body.action_space.low).float(),
-                                          high=torch.tensor(body.action_space.high).float())
+        action_pd = distributions.Uniform(
+            low=torch.tensor(body.action_space.low).float(),
+            high=torch.tensor(body.action_space.high).float())
     elif body.action_type == 'multi_discrete':
         action_pd = distributions.Categorical(
             logits=torch.ones(body.action_space.high.size, body.action_space.high[0], device=algorithm.net.device))

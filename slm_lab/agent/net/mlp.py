@@ -1,7 +1,6 @@
-from slm_lab.agent.algorithm import math_util
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 import numpy as np
 import pydash as ps
 import torch
