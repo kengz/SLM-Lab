@@ -31,9 +31,13 @@ class SARSA(Algorithm):
         "action_pdtype": "default",
         "action_policy": "boltzmann",
         "action_policy_update": "linear_decay",
-        "explore_var_start": 1.5,
-        "explore_var_end": 0.3,
-        "explore_anneal_epi": 10,
+        "explore_var_spec": {
+            "clock_unit": "total_t",
+            "start_val": 1.0,
+            "end_val": 0.1,
+            "start_step": 10,
+            "end_step": 1000,
+        },
         "gamma": 0.99,
         "training_frequency": 10,
         "normalize_state": true
@@ -48,9 +52,7 @@ class SARSA(Algorithm):
             action_pdtype='default',
             action_policy='default',
             action_policy_update='no_update',
-            explore_var_start=np.nan,
-            explore_var_end=np.nan,
-            explore_anneal_epi=np.nan,
+            explore_var_spec=None,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -58,9 +60,7 @@ class SARSA(Algorithm):
             'action_policy_update',
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
-            'explore_var_start',
-            'explore_var_end',
-            'explore_anneal_epi',
+            'explore_var_spec',
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
             'normalize_state',
@@ -68,7 +68,7 @@ class SARSA(Algorithm):
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        self.body.explore_var = self.explore_var_start
+        self.body.explore_var = self.explore_var_spec.get('start_val')
 
     @lab_api
     def init_nets(self, global_nets=None):

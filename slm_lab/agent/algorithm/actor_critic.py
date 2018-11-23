@@ -50,9 +50,7 @@ class ActorCritic(Reinforce):
         "action_pdtype": "default",
         "action_policy": "default",
         "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
@@ -85,9 +83,7 @@ class ActorCritic(Reinforce):
             action_pdtype='default',
             action_policy='default',
             action_policy_update='no_update',
-            explore_var_start=np.nan,
-            explore_var_end=np.nan,
-            explore_anneal_epi=np.nan,
+            explore_var_spec=None,
             policy_loss_coef=1.0,
             val_loss_coef=1.0,
         ))
@@ -96,9 +92,7 @@ class ActorCritic(Reinforce):
             'action_policy',
             # theoretically, AC does not have policy update; but in this implementation we have such option
             'action_policy_update',
-            'explore_var_start',
-            'explore_var_end',
-            'explore_anneal_epi',
+            'explore_var_spec',
             'gamma',  # the discount factor
             'use_gae',
             'lam',
@@ -118,7 +112,7 @@ class ActorCritic(Reinforce):
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
         self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        self.body.explore_var = self.explore_var_start
+        self.body.explore_var = self.explore_var_spec.get('start_val')
         self.body.entropy_coef = self.entropy_coef_start
         if getattr(self, 'entropy_anneal_epi'):
             self.entropy_decay_fn = policy_util.entropy_linear_decay

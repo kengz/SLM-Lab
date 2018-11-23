@@ -302,31 +302,36 @@ def multi_boltzmann(states, algorithm, body_list, pdparam):
 # generic rate decay methods
 
 
-def _linear_decay(start_val, end_val, anneal_step, step):
+def _linear_decay(start_val, end_val, start_step, end_step, step):
     '''Simple linear decay with annealing'''
-    rise = end_val - start_val
-    slope = rise / anneal_step
+    if step < start_step:
+        return start_val
+    slope = (end_val - start_val) / (end_step - start_step)
     val = max(slope * step + start_val, end_val)
     return val
 
 
-def _rate_decay(start_val, end_val, anneal_step, step, decay_rate=0.9, frequency=20.):
-    '''Compounding rate decay that anneals in 20 decay iterations until anneal_step'''
-    step_per_decay = anneal_step / frequency
+def _rate_decay(start_val, end_val, start_step, end_step, step, decay_rate=0.9, frequency=20.):
+    '''Compounding rate decay that anneals in 20 decay iterations until end_step'''
+    if step < start_step:
+        return start_val
+    step_per_decay = (end_step - start_step) / frequency
     decay_step = step / step_per_decay
     val = max(np.power(decay_rate, decay_step) * start_val, end_val)
     return val
 
 
-def _periodic_decay(start_val, end_val, anneal_step, step, frequency=60.):
+def _periodic_decay(start_val, end_val, start_step, end_step, step, frequency=60.):
     '''
     Linearly decaying sinusoid that decays in roughly 10 iterations until explore_anneal_epi
     Plot the equation below to see the pattern
     suppose sinusoidal decay, start_val = 1, end_val = 0.2, stop after 60 unscaled x steps
     then we get 0.2+0.5*(1-0.2)(1 + cos x)*(1-x/60)
     '''
+    if step < start_step:
+        return start_val
     x_freq = frequency
-    step_per_decay = anneal_step / x_freq
+    step_per_decay = (end_step - start_step) / x_freq
     x = step / step_per_decay
     unit = start_val - end_val
     val = end_val * 0.5 * unit * (1 + np.cos(x) * (1 - x / x_freq))
@@ -343,8 +348,9 @@ def no_update(algorithm, body):
 
 def fn_decay_explore_var(algorithm, body, fn):
     '''Apply a function to decay explore_var'''
-    epi = body.env.clock.get('total_t')
-    body.explore_var = fn(algorithm.explore_var_start, algorithm.explore_var_end, algorithm.explore_anneal_epi, epi)
+    spec = algorithm.explore_var_spec
+    step = body.env.clock.get(spec['clock_unit'])
+    body.explore_var = fn(spec['start_val'], spec['end_val'], spec['start_step'], spec['end_step'], step)
     return body.explore_var
 
 

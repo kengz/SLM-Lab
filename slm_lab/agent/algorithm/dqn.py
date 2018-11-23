@@ -36,9 +36,13 @@ class VanillaDQN(SARSA):
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
         "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 10,
+        "explore_var_spec": {
+            "clock_unit": "total_t",
+            "start_val": 1.0,
+            "end_val": 0.1,
+            "start_step": 10,
+            "end_step": 1000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 8,
         "training_epoch": 4,
@@ -55,9 +59,7 @@ class VanillaDQN(SARSA):
             action_pdtype='Argmax',
             action_policy='epsilon_greedy',
             action_policy_update='linear_decay',
-            explore_var_start=1.0,
-            explore_var_end=0.1,
-            explore_anneal_epi=100,
+            explore_var_spec=None,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -65,9 +67,7 @@ class VanillaDQN(SARSA):
             'action_policy_update',
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
-            'explore_var_start',
-            'explore_var_end',
-            'explore_anneal_epi',
+            'explore_var_spec',
             'gamma',  # the discount factor
             'training_batch_epoch',  # how many gradient updates per batch
             'training_epoch',  # how many batches to train each time
@@ -246,9 +246,13 @@ class DQN(DQNBase):
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
         "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 10,
+        "explore_var_spec": {
+            "clock_unit": "total_t",
+            "start_val": 1.0,
+            "end_val": 0.1,
+            "start_step": 10,
+            "end_step": 1000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 8,
         "training_epoch": 4,
@@ -271,9 +275,13 @@ class DoubleDQN(DQN):
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
         "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 10,
+        "explore_var_spec": {
+            "clock_unit": "total_t",
+            "start_val": 1.0,
+            "end_val": 0.1,
+            "start_step": 10,
+            "end_step": 1000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 8,
         "training_epoch": 4,
