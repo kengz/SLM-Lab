@@ -20,7 +20,7 @@ def test_session_total_t(test_spec, test_info_space):
     env_spec.pop('max_epi', None)
     env_spec['max_total_t'] = 30
     session = Session(spec, test_info_space)
-    assert session.max_tick_unit == 'total_t'
+    assert session.env.max_tick_unit == 'total_t'
     session_data = session.run()
     assert isinstance(session_data, pd.DataFrame)
 
