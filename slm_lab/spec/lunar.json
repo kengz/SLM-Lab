@@ -9,10 +9,14 @@
         "explore_var_spec": null,
         "gamma": 0.993,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -61,7 +65,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0]
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -82,10 +88,14 @@
         "explore_var_spec": null,
         "gamma": 0.993,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -138,7 +148,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0]
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -164,10 +176,14 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -223,7 +239,9 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "entropy_coef_start__uniform": [0.001, 0.1],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "lam__uniform": [0.9, 1.0]
         },
@@ -251,10 +269,14 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.03,
-        "entropy_coef_end": 0.0001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.0001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 3,
@@ -310,7 +332,9 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [2, 3, 4],
-          "entropy_coef_start__uniform": [0.001, 0.05],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.05],
+          },
           "entropy_anneal_start_epi__choice": [300, 400, 500, 600],
           "entropy_anneal_epi__choice": [200, 300, 400, 500, 600],
         },
@@ -336,10 +360,14 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -433,10 +461,14 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -495,7 +527,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "lam__uniform": [0.9, 1.0]
         },
@@ -523,10 +557,14 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.03,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 3,
@@ -618,10 +656,14 @@
         "use_nstep": true,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -678,7 +720,9 @@
         "algorithm": {
           "training_frequency__choice": [2, 3, 4],
           "training_batch_epoch_choice": [4, 6, 8, 10],
-          "entropy_coef_start__uniform": [0.001, 0.05],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.05],
+          },
           "num_step_returns__choice": [1, 2, 3, 4, 5, 10],
         },
         "net": {
@@ -705,10 +749,14 @@
         "use_nstep": true,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -795,10 +843,14 @@
         "use_nstep": true,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -892,10 +944,14 @@
         "use_nstep": true,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -955,7 +1011,9 @@
       "agent": [{
         "algorithm": {
           "num_step_returns__choice": [1, 4, 8],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -982,10 +1040,14 @@
         "use_nstep": true,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -1073,10 +1135,14 @@
         "gamma": 0.993,
         "lam": 0.92,
         "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_epoch": 8,
@@ -1131,7 +1197,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -1154,10 +1222,14 @@
         "gamma": 0.993,
         "lam": 0.92,
         "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_epoch": 8,
@@ -1212,7 +1284,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -1238,10 +1312,14 @@
         "gamma": 0.993,
         "lam": 0.92,
         "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_epoch": 8,
@@ -1300,7 +1378,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -1324,10 +1404,14 @@
         "gamma": 0.993,
         "lam": 0.92,
         "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_epoch": 8,
@@ -1386,7 +1470,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -1416,10 +1502,14 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
@@ -1481,7 +1571,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -1509,10 +1601,14 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
@@ -1574,7 +1670,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -1605,10 +1703,14 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
@@ -1674,7 +1776,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -1703,10 +1807,14 @@
         "use_nstep": false,
         "num_step_returns": 1,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
@@ -1772,7 +1880,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -1801,10 +1911,14 @@
         "gamma": 0.993,
         "lam": 0.92,
         "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
@@ -1862,7 +1976,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -1887,10 +2003,14 @@
         "gamma": 0.993,
         "lam": 0.92,
         "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
@@ -1948,7 +2068,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -1976,10 +2098,14 @@
         "gamma": 0.993,
         "lam": 0.92,
         "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
@@ -2045,7 +2171,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -2071,10 +2199,14 @@
         "gamma": 0.993,
         "lam": 0.92,
         "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "clock_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
@@ -2140,7 +2272,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
