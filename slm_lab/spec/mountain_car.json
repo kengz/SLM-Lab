@@ -55,7 +55,7 @@
     }],
     "env": [{
       "name": "MountainCar-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 2600,
       "save_epi_frequency": 3000
     }],
@@ -159,7 +159,7 @@
     }],
     "env": [{
       "name": "MountainCar-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 2600,
       "save_epi_frequency": 3000
     }],
@@ -257,7 +257,7 @@
     }],
     "env": [{
       "name": "MountainCar-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 2600,
       "save_epi_frequency": 3000
     }],
@@ -357,7 +357,7 @@
     }],
     "env": [{
       "name": "MountainCar-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 2600,
       "save_epi_frequency": 3000
     }],
@@ -454,7 +454,7 @@
     }],
     "env": [{
       "name": "MountainCar-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1400,
       "save_epi_frequency": 1600
     }],
@@ -550,7 +550,7 @@
     }],
     "env": [{
       "name": "MountainCar-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1400,
       "save_epi_frequency": 1600
     }],
@@ -645,7 +645,7 @@
     }],
     "env": [{
       "name": "MountainCar-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1400,
       "save_epi_frequency": 1600
     }],
@@ -741,7 +741,7 @@
     }],
     "env": [{
       "name": "MountainCar-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1400,
       "save_epi_frequency": 1600
     }],

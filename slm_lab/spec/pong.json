@@ -55,7 +55,7 @@
     }],
     "env": [{
       "name": "PongNoFrameskip-v4",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 2000,
       "save_epi_frequency": 100
     }],
@@ -148,7 +148,7 @@
     }],
     "env": [{
       "name": "PongNoFrameskip-v4",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 2000,
       "save_epi_frequency": 100
     }],

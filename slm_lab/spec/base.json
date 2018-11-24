@@ -12,7 +12,7 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3,
       "unity": {
         "gridSize": 6,
@@ -60,7 +60,7 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }],
     "body": {
@@ -91,7 +91,7 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": 10,
+      "max_t": 10,
       "max_epi": 1
     }],
     "body": {
@@ -119,7 +119,7 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": 10,
+      "max_t": 10,
       "max_epi": 1
     }],
     "body": {
@@ -147,7 +147,7 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": 10,
+      "max_t": 10,
       "max_epi": 1
     }],
     "body": {
@@ -179,7 +179,7 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": 10,
+      "max_t": 10,
       "max_epi": 1
     }],
     "body": {
@@ -207,7 +207,7 @@
     }],
     "env": [{
       "name": "3dball",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }],
     "body": {
@@ -243,7 +243,7 @@
     }],
     "env": [{
       "name": "tennis",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }],
     "body": {
@@ -270,11 +270,11 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }, {
       "name": "3dball",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }],
     "body": {
@@ -310,11 +310,11 @@
     }],
     "env": [{
       "name": "tennis",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }, {
       "name": "tennis",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }],
     "body": {
@@ -350,11 +350,11 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }, {
       "name": "3dball",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }],
     "body": {
@@ -390,11 +390,11 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }, {
       "name": "3dball",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }],
     "body": {
@@ -421,11 +421,11 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }, {
       "name": "3dball",
-      "max_timestep": 20,
+      "max_t": 20,
       "max_epi": 3
     }],
     "body": {

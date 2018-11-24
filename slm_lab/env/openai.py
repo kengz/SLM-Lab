@@ -158,7 +158,7 @@ class OpenAIEnv(BaseEnv):
                 env = FireResetEnv(env)
         self.u_env = env
         self._set_attr_from_u_env(self.u_env)
-        self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_epi_steps')
+        self.max_t = self.max_t or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_epi_steps')
         if env_space is None:  # singleton mode
             pass
         else:
@@ -185,8 +185,8 @@ class OpenAIEnv(BaseEnv):
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
-        if self.max_timestep is not None:
-            done = done or self.clock.get('t') > self.max_timestep
+        if self.max_t is not None:
+            done = done or self.clock.get('t') > self.max_t
         self.done = done
         logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
         return reward, state, done
@@ -229,7 +229,7 @@ class OpenAIEnv(BaseEnv):
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
-        self.done = done = done or self.clock.get('t') > self.max_timestep
+        self.done = done = done or self.clock.get('t') > self.max_t
         reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for ab, body in util.ndenumerate_nonan(self.body_e):
             reward_e[ab] = reward

@@ -12,7 +12,7 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 100
     }],
     "body": {
@@ -39,7 +39,7 @@
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 100
     }],
     "body": {
@@ -66,7 +66,7 @@
     }],
     "env": [{
       "name": "2DBall",
-      "max_timestep": 1000,
+      "max_t": 1000,
       "max_epi": 100
     }],
     "body": {

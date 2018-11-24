@@ -45,7 +45,7 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 400,
       "save_epi_frequency": 300
     }],
@@ -123,7 +123,7 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 500,
       "save_epi_frequency": 1000
     }],
@@ -197,7 +197,7 @@
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 500,
       "save_epi_frequency": 1000
     }],
@@ -275,7 +275,7 @@
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 500,
       "save_epi_frequency": 1000
     }],
@@ -355,7 +355,7 @@
     }],
     "env": [{
       "name": "Breakout-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1
     }],
     "body": {
@@ -423,7 +423,7 @@
     "env": [{
       "name": "vizdoom-v0",
       "cfg_name": "basic",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 100
     }],
     "body": {

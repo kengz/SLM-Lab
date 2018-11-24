@@ -74,7 +74,7 @@ class BaseEnv(ABC):
         ))
         util.set_attr(self, self.env_spec, [
             'name',
-            'max_timestep',
+            'max_t',
             'max_epi',
             'reward_scale',
             'save_epi_frequency',

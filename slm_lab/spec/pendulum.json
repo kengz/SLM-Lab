@@ -55,7 +55,7 @@
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 800,
       "save_epi_frequency": 400
     }],
@@ -147,7 +147,7 @@
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 800,
       "save_epi_frequency": 400
     }],
@@ -246,7 +246,7 @@
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 800,
       "save_epi_frequency": 400
     }],

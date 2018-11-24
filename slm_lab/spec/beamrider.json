@@ -59,7 +59,7 @@
     }],
     "env": [{
       "name": "BeamRiderNoFrameskip-v4",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 5000,
       "save_epi_frequency": 100
     }],
@@ -136,7 +136,7 @@
     }],
     "env": [{
       "name": "BeamRiderNoFrameskip-v4",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 5000,
       "save_epi_frequency": 100
     }],
@@ -212,7 +212,7 @@
     }],
     "env": [{
       "name": "BeamRiderNoFrameskip-v4",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 3000,
       "save_epi_frequency": 100
     }],

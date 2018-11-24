@@ -27,7 +27,7 @@ SPEC_FORMAT = {
     }],
     "env": [{
         "name": str,
-        "max_timestep": (type(None), int),
+        "max_t": (type(None), int),
         "max_epi": (type(None), int),
     }],
     "body": {

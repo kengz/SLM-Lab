@@ -45,7 +45,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200
     }],
@@ -128,7 +128,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200
     }],
@@ -218,7 +218,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -311,7 +311,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -406,7 +406,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200
     }],
@@ -507,7 +507,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -603,7 +603,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -698,7 +698,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200
     }],
@@ -791,7 +791,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -889,7 +889,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200
     }],
@@ -990,7 +990,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -1086,7 +1086,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -1176,7 +1176,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -1263,7 +1263,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -1357,7 +1357,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -1449,7 +1449,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -1551,7 +1551,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -1650,7 +1650,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -1756,7 +1756,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -1860,7 +1860,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -1955,7 +1955,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -2047,7 +2047,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -2150,7 +2150,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -2251,7 +2251,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -2336,7 +2336,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -2413,7 +2413,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -2494,7 +2494,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -2576,7 +2576,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -2660,7 +2660,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -2746,7 +2746,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -2833,7 +2833,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -2924,7 +2924,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -3016,7 +3016,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -3104,7 +3104,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -3191,7 +3191,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -3282,7 +3282,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -3374,7 +3374,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -3462,7 +3462,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],
@@ -3549,7 +3549,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 1200,
       "save_epi_frequency": 1200,
     }],

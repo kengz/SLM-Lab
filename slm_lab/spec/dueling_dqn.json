@@ -52,7 +52,7 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 250,
       "save_epi_frequency": 1000
     }],
@@ -141,7 +141,7 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 250,
       "save_epi_frequency": 1000
     }],
@@ -231,7 +231,7 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 600,
       "save_epi_frequency": 1000
     }],
@@ -310,7 +310,7 @@
     }],
     "env": [{
       "name": "BreakoutDeterministic-v4",
-      "max_timestep": null,
+      "max_t": null,
       "max_epi": 50000,
       "save_epi_frequency": 1000
     }],
