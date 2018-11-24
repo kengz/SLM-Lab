@@ -49,7 +49,7 @@
     "env": [{
       "name": "gridworld",
       "max_timestep": null,
-      "max_episode": 1000,
+      "max_epi": 1000,
       "save_epi_frequency": 1500,
     }],
     "body": {
@@ -142,7 +142,7 @@
     "env": [{
       "name": "gridworld",
       "max_timestep": null,
-      "max_episode": 1000,
+      "max_epi": 1000,
       "save_epi_frequency": 1500,
     }],
     "body": {
@@ -231,7 +231,7 @@
     "env": [{
       "name": "gridworld",
       "max_timestep": null,
-      "max_episode": 1000,
+      "max_epi": 1000,
       "save_epi_frequency": 1500,
     }],
     "body": {
@@ -324,7 +324,7 @@
     "env": [{
       "name": "gridworld",
       "max_timestep": null,
-      "max_episode": 1000,
+      "max_epi": 1000,
       "save_epi_frequency": 1500,
     }],
     "body": {
@@ -418,7 +418,7 @@
     "env": [{
       "name": "gridworld",
       "max_timestep": null,
-      "max_episode": 1000,
+      "max_epi": 1000,
       "save_epi_frequency": 1500,
     }],
     "body": {
@@ -514,7 +514,7 @@
     "env": [{
       "name": "gridworld",
       "max_timestep": null,
-      "max_episode": 1000,
+      "max_epi": 1000,
       "save_epi_frequency": 1500,
     }],
     "body": {
@@ -608,7 +608,7 @@
     "env": [{
       "name": "gridworld",
       "max_timestep": null,
-      "max_episode": 1000,
+      "max_epi": 1000,
       "save_epi_frequency": 1500,
     }],
     "body": {
@@ -704,7 +704,7 @@
     "env": [{
       "name": "gridworld",
       "max_timestep": null,
-      "max_episode": 1000,
+      "max_epi": 1000,
       "save_epi_frequency": 1500,
     }],
     "body": {

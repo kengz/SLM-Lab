@@ -323,7 +323,7 @@ def override_test_spec(spec):
         agent_spec['algorithm']['training_frequency'] = 1
         agent_spec['algorithm']['training_min_timestep'] = 1
     for env_spec in spec['env']:
-        env_spec['max_episode'] = 3
+        env_spec['max_epi'] = 3
         env_spec['max_timestep'] = 20
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2

@@ -56,7 +56,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 500,
+      "max_epi": 500,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -143,7 +143,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 500,
+      "max_epi": 500,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -234,7 +234,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 500,
+      "max_epi": 500,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -325,7 +325,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 500,
+      "max_epi": 500,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -412,7 +412,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_timestep": null,
-      "max_episode": 500,
+      "max_epi": 500,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -499,7 +499,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_timestep": null,
-      "max_episode": 500,
+      "max_epi": 500,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -590,7 +590,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_timestep": null,
-      "max_episode": 500,
+      "max_epi": 500,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -681,7 +681,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_timestep": null,
-      "max_episode": 500,
+      "max_epi": 500,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -773,7 +773,7 @@
     "env": [{
       "name": "Breakout-v0",
       "max_timestep": null,
-      "max_episode": 1
+      "max_epi": 1
     }],
     "body": {
       "product": "outer",
@@ -848,7 +848,7 @@
     "env": [{
       "name": "Breakout-v0",
       "max_timestep": null,
-      "max_episode": 1
+      "max_epi": 1
     }],
     "body": {
       "product": "outer",

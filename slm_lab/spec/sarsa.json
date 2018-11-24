@@ -44,7 +44,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 250,
+      "max_epi": 250,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -124,7 +124,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 250,
+      "max_epi": 250,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -208,7 +208,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 250,
+      "max_epi": 250,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -292,7 +292,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 250,
+      "max_epi": 250,
       "save_epi_frequency": 1000
     }],
     "body": {
@@ -378,7 +378,7 @@
     "env": [{
       "name": "Breakout-v0",
       "max_timestep": null,
-      "max_episode": 1
+      "max_epi": 1
     }],
     "body": {
       "product": "outer",
@@ -442,7 +442,7 @@
     "env": [{
       "name": "Breakout-v0",
       "max_timestep": null,
-      "max_episode": 1
+      "max_epi": 1
     }],
     "body": {
       "product": "outer",

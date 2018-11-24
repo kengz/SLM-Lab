@@ -46,7 +46,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 200,
+      "max_epi": 200,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -130,7 +130,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -220,7 +220,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -310,7 +310,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -403,7 +403,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -500,7 +500,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -593,7 +593,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -684,7 +684,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -778,7 +778,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -872,7 +872,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -962,7 +962,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1058,7 +1058,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1158,7 +1158,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1241,7 +1241,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1322,7 +1322,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1409,7 +1409,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1495,7 +1495,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1582,7 +1582,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1673,7 +1673,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1760,7 +1760,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1851,7 +1851,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 300
     }],
     "body": {
@@ -1938,7 +1938,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_timestep": null,
-      "max_episode": 400,
+      "max_epi": 400,
       "save_epi_frequency": 1000
     }],
     "body": {

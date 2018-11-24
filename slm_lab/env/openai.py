@@ -158,7 +158,7 @@ class OpenAIEnv(BaseEnv):
                 env = FireResetEnv(env)
         self.u_env = env
         self._set_attr_from_u_env(self.u_env)
-        self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
+        self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_epi_steps')
         if env_space is None:  # singleton mode
             pass
         else:

@@ -48,7 +48,7 @@ class Session:
     def save_if_ckpt(self, agent, env):
         '''Save for agent, env if episode is at checkpoint'''
         epi = env.clock.get('epi')
-        save_this_epi = env.done and epi != env.max_episode and epi > 0 and hasattr(env, 'save_epi_frequency') and epi % env.save_epi_frequency == 0
+        save_this_epi = env.done and epi != env.max_epi and epi > 0 and hasattr(env, 'save_epi_frequency') and epi % env.save_epi_frequency == 0
         if save_this_epi:
             agent.save(ckpt='last')
             analysis.analyze_session(self)
@@ -76,7 +76,7 @@ class Session:
         logger.info('Session done and closed.')
 
     def run(self):
-        while self.env.clock.get('epi') < self.env.max_episode:
+        while self.env.clock.get('epi') < self.env.max_epi:
             self.run_episode()
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
