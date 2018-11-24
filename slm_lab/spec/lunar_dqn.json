@@ -54,7 +54,7 @@
       "name": "LunarLander-v2",
       "max_t": null,
       "max_epi": 1200,
-      "save_epi_frequency": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -153,7 +153,7 @@
       "name": "LunarLander-v2",
       "max_t": null,
       "max_epi": 1200,
-      "save_epi_frequency": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -252,7 +252,7 @@
       "name": "LunarLander-v2",
       "max_t": null,
       "max_epi": 1200,
-      "save_epi_frequency": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -351,7 +351,7 @@
       "name": "LunarLander-v2",
       "max_t": null,
       "max_epi": 1200,
-      "save_epi_frequency": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -450,7 +450,7 @@
       "name": "LunarLander-v2",
       "max_t": null,
       "max_epi": 1200,
-      "save_epi_frequency": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -549,7 +549,7 @@
       "name": "LunarLander-v2",
       "max_t": null,
       "max_epi": 1200,
-      "save_epi_frequency": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -648,7 +648,7 @@
       "name": "LunarLander-v2",
       "max_t": null,
       "max_epi": 1200,
-      "save_epi_frequency": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -747,7 +747,7 @@
       "name": "LunarLander-v2",
       "max_t": null,
       "max_epi": 1200,
-      "save_epi_frequency": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",

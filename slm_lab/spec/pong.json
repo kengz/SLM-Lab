@@ -57,7 +57,7 @@
       "name": "PongNoFrameskip-v4",
       "max_t": null,
       "max_epi": 2000,
-      "save_epi_frequency": 100
+      "save_frequency": 100
     }],
     "body": {
       "product": "outer",
@@ -150,7 +150,7 @@
       "name": "PongNoFrameskip-v4",
       "max_t": null,
       "max_epi": 2000,
-      "save_epi_frequency": 100
+      "save_frequency": 100
     }],
     "body": {
       "product": "outer",

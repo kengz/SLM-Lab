@@ -54,7 +54,7 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_epi": 400,
-      "save_epi_frequency": 300
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -137,7 +137,7 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_epi": 250,
-      "save_epi_frequency": 1000
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -230,7 +230,7 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_epi": 250,
-      "save_epi_frequency": 1000
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -323,7 +323,7 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_epi": 250,
-      "save_epi_frequency": 1000
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -423,7 +423,7 @@
       "name": "BreakoutDeterministic-v4",
       "max_t": null,
       "max_epi": 50000,
-      "save_epi_frequency": 10000
+      "save_frequency": 10000
     }],
     "body": {
       "product": "outer",
@@ -502,7 +502,7 @@
       "name": "BreakoutDeterministic-v4",
       "max_t": null,
       "max_epi": 50000,
-      "save_epi_frequency": 10000
+      "save_frequency": 10000
     }],
     "body": {
       "product": "outer",

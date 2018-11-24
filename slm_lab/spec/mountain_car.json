@@ -57,7 +57,7 @@
       "name": "MountainCar-v0",
       "max_t": null,
       "max_epi": 2600,
-      "save_epi_frequency": 3000
+      "save_frequency": 3000
     }],
     "body": {
       "product": "outer",
@@ -161,7 +161,7 @@
       "name": "MountainCar-v0",
       "max_t": null,
       "max_epi": 2600,
-      "save_epi_frequency": 3000
+      "save_frequency": 3000
     }],
     "body": {
       "product": "outer",
@@ -259,7 +259,7 @@
       "name": "MountainCar-v0",
       "max_t": null,
       "max_epi": 2600,
-      "save_epi_frequency": 3000
+      "save_frequency": 3000
     }],
     "body": {
       "product": "outer",
@@ -359,7 +359,7 @@
       "name": "MountainCar-v0",
       "max_t": null,
       "max_epi": 2600,
-      "save_epi_frequency": 3000
+      "save_frequency": 3000
     }],
     "body": {
       "product": "outer",
@@ -456,7 +456,7 @@
       "name": "MountainCar-v0",
       "max_t": null,
       "max_epi": 1400,
-      "save_epi_frequency": 1600
+      "save_frequency": 1600
     }],
     "body": {
       "product": "outer",
@@ -552,7 +552,7 @@
       "name": "MountainCar-v0",
       "max_t": null,
       "max_epi": 1400,
-      "save_epi_frequency": 1600
+      "save_frequency": 1600
     }],
     "body": {
       "product": "outer",
@@ -647,7 +647,7 @@
       "name": "MountainCar-v0",
       "max_t": null,
       "max_epi": 1400,
-      "save_epi_frequency": 1600
+      "save_frequency": 1600
     }],
     "body": {
       "product": "outer",
@@ -743,7 +743,7 @@
       "name": "MountainCar-v0",
       "max_t": null,
       "max_epi": 1400,
-      "save_epi_frequency": 1600
+      "save_frequency": 1600
     }],
     "body": {
       "product": "outer",

@@ -57,7 +57,7 @@
       "name": "Pendulum-v0",
       "max_t": null,
       "max_epi": 800,
-      "save_epi_frequency": 400
+      "save_frequency": 400
     }],
     "body": {
       "product": "outer",
@@ -149,7 +149,7 @@
       "name": "Pendulum-v0",
       "max_t": null,
       "max_epi": 800,
-      "save_epi_frequency": 400
+      "save_frequency": 400
     }],
     "body": {
       "product": "outer",
@@ -248,7 +248,7 @@
       "name": "Pendulum-v0",
       "max_t": null,
       "max_epi": 800,
-      "save_epi_frequency": 400
+      "save_frequency": 400
     }],
     "body": {
       "product": "outer",

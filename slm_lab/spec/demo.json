@@ -54,7 +54,7 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_epi": 150,
-      "save_epi_frequency": 50
+      "save_frequency": 50
     }],
     "body": {
       "product": "outer",

@@ -50,7 +50,7 @@
       "name": "gridworld",
       "max_t": null,
       "max_epi": 1000,
-      "save_epi_frequency": 1500,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -143,7 +143,7 @@
       "name": "gridworld",
       "max_t": null,
       "max_epi": 1000,
-      "save_epi_frequency": 1500,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -232,7 +232,7 @@
       "name": "gridworld",
       "max_t": null,
       "max_epi": 1000,
-      "save_epi_frequency": 1500,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -325,7 +325,7 @@
       "name": "gridworld",
       "max_t": null,
       "max_epi": 1000,
-      "save_epi_frequency": 1500,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -419,7 +419,7 @@
       "name": "gridworld",
       "max_t": null,
       "max_epi": 1000,
-      "save_epi_frequency": 1500,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -515,7 +515,7 @@
       "name": "gridworld",
       "max_t": null,
       "max_epi": 1000,
-      "save_epi_frequency": 1500,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -609,7 +609,7 @@
       "name": "gridworld",
       "max_t": null,
       "max_epi": 1000,
-      "save_epi_frequency": 1500,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -705,7 +705,7 @@
       "name": "gridworld",
       "max_t": null,
       "max_epi": 1000,
-      "save_epi_frequency": 1500,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
