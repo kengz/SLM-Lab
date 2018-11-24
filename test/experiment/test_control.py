@@ -1,3 +1,4 @@
+from copy import deepcopy
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
@@ -8,6 +9,18 @@ import pytest
 def test_session(test_spec, test_info_space):
     test_info_space.tick('session')
     session = Session(test_spec, test_info_space)
+    session_data = session.run()
+    assert isinstance(session_data, pd.DataFrame)
+
+
+def test_session_total_t(test_spec, test_info_space):
+    test_info_space.tick('session')
+    spec = deepcopy(test_spec)
+    env_spec = spec['env'][0]
+    env_spec.pop('max_epi', None)
+    env_spec['max_total_t'] = 30
+    session = Session(spec, test_info_space)
+    assert session.max_tick_unit == 'total_t'
     session_data = session.run()
     assert isinstance(session_data, pd.DataFrame)
 
