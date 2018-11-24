@@ -47,7 +47,7 @@ class VanillaDQN(SARSA):
         "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_min_timestep": 10,
+        "training_start_step": 10,
         "normalize_state": true
     }
     '''
@@ -70,7 +70,7 @@ class VanillaDQN(SARSA):
             'training_batch_epoch',  # how many gradient updates per batch
             'training_epoch',  # how many batches to train each time
             'training_frequency',  # how often to train (once a few timesteps)
-            'training_min_timestep',  # how long before starting training
+            'training_start_step',  # how long before starting training
             'normalize_state',
         ])
         super(VanillaDQN, self).init_algorithm_params()
@@ -133,8 +133,8 @@ class VanillaDQN(SARSA):
         '''
         if util.get_lab_mode() == 'enjoy':
             return np.nan
-        total_t = self.body.env.clock.get('total_t')
-        self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
+        tick = self.body.env.clock.get(self.body.env.max_tick_unit)
+        self.to_train = (tick > self.training_start_step and tick % self.training_frequency == 0)
         if self.to_train == 1:
             total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):
@@ -257,7 +257,7 @@ class DQN(DQNBase):
         "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_min_timestep": 10
+        "training_start_step": 10
     }
     '''
     @lab_api
@@ -286,7 +286,7 @@ class DoubleDQN(DQN):
         "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 10,
-        "training_min_timestep": 10
+        "training_start_step": 10
     }
     '''
     @lab_api

@@ -103,8 +103,8 @@ class HydraDQN(DQN):
         '''
         if util.get_lab_mode() == 'enjoy':
             return np.nan
-        total_t = util.s_get(self, 'aeb_space.clock').get('total_t')
-        self.to_train = (total_t > self.training_min_timestep and total_t % self.training_frequency == 0)
+        tick = util.s_get(self, 'aeb_space.clock').get(self.body.env.max_tick_unit)
+        self.to_train = (tick > self.training_start_step and tick % self.training_frequency == 0)
         if self.to_train == 1:
             total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):

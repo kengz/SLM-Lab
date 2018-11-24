@@ -18,7 +18,7 @@
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 1,
-        "training_min_timestep": 10000,
+        "training_start_step": 10000,
         "normalize_state": false
       },
       "memory": {
@@ -85,7 +85,7 @@
       }]
     }
   },
-  "a3c_conv_separate_cartpole": {
+  "a2c_pong": {
     "agent": [{
       "name": "A3C",
       "algorithm": {

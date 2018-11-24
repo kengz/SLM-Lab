@@ -18,7 +18,7 @@
         "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 32,
-        "training_min_timestep": 10,
+        "training_start_step": 10,
         "normalize_state": true
       },
       "memory": {
@@ -115,7 +115,7 @@
         "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 32,
-        "training_min_timestep": 10,
+        "training_start_step": 10,
         "normalize_state": true
       },
       "memory": {
@@ -215,7 +215,7 @@
         "training_batch_epoch": 4,
         "training_epoch": 4,
         "training_frequency": 32,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -312,7 +312,7 @@
         "training_batch_epoch": 4,
         "training_epoch": 4,
         "training_frequency": 32,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
