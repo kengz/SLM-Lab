@@ -11,7 +11,7 @@
           "tick_unit": "total_t",
           "start_val": 1.0,
           "end_val": 0.02,
-          "start_step": 0,
+          "start_step": 10000,
           "end_step": 210000,
         },
         "gamma": 0.99,
@@ -49,7 +49,7 @@
         },
         "lr_scheduler_spec": null,
         "update_type": "replace",
-        "update_frequency": 250,
+        "update_frequency": 10000,
         "gpu": true
       }
     }],
@@ -104,8 +104,8 @@
           "tick_unit": "total_t",
           "start_val": 0.01,
           "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 5000,
+          "start_step": 10000,
+          "end_step": 210000,
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.5,
@@ -129,14 +129,14 @@
         "hid_layers_activation": "relu",
         "init_fn": "kaiming_uniform_",
         "batch_norm": false,
-        "clip_grad_val": 0.5,
+        "clip_grad_val": 10.0,
         "loss_spec": {
           "name": "SmoothL1Loss",
         },
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 1e-3
+          "lr": 2.5e-4
         },
         "critic_optim_spec": {
           "name": "Adam",
