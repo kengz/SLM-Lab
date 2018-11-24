@@ -56,8 +56,8 @@
     "env": [{
       "name": "PongNoFrameskip-v4",
       "max_t": null,
-      "max_epi": 2000,
-      "save_frequency": 100
+      "max_total_t": 10000000,
+      "save_frequency": 100000
     }],
     "body": {
       "product": "outer",
@@ -149,8 +149,8 @@
     "env": [{
       "name": "PongNoFrameskip-v4",
       "max_t": null,
-      "max_epi": 2000,
-      "save_frequency": 100
+      "max_total_t": 10000000,
+      "save_frequency": 100000
     }],
     "body": {
       "product": "outer",
