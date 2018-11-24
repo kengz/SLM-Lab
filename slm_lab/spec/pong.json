@@ -85,7 +85,7 @@
       }]
     }
   },
-  "a2c_pong": {
+  "a3c_pong": {
     "agent": [{
       "name": "A3C",
       "algorithm": {
