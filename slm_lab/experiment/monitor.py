@@ -365,7 +365,7 @@ class AEBSpace:
                 for body in env.nanflat_body_e:
                     body.log_summary()
             env.clock.tick(unit or ('epi' if env.done else 't'))
-            end_session = env.clock.get('epi') > env.max_epi
+            end_session = env.clock.get(env.max_tick_unit) > env.clock.max_tick
             end_sessions.append(end_session)
         return all(end_sessions)
 

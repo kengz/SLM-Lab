@@ -28,7 +28,6 @@ SPEC_FORMAT = {
     "env": [{
         "name": str,
         "max_t": (type(None), int),
-        "max_epi": (type(None), int),
     }],
     "body": {
         "product": ["outer", "inner", "custom"],

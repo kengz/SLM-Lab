@@ -143,7 +143,17 @@ class MaxAndSkipEnv(gym.Wrapper):
 
 
 class OpenAIEnv(BaseEnv):
-    '''Wrapper for OpenAI Gym env to work with the Lab.'''
+    '''
+    Wrapper for OpenAI Gym env to work with the Lab.
+
+    e.g. env_spec
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_epi": 150,
+      "save_frequency": 50
+    }],
+    '''
 
     def __init__(self, spec, e=None, env_space=None):
         super(OpenAIEnv, self).__init__(spec, e, env_space)

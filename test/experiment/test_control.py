@@ -22,7 +22,7 @@ def test_trial(test_spec, test_info_space):
 def test_trial_demo(test_info_space):
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     spec = util.override_test_spec(spec)
-    spec['env'][0]['save_epi_frequency'] = 1
+    spec['env'][0]['save_frequency'] = 1
     test_info_space.tick('trial')
     trial_data = Trial(spec, test_info_space).run()
     assert isinstance(trial_data, pd.DataFrame)

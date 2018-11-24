@@ -42,7 +42,21 @@ util.monkey_patch(brain.BrainParameters, BrainExt)
 
 
 class UnityEnv(BaseEnv):
-    '''Wrapper for Unity ML-Agents env to work with the Lab.'''
+    '''
+    Wrapper for Unity ML-Agents env to work with the Lab.
+
+    e.g. env_spec
+    "env": [{
+      "name": "gridworld",
+      "max_t": 20,
+      "max_epi": 3,
+      "unity": {
+        "gridSize": 6,
+        "numObstacles": 2,
+        "numGoals": 1
+      }
+    }],
+    '''
 
     def __init__(self, spec, e=None, env_space=None):
         super(UnityEnv, self).__init__(spec, e, env_space)
