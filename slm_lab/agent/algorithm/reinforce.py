@@ -34,7 +34,7 @@ class Reinforce(Algorithm):
         "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "clock_unit": "total_t",
+          "tick_unit": "total_t",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,

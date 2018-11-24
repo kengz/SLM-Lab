@@ -8,7 +8,7 @@
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
-          "clock_unit": "total_t",
+          "tick_unit": "total_t",
           "start_val": 5.0,
           "end_val": 0.5,
           "start_step": 0,
@@ -107,7 +107,7 @@
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
-          "clock_unit": "total_t",
+          "tick_unit": "total_t",
           "start_val": 1.0,
           "end_val": 0.08,
           "start_step": 0,
@@ -206,7 +206,7 @@
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
-          "clock_unit": "total_t",
+          "tick_unit": "total_t",
           "start_val": 5.0,
           "end_val": 0.5,
           "start_step": 0,
@@ -305,7 +305,7 @@
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
-          "clock_unit": "total_t",
+          "tick_unit": "total_t",
           "start_val": 1.0,
           "end_val": 0.08,
           "start_step": 0,
@@ -404,7 +404,7 @@
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
-          "clock_unit": "total_t",
+          "tick_unit": "total_t",
           "start_val": 5.0,
           "end_val": 0.5,
           "start_step": 0,
@@ -503,7 +503,7 @@
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
-          "clock_unit": "total_t",
+          "tick_unit": "total_t",
           "start_val": 1.0,
           "end_val": 0.08,
           "start_step": 0,
@@ -602,7 +602,7 @@
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
-          "clock_unit": "total_t",
+          "tick_unit": "total_t",
           "start_val": 5.0,
           "end_val": 0.5,
           "start_step": 0,
@@ -701,7 +701,7 @@
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
-          "clock_unit": "total_t",
+          "tick_unit": "total_t",
           "start_val": 1.0,
           "end_val": 0.08,
           "start_step": 0,

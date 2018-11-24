@@ -309,7 +309,7 @@ class VarScheduler:
     e.g. spec
     "explore_var_spec": {
         "name": "linear_decay",
-        "clock_unit": "total_t",
+        "tick_unit": "total_t",
         "start_val": 1.0,
         "end_val": 0.1,
         "start_step": 0,
@@ -324,7 +324,7 @@ class VarScheduler:
             start_val=np.nan,
         ))
         util.set_attr(self, var_decay_spec, [
-            'clock_unit',
+            'tick_unit',
             'start_val',
             'end_val',
             'start_step',
@@ -335,7 +335,7 @@ class VarScheduler:
         '''Get an updated value for var'''
         if self._updater_name == 'no_decay':
             return self.start_val
-        step = clock.get(self.clock_unit)
+        step = clock.get(self.tick_unit)
         val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
         return val
 
