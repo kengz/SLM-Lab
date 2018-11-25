@@ -12,6 +12,7 @@ import pandas as pd
 import pydash as ps
 import random
 import ray
+import torch
 
 logger = logger.get_logger(__name__)
 
@@ -159,6 +160,7 @@ class RandomSearch(RaySearch):
 
     @lab_api
     def run(self):
+        ray.utils.set_cuda_visible_devices(range(torch.cuda.device_count()))
         meta_spec = self.experiment.spec['meta']
         ray.init(**meta_spec.get('resources', {}))
         max_trial = meta_spec['max_trial']
@@ -234,6 +236,7 @@ class EvolutionarySearch(RaySearch):
 
     @lab_api
     def run(self):
+        ray.utils.set_cuda_visible_devices(range(torch.cuda.device_count()))
         meta_spec = self.experiment.spec['meta']
         ray.init(**meta_spec.get('resources', {}))
         max_generation = meta_spec['max_generation']
