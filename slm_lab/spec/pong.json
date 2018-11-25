@@ -251,9 +251,9 @@
       }
     }
   },
-  "a3c_pong_ram": {
+  "a2c_pong_ram": {
     "agent": [{
-      "name": "A3C",
+      "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -275,7 +275,7 @@
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.5,
-        "training_frequency": 1,
+        "training_frequency": 4,
         "training_epoch": 1,
         "normalize_state": false
       },
@@ -317,14 +317,31 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": false,
       "graph_x": "total_t",
-      "max_session": 4,
-      "max_trial": 1,
+      "max_session": 1,
+      "max_trial": 16,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16,
       }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.95, 0.99],
+          "lam__uniform": [0.95, 0.99],
+        },
+        "net": {
+          "hid_layers__choice": [[1000, 800], [1000], [800, 400]],
+          "actor_optim_spec": {
+            "lr__choice": [1e-5, 1e-4, 1e-3]
+          },
+          "critic_optim_spec": {
+            "lr__choice": [1e-5, 1e-4, 1e-3]
+          },
+        }
+      }]
     }
   },
 }
