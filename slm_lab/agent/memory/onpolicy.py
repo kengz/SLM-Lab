@@ -294,7 +294,56 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
         return data_seq
 
 
-class OnPolicyAtariReplay(OnPolicyReplay):
+class OnPolicyConcatReplay(OnPolicyReplay):
+    '''
+    Preprocesses a state to be the concatenation of the last n states. Otherwise the same as Replay memory
+
+    e.g. memory_spec
+    "memory": {
+        "name": "OnPolicyConcatReplay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "concat_len": 4,
+        "use_cer": true
+    }
+    '''
+
+    def __init__(self, memory_spec, body):
+        util.set_attr(self, memory_spec, [
+            'batch_size',
+            'max_size',
+            'concat_len',  # number of stack states
+            'use_cer',
+        ])
+        self.raw_state_dim = deepcopy(body.state_dim)  # used for state_buffer
+        body.state_dim = body.state_dim * self.concat_len  # modify to use for net init for concat input
+        super(OnPolicyConcatReplay, self).__init__(memory_spec, body)
+        self.state_buffer = deque(maxlen=self.concat_len)
+        self.reset()
+
+    def reset(self):
+        '''Initializes the memory arrays, size and head pointer'''
+        super(OnPolicyConcatReplay, self).reset()
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
+
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(OnPolicyConcatReplay, self).epi_reset(state)
+        # reappend buffer with custom shape
+        self.state_buffer.clear()
+        for _ in range(self.state_buffer.maxlen):
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
+
+    def preprocess_state(self, state, append=True):
+        '''Transforms the raw state into format that is fed into the network'''
+        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
+        self.preprocess_append(state, append)
+        return np.concatenate(self.state_buffer)
+
+
+class OnPolicyAtariReplay(OnPolicyConcatReplay):
     '''
     Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-10, 10] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
     Note: Playing Atari with Deep RL clips the rewards to + / - 1
@@ -311,22 +360,6 @@ class OnPolicyAtariReplay(OnPolicyReplay):
         OnPolicyReplay.__init__(self, memory_spec, body)
         self.state_buffer = deque(maxlen=self.stack_len)
         self.reset()
-
-    @lab_api
-    def reset(self):
-        '''Initializes the memory arrays, size and head pointer'''
-        super(OnPolicyAtariReplay, self).reset()
-        self.state_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.raw_state_dim))
-
-    def epi_reset(self, state):
-        '''Method to reset at new episode'''
-        state = self.preprocess_state(state, append=False)
-        super(OnPolicyAtariReplay, self).epi_reset(state)
-        self.state_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.raw_state_dim))
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
