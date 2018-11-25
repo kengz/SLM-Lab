@@ -69,7 +69,9 @@
       "max_session": 1,
       "max_trial": 16,
       "search": "RandomSearch",
-      "num_cpus": 16,
+      "resources": {
+        "num_cpus": 16,
+      }
     },
     "search": {
       "agent": [{
@@ -149,7 +151,9 @@
       "max_session": 1,
       "max_trial": 16,
       "search": "RandomSearch",
-      "num_cpus": 16,
+      "resources": {
+        "num_cpus": 16,
+      }
     },
     "search": {
       "agent": [{
@@ -241,7 +245,10 @@
       "graph_x": "total_t",
       "max_session": 4,
       "max_trial": 1,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 16,
+      }
     }
   },
   "a3c_pong_ram": {
@@ -314,7 +321,10 @@
       "graph_x": "total_t",
       "max_session": 4,
       "max_trial": 1,
-      "search": "RandomSearch"
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 16,
+      }
     }
   },
 }
