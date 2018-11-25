@@ -62,7 +62,7 @@ class OnPolicyReplay(Memory):
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
-        super(Replay, self).epi_reset(self.preprocess_state(state, append=False))
+        super(OnPolicyReplay, self).epi_reset(self.preprocess_state(state, append=False))
 
     @lab_api
     def update(self, action, reward, state, done):
