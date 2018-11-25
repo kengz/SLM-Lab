@@ -60,10 +60,15 @@ class OnPolicyReplay(Memory):
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
+    def epi_reset(self, state):
+        '''Method to reset at new episode'''
+        super(Replay, self).epi_reset(self.preprocess_state(state, append=False))
+
     @lab_api
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
         self.base_update(action, reward, state, done)
+        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
