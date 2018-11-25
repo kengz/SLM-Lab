@@ -74,7 +74,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "name__choice": ["DQN", "DDQN"]
+          "name__choice": ["DQN", "DoubleDQN"]
         },
         "net": {
           "update_frequency__choice": [250, 1000, 2000, 5000],
@@ -154,7 +154,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "name__choice": ["DQN", "DDQN"]
+          "name__choice": ["DQN", "DoubleDQN"]
         },
         "net": {
           "update_frequency__choice": [250, 1000, 2000, 5000],
