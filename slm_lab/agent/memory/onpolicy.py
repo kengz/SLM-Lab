@@ -301,19 +301,13 @@ class OnPolicyConcatReplay(OnPolicyReplay):
     e.g. memory_spec
     "memory": {
         "name": "OnPolicyConcatReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "concat_len": 4,
-        "use_cer": true
+        "concat_len": 4
     }
     '''
 
     def __init__(self, memory_spec, body):
         util.set_attr(self, memory_spec, [
-            'batch_size',
-            'max_size',
             'concat_len',  # number of stack states
-            'use_cer',
         ])
         self.raw_state_dim = deepcopy(body.state_dim)  # used for state_buffer
         body.state_dim = body.state_dim * self.concat_len  # modify to use for net init for concat input
