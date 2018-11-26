@@ -60,15 +60,10 @@ class OnPolicyReplay(Memory):
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
-    def epi_reset(self, state):
-        '''Method to reset at new episode'''
-        super(OnPolicyReplay, self).epi_reset(self.preprocess_state(state, append=False))
-
     @lab_api
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
         self.base_update(action, reward, state, done)
-        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
             self.add_experience(self.last_state, action, reward, state, done)
         self.last_state = state
@@ -130,6 +125,7 @@ class OnPolicySeqReplay(OnPolicyReplay):
         super(OnPolicySeqReplay, self).__init__(memory_spec, body)
         self.seq_len = self.body.agent.agent_spec['net']['seq_len']
         self.state_buffer = deque(maxlen=self.seq_len)
+        self.reset()
 
     def preprocess_state(self, state, append=True):
         '''
@@ -251,6 +247,7 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
         self.is_episodic = False
         self.seq_len = self.body.agent.agent_spec['net']['seq_len']
         self.state_buffer = deque(maxlen=self.seq_len)
+        self.reset()
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
@@ -373,7 +370,6 @@ class OnPolicyAtariReplay(OnPolicyConcatReplay):
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
         self.base_update(action, reward, state, done)
-        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
             reward = np.sign(reward)
             self.add_experience(self.last_state, action, reward, state, done)
