@@ -82,8 +82,8 @@
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch_choice": [1, 2, 3, 4],
-          "training_epoch_choice": [1, 2, 3, 4],
+          "training_batch_epoch__choice": [1, 2, 3, 4],
+          "training_epoch__choice": [1, 2, 3, 4],
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
@@ -181,8 +181,8 @@
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch_choice": [1, 2, 3, 4],
-          "training_epoch_choice": [1, 2, 3, 4],
+          "training_batch_epoch__choice": [1, 2, 3, 4],
+          "training_epoch__choice": [1, 2, 3, 4],
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
@@ -280,8 +280,8 @@
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch_choice": [1, 2, 3, 4],
-          "training_epoch_choice": [1, 2, 3, 4],
+          "training_batch_epoch__choice": [1, 2, 3, 4],
+          "training_epoch__choice": [1, 2, 3, 4],
           "update_frequency__choice": [100, 250, 500, 1000, 2000],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
@@ -379,8 +379,8 @@
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch_choice": [1, 2, 3, 4],
-          "training_epoch_choice": [1, 2, 3, 4],
+          "training_batch_epoch__choice": [1, 2, 3, 4],
+          "training_epoch__choice": [1, 2, 3, 4],
           "update_frequency__choice": [100, 250, 500, 1000, 2000],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
@@ -478,8 +478,8 @@
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch_choice": [1, 2, 3, 4],
-          "training_epoch_choice": [1, 2, 3, 4],
+          "training_batch_epoch__choice": [1, 2, 3, 4],
+          "training_epoch__choice": [1, 2, 3, 4],
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
@@ -577,8 +577,8 @@
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch_choice": [1, 2, 3, 4],
-          "training_epoch_choice": [1, 2, 3, 4],
+          "training_batch_epoch__choice": [1, 2, 3, 4],
+          "training_epoch__choice": [1, 2, 3, 4],
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
@@ -676,8 +676,8 @@
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch_choice": [1, 2, 3, 4],
-          "training_epoch_choice": [1, 2, 3, 4],
+          "training_batch_epoch__choice": [1, 2, 3, 4],
+          "training_epoch__choice": [1, 2, 3, 4],
           "update_frequency__choice": [100, 250, 500, 1000, 2000],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
@@ -775,8 +775,8 @@
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch_choice": [1, 2, 3, 4],
-          "training_epoch_choice": [1, 2, 3, 4],
+          "training_batch_epoch__choice": [1, 2, 3, 4],
+          "training_epoch__choice": [1, 2, 3, 4],
           "update_frequency__choice": [100, 250, 500, 1000, 2000],
           "optim_spec": {
             "lr__uniform": [0.001, 0.01]
