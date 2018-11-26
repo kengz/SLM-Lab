@@ -169,9 +169,9 @@
       }]
     }
   },
-  "a3c_pong": {
+  "a2c_pong": {
     "agent": [{
-      "name": "A3C",
+      "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -241,9 +241,9 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": false,
       "graph_x": "total_t",
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch",
       "resources": {

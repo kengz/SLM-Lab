@@ -44,6 +44,7 @@ def test_reinforce_cont(spec_file, spec_name):
     ('a2c.json', 'a2c_rnn_separate_cartpole'),
     # ('a2c.json', 'a2c_conv_shared_breakout'),
     # ('a2c.json', 'a2c_conv_separate_breakout'),
+    ('a2c.json', 'a2c_mlp_concat_cartpole'),
 ])
 def test_a2c(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
@@ -184,11 +185,12 @@ def test_hydra_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skip(os.environ.get('CI') == 'true' or sys.platform == 'darwin', reason='CI/Mac has not enough RAM')
+# @pytest.mark.skip(os.environ.get('CI') == 'true' or sys.platform == 'darwin', reason='CI/Mac has not enough RAM')
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('dqn.json', 'dqn_boltzmann_breakout'),
+    ('dqn.json', 'dqn_pong'),
+    ('a2c.json', 'a2c_pong'),
 ])
-def test_dqn_breakout(spec_file, spec_name):
+def test_atari(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 

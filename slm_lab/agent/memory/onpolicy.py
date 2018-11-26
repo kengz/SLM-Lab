@@ -326,6 +326,7 @@ class OnPolicyConcatReplay(OnPolicyReplay):
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
+        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         super(OnPolicyConcatReplay, self).epi_reset(state)
         # reappend buffer with custom shape
         self.state_buffer.clear()
@@ -336,7 +337,17 @@ class OnPolicyConcatReplay(OnPolicyReplay):
         '''Transforms the raw state into format that is fed into the network'''
         # append when state is first seen when acting in policy_util, don't append elsewhere in memory
         self.preprocess_append(state, append)
-        return np.concatenate(self.state_buffer)
+        res = np.concatenate(self.state_buffer)
+        return res
+
+    @lab_api
+    def update(self, action, reward, state, done):
+        '''Interface method to update memory'''
+        self.base_update(action, reward, state, done)
+        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
+        if not np.isnan(reward):  # not the start of episode
+            self.add_experience(self.last_state, action, reward, state, done)
+        self.last_state = state
 
 
 class OnPolicyAtariReplay(OnPolicyConcatReplay):
@@ -370,6 +381,7 @@ class OnPolicyAtariReplay(OnPolicyConcatReplay):
     def update(self, action, reward, state, done):
         '''Interface method to update memory'''
         self.base_update(action, reward, state, done)
+        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
         if not np.isnan(reward):  # not the start of episode
             reward = np.sign(reward)
             self.add_experience(self.last_state, action, reward, state, done)
