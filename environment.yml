@@ -30,7 +30,7 @@ dependencies:
   - pytest-timeout=1.2.1=py_0
   - pytest=3.6.0=py36_0
   - python=3.6.4=0
-  - pytorch-nightly=1.0.0.dev20181112
+  - pytorch-nightly=1.0.0
   - pyyaml=3.12=py36_1
   - regex=2017.12.12=py36_0
   - requests=2.18.4=py36_1
