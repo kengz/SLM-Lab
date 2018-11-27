@@ -68,23 +68,24 @@ def get_lr_scheduler(cls, lr_scheduler_spec):
 
 def get_policy_out_dim(body):
     '''Helper method to construct the policy network out_dim for a body according to is_discrete, action_type'''
+    action_dim = body.action_dim
     if body.is_discrete:
         if body.action_type == 'multi_discrete':
-            assert ps.is_list(body.action_dim), body.action_dim
-            policy_out_dim = body.action_dim
+            assert ps.is_list(action_dim), action_dim
+            policy_out_dim = action_dim
         else:
-            assert ps.is_integer(body.action_dim), body.action_dim
-            policy_out_dim = body.action_dim
+            assert ps.is_integer(action_dim), action_dim
+            policy_out_dim = action_dim
     else:
         if body.action_type == 'multi_continuous':
-            assert ps.is_list(body.action_dim), body.action_dim
+            assert ps.is_list(action_dim), action_dim
             raise NotImplementedError('multi_continuous not supported yet')
         else:
-            assert ps.is_integer(body.action_dim), body.action_dim
-            if body.action_dim == 1:
+            assert ps.is_integer(action_dim), action_dim
+            if action_dim == 1:
                 policy_out_dim = 2  # singleton stay as int
             else:
-                policy_out_dim = body.action_dim * [2]
+                policy_out_dim = action_dim * [2]
     return policy_out_dim
 
 
