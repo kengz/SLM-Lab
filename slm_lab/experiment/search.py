@@ -4,16 +4,14 @@ from deap import creator, base, tools, algorithms
 from ray.tune import grid_search
 from ray.tune.suggest import variant_generator
 from slm_lab.experiment import analysis
-from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import json
 import numpy as np
-import pandas as pd
+import os
 import pydash as ps
 import random
 import ray
-import torch
 
 logger = logger.get_logger(__name__)
 
@@ -21,6 +19,8 @@ logger = logger.get_logger(__name__)
 def register_ray_serializer():
     '''Helper to register so objects can be serialized in Ray'''
     from slm_lab.experiment.control import Experiment
+    from slm_lab.experiment.monitor import InfoSpace
+    import pandas as pd
     ray.register_custom_serializer(Experiment, use_pickle=True)
     ray.register_custom_serializer(InfoSpace, use_pickle=True)
     ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
@@ -83,13 +83,10 @@ def spec_from_config(experiment, config):
     return spec
 
 
-@ray.remote
+@ray.remote(num_gpus=int(os.environ.get('RAY_GPU', 0)))  # hack around bad Ray design of hard-coding
 def run_trial(experiment, config):
     trial_index = config.pop('trial_index')
     spec = spec_from_config(experiment, config)
-    if ps.get(spec, 'agent.0.net.gpu'):
-        # poor design/bug in ray, need to declare despite setting at top level
-        ray.utils.set_cuda_visible_devices(range(torch.cuda.device_count()))
     info_space = deepcopy(experiment.info_space)
     info_space.set('trial', trial_index)
     trial_fitness_df = experiment.init_trial_and_run(spec, info_space)
