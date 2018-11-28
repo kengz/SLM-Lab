@@ -42,7 +42,21 @@ util.monkey_patch(brain.BrainParameters, BrainExt)
 
 
 class UnityEnv(BaseEnv):
-    '''Wrapper for Unity ML-Agents env to work with the Lab.'''
+    '''
+    Wrapper for Unity ML-Agents env to work with the Lab.
+
+    e.g. env_spec
+    "env": [{
+      "name": "gridworld",
+      "max_t": 20,
+      "max_epi": 3,
+      "unity": {
+        "gridSize": 6,
+        "numObstacles": 2,
+        "numGoals": 1
+      }
+    }],
+    '''
 
     def __init__(self, spec, e=None, env_space=None):
         super(UnityEnv, self).__init__(spec, e, env_space)
@@ -127,7 +141,7 @@ class UnityEnv(BaseEnv):
         reward = env_info_a.rewards[b] * self.reward_scale
         state = env_info_a.states[b]
         done = env_info_a.local_done[b]
-        self.done = done = done or self.clock.get('t') > self.max_timestep
+        self.done = done = done or self.clock.get('t') > self.max_t
         logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
         return reward, state, done
 
@@ -173,6 +187,6 @@ class UnityEnv(BaseEnv):
             reward_e[(a, b)] = env_info_a.rewards[b] * self.reward_scale
             state_e[(a, b)] = env_info_a.states[b]
             done_e[(a, b)] = env_info_a.local_done[b]
-        self.done = (util.nonan_all(done_e) or self.clock.get('t') > self.max_timestep)
+        self.done = (util.nonan_all(done_e) or self.clock.get('t') > self.max_t)
         logger.debug(f'Env {self.e} step reward_e: {reward_e}, state_e: {state_e}, done_e: {done_e}')
         return reward_e, state_e, done_e

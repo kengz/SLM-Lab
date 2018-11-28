@@ -6,15 +6,19 @@
         "name": "HydraDQN",
         "action_pdtype": "Argmax",
         "action_policy": "multi_boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.5,
-        "explore_var_end": 0.3,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 32,
-        "training_min_timestep": 10,
+        "training_start_step": 10,
         "normalize_state": true
       },
       "memory": {
@@ -52,13 +56,13 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1000
     }, {
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 1000
+      "max_t": null,
+      "max_epi": 1000
     }],
     "body": {
       "product": "outer",
@@ -73,7 +77,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 30, 50, 100]
+          "explore_var_spec": {
+            "end_step__choice": [1000, 3000, 5000, 10000],
+          }
         },
         "net": {
           "hid_layers__choice": [
@@ -97,15 +103,19 @@
         "name": "HydraDQN",
         "action_pdtype": "Argmax",
         "action_policy": "multi_epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 8,
         "training_epoch": 4,
         "training_frequency": 32,
-        "training_min_timestep": 10,
+        "training_start_step": 10,
         "normalize_state": true
       },
       "memory": {
@@ -146,13 +156,13 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1000
     }, {
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 1000
+      "max_t": null,
+      "max_epi": 1000
     }],
     "body": {
       "product": "outer",
@@ -167,7 +177,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 30, 50, 100]
+          "explore_var_spec": {
+            "end_step__choice": [1000, 3000, 5000, 10000],
+          }
         },
         "net": {
           "hid_layers__choice": [
@@ -184,6 +196,103 @@
       }]
     }
   },
+  "hydra_dqn_epsilon_greedy_cartpole_2dball": {
+    "agent": [{
+      "name": "HydraDQN",
+      "algorithm": {
+        "name": "HydraDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "multi_epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 15000,
+        },
+        "gamma": 0.99,
+        "training_batch_epoch": 4,
+        "training_epoch": 4,
+        "training_frequency": 32,
+        "training_start_step": 32,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "HydraMLPNet",
+        "hid_layers": [
+          [
+            [32],
+            [32]
+          ],
+          [64],
+          []
+        ],
+        "hid_layers_activation": "tanh",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.002
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
+        "update_type": "polyak",
+        "update_frequency": 128,
+        "polyak_coef": 0,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_epi": 300,
+      "reward_scale": 1,
+      "save_frequency": 10000
+    }, {
+      "name": "2DBall",
+      "max_t": 1000,
+      "max_epi": 300,
+      "reward_scale": 10,
+      "save_frequency": 10000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "max_session": 1,
+      "max_trial": 40,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "optim_spec": {
+            "lr__uniform": [0.0001, 0.01]
+          },
+          "lr_decay_frequency__choice": [1000, 2000, 4000]
+        },
+        "memory": {
+          "use_cer__choice": [true, false],
+          "max_size__choice": [5000, 10000, 15000, 20000]
+        }
+      }]
+    }
+  },
   "hydra_dqn_boltzmann_cartpole_2dball": {
     "agent": [{
       "name": "HydraDQN",
@@ -191,15 +300,19 @@
         "name": "HydraDQN",
         "action_pdtype": "Argmax",
         "action_policy": "multi_boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 150,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 15000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 4,
         "training_epoch": 4,
         "training_frequency": 32,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -240,16 +353,16 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 300,
+      "max_t": null,
+      "max_epi": 300,
       "reward_scale": 1,
-      "save_epi_frequency": 10000
+      "save_frequency": 10000
     }, {
       "name": "2DBall",
-      "max_timestep": 1000,
-      "max_episode": 300,
+      "max_t": 1000,
+      "max_epi": 300,
       "reward_scale": 10,
-      "save_epi_frequency": 10000
+      "save_frequency": 10000
     }],
     "body": {
       "product": "outer",
@@ -257,7 +370,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 2,
+      "max_session": 1,
       "max_trial": 40,
       "search": "RandomSearch"
     },

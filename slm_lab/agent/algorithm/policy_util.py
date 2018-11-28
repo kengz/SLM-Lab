@@ -13,7 +13,7 @@ action, action_pd = sample_action_pd(ActionPD, pdparam, body)
 We can also augment pdparam before sampling - as in the case of Boltzmann sampling,
 or do epsilon-greedy to use pdparam-sampling or random sampling.
 '''
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from torch import distributions
 import numpy as np
 import pydash as ps
@@ -180,8 +180,9 @@ def random(state, algorithm, body):
         action_pd = distributions.Categorical(logits=torch.ones(body.action_space.high, device=algorithm.net.device))
     elif body.action_type == 'continuous':
         # Possibly this should this have a 'device' set
-        action_pd = distributions.Uniform(low=torch.tensor(body.action_space.low).float(),
-                                          high=torch.tensor(body.action_space.high).float())
+        action_pd = distributions.Uniform(
+            low=torch.tensor(body.action_space.low).float(),
+            high=torch.tensor(body.action_space.high).float())
     elif body.action_type == 'multi_discrete':
         action_pd = distributions.Categorical(
             logits=torch.ones(body.action_space.high.size, body.action_space.high[0], device=algorithm.net.device))
@@ -299,89 +300,47 @@ def multi_boltzmann(states, algorithm, body_list, pdparam):
     return action_a, action_pd_a
 
 
-# generic rate decay methods
-
-
-def _linear_decay(start_val, end_val, anneal_step, step):
-    '''Simple linear decay with annealing'''
-    rise = end_val - start_val
-    slope = rise / anneal_step
-    val = max(slope * step + start_val, end_val)
-    return val
-
-
-def _rate_decay(start_val, end_val, anneal_step, step, decay_rate=0.9, frequency=20.):
-    '''Compounding rate decay that anneals in 20 decay iterations until anneal_step'''
-    step_per_decay = anneal_step / frequency
-    decay_step = step / step_per_decay
-    val = max(np.power(decay_rate, decay_step) * start_val, end_val)
-    return val
-
-
-def _periodic_decay(start_val, end_val, anneal_step, step, frequency=60.):
-    '''
-    Linearly decaying sinusoid that decays in roughly 10 iterations until explore_anneal_epi
-    Plot the equation below to see the pattern
-    suppose sinusoidal decay, start_val = 1, end_val = 0.2, stop after 60 unscaled x steps
-    then we get 0.2+0.5*(1-0.2)(1 + cos x)*(1-x/60)
-    '''
-    x_freq = frequency
-    step_per_decay = anneal_step / x_freq
-    x = step / step_per_decay
-    unit = start_val - end_val
-    val = end_val * 0.5 * unit * (1 + np.cos(x) * (1 - x / x_freq))
-    val = max(val, end_val)
-    return val
-
-
 # action policy update methods
 
-def no_update(algorithm, body):
-    '''No update, but exists for API consistency'''
-    return body.explore_var
+class VarScheduler:
+    '''
+    Variable scheduler for decaying variables such as explore_var (epsilon, tau) and entropy
 
+    e.g. spec
+    "explore_var_spec": {
+        "name": "linear_decay",
+        "tick_unit": "total_t",
+        "start_val": 1.0,
+        "end_val": 0.1,
+        "start_step": 0,
+        "end_step": 800,
+    },
+    '''
 
-def fn_decay_explore_var(algorithm, body, fn):
-    '''Apply a function to decay explore_var'''
-    epi = body.env.clock.get('total_t')
-    body.explore_var = fn(algorithm.explore_var_start, algorithm.explore_var_end, algorithm.explore_anneal_epi, epi)
-    return body.explore_var
+    def __init__(self, var_decay_spec=None):
+        self._updater_name = 'no_decay' if var_decay_spec is None else var_decay_spec['name']
+        self._updater = getattr(math_util, self._updater_name)
+        util.set_attr(self, dict(
+            start_val=np.nan,
+        ))
+        util.set_attr(self, var_decay_spec, [
+            'tick_unit',
+            'start_val',
+            'end_val',
+            'start_step',
+            'end_step',
+        ])
 
+    def update(self, algorithm, clock):
+        '''Get an updated value for var'''
+        if self._updater_name == 'no_decay':
+            return self.start_val
+        step = clock.get(self.tick_unit)
+        val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
+        return val
 
-def linear_decay(algorithm, body):
-    '''Apply linear decay to explore_var'''
-    return fn_decay_explore_var(algorithm, body, _linear_decay)
-
-
-def rate_decay(algorithm, body):
-    '''Apply _rate_decay to explore_var'''
-    return fn_decay_explore_var(algorithm, body, _rate_decay)
-
-
-def periodic_decay(algorithm, body):
-    '''Apply _periodic_decay to explore_var'''
-    return fn_decay_explore_var(algorithm, body, _periodic_decay)
-
-# entropy coefficient decay methods
-# currently only linear decay supported
-
-
-def entropy_linear_decay(algorithm, body):
-    '''Apply a function to decay entropy_coef'''
-    epi = body.env.clock.get('epi')
-    # Offset the start of the decay
-    if epi < algorithm.entropy_anneal_start_epi:
-        return body.entropy_coef
-    else:
-        epi_offset = epi - algorithm.entropy_anneal_start_epi
-        body.entropy_coef = _linear_decay(algorithm.entropy_coef_start,
-                                          algorithm.entropy_coef_end,
-                                          algorithm.entropy_anneal_epi,
-                                          epi_offset)
-        return body.entropy_coef
 
 # misc calc methods
-
 
 def guard_multi_pdparams(pdparams, body):
     '''Guard pdparams for multi action'''

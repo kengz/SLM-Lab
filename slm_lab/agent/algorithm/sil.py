@@ -1,8 +1,8 @@
 from slm_lab.agent import net, memory
-from slm_lab.agent.algorithm import math_util, policy_util
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
 from slm_lab.agent.algorithm.ppo import PPO
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
@@ -21,20 +21,21 @@ class SIL(ActorCritic):
         "name": "SIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
         "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 10
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
@@ -68,10 +69,9 @@ class SIL(ActorCritic):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
-            action_policy_update='no_update',
-            explore_var_start=np.nan,
-            explore_var_end=np.nan,
-            explore_anneal_epi=np.nan,
+            explore_var_spec=None,
+            add_entropy=False,
+            entropy_coef_spec=None,
             policy_loss_coef=1.0,
             val_loss_coef=1.0,
         ))
@@ -79,20 +79,14 @@ class SIL(ActorCritic):
             'action_pdtype',
             'action_policy',
             # theoretically, AC does not have policy update; but in this implementation we have such option
-            'action_policy_update',
-            'explore_var_start',
-            'explore_var_end',
-            'explore_anneal_epi',
+            'explore_var_spec',
             'gamma',  # the discount factor
             'use_gae',
             'lam',
             'use_nstep',
             'num_step_returns',
             'add_entropy',
-            'entropy_coef_start',
-            'entropy_coef_end',
-            'entropy_anneal_epi',
-            'entropy_anneal_start_epi',
+            'entropy_coef_spec',
             'policy_loss_coef',
             'val_loss_coef',
             'sil_policy_loss_coef',
@@ -204,17 +198,18 @@ class PPOSIL(SIL, PPO):
         "name": "PPOSIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 1.0,
         "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 10
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.01,
         "training_frequency": 1,

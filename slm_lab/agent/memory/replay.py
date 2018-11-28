@@ -233,7 +233,7 @@ class ConcatReplay(Replay):
 
     e.g. memory_spec
     "memory": {
-        "name": "SeqReplay",
+        "name": "ConcatReplay",
         "batch_size": 32,
         "max_size": 10000,
         "concat_len": 4,

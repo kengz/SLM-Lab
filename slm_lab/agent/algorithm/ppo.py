@@ -1,9 +1,9 @@
 from copy import deepcopy
 from slm_lab.agent import net
-from slm_lab.agent.algorithm import math_util, policy_util
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
@@ -34,17 +34,18 @@ class PPO(ActorCritic):
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 1.0,
         "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 10
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "training_epoch": 8,
         "normalize_state": true
@@ -64,27 +65,20 @@ class PPO(ActorCritic):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
-            action_policy_update='no_update',
-            explore_var_start=np.nan,
-            explore_var_end=np.nan,
-            explore_anneal_epi=np.nan,
+            explore_var_spec=None,
+            add_entropy=True,
+            entropy_coef_spec=None,
             val_loss_coef=1.0,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
             'action_policy',
             # theoretically, PPO does not have policy update; but in this implementation we have such option
-            'action_policy_update',
-            'explore_var_start',
-            'explore_var_end',
-            'explore_anneal_epi',
+            'explore_var_spec',
             'gamma',
             'lam',
             'clip_eps',
-            'entropy_coef_start',
-            'entropy_coef_end',
-            'entropy_anneal_epi',
-            'entropy_anneal_start_epi',
+            'entropy_coef_spec',
             'val_loss_coef',
             'training_frequency',  # horizon
             'training_epoch',
@@ -92,11 +86,13 @@ class PPO(ActorCritic):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        self.body.explore_var = self.explore_var_start
-        self.body.entropy_coef = self.entropy_coef_start
-        if getattr(self, 'entropy_anneal_epi'):
-            self.entropy_decay_fn = policy_util.entropy_linear_decay
+        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.body.explore_var = self.explore_var_scheduler.start_val
+        # TODO check all param consistency
+        # TODO fill comment example entropy coef
+        if self.add_entropy:
+            self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
+            self.body.entropy_coef = self.entropy_coef_scheduler.start_val
         # PPO uses GAE
         self.calc_advs_v_targets = self.calc_gae_advs_v_targets
 

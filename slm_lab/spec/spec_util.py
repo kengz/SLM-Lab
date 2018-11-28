@@ -27,8 +27,7 @@ SPEC_FORMAT = {
     }],
     "env": [{
         "name": str,
-        "max_timestep": (type(None), int),
-        "max_episode": (type(None), int),
+        "max_t": (type(None), int),
     }],
     "body": {
         "product": ["outer", "inner", "custom"],

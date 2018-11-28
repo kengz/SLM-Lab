@@ -6,10 +6,7 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.999,
         "use_gae": true,
         "lam": 0.97,
@@ -51,9 +48,9 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -98,10 +95,7 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.999,
         "use_gae": true,
         "lam": 0.97,
@@ -147,9 +141,9 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -194,10 +188,7 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.999,
         "use_gae": false,
         "lam": 0.97,
@@ -239,9 +230,9 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -286,10 +277,7 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.999,
         "use_gae": false,
         "lam": 0.97,
@@ -335,9 +323,9 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -382,15 +370,19 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
-        "explore_anneal_epi": 400,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.999,
         "training_batch_epoch": 3,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -425,9 +417,9 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -446,7 +438,9 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_anneal_epi__choice": [300, 400, 500]
+          "explore_var_spec": {
+            "end_step__choice": [30000, 40000, 50000]
+          }
         },
         "memory": {
           "max_size__choice": [10000, 50000, 100000],
@@ -468,15 +462,19 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
-        "explore_anneal_epi": 400,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.999,
         "training_batch_epoch": 3,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -515,9 +513,9 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -536,7 +534,9 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_anneal_epi__choice": [300, 400, 500]
+          "explore_var_spec": {
+            "end_step__choice": [30000, 40000, 50000]
+          }
         },
         "memory": {
           "max_size__choice": [10000, 50000, 100000],
@@ -560,15 +560,19 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
-        "explore_anneal_epi": 400,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.999,
         "training_batch_epoch": 3,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -603,9 +607,9 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -624,7 +628,9 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_anneal_epi__choice": [300, 400, 500]
+          "explore_var_spec": {
+            "end_step__choice": [30000, 40000, 50000]
+          }
         },
         "memory": {
           "max_size__choice": [10000, 50000, 100000],
@@ -646,15 +652,19 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
-        "explore_anneal_epi": 400,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.999,
         "training_batch_epoch": 3,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -693,9 +703,9 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -714,7 +724,9 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_anneal_epi__choice": [300, 400, 500]
+          "explore_var_spec": {
+            "end_step__choice": [30000, 40000, 50000]
+          }
         },
         "memory": {
           "max_size__choice": [10000, 50000, 100000],

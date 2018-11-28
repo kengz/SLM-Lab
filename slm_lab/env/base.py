@@ -61,7 +61,25 @@ class Clock:
 
 
 class BaseEnv(ABC):
-    '''The base Env class with API and helper methods. Use this to implement your env class that is compatible with the Lab APIs'''
+    '''
+    The base Env class with API and helper methods. Use this to implement your env class that is compatible with the Lab APIs
+
+    e.g. env_spec
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_epi": 150,
+      "save_frequency": 50
+    }],
+
+    # or using max_total_t
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_total_t": 10000,
+      "save_frequency": 50
+    }],
+    '''
 
     def __init__(self, spec, e=None, env_space=None):
         self.e = e or 0  # for compatibility with env_space
@@ -74,11 +92,14 @@ class BaseEnv(ABC):
         ))
         util.set_attr(self, self.env_spec, [
             'name',
-            'max_timestep',
-            'max_episode',
+            'max_t',
+            'save_frequency',
             'reward_scale',
-            'save_epi_frequency',
         ])
+        # use either max_epi or max_total_t as std step
+        assert 'max_epi' in self.env_spec or 'max_total_t' in self.env_spec, 'Specify either max_epi or max_total_t'
+        self.max_tick_unit = 'epi' if 'max_epi' in self.env_spec else 'total_t'
+        self.max_tick = self.env_spec[f'max_{self.max_tick_unit}']
 
     def _set_attr_from_u_env(self, u_env):
         '''Set the observation, action dimensions and action type from u_env'''

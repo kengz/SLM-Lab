@@ -6,15 +6,19 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.05,
-        "explore_anneal_epi": 200000,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.05,
+          "start_step": 10000,
+          "end_step": 200000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_min_timestep": 50000,
+        "training_start_step": 50000,
         "normalize_state": false
       },
       "memory": {
@@ -55,9 +59,9 @@
     }],
     "env": [{
       "name": "BeamRiderNoFrameskip-v4",
-      "max_timestep": null,
-      "max_episode": 5000,
-      "save_epi_frequency": 100
+      "max_t": null,
+      "max_total_t": 10000000,
+      "save_frequency": 100000
     }],
     "body": {
       "product": "outer",
@@ -78,15 +82,19 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.05,
-        "explore_anneal_epi": 200000,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.05,
+          "start_step": 10000,
+          "end_step": 200000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 1,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_min_timestep": 10000,
+        "training_start_step": 10000,
         "normalize_state": false
       },
       "memory": {
@@ -128,9 +136,9 @@
     }],
     "env": [{
       "name": "BeamRiderNoFrameskip-v4",
-      "max_timestep": null,
-      "max_episode": 5000,
-      "save_epi_frequency": 100
+      "max_t": null,
+      "max_total_t": 10000000,
+      "save_frequency": 100000
     }],
     "body": {
       "product": "outer",
@@ -151,15 +159,19 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 2500,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.05,
+          "start_step": 10000,
+          "end_step": 200000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_min_timestep": 50000,
+        "training_start_step": 50000,
         "normalize_state": false
       },
       "memory": {
@@ -200,9 +212,9 @@
     }],
     "env": [{
       "name": "BeamRiderNoFrameskip-v4",
-      "max_timestep": null,
-      "max_episode": 3000,
-      "save_epi_frequency": 100
+      "max_t": null,
+      "max_total_t": 10000000,
+      "save_frequency": 100000
     }],
     "body": {
       "product": "outer",

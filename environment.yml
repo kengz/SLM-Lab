@@ -30,7 +30,7 @@ dependencies:
   - pytest-timeout=1.2.1=py_0
   - pytest=3.6.0=py36_0
   - python=3.6.4=0
-  - pytorch-nightly=1.0.0.dev20181112
+  - pytorch-nightly=1.0.0
   - pyyaml=3.12=py36_1
   - regex=2017.12.12=py36_0
   - requests=2.18.4=py36_1
@@ -54,7 +54,7 @@ dependencies:
     - opencv-python==3.4.0.12
     - plotly==3.2.1
     - pyopengl==3.1.0
-    - ray==0.3.1
+    - ray==0.5.3
     - redis==2.10.6
     - unityagents==0.2.0
     - vizdoom==1.1.6

@@ -6,16 +6,17 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.98,
         "add_entropy": true,
-        "entropy_coef_start": 0.003,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -44,9 +45,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -79,16 +80,17 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "add_entropy": true,
-        "entropy_coef_start": 0.003,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -121,9 +123,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 500,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 500,
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -156,16 +158,17 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "add_entropy": true,
-        "entropy_coef_start": 0.003,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -194,9 +197,9 @@
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "max_timestep": null,
-      "max_episode": 500,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 500,
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -229,16 +232,17 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "add_entropy": true,
-        "entropy_coef_start": 0.003,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -271,9 +275,9 @@
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "max_timestep": null,
-      "max_episode": 500,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 500,
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -306,16 +310,17 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "add_entropy": true,
-        "entropy_coef_start": 0.003,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": false
       },
@@ -350,8 +355,8 @@
     }],
     "env": [{
       "name": "Breakout-v0",
-      "max_timestep": null,
-      "max_episode": 1
+      "max_t": null,
+      "max_epi": 1
     }],
     "body": {
       "product": "outer",
@@ -371,16 +376,17 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "add_entropy": true,
-        "entropy_coef_start": 0.003,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": false
       },
@@ -417,8 +423,8 @@
     "env": [{
       "name": "vizdoom-v0",
       "cfg_name": "basic",
-      "max_timestep": null,
-      "max_episode": 100
+      "max_t": null,
+      "max_epi": 100
     }],
     "body": {
       "product": "outer",

@@ -6,10 +6,14 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.5,
-        "explore_var_end": 0.3,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_frequency": 20,
         "normalize_state": true
@@ -39,9 +43,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 250,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 250,
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -56,7 +60,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 30, 50, 100]
+          "explore_var_spec": {
+            "end_step__choice": [1000, 3000, 5000, 10000],
+          }
         },
         "net": {
           "hid_layers__choice": [
@@ -80,10 +86,14 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_frequency": 20,
         "normalize_state": true
@@ -113,9 +123,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 250,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 250,
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -130,7 +140,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 30, 50, 100]
+          "explore_var_spec": {
+            "end_step__choice": [1000, 3000, 5000, 10000],
+          }
         },
         "net": {
           "hid_layers__choice": [
@@ -154,10 +166,14 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.5,
-        "explore_var_end": 0.3,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_frequency": 20,
         "normalize_state": true
@@ -191,9 +207,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 250,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 250,
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -208,7 +224,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 30, 50, 100]
+          "explore_var_spec": {
+            "end_step__choice": [1000, 3000, 5000, 10000],
+          }
         },
         "net": {
           "hid_layers__choice": [
@@ -232,10 +250,14 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_frequency": 20,
         "normalize_state": true
@@ -269,9 +291,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 250,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 250,
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -286,7 +308,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 30, 50, 100]
+          "explore_var_spec": {
+            "end_step__choice": [1000, 3000, 5000, 10000],
+          }
         },
         "net": {
           "hid_layers__choice": [
@@ -310,10 +334,14 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.5,
-        "explore_var_end": 0.3,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_frequency": 100,
         "normalize_state": false
@@ -349,8 +377,8 @@
     }],
     "env": [{
       "name": "Breakout-v0",
-      "max_timestep": null,
-      "max_episode": 1
+      "max_t": null,
+      "max_epi": 1
     }],
     "body": {
       "product": "outer",
@@ -370,10 +398,14 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_frequency": 100,
         "normalize_state": false
@@ -409,8 +441,8 @@
     }],
     "env": [{
       "name": "Breakout-v0",
-      "max_timestep": null,
-      "max_episode": 1
+      "max_t": null,
+      "max_epi": 1
     }],
     "body": {
       "product": "outer",
