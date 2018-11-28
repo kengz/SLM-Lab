@@ -13,6 +13,7 @@ import pandas as pd
 import pydash as ps
 import random
 import ray
+import torch
 
 logger = logger.get_logger(__name__)
 
