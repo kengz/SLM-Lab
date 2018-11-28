@@ -665,7 +665,6 @@ def try_set_cuda_id(spec, info_space):
     else:
         cuda_id = job_idx % device_count
         cuda_id += int(os.environ.get('CUDA_ID_OFFSET', 0))
-        os.environ['RAY_GPU'] = '1'  # hack around bad Ray design of hard-coding
 
     for agent_spec in spec['agent']:
         agent_spec['net']['cuda_id'] = cuda_id

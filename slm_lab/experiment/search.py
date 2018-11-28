@@ -83,19 +83,23 @@ def spec_from_config(experiment, config):
     return spec
 
 
-@ray.remote(num_gpus=int(os.environ.get('RAY_GPU', 0)))  # hack around bad Ray design of hard-coding
-def run_trial(experiment, config):
-    trial_index = config.pop('trial_index')
-    spec = spec_from_config(experiment, config)
-    info_space = deepcopy(experiment.info_space)
-    info_space.set('trial', trial_index)
-    trial_fitness_df = experiment.init_trial_and_run(spec, info_space)
-    fitness_vec = trial_fitness_df.iloc[0].to_dict()
-    fitness = analysis.calc_fitness(trial_fitness_df)
-    trial_data = {**config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index}
-    prepath = util.get_prepath(spec, info_space, unit='trial')
-    util.write(trial_data, f'{prepath}_trial_data.json')
-    return trial_data
+def create_remote_fn(experiment):
+    ray_gpu = int(ps.get(experiment.spec, 'agent.0.net.gpu') and torch.cuda.device_count())
+
+    @ray.remote(num_gpus=ray_gpu)  # hack around bad Ray design of hard-coding
+    def run_trial(experiment, config):
+        trial_index = config.pop('trial_index')
+        spec = spec_from_config(experiment, config)
+        info_space = deepcopy(experiment.info_space)
+        info_space.set('trial', trial_index)
+        trial_fitness_df = experiment.init_trial_and_run(spec, info_space)
+        fitness_vec = trial_fitness_df.iloc[0].to_dict()
+        fitness = analysis.calc_fitness(trial_fitness_df)
+        trial_data = {**config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index}
+        prepath = util.get_prepath(spec, info_space, unit='trial')
+        util.write(trial_data, f'{prepath}_trial_data.json')
+        return trial_data
+    return run_trial
 
 
 def get_ray_results(pending_ids, ray_id_to_config):
@@ -163,6 +167,7 @@ class RandomSearch(RaySearch):
 
     @lab_api
     def run(self):
+        run_trial = create_remote_fn(self.experiment)
         meta_spec = self.experiment.spec['meta']
         ray.init(**meta_spec.get('resources', {}))
         register_ray_serializer()
@@ -239,6 +244,7 @@ class EvolutionarySearch(RaySearch):
 
     @lab_api
     def run(self):
+        run_trial = create_remote_fn(self.experiment)
         meta_spec = self.experiment.spec['meta']
         ray.init(**meta_spec.get('resources', {}))
         register_ray_serializer()
