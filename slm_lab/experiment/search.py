@@ -146,7 +146,7 @@ class RaySearch(ABC):
         ray.init()
         register_ray_serializer()
         # loop for max_trial: generate_config(); run_trial.remote(config)
-        ray.worker.cleanup()
+        ray.shutdown()
         raise NotImplementedError
         return trial_data_dict
 
@@ -178,7 +178,7 @@ class RandomSearch(RaySearch):
                 pending_ids.append(ray_id)
 
         trial_data_dict.update(get_ray_results(pending_ids, ray_id_to_config))
-        ray.worker.cleanup()
+        ray.shutdown()
         return trial_data_dict
 
 
@@ -282,5 +282,5 @@ class EvolutionarySearch(RaySearch):
                 # Vary the pool of individuals
                 population = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.5)
 
-        ray.worker.cleanup()
+        ray.shutdown()
         return trial_data_dict
