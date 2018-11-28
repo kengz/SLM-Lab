@@ -86,6 +86,7 @@ def spec_from_config(experiment, config):
 
 def create_remote_fn(experiment):
     ray_gpu = int(bool(ps.get(experiment.spec, 'agent.0.net.gpu') and torch.cuda.device_count()))
+    # TODO fractional ray_gpu is broken
 
     @ray.remote(num_gpus=ray_gpu)  # hack around bad Ray design of hard-coding
     def run_trial(experiment, config):
