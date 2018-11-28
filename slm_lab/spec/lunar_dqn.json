@@ -63,7 +63,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 128,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95,
@@ -162,7 +162,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 128,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95,
@@ -261,7 +261,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 128,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95,
@@ -360,7 +360,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 128,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95,
@@ -459,7 +459,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 128,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95,
@@ -558,7 +558,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 128,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95,
@@ -657,7 +657,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 128,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95,
@@ -756,7 +756,7 @@
     "meta": {
       "distributed": false,
       "max_session": 4,
-      "max_trial": 128,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 95,
