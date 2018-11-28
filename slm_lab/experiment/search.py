@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from deap import creator, base, tools, algorithms
-from ray.tune import grid_search, variant_generator
+from ray.tune import grid_search
+from ray.tune.suggest import variant_generator
 from slm_lab.experiment import analysis
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
@@ -14,6 +15,15 @@ import random
 import ray
 
 logger = logger.get_logger(__name__)
+
+
+def register_ray_serializer():
+    '''Helper to register so objects can be serialized in Ray'''
+    from slm_lab.experiment.control import Experiment
+    ray.register_custom_serializer(Experiment, use_pickle=True)
+    ray.register_custom_serializer(InfoSpace, use_pickle=True)
+    ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
+    ray.register_custom_serializer(pd.Series, use_pickle=True)
 
 
 def build_config_space(experiment):
@@ -111,11 +121,6 @@ class RaySearch(ABC):
     '''
 
     def __init__(self, experiment):
-        from slm_lab.experiment.control import Experiment
-        ray.register_custom_serializer(Experiment, use_pickle=True)
-        ray.register_custom_serializer(InfoSpace, use_pickle=True)
-        ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
-        ray.register_custom_serializer(pd.Series, use_pickle=True)
         self.experiment = experiment
         self.config_space = build_config_space(experiment)
         logger.info(f'Running {util.get_class_name(self)}, with meta spec:\n{self.experiment.spec["meta"]}')
@@ -139,6 +144,7 @@ class RaySearch(ABC):
         Remember to call ray init and cleanup before and after loop.
         '''
         ray.init()
+        register_ray_serializer()
         # loop for max_trial: generate_config(); run_trial.remote(config)
         ray.worker.cleanup()
         raise NotImplementedError
@@ -158,6 +164,7 @@ class RandomSearch(RaySearch):
     def run(self):
         meta_spec = self.experiment.spec['meta']
         ray.init(**meta_spec.get('resources', {}))
+        register_ray_serializer()
         max_trial = meta_spec['max_trial']
         trial_data_dict = {}
         ray_id_to_config = {}
@@ -233,6 +240,7 @@ class EvolutionarySearch(RaySearch):
     def run(self):
         meta_spec = self.experiment.spec['meta']
         ray.init(**meta_spec.get('resources', {}))
+        register_ray_serializer()
         max_generation = meta_spec['max_generation']
         pop_size = meta_spec['max_trial'] or calc_population_size(self.experiment)
         logger.info(f'EvolutionarySearch max_generation: {max_generation}, population size: {pop_size}')
