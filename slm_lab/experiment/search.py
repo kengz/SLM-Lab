@@ -86,6 +86,9 @@ def spec_from_config(experiment, config):
 def run_trial(experiment, config):
     trial_index = config.pop('trial_index')
     spec = spec_from_config(experiment, config)
+    if ps.get(spec, 'agent.0.net.gpu'):
+        # poor design/bug in ray, need to declare despite setting at top level
+        ray.utils.set_cuda_visible_devices(range(torch.cuda.device_count()))
     info_space = deepcopy(experiment.info_space)
     info_space.set('trial', trial_index)
     trial_fitness_df = experiment.init_trial_and_run(spec, info_space)
