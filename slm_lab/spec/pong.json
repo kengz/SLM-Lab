@@ -287,7 +287,7 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [1000, 800],
+        "hid_layers": [256, 128, 64],
         "hid_layers_activation": "relu",
         "init_fn": "kaiming_uniform_",
         "clip_grad_val": 10.0,
