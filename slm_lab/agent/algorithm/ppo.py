@@ -37,10 +37,15 @@ class PPO(ActorCritic):
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 1.0,
-        "clip_eps": 0.10,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
@@ -66,7 +71,6 @@ class PPO(ActorCritic):
             action_pdtype='default',
             action_policy='default',
             explore_var_spec=None,
-            add_entropy=True,
             entropy_coef_spec=None,
             val_loss_coef=1.0,
         ))
@@ -77,7 +81,7 @@ class PPO(ActorCritic):
             'explore_var_spec',
             'gamma',
             'lam',
-            'clip_eps',
+            'clip_eps_spec',
             'entropy_coef_spec',
             'val_loss_coef',
             'training_frequency',  # horizon
@@ -88,9 +92,10 @@ class PPO(ActorCritic):
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
-        # TODO check all param consistency
-        # TODO fill comment example entropy coef
-        if self.add_entropy:
+        # extra variable decays for PPO
+        self.clip_eps_scheduler = policy_util.VarScheduler(self.clip_eps_spec)
+        self.body.clip_eps = self.clip_eps_scheduler.start_val
+        if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
             self.body.entropy_coef = self.entropy_coef_scheduler.start_val
         # PPO uses GAE
@@ -117,9 +122,7 @@ class PPO(ActorCritic):
 
         3. S = E[ entropy ]
         '''
-        # decay clip_eps by episode
-        # TODO decay clip_eps along with entropy
-        clip_eps = self.clip_eps
+        clip_eps = self.body.clip_eps
 
         # L^CLIP
         log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
@@ -151,6 +154,7 @@ class PPO(ActorCritic):
         '''
         Trains the network when the actor and critic share parameters
         '''
+        clock = self.body.env.clock
         if self.to_train == 1:
             # update old net
             torch.cuda.empty_cache()
@@ -164,14 +168,14 @@ class PPO(ActorCritic):
                 val_loss = self.calc_val_loss(batch, v_targets)  # from critic
                 loss = policy_loss + val_loss
                 # retain for entropies etc.
-                self.net.training_step(loss=loss, lr_clock=self.body.env.clock, retain_graph=True)
+                self.net.training_step(loss=loss, lr_clock=clock, retain_graph=True)
                 total_loss += loss
             loss = total_loss / self.training_epoch
             # reset
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
@@ -181,6 +185,7 @@ class PPO(ActorCritic):
         '''
         Trains the network when the actor and critic share parameters
         '''
+        clock = self.body.env.clock
         if self.to_train == 1:
             torch.cuda.empty_cache()
             net_util.copy(self.net, self.old_net)
@@ -192,7 +197,7 @@ class PPO(ActorCritic):
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
@@ -209,3 +214,12 @@ class PPO(ActorCritic):
             self.net.training_step(loss=policy_loss, lr_clock=self.body.env.clock, retain_graph=True)
         val_loss = total_policy_loss / self.training_epoch
         return policy_loss
+
+    @lab_api
+    def update(self):
+        net_util.try_store_grad_norm(self)
+        self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
+        if self.entropy_coef_spec is not None:
+            self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
+        self.body.clip_eps = self.clip_eps_scheduler.update(self, self.body.env.clock)
+        return self.body.explore_var

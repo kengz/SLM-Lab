@@ -18,7 +18,7 @@ class Net(ABC):
         self.net_spec = net_spec
         self.in_dim = in_dim
         self.out_dim = out_dim
-        self.grad_norms = []  # for debugging
+        self.grad_norms = None  # for debugging
         if self.net_spec.get('gpu'):
             if torch.cuda.device_count():
                 self.device = f'cuda:{net_spec.get("cuda_id", 0)}'

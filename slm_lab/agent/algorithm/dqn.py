@@ -37,7 +37,6 @@ class VanillaDQN(SARSA):
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
             "name": "linear_decay",
-            "tick_unit": "total_t",
             "start_val": 1.0,
             "end_val": 0.1,
             "start_step": 10,
@@ -133,7 +132,8 @@ class VanillaDQN(SARSA):
         '''
         if util.get_lab_mode() == 'enjoy':
             return np.nan
-        tick = self.body.env.clock.get(self.body.env.max_tick_unit)
+        clock = self.body.env.clock
+        tick = clock.get(clock.max_tick_unit)
         self.to_train = (tick > self.training_start_step and tick % self.training_frequency == 0)
         if self.to_train == 1:
             total_loss = torch.tensor(0.0, device=self.net.device)
@@ -141,14 +141,14 @@ class VanillaDQN(SARSA):
                 batch = self.sample()
                 for _ in range(self.training_batch_epoch):
                     loss = self.calc_q_loss(batch)
-                    self.net.training_step(loss=loss, lr_clock=self.body.env.clock)
+                    self.net.training_step(loss=loss, lr_clock=clock)
                     total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
             return loss.item()
         else:
             return np.nan
@@ -247,7 +247,6 @@ class DQN(DQNBase):
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
             "name": "linear_decay",
-            "tick_unit": "total_t",
             "start_val": 1.0,
             "end_val": 0.1,
             "start_step": 10,
@@ -276,7 +275,6 @@ class DoubleDQN(DQN):
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
             "name": "linear_decay",
-            "tick_unit": "total_t",
             "start_val": 1.0,
             "end_val": 0.1,
             "start_step": 10,

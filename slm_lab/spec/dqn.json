@@ -8,7 +8,6 @@
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 1.0,
           "end_val": 0.1,
           "start_step": 0,
@@ -94,7 +93,6 @@
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 3.0,
           "end_val": 1.0,
           "start_step": 0,
@@ -183,7 +181,6 @@
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 1.0,
           "end_val": 0.1,
           "start_step": 0,
@@ -272,7 +269,6 @@
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 3.0,
           "end_val": 1.0,
           "start_step": 0,
@@ -365,7 +361,6 @@
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 1.0,
           "end_val": 0.1,
           "start_step": 0,
@@ -458,7 +453,6 @@
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 1.0,
           "end_val": 0.08,
           "start_step": 0,
@@ -527,7 +521,6 @@
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 1.0,
           "end_val": 0.02,
           "start_step": 10000,

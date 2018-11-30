@@ -98,8 +98,9 @@ class BaseEnv(ABC):
         ])
         # use either max_epi or max_total_t as std step
         assert 'max_epi' in self.env_spec or 'max_total_t' in self.env_spec, 'Specify either max_epi or max_total_t'
-        self.max_tick_unit = 'epi' if 'max_epi' in self.env_spec else 'total_t'
-        self.max_tick = self.env_spec[f'max_{self.max_tick_unit}']
+        max_tick_unit = 'epi' if 'max_epi' in self.env_spec else 'total_t'
+        self.clock.max_tick_unit = self.max_tick_unit = max_tick_unit
+        self.clock.max_tick = self.max_tick = self.env_spec[f'max_{self.max_tick_unit}']
 
     def _set_attr_from_u_env(self, u_env):
         '''Set the observation, action dimensions and action type from u_env'''

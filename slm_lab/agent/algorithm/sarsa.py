@@ -32,7 +32,6 @@ class SARSA(Algorithm):
         "action_policy": "boltzmann",
         "explore_var_spec": {
             "name": "linear_decay",
-            "tick_unit": "total_t",
             "start_val": 1.0,
             "end_val": 0.1,
             "start_step": 10,
@@ -145,15 +144,16 @@ class SARSA(Algorithm):
         '''
         if util.get_lab_mode() == 'enjoy':
             return np.nan
+        clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
             loss = self.calc_q_loss(batch)
-            self.net.training_step(loss=loss, lr_clock=self.body.env.clock)
+            self.net.training_step(loss=loss, lr_clock=clock)
             # reset
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
@@ -162,8 +162,6 @@ class SARSA(Algorithm):
     @lab_api
     def update(self):
         '''Update the agent after training'''
-        for net_name in self.net_names:
-            net = getattr(self, net_name)
-            self.body.grad_norms.extend(net.grad_norms)
+        net_util.try_store_grad_norm(self)
         self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
         return self.body.explore_var

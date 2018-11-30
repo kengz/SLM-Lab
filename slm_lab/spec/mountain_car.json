@@ -12,10 +12,8 @@
         "lam": 0.97,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
@@ -107,10 +105,8 @@
         "lam": 0.97,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
@@ -214,10 +210,8 @@
         "lam": 0.97,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
@@ -310,10 +304,8 @@
         "lam": 0.97,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
@@ -408,7 +400,6 @@
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 5.0,
           "end_val": 1.0,
           "start_step": 0,
@@ -501,7 +492,6 @@
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 5.0,
           "end_val": 1.0,
           "start_step": 0,
@@ -599,7 +589,6 @@
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 5.0,
           "end_val": 1.0,
           "start_step": 0,
@@ -692,7 +681,6 @@
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 5.0,
           "end_val": 1.0,
           "start_step": 0,

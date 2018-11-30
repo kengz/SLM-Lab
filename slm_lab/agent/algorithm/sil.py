@@ -27,10 +27,8 @@ class SIL(ActorCritic):
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
@@ -70,7 +68,6 @@ class SIL(ActorCritic):
             action_pdtype='default',
             action_policy='default',
             explore_var_spec=None,
-            add_entropy=False,
             entropy_coef_spec=None,
             policy_loss_coef=1.0,
             val_loss_coef=1.0,
@@ -85,7 +82,6 @@ class SIL(ActorCritic):
             'lam',
             'use_nstep',
             'num_step_returns',
-            'add_entropy',
             'entropy_coef_spec',
             'policy_loss_coef',
             'val_loss_coef',
@@ -144,6 +140,7 @@ class SIL(ActorCritic):
         '''
         Trains the network when the actor and critic share parameters
         '''
+        clock = self.body.env.clock
         if self.to_train == 1:
             # onpolicy update
             super_loss = super(SIL, self).train_shared()
@@ -154,11 +151,11 @@ class SIL(ActorCritic):
                 for _ in range(self.training_batch_epoch):
                     sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
                     sil_loss = sil_policy_loss + sil_val_loss
-                    self.net.training_step(loss=sil_loss, lr_clock=self.body.env.clock)
+                    self.net.training_step(loss=sil_loss, lr_clock=clock)
                     total_sil_loss += sil_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
@@ -168,6 +165,7 @@ class SIL(ActorCritic):
         '''
         Trains the network when the actor and critic are separate networks
         '''
+        clock = self.body.env.clock
         if self.to_train == 1:
             # onpolicy update
             super_loss = super(SIL, self).train_separate()
@@ -177,12 +175,12 @@ class SIL(ActorCritic):
                 batch = self.replay_sample()
                 for _ in range(self.training_batch_epoch):
                     sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
-                    self.net.training_step(loss=sil_policy_loss, lr_clock=self.body.env.clock, retain_graph=True)
-                    self.critic.training_step(loss=sil_val_loss, lr_clock=self.body.env.clock)
+                    self.net.training_step(loss=sil_policy_loss, lr_clock=clock, retain_graph=True)
+                    self.critic.training_step(loss=sil_val_loss, lr_clock=clock)
                     total_sil_loss += sil_policy_loss + sil_val_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
@@ -201,10 +199,15 @@ class PPOSIL(SIL, PPO):
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 1.0,
-        "clip_eps": 0.10,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
