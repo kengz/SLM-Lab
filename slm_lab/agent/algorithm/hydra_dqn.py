@@ -103,7 +103,7 @@ class HydraDQN(DQN):
         '''
         if util.get_lab_mode() == 'enjoy':
             return np.nan
-        clock = self.body.env.clock # main clock
+        clock = self.body.env.clock  # main clock
         tick = util.s_get(self, 'aeb_space.clock').get(clock.max_tick_unit)
         self.to_train = (tick > self.training_start_step and tick % self.training_frequency == 0)
         if self.to_train == 1:
