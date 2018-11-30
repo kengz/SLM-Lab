@@ -201,7 +201,14 @@ class PPOSIL(SIL, PPO):
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 1.0,
-        "clip_eps": 0.10,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",

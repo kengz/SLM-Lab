@@ -37,7 +37,14 @@ class PPO(ActorCritic):
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 1.0,
-        "clip_eps": 0.10,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "tick_unit": "total_t",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -77,7 +84,7 @@ class PPO(ActorCritic):
             'explore_var_spec',
             'gamma',
             'lam',
-            'clip_eps',
+            'clip_eps_spec',
             'entropy_coef_spec',
             'val_loss_coef',
             'training_frequency',  # horizon
@@ -91,6 +98,9 @@ class PPO(ActorCritic):
         # TODO check all param consistency
         # TODO fill comment example entropy coef
         if self.add_entropy:
+        # extra variable decays for PPO
+        self.clip_eps_scheduler = policy_util.VarScheduler(self.clip_eps_spec)
+        self.body.clip_eps = self.clip_eps_scheduler.start_val
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
             self.body.entropy_coef = self.entropy_coef_scheduler.start_val
         # PPO uses GAE
@@ -117,9 +127,7 @@ class PPO(ActorCritic):
 
         3. S = E[ entropy ]
         '''
-        # decay clip_eps by episode
-        # TODO decay clip_eps along with entropy
-        clip_eps = self.clip_eps
+        clip_eps = self.body.clip_eps
 
         # L^CLIP
         log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
@@ -209,3 +217,15 @@ class PPO(ActorCritic):
             self.net.training_step(loss=policy_loss, lr_clock=self.body.env.clock, retain_graph=True)
         val_loss = total_policy_loss / self.training_epoch
         return policy_loss
+
+    @lab_api
+    def update(self):
+        for net_name in self.net_names:
+            net = getattr(self, net_name)
+            # TODO expensive
+            self.body.grad_norms.extend(net.grad_norms)
+        self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
+        if self.entropy_coef_spec is not None:
+            self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
+        self.body.clip_eps = self.clip_eps_scheduler.update(self, self.body.env.clock)
+        return self.body.explore_var
