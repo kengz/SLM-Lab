@@ -219,6 +219,7 @@ class ActorCritic(Reinforce):
         Trains the network when the actor and critic share parameters
         loss = self.policy_loss_coef * policy_loss + self.val_loss_coef * val_loss
         '''
+        clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
             with torch.no_grad():
@@ -226,12 +227,12 @@ class ActorCritic(Reinforce):
             policy_loss = self.calc_policy_loss(batch, advs)  # from actor
             val_loss = self.calc_val_loss(batch, v_targets)  # from critic
             loss = policy_loss + val_loss
-            self.net.training_step(loss=loss, lr_clock=self.body.env.clock)
+            self.net.training_step(loss=loss, lr_clock=clock)
             # reset
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:

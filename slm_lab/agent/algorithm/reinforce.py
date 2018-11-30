@@ -132,15 +132,16 @@ class Reinforce(Algorithm):
     def train(self):
         if util.get_lab_mode() == 'enjoy':
             return np.nan
+        clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
             loss = self.calc_policy_loss(batch)
-            self.net.training_step(loss=loss, lr_clock=self.body.env.clock)
+            self.net.training_step(loss=loss, lr_clock=clock)
             # reset
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
