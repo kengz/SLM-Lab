@@ -69,8 +69,8 @@ class Session:
             action = self.agent.act(state)
             reward, state, done = self.env.step(action)
             self.agent.update(action, reward, state, done)
+            self.save_if_ckpt(self.agent, self.env)
         self.agent.body.log_summary()
-        self.save_if_ckpt(self.agent, self.env)
 
     def close(self):
         '''
