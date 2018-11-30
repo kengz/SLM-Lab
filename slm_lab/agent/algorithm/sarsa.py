@@ -162,8 +162,6 @@ class SARSA(Algorithm):
     @lab_api
     def update(self):
         '''Update the agent after training'''
-        for net_name in self.net_names:
-            net = getattr(self, net_name)
-            self.body.grad_norms.extend(net.grad_norms)
+        net_util.try_store_grad_norm(self)
         self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
         return self.body.explore_var

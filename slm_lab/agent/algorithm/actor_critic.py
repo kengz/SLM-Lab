@@ -353,9 +353,7 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def update(self):
-        for net_name in self.net_names:
-            net = getattr(self, net_name)
-            self.body.grad_norms.extend(net.grad_norms)
+        net_util.try_store_grad_norm(self)
         self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
         if self.self.entropy_coef_spec is not None:
             self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
