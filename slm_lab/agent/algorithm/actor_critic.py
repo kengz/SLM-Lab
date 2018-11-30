@@ -108,7 +108,7 @@ class ActorCritic(Reinforce):
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
-        if self.self.entropy_coef_spec is not None:
+        if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
             self.body.entropy_coef = self.entropy_coef_scheduler.start_val
         # Select appropriate methods to calculate adv_targets and v_targets for training
@@ -283,7 +283,7 @@ class ActorCritic(Reinforce):
         assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)
         policy_loss = - self.policy_loss_coef * log_probs * advs
-        if self.self.entropy_coef_spec is not None:
+        if self.entropy_coef_spec is not None:
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.body.entropy_coef * entropies)
             # Store mean entropy for debug logging
@@ -355,6 +355,6 @@ class ActorCritic(Reinforce):
     def update(self):
         net_util.try_store_grad_norm(self)
         self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
-        if self.self.entropy_coef_spec is not None:
+        if self.entropy_coef_spec is not None:
             self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
         return self.body.explore_var
