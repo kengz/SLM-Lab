@@ -27,7 +27,6 @@ class SIL(ActorCritic):
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -70,7 +69,6 @@ class SIL(ActorCritic):
             action_pdtype='default',
             action_policy='default',
             explore_var_spec=None,
-            add_entropy=False,
             entropy_coef_spec=None,
             policy_loss_coef=1.0,
             val_loss_coef=1.0,
@@ -85,7 +83,6 @@ class SIL(ActorCritic):
             'lam',
             'use_nstep',
             'num_step_returns',
-            'add_entropy',
             'entropy_coef_spec',
             'policy_loss_coef',
             'val_loss_coef',

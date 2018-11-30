@@ -73,7 +73,6 @@ class PPO(ActorCritic):
             action_pdtype='default',
             action_policy='default',
             explore_var_spec=None,
-            add_entropy=True,
             entropy_coef_spec=None,
             val_loss_coef=1.0,
         ))
@@ -95,12 +94,10 @@ class PPO(ActorCritic):
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
-        # TODO check all param consistency
-        # TODO fill comment example entropy coef
-        if self.add_entropy:
         # extra variable decays for PPO
         self.clip_eps_scheduler = policy_util.VarScheduler(self.clip_eps_spec)
         self.body.clip_eps = self.clip_eps_scheduler.start_val
+        if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
             self.body.entropy_coef = self.entropy_coef_scheduler.start_val
         # PPO uses GAE

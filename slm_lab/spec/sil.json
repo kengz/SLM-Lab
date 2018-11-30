@@ -12,7 +12,6 @@
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -111,7 +110,6 @@
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -210,7 +208,6 @@
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -313,7 +310,6 @@
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -416,7 +412,6 @@
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -515,7 +510,6 @@
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -614,7 +608,6 @@
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -717,7 +710,6 @@
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -820,7 +812,6 @@
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -902,7 +893,6 @@
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",

@@ -12,8 +12,7 @@
         "lam": 0.97,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_spec": null,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -71,8 +70,6 @@
           "normalize_state__choice": [true, false],
           "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [1, 2, 3, 4],
-          "add_entropy__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
           "lam__uniform": [0.9, 0.99]
         },
         "net": {
@@ -101,8 +98,7 @@
         "lam": 0.97,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_spec": null,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -164,8 +160,6 @@
           "normalize_state__choice": [true, false],
           "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [1, 2, 3, 4],
-          "add_entropy__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
           "lam__uniform": [0.9, 0.99]
         },
         "net": {
@@ -194,8 +188,7 @@
         "lam": 0.97,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_spec": null,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -253,8 +246,6 @@
           "normalize_state__choice": [true, false],
           "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [1, 2, 3, 4],
-          "add_entropy__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
           "num_step_returns__choice": [1, 2, 3, 5, 10]
         },
         "net": {
@@ -283,8 +274,7 @@
         "lam": 0.97,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_spec": null,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -346,8 +336,6 @@
           "normalize_state__choice": [true, false],
           "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [1, 2, 3, 4],
-          "add_entropy__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
           "num_step_returns__choice": [1, 2, 3, 5, 10]
         },
         "net": {

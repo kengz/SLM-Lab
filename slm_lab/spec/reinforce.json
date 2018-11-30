@@ -8,7 +8,6 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.98,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -82,7 +81,6 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -160,7 +158,6 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -234,7 +231,6 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -312,7 +308,6 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -378,7 +373,6 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",

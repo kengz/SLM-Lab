@@ -31,7 +31,6 @@ class Reinforce(Algorithm):
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -53,7 +52,6 @@ class Reinforce(Algorithm):
             action_pdtype='default',
             action_policy='default',
             explore_var_spec=None,
-            add_entropy=False,
             entropy_coef_spec=None,
         ))
         util.set_attr(self, self.algorithm_spec, [
@@ -62,7 +60,6 @@ class Reinforce(Algorithm):
             # theoretically, REINFORCE does not have policy update; but in this implementation we have such option
             'explore_var_spec',
             'gamma',  # the discount factor
-            'add_entropy',
             'entropy_coef_spec',
             'training_frequency',
             'normalize_state',
@@ -71,7 +68,7 @@ class Reinforce(Algorithm):
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
-        if self.add_entropy:
+        if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
             self.body.entropy_coef = self.entropy_coef_scheduler.start_val
 
@@ -159,7 +156,7 @@ class Reinforce(Algorithm):
         assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)
         policy_loss = - log_probs * advs
-        if self.add_entropy:
+        if self.entropy_coef_spec is not None:
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.body.entropy_coef * entropies)
             # Store mean entropy for debug logging
@@ -174,6 +171,6 @@ class Reinforce(Algorithm):
             net = getattr(self, net_name)
             self.body.grad_norms.extend(net.grad_norms)
         self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
-        if self.add_entropy:
+        if self.entropy_coef_spec is not None:
             self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
         return self.body.explore_var

@@ -183,7 +183,6 @@
         "lam": 0.97,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -265,7 +264,6 @@
         "lam": 0.97,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",

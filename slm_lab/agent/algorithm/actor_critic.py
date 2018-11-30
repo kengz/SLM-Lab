@@ -19,7 +19,6 @@ class ActorCritic(Reinforce):
     Algorithm specific spec param:
     use_gae: If false, use the default TD error. Then the algorithm stays as AC. If True, use generalized advantage estimation (GAE) introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. The algorithm becomes A2C.
     use_nstep: If false, use the default TD error. Then the algorithm stays as AC. If True, use n-step returns from "Asynchronous Methods for Deep Reinforcement Learning". The algorithm becomes A2C.
-    add_entropy: option to add entropy to policy during training to encourage exploration as outlined in "Asynchronous Methods for Deep Reinforcement Learning"
     memory.name: batch (through OnPolicyBatchReplay memory class) or episodic through (OnPolicyReplay memory class)
     num_step_returns: if use_gae is false, this specifies the number of steps used for the N-step returns method.
     lam: is use_gae, this lambda controls the bias variance tradeoff for GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
@@ -55,7 +54,6 @@ class ActorCritic(Reinforce):
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "tick_unit": "total_t",
@@ -86,7 +84,6 @@ class ActorCritic(Reinforce):
             action_pdtype='default',
             action_policy='default',
             explore_var_spec=None,
-            add_entropy=False,
             entropy_coef_spec=None,
             policy_loss_coef=1.0,
             val_loss_coef=1.0,
@@ -101,7 +98,6 @@ class ActorCritic(Reinforce):
             'lam',
             'use_nstep',
             'num_step_returns',
-            'add_entropy',
             'entropy_coef_spec',
             'policy_loss_coef',
             'val_loss_coef',
@@ -113,7 +109,7 @@ class ActorCritic(Reinforce):
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
-        if self.add_entropy:
+        if self.self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
             self.body.entropy_coef = self.entropy_coef_scheduler.start_val
         # Select appropriate methods to calculate adv_targets and v_targets for training
@@ -287,7 +283,7 @@ class ActorCritic(Reinforce):
         assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)
         policy_loss = - self.policy_loss_coef * log_probs * advs
-        if self.add_entropy:
+        if self.self.entropy_coef_spec is not None:
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.body.entropy_coef * entropies)
             # Store mean entropy for debug logging
@@ -361,6 +357,6 @@ class ActorCritic(Reinforce):
             net = getattr(self, net_name)
             self.body.grad_norms.extend(net.grad_norms)
         self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
-        if self.add_entropy:
+        if self.self.entropy_coef_spec is not None:
             self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
         return self.body.explore_var
