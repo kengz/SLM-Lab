@@ -29,7 +29,6 @@ class SIL(ActorCritic):
         "num_step_returns": 100,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
@@ -200,7 +199,6 @@ class PPOSIL(SIL, PPO):
         "lam": 1.0,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,
@@ -208,7 +206,6 @@ class PPOSIL(SIL, PPO):
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "tick_unit": "total_t",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 100,

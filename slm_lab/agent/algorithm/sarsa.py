@@ -32,7 +32,6 @@ class SARSA(Algorithm):
         "action_policy": "boltzmann",
         "explore_var_spec": {
             "name": "linear_decay",
-            "tick_unit": "total_t",
             "start_val": 1.0,
             "end_val": 0.1,
             "start_step": 10,
