@@ -72,8 +72,7 @@ class ConvNet(Net, nn.Module):
         polyak_coef: ratio of polyak weight update
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
-        # OpenAI gym provides images as W x H x C, pyTorch expects C x W x H
-        # in_dim = np.roll(in_dim, 1)
+        assert len(in_dim) == 3  # image shape (c,w,h)
         nn.Module.__init__(self)
         super(ConvNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
@@ -168,11 +167,10 @@ class ConvNet(Net, nn.Module):
         return fc_model
 
     def forward(self, x):
-        '''The feedforward step'''
-        # if x.dim() == 3:
-        #     x = x.permute(2, 0, 1).unsqueeze(dim=0)
-        # elif x.dim() == 4:
-        #     x = x.permute(0, 3, 1, 2)
+        '''
+        The feedforward step
+        Note that PyTorch takes (c,w,h) but gym provides (w,h,c), so preprocessing must be done before passing to network
+        '''
         x = self.conv_model(x)
         x = x.view(x.size(0), -1)  # to (batch_size, -1)
         if hasattr(self, 'fc_model'):
@@ -263,8 +261,7 @@ class DuelingConvNet(ConvNet):
     '''
 
     def __init__(self, net_spec, in_dim, out_dim):
-        # OpenAI gym provides images as W x H x C, pyTorch expects C x W x H
-        in_dim = np.roll(in_dim, 1)
+        assert len(in_dim) == 3  # image shape (c,w,h)
         nn.Module.__init__(self)
         Net.__init__(self, net_spec, in_dim, out_dim)
         # set default
@@ -324,10 +321,6 @@ class DuelingConvNet(ConvNet):
 
     def forward(self, x):
         '''The feedforward step'''
-        if x.dim() == 3:
-            x = x.permute(2, 0, 1).unsqueeze(dim=0)
-        elif x.dim() == 4:
-            x = x.permute(0, 3, 1, 2)
         x = self.conv_model(x)
         x = x.view(x.size(0), -1)  # to (batch_size, -1)
         if hasattr(self, 'fc_model'):
