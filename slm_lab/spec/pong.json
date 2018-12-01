@@ -99,20 +99,20 @@
           "name": "linear_decay",
           "start_val": 1.0,
           "end_val": 0.02,
-          "start_step": 10000,
-          "end_step": 100000,
+          "start_step": 50000,
+          "end_step": 1000000,
         },
         "gamma": 0.99,
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_start_step": 10000,
+        "training_start_step": 50000,
         "normalize_state": false
       },
       "memory": {
         "name": "AtariPlainReplay",
         "batch_size": 32,
-        "max_size": 100000,
+        "max_size": 500000,
         "stack_len": 4,
         "use_cer": false
       },
@@ -129,7 +129,7 @@
         "batch_norm": false,
         "clip_grad_val": 10.0,
         "loss_spec": {
-          "name": "MSELoss",
+          "name": "SmoothL1Loss",
         },
         "optim_spec": {
           "name": "Adam",
@@ -137,7 +137,7 @@
         },
         "lr_scheduler_spec": null,
         "update_type": "replace",
-        "update_frequency": 1000,
+        "update_frequency": 10000,
         "gpu": true
       }
     }],
