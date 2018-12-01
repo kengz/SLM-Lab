@@ -276,6 +276,12 @@ class ConcatReplay(Replay):
         return np.concatenate(self.state_buffer)
 
 
+class AtariPlainReplay(Replay):
+    def __init__(self, memory_spec, body):
+        body.state_dim = (4, 84, 84)  # greyscale downsized, stacked
+        Replay.__init__(self, memory_spec, body)
+
+
 class AtariReplay(ConcatReplay):
     '''
     Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-10, 10] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013

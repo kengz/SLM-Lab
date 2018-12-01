@@ -73,7 +73,7 @@ class ConvNet(Net, nn.Module):
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
         # OpenAI gym provides images as W x H x C, pyTorch expects C x W x H
-        in_dim = np.roll(in_dim, 1)
+        # in_dim = np.roll(in_dim, 1)
         nn.Module.__init__(self)
         super(ConvNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
@@ -169,10 +169,10 @@ class ConvNet(Net, nn.Module):
 
     def forward(self, x):
         '''The feedforward step'''
-        if x.dim() == 3:
-            x = x.permute(2, 0, 1).unsqueeze(dim=0)
-        elif x.dim() == 4:
-            x = x.permute(0, 3, 1, 2)
+        # if x.dim() == 3:
+        #     x = x.permute(2, 0, 1).unsqueeze(dim=0)
+        # elif x.dim() == 4:
+        #     x = x.permute(0, 3, 1, 2)
         x = self.conv_model(x)
         x = x.view(x.size(0), -1)  # to (batch_size, -1)
         if hasattr(self, 'fc_model'):
