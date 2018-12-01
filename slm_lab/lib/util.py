@@ -740,29 +740,28 @@ def crop_image(im):
 
 
 def normalize_image(im):
+    # NOTE: beware in its application, may cause loss to be 256 times lower due to smaller input values
     return np.divide(im, 255.0)
 
 
 def nature_transform_image(im):
     '''
     Image preprocessing from the paper "Playing Atari with Deep Reinforcement Learning, 2013, Mnih et al"
-    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84 without the game border, then normalize
+    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84 without the game border
     '''
     im = grayscale_image(im)
     im = resize_image(im, (84, 110))
     im = crop_image(im)
-    # im = normalize_image(im)
     return im
 
 
 def openai_transform_image(im):
     '''
-    Image transformation using OpenAI's baselines method: greyscale, resize, normalize
+    Image transformation using OpenAI's baselines method: greyscale, resize
     Instead of cropping as done in nature_transform_image(), this resizes and stretches the image.
     '''
     im = grayscale_image(im)
     im = resize_image(im, (84, 84))
-    # im = normalize_image(im)
     return im
 
 
