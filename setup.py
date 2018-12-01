@@ -15,7 +15,6 @@ test_args = [
     '--cov-report=term',
     '--cov-report=xml',
     '--cov=slm_lab',
-    '--ignore=test/agent/net',
     '--ignore=test/spec/test_dist_spec.py',
     'test',
 ]
@@ -37,7 +36,7 @@ class PyTest(TestCommand):
 
 setup(
     name='slm_lab',
-    version='2.2.0',
+    version='3.0.0',
     description='Modular Deep Reinforcement Learning framework in PyTorch.',
     long_description='https://github.com/kengz/slm_lab',
     keywords='SLM Lab',

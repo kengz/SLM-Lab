@@ -1,19 +1,31 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from deap import creator, base, tools, algorithms
-from ray.tune import grid_search, variant_generator
+from ray.tune import grid_search
+from ray.tune.suggest import variant_generator
 from slm_lab.experiment import analysis
-from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import json
 import numpy as np
-import pandas as pd
+import os
 import pydash as ps
 import random
 import ray
+import torch
 
 logger = logger.get_logger(__name__)
+
+
+def register_ray_serializer():
+    '''Helper to register so objects can be serialized in Ray'''
+    from slm_lab.experiment.control import Experiment
+    from slm_lab.experiment.monitor import InfoSpace
+    import pandas as pd
+    ray.register_custom_serializer(Experiment, use_pickle=True)
+    ray.register_custom_serializer(InfoSpace, use_pickle=True)
+    ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
+    ray.register_custom_serializer(pd.Series, use_pickle=True)
 
 
 def build_config_space(experiment):
@@ -36,10 +48,7 @@ def build_config_space(experiment):
     space_types = ('grid_search', 'choice', 'randint', 'uniform', 'normal')
     config_space = {}
     for k, v in util.flatten_dict(experiment.spec['search']).items():
-        if '__' in k:
-            key, space_type = k.split('__')
-        else:
-            key, space_type = k, 'grid_search'
+        key, space_type = k.split('__')
         assert space_type in space_types, f'Please specify your search variable as {key}__<space_type> in one of {space_types}'
         if space_type == 'grid_search':
             config_space[key] = grid_search(v)
@@ -75,19 +84,24 @@ def spec_from_config(experiment, config):
     return spec
 
 
-@ray.remote
-def run_trial(experiment, config):
-    trial_index = config.pop('trial_index')
-    spec = spec_from_config(experiment, config)
-    info_space = deepcopy(experiment.info_space)
-    info_space.set('trial', trial_index)
-    trial_fitness_df = experiment.init_trial_and_run(spec, info_space)
-    fitness_vec = trial_fitness_df.iloc[0].to_dict()
-    fitness = analysis.calc_fitness(trial_fitness_df)
-    trial_data = {**config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index}
-    prepath = util.get_prepath(spec, info_space, unit='trial')
-    util.write(trial_data, f'{prepath}_trial_data.json')
-    return trial_data
+def create_remote_fn(experiment):
+    ray_gpu = int(bool(ps.get(experiment.spec, 'agent.0.net.gpu') and torch.cuda.device_count()))
+    # TODO fractional ray_gpu is broken
+
+    @ray.remote(num_gpus=ray_gpu)  # hack around bad Ray design of hard-coding
+    def run_trial(experiment, config):
+        trial_index = config.pop('trial_index')
+        spec = spec_from_config(experiment, config)
+        info_space = deepcopy(experiment.info_space)
+        info_space.set('trial', trial_index)
+        trial_fitness_df = experiment.init_trial_and_run(spec, info_space)
+        fitness_vec = trial_fitness_df.iloc[0].to_dict()
+        fitness = analysis.calc_fitness(trial_fitness_df)
+        trial_data = {**config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index}
+        prepath = util.get_prepath(spec, info_space, unit='trial')
+        util.write(trial_data, f'{prepath}_trial_data.json')
+        return trial_data
+    return run_trial
 
 
 def get_ray_results(pending_ids, ray_id_to_config):
@@ -114,11 +128,6 @@ class RaySearch(ABC):
     '''
 
     def __init__(self, experiment):
-        from slm_lab.experiment.control import Experiment
-        ray.register_custom_serializer(Experiment, use_pickle=True)
-        ray.register_custom_serializer(InfoSpace, use_pickle=True)
-        ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
-        ray.register_custom_serializer(pd.Series, use_pickle=True)
         self.experiment = experiment
         self.config_space = build_config_space(experiment)
         logger.info(f'Running {util.get_class_name(self)}, with meta spec:\n{self.experiment.spec["meta"]}')
@@ -142,8 +151,9 @@ class RaySearch(ABC):
         Remember to call ray init and cleanup before and after loop.
         '''
         ray.init()
+        register_ray_serializer()
         # loop for max_trial: generate_config(); run_trial.remote(config)
-        ray.worker.cleanup()
+        ray.shutdown()
         raise NotImplementedError
         return trial_data_dict
 
@@ -159,8 +169,10 @@ class RandomSearch(RaySearch):
 
     @lab_api
     def run(self):
+        run_trial = create_remote_fn(self.experiment)
         meta_spec = self.experiment.spec['meta']
         ray.init(**meta_spec.get('resources', {}))
+        register_ray_serializer()
         max_trial = meta_spec['max_trial']
         trial_data_dict = {}
         ray_id_to_config = {}
@@ -174,7 +186,7 @@ class RandomSearch(RaySearch):
                 pending_ids.append(ray_id)
 
         trial_data_dict.update(get_ray_results(pending_ids, ray_id_to_config))
-        ray.worker.cleanup()
+        ray.shutdown()
         return trial_data_dict
 
 
@@ -234,8 +246,10 @@ class EvolutionarySearch(RaySearch):
 
     @lab_api
     def run(self):
+        run_trial = create_remote_fn(self.experiment)
         meta_spec = self.experiment.spec['meta']
         ray.init(**meta_spec.get('resources', {}))
+        register_ray_serializer()
         max_generation = meta_spec['max_generation']
         pop_size = meta_spec['max_trial'] or calc_population_size(self.experiment)
         logger.info(f'EvolutionarySearch max_generation: {max_generation}, population size: {pop_size}')
@@ -277,5 +291,5 @@ class EvolutionarySearch(RaySearch):
                 # Vary the pool of individuals
                 population = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.5)
 
-        ray.worker.cleanup()
+        ray.shutdown()
         return trial_data_dict

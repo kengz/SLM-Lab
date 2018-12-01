@@ -1,8 +1,8 @@
 from slm_lab.agent import net, memory
-from slm_lab.agent.algorithm import math_util, policy_util
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
 from slm_lab.agent.algorithm.ppo import PPO
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
@@ -21,20 +21,19 @@ class SIL(ActorCritic):
         "name": "SIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 10
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
@@ -68,10 +67,8 @@ class SIL(ActorCritic):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
-            action_policy_update='no_update',
-            explore_var_start=np.nan,
-            explore_var_end=np.nan,
-            explore_anneal_epi=np.nan,
+            explore_var_spec=None,
+            entropy_coef_spec=None,
             policy_loss_coef=1.0,
             val_loss_coef=1.0,
         ))
@@ -79,20 +76,13 @@ class SIL(ActorCritic):
             'action_pdtype',
             'action_policy',
             # theoretically, AC does not have policy update; but in this implementation we have such option
-            'action_policy_update',
-            'explore_var_start',
-            'explore_var_end',
-            'explore_anneal_epi',
+            'explore_var_spec',
             'gamma',  # the discount factor
             'use_gae',
             'lam',
             'use_nstep',
             'num_step_returns',
-            'add_entropy',
-            'entropy_coef_start',
-            'entropy_coef_end',
-            'entropy_anneal_epi',
-            'entropy_anneal_start_epi',
+            'entropy_coef_spec',
             'policy_loss_coef',
             'val_loss_coef',
             'sil_policy_loss_coef',
@@ -137,7 +127,7 @@ class SIL(ActorCritic):
         returns = batch['rets']
         v_preds = self.calc_v(batch['states'], evaluate=False)
         clipped_advs = torch.clamp(returns - v_preds, min=0.0)
-        log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch).detach()
+        log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
 
         sil_policy_loss = self.sil_policy_loss_coef * torch.mean(- log_probs * clipped_advs)
         sil_val_loss = self.sil_val_loss_coef * torch.pow(clipped_advs, 2) / 2
@@ -150,6 +140,7 @@ class SIL(ActorCritic):
         '''
         Trains the network when the actor and critic share parameters
         '''
+        clock = self.body.env.clock
         if self.to_train == 1:
             # onpolicy update
             super_loss = super(SIL, self).train_shared()
@@ -160,11 +151,11 @@ class SIL(ActorCritic):
                 for _ in range(self.training_batch_epoch):
                     sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
                     sil_loss = sil_policy_loss + sil_val_loss
-                    self.net.training_step(loss=sil_loss, global_net=self.global_nets.get('net'))
+                    self.net.training_step(loss=sil_loss, lr_clock=clock)
                     total_sil_loss += sil_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
@@ -174,6 +165,7 @@ class SIL(ActorCritic):
         '''
         Trains the network when the actor and critic are separate networks
         '''
+        clock = self.body.env.clock
         if self.to_train == 1:
             # onpolicy update
             super_loss = super(SIL, self).train_separate()
@@ -183,12 +175,12 @@ class SIL(ActorCritic):
                 batch = self.replay_sample()
                 for _ in range(self.training_batch_epoch):
                     sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
-                    self.net.training_step(loss=sil_policy_loss, retain_graph=True, global_net=self.global_nets.get('net'))
-                    self.critic.training_step(loss=sil_val_loss, global_net=self.global_nets.get('critic'))
+                    self.net.training_step(loss=sil_policy_loss, lr_clock=clock, retain_graph=True)
+                    self.critic.training_step(loss=sil_val_loss, lr_clock=clock)
                     total_sil_loss += sil_policy_loss + sil_val_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
@@ -204,17 +196,23 @@ class PPOSIL(SIL, PPO):
         "name": "PPOSIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 1.0,
-        "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 10
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.01,
         "training_frequency": 1,

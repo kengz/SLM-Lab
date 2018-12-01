@@ -20,17 +20,13 @@ class Algorithm(ABC):
         @param {*} agent is the container for algorithm and related components, and interfaces with env.
         '''
         self.agent = agent
-        if ps.is_list(global_nets):  # multiagent
-            self.global_nets = global_nets[agent.a]
-        else:
-            self.global_nets = global_nets or {}
         self.algorithm_spec = agent.agent_spec['algorithm']
         self.name = self.algorithm_spec['name']
         self.memory_spec = agent.agent_spec['memory']
         self.net_spec = agent.agent_spec['net']
         self.body = self.agent.body
         self.init_algorithm_params()
-        self.init_nets()
+        self.init_nets(global_nets)
         logger.info(util.self_desc(self))
 
     @abstractmethod
@@ -41,7 +37,7 @@ class Algorithm(ABC):
 
     @abstractmethod
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''Initialize the neural network from the spec'''
         raise NotImplementedError
 
@@ -52,8 +48,6 @@ class Algorithm(ABC):
         Call at the end of init_nets() after setting self.net_names
         '''
         assert hasattr(self, 'net_names')
-        if not ps.is_empty(self.global_nets):
-            assert all(k in self.net_names for k in self.global_nets), f'Provided global_nets keys: {list(self.global_nets.keys())} are inconsistent with self.net_names: {self.net_names}'
         if util.get_lab_mode() == 'enjoy':
             logger.info('Loaded algorithm models for lab_mode: enjoy')
             self.load()

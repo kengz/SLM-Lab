@@ -6,15 +6,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 800,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -27,8 +30,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "selu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -36,10 +38,11 @@
           "name": "Adam",
           "lr": 0.002
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 1000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -48,9 +51,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 150,
-      "save_epi_frequency": 50
+      "max_t": null,
+      "max_total_t": 20000,
+      "save_frequency": 10000
     }],
     "body": {
       "product": "outer",

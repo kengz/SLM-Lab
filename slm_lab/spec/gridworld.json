@@ -6,17 +6,13 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.999,
         "use_gae": true,
         "lam": 0.97,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_spec": null,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -31,8 +27,7 @@
         "shared": false,
         "hid_layers": [200],
         "hid_layers_activation": "sigmoid",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -42,18 +37,19 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 20000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -74,8 +70,6 @@
           "normalize_state__choice": [true, false],
           "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [1, 2, 3, 4],
-          "add_entropy__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
           "lam__uniform": [0.9, 0.99]
         },
         "net": {
@@ -98,17 +92,13 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.999,
         "use_gae": true,
         "lam": 0.97,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_spec": null,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -121,13 +111,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [200],
+        "cell_type": "GRU",
+        "fc_hid_layers": [200],
         "hid_layers_activation": "sigmoid",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -137,18 +127,19 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 20000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -169,8 +160,6 @@
           "normalize_state__choice": [true, false],
           "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [1, 2, 3, 4],
-          "add_entropy__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
           "lam__uniform": [0.9, 0.99]
         },
         "net": {
@@ -193,17 +182,13 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.999,
         "use_gae": false,
         "lam": 0.97,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_spec": null,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -218,8 +203,7 @@
         "shared": false,
         "hid_layers": [200],
         "hid_layers_activation": "sigmoid",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -229,18 +213,19 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 20000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -261,8 +246,6 @@
           "normalize_state__choice": [true, false],
           "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [1, 2, 3, 4],
-          "add_entropy__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
           "num_step_returns__choice": [1, 2, 3, 5, 10]
         },
         "net": {
@@ -285,17 +268,13 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.999,
         "use_gae": false,
         "lam": 0.97,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef": 0.01,
+        "entropy_coef_spec": null,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -308,13 +287,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [200],
+        "cell_type": "GRU",
+        "fc_hid_layers": [200],
         "hid_layers_activation": "sigmoid",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -324,18 +303,19 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 20000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -356,8 +336,6 @@
           "normalize_state__choice": [true, false],
           "training_frequency__choice": [1, 2, 3],
           "training_epoch__choice": [1, 2, 3, 4],
-          "add_entropy__choice": [true, false],
-          "entropy_coef__uniform": [0.001, 0.1],
           "num_step_returns__choice": [1, 2, 3, 5, 10]
         },
         "net": {
@@ -380,15 +358,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
-        "explore_anneal_epi": 400,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.999,
         "training_batch_epoch": 3,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -402,8 +383,7 @@
         "type": "MLPNet",
         "hid_layers": [200],
         "hid_layers_activation": "sigmoid",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -411,10 +391,11 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 20000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -423,9 +404,9 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -444,7 +425,9 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_anneal_epi__choice": [300, 400, 500]
+          "explore_var_spec": {
+            "end_step__choice": [30000, 40000, 50000]
+          }
         },
         "memory": {
           "max_size__choice": [10000, 50000, 100000],
@@ -466,15 +449,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
-        "explore_anneal_epi": 400,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.999,
         "training_batch_epoch": 3,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -486,13 +472,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [200],
+        "cell_type": "GRU",
+        "fc_hid_layers": [200],
         "hid_layers_activation": "sigmoid",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -500,10 +486,11 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 20000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -512,9 +499,9 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -533,7 +520,9 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_anneal_epi__choice": [300, 400, 500]
+          "explore_var_spec": {
+            "end_step__choice": [30000, 40000, 50000]
+          }
         },
         "memory": {
           "max_size__choice": [10000, 50000, 100000],
@@ -557,15 +546,18 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
-        "explore_anneal_epi": 400,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.999,
         "training_batch_epoch": 3,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -579,8 +571,7 @@
         "type": "MLPNet",
         "hid_layers": [200],
         "hid_layers_activation": "sigmoid",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -588,10 +579,11 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 20000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -600,9 +592,9 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -621,7 +613,9 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_anneal_epi__choice": [300, 400, 500]
+          "explore_var_spec": {
+            "end_step__choice": [30000, 40000, 50000]
+          }
         },
         "memory": {
           "max_size__choice": [10000, 50000, 100000],
@@ -643,15 +637,18 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 5.0,
-        "explore_var_end": 0.5,
-        "explore_anneal_epi": 400,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.999,
         "training_batch_epoch": 3,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -663,13 +660,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [200],
+        "cell_type": "GRU",
+        "fc_hid_layers": [200],
         "hid_layers_activation": "sigmoid",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -677,10 +674,11 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 20000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -689,9 +687,9 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": null,
-      "max_episode": 1000,
-      "save_epi_frequency": 1500,
+      "max_t": null,
+      "max_epi": 1000,
+      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -710,7 +708,9 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_anneal_epi__choice": [300, 400, 500]
+          "explore_var_spec": {
+            "end_step__choice": [30000, 40000, 50000]
+          }
         },
         "memory": {
           "max_size__choice": [10000, 50000, 100000],

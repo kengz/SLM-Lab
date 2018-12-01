@@ -1,6 +1,5 @@
 from functools import partial
 from slm_lab import ROOT_DIR
-from slm_lab.agent.algorithm import policy_util
 from slm_lab.lib import logger, util
 from subprocess import DEVNULL
 import os
@@ -8,15 +7,22 @@ import pydash as ps
 import subprocess
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 NN_LOWCASE_LOOKUP = {nn_name.lower(): nn_name for nn_name in nn.__dict__}
 logger = logger.get_logger(__name__)
 
 
+class NoOpLRScheduler:
+    '''Symbolic LRScheduler class for API consistency'''
+
+    def step(self, epoch=None):
+        pass
+
+
 def build_sequential(dims, activation):
     '''Build the Sequential model by interleaving nn.Linear and activation_fn'''
+    assert len(dims) >= 2, 'dims need to at least contain input, output'
     dim_pairs = list(zip(dims[:-1], dims[1:]))
     layers = []
     for in_d, out_d in dim_pairs:
@@ -49,25 +55,37 @@ def get_optim(cls, optim_spec):
     return optim
 
 
+def get_lr_scheduler(cls, lr_scheduler_spec):
+    '''Helper to parse lr_scheduler param and construct Pytorch optim.lr_scheduler'''
+    if ps.is_empty(lr_scheduler_spec):
+        lr_scheduler = NoOpLRScheduler()
+    else:
+        LRSchedulerClass = getattr(torch.optim.lr_scheduler, lr_scheduler_spec['name'])
+        lr_scheduler_spec = ps.omit(lr_scheduler_spec, 'name')
+        lr_scheduler = LRSchedulerClass(cls.optim, **lr_scheduler_spec)
+    return lr_scheduler
+
+
 def get_policy_out_dim(body):
     '''Helper method to construct the policy network out_dim for a body according to is_discrete, action_type'''
+    action_dim = body.action_dim
     if body.is_discrete:
         if body.action_type == 'multi_discrete':
-            assert ps.is_list(body.action_dim), body.action_dim
-            policy_out_dim = body.action_dim
+            assert ps.is_list(action_dim), action_dim
+            policy_out_dim = action_dim
         else:
-            assert ps.is_integer(body.action_dim), body.action_dim
-            policy_out_dim = body.action_dim
+            assert ps.is_integer(action_dim), action_dim
+            policy_out_dim = action_dim
     else:
         if body.action_type == 'multi_continuous':
-            assert ps.is_list(body.action_dim), body.action_dim
+            assert ps.is_list(action_dim), action_dim
             raise NotImplementedError('multi_continuous not supported yet')
         else:
-            assert ps.is_integer(body.action_dim), body.action_dim
-            if body.action_dim == 1:
+            assert ps.is_integer(action_dim), action_dim
+            if action_dim == 1:
                 policy_out_dim = 2  # singleton stay as int
             else:
-                policy_out_dim = body.action_dim * [2]
+                policy_out_dim = action_dim * [2]
     return policy_out_dim
 
 
@@ -87,22 +105,22 @@ def get_out_dim(body, add_critic=False):
 def init_layers(net, init_fn):
     if init_fn == 'xavier_uniform_':
         try:
-            gain = torch.nn.init.calculate_gain(net.hid_layers_activation)
+            gain = nn.init.calculate_gain(net.hid_layers_activation)
         except ValueError:
             gain = 1
-        init_fn = partial(torch.nn.init.xavier_uniform_, gain=gain)
+        init_fn = partial(nn.init.xavier_uniform_, gain=gain)
     elif 'kaiming' in init_fn:
         assert net.hid_layers_activation in ['relu', 'leaky_relu'], f'Kaiming initialization not supported for {net.hid_layers_activation}'
-        init_fn = torch.nn.init.__dict__[init_fn]
+        init_fn = nn.init.__dict__[init_fn]
         init_fn = partial(init_fn, nonlinearity=net.hid_layers_activation)
     else:
-        init_fn = torch.nn.init.__dict__[init_fn]
+        init_fn = nn.init.__dict__[init_fn]
     net.apply(partial(init_parameters, init_fn=init_fn))
 
 
 def init_parameters(module, init_fn):
     '''
-    Initializes module's weights using init_fn, which is the name of function from from torch.nn.init
+    Initializes module's weights using init_fn, which is the name of function from from nn.init
     Initializes module's biases to either 0.01 or 0.0, depending on module
     The only exception is BatchNorm layers, for which we use uniform initialization
     '''
@@ -110,56 +128,16 @@ def init_parameters(module, init_fn):
     classname = module.__class__.__name__
     if 'BatchNorm' in classname:
         init_fn(module.weight)
-        torch.nn.init.constant_(module.bias, bias_init)
+        nn.init.constant_(module.bias, bias_init)
     elif 'GRU' in classname:
         for name, param in module.named_parameters():
             if 'weight' in name:
                 init_fn(param)
             elif 'bias' in name:
-                torch.nn.init.constant_(param, 0.0)
+                nn.init.constant_(param, 0.0)
     elif 'Linear' in classname or ('Conv' in classname and 'Net' not in classname):
         init_fn(module.weight)
-        torch.nn.init.constant_(module.bias, bias_init)
-
-
-# lr decay methods
-
-
-def no_decay(net, clock):
-    '''No update'''
-    return net.optim_spec['lr']
-
-
-def fn_decay_lr(net, clock, fn):
-    '''
-    Decay learning rate for net module, only returns the new lr for user to set to appropriate nets
-    In the future, might add more flexible lr adjustment, like boosting and decaying on need.
-    '''
-    total_t = clock.get('total_t')
-    start_val, end_val = net.optim_spec['lr'], 1e-6
-    anneal_total_t = net.lr_anneal_timestep or max(1e6, 60 * net.lr_decay_frequency)
-
-    if total_t >= net.lr_decay_min_timestep and total_t % net.lr_decay_frequency == 0:
-        logger.debug(f'anneal_total_t: {anneal_total_t}, total_t: {total_t}')
-        new_lr = fn(start_val, end_val, anneal_total_t, total_t)
-        return new_lr
-    else:
-        return no_decay(net, clock)
-
-
-def linear_decay(net, clock):
-    '''Apply _linear_decay to lr'''
-    return fn_decay_lr(net, clock, policy_util._linear_decay)
-
-
-def rate_decay(net, clock):
-    '''Apply _rate_decay to lr'''
-    return fn_decay_lr(net, clock, policy_util._rate_decay)
-
-
-def periodic_decay(net, clock):
-    '''Apply _periodic_decay to lr'''
-    return fn_decay_lr(net, clock, policy_util._periodic_decay)
+        nn.init.constant_(module.bias, bias_init)
 
 
 # params methods
@@ -260,19 +238,16 @@ def gen_assert_trained(pre_model):
             max_norm = 1e5
             for p_name, param in post_model.named_parameters():
                 try:
-                    assert min_norm < param.grad.norm() < max_norm, f'Gradient norm fails the extreme value check {min_norm} < {p_name}:{param.grad.norm()} < {max_norm}, which is bad. Loss: {loss}. Check your network and loss computation. Consider using the "clip_grad" and "clip_grad_val" net parameter.'
+                    assert min_norm < param.grad.norm() < max_norm, f'Gradient norm fails the extreme value check {min_norm} < {p_name}:{param.grad.norm()} < {max_norm}, which is bad. Loss: {loss}. Check your network and loss computation. Consider using the "clip_grad_val" net parameter.'
                 except Exception as e:
                     logger.warn(e)
         logger.debug('Passed network weight update assertation in dev lab_mode.')
     return assert_trained
 
 
-def push_global_grad(local_net, global_net):
-    '''Push local gradient to global for distributed training'''
-    for lp, gp in zip(local_net.parameters(), global_net.parameters()):
-        gp._grad = lp.grad.to(global_net.device)
-
-
-def pull_global_param(local_net, global_net):
-    '''Pull global param to local network for distributed training'''
-    copy(local_net, global_net)
+def try_store_grad_norm(algorithm):
+    '''Check and if needed, store algorithm's net.grad_norms to body.grad_norms for debugging'''
+    for net_name in algorithm.net_names:
+        net = getattr(algorithm, net_name)
+        if net.grad_norms is not None:
+            algorithm.body.grad_norms.extend(net.grad_norms)

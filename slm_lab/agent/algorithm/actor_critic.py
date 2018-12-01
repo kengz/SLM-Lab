@@ -1,8 +1,8 @@
 from slm_lab.agent import net
-from slm_lab.agent.algorithm import math_util, policy_util
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.reinforce import Reinforce
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
@@ -19,7 +19,6 @@ class ActorCritic(Reinforce):
     Algorithm specific spec param:
     use_gae: If false, use the default TD error. Then the algorithm stays as AC. If True, use generalized advantage estimation (GAE) introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. The algorithm becomes A2C.
     use_nstep: If false, use the default TD error. Then the algorithm stays as AC. If True, use n-step returns from "Asynchronous Methods for Deep Reinforcement Learning". The algorithm becomes A2C.
-    add_entropy: option to add entropy to policy during training to encourage exploration as outlined in "Asynchronous Methods for Deep Reinforcement Learning"
     memory.name: batch (through OnPolicyBatchReplay memory class) or episodic through (OnPolicyReplay memory class)
     num_step_returns: if use_gae is false, this specifies the number of steps used for the N-step returns method.
     lam: is use_gae, this lambda controls the bias variance tradeoff for GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
@@ -49,20 +48,19 @@ class ActorCritic(Reinforce):
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 100,
-        "add_entropy": false,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 10
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -84,10 +82,8 @@ class ActorCritic(Reinforce):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
-            action_policy_update='no_update',
-            explore_var_start=np.nan,
-            explore_var_end=np.nan,
-            explore_anneal_epi=np.nan,
+            explore_var_spec=None,
+            entropy_coef_spec=None,
             policy_loss_coef=1.0,
             val_loss_coef=1.0,
         ))
@@ -95,20 +91,13 @@ class ActorCritic(Reinforce):
             'action_pdtype',
             'action_policy',
             # theoretically, AC does not have policy update; but in this implementation we have such option
-            'action_policy_update',
-            'explore_var_start',
-            'explore_var_end',
-            'explore_anneal_epi',
+            'explore_var_spec',
             'gamma',  # the discount factor
             'use_gae',
             'lam',
             'use_nstep',
             'num_step_returns',
-            'add_entropy',
-            'entropy_coef_start',
-            'entropy_coef_end',
-            'entropy_anneal_epi',
-            'entropy_anneal_start_epi',
+            'entropy_coef_spec',
             'policy_loss_coef',
             'val_loss_coef',
             'training_frequency',
@@ -117,11 +106,11 @@ class ActorCritic(Reinforce):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        self.body.explore_var = self.explore_var_start
-        self.body.entropy_coef = self.entropy_coef_start
-        if getattr(self, 'entropy_anneal_epi'):
-            self.entropy_decay_fn = policy_util.entropy_linear_decay
+        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.body.explore_var = self.explore_var_scheduler.start_val
+        if self.entropy_coef_spec is not None:
+            self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
+            self.body.entropy_coef = self.entropy_coef_scheduler.start_val
         # Select appropriate methods to calculate adv_targets and v_targets for training
         if self.use_gae:
             self.calc_advs_v_targets = self.calc_gae_advs_v_targets
@@ -131,7 +120,7 @@ class ActorCritic(Reinforce):
             self.calc_advs_v_targets = self.calc_td_advs_v_targets
 
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''
         Initialize the neural networks used to learn the actor and critic from the spec
         Below we automatically select an appropriate net based on two different conditions
@@ -162,18 +151,21 @@ class ActorCritic(Reinforce):
         if critic_net_spec['use_same_optim']:
             critic_net_spec = actor_net_spec
 
-        in_dim = self.body.state_dim
-        out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
-        # main actor network, may contain out_dim self.shared == True
-        NetClass = getattr(net, actor_net_spec['type'])
-        self.net = NetClass(actor_net_spec, in_dim, out_dim)
-        self.net_names = ['net']
-        if not self.shared:  # add separate network for critic
-            critic_out_dim = 1
-            CriticNetClass = getattr(net, critic_net_spec['type'])
-            self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
-            self.net_names.append('critic')
-
+        if global_nets is None:
+            in_dim = self.body.state_dim
+            out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
+            # main actor network, may contain out_dim self.shared == True
+            NetClass = getattr(net, actor_net_spec['type'])
+            self.net = NetClass(actor_net_spec, in_dim, out_dim)
+            self.net_names = ['net']
+            if not self.shared:  # add separate network for critic
+                critic_out_dim = 1
+                CriticNetClass = getattr(net, critic_net_spec['type'])
+                self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
+                self.net_names.append('critic')
+        else:
+            util.set_attr(self, global_nets)
+            self.net_names = list(global_nets.keys())
         self.post_init_nets()
 
     @lab_api
@@ -227,6 +219,7 @@ class ActorCritic(Reinforce):
         Trains the network when the actor and critic share parameters
         loss = self.policy_loss_coef * policy_loss + self.val_loss_coef * val_loss
         '''
+        clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
             with torch.no_grad():
@@ -234,12 +227,12 @@ class ActorCritic(Reinforce):
             policy_loss = self.calc_policy_loss(batch, advs)  # from actor
             val_loss = self.calc_val_loss(batch, v_targets)  # from critic
             loss = policy_loss + val_loss
-            self.net.training_step(loss=loss, global_net=self.global_nets.get('net'))
+            self.net.training_step(loss=loss, lr_clock=clock)
             # reset
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
@@ -269,7 +262,7 @@ class ActorCritic(Reinforce):
         with torch.no_grad():
             advs, _v_targets = self.calc_advs_v_targets(batch)
         policy_loss = self.calc_policy_loss(batch, advs)
-        self.net.training_step(loss=policy_loss, global_net=self.global_nets.get('net'))
+        self.net.training_step(loss=policy_loss, lr_clock=self.body.env.clock)
         return policy_loss
 
     def train_critic(self, batch):
@@ -280,7 +273,7 @@ class ActorCritic(Reinforce):
             with torch.no_grad():
                 _advs, v_targets = self.calc_advs_v_targets(batch)
             val_loss = self.calc_val_loss(batch, v_targets)
-            self.critic.training_step(loss=val_loss, global_net=self.global_nets.get('critic'))
+            self.critic.training_step(loss=val_loss, lr_clock=self.body.env.clock)
             total_val_loss += val_loss
         val_loss = total_val_loss / self.training_epoch
         return val_loss
@@ -290,7 +283,7 @@ class ActorCritic(Reinforce):
         assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)
         policy_loss = - self.policy_loss_coef * log_probs * advs
-        if self.add_entropy:
+        if self.entropy_coef_spec is not None:
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.body.entropy_coef * entropies)
             # Store mean entropy for debug logging
@@ -360,12 +353,8 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def update(self):
-        for net_name in self.net_names:
-            net = getattr(self, net_name)
-            net.update_lr(self.body.env.clock)
-        explore_var = self.action_policy_update(self, self.body)
-        if hasattr(self, 'entropy_anneal_epi'):
-            self.body.entropy_coef = self.entropy_decay_fn(self, self.body)
-            if self.body.env.clock.get('t') == 1:
-                logger.debug(f'entropy coefficient decayed to {self.body.entropy_coef}')
-        return explore_var
+        net_util.try_store_grad_norm(self)
+        self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
+        if self.entropy_coef_spec is not None:
+            self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
+        return self.body.explore_var

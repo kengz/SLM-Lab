@@ -318,9 +318,15 @@ def override_dev_spec(spec):
 
 
 def override_test_spec(spec):
+    for agent_spec in spec['agent']:
+        # covers episodic and timestep
+        agent_spec['algorithm']['training_frequency'] = 1
+        agent_spec['algorithm']['training_start_step'] = 1
+        agent_spec['algorithm']['training_epoch'] = 1
+        agent_spec['algorithm']['training_batch_epoch'] = 1
     for env_spec in spec['env']:
-        env_spec['max_episode'] = 3
-        env_spec['max_timestep'] = 100
+        env_spec['max_epi'] = 3
+        env_spec['max_t'] = 20
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
     return spec

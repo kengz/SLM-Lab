@@ -6,16 +6,15 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.0001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 25,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.0001,
+          "start_step": 2500,
+          "end_step": 10000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -26,8 +25,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -35,18 +33,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 400,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 20000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 400,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 200,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 200,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -65,7 +64,9 @@
       "agent": [{
         "algorithm": {
           "gamma__uniform": [0.95, 0.99],
-          "entropy_coef_start__uniform": [0.001, 0.1]
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.1],
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -83,16 +84,15 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -101,13 +101,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [],
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -115,18 +115,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -145,7 +146,9 @@
       "agent": [{
         "algorithm": {
           "gamma__uniform": [0.95, 0.99],
-          "entropy_coef_start__uniform": [0.001, 0.1]
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.1],
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -163,20 +166,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.1,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.1,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -191,8 +193,7 @@
         "shared": true,
         "hid_layers": [32],
         "hid_layers_activation": "tanh",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -202,18 +203,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -231,7 +233,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.001, 0.1],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.1],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -250,20 +254,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 25,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 2500,
+          "end_step": 10000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -278,8 +281,7 @@
         "shared": false,
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -289,18 +291,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -318,7 +321,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.001, 0.1],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.1],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -340,20 +345,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -368,8 +372,7 @@
         "shared": false,
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -379,18 +382,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -408,7 +412,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.001, 0.1],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.1],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -430,20 +436,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -456,13 +461,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [],
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -472,18 +477,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -501,7 +507,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.001, 0.1],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.1],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -523,20 +531,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -551,8 +558,7 @@
         "shared": true,
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -562,18 +568,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -592,7 +599,9 @@
       "agent": [{
         "algorithm": {
           "num_step_returns__choice": [1, 2, 4, 8],
-          "entropy_coef_start__uniform": [0.001, 0.1],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.1],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -611,20 +620,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -639,8 +647,7 @@
         "shared": false,
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -650,18 +657,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -680,7 +688,9 @@
       "agent": [{
         "algorithm": {
           "num_step_returns__choice": [1, 2, 4, 8],
-          "entropy_coef_start__uniform": [0.001, 0.1],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.1],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -702,20 +712,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
         "use_nstep": true,
         "num_step_returns": 8,
-        "add_entropy": true,
-        "entropy_coef_start": 0.07,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -730,8 +739,7 @@
         "shared": false,
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -741,18 +749,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -791,20 +800,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": false,
         "lam": 1.0,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -817,13 +825,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [],
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -833,18 +841,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -863,7 +872,9 @@
       "agent": [{
         "algorithm": {
           "num_step_returns__choice": [1, 2, 4, 8],
-          "entropy_coef_start__uniform": [0.001, 0.1],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.1],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -885,17 +896,23 @@
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 0.97,
-        "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.0001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 25,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.0001,
+          "start_step": 2500,
+          "end_step": 10000,
+        },
         "val_loss_coef": 0.1,
         "training_frequency": 8,
         "training_epoch": 8,
@@ -909,7 +926,6 @@
         "shared": false,
         "hid_layers": [64],
         "hid_layers_activation": "tanh",
-        "clip_grad": true,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -920,18 +936,19 @@
           "name": "Adam",
           "lr": 0.05
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 400,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 20000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -973,17 +990,23 @@
         "name": "PPOSIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 1.0,
-        "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
@@ -1004,8 +1027,7 @@
         "shared": false,
         "hid_layers": [64],
         "hid_layers_activation": "tanh",
-        "clip_grad": true,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1015,18 +1037,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 400,
-        "lr_decay_min_timestep": 1400,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -1068,20 +1091,19 @@
         "name": "SIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": true,
         "lam": 1.0,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
@@ -1103,8 +1125,7 @@
         "shared": false,
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1114,18 +1135,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -1143,7 +1165,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.001, 0.1],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.1],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -1167,10 +1191,13 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_frequency": 20,
         "normalize_state": true
@@ -1182,8 +1209,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -1191,18 +1217,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -1220,7 +1247,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100]
+          "explore_var_spec": {
+            "end_step__choice": [1000, 5000, 10000],
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -1238,10 +1267,13 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_frequency": 20,
         "normalize_state": true
@@ -1251,13 +1283,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [],
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -1265,18 +1297,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -1294,7 +1327,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100]
+          "explore_var_spec": {
+            "end_step__choice": [1000, 5000, 10000],
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -1313,15 +1348,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 50,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -1334,8 +1372,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -1343,10 +1380,11 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 600,
-        "lr_decay_min_timestep": 1400,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1355,9 +1393,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -1375,7 +1413,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100]
+          "explore_var_spec": {
+            "end_step__choice": [1000, 5000, 10000],
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -1393,15 +1433,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -1414,8 +1457,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -1423,10 +1465,11 @@
           "name": "Adam",
           "lr": 0.001
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1435,9 +1478,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -1455,7 +1498,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100],
+          "explore_var_spec": {
+            "end_step__choice": [1000, 5000, 10000],
+          },
           "lr_decay_frequency__choice": [400, 600, 800]
         },
         "net": {
@@ -1474,15 +1519,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -1495,8 +1543,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -1504,10 +1551,11 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 600,
-        "lr_decay_min_timestep": 1400,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1516,9 +1564,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -1536,7 +1584,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100],
+          "explore_var_spec": {
+            "end_step__choice": [1000, 5000, 10000],
+          },
           "lr_decay_frequency__choice": [400, 600, 800]
         },
         "net": {
@@ -1555,15 +1605,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -1574,13 +1627,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [],
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -1588,10 +1641,11 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1600,9 +1654,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -1620,7 +1674,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100]
+          "explore_var_spec": {
+            "end_step__choice": [1000, 5000, 10000],
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -1639,15 +1695,18 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -1660,8 +1719,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -1669,10 +1727,11 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 600,
-        "lr_decay_min_timestep": 1400,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1681,9 +1740,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -1701,7 +1760,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100],
+          "explore_var_spec": {
+            "end_step__choice": [1000, 5000, 10000],
+          },
           "lr_decay_frequency__choice": [400, 600, 800]
         },
         "net": {
@@ -1720,15 +1781,18 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -1739,13 +1803,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [],
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -1753,10 +1817,11 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1765,9 +1830,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -1785,7 +1850,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100]
+          "explore_var_spec": {
+            "end_step__choice": [1000, 5000, 10000],
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -1804,15 +1871,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
         "gamma": 0.99,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -1825,8 +1895,7 @@
         "type": "DuelingMLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -1834,10 +1903,11 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 600,
-        "lr_decay_min_timestep": 1400,
-        "lr_anneal_timestep": 10000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 1,
         "polyak_coef": 0,
@@ -1846,9 +1916,9 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -1866,7 +1936,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [10, 50, 100],
+          "explore_var_spec": {
+            "end_step__choice": [1000, 5000, 10000],
+          },
           "lr_decay_frequency__choice": [400, 600, 800]
         },
         "net": {

@@ -10,7 +10,7 @@
     "debug3": "LOG_LEVEL=DEBUG3 python3 run_lab.py",
     "analyze": "python3 -c 'import sys; from slm_lab.experiment import analysis; analysis.retro_analyze(sys.argv[1])'",
     "reset": "rm -rf data/* .cache __pycache__ */__pycache__ *egg-info .pytest* htmlcov .coverage* *.xml",
-    "kill": "pkill -f run_lab; pkill -f graph; pkill -f slm-env; pkill -f ipykernel; pkill -f ray;",
+    "kill": "pkill -f run_lab; pkill -f slm-env; pkill -f ipykernel; pkill -f ray; pkill -f orca; pkill -f Xvfb",
     "update": "conda env update -f environment.yml; yarn install;",
     "export-env": "conda env export > environment.yml",
     "build": "docker build -t kengz/slm_lab:latest -t kengz/slm_lab:v$v .",

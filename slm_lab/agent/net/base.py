@@ -18,6 +18,7 @@ class Net(ABC):
         self.net_spec = net_spec
         self.in_dim = in_dim
         self.out_dim = out_dim
+        self.grad_norms = None  # for debugging
         if self.net_spec.get('gpu'):
             if torch.cuda.device_count():
                 self.device = f'cuda:{net_spec.get("cuda_id", 0)}'
@@ -25,3 +26,8 @@ class Net(ABC):
                 self.device = 'cpu'
         else:
             self.device = 'cpu'
+
+    def store_grad_norms(self):
+        '''Stores the gradient norms for debugging.'''
+        norms = [param.grad.norm().item() for param in self.parameters()]
+        self.grad_norms = norms

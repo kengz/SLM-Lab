@@ -1,9 +1,13 @@
+from flaky import flaky
+from slm_lab.agent.net import net_util
+from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Trial
 from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 import os
 import pandas as pd
+import pydash as ps
 import pytest
 
 
@@ -15,8 +19,21 @@ def run_trial_test_dist(spec_file, spec_name=False):
     info_space.tick('trial')
     spec['meta']['distributed'] = True
     spec['meta']['max_session'] = 2
+
     trial = Trial(spec, info_space)
-    trial_data = trial.run()
+    # manually run the logic to obtain global nets for testing to ensure global net gets updated
+    global_nets = trial.init_global_nets()
+    # only test first network
+    if ps.is_list(global_nets):  # multiagent only test first
+        net = list(global_nets[0].values())[0]
+    else:
+        net = list(global_nets.values())[0]
+    assert_trained = net_util.gen_assert_trained(net)
+    session_datas = trial.parallelize_sessions(global_nets)
+    assert_trained(net, loss=1.0)
+    trial.session_data_dict = {data.index[0]: data for data in session_datas}
+    trial_data = analysis.analyze_trial(trial)
+    trial.close()
     assert isinstance(trial_data, pd.DataFrame)
 
 
@@ -81,6 +98,7 @@ def test_ppo_cont_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ppo_sil.json', 'ppo_sil_mlp_shared_cartpole'),
     ('ppo_sil.json', 'ppo_sil_mlp_separate_cartpole'),
@@ -91,6 +109,7 @@ def test_ppo_sil_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('ppo_sil.json', 'ppo_sil_mlp_shared_pendulum'),
     ('ppo_sil.json', 'ppo_sil_mlp_separate_pendulum'),
@@ -101,6 +120,7 @@ def test_ppo_sil_cont_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('sil.json', 'sil_mlp_shared_cartpole'),
     ('sil.json', 'sil_mlp_separate_cartpole'),
@@ -113,6 +133,7 @@ def test_sil_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('sil.json', 'sil_mlp_shared_pendulum'),
     ('sil.json', 'sil_mlp_separate_pendulum'),
@@ -172,16 +193,8 @@ def test_dueling_dqn_dist(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('multitask_dqn.json', 'multitask_dqn_boltzmann_cartpole'),
-    ('multitask_dqn.json', 'multitask_dqn_epsilon_greedy_cartpole'),
-])
-def test_multitask_dqn_dist(spec_file, spec_name):
-    run_trial_test_dist(spec_file, spec_name)
-
-
-@pytest.mark.parametrize('spec_file,spec_name', [
     ('hydra_dqn.json', 'hydra_dqn_boltzmann_cartpole'),
     ('hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole'),
 ])
-def test_multitask_dqn_dist(spec_file, spec_name):
+def test_hydra_dqn_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)

@@ -1,8 +1,8 @@
 from slm_lab.agent import net
-from slm_lab.agent.algorithm import math_util, policy_util
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
@@ -29,16 +29,15 @@ class Reinforce(Algorithm):
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": false,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 10
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": true
     }
@@ -51,49 +50,44 @@ class Reinforce(Algorithm):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
-            action_policy_update='no_update',
-            explore_var_start=np.nan,
-            explore_var_end=np.nan,
-            explore_anneal_epi=np.nan,
+            explore_var_spec=None,
+            entropy_coef_spec=None,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
             'action_policy',
             # theoretically, REINFORCE does not have policy update; but in this implementation we have such option
-            'action_policy_update',
-            'explore_var_start',
-            'explore_var_end',
-            'explore_anneal_epi',
+            'explore_var_spec',
             'gamma',  # the discount factor
-            'add_entropy',
-            'entropy_coef_start',
-            'entropy_coef_end',
-            'entropy_anneal_epi',
-            'entropy_anneal_start_epi',
+            'entropy_coef_spec',
             'training_frequency',
             'normalize_state',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        self.body.explore_var = self.explore_var_start
-        self.body.entropy_coef = self.entropy_coef_start
-        if getattr(self, 'entropy_anneal_epi'):
-            self.entropy_decay_fn = policy_util.entropy_linear_decay
+        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.body.explore_var = self.explore_var_scheduler.start_val
+        if self.entropy_coef_spec is not None:
+            self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
+            self.body.entropy_coef = self.entropy_coef_scheduler.start_val
 
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''
         Initialize the neural network used to learn the policy function from the spec
         Below we automatically select an appropriate net for a discrete or continuous action space if the setting is of the form 'MLPNet'. Otherwise the correct type of network is assumed to be specified in the spec.
         Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
         Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
         '''
-        in_dim = self.body.state_dim
-        out_dim = net_util.get_out_dim(self.body)
-        NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
-        self.net_names = ['net']
+        if global_nets is None:
+            in_dim = self.body.state_dim
+            out_dim = net_util.get_out_dim(self.body)
+            NetClass = getattr(net, self.net_spec['type'])
+            self.net = NetClass(self.net_spec, in_dim, out_dim)
+            self.net_names = ['net']
+        else:
+            util.set_attr(self, global_nets)
+            self.net_names = list(global_nets.keys())
         self.post_init_nets()
 
     @lab_api
@@ -138,15 +132,16 @@ class Reinforce(Algorithm):
     def train(self):
         if util.get_lab_mode() == 'enjoy':
             return np.nan
+        clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
             loss = self.calc_policy_loss(batch)
-            self.net.training_step(loss=loss, global_net=self.global_nets.get('net'))
+            self.net.training_step(loss=loss, lr_clock=clock)
             # reset
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
@@ -161,7 +156,7 @@ class Reinforce(Algorithm):
         assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
         log_probs = torch.stack(self.body.log_probs)
         policy_loss = - log_probs * advs
-        if self.add_entropy:
+        if self.entropy_coef_spec is not None:
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.body.entropy_coef * entropies)
             # Store mean entropy for debug logging
@@ -172,14 +167,8 @@ class Reinforce(Algorithm):
 
     @lab_api
     def update(self):
-        for net_name in self.net_names:
-            net = getattr(self, net_name)
-            net.update_lr(self.body.env.clock)
-            self.body.grad_norms.extend(net.grad_norms)
-        # logger.info(f'Body grad_norms: {self.body.grad_norms}')
-        explore_var = self.action_policy_update(self, self.body)
-        if hasattr(self, 'entropy_anneal_epi'):
-            self.body.entropy_coef = self.entropy_decay_fn(self, self.body)
-            if self.body.env.clock.get('t') == 1:
-                logger.debug(f'entropy coefficient decayed to {self.body.entropy_coef}')
-        return explore_var
+        net_util.try_store_grad_norm(self)
+        self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
+        if self.entropy_coef_spec is not None:
+            self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
+        return self.body.explore_var

@@ -6,16 +6,15 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.98,
-        "add_entropy": true,
-        "entropy_coef_start": 0.003,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -26,8 +25,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "tanh",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -35,18 +33,19 @@
           "name": "Adam",
           "lr": 0.004
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 2000,
-        "lr_decay_min_timestep": 5000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 400,
-      "save_epi_frequency": 300
+      "max_t": null,
+      "max_epi": 400,
+      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -79,16 +78,15 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
-        "entropy_coef_start": 0.003,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -97,13 +95,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [],
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -111,18 +109,19 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": null,
-      "max_episode": 500,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 500,
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -155,16 +154,15 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
-        "entropy_coef_start": 0.003,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -175,8 +173,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -184,18 +181,19 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "max_timestep": null,
-      "max_episode": 500,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 500,
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -228,16 +226,15 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
-        "entropy_coef_start": 0.003,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -246,13 +243,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [],
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -260,18 +257,19 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 100000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "max_timestep": null,
-      "max_episode": 500,
-      "save_epi_frequency": 1000
+      "max_t": null,
+      "max_epi": 500,
+      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -304,36 +302,32 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
-        "entropy_coef_start": 0.003,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
       },
       "net": {
         "type": "ConvNet",
-        "hid_layers": [
-          [
-            [3, 16, [5, 5], 2, 0, [1, 1]],
-            [16, 32, [5, 5], 2, 0, [2, 2]],
-            [32, 32, [5, 5], 2, 0, [2, 2]]
-          ],
-          [128, 64]
+        "conv_hid_layers": [
+          [16, 5, 2, 0, 1],
+          [32, 5, 2, 0, 2],
+          [32, 5, 2, 0, 2]
         ],
+        "fc_hid_layers": [128, 64],
         "hid_layers_activation": "relu",
         "batch_norm": false,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
@@ -341,17 +335,18 @@
           "name": "Adam",
           "lr": 0.01
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 600,
-        "lr_anneal_timestep": 1000000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 1000,
+          "gamma": 0.9,
+        },
         "gpu": false
       }
     }],
     "env": [{
       "name": "Breakout-v0",
-      "max_timestep": null,
-      "max_episode": 1
+      "max_t": null,
+      "max_epi": 1
     }],
     "body": {
       "product": "outer",
@@ -370,19 +365,18 @@
       "algorithm": {
         "name": "Reinforce",
         "action_pdtype": "default",
-        "action_policy": "boltzmann",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "action_policy": "default",
+        "explore_var_spec": null,
         "gamma": 0.99,
-        "add_entropy": true,
-        "entropy_coef_start": 0.003,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyAtariReplay",
@@ -390,18 +384,15 @@
       },
       "net": {
         "type": "ConvNet",
-        "hid_layers": [
-          [
-            [1, 16, [5, 5], 2, 0, [1, 1]],
-            [16, 32, [5, 5], 2, 0, [2, 2]],
-            [32, 32, [5, 5], 2, 0, [2, 2]]
-          ],
-          [128, 64]
+        "conv_hid_layers": [
+          [16, 5, 2, 0, 1],
+          [32, 5, 2, 0, 2],
+          [32, 5, 2, 0, 2]
         ],
+        "fc_hid_layers": [128, 64],
         "hid_layers_activation": "relu",
         "batch_norm": false,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
@@ -409,18 +400,19 @@
           "name": "Adam",
           "lr": 0.001
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 1000,
-        "lr_decay_min_timestep": 600,
-        "lr_anneal_timestep": 1000000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 1000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "vizdoom-v0",
       "cfg_name": "basic",
-      "max_timestep": null,
-      "max_episode": 100
+      "max_t": null,
+      "max_epi": 100
     }],
     "body": {
       "product": "outer",

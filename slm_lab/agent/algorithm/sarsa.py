@@ -30,10 +30,13 @@ class SARSA(Algorithm):
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.5,
-        "explore_var_end": 0.3,
-        "explore_anneal_epi": 10,
+        "explore_var_spec": {
+            "name": "linear_decay",
+            "start_val": 1.0,
+            "end_val": 0.1,
+            "start_step": 10,
+            "end_step": 1000,
+        },
         "gamma": 0.99,
         "training_frequency": 10,
         "normalize_state": true
@@ -47,39 +50,37 @@ class SARSA(Algorithm):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
-            action_policy_update='no_update',
-            explore_var_start=np.nan,
-            explore_var_end=np.nan,
-            explore_anneal_epi=np.nan,
+            explore_var_spec=None,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
             'action_policy',
-            'action_policy_update',
             # explore_var is epsilon, tau or etc. depending on the action policy
             # these control the trade off between exploration and exploitaton
-            'explore_var_start',
-            'explore_var_end',
-            'explore_anneal_epi',
+            'explore_var_spec',
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
             'normalize_state',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        self.body.explore_var = self.explore_var_start
+        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.body.explore_var = self.explore_var_scheduler.start_val
 
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''Initialize the neural network used to learn the Q function from the spec'''
         if 'Recurrent' in self.net_spec['type']:
             self.net_spec.update(seq_len=self.net_spec['seq_len'])
-        in_dim = self.body.state_dim
-        out_dim = net_util.get_out_dim(self.body)
-        NetClass = getattr(net, self.net_spec['type'])
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
-        self.net_names = ['net']
+        if global_nets is None:
+            in_dim = self.body.state_dim
+            out_dim = net_util.get_out_dim(self.body)
+            NetClass = getattr(net, self.net_spec['type'])
+            self.net = NetClass(self.net_spec, in_dim, out_dim)
+            self.net_names = ['net']
+        else:
+            util.set_attr(self, global_nets)
+            self.net_names = list(global_nets.keys())
         self.post_init_nets()
 
     @lab_api
@@ -113,29 +114,20 @@ class SARSA(Algorithm):
         else:
             return action.cpu().numpy()
 
-    def calc_q_targets(self, batch):
-        '''Computes the target Q values for a batch of experiences'''
+    def calc_q_loss(self, batch):
+        '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
         q_preds = self.net.wrap_eval(batch['states'])
+        act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         next_q_preds = self.net.wrap_eval(batch['next_states'])
-        action_idxs = batch['next_actions'].long()
-        # Get the q value for the next action that was actually taken
-        batch_size = len(batch['dones'])
-        act_next_q_preds = next_q_preds[range(batch_size), action_idxs]
-        # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
+        act_next_q_preds = q_preds.gather(-1, batch['next_actions'].long().unsqueeze(-1)).squeeze(-1)
         act_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * act_next_q_preds
-        act_q_targets.unsqueeze_(1)
-        # To train only for action taken, set q_target = q_pred for action not taken so that loss is 0
-        q_targets = (act_q_targets * batch['one_hot_actions']) + (q_preds * (1 - batch['one_hot_actions']))
-        logger.debug(f'q_targets: {q_targets}')
-        return q_targets
+        q_loss = self.net.loss_fn(act_q_preds, act_q_targets)
+        return q_loss
 
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
         batch = self.body.memory.sample()
-        # one-hot actions to calc q_targets
-        if self.body.is_discrete:
-            batch['one_hot_actions'] = util.to_one_hot(batch['actions'], self.body.action_space.high)
         # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['dones'])
         batch['next_actions'] = np.zeros_like(batch['actions'])
         batch['next_actions'][:-1] = batch['actions'][1:]
@@ -152,16 +144,16 @@ class SARSA(Algorithm):
         '''
         if util.get_lab_mode() == 'enjoy':
             return np.nan
+        clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
-            with torch.no_grad():
-                q_targets = self.calc_q_targets(batch)
-            loss = self.net.training_step(batch['states'], q_targets, global_net=self.global_nets.get('net'))
+            loss = self.calc_q_loss(batch)
+            self.net.training_step(loss=loss, lr_clock=clock)
             # reset
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
@@ -170,8 +162,6 @@ class SARSA(Algorithm):
     @lab_api
     def update(self):
         '''Update the agent after training'''
-        for net_name in self.net_names:
-            net = getattr(self, net_name)
-            net.update_lr(self.body.env.clock)
-        explore_var = self.action_policy_update(self, self.body)
-        return explore_var
+        net_util.try_store_grad_norm(self)
+        self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
+        return self.body.explore_var

@@ -162,7 +162,11 @@ class AgentSpace:
         self.agents = []
         for a in range(len(self.spec['agent'])):
             body_a = self.aeb_space.body_space.get(a=a)
-            agent = Agent(self.spec, self.info_space, body=body_a, a=a, agent_space=self, global_nets=global_nets)
+            if global_nets is not None:
+                agent_global_nets = global_nets[a]
+            else:
+                agent_global_nets = None
+            agent = Agent(self.spec, self.info_space, body=body_a, a=a, agent_space=self, global_nets=agent_global_nets)
             self.agents.append(agent)
         logger.info(util.self_desc(self))
 

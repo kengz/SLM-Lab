@@ -1,9 +1,9 @@
 from copy import deepcopy
 from slm_lab.agent import net
-from slm_lab.agent.algorithm import math_util, policy_util
+from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
@@ -34,17 +34,23 @@ class PPO(ActorCritic):
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 1.0,
-        "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 100,
-        "entropy_anneal_start_epi": 10
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
         "training_frequency": 1,
         "training_epoch": 8,
         "normalize_state": true
@@ -64,48 +70,41 @@ class PPO(ActorCritic):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
-            action_policy_update='no_update',
-            explore_var_start=np.nan,
-            explore_var_end=np.nan,
-            explore_anneal_epi=np.nan,
+            explore_var_spec=None,
+            entropy_coef_spec=None,
             val_loss_coef=1.0,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
             'action_policy',
             # theoretically, PPO does not have policy update; but in this implementation we have such option
-            'action_policy_update',
-            'explore_var_start',
-            'explore_var_end',
-            'explore_anneal_epi',
+            'explore_var_spec',
             'gamma',
             'lam',
-            'clip_eps',
-            'entropy_coef_start',
-            'entropy_coef_end',
-            'entropy_anneal_epi',
-            'entropy_anneal_start_epi',
+            'clip_eps_spec',
+            'entropy_coef_spec',
             'val_loss_coef',
             'training_frequency',  # horizon
             'training_epoch',
             'normalize_state',
         ])
-        # use the same annealing epi as lr
-        self.clip_eps_anneal_epi = self.net_spec['lr_decay_min_timestep'] + self.net_spec['lr_decay_frequency'] * 20
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.action_policy_update = getattr(policy_util, self.action_policy_update)
-        self.body.explore_var = self.explore_var_start
-        self.body.entropy_coef = self.entropy_coef_start
-        if getattr(self, 'entropy_anneal_epi'):
-            self.entropy_decay_fn = policy_util.entropy_linear_decay
+        self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
+        self.body.explore_var = self.explore_var_scheduler.start_val
+        # extra variable decays for PPO
+        self.clip_eps_scheduler = policy_util.VarScheduler(self.clip_eps_spec)
+        self.body.clip_eps = self.clip_eps_scheduler.start_val
+        if self.entropy_coef_spec is not None:
+            self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
+            self.body.entropy_coef = self.entropy_coef_scheduler.start_val
         # PPO uses GAE
         self.calc_advs_v_targets = self.calc_gae_advs_v_targets
 
     @lab_api
-    def init_nets(self):
+    def init_nets(self, global_nets=None):
         '''PPO uses old and new to calculate ratio for loss'''
-        super(PPO, self).init_nets()
+        super(PPO, self).init_nets(global_nets)
         # create old net to calculate ratio
         self.old_net = deepcopy(self.net)
         assert id(self.old_net) != id(self.net)
@@ -123,8 +122,7 @@ class PPO(ActorCritic):
 
         3. S = E[ entropy ]
         '''
-        # decay clip_eps by episode
-        clip_eps = policy_util._linear_decay(self.clip_eps, 0.1 * self.clip_eps, self.clip_eps_anneal_epi, self.body.env.clock.get('epi'))
+        clip_eps = self.body.clip_eps
 
         # L^CLIP
         log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
@@ -156,6 +154,7 @@ class PPO(ActorCritic):
         '''
         Trains the network when the actor and critic share parameters
         '''
+        clock = self.body.env.clock
         if self.to_train == 1:
             # update old net
             torch.cuda.empty_cache()
@@ -169,14 +168,14 @@ class PPO(ActorCritic):
                 val_loss = self.calc_val_loss(batch, v_targets)  # from critic
                 loss = policy_loss + val_loss
                 # retain for entropies etc.
-                self.net.training_step(loss=loss, retain_graph=True, global_net=self.global_nets.get('net'))
+                self.net.training_step(loss=loss, lr_clock=clock, retain_graph=True)
                 total_loss += loss
             loss = total_loss / self.training_epoch
             # reset
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
@@ -186,6 +185,7 @@ class PPO(ActorCritic):
         '''
         Trains the network when the actor and critic share parameters
         '''
+        clock = self.body.env.clock
         if self.to_train == 1:
             torch.cuda.empty_cache()
             net_util.copy(self.net, self.old_net)
@@ -197,7 +197,7 @@ class PPO(ActorCritic):
             self.to_train = 0
             self.body.entropies = []
             self.body.log_probs = []
-            logger.debug(f'Trained {self.name} at epi: {self.body.env.clock.get("epi")}, total_t: {self.body.env.clock.get("total_t")}, t: {self.body.env.clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
         else:
@@ -211,6 +211,15 @@ class PPO(ActorCritic):
                 advs, _v_targets = self.calc_advs_v_targets(batch)
             policy_loss = self.calc_policy_loss(batch, advs)
             # retain for entropies etc.
-            self.net.training_step(loss=policy_loss, retain_graph=True, global_net=self.global_nets.get('net'))
+            self.net.training_step(loss=policy_loss, lr_clock=self.body.env.clock, retain_graph=True)
         val_loss = total_policy_loss / self.training_epoch
         return policy_loss
+
+    @lab_api
+    def update(self):
+        net_util.try_store_grad_norm(self)
+        self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
+        if self.entropy_coef_spec is not None:
+            self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
+        self.body.clip_eps = self.clip_eps_scheduler.update(self, self.body.env.clock)
+        return self.body.explore_var

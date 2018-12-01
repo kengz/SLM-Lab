@@ -12,8 +12,8 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20,
-      "max_episode": 3,
+      "max_t": 20,
+      "max_epi": 3,
       "unity": {
         "gridSize": 6,
         "numObstacles": 2,
@@ -60,8 +60,8 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }],
     "body": {
       "product": "outer",
@@ -91,8 +91,8 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": 10,
-      "max_episode": 1
+      "max_t": 10,
+      "max_epi": 1
     }],
     "body": {
       "product": "outer",
@@ -119,8 +119,8 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": 10,
-      "max_episode": 1
+      "max_t": 10,
+      "max_epi": 1
     }],
     "body": {
       "product": "outer",
@@ -147,8 +147,8 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": 10,
-      "max_episode": 1
+      "max_t": 10,
+      "max_epi": 1
     }],
     "body": {
       "product": "outer",
@@ -179,8 +179,8 @@
     }],
     "env": [{
       "name": "CartPole-v0",
-      "max_timestep": 10,
-      "max_episode": 1
+      "max_t": 10,
+      "max_epi": 1
     }],
     "body": {
       "product": "outer",
@@ -207,8 +207,8 @@
     }],
     "env": [{
       "name": "3dball",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }],
     "body": {
       "product": "outer",
@@ -243,8 +243,8 @@
     }],
     "env": [{
       "name": "tennis",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }],
     "body": {
       "product": "outer",
@@ -270,12 +270,12 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }, {
       "name": "3dball",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }],
     "body": {
       "product": "outer",
@@ -310,12 +310,12 @@
     }],
     "env": [{
       "name": "tennis",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }, {
       "name": "tennis",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }],
     "body": {
       "product": "outer",
@@ -350,12 +350,12 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }, {
       "name": "3dball",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }],
     "body": {
       "product": "outer",
@@ -390,12 +390,12 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }, {
       "name": "3dball",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }],
     "body": {
       "product": "inner",
@@ -421,12 +421,12 @@
     }],
     "env": [{
       "name": "gridworld",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }, {
       "name": "3dball",
-      "max_timestep": 20,
-      "max_episode": 3
+      "max_t": 20,
+      "max_epi": 3
     }],
     "body": {
       "product": "custom",

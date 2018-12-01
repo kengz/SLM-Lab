@@ -142,23 +142,49 @@ class MaxAndSkipEnv(gym.Wrapper):
         return self.env.reset(**kwargs)
 
 
+class ClippedRewardsWrapper(gym.RewardWrapper):
+    def reward(self, reward):
+        '''Atari reward, to -1, 0 or +1.'''
+        return np.sign(reward)
+
+
+def wrap_atari(env, stack_frames=4, episodic_life=True, reward_clipping=True):
+    '''Apply a common set of wrappers for Atari games.'''
+    assert 'NoFrameskip' in env.spec.id
+    if episodic_life:
+        env = EpisodicLifeEnv(env)
+    env = NoopResetEnv(env, noop_max=30)
+    env = MaxAndSkipEnv(env, skip=4)
+    if 'FIRE' in env.unwrapped.get_action_meanings():
+        env = FireResetEnv(env)
+    if reward_clipping:
+        env = ClippedRewardsWrapper(env)
+    return env
+
+
 class OpenAIEnv(BaseEnv):
-    '''Wrapper for OpenAI Gym env to work with the Lab.'''
+    '''
+    Wrapper for OpenAI Gym env to work with the Lab.
+
+    e.g. env_spec
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_epi": 150,
+      "save_frequency": 50
+    }],
+    '''
 
     def __init__(self, spec, e=None, env_space=None):
         super(OpenAIEnv, self).__init__(spec, e, env_space)
         register_env(spec)  # register any additional environments first
         env = gym.make(self.name)
         # apply the series of hidden env wrappers from OpenAI baselines
-        if spec['env'][0]['name'].endswith('NoFrameskip-v4'):
-            env = NoopResetEnv(env, noop_max=30)
-            env = MaxAndSkipEnv(env, skip=4)
-            env = EpisodicLifeEnv(env)
-            if 'FIRE' in env.unwrapped.get_action_meanings():
-                env = FireResetEnv(env)
+        if 'NoFrameskip' in env.spec.id:
+            env = wrap_atari(env)
         self.u_env = env
         self._set_attr_from_u_env(self.u_env)
-        self.max_timestep = self.max_timestep or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
+        self.max_t = self.max_t or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_epi_steps')
         if env_space is None:  # singleton mode
             pass
         else:
@@ -185,8 +211,8 @@ class OpenAIEnv(BaseEnv):
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
-        if self.max_timestep is not None:
-            done = done or self.clock.get('t') > self.max_timestep
+        if self.max_t is not None:
+            done = done or self.clock.get('t') > self.max_t
         self.done = done
         logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
         return reward, state, done
@@ -229,7 +255,7 @@ class OpenAIEnv(BaseEnv):
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
-        self.done = done = done or self.clock.get('t') > self.max_timestep
+        self.done = done = done or self.clock.get('t') > self.max_t
         reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for ab, body in util.ndenumerate_nonan(self.body_e):
             reward_e[ab] = reward

@@ -38,6 +38,7 @@ class Session:
         # init singleton agent and env
         self.env = make_env(self.spec)
         body = Body(self.env, self.spec['agent'])
+        assert not ps.is_list(global_nets), f'single agent global_nets must be a dict, got {global_nets}'
         self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
 
         enable_aeb_space(self)  # to use lab's data analysis framework
@@ -46,9 +47,15 @@ class Session:
 
     def save_if_ckpt(self, agent, env):
         '''Save for agent, env if episode is at checkpoint'''
-        epi = env.clock.get('epi')
-        save_this_epi = env.done and epi != env.max_episode and epi > 0 and hasattr(env, 'save_epi_frequency') and epi % env.save_epi_frequency == 0
-        if save_this_epi:
+        tick = env.clock.get(env.max_tick_unit)
+        if hasattr(env, 'save_frequency') and 0 < tick < env.max_tick:
+            if env.max_tick_unit == 'epi':
+                to_save = (env.done and tick % env.save_frequency == 0)
+            else:
+                to_save = (tick % env.save_frequency == 0)
+        else:
+            to_save = False
+        if to_save:
             agent.save(ckpt='last')
             analysis.analyze_session(self)
 
@@ -62,8 +69,8 @@ class Session:
             action = self.agent.act(state)
             reward, state, done = self.env.step(action)
             self.agent.update(action, reward, state, done)
+            self.save_if_ckpt(self.agent, self.env)
         self.agent.body.log_summary()
-        self.save_if_ckpt(self.agent, self.env)
 
     def close(self):
         '''
@@ -75,7 +82,7 @@ class Session:
         logger.info('Session done and closed.')
 
     def run(self):
-        while self.env.clock.get('epi') < self.env.max_episode:
+        while self.env.clock.get(self.env.max_tick_unit) < self.env.max_tick:
             self.run_episode()
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
@@ -97,6 +104,7 @@ class SpaceSession(Session):
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.aeb_space.init_body_space()
+        assert not ps.is_dict(global_nets), f'multi agent global_nets must be a list of dicts, got {global_nets}'
         self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
 
         logger.info(util.self_desc(self))

@@ -1,12 +1,10 @@
-from slm_lab.agent.algorithm import math_util
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 import numpy as np
 import pydash as ps
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 logger = logger.get_logger(__name__)
 
@@ -23,7 +21,6 @@ class MLPNet(Net, nn.Module):
         "hid_layers": [32],
         "hid_layers_activation": "relu",
         "init_fn": "xavier_uniform_",
-        "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "MSELoss"
@@ -32,10 +29,11 @@ class MLPNet(Net, nn.Module):
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 1000000,
+        "lr_scheduler_spec": {
+            "name": "StepLR",
+            "step_size": 30,
+            "gamma": 0.1
+        },
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0.9,
@@ -49,14 +47,10 @@ class MLPNet(Net, nn.Module):
         hid_layers: list containing dimensions of the hidden layers
         hid_layers_activation: activation function for the hidden layers
         init_fn: weight initialization function
-        clip_grad: whether to clip the gradient
-        clip_grad_val: the clip value
+        clip_grad_val: clip gradient norm if value is not None
         loss_spec: measure of error between model predictions and correct outputs
         optim_spec: parameters for initializing the optimizer
-        lr_decay: function to decay learning rate
-        lr_decay_frequency: how many total timesteps per decay
-        lr_decay_min_timestep: minimum amount of total timesteps before starting decay
-        lr_anneal_timestep: timestep to anneal lr decay
+        lr_scheduler_spec: Pytorch optim.lr_scheduler
         update_type: method to update network weights: 'replace' or 'polyak'
         update_frequency: how many total timesteps per update
         polyak_coef: ratio of polyak weight update
@@ -67,28 +61,24 @@ class MLPNet(Net, nn.Module):
         # set default
         util.set_attr(self, dict(
             init_fn='xavier_uniform_',
-            clip_grad=False,
-            clip_grad_val=1.0,
+            clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},
-            lr_decay='no_decay',
+            lr_scheduler_spec=None,
             update_type='replace',
             update_frequency=1,
             polyak_coef=0.0,
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
+            'shared',
             'hid_layers',
             'hid_layers_activation',
             'init_fn',
-            'clip_grad',
             'clip_grad_val',
             'loss_spec',
             'optim_spec',
-            'lr_decay',
-            'lr_decay_frequency',
-            'lr_decay_min_timestep',
-            'lr_anneal_timestep',
+            'lr_scheduler_spec',
             'update_type',
             'update_frequency',
             'polyak_coef',
@@ -98,9 +88,10 @@ class MLPNet(Net, nn.Module):
         dims = [self.in_dim] + self.hid_layers
         self.model = net_util.build_sequential(dims, self.hid_layers_activation)
         # add last layer with no activation
+        # tails. avoid list for single-tail for compute speed
         if ps.is_integer(self.out_dim):
-            self.model.add_module(str(len(self.model)), nn.Linear(dims[-1], self.out_dim))
-        else:  # if more than 1 output, add last layer as tails separate from main model
+            self.model_tail = nn.Linear(dims[-1], self.out_dim)
+        else:
             self.model_tails = nn.ModuleList([nn.Linear(dims[-1], out_d) for out_d in self.out_dim])
 
         net_util.init_layers(self, self.init_fn)
@@ -108,54 +99,45 @@ class MLPNet(Net, nn.Module):
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_decay = getattr(net_util, self.lr_decay)
-        # store grad norms for debugging
-        self.grad_norms = []
+        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
 
     def __str__(self):
         return super(MLPNet, self).__str__() + f'\noptim: {self.optim}'
 
     def forward(self, x):
         '''The feedforward step'''
+        x = self.model(x)
         if hasattr(self, 'model_tails'):
-            x = self.model(x)
             outs = []
             for model_tail in self.model_tails:
                 outs.append(model_tail(x))
             return outs
         else:
-            return self.model(x)
+            return self.model_tail(x)
 
-    def training_step(self, x=None, y=None, loss=None, retain_graph=False, global_net=None):
+    def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_clock=None):
         '''
         Takes a single training step: one forward and one backwards pass
         More most RL usage, we have custom, often complicated, loss functions. Compute its value and put it in a pytorch tensor then pass it in as loss
         '''
+        if hasattr(self, 'model_tails') and x is not None:
+            raise ValueError('Loss computation from x,y not supported for multitails')
+        self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
         self.train()
-        self.zero_grad()
         self.optim.zero_grad()
         if loss is None:
             out = self(x)
             loss = self.loss_fn(out, y)
         assert not torch.isnan(loss).any(), loss
         if net_util.to_assert_trained():
-            # to accommodate split model in inherited classes
-            model = getattr(self, 'model', None) or getattr(self, 'model_body')
-            assert_trained = net_util.gen_assert_trained(model)
+            assert_trained = net_util.gen_assert_trained(self)
         loss.backward(retain_graph=retain_graph)
-        if self.clip_grad:
-            logger.debug(f'Clipping gradient: {self.clip_grad_val}')
-            torch.nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
-        if global_net is None:
-            self.optim.step()
-        else:  # distributed training with global net
-            net_util.push_global_grad(self, global_net)
-            self.optim.step()
-            net_util.pull_global_param(self, global_net)
-        self.store_grad_norms()
+        if self.clip_grad_val is not None:
+            nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
+        self.optim.step()
         if net_util.to_assert_trained():
-            model = getattr(self, 'model', None) or getattr(self, 'model_body')
-            assert_trained(model, loss)
+            assert_trained(self, loss)
+            self.store_grad_norms()
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
@@ -167,23 +149,6 @@ class MLPNet(Net, nn.Module):
         self.eval()
         return self(x)
 
-    def update_lr(self, clock):
-        assert 'lr' in self.optim_spec
-        old_lr = self.optim_spec['lr']
-        new_lr = self.lr_decay(self, clock)
-        if new_lr == old_lr:
-            return
-        self.optim_spec['lr'] = new_lr
-        logger.debug(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
-        self.optim = net_util.get_optim(self, self.optim_spec)
-
-    def store_grad_norms(self):
-        '''Stores the gradient norms for debugging.'''
-        norms = []
-        for p_name, param in self.named_parameters():
-            norms.append(param.grad.norm().item())
-        self.grad_norms = norms
-
 
 class HydraMLPNet(Net, nn.Module):
     '''
@@ -192,6 +157,7 @@ class HydraMLPNet(Net, nn.Module):
     e.g. net_spec
     "net": {
         "type": "HydraMLPNet",
+        "shared": true,
         "hid_layers": [
             [[32],[32]], # 2 heads with hidden layers
             [64], # body
@@ -199,7 +165,6 @@ class HydraMLPNet(Net, nn.Module):
         ],
         "hid_layers_activation": "relu",
         "init_fn": "xavier_uniform_",
-        "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "MSELoss"
@@ -208,10 +173,11 @@ class HydraMLPNet(Net, nn.Module):
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 1000000,
+        "lr_scheduler_spec": {
+            "name": "StepLR",
+            "step_size": 30,
+            "gamma": 0.1
+        },
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0.9,
@@ -248,11 +214,10 @@ class HydraMLPNet(Net, nn.Module):
         # set default
         util.set_attr(self, dict(
             init_fn='xavier_uniform_',
-            clip_grad=False,
-            clip_grad_val=1.0,
+            clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},
-            lr_decay='no_decay',
+            lr_scheduler_spec=None,
             update_type='replace',
             update_frequency=1,
             polyak_coef=0.0,
@@ -262,14 +227,10 @@ class HydraMLPNet(Net, nn.Module):
             'hid_layers',
             'hid_layers_activation',
             'init_fn',
-            'clip_grad',
             'clip_grad_val',
             'loss_spec',
             'optim_spec',
-            'lr_decay',
-            'lr_decay_frequency',
-            'lr_decay_min_timestep',
-            'lr_anneal_timestep',
+            'lr_scheduler_spec',
             'update_type',
             'update_frequency',
             'polyak_coef',
@@ -297,9 +258,7 @@ class HydraMLPNet(Net, nn.Module):
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_decay = getattr(net_util, self.lr_decay)
-        # store grad norms for debugging
-        self.grad_norms = []
+        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
 
     def __str__(self):
         return super(HydraMLPNet, self).__str__() + f'\noptim: {self.optim}'
@@ -341,12 +300,12 @@ class HydraMLPNet(Net, nn.Module):
             outs.append(model_tail(body_x))
         return outs
 
-    def training_step(self, xs=None, ys=None, loss=None, retain_graph=False, global_net=None):
+    def training_step(self, xs=None, ys=None, loss=None, retain_graph=False, lr_clock=None):
         '''
         Takes a single training step: one forward and one backwards pass. Both x and y are lists of the same length, one x and y per environment
         '''
+        self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
         self.train()
-        self.zero_grad()
         self.optim.zero_grad()
         if loss is None:
             outs = self(xs)
@@ -357,20 +316,14 @@ class HydraMLPNet(Net, nn.Module):
             loss = total_loss
         assert not torch.isnan(loss).any(), loss
         if net_util.to_assert_trained():
-            assert_trained = net_util.gen_assert_trained(self.model_body)
+            assert_trained = net_util.gen_assert_trained(self)
         loss.backward(retain_graph=retain_graph)
-        if self.clip_grad:
-            logger.debug(f'Clipping gradient: {self.clip_grad_val}')
-            torch.nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
-        if global_net is None:
-            self.optim.step()
-        else:  # distributed training with global net
-            net_util.push_global_grad(self, global_net)
-            self.optim.step()
-            net_util.pull_global_param(self, global_net)
-        self.store_grad_norms()
+        if self.clip_grad_val is not None:
+            nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
+        self.optim.step()
         if net_util.to_assert_trained():
-            assert_trained(self.model_body, loss)
+            assert_trained(self, loss)
+            self.store_grad_norms()
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
@@ -382,23 +335,6 @@ class HydraMLPNet(Net, nn.Module):
         self.eval()
         return self(x)
 
-    def update_lr(self, clock):
-        assert 'lr' in self.optim_spec
-        old_lr = self.optim_spec['lr']
-        new_lr = self.lr_decay(self, clock)
-        if new_lr == old_lr:
-            return
-        self.optim_spec['lr'] = new_lr
-        logger.debug(f'Learning rate decayed from {old_lr:.6f} to {self.optim_spec["lr"]:.6f}')
-        self.optim = net_util.get_optim(self, self.optim_spec)
-
-    def store_grad_norms(self):
-        '''Stores the gradient norms for debugging.'''
-        norms = []
-        for p_name, param in self.named_parameters():
-            norms.append(param.grad.norm().item())
-        self.grad_norms = norms
-
 
 class DuelingMLPNet(MLPNet):
     '''
@@ -408,10 +344,10 @@ class DuelingMLPNet(MLPNet):
     e.g. net_spec
     "net": {
         "type": "DuelingMLPNet",
+        "shared": true,
         "hid_layers": [32],
         "hid_layers_activation": "relu",
         "init_fn": "xavier_uniform_",
-        "clip_grad": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "MSELoss"
@@ -420,10 +356,11 @@ class DuelingMLPNet(MLPNet):
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "rate_decay",
-        "lr_decay_frequency": 500,
-        "lr_decay_min_timestep": 1000,
-        "lr_anneal_timestep": 1000000,
+        "lr_scheduler_spec": {
+            "name": "StepLR",
+            "step_size": 30,
+            "gamma": 0.1
+        },
         "update_type": "replace",
         "update_frequency": 1,
         "polyak_coef": 0.9,
@@ -437,28 +374,24 @@ class DuelingMLPNet(MLPNet):
         # set default
         util.set_attr(self, dict(
             init_fn='xavier_uniform_',
-            clip_grad=False,
-            clip_grad_val=1.0,
+            clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},
-            lr_decay='no_decay',
+            lr_scheduler_spec=None,
             update_type='replace',
             update_frequency=1,
             polyak_coef=0.0,
             gpu=False,
         ))
         util.set_attr(self, self.net_spec, [
+            'shared',
             'hid_layers',
             'hid_layers_activation',
             'init_fn',
-            'clip_grad',
             'clip_grad_val',
             'loss_spec',
             'optim_spec',
-            'lr_decay',
-            'lr_decay_frequency',
-            'lr_decay_min_timestep',
-            'lr_anneal_timestep',
+            'lr_scheduler_spec',
             'update_type',
             'update_frequency',
             'polyak_coef',
@@ -477,9 +410,7 @@ class DuelingMLPNet(MLPNet):
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_decay = getattr(net_util, self.lr_decay)
-        # store grad norms for debugging
-        self.grad_norms = []
+        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
 
     def forward(self, x):
         '''The feedforward step'''

@@ -6,16 +6,15 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -26,8 +25,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "selu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -35,18 +33,19 @@
           "name": "Adam",
           "lr": 0.0005
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -64,7 +63,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0]
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -82,16 +83,15 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "training_frequency": 1,
         "normalize_state": true
       },
@@ -100,13 +100,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -114,18 +114,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -143,7 +144,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0]
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -162,20 +165,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "use_gae": true,
         "lam": 0.92,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -190,8 +192,7 @@
         "shared": true,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -201,18 +202,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -231,7 +233,9 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "entropy_coef_start__uniform": [0.001, 0.1],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "lam__uniform": [0.9, 1.0]
         },
@@ -252,20 +256,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "use_gae": true,
         "lam": 0.921,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.03,
-        "entropy_coef_end": 0.0001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.0001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 3,
@@ -280,8 +283,7 @@
         "shared": false,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -291,18 +293,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -321,7 +324,9 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [2, 3, 4],
-          "entropy_coef_start__uniform": [0.001, 0.05],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.05],
+          },
           "entropy_anneal_start_epi__choice": [300, 400, 500, 600],
           "entropy_anneal_epi__choice": [200, 300, 400, 500, 600],
         },
@@ -340,20 +345,19 @@
         "name": "SIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": true,
         "lam": 0.97,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -372,8 +376,7 @@
         "shared": false,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -383,18 +386,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -440,20 +444,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "use_gae": true,
         "lam": 0.92,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -466,13 +469,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": true,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -482,18 +485,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -511,7 +515,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "lam__uniform": [0.9, 1.0]
         },
@@ -532,20 +538,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "use_gae": true,
         "lam": 0.92,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.03,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 3,
@@ -558,13 +563,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [400, 200],
+        "cell_type": "GRU",
+        "fc_hid_layers": [400, 200],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -574,18 +579,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -629,20 +635,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "use_gae": false,
         "lam": 0.92,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -657,8 +662,7 @@
         "shared": true,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -668,18 +672,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -699,7 +704,9 @@
         "algorithm": {
           "training_frequency__choice": [2, 3, 4],
           "training_batch_epoch_choice": [4, 6, 8, 10],
-          "entropy_coef_start__uniform": [0.001, 0.05],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.001, 0.05],
+          },
           "num_step_returns__choice": [1, 2, 3, 4, 5, 10],
         },
         "net": {
@@ -719,20 +726,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "use_gae": false,
         "lam": 0.92,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -747,8 +753,7 @@
         "shared": false,
         "hid_layers": [400, 200],
         "hid_layers_activation": "tanh",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -758,18 +763,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -812,20 +818,19 @@
         "name": "SIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.99,
         "use_gae": false,
         "lam": 0.97,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 50,
-        "entropy_anneal_start_epi": 10,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
@@ -844,8 +849,7 @@
         "shared": false,
         "hid_layers": [400, 200],
         "hid_layers_activation": "tanh",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -855,18 +859,19 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 80000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200
     }],
     "body": {
       "product": "outer",
@@ -912,20 +917,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "use_gae": false,
         "lam": 0.92,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -938,13 +942,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": true,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -954,18 +958,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -984,7 +989,9 @@
       "agent": [{
         "algorithm": {
           "num_step_returns__choice": [1, 4, 8],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -1004,20 +1011,19 @@
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "use_gae": false,
         "lam": 0.92,
         "use_nstep": true,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
@@ -1030,13 +1036,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [400, 200],
+        "cell_type": "GRU",
+        "fc_hid_layers": [400, 200],
         "hid_layers_activation": "tanh",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1046,18 +1052,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -1100,17 +1107,23 @@
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "lam": 0.92,
-        "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_epoch": 8,
@@ -1124,8 +1137,7 @@
         "shared": true,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1135,18 +1147,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -1165,7 +1178,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -1184,17 +1199,23 @@
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "lam": 0.92,
-        "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_epoch": 8,
@@ -1208,8 +1229,7 @@
         "shared": false,
         "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1219,18 +1239,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -1249,7 +1270,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -1271,17 +1294,23 @@
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "lam": 0.92,
-        "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_epoch": 8,
@@ -1293,13 +1322,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": true,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1309,18 +1338,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -1339,7 +1369,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -1359,17 +1391,23 @@
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "lam": 0.92,
-        "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "training_frequency": 1,
         "training_epoch": 8,
@@ -1381,13 +1419,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1397,18 +1435,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -1427,7 +1466,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0]
         },
         "net": {
@@ -1450,20 +1491,19 @@
         "name": "SIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "use_gae": true,
         "lam": 0.92,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
@@ -1485,8 +1525,7 @@
         "shared": true,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1496,18 +1535,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -1525,7 +1565,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -1546,20 +1588,19 @@
         "name": "SIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "use_gae": true,
         "lam": 0.92,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
@@ -1581,8 +1622,7 @@
         "shared": false,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1592,18 +1632,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -1621,7 +1662,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -1645,20 +1688,19 @@
         "name": "SIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "use_gae": true,
         "lam": 0.92,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
@@ -1678,13 +1720,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": true,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1694,18 +1736,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -1723,7 +1766,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -1745,20 +1790,19 @@
         "name": "SIL",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "use_gae": true,
         "lam": 0.92,
         "use_nstep": false,
         "num_step_returns": 1,
-        "add_entropy": true,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
@@ -1778,13 +1822,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1794,18 +1838,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -1823,7 +1868,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -1848,17 +1895,23 @@
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "lam": 0.92,
-        "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
@@ -1875,8 +1928,7 @@
         "shared": true,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1886,18 +1938,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -1916,7 +1969,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -1937,17 +1992,23 @@
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "lam": 0.92,
-        "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
@@ -1964,8 +2025,7 @@
         "shared": false,
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -1975,18 +2035,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2005,7 +2066,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -2029,17 +2092,23 @@
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "lam": 0.92,
-        "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
@@ -2058,13 +2127,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": true,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -2074,18 +2143,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2104,7 +2174,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -2126,17 +2198,23 @@
         "name": "PPO",
         "action_pdtype": "default",
         "action_policy": "default",
-        "action_policy_update": "no_update",
-        "explore_var_start": null,
-        "explore_var_end": null,
-        "explore_anneal_epi": null,
+        "explore_var_spec": null,
         "gamma": 0.993,
         "lam": 0.92,
-        "clip_eps": 0.10,
-        "entropy_coef_start": 0.01,
-        "entropy_coef_end": 0.001,
-        "entropy_anneal_epi": 300,
-        "entropy_anneal_start_epi": 400,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 30000,
+          "end_step": 40000,
+        },
         "val_loss_coef": 0.1,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
@@ -2155,13 +2233,13 @@
       "net": {
         "type": "RecurrentNet",
         "shared": false,
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "use_same_optim": true,
         "actor_optim_spec": {
           "name": "Adam",
@@ -2171,18 +2249,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2201,7 +2280,9 @@
       "agent": [{
         "algorithm": {
           "clip_eps__uniform": [0.1, 1.0],
-          "entropy_coef_start__uniform": [0.01, 1.0],
+          "entropy_coef_spec": {
+            "start_val__uniform": [0.01, 1.0],
+          },
           "val_loss_coef__uniform": [0.01, 1.0],
           "sil_policy_loss_coef__uniform": [0.01, 1.0],
           "sil_val_loss_coef__uniform": [0.01, 1.0]
@@ -2226,10 +2307,13 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_frequency": 20,
         "normalize_state": true
@@ -2241,8 +2325,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2250,18 +2333,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2279,7 +2363,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -2297,10 +2383,13 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_frequency": 20,
         "normalize_state": true
@@ -2312,8 +2401,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2321,18 +2409,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2350,7 +2439,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -2368,10 +2459,13 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_frequency": 20,
         "normalize_state": true
@@ -2381,13 +2475,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2395,18 +2489,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2424,7 +2519,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -2443,10 +2540,13 @@
         "name": "SARSA",
         "action_pdtype": "default",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_frequency": 20,
         "normalize_state": true
@@ -2456,13 +2556,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2470,18 +2570,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2499,7 +2600,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -2518,15 +2621,18 @@
         "name": "VanillaDQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -2539,8 +2645,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2548,18 +2653,19 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "gpu": true
       }
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2577,7 +2683,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "hid_layers_activation__choice": ["tanh", "relu", "selu"],
@@ -2595,15 +2703,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -2616,8 +2727,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2625,10 +2735,11 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -2637,9 +2748,9 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2657,7 +2768,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -2676,15 +2789,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -2697,8 +2813,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2706,10 +2821,11 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -2718,9 +2834,9 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2738,7 +2854,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -2757,15 +2875,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -2776,13 +2897,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2790,10 +2911,11 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -2802,9 +2924,9 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2822,7 +2944,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -2842,15 +2966,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -2861,13 +2988,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2875,10 +3002,11 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -2887,9 +3015,9 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2907,7 +3035,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -2927,15 +3057,18 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -2948,8 +3081,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -2957,10 +3089,11 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -2969,9 +3102,9 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -2989,7 +3122,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -3008,15 +3143,18 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -3029,8 +3167,7 @@
         "type": "MLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -3038,10 +3175,11 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -3050,9 +3188,9 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -3070,7 +3208,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -3089,15 +3229,18 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -3108,13 +3251,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -3122,10 +3265,11 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -3134,9 +3278,9 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -3154,7 +3298,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -3174,15 +3320,18 @@
         "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -3193,13 +3342,13 @@
       },
       "net": {
         "type": "RecurrentNet",
-        "hid_layers": [256, 128],
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 64,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -3207,10 +3356,11 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -3219,9 +3369,9 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -3239,7 +3389,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -3259,15 +3411,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "boltzmann",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 3.0,
-        "explore_var_end": 1.0,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -3280,8 +3435,7 @@
         "type": "DuelingMLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -3289,10 +3443,11 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -3301,9 +3456,9 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -3321,7 +3476,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
@@ -3340,15 +3497,18 @@
         "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
-        "action_policy_update": "linear_decay",
-        "explore_var_start": 1.0,
-        "explore_var_end": 0.1,
-        "explore_anneal_epi": 20,
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 10000,
+        },
         "gamma": 0.993,
         "training_batch_epoch": 10,
         "training_epoch": 4,
         "training_frequency": 8,
-        "training_min_timestep": 32,
+        "training_start_step": 32,
         "normalize_state": true
       },
       "memory": {
@@ -3361,8 +3521,7 @@
         "type": "DuelingMLPNet",
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
-        "clip_grad": false,
-        "clip_grad_val": 1.0,
+        "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -3370,10 +3529,11 @@
           "name": "Adam",
           "lr": 0.008,
         },
-        "lr_decay": "linear_decay",
-        "lr_decay_frequency": 40000,
-        "lr_decay_min_timestep": 40000,
-        "lr_anneal_timestep": 400000,
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 80000,
+          "gamma": 0.9,
+        },
         "update_type": "polyak",
         "update_frequency": 200,
         "polyak_coef": 0,
@@ -3382,9 +3542,9 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
-      "max_timestep": null,
-      "max_episode": 1200,
-      "save_epi_frequency": 1200,
+      "max_t": null,
+      "max_epi": 1200,
+      "save_frequency": 1200,
     }],
     "body": {
       "product": "outer",
@@ -3402,7 +3562,9 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_anneal_epi__choice": [50, 100, 150, 200]
+          "explore_var_spec": {
+            "end_step__choice": [5000, 10000, 15000, 20000]
+          }
         },
         "net": {
           "update_frequency__choice": [200, 1000, 2000],
