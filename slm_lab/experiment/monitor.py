@@ -165,9 +165,13 @@ class Body:
             return np.nan
         lrs = []
         for net_name in self.agent.algorithm.net_names:
-            net = getattr(self.agent.algorithm, net_name)
-            lr = net.optim_spec['lr']
-            lrs.append(lr)
+            if net_name is not 'target_net':
+                net = getattr(self.agent.algorithm, net_name)
+                if net.lr_scheduler.__class__.__name__ == 'NoOpLRScheduler':
+                    lr = net.optim_spec['lr']
+                else:
+                    lr = net.lr_scheduler.get_lr()
+                lrs.append(lr)
         return np.mean(lrs)
 
     def get_log_prefix(self):
