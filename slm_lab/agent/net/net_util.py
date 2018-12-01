@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 
 
+FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
 NN_LOWCASE_LOOKUP = {nn_name.lower(): nn_name for nn_name in nn.__dict__}
 logger = logger.get_logger(__name__)
 
@@ -149,20 +150,91 @@ def save(net, model_path):
     logger.info(f'Saved model to {model_path}')
 
 
+def get_reward_ma(agent, type='current_reward_ma'):
+    '''Return a list of the reward_ma types for all of an agent's
+    bodies.'''
+    if hasattr(agent, 'nanflat_body_a'):
+        reward_ma = []
+        for body in agent.nanflat_body_a:
+            reward_ma.append(getattr(body, type))
+        return reward_ma
+    else:
+        return [getattr(agent.body, type)]
+
+
+def update_saved_best_reward_ma(agent):
+    if hasattr(agent, 'nanflat_body_a'):
+        for body in agent.nanflat_body_a:
+            body.saved_best_reward_ma = body.current_reward_ma
+    else:
+        agent.body.saved_best_reward_ma = agent.body.current_reward_ma
+
+
+def get_fitness_std(agent):
+    '''Returns a list of std_epi_reward for each of the environments.'''
+    if hasattr(agent, 'nanflat_body_a'):
+        solved_scores = []
+        for body in agent.nanflat_body_a:
+            env_name = body.env.name
+            std = FITNESS_STD.get(env_name)['std_epi_reward']
+            solved_scores.append(std)
+    else:
+        env_name = agent.body.env.name
+        std = FITNESS_STD.get(env_name)['std_epi_reward']
+        return [std]
+
+
+def current_epi_is_new_best(algorithm, update_saved_best=False):
+    '''Returns a tuple of two elements: (current_epi_is_best, is_solved)
+        current_epi_is_best: true if the current episode has a higher
+            reward_ma than the previous saved version.
+        is_solved: true if the agent has solved all of the environments.'''
+    saved_best_reward_ma = get_reward_ma(algorithm.agent, 'saved_best_reward_ma')
+    current_reward_ma = get_reward_ma(algorithm.agent, 'current_reward_ma')
+    solved_scores = get_fitness_std(algorithm.agent)
+    print(f'saved best reward ma: {saved_best_reward_ma}')
+    print(f'current reward ma: {current_reward_ma}')
+    print(f'solved_scores: {solved_scores}')
+
+    is_solved = False
+    new_best = False
+    if all([x >= y for x, y in zip(current_reward_ma, solved_scores)]):
+        is_solved = True
+    if all([x >= y for x, y in zip(current_reward_ma, saved_best_reward_ma)]):
+        new_best = True
+
+    if update_saved_best and new_best:
+        update_saved_best_reward_ma(algorithm.agent)
+
+    return new_best, is_solved
+
+
+def is_solved(algorithm):
+    return current_epi_is_new_best(algorithm)[1]
+
+
 def save_algorithm(algorithm, ckpt=None):
     '''Save all the nets for an algorithm'''
     agent = algorithm.agent
     net_names = algorithm.net_names
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+    new_best = current_epi_is_new_best(algorithm, update_saved_best=True)[0]
     if ckpt is not None:
         prepath = f'{prepath}_ckpt{ckpt}'
     logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
+    if new_best:
+        logger.info(f'New best reward_ma. Saving algorithm {util.get_class_name(algorithm)} nets {net_names} to *_best.pth')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_{net_name}_model.pth'
         save(net, model_path)
         optim_path = f'{prepath}_{net_name}_optim.pth'
         save(net.optim, optim_path)
+        if new_best:
+            model_path = f'{prepath}_{net_name}_model_best.pth'
+            save(net, model_path)
+            optim_path = f'{prepath}_{net_name}_optim_best.pth'
+            save(net.optim, optim_path)
 
     if ckpt != 'last':  # remove checkpoint files at the end
         ckpt_path = f'{prepath}_ckptlast*.pth'

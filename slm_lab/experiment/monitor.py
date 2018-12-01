@@ -23,6 +23,7 @@ from gym import spaces
 from slm_lab.agent import AGENT_DATA_NAMES
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.env import ENV_DATA_NAMES
+from slm_lab.experiment.analysis import MA_WINDOW
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 from statistics import mean
@@ -111,6 +112,11 @@ class Body:
         self.state_std_dev = np.nan
         self.state_n = 0
 
+        # store current and saved best reward_ma for model checkpointing
+        # and early termination if all the environments are solved
+        self.saved_best_reward_ma = -np.inf
+        self.current_reward_ma = np.nan
+
         if aeb_space is None:  # singleton mode
             # the specific agent-env interface variables for a body
             self.observation_space = self.env.observation_space
@@ -154,6 +160,9 @@ class Body:
         })
         # append efficiently to df
         self.df.loc[len(self.df)] = pd.Series(row, dtype=np.float32)
+        # update current reward_ma
+        rewards = self.df['reward']
+        self.current_reward_ma = rewards.rolling(window=MA_WINDOW, min_periods=0, center=False).mean()[len(self.df) - 1]
         return row
 
     def __str__(self):
