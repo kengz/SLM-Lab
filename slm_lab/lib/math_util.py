@@ -113,8 +113,25 @@ def standardize(v):
     v = (v - v.mean()) / v_std
     return v
 
-# generic variable decay methods
 
+def get_backstack(dones, states, stack_len, i):
+    '''Function to help get a stack of current and preceeding frames'''
+    head_i = i - stack_len + 1
+    sub_idxs = np.arange(head_i, head_i + stack_len)
+    sub_idxs[sub_idxs < 0] = 0
+    stack_states = states[sub_idxs]
+    stack_dones = dones[sub_idxs[:-1]]
+    done_idxs = np.argwhere(stack_dones == 1).flatten()
+    prev_done_idx = np.nan if done_idxs.size == 0 else done_idxs[-1]
+    # handle at done-boundary, fill with last valid frames at done idx and before, only if done is not at last
+    if not np.isnan(prev_done_idx):
+        filler = stack_states[prev_done_idx + 1]
+        for idx in range(prev_done_idx + 1):
+            stack_states[idx] = filler
+    return stack_states
+
+
+# generic variable decay methods
 
 def no_decay(start_val, end_val, start_step, end_step, step):
     '''dummy method for API consistency'''
