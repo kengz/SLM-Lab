@@ -52,7 +52,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 200000,
+      "max_total_t": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -151,7 +151,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 200000,
+      "max_total_t": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -250,7 +250,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 200000,
+      "max_total_t": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -349,7 +349,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 200000,
+      "max_total_t": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -448,7 +448,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 200000,
+      "max_total_t": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -547,7 +547,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 200000,
+      "max_total_t": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -646,7 +646,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 200000,
+      "max_total_t": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -745,7 +745,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 200000,
+      "max_total_t": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -847,7 +847,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 200000,
+      "max_total_t": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -943,7 +943,7 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 200000,
+      "max_total_t": 250000,
       "save_frequency": 10000,
     }],
     "body": {
