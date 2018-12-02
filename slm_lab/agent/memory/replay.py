@@ -375,7 +375,7 @@ class OptAtariReplay(Replay):
         if to_replace:
             # create stack_latest_next_state for replacement
             stack_latest_state = self.get_stack_state(self.true_size - 1)
-            stack_latest_next_state = np.concatenate([stack_latest_state[1:], self.latest_next_state])
+            stack_latest_next_state = np.concatenate([stack_latest_state[:-1], self.latest_next_state])
             next_states[latest_ns_locs] = stack_latest_next_state
         return next_states
 
