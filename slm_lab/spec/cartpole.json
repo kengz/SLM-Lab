@@ -1366,7 +1366,8 @@
         "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
-        "use_cer": false
+        "use_cer": false,
+        "concat_len": 4,
       },
       "net": {
         "type": "MLPNet",
