@@ -84,6 +84,8 @@ class Session:
     def run(self):
         while self.env.clock.get(self.env.max_tick_unit) < self.env.max_tick:
             self.run_episode()
+            if analysis.is_solved(self.agent.algorithm):
+                break
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
         return self.data
