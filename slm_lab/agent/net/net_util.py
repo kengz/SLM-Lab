@@ -151,18 +151,27 @@ def save(net, model_path):
 
 def save_algorithm(algorithm, ckpt=None):
     '''Save all the nets for an algorithm'''
+    from slm_lab.experiment import analysis
     agent = algorithm.agent
     net_names = algorithm.net_names
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+    new_best = analysis.current_epi_is_new_best(algorithm, update_saved_best=True)[0]
     if ckpt is not None:
         prepath = f'{prepath}_ckpt{ckpt}'
     logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
+    if new_best:
+        logger.info(f'New best reward_ma. Saving algorithm {util.get_class_name(algorithm)} nets {net_names} to *_best.pth')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_{net_name}_model.pth'
         save(net, model_path)
         optim_path = f'{prepath}_{net_name}_optim.pth'
         save(net.optim, optim_path)
+        if new_best:
+            model_path = f'{prepath}_{net_name}_model_best.pth'
+            save(net, model_path)
+            optim_path = f'{prepath}_{net_name}_optim_best.pth'
+            save(net.optim, optim_path)
 
     if ckpt != 'last':  # remove checkpoint files at the end
         ckpt_path = f'{prepath}_ckptlast*.pth'
