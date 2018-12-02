@@ -320,7 +320,7 @@ class VarScheduler:
             'start_step',
             'end_step',
         ])
-        if not 'end_val':
+        if not getattr(self, 'end_val', None):
             self.end_val = self.start_val
 
     def update(self, algorithm, clock):
