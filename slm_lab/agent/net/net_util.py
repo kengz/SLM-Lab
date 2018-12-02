@@ -178,12 +178,18 @@ def get_fitness_std(agent):
         solved_scores = []
         for body in agent.nanflat_body_a:
             env_name = body.env.name
-            std = FITNESS_STD.get(env_name)['std_epi_reward']
+            if FITNESS_STD.get(env_name):
+                std = FITNESS_STD.get(env_name)['std_epi_reward']
+            else:
+                std = None
             solved_scores.append(std)
         return solved_scores
     else:
         env_name = agent.body.env.name
-        std = FITNESS_STD.get(env_name)['std_epi_reward']
+        if FITNESS_STD.get(env_name):
+            std = FITNESS_STD.get(env_name)['std_epi_reward']
+        else:
+            std = None
         return [std]
 
 
@@ -198,8 +204,11 @@ def current_epi_is_new_best(algorithm, update_saved_best=False):
 
     is_solved = False
     new_best = False
-    if all([x >= y for x, y in zip(current_reward_ma, solved_scores)]):
+    if any([x is None for x in solved_scores]):
+        is_solved = False
+    elif all([x >= y for x, y in zip(current_reward_ma, solved_scores)]):
         is_solved = True
+
     if all([x >= y for x, y in zip(current_reward_ma, saved_best_reward_ma)]):
         new_best = True
 
