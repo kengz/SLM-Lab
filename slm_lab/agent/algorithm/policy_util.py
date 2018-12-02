@@ -13,6 +13,7 @@ action, action_pd = sample_action_pd(ActionPD, pdparam, body)
 We can also augment pdparam before sampling - as in the case of Boltzmann sampling,
 or do epsilon-greedy to use pdparam-sampling or random sampling.
 '''
+from slm_lab.env.wrapper import LazyFrames
 from slm_lab.lib import logger, math_util, util
 from torch import distributions
 import numpy as np
@@ -107,9 +108,10 @@ setattr(distributions, 'MultiCategorical', MultiCategorical)
 
 # base methods
 
-
 def try_preprocess(state, algorithm, body, append=True):
     '''Try calling preprocess as implemented in body's memory to use for net input'''
+    if isinstance(state, LazyFrames):
+        state = state.__array__()  # from global env preprocessor
     if hasattr(body.memory, 'preprocess_state'):
         state = body.memory.preprocess_state(state, append=append)
     # as float, and always as minibatch for net input

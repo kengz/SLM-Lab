@@ -123,7 +123,7 @@ class Replay(Memory):
             if k == 'next_states':
                 batch[k] = self._sample_next_states(self.batch_idxs)
             else:
-                batch[k] = getattr(self, k)[self.batch_idxs]
+                batch[k] = util.cond_multiget(getattr(self, k), self.batch_idxs)
         return batch
 
     def _sample_next_states(self, batch_idxs):
@@ -137,7 +137,7 @@ class Replay(Memory):
         # then sample safely from self.states, and replace at locs with latest_next_state
         if to_replace:
             ns_batch_idxs[latest_ns_locs] = 0
-        next_states = self.states[ns_batch_idxs]
+        next_states = util.cond_multiget(self.states, ns_batch_idxs)
         if to_replace:
             next_states[latest_ns_locs] = self.latest_next_state
         return next_states
@@ -298,10 +298,9 @@ class AtariReplay(Replay):
             'stack_len',  # number of stack states
             'use_cer',
         ])
-        # state_dim = (4, 84, 84) from env
-        # self.raw_state_dim = body.state_dim
-        # body.state_dim = (self.stack_len,) + self.raw_state_dim
         Replay.__init__(self, memory_spec, body)
+        self.states_shape = self.scalar_shape
+        self.states = [None] * self.max_size
 
 
 class ImageReplay(Replay):

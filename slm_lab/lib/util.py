@@ -5,6 +5,7 @@ import cv2
 import json
 import math
 import numpy as np
+import operator
 import os
 import pandas as pd
 import pydash as ps
@@ -84,6 +85,14 @@ def concat_batches(batches):
             datas.append(data)
         concat_batch[k] = np.concatenate(datas)
     return concat_batch
+
+
+def cond_multiget(arr, idxs):
+    '''Get multi-idxs from an array depending if it's a python list or np.array'''
+    if isinstance(arr, list):
+        return np.array(operator.itemgetter(*idxs)(arr))
+    else:
+        return arr[idxs]
 
 
 def count_nonan(arr):

@@ -207,7 +207,7 @@ class FrameStack(gym.Wrapper):
 
     def _get_ob(self):
         assert len(self.frames) == self.k
-        return LazyFrames(list(self.frames)).__array__()
+        return LazyFrames(list(self.frames))
 
 
 def wrap_atari(env):
