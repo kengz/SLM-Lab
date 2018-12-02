@@ -35,7 +35,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -127,7 +127,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -330,7 +330,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -430,7 +430,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -533,7 +533,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -637,7 +637,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -736,7 +736,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -829,7 +829,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -924,7 +924,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -1023,7 +1023,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -1113,7 +1113,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -1208,7 +1208,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -1307,7 +1307,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -1400,7 +1400,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -1496,7 +1496,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -1593,7 +1593,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -1690,7 +1690,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -1794,7 +1794,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -1896,7 +1896,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -1996,7 +1996,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -2093,7 +2093,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -2201,7 +2201,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
@@ -2307,7 +2307,7 @@
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
-          "step_size": 80000,
+          "milestones": [80000],
           "gamma": 0.9,
         },
         "gpu": true
