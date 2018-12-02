@@ -267,7 +267,7 @@ class ConcatReplay(Replay):
         # reappend buffer with custom shape
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(state)
+            self.state_buffer.append(np.zeros(self.raw_state_dim))
 
     def preprocess_state(self, state, append=True):
         '''Transforms the raw state into format that is fed into the network'''
