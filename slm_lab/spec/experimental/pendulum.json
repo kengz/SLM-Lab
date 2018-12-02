@@ -124,6 +124,7 @@
       },
       "net": {
         "type": "RecurrentNet",
+        "shared": false,
         "cell_type": "GRU",
         "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
@@ -316,6 +317,7 @@
       },
       "net": {
         "type": "RecurrentNet",
+        "shared": false,
         "cell_type": "GRU",
         "fc_hid_layers": [256, 128],
         "hid_layers_activation": "relu",
