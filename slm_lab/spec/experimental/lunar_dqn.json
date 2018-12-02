@@ -24,7 +24,7 @@
         "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": true,
+        "use_cer": false,
         "concat_len": 4
       },
       "net": {
@@ -37,7 +37,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.008,
+          "lr": 0.002,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -52,8 +52,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_epi": 1200,
-      "save_frequency": 1200,
+      "max_total_t": 250000,
+      "save_frequency": 10000,
     }],
     "body": {
       "product": "outer",
@@ -61,7 +61,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 4,
+      "graph_x": "total_t",
+      "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -72,26 +73,26 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
+          "training_batch_epoch__choice": [1, 2, 3],
           "explore_var_spec": {
-            "end_step__choice": [10000, 15000, 20000, 25000]
+            "end_step__choice": [8000, 10000, 12000, 14000]
           },
-          "gamma__choice": [0.99, 0.993, 0.995],
         },
         "memory": {
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch__choice": [1, 2, 3, 4],
-          "training_epoch__choice": [1, 2, 3, 4],
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
-          "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          },
           "lr_scheduler_spec": {
             "milestones__choice": [
-              [50000],[60000],[70000],[80000],[90000],
-              [50000, 70000],[60000, 80000],[70000, 90000],[80000, 100000],[90000, 110000]
-            ]
+              [60000],
+              [70000],
+              [80000],
+              [60000, 80000],
+              [70000, 90000],
+              [80000, 100000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5]
           }
         }
       }]
@@ -122,7 +123,7 @@
         "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": true,
+        "use_cer": false,
         "concat_len": 4
       },
       "net": {
@@ -135,7 +136,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.008,
+          "lr": 0.002,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -150,8 +151,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_epi": 1200,
-      "save_frequency": 1200,
+      "max_total_t": 250000,
+      "save_frequency": 10000,
     }],
     "body": {
       "product": "outer",
@@ -159,7 +160,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 4,
+      "graph_x": "total_t",
+      "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -170,26 +172,26 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
+          "training_batch_epoch__choice": [1, 2, 3],
           "explore_var_spec": {
-            "end_step__choice": [10000, 15000, 20000, 25000]
+            "end_step__choice": [8000, 10000, 12000, 14000]
           },
-          "gamma__choice": [0.99, 0.993, 0.995],
         },
         "memory": {
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch__choice": [1, 2, 3, 4],
-          "training_epoch__choice": [1, 2, 3, 4],
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
-          "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          },
           "lr_scheduler_spec": {
             "milestones__choice": [
-              [50000],[60000],[70000],[80000],[90000],
-              [50000, 70000],[60000, 80000],[70000, 90000],[80000, 100000],[90000, 110000]
-            ]
+              [60000],
+              [70000],
+              [80000],
+              [60000, 80000],
+              [70000, 90000],
+              [80000, 100000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5]
           }
         }
       }]
@@ -220,7 +222,7 @@
         "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": true,
+        "use_cer": false,
         "concat_len": 4
       },
       "net": {
@@ -233,7 +235,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.008,
+          "lr": 0.002,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -248,8 +250,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_epi": 1200,
-      "save_frequency": 1200,
+      "max_total_t": 250000,
+      "save_frequency": 10000,
     }],
     "body": {
       "product": "outer",
@@ -257,7 +259,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 4,
+      "graph_x": "total_t",
+      "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -268,26 +271,26 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
+          "training_batch_epoch__choice": [1, 2, 3],
           "explore_var_spec": {
-            "end_step__choice": [10000, 15000, 20000, 25000]
+            "end_step__choice": [8000, 10000, 12000, 14000]
           },
-          "gamma__choice": [0.99, 0.993, 0.995],
         },
         "memory": {
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch__choice": [1, 2, 3, 4],
-          "training_epoch__choice": [1, 2, 3, 4],
-          "update_frequency__choice": [100, 250, 500, 1000, 2000],
-          "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          },
+          "update_frequency__choice": [0, 200, 500, 800, 1000, 1500],
           "lr_scheduler_spec": {
             "milestones__choice": [
-              [50000],[60000],[70000],[80000],[90000],
-              [50000, 70000],[60000, 80000],[70000, 90000],[80000, 100000],[90000, 110000]
-            ]
+              [60000],
+              [70000],
+              [80000],
+              [60000, 80000],
+              [70000, 90000],
+              [80000, 100000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5]
           }
         }
       }]
@@ -318,7 +321,7 @@
         "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": true,
+        "use_cer": false,
         "concat_len": 4
       },
       "net": {
@@ -331,7 +334,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.008,
+          "lr": 0.002,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -346,8 +349,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_epi": 1200,
-      "save_frequency": 1200,
+      "max_total_t": 250000,
+      "save_frequency": 10000,
     }],
     "body": {
       "product": "outer",
@@ -355,7 +358,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 4,
+      "graph_x": "total_t",
+      "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -366,26 +370,26 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
+          "training_batch_epoch__choice": [1, 2, 3],
           "explore_var_spec": {
-            "end_step__choice": [10000, 15000, 20000, 25000]
+            "end_step__choice": [8000, 10000, 12000, 14000]
           },
-          "gamma__choice": [0.99, 0.993, 0.995],
         },
         "memory": {
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch__choice": [1, 2, 3, 4],
-          "training_epoch__choice": [1, 2, 3, 4],
-          "update_frequency__choice": [100, 250, 500, 1000, 2000],
-          "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          },
+          "update_frequency__choice": [0, 200, 500, 800, 1000, 1500],
           "lr_scheduler_spec": {
             "milestones__choice": [
-              [50000],[60000],[70000],[80000],[90000],
-              [50000, 70000],[60000, 80000],[70000, 90000],[80000, 100000],[90000, 110000]
-            ]
+              [60000],
+              [70000],
+              [80000],
+              [60000, 80000],
+              [70000, 90000],
+              [80000, 100000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5]
           }
         }
       }]
@@ -416,7 +420,7 @@
         "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": true,
+        "use_cer": false,
         "concat_len": 4
       },
       "net": {
@@ -429,7 +433,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.008,
+          "lr": 0.002,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -444,8 +448,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_epi": 1200,
-      "save_frequency": 1200,
+      "max_total_t": 250000,
+      "save_frequency": 10000,
     }],
     "body": {
       "product": "outer",
@@ -453,7 +457,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 4,
+      "graph_x": "total_t",
+      "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -464,26 +469,26 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
+          "training_batch_epoch__choice": [1, 2, 3],
           "explore_var_spec": {
-            "end_step__choice": [10000, 15000, 20000, 25000]
+            "end_step__choice": [8000, 10000, 12000, 14000]
           },
-          "gamma__choice": [0.99, 0.993, 0.995],
         },
         "memory": {
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch__choice": [1, 2, 3, 4],
-          "training_epoch__choice": [1, 2, 3, 4],
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
-          "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          },
           "lr_scheduler_spec": {
             "milestones__choice": [
-              [50000],[60000],[70000],[80000],[90000],
-              [50000, 70000],[60000, 80000],[70000, 90000],[80000, 100000],[90000, 110000]
-            ]
+              [60000],
+              [70000],
+              [80000],
+              [60000, 80000],
+              [70000, 90000],
+              [80000, 100000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5]
           }
         }
       }]
@@ -514,7 +519,7 @@
         "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": true,
+        "use_cer": false,
         "concat_len": 4
       },
       "net": {
@@ -527,7 +532,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.008,
+          "lr": 0.002,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -542,8 +547,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_epi": 1200,
-      "save_frequency": 1200,
+      "max_total_t": 250000,
+      "save_frequency": 10000,
     }],
     "body": {
       "product": "outer",
@@ -551,7 +556,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 4,
+      "graph_x": "total_t",
+      "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -562,26 +568,26 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
+          "training_batch_epoch__choice": [1, 2, 3],
           "explore_var_spec": {
-            "end_step__choice": [10000, 15000, 20000, 25000]
+            "end_step__choice": [8000, 10000, 12000, 14000]
           },
-          "gamma__choice": [0.99, 0.993, 0.995],
         },
         "memory": {
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch__choice": [1, 2, 3, 4],
-          "training_epoch__choice": [1, 2, 3, 4],
           "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
-          "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          },
           "lr_scheduler_spec": {
             "milestones__choice": [
-              [50000],[60000],[70000],[80000],[90000],
-              [50000, 70000],[60000, 80000],[70000, 90000],[80000, 100000],[90000, 110000]
-            ]
+              [60000],
+              [70000],
+              [80000],
+              [60000, 80000],
+              [70000, 90000],
+              [80000, 100000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5]
           }
         }
       }]
@@ -612,7 +618,7 @@
         "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": true,
+        "use_cer": false,
         "concat_len": 4
       },
       "net": {
@@ -625,7 +631,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.008,
+          "lr": 0.002,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -640,8 +646,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_epi": 1200,
-      "save_frequency": 1200,
+      "max_total_t": 250000,
+      "save_frequency": 10000,
     }],
     "body": {
       "product": "outer",
@@ -649,7 +655,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 4,
+      "graph_x": "total_t",
+      "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -660,26 +667,26 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
+          "training_batch_epoch__choice": [1, 2, 3],
           "explore_var_spec": {
-            "end_step__choice": [10000, 15000, 20000, 25000]
+            "end_step__choice": [8000, 10000, 12000, 14000]
           },
-          "gamma__choice": [0.99, 0.993, 0.995],
         },
         "memory": {
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch__choice": [1, 2, 3, 4],
-          "training_epoch__choice": [1, 2, 3, 4],
-          "update_frequency__choice": [100, 250, 500, 1000, 2000],
-          "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          },
+          "update_frequency__choice": [0, 200, 500, 800, 1000, 1500],
           "lr_scheduler_spec": {
             "milestones__choice": [
-              [50000],[60000],[70000],[80000],[90000],
-              [50000, 70000],[60000, 80000],[70000, 90000],[80000, 100000],[90000, 110000]
-            ]
+              [60000],
+              [70000],
+              [80000],
+              [60000, 80000],
+              [70000, 90000],
+              [80000, 100000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5]
           }
         }
       }]
@@ -710,7 +717,7 @@
         "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": true,
+        "use_cer": false,
         "concat_len": 4
       },
       "net": {
@@ -723,7 +730,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.008,
+          "lr": 0.002,
         },
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
@@ -738,8 +745,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_epi": 1200,
-      "save_frequency": 1200,
+      "max_total_t": 250000,
+      "save_frequency": 10000,
     }],
     "body": {
       "product": "outer",
@@ -747,7 +754,8 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 4,
+      "graph_x": "total_t",
+      "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
@@ -758,26 +766,224 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
+          "training_batch_epoch__choice": [1, 2, 3],
           "explore_var_spec": {
-            "end_step__choice": [10000, 15000, 20000, 25000]
+            "end_step__choice": [8000, 10000, 12000, 14000]
           },
-          "gamma__choice": [0.99, 0.993, 0.995],
         },
         "memory": {
           "name__choice": ["Replay", "ConcatReplay"],
         },
         "net": {
-          "training_batch_epoch__choice": [1, 2, 3, 4],
-          "training_epoch__choice": [1, 2, 3, 4],
-          "update_frequency__choice": [100, 250, 500, 1000, 2000],
-          "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          },
+          "update_frequency__choice": [0, 200, 500, 800, 1000, 1500],
           "lr_scheduler_spec": {
             "milestones__choice": [
-              [50000],[60000],[70000],[80000],[90000],
-              [50000, 70000],[60000, 80000],[70000, 90000],[80000, 100000],[90000, 110000]
-            ]
+              [60000],
+              [70000],
+              [80000],
+              [60000, 80000],
+              [70000, 90000],
+              [80000, 100000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5]
+          }
+        }
+      }]
+    }
+  },
+  "drqn_epsilon_replace_lunar": {
+    "agent": [{
+      "name": "DRQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.08,
+          "start_step": 0,
+          "end_step": 10000,
+        },
+        "gamma": 0.99,
+        "training_batch_epoch": 3,
+        "training_epoch": 4,
+        "training_frequency": 4,
+        "training_start_step": 32,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "SeqReplay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false,
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "cell_type": "GRU",
+        "fc_hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.002,
+        },
+        "lr_scheduler_spec": {
+          "name": "MultiStepLR",
+          "milestones": [80000],
+          "gamma": 0.1,
+        },
+        "update_type": "replace",
+        "update_frequency": 200,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "max_t": null,
+      "max_total_t": 250000,
+      "save_frequency": 10000,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "graph_x": "total_t",
+      "max_session": 2,
+      "max_trial": 95,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95,
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "normalize_state__choice": [true, false],
+          "training_batch_epoch__choice": [1, 2, 3],
+          "explore_var_spec": {
+            "end_step__choice": [8000, 10000, 12000, 14000]
+          },
+        },
+        "net": {
+          "update_frequency__choice": [0, 200, 500, 800, 1000, 1500],
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [60000],
+              [70000],
+              [80000],
+              [60000, 80000],
+              [70000, 90000],
+              [80000, 100000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5]
+          }
+        }
+      }]
+    }
+  },
+  "dueling_dqn_boltzmann_poly_lunar": {
+    "agent": [{
+      "name": "DuelingDQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 5.0,
+          "end_val": 0.5,
+          "start_step": 0,
+          "end_step": 10000,
+        },
+        "gamma": 0.99,
+        "training_batch_epoch": 3,
+        "training_epoch": 4,
+        "training_frequency": 4,
+        "training_start_step": 32,
+        "normalize_state": true
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false,
+        "concat_len": 4
+      },
+      "net": {
+        "type": "DuelingMLPNet",
+        "hid_layers": [400, 200],
+        "hid_layers_activation": "relu",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.002,
+        },
+        "lr_scheduler_spec": {
+          "name": "MultiStepLR",
+          "milestones": [80000],
+          "gamma": 0.1,
+        },
+        "update_type": "polyak",
+        "polyak_coef": 0.9,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "max_t": null,
+      "max_total_t": 250000,
+      "save_frequency": 10000,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "graph_x": "total_t",
+      "max_session": 2,
+      "max_trial": 95,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 95,
+      }
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "normalize_state__choice": [true, false],
+          "training_batch_epoch__choice": [1, 2, 3],
+          "explore_var_spec": {
+            "end_step__choice": [8000, 10000, 12000, 14000]
+          },
+        },
+        "memory": {
+          "name__choice": ["Replay", "ConcatReplay"],
+        },
+        "net": {
+          "polyak_coef__choice": [0, 0.9, 0.95, 0.99, 0.995, 0.999],
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [60000],
+              [70000],
+              [80000],
+              [60000, 80000],
+              [70000, 90000],
+              [80000, 100000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5]
           }
         }
       }]
