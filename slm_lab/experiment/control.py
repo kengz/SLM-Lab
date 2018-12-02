@@ -31,13 +31,13 @@ class Session:
         self.info_space = info_space
         self.index = self.info_space.get('session')
         util.set_session_logger(self.spec, self.info_space, logger)
-        util.set_module_seed(self.info_space.get_random_seed())
-        util.try_set_cuda_id(self.spec, self.info_space)
         self.data = None
 
         # init singleton agent and env
         self.env = make_env(self.spec)
         body = Body(self.env, self.spec['agent'])
+        util.set_rand_seed(self.info_space.get_random_seed(), self.env)
+        util.try_set_cuda_id(self.spec, self.info_space)
         assert not ps.is_list(global_nets), f'single agent global_nets must be a dict, got {global_nets}'
         self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
 
@@ -102,13 +102,13 @@ class SpaceSession(Session):
         self.info_space = info_space
         self.index = self.info_space.get('session')
         util.set_session_logger(self.spec, self.info_space, logger)
-        util.set_module_seed(self.info_space.get_random_seed())
-        util.try_set_cuda_id(self.spec, self.info_space)
         self.data = None
 
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.aeb_space.init_body_space()
+        util.set_rand_seed(self.info_space.get_random_seed(), self.env_space)
+        util.try_set_cuda_id(self.spec, self.info_space)
         assert not ps.is_dict(global_nets), f'multi agent global_nets must be a list of dicts, got {global_nets}'
         self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
 
