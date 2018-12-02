@@ -391,6 +391,7 @@ class InfoSpace:
         self.covered_space = []
         # used to id experiment sharing the same spec name
         self.experiment_ts = util.get_ts()
+        self.ckpt = None
 
     def reset_lower_axes(cls, coor, axis):
         '''Reset the axes lower than the given axis in coor'''
