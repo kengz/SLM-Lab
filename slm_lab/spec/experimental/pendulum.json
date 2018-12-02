@@ -120,7 +120,7 @@
         "normalize_state": true
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicySeqReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -313,7 +313,7 @@
         "normalize_state": true
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicySeqReplay"
       },
       "net": {
         "type": "RecurrentNet",
