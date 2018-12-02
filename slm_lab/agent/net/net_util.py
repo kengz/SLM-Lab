@@ -178,18 +178,16 @@ def get_fitness_std(agent):
         solved_scores = []
         for body in agent.nanflat_body_a:
             env_name = body.env.name
+            std = None
             if FITNESS_STD.get(env_name):
                 std = FITNESS_STD.get(env_name)['std_epi_reward']
-            else:
-                std = None
             solved_scores.append(std)
         return solved_scores
     else:
         env_name = agent.body.env.name
+        std = None
         if FITNESS_STD.get(env_name):
             std = FITNESS_STD.get(env_name)['std_epi_reward']
-        else:
-            std = None
         return [std]
 
 
