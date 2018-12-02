@@ -264,7 +264,7 @@
         "num_step_returns": 1,
         "entropy_coef_spec": {
           "name": "linear_decay",
-          "start_val": 0.01,
+          "start_val": 0.03,
           "end_val": 0.0001,
           "start_step": 30000,
           "end_step": 40000,
@@ -294,9 +294,9 @@
           "lr": 0.008,
         },
         "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 80000,
-          "gamma": 0.9,
+          "name": "MultiStepLR",
+          "milestones": [80000],
+          "gamma": 0.1,
         },
         "gpu": true
       }
@@ -304,8 +304,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_epi": 1200,
-      "save_frequency": 1200,
+      "max_total_t": 400000,
+      "save_frequency": 20000,
     }],
     "body": {
       "product": "outer",
@@ -313,11 +313,12 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 4,
-      "max_trial": 64,
+      "graph_x": "total_t",
+      "max_session": 2,
+      "max_trial": 95,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16,
+        "num_cpus": 95,
       }
     },
     "search": {
@@ -326,13 +327,21 @@
           "training_frequency__choice": [2, 3, 4],
           "entropy_coef_spec": {
             "start_val__uniform": [0.001, 0.05],
+            "start_step__choice": [90000, 100000, 110000, 120000],
+            "end_step__choice": [150000, 160000, 170000, 180000],
           },
-          "entropy_anneal_start_epi__choice": [300, 400, 500, 600],
-          "entropy_anneal_epi__choice": [200, 300, 400, 500, 600],
         },
         "net": {
-          "critic_optim_spec": {
-            "lr__uniform": [0.001, 0.01]
+          "lr_scheduler_spec": {
+            "milestones__choice": [
+              [60000],
+              [70000],
+              [80000],
+              [60000, 80000],
+              [70000, 90000],
+              [80000, 100000]
+            ],
+            "gamma__choice": [0.1, 0.25, 0.5]
           }
         }
       }]
