@@ -1,6 +1,5 @@
 from functools import partial
 from slm_lab import ROOT_DIR
-from slm_lab.experiment import analysis
 from slm_lab.lib import logger, util
 from subprocess import DEVNULL
 import os
@@ -152,6 +151,7 @@ def save(net, model_path):
 
 def save_algorithm(algorithm, ckpt=None):
     '''Save all the nets for an algorithm'''
+    from slm_lab.experiment import analysis
     agent = algorithm.agent
     net_names = algorithm.net_names
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
