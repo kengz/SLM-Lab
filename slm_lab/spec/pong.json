@@ -21,7 +21,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "AtariReplay",
+        "name": "OptAtariReplay",
         "batch_size": 32,
         "max_size": 500000,
         "stack_len": 4,

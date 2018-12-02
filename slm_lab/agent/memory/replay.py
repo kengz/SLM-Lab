@@ -1,7 +1,7 @@
 from collections import deque
 from copy import deepcopy
 from slm_lab.agent.memory.base import Memory
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
@@ -299,9 +299,85 @@ class AtariReplay(Replay):
             'use_cer',
         ])
         # state_dim = (1, 84, 84) from env
-        self.raw_state_dim = body.state_dim[1:]
-        body.state_dim = (self.stack_len,) + self.raw_state_dim  # greyscale downsized, stacked
+        self.raw_state_dim = body.state_dim
+        body.state_dim = (self.stack_len,) + self.raw_state_dim
         Replay.__init__(self, memory_spec, body)
+
+
+class OptAtariReplay(Replay):
+    '''
+    Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-10, 10] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
+    Note: Playing Atari with Deep RL clips the rewards to + / - 1
+
+    e.g. memory_spec
+    "memory": {
+        "name": "AtariReplay",
+        "batch_size": 32,
+        "max_size": 250000,
+        "stack_len": 4,
+        "use_cer": true
+    }
+    '''
+
+    def __init__(self, memory_spec, body):
+        util.set_attr(self, memory_spec, [
+            'batch_size',
+            'max_size',
+            'stack_len',  # number of stack states
+            'use_cer',
+        ])
+        Replay.__init__(self, memory_spec, body)
+        # (1, 84, 84) used in memory state_shape, but use stacked (4, 84, 84) in state_dim for network input
+        self.raw_state_dim = body.state_dim[1:]
+        body.state_dim = (self.stack_len,) + self.raw_state_dim
+
+    def get_stack_state(self, idx):
+        stack_state = math_util.get_backstack(self.dones, self.states, self.stack_len, idx).squeeze(axis=1)
+        return stack_state
+
+    @lab_api
+    def sample(self):
+        '''
+        Returns a batch of batch_size samples. Batch is stored as a dict.
+        Keys are the names of the different elements of an experience. Values are an array of the corresponding sampled elements
+        e.g.
+        batch = {
+            'states'     : states,
+            'actions'    : actions,
+            'rewards'    : rewards,
+            'next_states': next_states,
+            'dones'      : dones}
+        '''
+        self.batch_idxs = self.sample_idxs(self.batch_size)
+        batch = {}
+        for k in self.data_keys:
+            if k == 'states':
+                batch[k] = np.array([self.get_stack_state(idx) for idx in self.batch_idxs])
+            elif k == 'next_states':
+                batch[k] = self._sample_next_states(self.batch_idxs)
+            else:
+                batch[k] = getattr(self, k)[self.batch_idxs]
+        return batch
+
+    def _sample_next_states(self, batch_idxs):
+        '''Method to sample next_states from states, with proper guard for last idx (out of bound)'''
+        # idxs for next state is state idxs + 1
+        ns_batch_idxs = batch_idxs + 1
+        # find the locations to be replaced with latest_next_state
+        latest_ns_locs = np.argwhere(ns_batch_idxs == self.true_size).flatten()
+        to_replace = latest_ns_locs.size != 0
+        # set to 0, a safe sentinel for ns_batch_idxs due to the +1 above
+        # then sample safely from self.states, and replace at locs with latest_next_state
+        if to_replace:
+            ns_batch_idxs[latest_ns_locs] = 0
+        # use the same stack sampling but on advanced idxs
+        next_states = np.array([self.get_stack_state(idx) for idx in ns_batch_idxs])
+        if to_replace:
+            # create stack_latest_next_state for replacement
+            stack_latest_state = self.get_stack_state(self.true_size - 1)
+            stack_latest_next_state = np.concatenate([stack_latest_state[1:], self.latest_next_state])
+            next_states[latest_ns_locs] = stack_latest_next_state
+        return next_states
 
 
 class ImageReplay(Replay):

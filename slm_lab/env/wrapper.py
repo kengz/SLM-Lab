@@ -228,5 +228,5 @@ def wrap_deepmind(env, episode_life=True, clip_rewards=True):
         env = ClipRewardEnv(env)
     env = TransformImage(env)
     # TODO absorb into memory for efficient handling
-    env = FrameStack(env, 4)
+    # env = FrameStack(env, 4)
     return env
