@@ -145,8 +145,6 @@ class Replay(Memory):
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
         batch_idxs = np.random.randint(self.true_size, size=batch_size)
-        # TODO fancy sampling only took early experiences somehow. could be due to binning stuff
-        # batch_idxs = util.fast_uniform_sample(self.true_size, batch_size)
         if self.use_cer:  # add the latest sample
             batch_idxs[-1] = self.head
         return batch_idxs
