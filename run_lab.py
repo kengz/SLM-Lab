@@ -60,10 +60,6 @@ def run_by_mode(spec_file, spec_name, lab_mode):
         prepath = lab_mode.split('@')[1]
         spec, info_space = util.prepath_to_spec_info_space(prepath)
         Session(spec, info_space).run()
-    elif lab_mode.startswith('enjoy'):
-        prepath = lab_mode.split('@')[1]
-        spec, info_space = util.prepath_to_spec_info_space(prepath)
-        Session(spec, info_space).run()
     elif lab_mode == 'dev':
         spec = util.override_dev_spec(spec)
         info_space.tick('trial')

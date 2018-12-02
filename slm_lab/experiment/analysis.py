@@ -205,76 +205,39 @@ Checkpoint and early termination analysis
 '''
 
 
-def get_reward_ma(agent, type='current_reward_ma'):
-    '''Return a list of the reward_ma types for all of an agent's
-    bodies.'''
-    if hasattr(agent, 'nanflat_body_a'):
-        reward_ma = []
-        for body in agent.nanflat_body_a:
-            reward_ma.append(getattr(body, type))
-        return reward_ma
-    else:
-        return [getattr(agent.body, type)]
+def get_reward_mas(agent, name='current_reward_ma'):
+    '''Return array of the named reward_ma for all of an agent's bodies.'''
+    bodies = getattr(agent, 'nanflat_body_a', None) or [agent.body]
+    return np.array([getattr(body, name) for body in bodies], dtype=np.float16)
 
 
-def update_saved_best_reward_ma(agent):
-    '''Updates each the reward_ma at latest best model checkpoint
-    in each of the agent's bodies'''
-    if hasattr(agent, 'nanflat_body_a'):
-        for body in agent.nanflat_body_a:
-            body.saved_best_reward_ma = body.current_reward_ma
-    else:
-        agent.body.saved_best_reward_ma = agent.body.current_reward_ma
+def get_std_epi_rewards(agent):
+    '''Return array of std_epi_reward for each of the environments.'''
+    bodies = getattr(agent, 'nanflat_body_a', None) or [agent.body]
+    return np.array([ps.get(FITNESS_STD, f'{body.env.name}.std_epi_reward') for body in bodies], dtype=np.float16)
 
 
-def get_fitness_std(agent):
-    '''Returns a list of std_epi_reward for each of the environments.'''
-    if hasattr(agent, 'nanflat_body_a'):
-        solved_scores = []
-        for body in agent.nanflat_body_a:
-            env_name = body.env.name
-            std = None
-            if FITNESS_STD.get(env_name):
-                std = FITNESS_STD.get(env_name)['std_epi_reward']
-            solved_scores.append(std)
-        return solved_scores
-    else:
-        env_name = agent.body.env.name
-        std = None
-        if FITNESS_STD.get(env_name):
-            std = FITNESS_STD.get(env_name)['std_epi_reward']
-        return [std]
+def new_best(agent):
+    '''Check if algorithm is now the new best result, then update the new best'''
+    best_reward_mas = get_reward_mas(agent, 'best_reward_ma')
+    current_reward_mas = get_reward_mas(agent, 'current_reward_ma')
+    new_best = (current_reward_mas >= best_reward_mas).all()
+    if new_best:
+        bodies = getattr(agent, 'nanflat_body_a', None) or [agent.body]
+        for body in bodies:
+            body.best_reward_ma = body.current_reward_ma
+    return new_best
 
 
-def current_epi_is_new_best(algorithm, update_saved_best=False):
-    '''Returns a tuple of two elements: (current_epi_is_best, is_solved)
-        current_epi_is_best: true if the current episode has a higher
-            reward_ma than the previous saved version.
-        is_solved: true if the agent has solved all of the environments.'''
-    saved_best_reward_ma = get_reward_ma(algorithm.agent, 'saved_best_reward_ma')
-    current_reward_ma = get_reward_ma(algorithm.agent, 'current_reward_ma')
-    solved_scores = get_fitness_std(algorithm.agent)
-
-    is_solved = False
-    new_best = False
-    if any([x is None for x in solved_scores]):
-        is_solved = False
-    elif all([x >= y for x, y in zip(current_reward_ma, solved_scores)]):
-        is_solved = True
-
-    if all([x >= y for x, y in zip(current_reward_ma, saved_best_reward_ma)]):
-        new_best = True
-
-    if update_saved_best and new_best:
-        update_saved_best_reward_ma(algorithm.agent)
-
-    return new_best, is_solved
-
-
-def is_solved(algorithm):
-    '''Returns true if the algorithm has solved all of the
-    environments as defined in slm_lab/spec/_fitness_std.json'''
-    return current_epi_is_new_best(algorithm)[1]
+def all_solved(agent):
+    '''Check if envs have all been solved using std from slm_lab/spec/_fitness_std.json'''
+    current_reward_mas = get_reward_mas(agent, 'current_reward_ma')
+    std_epi_rewards = get_std_epi_rewards(agent)
+    solved = (
+        not np.isnan(std_epi_rewards).any() and
+        (current_reward_mas >= std_epi_rewards).all()
+    )
+    return solved
 
 
 '''
@@ -430,7 +393,7 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
 def plot_trial(trial_spec, info_space):
     '''Plot the trial graph, 1 pane: mean and error envelope of reward graphs from all sessions. Each aeb_df gets its own color'''
     prepath = util.get_prepath(trial_spec, info_space)
-    predir = util.prepath_to_predir(prepath)
+    predir, _, _, _, _, _ = util.prepath_split(prepath)
     session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
 
     aeb_count = len(session_datas[0])
@@ -510,7 +473,7 @@ def save_trial_data(spec, info_space, trial_fitness_df, trial_fig):
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
     if util.get_lab_mode() == 'train':
-        predir = util.prepath_to_predir(prepath)
+        predir, _, _, _, _, _ = util.prepath_split(prepath)
         shutil.make_archive(predir, 'zip', predir)
         logger.info(f'All trial data zipped to {predir}.zip')
 
@@ -522,7 +485,7 @@ def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
     # zip for ease of upload
-    predir = util.prepath_to_predir(prepath)
+    predir, _, _, _, _, _ = util.prepath_split(prepath)
     shutil.make_archive(predir, 'zip', predir)
     logger.info(f'All experiment data zipped to {predir}.zip')
 
@@ -615,7 +578,7 @@ def session_data_dict_from_file(predir, trial_index):
 def session_data_dict_for_dist(spec, info_space):
     '''Method to retrieve session_datas (fitness df, so the same as session_data_dict above) when a trial with distributed sessions is done, to avoid messy multiprocessing data communication'''
     prepath = util.get_prepath(spec, info_space)
-    predir = util.prepath_to_predir(prepath)
+    predir, _, _, _, _, _ = util.prepath_split(prepath)
     session_datas = session_data_dict_from_file(predir, info_space.get('trial'))
     session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
     return session_datas
@@ -636,8 +599,7 @@ def trial_data_dict_from_file(predir):
 def mock_spec_info_space(predir, trial_index=None, session_index=None):
     '''Helper for retro analysis to build mock info_space and spec'''
     from slm_lab.experiment.monitor import InfoSpace
-    spec_name = util.prepath_to_spec_name(predir)
-    experiment_ts = util.prepath_to_experiment_ts(predir)
+    _, _, _, spec_name, experiment_ts, _ = util.prepath_split(predir)
     info_space = InfoSpace()
     info_space.experiment_ts = experiment_ts
     info_space.set('experiment', 0)
@@ -731,7 +693,7 @@ def plot_session_from_file(session_df_filepath):
     analysis.plot_session_from_file(filepath)
     '''
     from slm_lab.experiment.monitor import InfoSpace
-    spec_name = util.prepath_to_spec_name(session_df_filepath)
+    _, _, _, spec_name, _, _ = util.prepath_split(session_df_filepath)
     session_spec = {'name': spec_name}
     session_df = util.read(session_df_filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
     session_data = util.session_df_to_data(session_df)
