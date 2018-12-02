@@ -192,9 +192,6 @@ def current_epi_is_new_best(algorithm, update_saved_best=False):
     saved_best_reward_ma = get_reward_ma(algorithm.agent, 'saved_best_reward_ma')
     current_reward_ma = get_reward_ma(algorithm.agent, 'current_reward_ma')
     solved_scores = get_fitness_std(algorithm.agent)
-    print(f'saved best reward ma: {saved_best_reward_ma}')
-    print(f'current reward ma: {current_reward_ma}')
-    print(f'solved_scores: {solved_scores}')
 
     is_solved = False
     new_best = False
