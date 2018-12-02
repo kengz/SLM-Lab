@@ -163,6 +163,8 @@ def get_reward_ma(agent, type='current_reward_ma'):
 
 
 def update_saved_best_reward_ma(agent):
+    '''Updates each the reward_ma at latest best model checkpoint
+    in each of the agent's bodies'''
     if hasattr(agent, 'nanflat_body_a'):
         for body in agent.nanflat_body_a:
             body.saved_best_reward_ma = body.current_reward_ma
@@ -208,6 +210,8 @@ def current_epi_is_new_best(algorithm, update_saved_best=False):
 
 
 def is_solved(algorithm):
+    '''Returns true if the algorithm has solved all of the
+    environments as defined in slm_lab/spec/_fitness_std.json'''
     return current_epi_is_new_best(algorithm)[1]
 
 
