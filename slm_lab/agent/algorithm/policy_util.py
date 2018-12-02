@@ -320,7 +320,7 @@ class VarScheduler:
             'start_step',
             'end_step',
         ])
-        if 'end_val' not in var_decay_spec:
+        if not 'end_val':
             self.end_val = self.start_val
 
     def update(self, algorithm, clock):
