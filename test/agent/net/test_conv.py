@@ -31,7 +31,7 @@ net_spec = {
     },
     "gpu": True
 }
-in_dim = (84, 84, 4)
+in_dim = (4, 84, 84)
 out_dim = 3
 batch_size = 16
 net = ConvNet(net_spec, in_dim, out_dim)
