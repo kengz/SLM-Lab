@@ -350,37 +350,30 @@ def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
 
 
 def prepath_split(prepath):
-    '''Split prepath into prefolder and prename'''
+    '''
+    Split prepath into useful names. Works with predir (prename will be None)
+    prepath: data/dqn_pong_2018_12_02_082510/dqn_pong_t0_s0
+    predir: data/dqn_pong_2018_12_02_082510
+    prefolder: dqn_pong_2018_12_02_082510
+    prename: dqn_pong_t0_s0
+    spec_name: dqn_pong
+    experiment_ts: 2018_12_02_082510
+    '''
     prepath = prepath.strip('_')
     tail = prepath.split('data/')[-1]
-    prefolder, prename = tail.split('/')
-    return prefolder, prename
-
-
-def prepath_to_experiment_ts(prepath):
-    predir = prepath_to_predir(prepath)
-    experiment_ts = RE_FILE_TS.findall(predir)[0]
-    return experiment_ts
-
-
-def prepath_to_info_space(prepath):
-    '''Create info_space from prepath such that it returns the same prepath with spec'''
-    from slm_lab.experiment.monitor import InfoSpace
-    experiment_ts = prepath_to_experiment_ts(prepath)
-    trial_index, session_index = prepath_to_idxs(prepath)
-    # create info_space for prepath
-    info_space = InfoSpace()
-    info_space.experiment_ts = experiment_ts
-    info_space.set('experiment', 0)
-    info_space.set('trial', trial_index)
-    info_space.set('session', session_index)
-    return info_space
+    if '/' in tail:
+        prefolder, prename = tail.split('/')
+    else:
+        prefolder, prename = tail, None
+    predir = f'data/{prefolder}'
+    spec_name = RE_FILE_TS.sub('', prefolder).strip('_')
+    experiment_ts = RE_FILE_TS.findall(prefolder)[0]
+    return predir, prefolder, prename, spec_name, experiment_ts
 
 
 def prepath_to_idxs(prepath):
     '''Extract trial index and session index from prepath if available'''
-    spec_name = prepath_to_spec_name(prepath)
-    _prefolder, prename = prepath_split(prepath)
+    _, _, prename, spec_name, _ = prepath_split(prepath)
     idxs_tail = prename.replace(spec_name, '').strip('_')
     idxs_strs = idxs_tail.split('_')[:2]
     assert len(idxs_strs) > 0, 'No trial/session indices found in prepath'
@@ -396,30 +389,29 @@ def prepath_to_idxs(prepath):
     return trial_index, session_index
 
 
-def prepath_to_predir(prepath):
-    tail = prepath.split('data/')[-1]
-    prefolder = tail.split('/')[0]
-    predir = f'data/{prefolder}'
-    return predir
-
-
-def prepath_to_spec_name(prepath):
-    predir = prepath_to_predir(prepath)
-    tail = prepath.split('data/')[-1]
-    prefolder = tail.split('/')[0]
-    experiment_ts = prepath_to_experiment_ts(prepath)
-    spec_name = prefolder.replace(experiment_ts, '').strip('_')
-    return spec_name
-
-
 def prepath_to_spec(prepath):
     '''Create spec from prepath such that it returns the same prepath with info_space'''
     prepath = prepath.strip('_')
-    pre_spec_path = '_'.join(prepath.split('_')[:-1])
+    splits = prepath.split('_')
+    pre_spec_path = '_'.join(splits[:-1])
     spec_path = f'{pre_spec_path}_spec.json'
     # read the spec of prepath
     spec = read(spec_path)
     return spec
+
+
+def prepath_to_info_space(prepath):
+    '''Create info_space from prepath such that it returns the same prepath with spec'''
+    from slm_lab.experiment.monitor import InfoSpace
+    _, _, _, _, experiment_ts = prepath_split(prepath)
+    trial_index, session_index = prepath_to_idxs(prepath)
+    # create info_space for prepath
+    info_space = InfoSpace()
+    info_space.experiment_ts = experiment_ts
+    info_space.set('experiment', 0)
+    info_space.set('trial', trial_index)
+    info_space.set('session', session_index)
+    return info_space
 
 
 def prepath_to_spec_info_space(prepath):

@@ -393,7 +393,7 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
 def plot_trial(trial_spec, info_space):
     '''Plot the trial graph, 1 pane: mean and error envelope of reward graphs from all sessions. Each aeb_df gets its own color'''
     prepath = util.get_prepath(trial_spec, info_space)
-    predir = util.prepath_to_predir(prepath)
+    predir, _, _, _, _ = util.prepath_split(prepath)
     session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
 
     aeb_count = len(session_datas[0])
@@ -473,7 +473,7 @@ def save_trial_data(spec, info_space, trial_fitness_df, trial_fig):
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
     if util.get_lab_mode() == 'train':
-        predir = util.prepath_to_predir(prepath)
+        predir, _, _, _, _ = util.prepath_split(prepath)
         shutil.make_archive(predir, 'zip', predir)
         logger.info(f'All trial data zipped to {predir}.zip')
 
@@ -485,7 +485,7 @@ def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
     # zip for ease of upload
-    predir = util.prepath_to_predir(prepath)
+    predir, _, _, _, _ = util.prepath_split(prepath)
     shutil.make_archive(predir, 'zip', predir)
     logger.info(f'All experiment data zipped to {predir}.zip')
 
@@ -578,7 +578,7 @@ def session_data_dict_from_file(predir, trial_index):
 def session_data_dict_for_dist(spec, info_space):
     '''Method to retrieve session_datas (fitness df, so the same as session_data_dict above) when a trial with distributed sessions is done, to avoid messy multiprocessing data communication'''
     prepath = util.get_prepath(spec, info_space)
-    predir = util.prepath_to_predir(prepath)
+    predir, _, _, _, _ = util.prepath_split(prepath)
     session_datas = session_data_dict_from_file(predir, info_space.get('trial'))
     session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
     return session_datas
@@ -599,8 +599,7 @@ def trial_data_dict_from_file(predir):
 def mock_spec_info_space(predir, trial_index=None, session_index=None):
     '''Helper for retro analysis to build mock info_space and spec'''
     from slm_lab.experiment.monitor import InfoSpace
-    spec_name = util.prepath_to_spec_name(predir)
-    experiment_ts = util.prepath_to_experiment_ts(predir)
+    _, _, _, spec_name, experiment_ts = util.prepath_split(predir)
     info_space = InfoSpace()
     info_space.experiment_ts = experiment_ts
     info_space.set('experiment', 0)
@@ -694,7 +693,7 @@ def plot_session_from_file(session_df_filepath):
     analysis.plot_session_from_file(filepath)
     '''
     from slm_lab.experiment.monitor import InfoSpace
-    spec_name = util.prepath_to_spec_name(session_df_filepath)
+    _, _, _, spec_name, _ = util.prepath_split(session_df_filepath)
     session_spec = {'name': spec_name}
     session_df = util.read(session_df_filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
     session_data = util.session_df_to_data(session_df)
