@@ -3,7 +3,7 @@
 
 Modular Deep Reinforcement Learning framework in PyTorch.
 
-| References |  |
+| References | |
 |------------|--|
 | [Github](https://github.com/kengz/SLM-Lab) | Github repository |
 | [Installation](#installation) | How to install SLM Lab |
@@ -16,6 +16,9 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 
 ![dqn cartpole ball2d](https://media.giphy.com/media/l0DAIymuiMS3HyW9G/giphy.gif)
 >A multitask agent solving both OpenAI Cartpole-v0 and Unity Ball2D.
+
+![pong](https://user-images.githubusercontent.com/8209263/49346161-07dd8580-f643-11e8-975c-38972465a587.gif)
+>DQN Atari Pong solution in SLM Lab.
 
 SLM Lab is created for deep reinforcement learning research and applications. The design was guided by four principles
 - **modularity**
@@ -120,7 +123,6 @@ Using the lab's unified API, **all the algorithms can be distributed hogwild-sty
 - DDQN (Double DQN)
 - DDRQN
 - Dueling DDQN
-- Multitask DQN (multi-environment DQN)
 - Hydra DQN (multi-environment DQN)
 
 As mentioned above, **all these algorithms can be turned into distributed algorithms too**, although we do not have special names for them.
@@ -137,19 +139,21 @@ Note that some particular types of algorithm/network need particular types of Me
 
 For on-policy algorithms (policy gradient):
 - OnPolicyReplay
-- OnPolicyImageReplay (credit: joelouismarino)
 - OnPolicySeqReplay
 - OnPolicyBatchReplay
-- OnPolicyBatchSeqReplay
+- OnPolicySeqBatchReplay
+- OnPolicyConcatReplay
+- OnPolicyAtariReplay
+- OnPolicyImageReplay (credit: joelouismarino)
 
 For off-policy algorithms (value-based)
 - Replay
-- ImageReplay
 - SeqReplay
 - SILReplay (special Replay for SIL)
 - SILSeqReplay (special SeqReplay for SIL)
 - ConcatReplay
 - AtariReplay
+- ImageReplay
 - PrioritizedReplay
 - AtariPrioritizedReplay
 
@@ -159,8 +163,7 @@ code: [slm_lab/agent/net](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/a
 
 These networks are usable for all algorithms, and the lab takes care of the proper initialization with proper input/output sizing. One can swap out the network for any algorithm with just a spec change, e.g. make `DQN` into `DRQN` by substituting the net spec `"type": "MLPNet"` with `"type": "RecurrentNet"`.
 
-- MLPNet (Multi Layer Perceptron, with multi-tails support)
-- HydraMLPNet (multi-heads, multi-tails)
+- MLPNet (Multi Layer Perceptron, with multi-heads, multi-tails)
 - RecurrentNet (with multi-tails support)
 - ConvNet (with multi-tails support)
 
@@ -278,7 +281,9 @@ It is `DQN` in `CartPole-v0`:
       "dqn_cartpole": "enjoy@data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0"
     }
     ```
-    >enjoy mode will automatically disable learning and exploration. Graphs will still save.
+    >Enjoy mode will automatically disable learning and exploration. Graphs will still save.
+
+    >To run the best model, use the best saved checkpoint `enjoy@data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_ckptbest`
 
 6. Next, change the run mode from `"train"` to `"search"`  `config/experiments.json`, and rerun. This runs experiments of multiple trials with hyperparameter search. Environments will not be rendered.:
     ```json
