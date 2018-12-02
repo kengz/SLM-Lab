@@ -164,7 +164,7 @@ def save_algorithm(algorithm, ckpt=None):
         optim_path = f'{prepath}_{net_name}_optim.pth'
         save(net.optim, optim_path)
 
-    if ckpt != 'last':  # remove checkpoint files at the end
+    if ckpt is None:  # remove checkpoint files at the end
         ckpt_path = f'{prepath}_ckptlast*.pth'
         subprocess.run(f'rm {ckpt_path}', cwd=ROOT_DIR, shell=True, stderr=DEVNULL, stdout=DEVNULL, close_fds=True)
         logger.info(f'Removed all checkpoint model files {ckpt_path}')
@@ -172,7 +172,8 @@ def save_algorithm(algorithm, ckpt=None):
 
 def load(net, model_path):
     '''Save model weights from a path into a net module'''
-    net.load_state_dict(torch.load(util.smart_path(model_path)))
+    device = None if torch.cuda.is_available() else 'cpu'
+    net.load_state_dict(torch.load(util.smart_path(model_path), map_location=device))
     logger.info(f'Loaded model from {model_path}')
 
 
