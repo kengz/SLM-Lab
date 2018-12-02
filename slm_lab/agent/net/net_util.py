@@ -1,5 +1,6 @@
 from functools import partial
 from slm_lab import ROOT_DIR
+from slm_lab.experiment import analysis
 from slm_lab.lib import logger, util
 from subprocess import DEVNULL
 import os
@@ -9,7 +10,6 @@ import torch
 import torch.nn as nn
 
 
-FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
 NN_LOWCASE_LOOKUP = {nn_name.lower(): nn_name for nn_name in nn.__dict__}
 logger = logger.get_logger(__name__)
 
@@ -150,86 +150,12 @@ def save(net, model_path):
     logger.info(f'Saved model to {model_path}')
 
 
-def get_reward_ma(agent, type='current_reward_ma'):
-    '''Return a list of the reward_ma types for all of an agent's
-    bodies.'''
-    if hasattr(agent, 'nanflat_body_a'):
-        reward_ma = []
-        for body in agent.nanflat_body_a:
-            reward_ma.append(getattr(body, type))
-        return reward_ma
-    else:
-        return [getattr(agent.body, type)]
-
-
-def update_saved_best_reward_ma(agent):
-    '''Updates each the reward_ma at latest best model checkpoint
-    in each of the agent's bodies'''
-    if hasattr(agent, 'nanflat_body_a'):
-        for body in agent.nanflat_body_a:
-            body.saved_best_reward_ma = body.current_reward_ma
-    else:
-        agent.body.saved_best_reward_ma = agent.body.current_reward_ma
-
-
-def get_fitness_std(agent):
-    '''Returns a list of std_epi_reward for each of the environments.'''
-    if hasattr(agent, 'nanflat_body_a'):
-        solved_scores = []
-        for body in agent.nanflat_body_a:
-            env_name = body.env.name
-            if FITNESS_STD.get(env_name):
-                std = FITNESS_STD.get(env_name)['std_epi_reward']
-            else:
-                std = None
-            solved_scores.append(std)
-        return solved_scores
-    else:
-        env_name = agent.body.env.name
-        if FITNESS_STD.get(env_name):
-            std = FITNESS_STD.get(env_name)['std_epi_reward']
-        else:
-            std = None
-        return [std]
-
-
-def current_epi_is_new_best(algorithm, update_saved_best=False):
-    '''Returns a tuple of two elements: (current_epi_is_best, is_solved)
-        current_epi_is_best: true if the current episode has a higher
-            reward_ma than the previous saved version.
-        is_solved: true if the agent has solved all of the environments.'''
-    saved_best_reward_ma = get_reward_ma(algorithm.agent, 'saved_best_reward_ma')
-    current_reward_ma = get_reward_ma(algorithm.agent, 'current_reward_ma')
-    solved_scores = get_fitness_std(algorithm.agent)
-
-    is_solved = False
-    new_best = False
-    if any([x is None for x in solved_scores]):
-        is_solved = False
-    elif all([x >= y for x, y in zip(current_reward_ma, solved_scores)]):
-        is_solved = True
-
-    if all([x >= y for x, y in zip(current_reward_ma, saved_best_reward_ma)]):
-        new_best = True
-
-    if update_saved_best and new_best:
-        update_saved_best_reward_ma(algorithm.agent)
-
-    return new_best, is_solved
-
-
-def is_solved(algorithm):
-    '''Returns true if the algorithm has solved all of the
-    environments as defined in slm_lab/spec/_fitness_std.json'''
-    return current_epi_is_new_best(algorithm)[1]
-
-
 def save_algorithm(algorithm, ckpt=None):
     '''Save all the nets for an algorithm'''
     agent = algorithm.agent
     net_names = algorithm.net_names
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
-    new_best = current_epi_is_new_best(algorithm, update_saved_best=True)[0]
+    new_best = analysis.current_epi_is_new_best(algorithm, update_saved_best=True)[0]
     if ckpt is not None:
         prepath = f'{prepath}_ckpt{ckpt}'
     logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
