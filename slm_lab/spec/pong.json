@@ -43,10 +43,8 @@
           "name": "SmoothL1Loss",
         },
         "optim_spec": {
-          "name": "RMSprop",
+          "name": "Adam",
           "lr": 2.5e-4,
-          "alpha": 0.95,
-          "eps": 1e-1,
         },
         "lr_scheduler_spec": null,
         "update_type": "replace",
@@ -106,7 +104,7 @@
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_start_step": 100,
+        "training_start_step": 50000,
         "normalize_state": false
       },
       "memory": {
