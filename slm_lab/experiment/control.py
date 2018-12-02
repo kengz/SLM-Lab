@@ -5,7 +5,6 @@ Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Se
 from copy import deepcopy
 from importlib import reload
 from slm_lab.agent import AgentSpace, Agent
-from slm_lab.agent.net.net_util import is_solved
 from slm_lab.env import EnvSpace, make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
@@ -85,7 +84,7 @@ class Session:
     def run(self):
         while self.env.clock.get(self.env.max_tick_unit) < self.env.max_tick:
             self.run_episode()
-            if is_solved(self.agent.algorithm):
+            if analysis.is_solved(self.agent.algorithm):
                 break
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
