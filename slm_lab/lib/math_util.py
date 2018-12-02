@@ -113,8 +113,8 @@ def standardize(v):
     v = (v - v.mean()) / v_std
     return v
 
-# generic variable decay methods
 
+# generic variable decay methods
 
 def no_decay(start_val, end_val, start_step, end_step, step):
     '''dummy method for API consistency'''

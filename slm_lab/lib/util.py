@@ -5,6 +5,7 @@ import cv2
 import json
 import math
 import numpy as np
+import operator
 import os
 import pandas as pd
 import pydash as ps
@@ -86,6 +87,14 @@ def concat_batches(batches):
     return concat_batch
 
 
+def cond_multiget(arr, idxs):
+    '''Get multi-idxs from an array depending if it's a python list or np.array'''
+    if isinstance(arr, list):
+        return np.array(operator.itemgetter(*idxs)(arr))
+    else:
+        return arr[idxs]
+
+
 def count_nonan(arr):
     try:
         return np.count_nonzero(~np.isnan(arr))
@@ -99,17 +108,6 @@ def downcast_float32(df):
         if df[col].dtype == 'float':
             df[col] = df[col].astype('float32')
     return df
-
-
-def fast_uniform_sample(mem_size, batch_size):
-    '''Fast uniform sampling for large memory size (indices) by binning the number line and sampling from each bin'''
-    if mem_size <= batch_size:
-        return np.random.randint(mem_size, size=batch_size)
-    num_base = math.floor(mem_size / batch_size)
-    bin_start = np.arange(batch_size, dtype=np.int) * num_base
-    bin_idx = np.random.randint(num_base, size=batch_size)
-    bin_idx += bin_start
-    return bin_idx
 
 
 def flatten_dict(obj, delim='.'):
@@ -218,12 +216,15 @@ def get_prepath(spec, info_space, unit='experiment'):
     spec_name = spec['name']
     predir = f'data/{spec_name}_{info_space.experiment_ts}'
     prename = f'{spec_name}'
+    ckpt = ps.get(info_space, 'ckpt')
     trial_index = info_space.get('trial')
     session_index = info_space.get('session')
     if unit == 'trial':
         prename += f'_t{trial_index}'
     elif unit == 'session':
         prename += f'_t{trial_index}_s{session_index}'
+    if ckpt is not None:
+        prename += f'_ckpt{ckpt}'
     prepath = f'{predir}/{prename}'
     return prepath
 
@@ -350,37 +351,37 @@ def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
 
 
 def prepath_split(prepath):
-    '''Split prepath into prefolder and prename'''
+    '''
+    Split prepath into useful names. Works with predir (prename will be None)
+    prepath: data/dqn_pong_2018_12_02_082510/dqn_pong_t0_s0
+    predir: data/dqn_pong_2018_12_02_082510
+    prefolder: dqn_pong_2018_12_02_082510
+    prename: dqn_pong_t0_s0
+    spec_name: dqn_pong
+    experiment_ts: 2018_12_02_082510
+    ckpt: ckptbest of dqn_pong_t0_s0_ckptbest if available
+    '''
     prepath = prepath.strip('_')
     tail = prepath.split('data/')[-1]
-    prefolder, prename = tail.split('/')
-    return prefolder, prename
-
-
-def prepath_to_experiment_ts(prepath):
-    predir = prepath_to_predir(prepath)
-    experiment_ts = RE_FILE_TS.findall(predir)[0]
-    return experiment_ts
-
-
-def prepath_to_info_space(prepath):
-    '''Create info_space from prepath such that it returns the same prepath with spec'''
-    from slm_lab.experiment.monitor import InfoSpace
-    experiment_ts = prepath_to_experiment_ts(prepath)
-    trial_index, session_index = prepath_to_idxs(prepath)
-    # create info_space for prepath
-    info_space = InfoSpace()
-    info_space.experiment_ts = experiment_ts
-    info_space.set('experiment', 0)
-    info_space.set('trial', trial_index)
-    info_space.set('session', session_index)
-    return info_space
+    if '_ckpt' in tail:
+        ckpt_chunk = ps.find(tail.split('_'), lambda s: s.startswith('ckpt'))
+        tail = tail.replace(f'_{ckpt_chunk}', '')
+        ckpt = ckpt_chunk.replace('ckpt', '')
+    else:
+        ckpt = None
+    if '/' in tail:
+        prefolder, prename = tail.split('/')
+    else:
+        prefolder, prename = tail, None
+    predir = f'data/{prefolder}'
+    spec_name = RE_FILE_TS.sub('', prefolder).strip('_')
+    experiment_ts = RE_FILE_TS.findall(prefolder)[0]
+    return predir, prefolder, prename, spec_name, experiment_ts, ckpt
 
 
 def prepath_to_idxs(prepath):
     '''Extract trial index and session index from prepath if available'''
-    spec_name = prepath_to_spec_name(prepath)
-    _prefolder, prename = prepath_split(prepath)
+    _, _, prename, spec_name, _, _ = prepath_split(prepath)
     idxs_tail = prename.replace(spec_name, '').strip('_')
     idxs_strs = idxs_tail.split('_')[:2]
     assert len(idxs_strs) > 0, 'No trial/session indices found in prepath'
@@ -396,30 +397,29 @@ def prepath_to_idxs(prepath):
     return trial_index, session_index
 
 
-def prepath_to_predir(prepath):
-    tail = prepath.split('data/')[-1]
-    prefolder = tail.split('/')[0]
-    predir = f'data/{prefolder}'
-    return predir
-
-
-def prepath_to_spec_name(prepath):
-    predir = prepath_to_predir(prepath)
-    tail = prepath.split('data/')[-1]
-    prefolder = tail.split('/')[0]
-    experiment_ts = prepath_to_experiment_ts(prepath)
-    spec_name = prefolder.replace(experiment_ts, '').strip('_')
-    return spec_name
-
-
 def prepath_to_spec(prepath):
     '''Create spec from prepath such that it returns the same prepath with info_space'''
-    prepath = prepath.strip('_')
-    pre_spec_path = '_'.join(prepath.split('_')[:-1])
-    spec_path = f'{pre_spec_path}_spec.json'
+    predir, _, prename, _, _, _ = prepath_split(prepath)
+    prename_no_s = '_'.join(prename.split('_')[:-1])
+    spec_path = f'{predir}/{prename_no_s}_spec.json'
     # read the spec of prepath
     spec = read(spec_path)
     return spec
+
+
+def prepath_to_info_space(prepath):
+    '''Create info_space from prepath such that it returns the same prepath with spec'''
+    from slm_lab.experiment.monitor import InfoSpace
+    _, _, _, _, experiment_ts, ckpt = prepath_split(prepath)
+    trial_index, session_index = prepath_to_idxs(prepath)
+    # create info_space for prepath
+    info_space = InfoSpace()
+    info_space.experiment_ts = experiment_ts
+    info_space.ckpt = ckpt
+    info_space.set('experiment', 0)
+    info_space.set('trial', trial_index)
+    info_space.set('session', session_index)
+    return info_space
 
 
 def prepath_to_spec_info_space(prepath):
@@ -560,11 +560,17 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
-def set_module_seed(random_seed):
+def set_rand_seed(random_seed, env_space):
     '''Set all the module random seeds'''
     torch.cuda.manual_seed_all(random_seed)
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
+    envs = env_space.envs if hasattr(env_space, 'envs') else [env_space]
+    for env in envs:
+        try:
+            env.u_env.seed(random_seed)
+        except Exception as e:
+            pass
 
 
 def set_session_logger(spec, info_space, logger):
@@ -726,9 +732,8 @@ def write_as_plain(data, data_path):
 
 # Atari image transformation
 
-def weighted_greyscale_image(im):
-    '''Greyscale image with special weights applied to RGB different colors blending together'''
-    return np.dot(im[..., :3], [0.299, 0.587, 0.114])
+def grayscale_image(im):
+    return cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
 
 
 def resize_image(im, w_h):
@@ -737,35 +742,32 @@ def resize_image(im, w_h):
 
 def crop_image(im):
     '''Crop away the unused top-bottom game borders of Atari'''
-    return im[-92:-8, :]
+    return im[18:102, :]
 
 
 def normalize_image(im):
+    # NOTE: beware in its application, may cause loss to be 256 times lower due to smaller input values
     return np.divide(im, 255.0)
 
 
 def nature_transform_image(im):
     '''
     Image preprocessing from the paper "Playing Atari with Deep Reinforcement Learning, 2013, Mnih et al"
-    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84 without the game border, then normalize
+    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84 without the game border
     '''
-    if im.ndim != 3:
-        print(f'Unexpected image dimension: {im.ndim}, {im.shape}')
-    im = weighted_greyscale_image(im)
+    im = grayscale_image(im)
     im = resize_image(im, (84, 110))
     im = crop_image(im)
-    im = normalize_image(im)
     return im
 
 
 def openai_transform_image(im):
     '''
-    Image transformation using OpenAI's baselines method: greyscale, resize, normalize
+    Image transformation using OpenAI's baselines method: greyscale, resize
     Instead of cropping as done in nature_transform_image(), this resizes and stretches the image.
     '''
-    im = cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
+    im = grayscale_image(im)
     im = resize_image(im, (84, 84))
-    im = normalize_image(im)
     return im
 
 

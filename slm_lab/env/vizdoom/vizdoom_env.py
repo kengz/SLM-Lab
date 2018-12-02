@@ -21,7 +21,7 @@ class VizDoomEnv(Env):
         # TODO In future, need to update action to handle (continuous) DELTA buttons using gym's Box space
         self.action_space = spaces.MultiDiscrete([2] * self.game.get_available_buttons_size())
         self.action_space.dtype = 'uint8'
-        output_shape = (self.game.get_screen_height(), self.game.get_screen_width(), self.game.get_screen_channels())
+        output_shape = (self.game.get_screen_channels(), self.game.get_screen_height(), self.game.get_screen_width())
         self.observation_space = spaces.Box(low=0, high=255, shape=output_shape, dtype='uint8')
         self.game.init()
 
@@ -41,7 +41,7 @@ class VizDoomEnv(Env):
         # info = self._get_game_variables(state.game_variables)
         info = {}
         if state is not None:
-            observation = state.screen_buffer.transpose(1, 2, 0)
+            observation = state.screen_buffer
         else:
             observation = np.zeros(shape=self.observation_space.shape, dtype=np.uint8)
         return observation, reward, done, info
@@ -49,7 +49,7 @@ class VizDoomEnv(Env):
     def reset(self):
         # self.seed(seed)
         self.game.new_episode()
-        return self.game.get_state().screen_buffer.transpose(1, 2, 0)
+        return self.game.get_state().screen_buffer
 
     def render(self, mode='human', close=False):
         if close:
