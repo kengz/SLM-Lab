@@ -391,6 +391,7 @@
         ],
         "fc_hid_layers": [128, 64],
         "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
         "batch_norm": false,
         "clip_grad_val": 10.0,
         "loss_spec": {
