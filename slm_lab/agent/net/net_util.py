@@ -1,6 +1,6 @@
 from functools import partial
 from slm_lab import ROOT_DIR
-from slm_lab.experiment.analysis import current_epi_is_new_best
+from slm_lab.experiment import analysis
 from slm_lab.lib import logger, util
 from subprocess import DEVNULL
 import os
@@ -155,7 +155,7 @@ def save_algorithm(algorithm, ckpt=None):
     agent = algorithm.agent
     net_names = algorithm.net_names
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
-    new_best = current_epi_is_new_best(algorithm, update_saved_best=True)[0]
+    new_best = analysis.current_epi_is_new_best(algorithm, update_saved_best=True)[0]
     if ckpt is not None:
         prepath = f'{prepath}_ckpt{ckpt}'
     logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
