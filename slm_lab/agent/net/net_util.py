@@ -178,6 +178,7 @@ def get_fitness_std(agent):
             env_name = body.env.name
             std = FITNESS_STD.get(env_name)['std_epi_reward']
             solved_scores.append(std)
+        return solved_scores
     else:
         env_name = agent.body.env.name
         std = FITNESS_STD.get(env_name)['std_epi_reward']
