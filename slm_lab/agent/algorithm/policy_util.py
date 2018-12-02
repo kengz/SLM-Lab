@@ -201,8 +201,6 @@ def random(state, algorithm, body):
 
 def epsilon_greedy(state, algorithm, body):
     '''Epsilon-greedy policy: with probability epsilon, do random action, otherwise do default sampling.'''
-    if util.get_lab_mode() == 'enjoy':
-        return default(state, algorithm, body)
     epsilon = body.explore_var
     if epsilon > np.random.rand():
         return random(state, algorithm, body)
@@ -214,8 +212,6 @@ def boltzmann(state, algorithm, body):
     '''
     Boltzmann policy: adjust pdparam with temperature tau; the higher the more randomness/noise in action.
     '''
-    if util.get_lab_mode() == 'enjoy':
-        return default(state, algorithm, body)
     tau = body.explore_var
     ActionPD, pdparam, body = init_action_pd(state, algorithm, body)
     pdparam /= tau
@@ -264,8 +260,6 @@ def multi_random(states, algorithm, body_list, pdparam):
 def multi_epsilon_greedy(states, algorithm, body_list, pdparam):
     '''Apply epsilon-greedy policy body-wise'''
     assert len(pdparam) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
-    if util.get_lab_mode() == 'enjoy':
-        return multi_default(states, algorithm, body_list, pdparam)
     action_list, action_pd_a = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
@@ -286,8 +280,6 @@ def multi_boltzmann(states, algorithm, body_list, pdparam):
     '''Apply Boltzmann policy body-wise'''
     # pdparam.squeeze_(dim=0)
     assert len(pdparam) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
-    if util.get_lab_mode() == 'enjoy':
-        return multi_default(states, algorithm, body_list, pdparam)
     action_list, action_pd_a = [], []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
@@ -330,11 +322,13 @@ class VarScheduler:
             'start_step',
             'end_step',
         ])
+        if not getattr(self, 'end_val', None):
+            self.end_val = self.start_val
 
     def update(self, algorithm, clock):
         '''Get an updated value for var'''
-        if self._updater_name == 'no_decay':
-            return self.start_val
+        if util.get_lab_mode() == 'enjoy' or self._updater_name == 'no_decay':
+            return self.end_val
         step = clock.get(clock.max_tick_unit)
         val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
         return val

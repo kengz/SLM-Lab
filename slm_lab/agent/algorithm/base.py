@@ -113,6 +113,11 @@ class Algorithm(ABC):
             logger.info('No net declared in self.net_names in init_nets(); no models to load.')
         else:
             net_util.load_algorithm(self)
+        # set decayable variables to final values
+        for k, v in vars(self).items():
+            if k.endswith('_scheduler'):
+                var_name = k.replace('_scheduler', '')
+                setattr(self.body, var_name, v.end_val)
 
     # NOTE optional extension for multi-agent-env
 
