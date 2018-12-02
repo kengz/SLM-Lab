@@ -218,7 +218,7 @@ def wrap_atari(env):
     return env
 
 
-def wrap_deepmind(env, episode_life=True, clip_rewards=True):
+def wrap_deepmind(env, episode_life=True, clip_rewards=True, stack_len=None):
     '''Wrap Atari environment DeepMind-style'''
     if episode_life:
         env = EpisodicLifeEnv(env)
@@ -227,6 +227,6 @@ def wrap_deepmind(env, episode_life=True, clip_rewards=True):
     if clip_rewards:
         env = ClipRewardEnv(env)
     env = TransformImage(env)
-    # TODO absorb into memory for efficient handling
-    # env = FrameStack(env, 4)
+    if stack_len is not None:
+        env = FrameStack(env, stack_len)
     return env
