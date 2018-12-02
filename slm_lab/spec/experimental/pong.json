@@ -117,8 +117,8 @@
         "type": "MLPNet",
         "hid_layers": [256, 128, 64],
         "hid_layers_activation": "relu",
-        "init_fn": "kaiming_uniform_",
-        "clip_grad_val": 10.0,
+        "init_fn": "orthogonal_",
+        "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "SmoothL1Loss",
         },
