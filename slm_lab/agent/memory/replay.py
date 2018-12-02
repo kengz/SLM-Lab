@@ -1,7 +1,7 @@
 from collections import deque
 from copy import deepcopy
 from slm_lab.agent.memory.base import Memory
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
@@ -123,7 +123,7 @@ class Replay(Memory):
             if k == 'next_states':
                 batch[k] = self._sample_next_states(self.batch_idxs)
             else:
-                batch[k] = getattr(self, k)[self.batch_idxs]
+                batch[k] = util.cond_multiget(getattr(self, k), self.batch_idxs)
         return batch
 
     def _sample_next_states(self, batch_idxs):
@@ -137,7 +137,7 @@ class Replay(Memory):
         # then sample safely from self.states, and replace at locs with latest_next_state
         if to_replace:
             ns_batch_idxs[latest_ns_locs] = 0
-        next_states = self.states[ns_batch_idxs]
+        next_states = util.cond_multiget(self.states, ns_batch_idxs)
         if to_replace:
             next_states[latest_ns_locs] = self.latest_next_state
         return next_states
@@ -145,8 +145,6 @@ class Replay(Memory):
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
         batch_idxs = np.random.randint(self.true_size, size=batch_size)
-        # TODO fancy sampling only took early experiences somehow. could be due to binning stuff
-        # batch_idxs = util.fast_uniform_sample(self.true_size, batch_size)
         if self.use_cer:  # add the latest sample
             batch_idxs[-1] = self.head
         return batch_idxs
@@ -276,7 +274,7 @@ class ConcatReplay(Replay):
         return np.concatenate(self.state_buffer)
 
 
-class AtariReplay(ConcatReplay):
+class AtariReplay(Replay):
     '''
     Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-10, 10] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
     Note: Playing Atari with Deep RL clips the rewards to + / - 1
@@ -292,37 +290,15 @@ class AtariReplay(ConcatReplay):
     '''
 
     def __init__(self, memory_spec, body):
-        self.atari = True  # Memory is specialized for playing Atari games
         util.set_attr(self, memory_spec, [
             'batch_size',
             'max_size',
             'stack_len',  # number of stack states
             'use_cer',
         ])
-        self.raw_state_dim = (84, 84)
-        body.state_dim = self.raw_state_dim + (self.stack_len,)  # greyscale downsized, stacked
         Replay.__init__(self, memory_spec, body)
-        self.state_buffer = deque(maxlen=self.stack_len)
-        self.reset()
-
-    def preprocess_state(self, state, append=True):
-        '''Transforms the raw state into format that is fed into the network'''
-        state = util.transform_image(state)
-        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
-        self.preprocess_append(state, append)
-        processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
-        assert processed_state.shape == self.body.state_dim
-        return processed_state
-
-    @lab_api
-    def update(self, action, reward, state, done):
-        '''Interface method to update memory'''
-        self.base_update(action, reward, state, done)
-        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
-        if not np.isnan(reward):  # not the start of episode
-            reward = np.sign(reward)
-            self.add_experience(self.last_state, action, reward, state, done)
-        self.last_state = state
+        self.states_shape = self.scalar_shape
+        self.states = [None] * self.max_size
 
 
 class ImageReplay(Replay):

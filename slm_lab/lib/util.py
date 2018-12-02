@@ -5,6 +5,7 @@ import cv2
 import json
 import math
 import numpy as np
+import operator
 import os
 import pandas as pd
 import pydash as ps
@@ -86,6 +87,14 @@ def concat_batches(batches):
     return concat_batch
 
 
+def cond_multiget(arr, idxs):
+    '''Get multi-idxs from an array depending if it's a python list or np.array'''
+    if isinstance(arr, list):
+        return np.array(operator.itemgetter(*idxs)(arr))
+    else:
+        return arr[idxs]
+
+
 def count_nonan(arr):
     try:
         return np.count_nonzero(~np.isnan(arr))
@@ -99,17 +108,6 @@ def downcast_float32(df):
         if df[col].dtype == 'float':
             df[col] = df[col].astype('float32')
     return df
-
-
-def fast_uniform_sample(mem_size, batch_size):
-    '''Fast uniform sampling for large memory size (indices) by binning the number line and sampling from each bin'''
-    if mem_size <= batch_size:
-        return np.random.randint(mem_size, size=batch_size)
-    num_base = math.floor(mem_size / batch_size)
-    bin_start = np.arange(batch_size, dtype=np.int) * num_base
-    bin_idx = np.random.randint(num_base, size=batch_size)
-    bin_idx += bin_start
-    return bin_idx
 
 
 def flatten_dict(obj, delim='.'):
@@ -734,9 +732,8 @@ def write_as_plain(data, data_path):
 
 # Atari image transformation
 
-def weighted_greyscale_image(im):
-    '''Greyscale image with special weights applied to RGB different colors blending together'''
-    return np.dot(im[..., :3], [0.299, 0.587, 0.114])
+def grayscale_image(im):
+    return cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
 
 
 def resize_image(im, w_h):
@@ -745,35 +742,32 @@ def resize_image(im, w_h):
 
 def crop_image(im):
     '''Crop away the unused top-bottom game borders of Atari'''
-    return im[-92:-8, :]
+    return im[18:102, :]
 
 
 def normalize_image(im):
+    # NOTE: beware in its application, may cause loss to be 256 times lower due to smaller input values
     return np.divide(im, 255.0)
 
 
 def nature_transform_image(im):
     '''
     Image preprocessing from the paper "Playing Atari with Deep Reinforcement Learning, 2013, Mnih et al"
-    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84 without the game border, then normalize
+    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84 without the game border
     '''
-    if im.ndim != 3:
-        print(f'Unexpected image dimension: {im.ndim}, {im.shape}')
-    im = weighted_greyscale_image(im)
+    im = grayscale_image(im)
     im = resize_image(im, (84, 110))
     im = crop_image(im)
-    im = normalize_image(im)
     return im
 
 
 def openai_transform_image(im):
     '''
-    Image transformation using OpenAI's baselines method: greyscale, resize, normalize
+    Image transformation using OpenAI's baselines method: greyscale, resize
     Instead of cropping as done in nature_transform_image(), this resizes and stretches the image.
     '''
-    im = cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
+    im = grayscale_image(im)
     im = resize_image(im, (84, 84))
-    im = normalize_image(im)
     return im
 
 

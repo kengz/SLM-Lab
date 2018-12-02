@@ -234,7 +234,7 @@ def gen_assert_trained(pre_model):
             for p_name, param in post_model.named_parameters():
                 assert param.grad.norm() == 0
         else:
-            assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), 'Model parameter is not updated in training_step(), check if your tensor is detached from graph.'
+            assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), f'Model parameter is not updated in training_step(), check if your tensor is detached from graph. loss: {loss}'
             min_norm = 0
             max_norm = 1e5
             for p_name, param in post_model.named_parameters():

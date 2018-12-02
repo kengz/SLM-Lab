@@ -350,7 +350,7 @@ class OnPolicyConcatReplay(OnPolicyReplay):
         self.last_state = state
 
 
-class OnPolicyAtariReplay(OnPolicyConcatReplay):
+class OnPolicyAtariReplay(OnPolicyReplay):
     '''
     Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-10, 10] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
     Note: Playing Atari with Deep RL clips the rewards to + / - 1
@@ -358,34 +358,10 @@ class OnPolicyAtariReplay(OnPolicyConcatReplay):
     '''
 
     def __init__(self, memory_spec, body):
-        self.atari = True  # Memory is specialized for playing Atari games
         util.set_attr(self, memory_spec, [
             'stack_len',  # number of stack states
         ])
-        self.raw_state_dim = (84, 84)
-        body.state_dim = self.raw_state_dim + (self.stack_len,)  # greyscale downsized, stacked
         OnPolicyReplay.__init__(self, memory_spec, body)
-        self.state_buffer = deque(maxlen=self.stack_len)
-        self.reset()
-
-    def preprocess_state(self, state, append=True):
-        '''Transforms the raw state into format that is fed into the network'''
-        state = util.transform_image(state)
-        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
-        self.preprocess_append(state, append)
-        processed_state = np.stack(self.state_buffer, axis=-1).astype(np.float16)
-        assert processed_state.shape == self.body.state_dim
-        return processed_state
-
-    @lab_api
-    def update(self, action, reward, state, done):
-        '''Interface method to update memory'''
-        self.base_update(action, reward, state, done)
-        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
-        if not np.isnan(reward):  # not the start of episode
-            reward = np.sign(reward)
-            self.add_experience(self.last_state, action, reward, state, done)
-        self.last_state = state
 
 
 class OnPolicyImageReplay(OnPolicyReplay):
