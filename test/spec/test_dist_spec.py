@@ -100,10 +100,10 @@ def test_ppo_cont_dist(spec_file, spec_name):
 
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('ppo_sil.json', 'ppo_sil_mlp_shared_cartpole'),
-    ('ppo_sil.json', 'ppo_sil_mlp_separate_cartpole'),
-    ('ppo_sil.json', 'ppo_sil_rnn_shared_cartpole'),
-    ('ppo_sil.json', 'ppo_sil_rnn_separate_cartpole'),
+    ('experimental/ppo_sil.json', 'ppo_sil_mlp_shared_cartpole'),
+    ('experimental/ppo_sil.json', 'ppo_sil_mlp_separate_cartpole'),
+    ('experimental/ppo_sil.json', 'ppo_sil_rnn_shared_cartpole'),
+    ('experimental/ppo_sil.json', 'ppo_sil_rnn_separate_cartpole'),
 ])
 def test_ppo_sil_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)
