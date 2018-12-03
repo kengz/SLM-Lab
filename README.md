@@ -14,11 +14,9 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 | [Roadmap](https://github.com/kengz/SLM-Lab/projects) | Research and engineering roadmap |
 | [Gitter](https://gitter.im/SLM-Lab/SLM-Lab) | SLM Lab user chatroom |
 
-![dqn cartpole ball2d](https://media.giphy.com/media/l0DAIymuiMS3HyW9G/giphy.gif)
->A multitask agent solving both OpenAI Cartpole-v0 and Unity Ball2D.
-
-![pong](https://user-images.githubusercontent.com/8209263/49346161-07dd8580-f643-11e8-975c-38972465a587.gif)
->DQN Atari Pong solution in SLM Lab.
+| | | |
+|:---:|:---:|:---:|
+|![dqn cartpole ball2d](https://media.giphy.com/media/l0DAIymuiMS3HyW9G/giphy.gif) A multitask agent solving both OpenAI Cartpole-v0 and Unity Ball2D. | ![pong](https://user-images.githubusercontent.com/8209263/49346161-07dd8580-f643-11e8-975c-38972465a587.gif) DQN Atari Pong solution in SLM Lab. | ![lunar](https://user-images.githubusercontent.com/5512945/49346897-8d663300-f64d-11e8-8e9c-97cf079337a3.gif) DDQN Lunar solution in SLM Lab. |
 
 SLM Lab is created for deep reinforcement learning research and applications. The design was guided by four principles
 - **modularity**
