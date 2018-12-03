@@ -77,7 +77,7 @@ class ConvNet(Net, nn.Module):
         super(ConvNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fn='xavier_uniform_',
+            init_fn=None,
             batch_norm=True,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
@@ -266,7 +266,7 @@ class DuelingConvNet(ConvNet):
         Net.__init__(self, net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fn='xavier_uniform_',
+            init_fn=None,
             batch_norm=True,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
