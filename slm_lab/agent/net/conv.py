@@ -31,7 +31,8 @@ class ConvNet(Net, nn.Module):
         ],
         "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
-        "init_fn": "xavier_uniform_",
+        "init_fn": null,
+        "maxpool": [3],
         "batch_norm": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -78,6 +79,7 @@ class ConvNet(Net, nn.Module):
         # set default
         util.set_attr(self, dict(
             init_fn=None,
+            maxpool=None,
             batch_norm=True,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
@@ -93,6 +95,7 @@ class ConvNet(Net, nn.Module):
             'fc_hid_layers',
             'hid_layers_activation',
             'init_fn',
+            'maxpool',
             'batch_norm',
             'clip_grad_val',
             'loss_spec',
@@ -149,6 +152,8 @@ class ConvNet(Net, nn.Module):
             hid_layer = [tuple(e) if ps.is_list(e) else e for e in hid_layer]  # guard list-to-tuple
             # hid_layer = out_d, kernel, stride, padding, dilation
             conv_layers.append(nn.Conv2d(in_d, *hid_layer))
+            if not ps.is_empty(self.maxpool):
+                conv_layers.append(nn.MaxPool2d(*self.maxpool))
             conv_layers.append(net_util.get_activation_fn(self.hid_layers_activation))
             # Don't include batch norm in the first layer
             if self.batch_norm and i != 0:
@@ -267,7 +272,8 @@ class DuelingConvNet(ConvNet):
         # set default
         util.set_attr(self, dict(
             init_fn=None,
-            batch_norm=True,
+            maxpool=None,
+            batch_norm=False,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},
@@ -282,6 +288,7 @@ class DuelingConvNet(ConvNet):
             'fc_hid_layers',
             'hid_layers_activation',
             'init_fn',
+            'maxpool',
             'batch_norm',
             'clip_grad_val',
             'loss_spec',
