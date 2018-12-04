@@ -1,5 +1,5 @@
 {
-  "ddqn_pong": {
+  "ddqn_seaquest": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {

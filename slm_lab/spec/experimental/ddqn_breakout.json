@@ -1,5 +1,5 @@
 {
-  "ddqn_pong": {
+  "ddqn_breakout": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {

@@ -1,5 +1,5 @@
 {
-  "ddqn_pong": {
+  "ddqn_qbert": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {

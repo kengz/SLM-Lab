@@ -1,5 +1,5 @@
 {
-  "dqn_pong": {
+  "dqn_enduro": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
