@@ -56,7 +56,7 @@
       }
     }],
     "env": [{
-      "name": "BreakoutNoFrameskip-v4",
+      "name": "BeamRiderNoFrameskip-v4",
       "max_t": null,
       "max_total_t": 10000000,
       "save_frequency": 100000
