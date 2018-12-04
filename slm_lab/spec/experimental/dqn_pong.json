@@ -114,7 +114,6 @@
         "fc_hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": null,
-        "maxpool": [3],
         "batch_norm": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
