@@ -3,6 +3,17 @@
 
 Modular Deep Reinforcement Learning framework in PyTorch.
 
+|||||
+|:---:|:---:|:---:|:---:|
+| ![ddqn_beamrider](https://user-images.githubusercontent.com/8209263/49688812-b7e04200-facc-11e8-9a1a-d5c8e512f26c.gif) |  ![ddqn_breakout](https://user-images.githubusercontent.com/8209263/49688819-c29ad700-facc-11e8-842b-1dc6f6f38495.gif) | ![ddqn_enduro](https://user-images.githubusercontent.com/8209263/49688852-3ccb5b80-facd-11e8-80e4-8d86c195d112.gif)|![ddqn_pong](https://user-images.githubusercontent.com/8209263/49688793-54eeab00-facc-11e8-80fe-4b76a12180a0.gif) |
+| BeamRider | Breakout | Enduro | Pong |
+| ![ddqn_qbert](https://user-images.githubusercontent.com/8209263/49688862-6be1cd00-facd-11e8-849d-61aef598611b.gif) | ![ddqn_seaquest](https://user-images.githubusercontent.com/8209263/49688863-70a68100-facd-11e8-9303-73bea9b9987a.gif) | ![ddqn_spaceinvaders](https://user-images.githubusercontent.com/8209263/49688875-87e56e80-facd-11e8-90be-9d6be7bace03.gif) | |
+| Qbert | Seaquest | SpaceInvaders | |
+
+| | | |
+|:---:|:---:|:---:|
+| ![dqn cartpole ball2d](https://media.giphy.com/media/l0DAIymuiMS3HyW9G/giphy.gif) Multitask DQN solving OpenAI Cartpole-v0 and Unity Ball2D. | ![pong](https://user-images.githubusercontent.com/8209263/49346161-07dd8580-f643-11e8-975c-38972465a587.gif) DQN Atari Pong solution in SLM Lab. | ![lunar](https://user-images.githubusercontent.com/5512945/49346897-8d663300-f64d-11e8-8e9c-97cf079337a3.gif) DDQN Lunar solution in SLM Lab. |
+
 | References | |
 |------------|--|
 | [Github](https://github.com/kengz/SLM-Lab) | Github repository |
@@ -13,10 +24,6 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 | [Contributing](https://github.com/kengz/SLM-Lab/blob/master/CONTRIBUTING.md)| How to contribute |
 | [Roadmap](https://github.com/kengz/SLM-Lab/projects) | Research and engineering roadmap |
 | [Gitter](https://gitter.im/SLM-Lab/SLM-Lab) | SLM Lab user chatroom |
-
-| | | |
-|:---:|:---:|:---:|
-|![dqn cartpole ball2d](https://media.giphy.com/media/l0DAIymuiMS3HyW9G/giphy.gif) A multitask agent solving both OpenAI Cartpole-v0 and Unity Ball2D. | ![pong](https://user-images.githubusercontent.com/8209263/49346161-07dd8580-f643-11e8-975c-38972465a587.gif) DQN Atari Pong solution in SLM Lab. | ![lunar](https://user-images.githubusercontent.com/5512945/49346897-8d663300-f64d-11e8-8e9c-97cf079337a3.gif) DDQN Lunar solution in SLM Lab. |
 
 SLM Lab is created for deep reinforcement learning research and applications. The design was guided by four principles
 - **modularity**
