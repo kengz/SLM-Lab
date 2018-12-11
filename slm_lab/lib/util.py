@@ -21,7 +21,7 @@ NUM_CPUS = mp.cpu_count()
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
-NUM_EVAL_EPISODES = 3
+NUM_EVAL_EPISODES = 100
 
 
 class LabJsonEncoder(json.JSONEncoder):
