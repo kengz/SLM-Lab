@@ -87,7 +87,9 @@ class Agent:
     @lab_api
     def close(self):
         '''Close and cleanup agent at the end of a session, e.g. save model'''
-        self.save()
+        # No need to save a model in eval mode since a model will always have been loaded and not updated
+        if not util.get_lab_mode() == 'eval':
+            self.save()
 
     @lab_api
     def space_init(self, agent_space, body_a, global_nets):
