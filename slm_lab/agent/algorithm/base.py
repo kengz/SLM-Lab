@@ -48,8 +48,9 @@ class Algorithm(ABC):
         Call at the end of init_nets() after setting self.net_names
         '''
         assert hasattr(self, 'net_names')
-        if util.get_lab_mode() == 'enjoy':
-            logger.info('Loaded algorithm models for lab_mode: enjoy')
+        lab_mode = util.get_lab_mode()
+        if lab_mode == 'enjoy' or lab_mode == 'eval':
+            logger.info(f'Loaded algorithm models for lab_mode: {lab_mode}')
             self.load()
         else:
             logger.info(f'Initialized algorithm models for lab_mode: {util.get_lab_mode()}')
@@ -88,7 +89,8 @@ class Algorithm(ABC):
     @lab_api
     def train(self):
         '''Implement algorithm train, or throw NotImplementedError'''
-        if util.get_lab_mode() == 'enjoy':
+        lab_mode = util.get_lab_mode()
+        if lab_mode == 'enjoy' or lab_mode == 'eval':
             return np.nan
         raise NotImplementedError
 
@@ -149,7 +151,8 @@ class Algorithm(ABC):
 
     @lab_api
     def space_train(self):
-        if util.get_lab_mode() == 'enjoy':
+        lab_mode = util.get_lab_mode()
+        if lab_mode == 'enjoy' or lab_mode == 'eval':
             return np.nan
         losses = []
         for body in self.agent.nanflat_body_a:

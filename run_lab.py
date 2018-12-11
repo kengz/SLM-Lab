@@ -60,12 +60,17 @@ def run_by_mode(spec_file, spec_name, lab_mode):
         prepath = lab_mode.split('@')[1]
         spec, info_space = util.prepath_to_spec_info_space(prepath)
         Session(spec, info_space).run()
+    elif lab_mode.startswith('eval'):
+        prepath = lab_mode.split('@')[1]
+        spec, info_space = util.prepath_to_spec_info_space(prepath)
+        spec = util.override_eval_spec(spec)
+        Session(spec, info_space).run()
     elif lab_mode == 'dev':
         spec = util.override_dev_spec(spec)
         info_space.tick('trial')
         Trial(spec, info_space).run()
     else:
-        logger.warn('lab_mode not recognized; must be one of `search, train, enjoy, benchmark, dev`.')
+        logger.warn('lab_mode not recognized; must be one of `search, train, enjoy, eval, benchmark, dev`.')
 
 
 def main():
