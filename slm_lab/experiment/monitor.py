@@ -29,6 +29,7 @@ from statistics import mean
 import numpy as np
 import pandas as pd
 import pydash as ps
+import time
 
 # These correspond to the control unit classes, lower cased
 COOR_AXES = [
@@ -433,4 +434,4 @@ class InfoSpace:
 
     def get_random_seed(self):
         '''Standard method to get random seed for a session'''
-        return int(1e5 * (self.get('trial') or 0) + 1e3 * (self.get('session') or 0))
+        return int(1e5 * (self.get('trial') or 0) + 1e3 * (self.get('session') or 0) + time.time())
