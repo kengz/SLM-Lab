@@ -21,6 +21,7 @@ NUM_CPUS = mp.cpu_count()
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
+NUM_EVAL_EPISODES = 3
 
 
 class LabJsonEncoder(json.JSONEncoder):
@@ -315,6 +316,18 @@ def nonan_all(v):
 def override_dev_spec(spec):
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
+    return spec
+
+
+def override_eval_spec(spec):
+    spec['meta']['max_session'] = 1
+    spec['meta']['max_trial'] = 1
+    spec['meta']['graph_x'] = 'epi'
+    spec['meta']['eval_mode'] = True
+    for e in spec['env']:
+        if 'max_total_t' in e:
+            del e['max_total_t']
+        e['max_epi'] = NUM_EVAL_EPISODES
     return spec
 
 
