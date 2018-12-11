@@ -103,6 +103,8 @@ def get_out_dim(body, add_critic=False):
 
 
 def init_layers(net, init_fn):
+    if init_fn is None:
+        return
     if init_fn == 'xavier_uniform_':
         try:
             gain = nn.init.calculate_gain(net.hid_layers_activation)

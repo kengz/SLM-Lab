@@ -31,7 +31,7 @@ class ConvNet(Net, nn.Module):
         ],
         "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
-        "init_fn": "xavier_uniform_",
+        "init_fn": null,
         "batch_norm": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -77,7 +77,7 @@ class ConvNet(Net, nn.Module):
         super(ConvNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fn='xavier_uniform_',
+            init_fn=None,
             batch_norm=True,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
@@ -266,8 +266,8 @@ class DuelingConvNet(ConvNet):
         Net.__init__(self, net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fn='xavier_uniform_',
-            batch_norm=True,
+            init_fn=None,
+            batch_norm=False,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},
