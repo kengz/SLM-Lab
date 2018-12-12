@@ -95,8 +95,9 @@ class Body:
         self.last_loss = np.nan  # the last non-nan loss, for printing
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
-        self.df = pd.DataFrame(columns=['epi', 't', 'reward', 'loss', 'explore_var',
-                                        'lr', 'action_ent', 'ent_coef', 'grad_norm'])
+        self.df = pd.DataFrame(columns=[
+            'epi', 't', 'reward', 'loss', 'explore_var',
+            'lr', 'action_ent', 'ent_coef', 'grad_norm'])
 
         # diagnostics variables/stats from action_policy prob. dist.
         self.entropies = []  # check exploration
@@ -162,6 +163,12 @@ class Body:
         # update current reward_ma
         self.current_reward_ma = self.memory.avg_total_reward
         return row
+
+    def flush(self):
+        '''Flush gradient-related variables after training step similar.'''
+        self.entropies = []
+        self.log_probs = []
+        self.grad_norms = []
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))

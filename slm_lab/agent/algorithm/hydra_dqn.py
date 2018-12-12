@@ -101,9 +101,8 @@ class HydraDQN(DQN):
         For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
         Otherwise this function does nothing.
         '''
-        if util.get_lab_mode() in ['enjoy', 'eval']:
-            self.body.entropies = []
-            self.body.log_probs = []
+        if util.get_lab_mode() in ('enjoy', 'eval'):
+            self.body.flush()
             return np.nan
         clock = self.body.env.clock  # main clock
         tick = util.s_get(self, 'aeb_space.clock').get(clock.max_tick_unit)
@@ -120,8 +119,7 @@ class HydraDQN(DQN):
             # reset
             self.to_train = 0
             for body in self.agent.nanflat_body_a:
-                body.entropies = []
-                body.log_probs = []
+                body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()

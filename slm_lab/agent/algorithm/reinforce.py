@@ -130,9 +130,8 @@ class Reinforce(Algorithm):
 
     @lab_api
     def train(self):
-        if util.get_lab_mode() in ['enjoy', 'eval']:
-            self.body.entropies = []
-            self.body.log_probs = []
+        if util.get_lab_mode() in ('enjoy', 'eval'):
+            self.body.flush()
             return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
@@ -141,8 +140,7 @@ class Reinforce(Algorithm):
             self.net.training_step(loss=loss, lr_clock=clock)
             # reset
             self.to_train = 0
-            self.body.entropies = []
-            self.body.log_probs = []
+            self.body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
