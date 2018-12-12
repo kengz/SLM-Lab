@@ -327,7 +327,7 @@ def override_eval_spec(spec):
         if 'max_size' in agent_spec['memory']:
             agent_spec['memory']['max_size'] = 1000
     for env_spec in spec['env']:
-        if 'max_total_t' in e:
+        if 'max_total_t' in env_spec:
             del env_spec['max_total_t']
         env_spec['max_epi'] = NUM_EVAL_EPISODES
     return spec
