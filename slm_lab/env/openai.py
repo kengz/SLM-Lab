@@ -37,13 +37,10 @@ class OpenAIEnv(BaseEnv):
         super(OpenAIEnv, self).__init__(spec, e, env_space)
         register_env(spec)  # register any additional environments first
         env = gym.make(self.name)
-        self.eval_mode = False
-        if 'eval_mode' in spec['meta']:
-            self.eval_mode = spec['meta']['eval_mode']
         if 'NoFrameskip' in env.spec.id:  # for Atari
             stack_len = ps.get(spec, 'agent.0.memory.stack_len')
             env = wrap_atari(env)
-            if self.eval_mode:
+            if util.get_lab_mode() == 'eval':
                 env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=False)
             else:
                 env = wrap_deepmind(env, stack_len=stack_len)

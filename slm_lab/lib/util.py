@@ -323,7 +323,6 @@ def override_eval_spec(spec):
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 1
     spec['meta']['graph_x'] = 'epi'
-    spec['meta']['eval_mode'] = True
     for a in spec['agent']:
         if 'max_size' in a['memory']:
             a['memory']['max_size'] = 1000
