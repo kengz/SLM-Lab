@@ -324,6 +324,8 @@ def override_eval_spec(spec):
     spec['meta']['max_trial'] = 1
     spec['meta']['graph_x'] = 'epi'
     spec['meta']['eval_mode'] = True
+    if 'max_size' in spec['agent']['memory']:
+        spec['agent']['memory']['max_size'] = 1000
     for e in spec['env']:
         if 'max_total_t' in e:
             del e['max_total_t']
