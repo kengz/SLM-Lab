@@ -49,7 +49,7 @@ class Algorithm(ABC):
         '''
         assert hasattr(self, 'net_names')
         if util.get_lab_mode() in ['enjoy', 'eval']:
-            logger.info(f'Loaded algorithm models for lab_mode: {lab_mode}')
+            logger.info(f'Loaded algorithm models for lab_mode: {util.get_lab_mode()}')
             self.load()
         else:
             logger.info(f'Initialized algorithm models for lab_mode: {util.get_lab_mode()}')
