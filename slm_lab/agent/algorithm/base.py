@@ -88,8 +88,7 @@ class Algorithm(ABC):
     @lab_api
     def train(self):
         '''Implement algorithm train, or throw NotImplementedError'''
-        lab_mode = util.get_lab_mode()
-        if lab_mode == 'enjoy' or lab_mode == 'eval':
+        if util.get_lab_mode() in ['enjoy', 'eval']:
             return np.nan
         raise NotImplementedError
 
@@ -150,8 +149,7 @@ class Algorithm(ABC):
 
     @lab_api
     def space_train(self):
-        lab_mode = util.get_lab_mode()
-        if lab_mode == 'enjoy' or lab_mode == 'eval':
+        if util.get_lab_mode() in ['enjoy', 'eval']:
             return np.nan
         losses = []
         for body in self.agent.nanflat_body_a:
