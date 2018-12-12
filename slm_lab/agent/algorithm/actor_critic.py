@@ -209,6 +209,8 @@ class ActorCritic(Reinforce):
         '''Trains the algorithm'''
         lab_mode = util.get_lab_mode()
         if lab_mode == 'enjoy' or lab_mode == 'eval':
+            self.body.entropies = []
+            self.body.log_probs = []
             return np.nan
         if self.shared:
             return self.train_shared()

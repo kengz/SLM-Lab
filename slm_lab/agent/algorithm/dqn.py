@@ -132,6 +132,8 @@ class VanillaDQN(SARSA):
         '''
         lab_mode = util.get_lab_mode()
         if lab_mode == 'enjoy' or lab_mode == 'eval':
+            self.body.entropies = []
+            self.body.log_probs = []
             return np.nan
         clock = self.body.env.clock
         tick = clock.get(clock.max_tick_unit)
