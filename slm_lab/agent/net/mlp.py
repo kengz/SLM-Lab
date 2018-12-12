@@ -60,7 +60,7 @@ class MLPNet(Net, nn.Module):
         super(MLPNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fn='xavier_uniform_',
+            init_fn=None,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},
@@ -213,7 +213,7 @@ class HydraMLPNet(Net, nn.Module):
         super(HydraMLPNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fn='xavier_uniform_',
+            init_fn=None,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},
@@ -373,7 +373,7 @@ class DuelingMLPNet(MLPNet):
         Net.__init__(self, net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
-            init_fn='xavier_uniform_',
+            init_fn=None,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},

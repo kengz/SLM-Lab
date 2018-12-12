@@ -207,7 +207,8 @@ class ActorCritic(Reinforce):
     @lab_api
     def train(self):
         '''Trains the algorithm'''
-        if util.get_lab_mode() == 'enjoy':
+        if util.get_lab_mode() in ('enjoy', 'eval'):
+            self.body.flush()
             return np.nan
         if self.shared:
             return self.train_shared()
@@ -230,8 +231,7 @@ class ActorCritic(Reinforce):
             self.net.training_step(loss=loss, lr_clock=clock)
             # reset
             self.to_train = 0
-            self.body.entropies = []
-            self.body.log_probs = []
+            self.body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
@@ -250,8 +250,7 @@ class ActorCritic(Reinforce):
             loss = val_loss + abs(policy_loss)
             # reset
             self.to_train = 0
-            self.body.entropies = []
-            self.body.log_probs = []
+            self.body.flush()
             logger.debug(f'Trained {self.name}, loss: {loss:.4f}')
             return loss.item()
         else:

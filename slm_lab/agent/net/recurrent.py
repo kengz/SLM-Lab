@@ -79,7 +79,7 @@ class RecurrentNet(Net, nn.Module):
             cell_type='GRU',
             rnn_num_layers=1,
             bidirectional=False,
-            init_fn='xavier_uniform_',
+            init_fn=None,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
             optim_spec={'name': 'Adam'},
