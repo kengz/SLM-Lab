@@ -48,8 +48,7 @@ class Algorithm(ABC):
         Call at the end of init_nets() after setting self.net_names
         '''
         assert hasattr(self, 'net_names')
-        lab_mode = util.get_lab_mode()
-        if lab_mode == 'enjoy' or lab_mode == 'eval':
+        if util.get_lab_mode() in ['enjoy', 'eval']:
             logger.info(f'Loaded algorithm models for lab_mode: {lab_mode}')
             self.load()
         else:

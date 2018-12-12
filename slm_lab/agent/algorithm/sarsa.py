@@ -142,8 +142,7 @@ class SARSA(Algorithm):
         Completes one training step for the agent if it is time to train.
         Otherwise this function does nothing.
         '''
-        lab_mode = util.get_lab_mode()
-        if lab_mode == 'enjoy' or lab_mode == 'eval':
+        if util.get_lab_mode() in ['enjoy', 'eval']:
             self.body.entropies = []
             self.body.log_probs = []
             return np.nan

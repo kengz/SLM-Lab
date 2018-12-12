@@ -207,8 +207,7 @@ class ActorCritic(Reinforce):
     @lab_api
     def train(self):
         '''Trains the algorithm'''
-        lab_mode = util.get_lab_mode()
-        if lab_mode == 'enjoy' or lab_mode == 'eval':
+        if util.get_lab_mode() in ['enjoy', 'eval']:
             self.body.entropies = []
             self.body.log_probs = []
             return np.nan

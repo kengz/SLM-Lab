@@ -327,8 +327,7 @@ class VarScheduler:
 
     def update(self, algorithm, clock):
         '''Get an updated value for var'''
-        lab_mode = util.get_lab_mode()
-        if lab_mode == 'enjoy' or lab_mode == 'eval' or self._updater_name == 'no_decay':
+        if (util.get_lab_mode() in ['enjoy', 'eval']) or self._updater_name == 'no_decay':
             return self.end_val
         step = clock.get(clock.max_tick_unit)
         val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
