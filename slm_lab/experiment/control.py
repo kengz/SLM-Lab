@@ -200,7 +200,7 @@ class Trial:
 
     def run_sessions(self):
         logger.info('Running sessions')
-        if util.get_lab_mode() == 'train' and self.spec['meta']['max_session'] > 1:
+        if util.get_lab_mode() in ['train', 'eval'] and self.spec['meta']['max_session'] > 1:
             # when training a single spec over multiple sessions
             session_datas = self.parallelize_sessions()
         else:

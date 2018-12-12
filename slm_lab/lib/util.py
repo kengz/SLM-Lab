@@ -320,7 +320,7 @@ def override_dev_spec(spec):
 
 
 def override_eval_spec(spec):
-    spec['meta']['max_session'] = 1
+    spec['meta']['max_session'] = 6
     spec['meta']['max_trial'] = 1
     spec['meta']['graph_x'] = 'epi'
     for agent_spec in spec['agent']:
