@@ -185,7 +185,7 @@ def test_hydra_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-# @pytest.mark.skip(os.environ.get('CI') == 'true' or sys.platform == 'darwin', reason='CI/Mac has not enough RAM')
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('experimental/dqn.json', 'dqn_pong'),
     ('experimental/a2c.json', 'a2c_pong'),
