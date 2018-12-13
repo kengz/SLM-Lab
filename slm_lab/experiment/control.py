@@ -86,7 +86,7 @@ class Session:
     def run(self):
         while self.env.clock.get(self.env.max_tick_unit) < self.env.max_tick:
             self.run_episode()
-            if util.get_lab_mode() != 'enjoy' and analysis.all_solved(self.agent):
+            if util.get_lab_mode() not in ('enjoy', 'eval') and analysis.all_solved(self.agent):
                 logger.info('All environments solved. Early exit.')
                 break
         self.data = analysis.analyze_session(self)  # session fitness
