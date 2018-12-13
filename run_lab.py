@@ -3,6 +3,7 @@ The entry point of SLM Lab
 Specify what to run in `config/experiments.json`
 Then run `yarn start` or `python run_lab.py`
 '''
+from copy import deepcopy
 import os
 # NOTE increase if needed. Pytorch thread overusage https://github.com/pytorch/pytorch/issues/975
 os.environ['OMP_NUM_THREADS'] = '1'
@@ -58,10 +59,18 @@ def run_by_mode(spec_file, spec_name, lab_mode):
         Trial(spec, info_space).run()
     elif lab_mode.startswith('enjoy') or lab_mode.startswith('eval'):
         prepath = lab_mode.split('@')[1]
+        # For eval mode we create two InfoSpaces, the original and
+        # a new one, and copy all the relevant data (spec and models)
+        # to the new InfoSpace and use this. The original experiment
+        # folder remains unchanged
+        new_info_space = deepcopy(info_space)
         spec, info_space = util.prepath_to_spec_info_space(prepath)
         if lab_mode.startswith('eval'):
-            spec = util.override_eval_spec(spec)
-            Trial(spec, info_space).run()
+            new_spec = util.override_eval_spec(deepcopy(spec))
+            util.prepare_eval_directory(new_spec, new_info_space, spec, info_space, prepath)
+            logger.info('Eval directory prepared')
+            new_info_space.tick('trial')
+            Trial(new_spec, new_info_space).run()
         else:
             Session(spec, info_space).run()
     elif lab_mode == 'dev':
