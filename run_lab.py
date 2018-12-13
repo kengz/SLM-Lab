@@ -61,7 +61,9 @@ def run_by_mode(spec_file, spec_name, lab_mode):
         spec, info_space = util.prepath_to_spec_info_space(prepath)
         if lab_mode.startswith('eval'):
             spec = util.override_eval_spec(spec)
-        Session(spec, info_space).run()
+            Trial(spec, info_space).run()
+        else:
+            Session(spec, info_space).run()
     elif lab_mode == 'dev':
         spec = util.override_dev_spec(spec)
         info_space.tick('trial')
