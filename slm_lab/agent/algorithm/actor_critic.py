@@ -17,11 +17,10 @@ class ActorCritic(Reinforce):
     Original paper: "Asynchronous Methods for Deep Reinforcement Learning"
     https://arxiv.org/abs/1602.01783
     Algorithm specific spec param:
-    use_gae: If false, use the default TD error. Then the algorithm stays as AC. If True, use generalized advantage estimation (GAE) introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. The algorithm becomes A2C.
-    use_nstep: If false, use the default TD error. Then the algorithm stays as AC. If True, use n-step returns from "Asynchronous Methods for Deep Reinforcement Learning". The algorithm becomes A2C.
     memory.name: batch (through OnPolicyBatchReplay memory class) or episodic through (OnPolicyReplay memory class)
-    num_step_returns: if use_gae is false, this specifies the number of steps used for the N-step returns method.
-    lam: is use_gae, this lambda controls the bias variance tradeoff for GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
+    lam: if not null, used as the lambda value of generalized advantage estimation (GAE) introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. The algorithm becomes A2C. This lambda controls the bias variance tradeoff for GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
+    num_step_returns: if lam is null and this is not null, specifies the number of steps for N-step returns from "Asynchronous Methods for Deep Reinforcement Learning". The algorithm becomes A2C.
+    If both lam and num_step_returns are null, use the default TD error. Then the algorithm stays as AC.
     net.type: whether the actor and critic should share params (e.g. through 'MLPNetShared') or have separate params (e.g. through 'MLPNetSeparate'). If param sharing is used then there is also the option to control the weight given to the policy and value components of the loss function through 'policy_loss_coef' and 'val_loss_coef'
     Algorithm - separate actor and critic:
         Repeat:
@@ -50,9 +49,7 @@ class ActorCritic(Reinforce):
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "use_gae": false,
         "lam": 1.0,
-        "use_nstep": false,
         "num_step_returns": 100,
         "entropy_coef_spec": {
           "name": "linear_decay",
@@ -93,9 +90,7 @@ class ActorCritic(Reinforce):
             # theoretically, AC does not have policy update; but in this implementation we have such option
             'explore_var_spec',
             'gamma',  # the discount factor
-            'use_gae',
             'lam',
-            'use_nstep',
             'num_step_returns',
             'entropy_coef_spec',
             'policy_loss_coef',
@@ -112,9 +107,9 @@ class ActorCritic(Reinforce):
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
             self.body.entropy_coef = self.entropy_coef_scheduler.start_val
         # Select appropriate methods to calculate adv_targets and v_targets for training
-        if self.use_gae:
+        if self.lam is not None:
             self.calc_advs_v_targets = self.calc_gae_advs_v_targets
-        elif self.use_nstep:
+        elif self.num_step_returns is not None:
             self.calc_advs_v_targets = self.calc_nstep_advs_v_targets
         else:
             self.calc_advs_v_targets = self.calc_td_advs_v_targets
@@ -207,7 +202,8 @@ class ActorCritic(Reinforce):
     @lab_api
     def train(self):
         '''Trains the algorithm'''
-        if util.get_lab_mode() == 'enjoy':
+        if util.get_lab_mode() in ('enjoy', 'eval'):
+            self.body.flush()
             return np.nan
         if self.shared:
             return self.train_shared()
@@ -230,8 +226,7 @@ class ActorCritic(Reinforce):
             self.net.training_step(loss=loss, lr_clock=clock)
             # reset
             self.to_train = 0
-            self.body.entropies = []
-            self.body.log_probs = []
+            self.body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
 
             return loss.item()
@@ -250,8 +245,7 @@ class ActorCritic(Reinforce):
             loss = val_loss + abs(policy_loss)
             # reset
             self.to_train = 0
-            self.body.entropies = []
-            self.body.log_probs = []
+            self.body.flush()
             logger.debug(f'Trained {self.name}, loss: {loss:.4f}')
             return loss.item()
         else:

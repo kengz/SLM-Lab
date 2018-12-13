@@ -18,6 +18,7 @@ import ujson
 import yaml
 
 NUM_CPUS = mp.cpu_count()
+NUM_EVAL_EPISODES = 100
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
@@ -315,6 +316,20 @@ def nonan_all(v):
 def override_dev_spec(spec):
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
+    return spec
+
+
+def override_eval_spec(spec):
+    spec['meta']['max_session'] = 1
+    spec['meta']['max_trial'] = 1
+    spec['meta']['graph_x'] = 'epi'
+    for agent_spec in spec['agent']:
+        if 'max_size' in agent_spec['memory']:
+            agent_spec['memory']['max_size'] = 1000
+    for env_spec in spec['env']:
+        if 'max_total_t' in env_spec:
+            del env_spec['max_total_t']
+        env_spec['max_epi'] = NUM_EVAL_EPISODES
     return spec
 
 
