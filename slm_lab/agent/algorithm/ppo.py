@@ -129,12 +129,12 @@ class PPO(ActorCritic):
         old_log_probs = policy_util.calc_log_probs(self, self.old_net, self.body, batch).detach()
         assert log_probs.shape == old_log_probs.shape
         assert advs.shape[0] == log_probs.shape[0]  # batch size
-        ratios = torch.exp(torch.clamp(log_probs - old_log_probs, -10, 10))  # clip to prevent overflow
+        ratios = torch.exp(log_probs - old_log_probs)  # clip to prevent overflow
         logger.debug(f'ratios: {ratios}')
+        sur_1 = ratios * advs
+        sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
         # flip sign because need to maximize
-        sur_1 = -ratios * advs
-        sur_2 = -torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
-        clip_loss = torch.mean(torch.max(sur_1, sur_2))
+        clip_loss = -torch.mean(torch.min(sur_1, sur_2))
         logger.debug(f'clip_loss: {clip_loss}')
 
         # L^VF (inherit from ActorCritic)

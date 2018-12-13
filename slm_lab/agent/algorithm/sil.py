@@ -23,9 +23,7 @@ class SIL(ActorCritic):
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "use_gae": true,
         "lam": 1.0,
-        "use_nstep": false,
         "num_step_returns": 100,
         "entropy_coef_spec": {
           "name": "linear_decay",
@@ -78,9 +76,7 @@ class SIL(ActorCritic):
             # theoretically, AC does not have policy update; but in this implementation we have such option
             'explore_var_spec',
             'gamma',  # the discount factor
-            'use_gae',
             'lam',
-            'use_nstep',
             'num_step_returns',
             'entropy_coef_spec',
             'policy_loss_coef',
