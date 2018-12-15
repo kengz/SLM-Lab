@@ -5,8 +5,6 @@ Provides the rich experience for agent embodiment, reflects the curriculum and a
 To be designed by human and evolution module, based on the curriculum and fitness metrics.
 '''
 from slm_lab.env.base import Clock, ENV_DATA_NAMES
-from slm_lab.env.openai import OpenAIEnv
-from slm_lab.env.unity import UnityEnv
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import pydash as ps
@@ -17,8 +15,10 @@ logger = logger.get_logger(__name__)
 
 def make_env(spec, e=None, env_space=None):
     try:
+        from slm_lab.env.openai import OpenAIEnv
         env = OpenAIEnv(spec, e, env_space)
     except Exception:
+        from slm_lab.env.unity import UnityEnv
         env = UnityEnv(spec, e, env_space)
     return env
 
