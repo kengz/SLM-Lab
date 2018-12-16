@@ -134,6 +134,8 @@ def rate_decay(start_val, end_val, start_step, end_step, step, decay_rate=0.9, f
     '''Compounding rate decay that anneals in 20 decay iterations until end_step'''
     if step < start_step:
         return start_val
+    if step >= end_step:
+        return end_val
     step_per_decay = (end_step - start_step) / frequency
     decay_step = (step - start_step) / step_per_decay
     val = max(np.power(decay_rate, decay_step) * start_val, end_val)
@@ -149,6 +151,8 @@ def periodic_decay(start_val, end_val, start_step, end_step, step, frequency=60.
     '''
     if step < start_step:
         return start_val
+    if step >= end_step:
+        return end_val
     x_freq = frequency
     step_per_decay = (end_step - start_step) / x_freq
     x = (step - start_step) / step_per_decay
