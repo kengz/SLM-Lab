@@ -126,7 +126,7 @@ def linear_decay(start_val, end_val, start_step, end_step, step):
     if step < start_step:
         return start_val
     slope = (end_val - start_val) / (end_step - start_step)
-    val = max(slope * step + start_val, end_val)
+    val = max(slope * (step - start_step) + start_val, end_val)
     return val
 
 
@@ -134,8 +134,10 @@ def rate_decay(start_val, end_val, start_step, end_step, step, decay_rate=0.9, f
     '''Compounding rate decay that anneals in 20 decay iterations until end_step'''
     if step < start_step:
         return start_val
+    if step >= end_step:
+        return end_val
     step_per_decay = (end_step - start_step) / frequency
-    decay_step = step / step_per_decay
+    decay_step = (step - start_step) / step_per_decay
     val = max(np.power(decay_rate, decay_step) * start_val, end_val)
     return val
 
@@ -149,9 +151,11 @@ def periodic_decay(start_val, end_val, start_step, end_step, step, frequency=60.
     '''
     if step < start_step:
         return start_val
+    if step >= end_step:
+        return end_val
     x_freq = frequency
     step_per_decay = (end_step - start_step) / x_freq
-    x = step / step_per_decay
+    x = (step - start_step) / step_per_decay
     unit = start_val - end_val
     val = end_val * 0.5 * unit * (1 + np.cos(x) * (1 - x / x_freq))
     val = max(val, end_val)
