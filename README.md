@@ -282,7 +282,7 @@ It is `DQN` in `CartPole-v0`:
 
 5. Enjoy mode - when a session ends, a model file will automatically save. You can find the session `prepath` that ends in its trial and session numbers. The example above is trial 1 session 0, and you can see a pyotrch model saved at `data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_model_net.pth`. Use the following command to run from the saved folder in `data/`:
     ```bash
-    yarn start data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_spec.json dqn_cartpole enjoy@dqn_cartpole_t0_s0
+    yarn start data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_spec.json dqn_cartpole enjoy@dqn_cartpole_t1_s0
     ```
     >Enjoy mode will automatically disable learning and exploration. Graphs will still save.
 
