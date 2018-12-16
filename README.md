@@ -280,15 +280,13 @@ It is `DQN` in `CartPole-v0`:
     ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
     >Session graph showing total rewards, exploration variable and loss for the episodes.
 
-5. Enjoy mode - when a session ends, a model file will automatically save. You can find the session `prepath` that ends in its trial and session numbers. The example above is trial 1 session 0, and you can see a pyotrch model saved at `data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_model_net.pth`. Use the prepath at `config/experiments.json` to run enjoy mode:
-    ```json
-    "demo.json": {
-      "dqn_cartpole": "enjoy@data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0"
-    }
+5. Enjoy mode - when a session ends, a model file will automatically save. You can find the session `prepath` that ends in its trial and session numbers. The example above is trial 1 session 0, and you can see a pyotrch model saved at `data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_model_net.pth`. Use the following command to run from the saved folder in `data/`:
+    ```bash
+    yarn start data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_spec.json dqn_cartpole enjoy@dqn_cartpole_t0_s0
     ```
     >Enjoy mode will automatically disable learning and exploration. Graphs will still save.
 
-    >To run the best model, use the best saved checkpoint `enjoy@data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_ckptbest`
+    >To run the best model, use the best saved checkpoint `enjoy@dqn_cartpole_t1_s0_ckptbest`
 
 6. Next, change the run mode from `"train"` to `"search"`  `config/experiments.json`, and rerun. This runs experiments of multiple trials with hyperparameter search. Environments will not be rendered.:
     ```json

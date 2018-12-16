@@ -58,7 +58,9 @@ def run_by_mode(spec_file, spec_name, lab_mode):
             info_space.tick('trial')
         Trial(spec, info_space).run()
     elif lab_mode.startswith('enjoy'):
-        prepath = lab_mode.split('@')[1]
+        prename = lab_mode.split('@')[1]
+        predir, _, _, _, _, _ = util.prepath_split(spec_file)
+        prepath = f'{predir}/{prename}'
         new_info_space = deepcopy(info_space)
         spec, info_space = util.prepath_to_spec_info_space(prepath)
         new_spec = util.override_enjoy_spec(deepcopy(spec))
@@ -67,7 +69,9 @@ def run_by_mode(spec_file, spec_name, lab_mode):
         new_info_space.tick('session')
         Session(new_spec, new_info_space).run()
     elif lab_mode.startswith('eval'):
-        prepath = lab_mode.split('@')[1]
+        prename = lab_mode.split('@')[1]
+        predir, _, _, _, _, _ = util.prepath_split(spec_file)
+        prepath = f'{predir}/{prename}'
         new_info_space = deepcopy(info_space)
         spec, info_space = util.prepath_to_spec_info_space(prepath)
         new_spec = util.override_eval_spec(deepcopy(spec))

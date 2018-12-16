@@ -113,11 +113,16 @@ def get(spec_file, spec_name):
 
     spec = spec_util.get('base.json', 'base_case_openai')
     '''
-    spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
-    assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
-    spec = spec_dict[spec_name]
-    spec['name'] = spec_name
-    spec['git_SHA'] = util.get_git_sha()
+    if 'data/' in spec_file:
+        assert spec_name in spec_file, 'spec_file in data/ must be lab-generated and contains spec_name'
+        spec = util.read(spec_file)
+    else:
+        spec_file = f'{SPEC_DIR}/{spec_file}'  # allow direct filename
+        spec_dict = util.read(spec_file)
+        assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
+        spec = spec_dict[spec_name]
+        spec['name'] = spec_name
+        spec['git_SHA'] = util.get_git_sha()
     check(spec)
     return spec
 

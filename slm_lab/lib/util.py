@@ -407,7 +407,9 @@ def prepare_directory(new_spec, new_info_space, original_spec, original_info_spa
     new_predir, _, _, _, _, _ = prepath_split(new_prepath)
     new_trial_name = f'{new_prepath}_t0'
     original_trial_name = f'{predir}/{spec_name}_t{trial}'
-    original_session_name = f'{original_trial_name}_s{session}_ckpt{ckpt}'
+    original_session_name = f'{original_trial_name}_s{session}'
+    if ckpt is not None:
+        original_session_name = f'{original_session_name}_ckpt{ckpt}'
     copy_spec(original_trial_name, new_trial_name)
     copy_original_models(original_session_name, predir, new_predir)
     copy_models(original_session_name, new_trial_name, new_spec['meta']['max_session'])
