@@ -11,12 +11,6 @@ import pandas as pd
 import pydash as ps
 import shutil
 
-DATA_AGG_FNS = {
-    't': 'sum',
-    'reward': 'sum',
-    'loss': 'mean',
-    'explore_var': 'mean',
-}
 FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
 # TODO improve to make it work with any reward mean
 FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
@@ -188,7 +182,7 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
     if std is None:
         std = FITNESS_STD.get('template')
         logger.warn(f'The fitness standard for env {env_name} is not built yet. Contact author. Using a template standard for now.')
-    aeb_df['total_t'] = aeb_df['t'].cumsum()
+    aeb_df['total_t'] = aeb_df['total_t']
     aeb_df['strength'] = calc_strength(aeb_df, std['rand_epi_reward'], std['std_epi_reward'])
     aeb_df['strength_ma'] = aeb_df['strength'].rolling(MA_WINDOW).mean()
     aeb_df['strength_mono_inc'] = is_noisy_mono_inc(aeb_df['strength']).astype(int)
@@ -455,7 +449,7 @@ def save_session_data(spec, info_space, session_data, session_fitness_df, sessio
     Save the session data: session_df, session_fitness_df, session_graph.
     session_data is saved as session_df; multi-indexed with (a,e,b), 3 extra levels
     to read, use:
-    session_df = util.read(filepath, header=[0, 1, 2, 3])
+    session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
     session_data = util.session_df_to_data(session_df)
     '''
     prepath = util.get_prepath(spec, info_space, unit='session')

@@ -96,7 +96,7 @@ class Body:
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
         self.df = pd.DataFrame(columns=[
-            'epi', 't', 'reward', 'loss', 'explore_var',
+            'epi', 'total_t', 't', 'reward', 'loss', 'explore_var',
             'lr', 'action_ent', 'ent_coef', 'grad_norm'])
 
         # diagnostics variables/stats from action_policy prob. dist.
@@ -148,7 +148,7 @@ class Body:
         '''Update to append data at the end of an episode (when env.done is true)'''
         assert self.env.done
         clock = self.env.clock
-        row = {k: self.env.clock.get(k) for k in ['epi', 't']}
+        row = {k: self.env.clock.get(k) for k in ['epi', 'total_t', 't']}
         row.update({
             'reward': self.memory.total_reward,
             'loss': self.last_loss,
