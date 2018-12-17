@@ -45,18 +45,19 @@ def run_by_mode(spec_file, spec_name, lab_mode):
 
     # '@' is reserved for 'enjoy@{prepath}'
     os.environ['lab_mode'] = lab_mode.split('@')[0]
-    os.environ['PREPATH'] = util.get_prepath(spec, info_space)
-    reload(logger)  # to set PREPATH properly
 
     if lab_mode == 'search':
         info_space.tick('experiment')
+        util.set_logger(spec, info_space, logger)
         Experiment(spec, info_space).run()
     elif lab_mode.startswith('train'):
         info_space.tick('trial')
+        util.set_logger(spec, info_space, logger)
         Trial(spec, info_space).run()
     elif lab_mode == 'dev':
         spec = util.override_dev_spec(spec)
         info_space.tick('trial')
+        util.set_logger(spec, info_space, logger)
         Trial(spec, info_space).run()
     elif lab_mode.startswith('enjoy'):
         prename = lab_mode.split('@')[1]
@@ -69,6 +70,7 @@ def run_by_mode(spec_file, spec_name, lab_mode):
         new_info_space.tick('trial')
         new_info_space.tick('session')
         Session(new_spec, new_info_space).run()
+        util.set_logger(spec, info_space, logger)
     elif lab_mode.startswith('eval'):
         prename = lab_mode.split('@')[1]
         predir, _, _, _, _, _ = util.prepath_split(spec_file)
@@ -78,6 +80,7 @@ def run_by_mode(spec_file, spec_name, lab_mode):
         new_spec = util.override_eval_spec(deepcopy(spec))
         util.prepare_directory(new_spec, new_info_space, spec, info_space, prepath)
         new_info_space.tick('trial')
+        util.set_logger(spec, new_info_space, logger)
         Trial(new_spec, new_info_space).run()
     else:
         logger.warn('lab_mode not recognized; must be one of `search, train, dev, enjoy, eval`.')

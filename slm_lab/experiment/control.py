@@ -30,7 +30,7 @@ class Session:
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
-        util.set_session_logger(self.spec, self.info_space, logger)
+        util.set_logger(self.spec, self.info_space, logger, 'session')
         self.data = None
 
         # init singleton agent and env
@@ -101,7 +101,7 @@ class SpaceSession(Session):
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
-        util.set_session_logger(self.spec, self.info_space, logger)
+        util.set_logger(self.spec, self.info_space, logger, 'session')
         self.data = None
 
         self.aeb_space = AEBSpace(self.spec, self.info_space)

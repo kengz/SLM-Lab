@@ -638,9 +638,9 @@ def set_rand_seed(random_seed, env_space):
             pass
 
 
-def set_session_logger(spec, info_space, logger):
-    '''Set the logger for a session give its spec and info_space'''
-    os.environ['PREPATH'] = get_prepath(spec, info_space, unit='session')
+def set_logger(spec, info_space, logger, unit=None):
+    '''Set the logger for a lab unit give its spec and info_space'''
+    os.environ['PREPATH'] = get_prepath(spec, info_space, unit=unit)
     reload(logger)  # to set session-specific logger
 
 
