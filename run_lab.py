@@ -40,6 +40,7 @@ def run_by_mode(spec_file, spec_name, lab_mode):
     logger.info(f'Running lab in mode: {lab_mode}')
     spec = spec_util.get(spec_file, spec_name)
     info_space = InfoSpace()
+    # TODO dont save in enjoy, eval
     analysis.save_spec(spec, info_space, unit='experiment')
 
     # '@' is reserved for 'enjoy@{prepath}'
@@ -51,11 +52,11 @@ def run_by_mode(spec_file, spec_name, lab_mode):
         info_space.tick('experiment')
         Experiment(spec, info_space).run()
     elif lab_mode.startswith('train'):
-        if '@' in lab_mode:
-            prepath = lab_mode.split('@')[1]
-            spec, info_space = util.prepath_to_spec_info_space(prepath)
-        else:
-            info_space.tick('trial')
+        info_space.tick('trial')
+        Trial(spec, info_space).run()
+    elif lab_mode == 'dev':
+        spec = util.override_dev_spec(spec)
+        info_space.tick('trial')
         Trial(spec, info_space).run()
     elif lab_mode.startswith('enjoy'):
         prename = lab_mode.split('@')[1]
@@ -78,12 +79,8 @@ def run_by_mode(spec_file, spec_name, lab_mode):
         util.prepare_directory(new_spec, new_info_space, spec, info_space, prepath)
         new_info_space.tick('trial')
         Trial(new_spec, new_info_space).run()
-    elif lab_mode == 'dev':
-        spec = util.override_dev_spec(spec)
-        info_space.tick('trial')
-        Trial(spec, info_space).run()
     else:
-        logger.warn('lab_mode not recognized; must be one of `search, train, enjoy, eval, benchmark, dev`.')
+        logger.warn('lab_mode not recognized; must be one of `search, train, dev, enjoy, eval`.')
 
 
 def main():
