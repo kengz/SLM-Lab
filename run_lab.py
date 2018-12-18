@@ -51,17 +51,15 @@ def run_old_mode(spec_file, spec_name, lab_mode):
     prepath = f'{predir}/{prename}'
     spec, info_space = util.prepath_to_spec_info_space(prepath)
     info_space.ckpt = 'eval'
+    # to load specific model in eval mode
+    info_space.eval_model_prepath = prepath
 
     # no info_space.tick() as they are reconstructed
     if lab_mode == 'enjoy':
         spec = util.override_enjoy_spec(spec)
         Session(spec, info_space).run()
     elif lab_mode == 'eval':
-        # right. missing models to be loaded. Basicaly these conditions apply to loadable things
-        # TODO hack and set the eval model location inside info_space
-        # reconstruct existing spec and info_space
         spec = util.override_eval_spec(spec)
-        # no info_space.tick() because it is recovered
         Trial(spec, info_space).run()
     else:
         logger.warn('Unrecognizable lab_mode not of `enjoy, eval`')

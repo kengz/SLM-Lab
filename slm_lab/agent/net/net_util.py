@@ -183,7 +183,11 @@ def load_algorithm(algorithm):
     '''Save all the nets for an algorithm'''
     agent = algorithm.agent
     net_names = algorithm.net_names
-    prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+    if util.get_lab_mode() in ('enjoy', 'eval'):
+        # load specific model in eval mode
+        prepath = agent.info_space.eval_model_prepath
+    else:
+        prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
     logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names}')
     for net_name in net_names:
         net = getattr(algorithm, net_name)

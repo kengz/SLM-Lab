@@ -400,6 +400,8 @@ class InfoSpace:
         # used to id experiment sharing the same spec name
         self.experiment_ts = util.get_ts()
         self.ckpt = None
+        # to load specific model in eval mode
+        self.eval_model_prepath = None
 
     def reset_lower_axes(cls, coor, axis):
         '''Reset the axes lower than the given axis in coor'''
