@@ -3,7 +3,6 @@ The entry point of SLM Lab
 Specify what to run in `config/experiments.json`
 Then run `yarn start` or `python run_lab.py`
 '''
-from copy import deepcopy
 import os
 # NOTE increase if needed. Pytorch thread overusage https://github.com/pytorch/pytorch/issues/975
 os.environ['OMP_NUM_THREADS'] = '1'

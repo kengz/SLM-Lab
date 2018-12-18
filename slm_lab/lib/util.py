@@ -4,7 +4,6 @@ from slm_lab import ROOT_DIR
 import cv2
 import glob
 import json
-import math
 import numpy as np
 import operator
 import os

@@ -25,7 +25,6 @@ from slm_lab.agent.algorithm import policy_util
 from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
-from statistics import mean
 import numpy as np
 import pandas as pd
 import pydash as ps
