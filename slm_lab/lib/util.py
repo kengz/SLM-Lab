@@ -72,8 +72,13 @@ def cast_list(val):
 def clear_ckpt(agent):
     '''Clear ckpt{last} files in prepath'''
     prepath = get_prepath(agent.spec, agent.info_space, unit='session')
-    ckpt_path = f'{prepath}_ckptlast*'
-    subprocess.run(f'rm {ckpt_path}', cwd=ROOT_DIR, shell=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, close_fds=True)
+    cmds = [
+        f'rm {prepath}_ckptlast*',
+        f'rm {prepath}_ckpteval*spec*',
+        f'rm {prepath}_ckpteval*fitness*',
+    ]
+    for cmd in cmds:
+        subprocess.run(cmd, cwd=ROOT_DIR, shell=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, close_fds=True)
 
 
 def concat_batches(batches):
