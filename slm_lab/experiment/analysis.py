@@ -539,8 +539,9 @@ Retro analysis
 
 def session_data_from_file(predir, trial_index, session_index):
     '''Build session.session_data from file'''
+    ckpt_str = '_ckpteval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
     for filename in os.listdir(predir):
-        if filename.endswith(f'_t{trial_index}_s{session_index}_session_df.csv'):
+        if filename.endswith(f'_t{trial_index}_s{session_index}{ckpt_str}_session_df.csv'):
             filepath = f'{predir}/{filename}'
             session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
             session_data = util.session_df_to_data(session_df)
@@ -559,9 +560,10 @@ def session_datas_from_file(predir, trial_spec, trial_index):
 
 def session_data_dict_from_file(predir, trial_index):
     '''Build trial.session_data_dict from file'''
+    ckpt_str = '_ckpteval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
     session_data_dict = {}
     for filename in os.listdir(predir):
-        if f'_t{trial_index}_' in filename and filename.endswith('_session_fitness_df.csv'):
+        if f'_t{trial_index}_' in filename and filename.endswith(f'{ckpt_str}_session_fitness_df.csv'):
             filepath = f'{predir}/{filename}'
             fitness_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
             util.fix_multi_index_dtype(fitness_df)
