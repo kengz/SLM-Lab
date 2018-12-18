@@ -180,6 +180,8 @@ class Trial:
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('trial')
+        info_space.set('session', None)  # Session starts anew for new trial
+        util.set_logger(self.spec, self.info_space, logger, 'trial')
         self.session_data_dict = {}
         self.data = None
         analysis.save_spec(spec, info_space, unit='trial')
@@ -273,6 +275,7 @@ class Experiment:
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('experiment')
+        util.set_logger(self.spec, self.info_space, logger, 'trial')
         self.trial_data_dict = {}
         self.data = None
         analysis.save_spec(spec, info_space, unit='experiment')
