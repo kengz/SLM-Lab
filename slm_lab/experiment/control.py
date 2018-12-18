@@ -1,6 +1,6 @@
 '''
 The control module
-Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Session
+Creates and controls the units of SLM lab: Experiment, Trial, Session
 '''
 from copy import deepcopy
 from importlib import reload
@@ -300,16 +300,3 @@ class Experiment:
         self.data = analysis.analyze_experiment(self)
         self.close()
         return self.data
-
-
-class EvolutionGraph:
-    '''
-    The biggest unit of Lab.
-    The evolution graph keeps track of all experiments as nodes of experiment data, with fitness metrics, evolution links, traits,
-    which could be used to aid graph analysis on the traits, fitness metrics,
-    to suggest new experiment via node creation, mutation or combination (no DAG restriction).
-    There could be a high level evolution module that guides and optimizes the evolution graph and experiments to achieve SLM.
-    '''
-
-    def __init__(self, spec, info_space):
-        raise NotImplementedError
