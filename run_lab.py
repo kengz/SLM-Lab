@@ -25,17 +25,6 @@ debug_level = 'DEBUG'
 logger.toggle_debug(debug_modules, debug_level)
 
 
-def run_benchmark(spec_file):
-    logger.info('Running benchmark')
-    spec_dict = util.read(f'{spec_util.SPEC_DIR}/{spec_file}')
-    for spec_name in spec_dict:
-        # run only if not already exist; benchmark mode only
-        if not any(spec_name in filename for filename in os.listdir('data')):
-            run_by_mode(spec_file, spec_name, 'search')
-        else:
-            logger.info(f'{spec_name} is already ran and present in data/')
-
-
 def run_by_mode(spec_file, spec_name, lab_mode):
     logger.info(f'Running lab in mode: {lab_mode}')
     spec = spec_util.get(spec_file, spec_name)
@@ -96,10 +85,7 @@ def main():
     experiments = util.read('config/experiments.json')
     for spec_file in experiments:
         for spec_name, lab_mode in experiments[spec_file].items():
-            if lab_mode == 'benchmark':
-                run_benchmark(spec_file)
-            else:
-                run_by_mode(spec_file, spec_name, lab_mode)
+            run_by_mode(spec_file, spec_name, lab_mode)
 
 
 if __name__ == '__main__':
