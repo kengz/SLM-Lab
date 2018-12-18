@@ -48,7 +48,9 @@ class Session:
     def save_if_ckpt(self, agent, env):
         '''Save for agent, env if episode is at checkpoint'''
         tick = env.clock.get(env.max_tick_unit)
-        if hasattr(env, 'save_frequency') and 0 < tick < env.max_tick:
+        if util.get_lab_mode() in ('enjoy', 'eval'):
+            to_save = False
+        elif hasattr(env, 'save_frequency') and 0 < tick < env.max_tick:
             if env.max_tick_unit == 'epi':
                 to_save = (env.done and tick % env.save_frequency == 0)
             else:

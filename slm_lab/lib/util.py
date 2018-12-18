@@ -244,13 +244,13 @@ def get_prepath(spec, info_space, unit='experiment'):
     spec_name = spec['name']
     predir = f'data/{spec_name}_{info_space.experiment_ts}'
     prename = f'{spec_name}'
-    ckpt = ps.get(info_space, 'ckpt')
     trial_index = info_space.get('trial')
     session_index = info_space.get('session')
     if unit == 'trial':
         prename += f'_t{trial_index}'
     elif unit == 'session':
         prename += f'_t{trial_index}_s{session_index}'
+    ckpt = ps.get(info_space, 'ckpt')
     if ckpt is not None:
         prename += f'_ckpt{ckpt}'
     prepath = f'{predir}/{prename}'
