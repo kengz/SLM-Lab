@@ -322,7 +322,7 @@ def plot_session(session_spec, info_space, session_data):
     graph_x = session_spec['meta'].get('graph_x', 'epi')
     aeb_count = len(session_data)
     palette = viz.get_palette(aeb_count)
-    fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True)
+    fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True, print_grid=False)
     for idx, (a, e, b) in enumerate(session_data):
         aeb_str = f'{a}{e}{b}'
         aeb_df = session_data[(a, e, b)]
@@ -417,7 +417,7 @@ def plot_experiment(experiment_spec, experiment_df):
     y_cols = ['fitness'] + FITNESS_COLS
     x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
 
-    fig = viz.tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True)
+    fig = viz.tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
     fitness_sr = experiment_df['fitness']
     min_fitness = fitness_sr.values.min()
     max_fitness = fitness_sr.values.max()
