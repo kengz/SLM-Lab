@@ -83,6 +83,7 @@ class Session:
         '''
         self.agent.close()
         self.env.close()
+        util.clear_ckpt(self.agent)
         logger.info('Session done and closed.')
 
     def run(self):

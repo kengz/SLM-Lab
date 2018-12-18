@@ -70,6 +70,13 @@ def cast_list(val):
         return [val]
 
 
+def clear_ckpt(agent):
+    '''Clear ckpt{last} files in prepath'''
+    prepath = get_prepath(agent.spec, agent.info_space, unit='session')
+    ckpt_path = f'{prepath}_ckptlast*'
+    subprocess.run(f'rm {ckpt_path}', cwd=ROOT_DIR, shell=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, close_fds=True)
+
+
 def concat_batches(batches):
     '''
     Concat batch objects from body.memory.sample() into one batch, when all bodies experience similar envs
