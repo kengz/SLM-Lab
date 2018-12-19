@@ -80,7 +80,7 @@ def clear_ckpt(agent):
         f'rm {prepath}_ckpt-eval*spec*',
     ]
     for cmd in cmds:
-        subprocess.run(cmd, cwd=ROOT_DIR, shell=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, close_fds=True)
+        run_cmd(cmd, wait=True)
 
 
 def concat_batches(batches):
@@ -577,6 +577,26 @@ def read_as_plain(data_path, **kwargs):
         data = open_file.read()
     open_file.close()
     return data
+
+
+def run_cmd(cmd, wait=False):
+    '''Run shell command, with wait or without'''
+    if wait:
+        stdout = subprocess.PIPE
+        stderr = subprocess.STDOUT
+    else:
+        stdout = stderr = None
+    proc = subprocess.Popen(cmd, cwd=ROOT_DIR, shell=True, stdout=stdout, stderr=stderr, close_fds=True)
+    if wait:
+        for line in proc.stdout:
+            print(line.decode(), end='')
+        output = proc.communicate()[0]
+        if proc.returncode != 0:
+            raise subprocess.CalledProcessError(cmd, proc.returncode, output)
+        else:
+            return output
+    else:
+        return proc
 
 
 def s_get(cls, attr_path):
