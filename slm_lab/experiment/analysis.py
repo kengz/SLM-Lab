@@ -561,6 +561,15 @@ Retro analysis
 '''
 
 
+def run_online_eval(spec, info_space, ckpt):
+    prepath_t = util.get_prepath(spec, info_space, unit='trial')
+    prepath_s = util.get_prepath(spec, info_space, unit='session')
+    predir, _, prename, spec_name, _, _ = util.prepath_split(prepath_s)
+    cmd = f'python run_lab.py {prepath_t}_spec.json {spec_name} eval@{prename}_ckpt-{ckpt}'
+    logger.info(f'Running online eval for ckpt-{ckpt}. Cmd: \n+ {cmd}')
+    util.run_cmd(cmd, wait=False)
+
+
 def session_data_from_file(predir, trial_index, session_index):
     '''Build session.session_data from file'''
     ckpt_str = '_ckpt-eval' if util.get_lab_mode() in ('enjoy', 'eval') else ''

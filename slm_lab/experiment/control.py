@@ -55,13 +55,12 @@ class Session:
             to_ckpt = False
 
         if to_ckpt:
-            util.clear_ckpt(self.agent) # clear previous
             ckpt = f'epi{clock.get("epi")}-totalt{clock.get("total_t")}'
             agent.save(ckpt=ckpt)
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             analysis.analyze_session(self)
-            # TODO eval call using eval_model_prepath
+            analysis.run_online_eval(self.spec, self.info_space, ckpt)
 
     def run_episode(self):
         self.env.clock.tick('epi')
@@ -83,7 +82,6 @@ class Session:
         '''
         self.agent.close()
         self.env.close()
-        util.clear_ckpt(self.agent)
         logger.info('Session done and closed.')
 
     def run(self):

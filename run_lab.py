@@ -39,7 +39,7 @@ def run_new_mode(spec_file, spec_name, lab_mode):
         info_space.tick('trial')
         Trial(spec, info_space).run()
     else:
-        logger.warn('Unrecognizable lab_mode not of `search, train, dev`')
+        raise ValueError('Unrecognizable lab_mode not of `search, train, dev`')
 
 
 def run_old_mode(spec_file, spec_name, lab_mode):
@@ -59,9 +59,9 @@ def run_old_mode(spec_file, spec_name, lab_mode):
         Session(spec, info_space).run()
     elif lab_mode == 'eval':
         spec = util.override_eval_spec(spec)
-        Trial(spec, info_space).run()
+        Session(spec, info_space).run()
     else:
-        logger.warn('Unrecognizable lab_mode not of `enjoy, eval`')
+        raise ValueError('Unrecognizable lab_mode not of `enjoy, eval`')
 
 
 def run_by_mode(spec_file, spec_name, lab_mode):
