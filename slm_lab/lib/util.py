@@ -75,6 +75,9 @@ def clear_ckpt(agent):
     cmds = [
         # remove all normal ckpt with the form ckpt-epi10-totalt-1000
         f'rm {prepath}_ckpt-epi*',
+        # remove useless eval byproducts
+        f'rm {prepath}_ckpt-eval*fitness*',
+        f'rm {prepath}_ckpt-eval*spec*',
     ]
     for cmd in cmds:
         subprocess.run(cmd, cwd=ROOT_DIR, shell=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, close_fds=True)
@@ -481,8 +484,10 @@ def prepath_to_idxs(prepath):
 def prepath_to_spec(prepath):
     '''Create spec from prepath such that it returns the same prepath with info_space'''
     predir, _, prename, _, _, _ = prepath_split(prepath)
-    prename_no_s = '_'.join(prename.split('_')[:-1])
-    spec_path = f'{predir}/{prename_no_s}_spec.json'
+    sidx_res = re.search('_s\d+', prename)
+    if sidx_res:  # replace the _s0 if any
+        prename = prename.replace(sidx_res[0], '')
+    spec_path = f'{predir}/{prename}_spec.json'
     # read the spec of prepath
     spec = read(spec_path)
     return spec
