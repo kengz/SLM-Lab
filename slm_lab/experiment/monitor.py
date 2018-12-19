@@ -398,8 +398,9 @@ class InfoSpace:
         self.covered_space = []
         # used to id experiment sharing the same spec name
         self.experiment_ts = util.get_ts()
+        # ckpt gets appened to extend prepath using util.get_prepath for saving models, e.g. ckpt_str = ckpt-epi10-totalt1000
+        # ckpt = 'eval' is special for eval mode, so data files will save with `ckpt-eval`; no models will be saved, but to load models with normal ckpt it will find them using eval_model_prepath
         self.ckpt = None
-        # to load specific model in eval mode
         self.eval_model_prepath = None
 
     def reset_lower_axes(cls, coor, axis):

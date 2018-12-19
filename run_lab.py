@@ -49,8 +49,8 @@ def run_old_mode(spec_file, spec_name, lab_mode):
     predir, _, _, _, _, _ = util.prepath_split(spec_file)
     prepath = f'{predir}/{prename}'
     spec, info_space = util.prepath_to_spec_info_space(prepath)
+    # see InfoSpace def for more on these
     info_space.ckpt = 'eval'
-    # to load specific model in eval mode
     info_space.eval_model_prepath = prepath
 
     # no info_space.tick() as they are reconstructed
