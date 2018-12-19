@@ -272,7 +272,7 @@ def get_prepath(spec, info_space, unit='experiment'):
         prename += f'_t{trial_index}_s{session_index}'
     ckpt = ps.get(info_space, 'ckpt')
     if ckpt is not None:
-        prename += f'_ckpt{ckpt}'
+        prename += f'_ckpt-{ckpt}'
     prepath = f'{predir}/{prename}'
     return prepath
 
@@ -450,8 +450,7 @@ def prepath_split(prepath):
     tail = prepath.split('data/')[-1]
     ckpt = find_ckpt(tail)
     if ckpt is not None:  # separate ckpt
-        tail = tail.replace(f'_{ckpt_str}', '')
-
+        tail = tail.replace(f'_ckpt-{ckpt}', '')
     if '/' in tail:  # tail = prefolder/prename
         prefolder, prename = tail.split('/')
     else:

@@ -450,8 +450,8 @@ def save_session_df(prepath, session_data):
     filepath = f'{prepath}_session_df.csv'
     if util.get_lab_mode() in ('enjoy', 'eval'):
         ckpt = util.find_ckpt(prepath)
-        epi = re.search('epi(\d+)', ckpt_str)[1]
-        totalt = re.search('totalt(\d+)', ckpt_str)[1]
+        epi = re.search('epi(\d+)', ckpt)[1]
+        totalt = re.search('totalt(\d+)', ckpt)[1]
         for aeb in session_data:
             aeb_df = session_data[aeb]
             # override to know which ckpt eval is for
