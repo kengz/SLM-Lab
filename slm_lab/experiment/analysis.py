@@ -348,18 +348,19 @@ def plot_session(session_spec, info_space, session_data):
     return fig
 
 
-def gather_aeb_rewards_df(aeb, session_datas):
+def gather_aeb_rewards_df(aeb, session_datas, graph_x):
     '''Gather rewards from each session for a body into a df'''
     aeb_session_rewards = {}
     for s, session_data in session_datas.items():
         aeb_df = session_data[aeb]
         aeb_reward_sr = aeb_df['reward']
+        aeb_reward_sr.index = aeb_df[graph_x]
         aeb_session_rewards[s] = aeb_reward_sr
     aeb_rewards_df = pd.DataFrame(aeb_session_rewards)
     return aeb_rewards_df
 
 
-def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
+def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, graph_x):
     '''Build the aeb_reward envelope figure'''
     mean_sr = aeb_rewards_df.mean(axis=1)
     std_sr = aeb_rewards_df.std(axis=1).fillna(0)
@@ -378,9 +379,9 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color):
         showlegend=False,
         legendgroup=aeb_str,
     )
-    df = pd.DataFrame({'epi': x, 'mean_reward': mean_sr})
+    df = pd.DataFrame({graph_x: x, 'mean_reward': mean_sr})
     fig = viz.plot_line(
-        df, ['mean_reward'], ['epi'], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
+        df, ['mean_reward'], [graph_x], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
     )
     fig.add_traces([envelope_trace])
     return fig
@@ -391,7 +392,7 @@ def plot_trial(trial_spec, info_space):
     prepath = util.get_prepath(trial_spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
-
+    graph_x = trial_spec['meta'].get('graph_x', 'epi')
     aeb_count = len(session_datas[0])
     palette = viz.get_palette(aeb_count)
     fig = None
@@ -399,13 +400,13 @@ def plot_trial(trial_spec, info_space):
         aeb = (a, e, b)
         aeb_str = f'{a}{e}{b}'
         color = palette[idx]
-        aeb_rewards_df = gather_aeb_rewards_df(aeb, session_datas)
-        aeb_fig = build_aeb_reward_fig(aeb_rewards_df, aeb_str, color)
+        aeb_rewards_df = gather_aeb_rewards_df(aeb, session_datas, graph_x)
+        aeb_fig = build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, graph_x)
         if fig is None:
             fig = aeb_fig
         else:
             fig.add_traces(aeb_fig.data)
-    fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{info_space.get("trial")}', width=500, height=600)
+    fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{info_space.get("trial")}, {len(session_datas)} sessions', width=500, height=600)
     viz.plot(fig)
     return fig
 
