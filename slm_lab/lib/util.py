@@ -69,18 +69,10 @@ def cast_list(val):
         return [val]
 
 
-def clear_ckpt(agent):
-    '''Clear ckpt{last} files in prepath'''
-    prepath = get_prepath(agent.spec, agent.info_space, unit='session')
-    cmds = [
-        # remove all normal ckpt with the form ckpt-epi10-totalt-1000
-        f'rm {prepath}_ckpt-epi*',
-        # remove useless eval byproducts
-        f'rm {prepath}_ckpt-eval*fitness*',
-        f'rm {prepath}_ckpt-eval*spec*',
-    ]
-    for cmd in cmds:
-        run_cmd(cmd, wait=True)
+def clear_periodic_ckpt(prepath):
+    '''Clear periodic (with -epi) ckpt files in prepath'''
+    if '-epi' in prepath:
+        run_cmd(f'rm {prepath}*', wait=False)
 
 
 def concat_batches(batches):
@@ -586,6 +578,7 @@ def run_cmd(cmd, wait=False):
         stderr = subprocess.STDOUT
     else:
         stdout = stderr = None
+    print(f'+ {cmd}')
     proc = subprocess.Popen(cmd, cwd=ROOT_DIR, shell=True, stdout=stdout, stderr=stderr, close_fds=True)
     if wait:
         for line in proc.stdout:

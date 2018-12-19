@@ -60,6 +60,7 @@ class Session:
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             analysis.analyze_session(self)
+            # run online eval for this session once ckpt is ready
             analysis.run_online_eval(self.spec, self.info_space, ckpt)
 
     def run_episode(self):
