@@ -491,7 +491,7 @@ def save_trial_data(spec, info_space, trial_fitness_df, trial_fig):
     logger.info(f'Saving trial data to {prepath}')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
-    if util.get_lab_mode() in ('train', 'eval'):
+    if util.get_lab_mode() == 'train':
         predir, _, _, _, _, _ = util.prepath_split(prepath)
         shutil.make_archive(predir, 'zip', predir)
         logger.info(f'All trial data zipped to {predir}.zip')
