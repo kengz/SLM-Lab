@@ -73,9 +73,8 @@ def clear_ckpt(agent):
     '''Clear ckpt{last} files in prepath'''
     prepath = get_prepath(agent.spec, agent.info_space, unit='session')
     cmds = [
-        f'rm {prepath}_ckptlast*',
-        f'rm {prepath}_ckpteval*spec*',
-        f'rm {prepath}_ckpteval*fitness*',
+        # remove all normal ckpt with the form ckpt-epi10-totalt-1000
+        f'rm {prepath}_ckpt-epi*',
     ]
     for cmd in cmds:
         subprocess.run(cmd, cwd=ROOT_DIR, shell=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, close_fds=True)

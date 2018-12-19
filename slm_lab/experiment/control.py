@@ -55,6 +55,7 @@ class Session:
             to_ckpt = False
 
         if to_ckpt:
+            util.clear_ckpt(self.agent) # clear previous
             ckpt = f'epi{clock.get("epi")}-totalt{clock.get("total_t")}'
             agent.save(ckpt=ckpt)
             if analysis.new_best(agent):
