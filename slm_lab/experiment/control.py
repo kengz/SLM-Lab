@@ -40,23 +40,26 @@ class Session:
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-    def save_if_ckpt(self, agent, env):
-        '''Save for agent, env if episode is at checkpoint'''
-        tick = env.clock.get(env.max_tick_unit)
+    def try_ckpt(self, agent, env):
+        '''Try to checkpoint agent per save_frequency'''
+        clock = env.clock
+        tick = clock.get(env.max_tick_unit)
         if util.get_lab_mode() in ('enjoy', 'eval'):
-            to_save = False
+            to_ckpt = False
         elif hasattr(env, 'save_frequency') and 0 < tick < env.max_tick:
             if env.max_tick_unit == 'epi':
-                to_save = (env.done and tick % env.save_frequency == 0)
+                to_ckpt = (env.done and tick % env.save_frequency == 0)
             else:
-                to_save = (tick % env.save_frequency == 0)
+                to_ckpt = (tick % env.save_frequency == 0)
         else:
-            to_save = False
-        if to_save:
+            to_ckpt = False
+
+        if to_ckpt:
             agent.save(ckpt='last')
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             analysis.analyze_session(self)
+            # TODO eval call using eval_model_prepath
 
     def run_episode(self):
         self.env.clock.tick('epi')
@@ -68,7 +71,7 @@ class Session:
             action = self.agent.act(state)
             reward, state, done = self.env.step(action)
             self.agent.update(action, reward, state, done)
-            self.save_if_ckpt(self.agent, self.env)
+            self.try_ckpt(self.agent, self.env)
         self.agent.body.log_summary()
 
     def close(self):
@@ -112,12 +115,12 @@ class SpaceSession(Session):
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-    def save_if_ckpt(self, agent_space, env_space):
-        '''Save for agent, env if episode is at checkpoint'''
+    def try_ckpt(self, agent_space, env_space):
+        '''Try to checkpoint agent per save_frequency'''
         for agent in agent_space.agents:
             for body in agent.nanflat_body_a:
                 env = body.env
-                super(SpaceSession, self).save_if_ckpt(agent, env)
+                super(SpaceSession, self).try_ckpt(agent, env)
 
     def run_all_episodes(self):
         '''
@@ -132,7 +135,7 @@ class SpaceSession(Session):
             action_space = self.agent_space.act(state_space)
             reward_space, state_space, done_space = self.env_space.step(action_space)
             self.agent_space.update(action_space, reward_space, state_space, done_space)
-            self.save_if_ckpt(self.agent_space, self.env_space)
+            self.try_ckpt(self.agent_space, self.env_space)
 
     def close(self):
         '''
