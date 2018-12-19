@@ -155,7 +155,7 @@ def save_algorithm(algorithm, ckpt=None):
     net_names = algorithm.net_names
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
     if ckpt is not None:
-        prepath = f'{prepath}_ckpt{ckpt}'
+        prepath = f'{prepath}_ckpt-{ckpt}'
     logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
     for net_name in net_names:
         net = getattr(algorithm, net_name)

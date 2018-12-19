@@ -9,6 +9,7 @@ import numpy as np
 import os
 import pandas as pd
 import pydash as ps
+import regex as re
 import shutil
 
 FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
@@ -444,6 +445,29 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
+def save_session_df(prepath, session_data):
+    '''Save session_df, and if is in eval mode, modify it and save with append'''
+    filepath = f'{prepath}_session_df.csv'
+    if util.get_lab_mode() in ('enjoy', 'eval'):
+        ckpt = util.find_ckpt(prepath)
+        epi = re.search('epi(\d+)', ckpt_str)[1]
+        totalt = re.search('totalt(\d+)', ckpt_str)[1]
+        for aeb in session_data:
+            aeb_df = session_data[aeb]
+            # override to know which ckpt eval is for
+            aeb_df['epi'] = epi
+            aeb_df['total_t'] = totalt
+        session_df = pd.concat(session_data, axis=1)
+        eval_session_df = pd.DataFrame(data=[session_df.mean()])
+        # if eval, save with append mode
+        header = not os.path.exists(filepath)
+        with open(filepath, 'a') as f:
+            eval_session_df.to_csv(f, header=header)
+    else:
+        session_df = pd.concat(session_data, axis=1)
+        util.write(session_df, filepath)
+
+
 def save_session_data(spec, info_space, session_data, session_fitness_df, session_fig):
     '''
     Save the session data: session_df, session_fitness_df, session_graph.
@@ -455,8 +479,7 @@ def save_session_data(spec, info_space, session_data, session_fitness_df, sessio
     prepath = util.get_prepath(spec, info_space, unit='session')
     logger.info(f'Saving session data to {prepath}')
     if 'retro_analyze' not in os.environ['PREPATH']:
-        session_df = pd.concat(session_data, axis=1)
-        util.write(session_df, f'{prepath}_session_df.csv')
+        save_session_df(prepath, session_data)
     util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
     viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
@@ -539,7 +562,7 @@ Retro analysis
 
 def session_data_from_file(predir, trial_index, session_index):
     '''Build session.session_data from file'''
-    ckpt_str = '_ckpteval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
+    ckpt_str = '_ckpt-eval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
     for filename in os.listdir(predir):
         if filename.endswith(f'_t{trial_index}_s{session_index}{ckpt_str}_session_df.csv'):
             filepath = f'{predir}/{filename}'
@@ -560,7 +583,7 @@ def session_datas_from_file(predir, trial_spec, trial_index):
 
 def session_data_dict_from_file(predir, trial_index):
     '''Build trial.session_data_dict from file'''
-    ckpt_str = '_ckpteval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
+    ckpt_str = 'ckpt-eval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
     session_data_dict = {}
     for filename in os.listdir(predir):
         if f'_t{trial_index}_' in filename and filename.endswith(f'{ckpt_str}_session_fitness_df.csv'):

@@ -149,6 +149,16 @@ def downcast_float32(df):
     return df
 
 
+def find_ckpt(prepath):
+    '''Find the ckpt-lorem-ipsum in a string and return lorem-ipsum'''
+    if 'ckpt' in prepath:
+        ckpt_str = ps.find(prepath.split('_'), lambda s: s.startswith('ckpt'))
+        ckpt = ckpt_str.replace('ckpt-', '')
+    else:
+        ckpt = None
+    return ckpt
+
+
 def flatten_dict(obj, delim='.'):
     '''Missing pydash method to flatten dict'''
     nobj = {}
@@ -435,17 +445,15 @@ def prepath_split(prepath):
     prename: dqn_pong_t0_s0
     spec_name: dqn_pong
     experiment_ts: 2018_12_02_082510
-    ckpt: ckptbest of dqn_pong_t0_s0_ckptbest if available
+    ckpt: ckpt-best of dqn_pong_t0_s0_ckpt-best if available
     '''
     prepath = prepath.strip('_')
     tail = prepath.split('data/')[-1]
-    if '_ckpt' in tail:
-        ckpt_chunk = ps.find(tail.split('_'), lambda s: s.startswith('ckpt'))
-        tail = tail.replace(f'_{ckpt_chunk}', '')
-        ckpt = ckpt_chunk.replace('ckpt', '')
-    else:
-        ckpt = None
-    if '/' in tail:
+    ckpt = find_ckpt(tail)
+    if ckpt is not None:  # separate ckpt
+        tail = tail.replace(f'_{ckpt_str}', '')
+
+    if '/' in tail:  # tail = prefolder/prename
         prefolder, prename = tail.split('/')
     else:
         prefolder, prename = tail, None
