@@ -34,7 +34,6 @@ class Session:
         body = Body(self.env, self.spec['agent'])
         util.set_rand_seed(self.info_space.get_random_seed(), self.env)
         util.try_set_cuda_id(self.spec, self.info_space)
-        assert not ps.is_list(global_nets), f'single agent global_nets must be a dict, got {global_nets}'
         self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
 
         enable_aeb_space(self)  # to use lab's data analysis framework
@@ -108,7 +107,6 @@ class SpaceSession(Session):
         self.aeb_space.init_body_space()
         util.set_rand_seed(self.info_space.get_random_seed(), self.env_space)
         util.try_set_cuda_id(self.spec, self.info_space)
-        assert not ps.is_dict(global_nets), f'multi agent global_nets must be a list of dicts, got {global_nets}'
         self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
 
         logger.info(util.self_desc(self))
