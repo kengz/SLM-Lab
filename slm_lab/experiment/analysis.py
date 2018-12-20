@@ -357,6 +357,10 @@ def gather_aeb_rewards_df(aeb, session_datas, graph_x):
         aeb_reward_sr.index = aeb_df[graph_x]
         aeb_session_rewards[s] = aeb_reward_sr
     aeb_rewards_df = pd.DataFrame(aeb_session_rewards)
+    if util.get_lab_mode() in ('enjoy', 'eval'):
+        # guard for eval appending possibly not ordered, and multiindex df is hard to sort
+        aeb_rewards_df = aeb_rewards_df[~aeb_rewards_df.index.duplicated(keep='first')]
+        aeb_rewards_df.sort_index(inplace=True)
     return aeb_rewards_df
 
 
@@ -562,6 +566,10 @@ Retro analysis
 
 
 def run_online_eval(spec, info_space, ckpt):
+    '''
+    Calls a subprocess to run lab in eval mode with the constructed ckpt prepath, same as how one would manually run the bash cmd
+    e.g. python run_lab.py data/dqn_cartpole_2018_12_19_224811/dqn_cartpole_t0_spec.json dqn_cartpole eval@dqn_cartpole_t0_s1_ckpt-epi10-totalt1000
+    '''
     prepath_t = util.get_prepath(spec, info_space, unit='trial')
     prepath_s = util.get_prepath(spec, info_space, unit='session')
     predir, _, prename, spec_name, _, _ = util.prepath_split(prepath_s)
