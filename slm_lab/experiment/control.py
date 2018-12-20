@@ -40,8 +40,8 @@ class Session:
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-    def try_ckpt(self, agent, env):
-        '''Try to checkpoint agent and run_online_eval per save_frequency, starting from total_t=0 or epi=1'''
+    def try_ckpt(self, agent, env, wait=False):
+        '''Try to checkpoint agent and run_online_eval per save_frequency, starting from total_t=0 or epi=1, and at the very end'''
         clock = env.clock
         tick = clock.get(env.max_tick_unit)
         if util.get_lab_mode() in ('enjoy', 'eval'):
@@ -62,7 +62,7 @@ class Session:
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             # run online eval for this session once ckpt is ready
-            analysis.run_online_eval(self.spec, self.info_space, ckpt)
+            analysis.run_online_eval(self.spec, self.info_space, ckpt, wait)
             if tick > 0:  # nothing to analyze at start
                 analysis.analyze_session(self)
 
@@ -77,6 +77,7 @@ class Session:
             action = self.agent.act(state)
             reward, state, done = self.env.step(action)
             self.agent.update(action, reward, state, done)
+        self.try_ckpt(self.agent, self.env, wait=True)  # wait for final eval before closing
         self.agent.body.log_summary()
 
     def close(self):
@@ -119,12 +120,12 @@ class SpaceSession(Session):
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-    def try_ckpt(self, agent_space, env_space):
-        '''Try to checkpoint agent per save_frequency'''
+    def try_ckpt(self, agent_space, env_space, wait=False):
+        '''Try to checkpoint agent and run_online_eval per save_frequency, starting from total_t=0 or epi=1, and at the very end'''
         for agent in agent_space.agents:
             for body in agent.nanflat_body_a:
                 env = body.env
-                super(SpaceSession, self).try_ckpt(agent, env)
+                super(SpaceSession, self).try_ckpt(agent, env, wait=wait)
 
     def run_all_episodes(self):
         '''
@@ -135,11 +136,12 @@ class SpaceSession(Session):
         reward_space, state_space, done_space = self.env_space.reset()
         self.agent_space.reset(state_space)
         while not all_done:
+            self.try_ckpt(self.agent_space, self.env_space)
             all_done = self.aeb_space.tick()
             action_space = self.agent_space.act(state_space)
             reward_space, state_space, done_space = self.env_space.step(action_space)
             self.agent_space.update(action_space, reward_space, state_space, done_space)
-            self.try_ckpt(self.agent_space, self.env_space)
+        self.try_ckpt(self.agent_space, self.env_space, wait=True)  # wait for final eval before closin
 
     def close(self):
         '''

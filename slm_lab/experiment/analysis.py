@@ -565,7 +565,7 @@ Retro analysis
 '''
 
 
-def run_online_eval(spec, info_space, ckpt):
+def run_online_eval(spec, info_space, ckpt, wait=False):
     '''
     Calls a subprocess to run lab in eval mode with the constructed ckpt prepath, same as how one would manually run the bash cmd
     e.g. python run_lab.py data/dqn_cartpole_2018_12_19_224811/dqn_cartpole_t0_spec.json dqn_cartpole eval@dqn_cartpole_t0_s1_ckpt-epi10-totalt1000
@@ -575,7 +575,7 @@ def run_online_eval(spec, info_space, ckpt):
     predir, _, prename, spec_name, _, _ = util.prepath_split(prepath_s)
     cmd = f'python run_lab.py {prepath_t}_spec.json {spec_name} eval@{prename}_ckpt-{ckpt}'
     logger.info(f'Running online eval for ckpt-{ckpt}')
-    util.run_cmd(cmd, wait=False)
+    util.run_cmd(cmd, wait=wait)
 
 
 def session_data_from_file(predir, trial_index, session_index):
