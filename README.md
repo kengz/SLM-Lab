@@ -217,7 +217,7 @@ Deep Reinforcement Learning is highly empirical. The lab enables rapid and massi
     conda activate lab
     ```
 
->Alternatively, run the content of `bin/setup_macOS` or `bin/setup_ubuntu` on your terminal manually.
+>Alternatively, run the content of [`bin/setup_macOS` or `bin/setup_ubuntu`](https://github.com/kengz/SLM-Lab/tree/master/bin) on your terminal manually.
 >Docker image and Dockerfile with instructions are also available
 
 >Useful reference: [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html)
@@ -269,8 +269,8 @@ It is `DQN` in `CartPole-v0`:
     conda activate lab
     python run_lab.py
     ```
+    >To run any lab commands, conda environment must be activated first. See [Installation](#installation) for more.
     >Alternatively, use the shorthand command `yarn start` to replace the last line
-    >To access GUI from remove server, use `-X` flag during ssh like so `ssh -X foo@bar`. See [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html) for more.
 
 4. This demo will run a single trial using the default parameters, and render the environment. After completion, check the output for data `data/dqn_cartpole_2018_06_16_214527/` (timestamp will differ). You should see some healthy graphs.
 
