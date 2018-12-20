@@ -577,7 +577,7 @@ def run_cmd(cmd, wait=False):
         stdout = subprocess.PIPE
         stderr = subprocess.STDOUT
     else:
-        stdout = stderr = None
+        stdout = stderr = subprocess.DEVNULL
     print(f'+ {cmd}')
     proc = subprocess.Popen(cmd, cwd=ROOT_DIR, shell=True, stdout=stdout, stderr=stderr, close_fds=True)
     if wait:
