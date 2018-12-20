@@ -41,11 +41,13 @@ class Session:
         logger.info(f'Initialized session {self.index}')
 
     def try_ckpt(self, agent, env):
-        '''Try to checkpoint agent per save_frequency'''
+        '''Try to checkpoint agent and run_online_eval per save_frequency, starting from total_t=0 or epi=1'''
         clock = env.clock
         tick = clock.get(env.max_tick_unit)
         if util.get_lab_mode() in ('enjoy', 'eval'):
             to_ckpt = False
+        elif (env.max_tick_unit == 'epi' and tick == 1) or (tick == 0):
+            to_ckpt = True  # ckpt at beginning, but epi starts at 1
         elif hasattr(env, 'save_frequency') and 0 < tick < env.max_tick:
             if env.max_tick_unit == 'epi':
                 to_ckpt = (env.done and tick % env.save_frequency == 0)
@@ -59,9 +61,10 @@ class Session:
             agent.save(ckpt=ckpt)
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            analysis.analyze_session(self)
             # run online eval for this session once ckpt is ready
             analysis.run_online_eval(self.spec, self.info_space, ckpt)
+            if tick > 0:  # nothing to analyze at start
+                analysis.analyze_session(self)
 
     def run_episode(self):
         self.env.clock.tick('epi')
@@ -69,11 +72,11 @@ class Session:
         reward, state, done = self.env.reset()
         self.agent.reset(state)
         while not done:
+            self.try_ckpt(self.agent, self.env)
             self.env.clock.tick('t')
             action = self.agent.act(state)
             reward, state, done = self.env.step(action)
             self.agent.update(action, reward, state, done)
-            self.try_ckpt(self.agent, self.env)
         self.agent.body.log_summary()
 
     def close(self):
