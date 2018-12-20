@@ -363,13 +363,10 @@ def override_dev_spec(spec):
 
 def override_enjoy_spec(spec):
     spec['meta']['max_session'] = 1
-    spec['meta']['max_trial'] = 1
     return spec
 
 
 def override_eval_spec(spec):
-    spec['meta']['max_session'] = 6
-    spec['meta']['max_trial'] = 1
     for agent_spec in spec['agent']:
         if 'max_size' in agent_spec['memory']:
             agent_spec['memory']['max_size'] = 1000
