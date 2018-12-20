@@ -61,9 +61,9 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "epi",
       "max_trial": 4,
       "max_session": 4,
+      "graph_x": "total_t",
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 4,

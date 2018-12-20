@@ -60,7 +60,8 @@ def run_old_mode(spec_file, spec_name, lab_mode):
     elif lab_mode == 'eval':
         spec = util.override_eval_spec(spec)
         Session(spec, info_space).run()
-        util.clear_periodic_ckpt(prepath) # cleanup after itself
+        util.clear_periodic_ckpt(prepath)  # cleanup after itself
+        analysis.analyze_eval_trial(spec, info_space, predir)
     else:
         raise ValueError('Unrecognizable lab_mode not of `enjoy, eval`')
 

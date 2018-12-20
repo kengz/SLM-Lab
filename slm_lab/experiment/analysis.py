@@ -565,6 +565,14 @@ Retro analysis
 '''
 
 
+def analyze_eval_trial(spec, info_space, predir):
+    '''Create a trial and run analysis to get the trial graph and other trial data'''
+    from slm_lab.experiment.control import Trial
+    trial = Trial(spec, info_space)
+    trial.session_data_dict = session_data_dict_from_file(predir, trial.index)
+    analyze_trial(trial)
+
+
 def run_online_eval(spec, info_space, ckpt, wait=False):
     '''
     Calls a subprocess to run lab in eval mode with the constructed ckpt prepath, same as how one would manually run the bash cmd
