@@ -2,7 +2,6 @@ from datetime import datetime
 from importlib import reload
 from slm_lab import ROOT_DIR
 import cv2
-import glob
 import json
 import numpy as np
 import operator
@@ -10,7 +9,6 @@ import os
 import pandas as pd
 import pydash as ps
 import regex as re
-import shutil
 import subprocess
 import sys
 import torch
@@ -101,31 +99,6 @@ def cond_multiget(arr, idxs):
         return np.array(operator.itemgetter(*idxs)(arr))
     else:
         return arr[idxs]
-
-
-def copy_spec(original_trial_path, new_trial_path):
-    '''Copies spec from original to new directory. Used in eval or enjoy mode.'''
-    source = f'{original_trial_path}_spec.json'
-    dest = f'{new_trial_path}_spec.json'
-    shutil.copy(source, dest)
-
-
-def copy_models(original_session_name, new_trial_name, number_sessions):
-    '''Copies all model data from original_session to new_trial. Duplicates model x number_sessions. Used in eval or enjoy mode.'''
-    for i in range(number_sessions):
-        new_session_name = f'{new_trial_name}_s{i}'
-        files = glob.glob(f'{original_session_name}*')
-        new_files = [re.sub(original_session_name, new_session_name, f) for f in files]
-        for f, nf in zip(files, new_files):
-            shutil.copy(f, nf)
-
-
-def copy_original_models(original_session_name, old_dir, new_dir):
-    '''Copies the original checkpoint to the new directory. Used in eval or enjoy mode.'''
-    files = glob.glob(f'{original_session_name}*')
-    for f in files:
-        nf = re.sub(old_dir, new_dir, f)
-        shutil.copy(f, nf)
 
 
 def count_nonan(arr):
@@ -408,23 +381,6 @@ def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
     pool.close()
     pool.join()
     return results
-
-
-def prepare_directory(new_spec, new_info_space, original_spec, original_info_space, original_prepath):
-    '''Prepares a clean directory to evaluate or enjoy a particular model. Leaves original experiment directory untouched.'''
-    assert new_spec['meta']['max_trial'] == 1
-    predir, _, _, spec_name, _, ckpt = prepath_split(original_prepath)
-    trial, session = prepath_to_idxs(original_prepath)
-    new_prepath = get_prepath(new_spec, new_info_space, 'experiment')
-    new_predir, _, _, _, _, _ = prepath_split(new_prepath)
-    new_trial_name = f'{new_prepath}_t0'
-    original_trial_name = f'{predir}/{spec_name}_t{trial}'
-    original_session_name = f'{original_trial_name}_s{session}'
-    if ckpt is not None:
-        original_session_name = f'{original_session_name}_ckpt{ckpt}'
-    copy_spec(original_trial_name, new_trial_name)
-    copy_original_models(original_session_name, predir, new_predir)
-    copy_models(original_session_name, new_trial_name, new_spec['meta']['max_session'])
 
 
 def prepath_split(prepath):
