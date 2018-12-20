@@ -355,12 +355,12 @@ def gather_aeb_rewards_df(aeb, session_datas, graph_x):
         aeb_df = session_data[aeb]
         aeb_reward_sr = aeb_df['reward']
         aeb_reward_sr.index = aeb_df[graph_x]
+        if util.get_lab_mode() in ('enjoy', 'eval'):
+            # guard for eval appending possibly not ordered, and multiindex df is hard to sort
+            aeb_reward_sr = aeb_reward_sr[~aeb_reward_sr.index.duplicated(keep='first')]
+            aeb_reward_sr.sort_index(inplace=True)
         aeb_session_rewards[s] = aeb_reward_sr
     aeb_rewards_df = pd.DataFrame(aeb_session_rewards)
-    if util.get_lab_mode() in ('enjoy', 'eval'):
-        # guard for eval appending possibly not ordered, and multiindex df is hard to sort
-        aeb_rewards_df = aeb_rewards_df[~aeb_rewards_df.index.duplicated(keep='first')]
-        aeb_rewards_df.sort_index(inplace=True)
     return aeb_rewards_df
 
 
