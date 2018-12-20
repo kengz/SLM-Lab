@@ -48,7 +48,7 @@ class Session:
             to_ckpt = False
         elif (env.max_tick_unit == 'epi' and tick == 1) or (tick == 0):
             to_ckpt = True  # ckpt at beginning, but epi starts at 1
-        elif hasattr(env, 'save_frequency') and 0 < tick < env.max_tick:
+        elif hasattr(env, 'save_frequency') and 0 < tick:
             if env.max_tick_unit == 'epi':
                 to_ckpt = (env.done and tick % env.save_frequency == 0)
             else:
