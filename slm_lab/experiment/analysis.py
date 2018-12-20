@@ -481,8 +481,7 @@ def save_session_data(spec, info_space, session_data, session_fitness_df, sessio
     logger.info(f'Saving session data to {prepath}')
     if 'retro_analyze' not in os.environ['PREPATH']:
         save_session_df(session_data, prepath, info_space)
-    if util.get_lab_mode() not in ('enjoy', 'eval'):
-        util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
+    util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
     viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
 
