@@ -61,8 +61,9 @@ class Session:
             agent.save(ckpt=ckpt)
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            # run online eval for this session once ckpt is ready
-            analysis.run_online_eval(self.spec, self.info_space, ckpt, wait)
+            if util.get_lab_mode() == 'train':
+                # (only for train mode) spawn online eval for this session once ckpt is ready
+                analysis.run_online_eval(self.spec, self.info_space, ckpt, wait)
             if tick > 0:  # nothing to analyze at start
                 analysis.analyze_session(self)
 

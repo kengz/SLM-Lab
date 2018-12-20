@@ -43,7 +43,7 @@ def run_new_mode(spec_file, spec_name, lab_mode):
 
 
 def run_old_mode(spec_file, spec_name, lab_mode):
-    '''Run using existing data with `enjoy, eval`'''
+    '''Run using existing data with `enjoy, eval`. The eval mode is also what train mode's online eval runs in a subprocess via bash command'''
     # reconstruct spec and info_space from existing data
     lab_mode, prename = lab_mode.split('@')
     predir, _, _, _, _, _ = util.prepath_split(spec_file)
