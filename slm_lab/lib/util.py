@@ -17,7 +17,6 @@ import ujson
 import yaml
 
 NUM_CPUS = mp.cpu_count()
-NUM_EVAL_EPISODES = 100
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
@@ -339,7 +338,7 @@ def override_enjoy_spec(spec):
     return spec
 
 
-def override_eval_spec(spec):
+def override_eval_spec(spec, num_eval_epi=100):
     for agent_spec in spec['agent']:
         if 'max_size' in agent_spec['memory']:
             agent_spec['memory']['max_size'] = 100
@@ -347,7 +346,7 @@ def override_eval_spec(spec):
         # evaluate on episode basis
         if 'max_total_t' in env_spec:
             del env_spec['max_total_t']
-        env_spec['max_epi'] = NUM_EVAL_EPISODES
+        env_spec['max_epi'] = num_eval_epi
     return spec
 
 
