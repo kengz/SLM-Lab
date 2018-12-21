@@ -9,6 +9,7 @@ from slm_lab.env import EnvSpace, make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
 from slm_lab.lib import logger, util
+import os
 import pydash as ps
 import torch.multiprocessing as mp
 
@@ -46,7 +47,7 @@ class Session:
         tick = clock.get(env.max_tick_unit)
         if util.get_lab_mode() in ('enjoy', 'eval'):
             to_ckpt = False
-        elif (env.max_tick_unit == 'epi' and tick == 1) or (tick == 0):
+        elif os.environ.get('PY_ENV') != 'test' and ((env.max_tick_unit == 'epi' and tick == 1) or (tick == 0)):
             to_ckpt = True  # ckpt at beginning, but epi starts at 1
         elif hasattr(env, 'save_frequency') and 0 < tick <= env.max_tick:
             if env.max_tick_unit == 'epi':

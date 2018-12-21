@@ -184,7 +184,6 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
     if std is None:
         std = FITNESS_STD.get('template')
         logger.warn(f'The fitness standard for env {env_name} is not built yet. Contact author. Using a template standard for now.')
-    aeb_df['total_t'] = aeb_df['total_t']
     aeb_df['strength'] = calc_strength(aeb_df, std['rand_epi_reward'], std['std_epi_reward'])
     aeb_df['strength_ma'] = aeb_df['strength'].rolling(MA_WINDOW).mean()
     aeb_df['strength_mono_inc'] = is_noisy_mono_inc(aeb_df['strength']).astype(int)
