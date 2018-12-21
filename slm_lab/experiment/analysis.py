@@ -458,13 +458,11 @@ def save_session_df(session_data, prepath, info_space):
         ckpt = util.find_ckpt(info_space.eval_model_prepath)
         epi = int(re.search('epi(\d+)', ckpt)[1])
         totalt = int(re.search('totalt(\d+)', ckpt)[1])
-        for aeb in session_data:
-            aeb_df = session_data[aeb]
-            # override to know which ckpt eval is for
-            aeb_df['epi'] = epi
-            aeb_df['total_t'] = totalt
         session_df = pd.concat(session_data, axis=1)
         eval_session_df = pd.DataFrame(data=[session_df.mean()])
+        for aeb in util.get_df_aeb_list(eval_session_df):
+            eval_session_df.loc[:, aeb + ('epi',)] = epi
+            eval_session_df.loc[:, aeb + ('total_t',)] = totalt
         # if eval, save with append mode
         header = not os.path.exists(filepath)
         with open(filepath, 'a') as f:
