@@ -357,8 +357,7 @@ def gather_aeb_rewards_df(aeb, session_datas, graph_x):
         aeb_reward_sr = aeb_df['reward']
         aeb_reward_sr.index = aeb_df[graph_x]
         if util.get_lab_mode() in ('enjoy', 'eval'):
-            # guard for eval appending possibly not ordered, and multiindex df is hard to sort
-            aeb_reward_sr = aeb_reward_sr[~aeb_reward_sr.index.duplicated(keep='first')]
+            # guard for eval appending possibly not ordered
             aeb_reward_sr.sort_index(inplace=True)
         aeb_session_rewards[s] = aeb_reward_sr
     aeb_rewards_df = pd.DataFrame(aeb_session_rewards)
@@ -392,16 +391,36 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, graph_x):
     return fig
 
 
+def calc_trial_df(trial_spec, info_space):
+    '''Calculate trial_df as mean of all session_df'''
+    prepath = util.get_prepath(trial_spec, info_space)
+    predir, _, _, _, _, _ = util.prepath_split(prepath)
+    session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
+    aeb_transpose = {aeb: [] for aeb in session_datas[list(session_datas.keys())[0]]}
+    graph_x = trial_spec['meta'].get('graph_x', 'epi')
+    for s, session_data in session_datas.items():
+        for aeb, aeb_df in session_data.items():
+            aeb_transpose[aeb].append(aeb_df.sort_values(by=[graph_x]).set_index(graph_x, drop=False))
+
+    trial_data = {}
+    for aeb, df_list in aeb_transpose.items():
+        trial_data[aeb] = pd.concat(df_list).groupby(level=0).mean().reset_index(drop='True')
+
+    trial_df = pd.concat(trial_data, axis=1)
+    return trial_df
+
+
 def plot_trial(trial_spec, info_space):
     '''Plot the trial graph, 1 pane: mean and error envelope of reward graphs from all sessions. Each aeb_df gets its own color'''
     prepath = util.get_prepath(trial_spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
+    rand_session_data = session_datas[list(session_datas.keys())[0]]
     graph_x = trial_spec['meta'].get('graph_x', 'epi')
-    aeb_count = len(session_datas[0])
+    aeb_count = len(rand_session_data)
     palette = viz.get_palette(aeb_count)
     fig = None
-    for idx, (a, e, b) in enumerate(session_datas[0]):
+    for idx, (a, e, b) in enumerate(rand_session_data):
         aeb = (a, e, b)
         aeb_str = f'{a}{e}{b}'
         color = palette[idx]
@@ -488,10 +507,11 @@ def save_session_data(spec, info_space, session_data, session_fitness_df, sessio
     viz.save_image(session_fig, f'{prepath}_session_graph.png')
 
 
-def save_trial_data(spec, info_space, trial_fitness_df, trial_fig):
+def save_trial_data(spec, info_space, trial_df, trial_fitness_df, trial_fig):
     '''Save the trial data: spec, trial_fitness_df.'''
     prepath = util.get_prepath(spec, info_space, unit='trial')
     logger.info(f'Saving trial data to {prepath}')
+    util.write(trial_df, f'{prepath}_trial_df.csv')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
     if util.get_lab_mode() == 'train':
@@ -532,9 +552,10 @@ def analyze_trial(trial):
     @returns {DataFrame} trial_fitness_df Single-row df of trial fitness vector (avg over aeb, sessions), indexed with trial index.
     '''
     logger.info('Analyzing trial')
+    trial_df = calc_trial_df(trial.spec, trial.info_space)
     trial_fitness_df = calc_trial_fitness_df(trial)
     trial_fig = plot_trial(trial.spec, trial.info_space)
-    save_trial_data(trial.spec, trial.info_space, trial_fitness_df, trial_fig)
+    save_trial_data(trial.spec, trial.info_space, trial_df, trial_fitness_df, trial_fig)
     return trial_fitness_df
 
 
