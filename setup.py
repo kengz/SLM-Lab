@@ -25,7 +25,6 @@ class PyTest(TestCommand):
 
     def initialize_options(self):
         os.environ['PY_ENV'] = 'test'
-        os.environ['EVAL'] = 'false'
         TestCommand.initialize_options(self)
         self.pytest_args = test_args
 
