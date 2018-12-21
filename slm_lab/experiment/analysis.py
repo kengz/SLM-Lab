@@ -204,13 +204,13 @@ Checkpoint and early termination analysis
 
 def get_reward_mas(agent, name='current_reward_ma'):
     '''Return array of the named reward_ma for all of an agent's bodies.'''
-    bodies = getattr(agent, 'nanflat_body_a', None) or [agent.body]
+    bodies = getattr(agent, 'nanflat_body_a', [agent.body])
     return np.array([getattr(body, name) for body in bodies], dtype=np.float16)
 
 
 def get_std_epi_rewards(agent):
     '''Return array of std_epi_reward for each of the environments.'''
-    bodies = getattr(agent, 'nanflat_body_a', None) or [agent.body]
+    bodies = getattr(agent, 'nanflat_body_a', [agent.body])
     return np.array([ps.get(FITNESS_STD, f'{body.env.name}.std_epi_reward') for body in bodies], dtype=np.float16)
 
 
@@ -220,7 +220,7 @@ def new_best(agent):
     current_reward_mas = get_reward_mas(agent, 'current_reward_ma')
     new_best = (current_reward_mas >= best_reward_mas).all()
     if new_best:
-        bodies = getattr(agent, 'nanflat_body_a', None) or [agent.body]
+        bodies = getattr(agent, 'nanflat_body_a', [agent.body])
         for body in bodies:
             body.best_reward_ma = body.current_reward_ma
     return new_best
