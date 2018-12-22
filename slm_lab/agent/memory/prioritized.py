@@ -185,4 +185,20 @@ class PrioritizedReplay(Replay):
 
 class AtariPrioritizedReplay(PrioritizedReplay, AtariReplay):
     '''Make a Prioritized AtariReplay via nice multi-inheritance (python magic)'''
-    pass
+
+    def __init__(self, memory_spec, body):
+        util.set_attr(self, memory_spec, [
+            'alpha',
+            'epsilon',
+            'batch_size',
+            'max_size',
+            'use_cer',
+        ])
+        AtariReplay.__init__(self, memory_spec, body)
+        self.epsilon = torch.full((1,), self.epsilon)
+        self.alpha = torch.full((1,), self.alpha)
+        # adds a 'priorities' scalar to the data_keys and call reset again
+        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
+        self.reset()
+        self.states_shape = self.scalar_shape
+        self.states = [None] * self.max_size
