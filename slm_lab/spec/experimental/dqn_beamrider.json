@@ -61,7 +61,7 @@
     "env": [{
       "name": "BeamRiderNoFrameskip-v4",
       "max_t": null,
-      "max_total_t": 20000000,
+      "max_total_t": 10000000,
       "save_frequency": 100000
     }],
     "body": {
@@ -152,7 +152,7 @@
     "env": [{
       "name": "BeamRiderNoFrameskip-v4",
       "max_t": null,
-      "max_total_t": 20000000,
+      "max_total_t": 10000000,
       "save_frequency": 100000
     }],
     "body": {
