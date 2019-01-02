@@ -164,6 +164,7 @@
       "graph_x": "total_t",
       "max_session": 1,
       "max_trial": 12,
+      "training_eval": true,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 12
