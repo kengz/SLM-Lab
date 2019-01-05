@@ -300,6 +300,10 @@ class AtariReplay(Replay):
         self.states_shape = self.scalar_shape
         self.states = [None] * self.max_size
 
+    def add_experience(self, state, action, reward, next_state, done):
+        # clip reward, done here to minimize change to only training data data
+        super(AtariReplay, self).add_experience(state, action, np.sign(reward), next_state, done)
+
 
 class ImageReplay(Replay):
     '''
