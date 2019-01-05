@@ -69,7 +69,7 @@ def cast_list(val):
 def clear_periodic_ckpt(prepath):
     '''Clear periodic (with -epi) ckpt files in prepath'''
     if '-epi' in prepath:
-        run_cmd(f'rm {prepath}*', wait=False)
+        run_cmd(f'rm {prepath}*')
 
 
 def concat_batches(batches):
@@ -524,25 +524,22 @@ def read_as_plain(data_path, **kwargs):
     return data
 
 
-def run_cmd(cmd, wait=False):
-    '''Run shell command, with wait or without'''
-    if wait:
-        stdout = subprocess.PIPE
-        stderr = subprocess.STDOUT
-    else:
-        stdout = stderr = subprocess.DEVNULL
+def run_cmd(cmd):
+    '''Run shell command'''
     print(f'+ {cmd}')
-    proc = subprocess.Popen(cmd, cwd=ROOT_DIR, shell=True, stdout=stdout, stderr=stderr, close_fds=True)
-    if wait:
-        for line in proc.stdout:
-            print(line.decode(), end='')
-        output = proc.communicate()[0]
-        if proc.returncode != 0:
-            raise subprocess.CalledProcessError(cmd, proc.returncode, output)
-        else:
-            return output
+    proc = subprocess.Popen(cmd, cwd=ROOT_DIR, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+    return proc
+
+
+def run_cmd_wait(proc):
+    '''Wait on a running process created by util.run_cmd and print its stdout'''
+    for line in proc.stdout:
+        print(line.decode(), end='')
+    output = proc.communicate()[0]
+    if proc.returncode != 0:
+        raise subprocess.CalledProcessError(proc.args, proc.returncode, output)
     else:
-        return proc
+        return output
 
 
 def s_get(cls, attr_path):
