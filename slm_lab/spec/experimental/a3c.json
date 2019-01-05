@@ -52,7 +52,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick": 500,
+      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -135,7 +136,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick": 500,
+      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -218,7 +220,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 400,
+      "max_tick": 400,
+      "max_tick_unit": "epi",
       "save_frequency": 300
     }],
     "body": {
@@ -305,7 +308,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick": 500,
+      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -392,7 +396,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick": 500,
+      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -475,7 +480,8 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick": 500,
+      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -558,7 +564,8 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick": 500,
+      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -645,7 +652,8 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick": 500,
+      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -732,7 +740,8 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick": 500,
+      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -820,7 +829,8 @@
     "env": [{
       "name": "Breakout-v0",
       "max_t": null,
-      "max_epi": 1
+      "max_tick": 1,
+      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -891,7 +901,8 @@
     "env": [{
       "name": "Breakout-v0",
       "max_t": null,
-      "max_epi": 1
+      "max_tick": 1,
+      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",

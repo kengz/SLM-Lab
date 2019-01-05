@@ -55,11 +55,12 @@
       }
     }],
     "env": [{
-        "name": "LunarLander-v2",
-        "max_t": null,
-        "max_total_t": 250000,
-        "save_frequency": 10000
-      }],
+      "name": "LunarLander-v2",
+      "max_t": null,
+      "max_tick": 250000,
+      "max_tick_unit": "total_t",
+      "save_frequency": 10000
+    }],
     "body": {
       "product": "outer",
       "num": 1

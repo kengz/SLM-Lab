@@ -52,7 +52,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -151,7 +152,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -250,7 +252,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -349,7 +352,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -448,7 +452,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -547,7 +552,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -646,7 +652,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -745,7 +752,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -847,7 +855,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -943,7 +952,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {

@@ -57,7 +57,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick_unit": "epi",
+      "max_tick": 500,
       "save_frequency": 1000
     }],
     "body": {
@@ -148,7 +149,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick_unit": "epi",
+      "max_tick": 500,
       "save_frequency": 1000
     }],
     "body": {
@@ -243,7 +245,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick_unit": "epi",
+      "max_tick": 500,
       "save_frequency": 1000
     }],
     "body": {
@@ -338,7 +341,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick_unit": "epi",
+      "max_tick": 500,
       "save_frequency": 1000
     }],
     "body": {
@@ -429,7 +433,8 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick_unit": "epi",
+      "max_tick": 500,
       "save_frequency": 1000
     }],
     "body": {
@@ -520,7 +525,8 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick_unit": "epi",
+      "max_tick": 500,
       "save_frequency": 1000
     }],
     "body": {
@@ -615,7 +621,8 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick_unit": "epi",
+      "max_tick": 500,
       "save_frequency": 1000
     }],
     "body": {
@@ -710,7 +717,8 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_epi": 500,
+      "max_tick_unit": "epi",
+      "max_tick": 500,
       "save_frequency": 1000
     }],
     "body": {
@@ -806,7 +814,8 @@
     "env": [{
       "name": "Breakout-v0",
       "max_t": null,
-      "max_epi": 1
+      "max_tick_unit": "epi",
+      "max_tick": 1
     }],
     "body": {
       "product": "outer",
@@ -882,7 +891,8 @@
     "env": [{
       "name": "Breakout-v0",
       "max_t": null,
-      "max_epi": 1
+      "max_tick_unit": "epi",
+      "max_tick": 1
     }],
     "body": {
       "product": "outer",

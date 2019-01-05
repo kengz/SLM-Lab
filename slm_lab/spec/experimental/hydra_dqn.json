@@ -56,12 +56,14 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 1000,
+      "max_tick_unit": "epi",
+      "max_tick": 1000,
       "save_frequency": 1000
     }, {
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 1000
+      "max_tick_unit": "epi",
+      "max_tick": 1000
     }],
     "body": {
       "product": "outer",
@@ -155,12 +157,14 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 1000,
+      "max_tick_unit": "epi",
+      "max_tick": 1000,
       "save_frequency": 1000
     }, {
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 1000
+      "max_tick_unit": "epi",
+      "max_tick": 1000
     }],
     "body": {
       "product": "outer",
@@ -254,13 +258,15 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 300,
+      "max_tick_unit": "epi",
+      "max_tick": 300,
       "reward_scale": 1,
       "save_frequency": 10000
     }, {
       "name": "2DBall",
       "max_t": 1000,
-      "max_epi": 300,
+      "max_tick_unit": "epi",
+      "max_tick": 300,
       "reward_scale": 10,
       "save_frequency": 10000
     }],
@@ -350,13 +356,15 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 300,
+      "max_tick_unit": "epi",
+      "max_tick": 300,
       "reward_scale": 1,
       "save_frequency": 10000
     }, {
       "name": "2DBall",
       "max_t": 1000,
-      "max_epi": 300,
+      "max_tick_unit": "epi",
+      "max_tick": 300,
       "reward_scale": 10,
       "save_frequency": 10000
     }],

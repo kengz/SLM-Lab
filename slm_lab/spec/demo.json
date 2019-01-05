@@ -52,7 +52,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_total_t": 10000,
+      "max_tick": 10000,
+      "max_tick_unit": "total_t",
       "save_frequency": 2000
     }],
     "body": {
