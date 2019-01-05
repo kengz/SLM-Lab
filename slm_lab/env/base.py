@@ -29,14 +29,14 @@ def set_gym_space_attr(gym_space):
 
 
 class Clock:
-    '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0, but epi begins at 1, env step begins at 1.'''
+    '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0 and epi=0'''
 
     def __init__(self, clock_speed=1):
         self.clock_speed = int(clock_speed)
         self.ticks = 0  # multiple ticks make a timestep; used for clock speed
         self.t = 0
         self.total_t = 0
-        self.epi = 0
+        self.epi = -1  # offset so epi is 0 when it gets ticked at start
 
     def to_step(self):
         '''Step signal from clock_speed. Step only if the base unit of time in this clock has moved. Used to control if env of different clock_speed should step()'''

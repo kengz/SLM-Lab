@@ -47,15 +47,12 @@ class Session:
         tick = clock.get(env.max_tick_unit)
         if util.get_lab_mode() in ('enjoy', 'eval'):
             to_ckpt = False
-        elif os.environ.get('PY_ENV') != 'test' and ((env.max_tick_unit == 'epi' and tick == 1) or (tick == 0)):
-            to_ckpt = True  # ckpt at beginning, but epi starts at 1
-        elif hasattr(env, 'save_frequency') and 0 < tick <= env.max_tick:
-            if env.max_tick_unit == 'epi':
-                to_ckpt = (env.done and tick % env.save_frequency == 0)
-            else:
-                to_ckpt = (tick % env.save_frequency == 0)
+        elif tick <= env.max_tick:
+            to_ckpt = tick % env.save_frequency == 0
         else:
             to_ckpt = False
+        if env.max_tick_unit == 'epi':  # extra condition for epi
+            to_ckpt = to_ckpt and env.done
 
         if to_ckpt:
             ckpt = f'epi{clock.get("epi")}-totalt{clock.get("total_t")}'
