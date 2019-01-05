@@ -64,7 +64,6 @@
       "distributed": false,
       "max_trial": 4,
       "max_session": 4,
-      "graph_x": "total_t",
       "training_eval": false,
       "search": "RandomSearch",
       "resources": {

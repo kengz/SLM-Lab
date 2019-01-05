@@ -584,7 +584,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 1,
       "max_trial": 16,
       "search": "RandomSearch",

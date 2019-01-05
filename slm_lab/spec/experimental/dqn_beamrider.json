@@ -71,7 +71,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 1,
       "max_trial": 12,
       "search": "RandomSearch",
@@ -163,7 +162,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 1,
       "max_trial": 12,
       "training_eval": true,

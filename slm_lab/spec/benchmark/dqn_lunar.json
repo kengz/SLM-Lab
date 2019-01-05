@@ -67,7 +67,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 4,
       "max_trial": 62,
       "search": "RandomSearch",

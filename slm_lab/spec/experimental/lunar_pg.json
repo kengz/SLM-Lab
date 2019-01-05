@@ -246,7 +246,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
