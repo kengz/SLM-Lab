@@ -72,7 +72,7 @@ class OpenAIEnv(BaseEnv):
         if util.to_render():
             self.u_env.render()
         if self.max_t is not None:
-            done = done or self.clock.get('t') > self.max_t
+            done = done or self.clock.t > self.max_t
         self.done = done
         logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
         return reward, state, done
@@ -115,7 +115,7 @@ class OpenAIEnv(BaseEnv):
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
-        self.done = done = done or self.clock.get('t') > self.max_t
+        self.done = done = done or self.clock.t > self.max_t
         reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for ab, body in util.ndenumerate_nonan(self.body_e):
             reward_e[ab] = reward

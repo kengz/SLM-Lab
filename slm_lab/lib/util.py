@@ -346,7 +346,7 @@ def override_eval_spec(spec, num_eval_epi=100):
         # evaluate on episode basis
         if 'max_total_t' in env_spec:
             del env_spec['max_total_t']
-        env_spec['max_epi'] = num_eval_epi
+        env_spec['max_epi'] = num_eval_epi - 1  # offset so epi is 0 - (num_eval_epi - 1)
     return spec
 
 
@@ -360,6 +360,7 @@ def override_test_spec(spec):
     for env_spec in spec['env']:
         env_spec['max_epi'] = 3
         env_spec['max_t'] = 20
+        env_spec['save_frequency'] = 1000
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
     return spec

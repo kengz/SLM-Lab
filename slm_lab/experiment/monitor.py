@@ -137,7 +137,7 @@ class Body:
         Handles any body attribute reset at the start of an episode.
         This method is called automatically at base memory.epi_reset().
         '''
-        t = self.env.clock.get('t')
+        t = self.env.clock.t
         assert t == 0, f'aeb: {self.aeb}, t: {t}'
         if hasattr(self, 'aeb_space'):
             self.space_fix_stats()
@@ -193,7 +193,7 @@ class Body:
         spec = self.agent.spec
         info_space = self.agent.info_space
         clock = self.env.clock
-        prefix = f'{spec["name"]}_t{info_space.get("trial")}_s{info_space.get("session")}, aeb{self.aeb}, epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}'
+        prefix = f'{spec["name"]}_t{info_space.get("trial")}_s{info_space.get("session")}, aeb{self.aeb}, epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}'
         return prefix
 
     def log_summary(self):
@@ -383,7 +383,7 @@ class AEBSpace:
                 for body in env.nanflat_body_e:
                     body.log_summary()
             env.clock.tick(unit or ('epi' if env.done else 't'))
-            end_session = env.clock.get(env.max_tick_unit) > env.max_tick
+            end_session = not (env.clock.get(env.max_tick_unit) < env.max_tick)
             end_sessions.append(end_session)
         return all(end_sessions)
 

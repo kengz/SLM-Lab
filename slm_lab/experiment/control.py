@@ -47,23 +47,20 @@ class Session:
         tick = clock.get(env.max_tick_unit)
         if util.get_lab_mode() in ('enjoy', 'eval'):
             to_ckpt = False
-        elif os.environ.get('PY_ENV') != 'test' and ((env.max_tick_unit == 'epi' and tick == 1) or (tick == 0)):
-            to_ckpt = True  # ckpt at beginning, but epi starts at 1
-        elif hasattr(env, 'save_frequency') and 0 < tick <= env.max_tick:
-            if env.max_tick_unit == 'epi':
-                to_ckpt = (env.done and tick % env.save_frequency == 0)
-            else:
-                to_ckpt = (tick % env.save_frequency == 0)
+        elif tick <= env.max_tick:
+            to_ckpt = tick % env.save_frequency == 0
         else:
             to_ckpt = False
+        if env.max_tick_unit == 'epi':  # extra condition for epi
+            to_ckpt = to_ckpt and env.done
 
         if to_ckpt:
-            ckpt = f'epi{clock.get("epi")}-totalt{clock.get("total_t")}'
-            agent.save(ckpt=ckpt)
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             # run online eval for train mode using model saved above
             if util.get_lab_mode() == 'train' and self.spec['meta'].get('training_eval', False):
+                ckpt = f'epi{clock.epi}-totalt{clock.total_t}'
+                agent.save(ckpt=ckpt)
                 # set reference to eval process for handling
                 self.eval_proc = analysis.run_online_eval(self.spec, self.info_space, ckpt)
             if tick > 0:  # nothing to analyze at start
@@ -71,7 +68,7 @@ class Session:
 
     def run_episode(self):
         self.env.clock.tick('epi')
-        logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.env.clock.get("epi")}')
+        logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.env.clock.epi}')
         reward, state, done = self.env.reset()
         self.agent.reset(state)
         while not done:
