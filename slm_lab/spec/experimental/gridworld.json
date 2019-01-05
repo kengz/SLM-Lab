@@ -46,7 +46,8 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_epi": 1000,
+      "max_tick_unit": "epi",
+      "max_tick": 1000,
       "save_frequency": 1500,
     }],
     "body": {
@@ -134,7 +135,8 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_epi": 1000,
+      "max_tick_unit": "epi",
+      "max_tick": 1000,
       "save_frequency": 1500,
     }],
     "body": {
@@ -218,7 +220,8 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_epi": 1000,
+      "max_tick_unit": "epi",
+      "max_tick": 1000,
       "save_frequency": 1500,
     }],
     "body": {
@@ -306,7 +309,8 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_epi": 1000,
+      "max_tick_unit": "epi",
+      "max_tick": 1000,
       "save_frequency": 1500,
     }],
     "body": {
@@ -397,7 +401,8 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_epi": 1000,
+      "max_tick_unit": "epi",
+      "max_tick": 1000,
       "save_frequency": 1500,
     }],
     "body": {
@@ -492,7 +497,8 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_epi": 1000,
+      "max_tick_unit": "epi",
+      "max_tick": 1000,
       "save_frequency": 1500,
     }],
     "body": {
@@ -585,7 +591,8 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_epi": 1000,
+      "max_tick_unit": "epi",
+      "max_tick": 1000,
       "save_frequency": 1500,
     }],
     "body": {
@@ -680,7 +687,8 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_epi": 1000,
+      "max_tick_unit": "epi",
+      "max_tick": 1000,
       "save_frequency": 1500,
     }],
     "body": {

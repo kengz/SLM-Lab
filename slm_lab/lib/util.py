@@ -343,10 +343,9 @@ def override_eval_spec(spec, num_eval_epi=100):
         if 'max_size' in agent_spec['memory']:
             agent_spec['memory']['max_size'] = 100
     for env_spec in spec['env']:
-        # evaluate on episode basis
-        if 'max_total_t' in env_spec:
-            del env_spec['max_total_t']
-        env_spec['max_epi'] = num_eval_epi - 1  # offset so epi is 0 - (num_eval_epi - 1)
+        # evaluate by episode; offset so epi is 0 - (num_eval_epi - 1)
+        env_spec['max_tick'] = num_eval_epi - 1
+        env_spec['max_tick_unit'] = 'epi'
     return spec
 
 
@@ -358,8 +357,9 @@ def override_test_spec(spec):
         agent_spec['algorithm']['training_epoch'] = 1
         agent_spec['algorithm']['training_batch_epoch'] = 1
     for env_spec in spec['env']:
-        env_spec['max_epi'] = 3
         env_spec['max_t'] = 20
+        env_spec['max_tick'] = 3
+        env_spec['max_tick_unit'] = 'epi'
         env_spec['save_frequency'] = 1000
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2

@@ -52,7 +52,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -61,7 +62,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -151,7 +151,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -160,7 +161,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -250,7 +250,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -259,7 +260,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -349,7 +349,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -358,7 +359,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -448,7 +448,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -457,7 +458,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -547,7 +547,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -556,7 +557,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -646,7 +646,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -655,7 +656,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -745,7 +745,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -754,7 +755,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -847,7 +847,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -856,7 +857,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -943,7 +943,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_total_t": 250000,
+      "max_tick_unit": "total_t",
+      "max_tick": 250000,
       "save_frequency": 10000,
     }],
     "body": {
@@ -952,7 +953,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",

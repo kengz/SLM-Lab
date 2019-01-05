@@ -68,15 +68,17 @@ class BaseEnv(ABC):
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 150,
+      "max_tick": 150,
+      "max_tick_unit": "epi",
       "save_frequency": 50
     }],
 
-    # or using max_total_t
+    # or using total_t
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_total_t": 10000,
+      "max_tick": 10000,
+      "max_tick_unit": "total_t",
       "save_frequency": 50
     }],
     '''
@@ -93,14 +95,14 @@ class BaseEnv(ABC):
         util.set_attr(self, self.env_spec, [
             'name',
             'max_t',
+            'max_tick',
+            'max_tick_unit',
             'save_frequency',
             'reward_scale',
         ])
-        # use either max_epi or max_total_t as std step
-        assert 'max_epi' in self.env_spec or 'max_total_t' in self.env_spec, 'Specify either max_epi or max_total_t'
-        max_tick_unit = 'epi' if 'max_epi' in self.env_spec else 'total_t'
-        self.clock.max_tick_unit = self.max_tick_unit = max_tick_unit
-        self.clock.max_tick = self.max_tick = self.env_spec[f'max_{self.max_tick_unit}']
+        # set max_tick info to clock
+        self.clock.max_tick = self.max_tick
+        self.clock.max_tick_unit = self.max_tick_unit
 
     def _set_attr_from_u_env(self, u_env):
         '''Set the observation, action dimensions and action type from u_env'''

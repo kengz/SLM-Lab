@@ -49,7 +49,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 250,
+      "max_tick_unit": "epi",
+      "max_tick": 250,
       "save_frequency": 1000
     }],
     "body": {
@@ -137,7 +138,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 250,
+      "max_tick_unit": "epi",
+      "max_tick": 250,
       "save_frequency": 1000
     }],
     "body": {
@@ -225,7 +227,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 250,
+      "max_tick_unit": "epi",
+      "max_tick": 250,
       "save_frequency": 1000
     }],
     "body": {
@@ -317,7 +320,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 250,
+      "max_tick_unit": "epi",
+      "max_tick": 250,
       "save_frequency": 1000
     }],
     "body": {
@@ -409,7 +413,8 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 250,
+      "max_tick_unit": "epi",
+      "max_tick": 250,
       "save_frequency": 1000
     }],
     "body": {
@@ -498,7 +503,8 @@
     "env": [{
       "name": "LunarLander-v2",
       "max_t": null,
-      "max_epi": 600,
+      "max_tick_unit": "epi",
+      "max_tick": 600,
       "save_frequency": 1000
     }],
     "body": {
@@ -568,7 +574,8 @@
     "env": [{
       "name": "PongNoFrameskip-v4",
       "max_t": null,
-      "max_total_t": 10000000,
+      "max_tick_unit": "total_t",
+      "max_tick": 10000000,
       "save_frequency": 100000
     }],
     "body": {
@@ -577,7 +584,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 1,
       "max_trial": 16,
       "search": "RandomSearch",

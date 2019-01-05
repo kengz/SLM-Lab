@@ -27,7 +27,8 @@ class OpenAIEnv(BaseEnv):
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_epi": 150,
+      "max_tick": 150,
+      "max_tick_unit": "epi",
       "save_frequency": 50
     }],
     '''

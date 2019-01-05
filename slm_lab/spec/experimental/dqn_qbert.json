@@ -58,7 +58,8 @@
     "env": [{
       "name": "QbertNoFrameskip-v4",
       "max_t": null,
-      "max_total_t": 10000000,
+      "max_tick_unit": "total_t",
+      "max_tick": 10000000,
       "save_frequency": 100000
     }],
     "body": {
@@ -67,7 +68,6 @@
     },
     "meta": {
       "distributed": false,
-      "graph_x": "total_t",
       "max_session": 1,
       "max_trial": 16,
       "training_eval": true,

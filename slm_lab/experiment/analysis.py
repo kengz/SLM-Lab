@@ -320,7 +320,7 @@ def is_unfit(fitness_df, session):
 
 def plot_session(session_spec, info_space, session_data):
     '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
-    graph_x = session_spec['meta'].get('graph_x', 'epi')
+    max_tick_unit = ps.get(session_spec, 'env.0.max_tick_unit')
     aeb_count = len(session_data)
     palette = viz.get_palette(aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True, print_grid=False)
@@ -328,14 +328,14 @@ def plot_session(session_spec, info_space, session_data):
         aeb_str = f'{a}{e}{b}'
         aeb_df = session_data[(a, e, b)]
         aeb_df.fillna(0, inplace=True)  # for saving plot, cant have nan
-        fig_1 = viz.plot_line(aeb_df, 'reward', graph_x, legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
+        fig_1 = viz.plot_line(aeb_df, 'reward', max_tick_unit, legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
         fig.append_trace(fig_1.data[0], 1, 1)
 
-        fig_2 = viz.plot_line(aeb_df, ['loss'], graph_x, y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
+        fig_2 = viz.plot_line(aeb_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
         fig.append_trace(fig_2.data[0], 2, 1)
         fig.append_trace(fig_2.data[1], 3, 1)
 
-    fig.layout['xaxis1'].update(title=graph_x, zerolinewidth=1)
+    fig.layout['xaxis1'].update(title=max_tick_unit, zerolinewidth=1)
     fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
     fig.layout['yaxis1'].update(domain=[0.55, 1])
     fig.layout['yaxis2'].update(fig_2.layout['yaxis'])
@@ -348,13 +348,13 @@ def plot_session(session_spec, info_space, session_data):
     return fig
 
 
-def gather_aeb_rewards_df(aeb, session_datas, graph_x):
+def gather_aeb_rewards_df(aeb, session_datas, max_tick_unit):
     '''Gather rewards from each session for a body into a df'''
     aeb_session_rewards = {}
     for s, session_data in session_datas.items():
         aeb_df = session_data[aeb]
         aeb_reward_sr = aeb_df['reward']
-        aeb_reward_sr.index = aeb_df[graph_x]
+        aeb_reward_sr.index = aeb_df[max_tick_unit]
         if util.get_lab_mode() in ('enjoy', 'eval'):
             # guard for eval appending possibly not ordered
             aeb_reward_sr.sort_index(inplace=True)
@@ -363,7 +363,7 @@ def gather_aeb_rewards_df(aeb, session_datas, graph_x):
     return aeb_rewards_df
 
 
-def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, graph_x):
+def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, max_tick_unit):
     '''Build the aeb_reward envelope figure'''
     mean_sr = aeb_rewards_df.mean(axis=1)
     std_sr = aeb_rewards_df.std(axis=1).fillna(0)
@@ -382,9 +382,9 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, graph_x):
         showlegend=False,
         legendgroup=aeb_str,
     )
-    df = pd.DataFrame({graph_x: x, 'mean_reward': mean_sr})
+    df = pd.DataFrame({max_tick_unit: x, 'mean_reward': mean_sr})
     fig = viz.plot_line(
-        df, ['mean_reward'], [graph_x], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
+        df, ['mean_reward'], [max_tick_unit], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
     )
     fig.add_traces([envelope_trace])
     return fig
@@ -396,10 +396,10 @@ def calc_trial_df(trial_spec, info_space):
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
     aeb_transpose = {aeb: [] for aeb in session_datas[list(session_datas.keys())[0]]}
-    graph_x = trial_spec['meta'].get('graph_x', 'epi')
+    max_tick_unit = ps.get(trial_spec, 'env.0.max_tick_unit')
     for s, session_data in session_datas.items():
         for aeb, aeb_df in session_data.items():
-            aeb_transpose[aeb].append(aeb_df.sort_values(by=[graph_x]).set_index(graph_x, drop=False))
+            aeb_transpose[aeb].append(aeb_df.sort_values(by=[max_tick_unit]).set_index(max_tick_unit, drop=False))
 
     trial_data = {}
     for aeb, df_list in aeb_transpose.items():
@@ -415,7 +415,7 @@ def plot_trial(trial_spec, info_space):
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
     rand_session_data = session_datas[list(session_datas.keys())[0]]
-    graph_x = trial_spec['meta'].get('graph_x', 'epi')
+    max_tick_unit = ps.get(trial_spec, 'env.0.max_tick_unit')
     aeb_count = len(rand_session_data)
     palette = viz.get_palette(aeb_count)
     fig = None
@@ -423,8 +423,8 @@ def plot_trial(trial_spec, info_space):
         aeb = (a, e, b)
         aeb_str = f'{a}{e}{b}'
         color = palette[idx]
-        aeb_rewards_df = gather_aeb_rewards_df(aeb, session_datas, graph_x)
-        aeb_fig = build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, graph_x)
+        aeb_rewards_df = gather_aeb_rewards_df(aeb, session_datas, max_tick_unit)
+        aeb_fig = build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, max_tick_unit)
         if fig is None:
             fig = aeb_fig
         else:
