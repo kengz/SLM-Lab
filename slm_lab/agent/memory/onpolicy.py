@@ -273,14 +273,8 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
             'next_states': [[ns_seq_0, ns_seq_1, ..., ns_seq_k]],
             'dones'      : dones}
         '''
-        batch = {}
-        batch['states'] = self.build_seqs(self.states)
-        batch['actions'] = self.actions
-        batch['rewards'] = self.rewards
-        batch['next_states'] = self.build_seqs(self.next_states)
-        batch['dones'] = self.dones
-        self.reset()
-        return batch
+        # delegate method
+        return OnPolicySeqReplay.sample(self)
 
     def build_seqs(self, data):
         '''Construct the seq data for sampling'''
