@@ -132,7 +132,7 @@ class MaxAndSkipEnv(gym.Wrapper):
 
 class ClipRewardEnv(gym.RewardWrapper):
     def reward(self, reward):
-        '''Atari reward, to -1, 0 or +1.'''
+        '''Atari reward, to -1, 0 or +1. Not usually used as SLM Lab memory class does the clipping'''
         return np.sign(reward)
 
 

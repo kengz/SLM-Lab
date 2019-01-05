@@ -249,17 +249,9 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
         self.state_buffer = deque(maxlen=self.seq_len)
         self.reset()
 
-    def reset(self):
-        '''Initializes the memory arrays, size and head pointer'''
-        super(OnPolicySeqBatchReplay, self).reset()
-        self.state_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim))
-
     def preprocess_state(self, state, append=True):
-        '''Transforms the raw state into format that is fed into the network'''
-        self.preprocess_append(state, append)
-        return np.stack(self.state_buffer)
+        # delegate to OnPolicySeqReplay sequential method
+        return OnPolicySeqReplay.preprocess_state(self, state, append)
 
     def sample(self):
         '''
@@ -273,14 +265,8 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
             'next_states': [[ns_seq_0, ns_seq_1, ..., ns_seq_k]],
             'dones'      : dones}
         '''
-        batch = {}
-        batch['states'] = self.build_seqs(self.states)
-        batch['actions'] = self.actions
-        batch['rewards'] = self.rewards
-        batch['next_states'] = self.build_seqs(self.next_states)
-        batch['dones'] = self.dones
-        self.reset()
-        return batch
+        # delegate method
+        return OnPolicySeqReplay.sample(self)
 
     def build_seqs(self, data):
         '''Construct the seq data for sampling'''
@@ -337,8 +323,7 @@ class OnPolicyConcatReplay(OnPolicyReplay):
         '''Transforms the raw state into format that is fed into the network'''
         # append when state is first seen when acting in policy_util, don't append elsewhere in memory
         self.preprocess_append(state, append)
-        res = np.concatenate(self.state_buffer)
-        return res
+        return np.concatenate(self.state_buffer)
 
     @lab_api
     def update(self, action, reward, state, done):
@@ -362,6 +347,10 @@ class OnPolicyAtariReplay(OnPolicyReplay):
             'stack_len',  # number of stack states
         ])
         OnPolicyReplay.__init__(self, memory_spec, body)
+
+    def add_experience(self, state, action, reward, next_state, done):
+        # clip reward, done here to minimize change to only training data data
+        super(OnPolicyAtariReplay, self).add_experience(state, action, np.sign(reward), next_state, done)
 
 
 class OnPolicyImageReplay(OnPolicyReplay):

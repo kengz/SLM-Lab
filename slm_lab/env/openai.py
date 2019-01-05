@@ -42,7 +42,8 @@ class OpenAIEnv(BaseEnv):
             if util.get_lab_mode() == 'eval':
                 env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=False)
             else:
-                env = wrap_deepmind(env, stack_len=stack_len)
+                # no reward clipping in training since Atari Memory classes handle it
+                env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False)
         self.u_env = env
         self._set_attr_from_u_env(self.u_env)
         self.max_t = self.max_t or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_epi_steps')
