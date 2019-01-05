@@ -221,7 +221,7 @@ def save_image(figure, filepath=None):
         logger.info(f'Graph saved to {filepath}')
     except Exception as e:
         logger.warn(
-            '{e}\nFailed to generate graph. Fix the issue and run retro-analysis to generate graphs.')
+            f'{e}\nFailed to generate graph. Fix the issue and run retro-analysis to generate graphs.')
 
 
 def stack_cumsum(df, y_col):

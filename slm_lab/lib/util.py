@@ -2,16 +2,13 @@ from datetime import datetime
 from importlib import reload
 from slm_lab import ROOT_DIR
 import cv2
-import glob
 import json
-import math
 import numpy as np
 import operator
 import os
 import pandas as pd
 import pydash as ps
 import regex as re
-import shutil
 import subprocess
 import sys
 import torch
@@ -20,7 +17,6 @@ import ujson
 import yaml
 
 NUM_CPUS = mp.cpu_count()
-NUM_EVAL_EPISODES = 100
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
 SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
@@ -70,6 +66,12 @@ def cast_list(val):
         return [val]
 
 
+def clear_periodic_ckpt(prepath):
+    '''Clear periodic (with -epi) ckpt files in prepath'''
+    if '-epi' in prepath:
+        run_cmd(f'rm {prepath}*')
+
+
 def concat_batches(batches):
     '''
     Concat batch objects from body.memory.sample() into one batch, when all bodies experience similar envs
@@ -98,31 +100,6 @@ def cond_multiget(arr, idxs):
         return arr[idxs]
 
 
-def copy_spec(original_trial_path, new_trial_path):
-    '''Copies spec from original to new directory. Used in eval or enjoy mode.'''
-    source = f'{original_trial_path}_spec.json'
-    dest = f'{new_trial_path}_spec.json'
-    shutil.copy(source, dest)
-
-
-def copy_models(original_session_name, new_trial_name, number_sessions):
-    '''Copies all model data from original_session to new_trial. Duplicates model x number_sessions. Used in eval or enjoy mode.'''
-    for i in range(number_sessions):
-        new_session_name = f'{new_trial_name}_s{i}'
-        files = glob.glob(f'{original_session_name}*')
-        new_files = [re.sub(original_session_name, new_session_name, f) for f in files]
-        for f, nf in zip(files, new_files):
-            shutil.copy(f, nf)
-
-
-def copy_original_models(original_session_name, old_dir, new_dir):
-    '''Copies the original checkpoint to the new directory. Used in eval or enjoy mode.'''
-    files = glob.glob(f'{original_session_name}*')
-    for f in files:
-        nf = re.sub(old_dir, new_dir, f)
-        shutil.copy(f, nf)
-
-
 def count_nonan(arr):
     try:
         return np.count_nonzero(~np.isnan(arr))
@@ -136,6 +113,16 @@ def downcast_float32(df):
         if df[col].dtype == 'float':
             df[col] = df[col].astype('float32')
     return df
+
+
+def find_ckpt(prepath):
+    '''Find the ckpt-lorem-ipsum in a string and return lorem-ipsum'''
+    if 'ckpt' in prepath:
+        ckpt_str = ps.find(prepath.split('_'), lambda s: s.startswith('ckpt'))
+        ckpt = ckpt_str.replace('ckpt-', '')
+    else:
+        ckpt = None
+    return ckpt
 
 
 def flatten_dict(obj, delim='.'):
@@ -244,15 +231,15 @@ def get_prepath(spec, info_space, unit='experiment'):
     spec_name = spec['name']
     predir = f'data/{spec_name}_{info_space.experiment_ts}'
     prename = f'{spec_name}'
-    ckpt = ps.get(info_space, 'ckpt')
     trial_index = info_space.get('trial')
     session_index = info_space.get('session')
     if unit == 'trial':
         prename += f'_t{trial_index}'
     elif unit == 'session':
         prename += f'_t{trial_index}_s{session_index}'
+    ckpt = ps.get(info_space, 'ckpt')
     if ckpt is not None:
-        prename += f'_ckpt{ckpt}'
+        prename += f'_ckpt-{ckpt}'
     prepath = f'{predir}/{prename}'
     return prepath
 
@@ -348,21 +335,18 @@ def override_dev_spec(spec):
 
 def override_enjoy_spec(spec):
     spec['meta']['max_session'] = 1
-    spec['meta']['max_trial'] = 1
     return spec
 
 
-def override_eval_spec(spec):
-    spec['meta']['max_session'] = 6
-    spec['meta']['max_trial'] = 1
-    spec['meta']['graph_x'] = 'epi'
+def override_eval_spec(spec, num_eval_epi=100):
     for agent_spec in spec['agent']:
         if 'max_size' in agent_spec['memory']:
-            agent_spec['memory']['max_size'] = 1000
+            agent_spec['memory']['max_size'] = 100
     for env_spec in spec['env']:
+        # evaluate on episode basis
         if 'max_total_t' in env_spec:
             del env_spec['max_total_t']
-        env_spec['max_epi'] = NUM_EVAL_EPISODES
+        env_spec['max_epi'] = num_eval_epi
     return spec
 
 
@@ -398,21 +382,6 @@ def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
     return results
 
 
-def prepare_directory(new_spec, new_info_space, original_spec, original_info_space, original_prepath):
-    '''Prepares a clean directory to evaluate or enjoy a particular model. Leaves original experiment directory untouched.'''
-    assert new_spec['meta']['max_trial'] == 1
-    predir, _, _, spec_name, _, ckpt = prepath_split(original_prepath)
-    trial, session = prepath_to_idxs(original_prepath)
-    new_prepath = get_prepath(new_spec, new_info_space, 'experiment')
-    new_predir, _, _, _, _, _ = prepath_split(new_prepath)
-    new_trial_name = f'{new_prepath}_t0'
-    original_trial_name = f'{predir}/{spec_name}_t{trial}'
-    original_session_name = f'{original_trial_name}_s{session}_ckpt{ckpt}'
-    copy_spec(original_trial_name, new_trial_name)
-    copy_original_models(original_session_name, predir, new_predir)
-    copy_models(original_session_name, new_trial_name, new_spec['meta']['max_session'])
-
-
 def prepath_split(prepath):
     '''
     Split prepath into useful names. Works with predir (prename will be None)
@@ -422,17 +391,14 @@ def prepath_split(prepath):
     prename: dqn_pong_t0_s0
     spec_name: dqn_pong
     experiment_ts: 2018_12_02_082510
-    ckpt: ckptbest of dqn_pong_t0_s0_ckptbest if available
+    ckpt: ckpt-best of dqn_pong_t0_s0_ckpt-best if available
     '''
     prepath = prepath.strip('_')
     tail = prepath.split('data/')[-1]
-    if '_ckpt' in tail:
-        ckpt_chunk = ps.find(tail.split('_'), lambda s: s.startswith('ckpt'))
-        tail = tail.replace(f'_{ckpt_chunk}', '')
-        ckpt = ckpt_chunk.replace('ckpt', '')
-    else:
-        ckpt = None
-    if '/' in tail:
+    ckpt = find_ckpt(tail)
+    if ckpt is not None:  # separate ckpt
+        tail = tail.replace(f'_ckpt-{ckpt}', '')
+    if '/' in tail:  # tail = prefolder/prename
         prefolder, prename = tail.split('/')
     else:
         prefolder, prename = tail, None
@@ -463,8 +429,10 @@ def prepath_to_idxs(prepath):
 def prepath_to_spec(prepath):
     '''Create spec from prepath such that it returns the same prepath with info_space'''
     predir, _, prename, _, _, _ = prepath_split(prepath)
-    prename_no_s = '_'.join(prename.split('_')[:-1])
-    spec_path = f'{predir}/{prename_no_s}_spec.json'
+    sidx_res = re.search('_s\d+', prename)
+    if sidx_res:  # replace the _s0 if any
+        prename = prename.replace(sidx_res[0], '')
+    spec_path = f'{predir}/{prename}_spec.json'
     # read the spec of prepath
     spec = read(spec_path)
     return spec
@@ -556,6 +524,24 @@ def read_as_plain(data_path, **kwargs):
     return data
 
 
+def run_cmd(cmd):
+    '''Run shell command'''
+    print(f'+ {cmd}')
+    proc = subprocess.Popen(cmd, cwd=ROOT_DIR, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+    return proc
+
+
+def run_cmd_wait(proc):
+    '''Wait on a running process created by util.run_cmd and print its stdout'''
+    for line in proc.stdout:
+        print(line.decode(), end='')
+    output = proc.communicate()[0]
+    if proc.returncode != 0:
+        raise subprocess.CalledProcessError(proc.args, proc.returncode, output)
+    else:
+        return output
+
+
 def s_get(cls, attr_path):
     '''
     Method to get attribute across space via inferring agent <-> env paths.
@@ -636,9 +622,9 @@ def set_rand_seed(random_seed, env_space):
             pass
 
 
-def set_session_logger(spec, info_space, logger):
-    '''Set the logger for a session give its spec and info_space'''
-    os.environ['PREPATH'] = get_prepath(spec, info_space, unit='session')
+def set_logger(spec, info_space, logger, unit=None):
+    '''Set the logger for a lab unit give its spec and info_space'''
+    os.environ['PREPATH'] = get_prepath(spec, info_space, unit=unit)
     reload(logger)  # to set session-specific logger
 
 

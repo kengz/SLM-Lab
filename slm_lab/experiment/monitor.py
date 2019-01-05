@@ -25,7 +25,6 @@ from slm_lab.agent.algorithm import policy_util
 from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
-from statistics import mean
 import numpy as np
 import pandas as pd
 import pydash as ps
@@ -96,7 +95,7 @@ class Body:
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
         self.df = pd.DataFrame(columns=[
-            'epi', 't', 'reward', 'loss', 'explore_var',
+            'epi', 'total_t', 't', 'reward', 'loss', 'explore_var',
             'lr', 'action_ent', 'ent_coef', 'grad_norm'])
 
         # diagnostics variables/stats from action_policy prob. dist.
@@ -148,7 +147,7 @@ class Body:
         '''Update to append data at the end of an episode (when env.done is true)'''
         assert self.env.done
         clock = self.env.clock
-        row = {k: self.env.clock.get(k) for k in ['epi', 't']}
+        row = {k: self.env.clock.get(k) for k in ['epi', 'total_t', 't']}
         row.update({
             'reward': self.memory.total_reward,
             'loss': self.last_loss,
@@ -399,7 +398,12 @@ class InfoSpace:
         self.covered_space = []
         # used to id experiment sharing the same spec name
         self.experiment_ts = util.get_ts()
+        # ckpt gets appened to extend prepath using util.get_prepath for saving models, e.g. ckpt_str = ckpt-epi10-totalt1000
+        # ckpt = 'eval' is special for eval mode, so data files will save with `ckpt-eval`; no models will be saved, but to load models with normal ckpt it will find them using eval_model_prepath
+        # e.g. 'epi24-totalt1000', 'eval', 'best'
         self.ckpt = None
+        # e.g. 'data/dqn_cartpole_2018_12_19_085843/dqn_cartpole_t0_s0_ckpt-epi24-totalt1000'
+        self.eval_model_prepath = None
 
     def reset_lower_axes(cls, coor, axis):
         '''Reset the axes lower than the given axis in coor'''

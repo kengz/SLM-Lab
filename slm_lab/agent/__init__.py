@@ -41,6 +41,7 @@ class Agent:
         self.a = a or 0  # for compatibility with agent_space
         self.agent_spec = spec['agent'][self.a]
         self.name = self.agent_spec['name']
+        assert not ps.is_list(global_nets), f'single agent global_nets must be a dict, got {global_nets}'
         if agent_space is None:  # singleton mode
             self.body = body
             body.agent = self
@@ -82,14 +83,15 @@ class Agent:
     @lab_api
     def save(self, ckpt=None):
         '''Save agent'''
+        if util.get_lab_mode() in ('enjoy', 'eval'):
+            # eval does not save new models
+            return
         self.algorithm.save(ckpt=ckpt)
 
     @lab_api
     def close(self):
         '''Close and cleanup agent at the end of a session, e.g. save model'''
-        # No need to save a model in eval mode since a model will always have been loaded and not updated
-        if not util.get_lab_mode() == 'eval':
-            self.save()
+        self.save()
 
     @lab_api
     def space_init(self, agent_space, body_a, global_nets):
@@ -160,6 +162,7 @@ class AgentSpace:
         aeb_space.agent_space = self
         self.info_space = aeb_space.info_space
         self.aeb_shape = aeb_space.aeb_shape
+        assert not ps.is_dict(global_nets), f'multi agent global_nets must be a list of dicts, got {global_nets}'
         assert ps.is_list(self.spec['agent'])
         self.agents = []
         for a in range(len(self.spec['agent'])):

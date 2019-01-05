@@ -3,11 +3,9 @@ The entry point of SLM Lab
 Specify what to run in `config/experiments.json`
 Then run `yarn start` or `python run_lab.py`
 '''
-from copy import deepcopy
 import os
 # NOTE increase if needed. Pytorch thread overusage https://github.com/pytorch/pytorch/issues/975
 os.environ['OMP_NUM_THREADS'] = '1'
-from importlib import reload
 from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.experiment.monitor import InfoSpace
@@ -25,61 +23,58 @@ debug_level = 'DEBUG'
 logger.toggle_debug(debug_modules, debug_level)
 
 
-def run_benchmark(spec_file):
-    logger.info('Running benchmark')
-    spec_dict = util.read(f'{spec_util.SPEC_DIR}/{spec_file}')
-    for spec_name in spec_dict:
-        # run only if not already exist; benchmark mode only
-        if not any(spec_name in filename for filename in os.listdir('data')):
-            run_by_mode(spec_file, spec_name, 'search')
-        else:
-            logger.info(f'{spec_name} is already ran and present in data/')
-
-
-def run_by_mode(spec_file, spec_name, lab_mode):
-    logger.info(f'Running lab in mode: {lab_mode}')
+def run_new_mode(spec_file, spec_name, lab_mode):
+    '''Run to generate new data with `search, train, dev`'''
     spec = spec_util.get(spec_file, spec_name)
     info_space = InfoSpace()
-    analysis.save_spec(spec, info_space, unit='experiment')
-
-    # '@' is reserved for 'enjoy@{prepath}'
-    os.environ['lab_mode'] = lab_mode.split('@')[0]
-    os.environ['PREPATH'] = util.get_prepath(spec, info_space)
-    reload(logger)  # to set PREPATH properly
-
+    analysis.save_spec(spec, info_space, unit='experiment')  # first save the new spec
     if lab_mode == 'search':
         info_space.tick('experiment')
         Experiment(spec, info_space).run()
     elif lab_mode.startswith('train'):
-        if '@' in lab_mode:
-            prepath = lab_mode.split('@')[1]
-            spec, info_space = util.prepath_to_spec_info_space(prepath)
-        else:
-            info_space.tick('trial')
+        info_space.tick('trial')
         Trial(spec, info_space).run()
-    elif lab_mode.startswith('enjoy'):
-        prepath = lab_mode.split('@')[1]
-        new_info_space = deepcopy(info_space)
-        spec, info_space = util.prepath_to_spec_info_space(prepath)
-        new_spec = util.override_enjoy_spec(deepcopy(spec))
-        util.prepare_directory(new_spec, new_info_space, spec, info_space, prepath)
-        new_info_space.tick('trial')
-        new_info_space.tick('session')
-        Session(new_spec, new_info_space).run()
-    elif lab_mode.startswith('eval'):
-        prepath = lab_mode.split('@')[1]
-        new_info_space = deepcopy(info_space)
-        spec, info_space = util.prepath_to_spec_info_space(prepath)
-        new_spec = util.override_eval_spec(deepcopy(spec))
-        util.prepare_directory(new_spec, new_info_space, spec, info_space, prepath)
-        new_info_space.tick('trial')
-        Trial(new_spec, new_info_space).run()
     elif lab_mode == 'dev':
         spec = util.override_dev_spec(spec)
         info_space.tick('trial')
         Trial(spec, info_space).run()
     else:
-        logger.warn('lab_mode not recognized; must be one of `search, train, enjoy, eval, benchmark, dev`.')
+        raise ValueError('Unrecognizable lab_mode not of `search, train, dev`')
+
+
+def run_old_mode(spec_file, spec_name, lab_mode):
+    '''Run using existing data with `enjoy, eval`. The eval mode is also what train mode's online eval runs in a subprocess via bash command'''
+    # reconstruct spec and info_space from existing data
+    lab_mode, prename = lab_mode.split('@')
+    predir, _, _, _, _, _ = util.prepath_split(spec_file)
+    prepath = f'{predir}/{prename}'
+    spec, info_space = util.prepath_to_spec_info_space(prepath)
+    # see InfoSpace def for more on these
+    info_space.ckpt = 'eval'
+    info_space.eval_model_prepath = prepath
+
+    # no info_space.tick() as they are reconstructed
+    if lab_mode == 'enjoy':
+        spec = util.override_enjoy_spec(spec)
+        Session(spec, info_space).run()
+    elif lab_mode == 'eval':
+        spec = util.override_eval_spec(spec, num_eval_epi=analysis.NUM_EVAL_EPI)
+        Session(spec, info_space).run()
+        util.clear_periodic_ckpt(prepath)  # cleanup after itself
+        analysis.analyze_eval_trial(spec, info_space, predir)
+    else:
+        raise ValueError('Unrecognizable lab_mode not of `enjoy, eval`')
+
+
+def run_by_mode(spec_file, spec_name, lab_mode):
+    '''The main run lab function for all lab_modes'''
+    logger.info(f'Running lab in mode: {lab_mode}')
+    # '@' is reserved for 'enjoy@{prename}'
+    os.environ['lab_mode'] = lab_mode.split('@')[0]
+    if lab_mode in ('search', 'train', 'dev'):
+        run_new_mode(spec_file, spec_name, lab_mode)
+    else:
+        run_old_mode(spec_file, spec_name, lab_mode)
 
 
 def main():
@@ -92,10 +87,7 @@ def main():
     experiments = util.read('config/experiments.json')
     for spec_file in experiments:
         for spec_name, lab_mode in experiments[spec_file].items():
-            if lab_mode == 'benchmark':
-                run_benchmark(spec_file)
-            else:
-                run_by_mode(spec_file, spec_name, lab_mode)
+            run_by_mode(spec_file, spec_name, lab_mode)
 
 
 if __name__ == '__main__':

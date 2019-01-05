@@ -1,6 +1,6 @@
 '''
 The control module
-Creates and controls the units of SLM lab: EvolutionGraph, Experiment, Trial, Session
+Creates and controls the units of SLM lab: Experiment, Trial, Session
 '''
 from copy import deepcopy
 from importlib import reload
@@ -9,11 +9,7 @@ from slm_lab.env import EnvSpace, make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
 from slm_lab.lib import logger, util
-import numpy as np
 import os
-import pandas as pd
-import pydash as ps
-import torch
 import torch.multiprocessing as mp
 
 
@@ -30,36 +26,48 @@ class Session:
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
-        util.set_session_logger(self.spec, self.info_space, logger)
+        util.set_logger(self.spec, self.info_space, logger, 'session')
         self.data = None
+        self.eval_proc = None  # reference run_online_eval process
 
         # init singleton agent and env
         self.env = make_env(self.spec)
         body = Body(self.env, self.spec['agent'])
         util.set_rand_seed(self.info_space.get_random_seed(), self.env)
         util.try_set_cuda_id(self.spec, self.info_space)
-        assert not ps.is_list(global_nets), f'single agent global_nets must be a dict, got {global_nets}'
         self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
 
         enable_aeb_space(self)  # to use lab's data analysis framework
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-    def save_if_ckpt(self, agent, env):
-        '''Save for agent, env if episode is at checkpoint'''
-        tick = env.clock.get(env.max_tick_unit)
-        if hasattr(env, 'save_frequency') and 0 < tick < env.max_tick:
+    def try_ckpt(self, agent, env):
+        '''Try to checkpoint agent and run_online_eval at the start, save_freq, and the end'''
+        clock = env.clock
+        tick = clock.get(env.max_tick_unit)
+        if util.get_lab_mode() in ('enjoy', 'eval'):
+            to_ckpt = False
+        elif os.environ.get('PY_ENV') != 'test' and ((env.max_tick_unit == 'epi' and tick == 1) or (tick == 0)):
+            to_ckpt = True  # ckpt at beginning, but epi starts at 1
+        elif hasattr(env, 'save_frequency') and 0 < tick <= env.max_tick:
             if env.max_tick_unit == 'epi':
-                to_save = (env.done and tick % env.save_frequency == 0)
+                to_ckpt = (env.done and tick % env.save_frequency == 0)
             else:
-                to_save = (tick % env.save_frequency == 0)
+                to_ckpt = (tick % env.save_frequency == 0)
         else:
-            to_save = False
-        if to_save:
-            agent.save(ckpt='last')
+            to_ckpt = False
+
+        if to_ckpt:
+            ckpt = f'epi{clock.get("epi")}-totalt{clock.get("total_t")}'
+            agent.save(ckpt=ckpt)
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            analysis.analyze_session(self)
+            # run online eval for train mode using model saved above
+            if util.get_lab_mode() == 'train' and self.spec['meta'].get('training_eval', False):
+                # set reference to eval process for handling
+                self.eval_proc = analysis.run_online_eval(self.spec, self.info_space, ckpt)
+            if tick > 0:  # nothing to analyze at start
+                analysis.analyze_session(self)
 
     def run_episode(self):
         self.env.clock.tick('epi')
@@ -67,11 +75,12 @@ class Session:
         reward, state, done = self.env.reset()
         self.agent.reset(state)
         while not done:
+            self.try_ckpt(self.agent, self.env)
             self.env.clock.tick('t')
             action = self.agent.act(state)
             reward, state, done = self.env.step(action)
             self.agent.update(action, reward, state, done)
-            self.save_if_ckpt(self.agent, self.env)
+        self.try_ckpt(self.agent, self.env)  # final timestep ckpt
         self.agent.body.log_summary()
 
     def close(self):
@@ -89,6 +98,8 @@ class Session:
             if util.get_lab_mode() not in ('enjoy', 'eval') and analysis.all_solved(self.agent):
                 logger.info('All environments solved. Early exit.')
                 break
+        if self.eval_proc is not None:  # wait for final eval before closing
+            util.run_cmd_wait(self.eval_proc)
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
         return self.data
@@ -101,26 +112,26 @@ class SpaceSession(Session):
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
-        util.set_session_logger(self.spec, self.info_space, logger)
+        util.set_logger(self.spec, self.info_space, logger, 'session')
         self.data = None
+        self.eval_proc = None  # reference run_online_eval process
 
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.aeb_space.init_body_space()
         util.set_rand_seed(self.info_space.get_random_seed(), self.env_space)
         util.try_set_cuda_id(self.spec, self.info_space)
-        assert not ps.is_dict(global_nets), f'multi agent global_nets must be a list of dicts, got {global_nets}'
         self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
 
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-    def save_if_ckpt(self, agent_space, env_space):
-        '''Save for agent, env if episode is at checkpoint'''
+    def try_ckpt(self, agent_space, env_space):
+        '''Try to checkpoint agent and run_online_eval at the start, save_freq, and the end'''
         for agent in agent_space.agents:
             for body in agent.nanflat_body_a:
                 env = body.env
-                super(SpaceSession, self).save_if_ckpt(agent, env)
+                super(SpaceSession, self).try_ckpt(agent, env)
 
     def run_all_episodes(self):
         '''
@@ -131,11 +142,14 @@ class SpaceSession(Session):
         reward_space, state_space, done_space = self.env_space.reset()
         self.agent_space.reset(state_space)
         while not all_done:
+            self.try_ckpt(self.agent_space, self.env_space)
             all_done = self.aeb_space.tick()
             action_space = self.agent_space.act(state_space)
             reward_space, state_space, done_space = self.env_space.step(action_space)
             self.agent_space.update(action_space, reward_space, state_space, done_space)
-            self.save_if_ckpt(self.agent_space, self.env_space)
+        self.try_ckpt(self.agent_space, self.env_space)
+        if self.eval_proc is not None:  # wait for final eval before closing
+            util.run_cmd_wait(self.eval_proc)
 
     def close(self):
         '''
@@ -178,8 +192,11 @@ class Trial:
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('trial')
+        info_space.set('session', None)  # Session starts anew for new trial
+        util.set_logger(self.spec, self.info_space, logger, 'trial')
         self.session_data_dict = {}
         self.data = None
+
         analysis.save_spec(spec, info_space, unit='trial')
         self.is_singleton = util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
         self.SessionClass = Session if self.is_singleton else SpaceSession
@@ -271,6 +288,7 @@ class Experiment:
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('experiment')
+        util.set_logger(self.spec, self.info_space, logger, 'trial')
         self.trial_data_dict = {}
         self.data = None
         analysis.save_spec(spec, info_space, unit='experiment')
@@ -295,16 +313,3 @@ class Experiment:
         self.data = analysis.analyze_experiment(self)
         self.close()
         return self.data
-
-
-class EvolutionGraph:
-    '''
-    The biggest unit of Lab.
-    The evolution graph keeps track of all experiments as nodes of experiment data, with fitness metrics, evolution links, traits,
-    which could be used to aid graph analysis on the traits, fitness metrics,
-    to suggest new experiment via node creation, mutation or combination (no DAG restriction).
-    There could be a high level evolution module that guides and optimizes the evolution graph and experiments to achieve SLM.
-    '''
-
-    def __init__(self, spec, info_space):
-        raise NotImplementedError

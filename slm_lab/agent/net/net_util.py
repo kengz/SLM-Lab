@@ -1,10 +1,8 @@
 from functools import partial
 from slm_lab import ROOT_DIR
 from slm_lab.lib import logger, util
-from subprocess import DEVNULL
 import os
 import pydash as ps
-import subprocess
 import torch
 import torch.nn as nn
 
@@ -157,7 +155,7 @@ def save_algorithm(algorithm, ckpt=None):
     net_names = algorithm.net_names
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
     if ckpt is not None:
-        prepath = f'{prepath}_ckpt{ckpt}'
+        prepath = f'{prepath}_ckpt-{ckpt}'
     logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
@@ -165,11 +163,6 @@ def save_algorithm(algorithm, ckpt=None):
         save(net, model_path)
         optim_path = f'{prepath}_{net_name}_optim.pth'
         save(net.optim, optim_path)
-
-    if ckpt is None:  # remove checkpoint files at the end
-        ckpt_path = f'{prepath}_ckptlast*.pth'
-        subprocess.run(f'rm {ckpt_path}', cwd=ROOT_DIR, shell=True, stderr=DEVNULL, stdout=DEVNULL, close_fds=True)
-        logger.info(f'Removed all checkpoint model files {ckpt_path}')
 
 
 def load(net, model_path):
@@ -183,7 +176,11 @@ def load_algorithm(algorithm):
     '''Save all the nets for an algorithm'''
     agent = algorithm.agent
     net_names = algorithm.net_names
-    prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+    if util.get_lab_mode() in ('enjoy', 'eval'):
+        # load specific model in eval mode
+        prepath = agent.info_space.eval_model_prepath
+    else:
+        prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
     logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names}')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
