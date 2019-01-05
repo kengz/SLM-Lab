@@ -55,7 +55,7 @@ class Session:
             to_ckpt = to_ckpt and env.done
 
         if to_ckpt:
-            ckpt = f'epi{clock.get("epi")}-totalt{clock.get("total_t")}'
+            ckpt = f'epi{clock.epi}-totalt{clock.total_t}'
             agent.save(ckpt=ckpt)
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
@@ -68,7 +68,7 @@ class Session:
 
     def run_episode(self):
         self.env.clock.tick('epi')
-        logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.env.clock.get("epi")}')
+        logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.env.clock.epi}')
         reward, state, done = self.env.reset()
         self.agent.reset(state)
         while not done:

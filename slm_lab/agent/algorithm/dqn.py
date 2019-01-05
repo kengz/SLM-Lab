@@ -148,7 +148,7 @@ class VanillaDQN(SARSA):
             # reset
             self.to_train = 0
             self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.get("epi")}, total_t: {clock.get("total_t")}, t: {clock.get("t")}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
             return loss.item()
         else:
             return np.nan
@@ -214,7 +214,7 @@ class DQNBase(VanillaDQN):
         return q_loss
 
     def update_nets(self):
-        total_t = self.body.env.clock.get('total_t')
+        total_t = self.body.env.clock.total_t
         if self.net.update_type == 'replace':
             if total_t % self.net.update_frequency == 0:
                 logger.debug('Updating target_net by replacing')
@@ -295,7 +295,7 @@ class DoubleDQN(DQN):
 
     def update_nets(self):
         res = super(DoubleDQN, self).update_nets()
-        total_t = self.body.env.clock.get('total_t')
+        total_t = self.body.env.clock.total_t
         if self.net.update_type == 'replace':
             if total_t % self.net.update_frequency == 0:
                 self.online_net = self.net
