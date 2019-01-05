@@ -28,6 +28,8 @@ SPEC_FORMAT = {
     "env": [{
         "name": str,
         "max_t": (type(None), int),
+        "max_tick": int,
+        "max_tick_unit": str,
     }],
     "body": {
         "product": ["outer", "inner", "custom"],
