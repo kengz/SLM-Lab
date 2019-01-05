@@ -249,17 +249,9 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
         self.state_buffer = deque(maxlen=self.seq_len)
         self.reset()
 
-    def reset(self):
-        '''Initializes the memory arrays, size and head pointer'''
-        super(OnPolicySeqBatchReplay, self).reset()
-        self.state_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim))
-
     def preprocess_state(self, state, append=True):
-        '''Transforms the raw state into format that is fed into the network'''
-        self.preprocess_append(state, append)
-        return np.stack(self.state_buffer)
+        # delegate to OnPolicySeqReplay sequential method
+        return OnPolicySeqReplay.preprocess_state(self, state, append)
 
     def sample(self):
         '''
@@ -331,8 +323,7 @@ class OnPolicyConcatReplay(OnPolicyReplay):
         '''Transforms the raw state into format that is fed into the network'''
         # append when state is first seen when acting in policy_util, don't append elsewhere in memory
         self.preprocess_append(state, append)
-        res = np.concatenate(self.state_buffer)
-        return res
+        return np.concatenate(self.state_buffer)
 
     @lab_api
     def update(self, action, reward, state, done):
