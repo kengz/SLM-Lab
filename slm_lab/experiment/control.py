@@ -10,7 +10,6 @@ from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
 from slm_lab.lib import logger, util
 import os
-import pydash as ps
 import torch.multiprocessing as mp
 
 
@@ -29,7 +28,7 @@ class Session:
         self.index = self.info_space.get('session')
         util.set_logger(self.spec, self.info_space, logger, 'session')
         self.data = None
-        self.eval_proc = None  # evaluation process
+        self.eval_proc = None  # reference run_online_eval process
 
         # init singleton agent and env
         self.env = make_env(self.spec)
@@ -43,7 +42,7 @@ class Session:
         logger.info(f'Initialized session {self.index}')
 
     def try_ckpt(self, agent, env):
-        '''Try to checkpoint agent and run_online_eval per save_frequency, starting from total_t=0 or epi=1, and at the very end'''
+        '''Try to checkpoint agent and run_online_eval at the start, save_freq, and the end'''
         clock = env.clock
         tick = clock.get(env.max_tick_unit)
         if util.get_lab_mode() in ('enjoy', 'eval'):
@@ -63,9 +62,9 @@ class Session:
             agent.save(ckpt=ckpt)
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
+            # run online eval for train mode using model saved above
             if util.get_lab_mode() == 'train' and self.spec['meta'].get('training_eval', False):
-                # (only for train mode) spawn online eval for this session once ckpt is ready
-                # set reference to process for potential waiting at the end
+                # set reference to eval process for handling
                 self.eval_proc = analysis.run_online_eval(self.spec, self.info_space, ckpt)
             if tick > 0:  # nothing to analyze at start
                 analysis.analyze_session(self)
@@ -115,7 +114,7 @@ class SpaceSession(Session):
         self.index = self.info_space.get('session')
         util.set_logger(self.spec, self.info_space, logger, 'session')
         self.data = None
-        self.eval_proc = None
+        self.eval_proc = None  # reference run_online_eval process
 
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
@@ -128,7 +127,7 @@ class SpaceSession(Session):
         logger.info(f'Initialized session {self.index}')
 
     def try_ckpt(self, agent_space, env_space):
-        '''Try to checkpoint agent and run_online_eval per save_frequency, starting from total_t=0 or epi=1, and at the very end'''
+        '''Try to checkpoint agent and run_online_eval at the start, save_freq, and the end'''
         for agent in agent_space.agents:
             for body in agent.nanflat_body_a:
                 env = body.env
@@ -197,6 +196,7 @@ class Trial:
         util.set_logger(self.spec, self.info_space, logger, 'trial')
         self.session_data_dict = {}
         self.data = None
+
         analysis.save_spec(spec, info_space, unit='trial')
         self.is_singleton = util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
         self.SessionClass = Session if self.is_singleton else SpaceSession
