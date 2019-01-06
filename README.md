@@ -287,11 +287,10 @@ It is `DQN` in `CartPole-v0`:
     ```
 
 6. Next, perform a hyperparameter search using the lab mode `search`. This runs experiments of multiple trials with hyperparameter search, defined at the bottom section of the demo spec.
-    ```json
-    "demo.json": {
-      "dqn_cartpole": "search"
-    }
+    ```bash
+    yarn start demo.json dqn_cartpole search
     ```
+
     When it ends, refer to `{prepath}_experiment_graph.png` and `{prepath}_experiment_df.csv` to find the best trials.
 
 >If the demo fails, consult [Debugging](https://kengz.gitbooks.io/slm-lab/content/debugging.html).
