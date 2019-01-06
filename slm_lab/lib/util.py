@@ -280,36 +280,6 @@ def is_jupyter():
     return False
 
 
-def is_outlier(points, thres=3.5):
-    '''
-    Detects outliers using MAD modified_z_score method, generalized to work on points.
-    From https://stackoverflow.com/a/22357811/3865298
-    @example
-
-    is_outlier([1, 1, 1])
-    # => array([False, False, False], dtype=bool)
-    is_outlier([1, 1, 2])
-    # => array([False, False,  True], dtype=bool)
-    is_outlier([[1, 1], [1, 1], [1, 2]])
-    # => array([False, False,  True], dtype=bool)
-    '''
-    points = np.array(points)
-    if len(points.shape) == 1:
-        points = points[:, None]
-    median = np.median(points, axis=0)
-    diff = np.sum((points - median)**2, axis=-1)
-    diff = np.sqrt(diff)
-    med_abs_deviation = np.median(diff)
-    with np.errstate(divide='ignore', invalid='ignore'):
-        modified_z_score = 0.6745 * diff / med_abs_deviation
-        return modified_z_score > thres
-
-
-def is_singleton(spec):
-    '''Check if spec uses a singleton Session'''
-    return len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1
-
-
 def monkey_patch(base_cls, extend_cls):
     '''Monkey patch a base class with methods from extend_cls'''
     ext_fn_list = get_fn_list(extend_cls)
@@ -325,45 +295,6 @@ def ndenumerate_nonan(arr):
 def nonan_all(v):
     '''Generic np.all that also returns false if array is all np.nan'''
     return bool(np.all(v) and ~np.all(np.isnan(v)))
-
-
-def override_dev_spec(spec):
-    spec['meta']['max_session'] = 1
-    spec['meta']['max_trial'] = 2
-    return spec
-
-
-def override_enjoy_spec(spec):
-    spec['meta']['max_session'] = 1
-    return spec
-
-
-def override_eval_spec(spec, num_eval_epi=100):
-    for agent_spec in spec['agent']:
-        if 'max_size' in agent_spec['memory']:
-            agent_spec['memory']['max_size'] = 100
-    for env_spec in spec['env']:
-        # evaluate by episode; offset so epi is 0 - (num_eval_epi - 1)
-        env_spec['max_tick'] = num_eval_epi - 1
-        env_spec['max_tick_unit'] = 'epi'
-    return spec
-
-
-def override_test_spec(spec):
-    for agent_spec in spec['agent']:
-        # covers episodic and timestep
-        agent_spec['algorithm']['training_frequency'] = 1
-        agent_spec['algorithm']['training_start_step'] = 1
-        agent_spec['algorithm']['training_epoch'] = 1
-        agent_spec['algorithm']['training_batch_epoch'] = 1
-    for env_spec in spec['env']:
-        env_spec['max_t'] = 20
-        env_spec['max_tick'] = 3
-        env_spec['max_tick_unit'] = 'epi'
-        env_spec['save_frequency'] = 1000
-    spec['meta']['max_session'] = 1
-    spec['meta']['max_trial'] = 2
-    return spec
 
 
 def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
@@ -685,10 +616,6 @@ def to_json(d, indent=2):
     return json.dumps(d, indent=indent, cls=LabJsonEncoder)
 
 
-def to_one_hot(data, max_val):
-    '''Convert an int list of data into one-hot vectors'''
-    return np.eye(max_val)[np.array(data)]
-
 
 def to_render():
     return get_lab_mode() in ('dev', 'enjoy') and os.environ.get('RENDER', 'true') == 'true'
@@ -796,7 +723,8 @@ def crop_image(im):
 
 
 def normalize_image(im):
-    # NOTE: beware in its application, may cause loss to be 256 times lower due to smaller input values
+    '''Normalizing image by dividing max value 255'''
+    # NOTE: beware in its application, may cause loss to be 255 times lower due to smaller input values
     return np.divide(im, 255.0)
 
 

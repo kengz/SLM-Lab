@@ -31,7 +31,7 @@ def test_xvfb():
 def test_spec():
     global spec
     spec = spec_util.get('base.json', 'base_case_openai')
-    spec = util.override_test_spec(spec)
+    spec = spec_util.override_test_spec(spec)
     return spec
 
 
@@ -123,7 +123,7 @@ def test_str():
 ])
 def test_memory(request):
     memspec = spec_util.get('base.json', 'base_memory')
-    memspec = util.override_test_spec(memspec)
+    memspec = spec_util.override_test_spec(memspec)
     aeb_mem_space = AEBSpace(memspec, InfoSpace())
     env_space = EnvSpace(memspec, aeb_mem_space)
     aeb_mem_space.init_body_space()
@@ -151,7 +151,7 @@ def test_memory(request):
 ])
 def test_on_policy_episodic_memory(request):
     memspec = spec_util.get('base.json', 'base_on_policy_memory')
-    memspec = util.override_test_spec(memspec)
+    memspec = spec_util.override_test_spec(memspec)
     aeb_mem_space = AEBSpace(memspec, InfoSpace())
     env_space = EnvSpace(memspec, aeb_mem_space)
     aeb_mem_space.init_body_space()
@@ -179,7 +179,7 @@ def test_on_policy_episodic_memory(request):
 ])
 def test_on_policy_batch_memory(request):
     memspec = spec_util.get('base.json', 'base_on_policy_batch_memory')
-    memspec = util.override_test_spec(memspec)
+    memspec = spec_util.override_test_spec(memspec)
     aeb_mem_space = AEBSpace(memspec, InfoSpace())
     env_space = EnvSpace(memspec, aeb_mem_space)
     aeb_mem_space.init_body_space()
@@ -207,7 +207,7 @@ def test_on_policy_batch_memory(request):
 ])
 def test_prioritized_replay_memory(request):
     memspec = spec_util.get('base.json', 'base_prioritized_replay_memory')
-    memspec = util.override_test_spec(memspec)
+    memspec = spec_util.override_test_spec(memspec)
     aeb_mem_space = AEBSpace(memspec, InfoSpace())
     env_space = EnvSpace(memspec, aeb_mem_space)
     aeb_mem_space.init_body_space()

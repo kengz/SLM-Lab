@@ -35,7 +35,7 @@ def run_new_mode(spec_file, spec_name, lab_mode):
         info_space.tick('trial')
         Trial(spec, info_space).run()
     elif lab_mode == 'dev':
-        spec = util.override_dev_spec(spec)
+        spec = spec_util.override_dev_spec(spec)
         info_space.tick('trial')
         Trial(spec, info_space).run()
     else:
@@ -55,10 +55,10 @@ def run_old_mode(spec_file, spec_name, lab_mode):
 
     # no info_space.tick() as they are reconstructed
     if lab_mode == 'enjoy':
-        spec = util.override_enjoy_spec(spec)
+        spec = spec_util.override_enjoy_spec(spec)
         Session(spec, info_space).run()
     elif lab_mode == 'eval':
-        spec = util.override_eval_spec(spec, num_eval_epi=analysis.NUM_EVAL_EPI)
+        spec = spec_util.override_eval_spec(spec, num_eval_epi=analysis.NUM_EVAL_EPI)
         Session(spec, info_space).run()
         util.clear_periodic_ckpt(prepath)  # cleanup after itself
         analysis.analyze_eval_trial(spec, info_space, predir)

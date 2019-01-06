@@ -4,7 +4,8 @@ Handles the analyses of the info and data space for experiment evaluation and de
 '''
 from slm_lab.agent import AGENT_DATA_NAMES
 from slm_lab.env import ENV_DATA_NAMES
-from slm_lab.lib import logger, util, viz
+from slm_lab.lib import logger, math_util, util, viz
+from slm_lab.spec import spec_util
 import numpy as np
 import os
 import pandas as pd
@@ -147,7 +148,7 @@ def calc_consistency(aeb_fitness_df):
         diff_norm = np.linalg.norm(np.diff(fitness_vecs, axis=0), NORM_ORDER) / np.linalg.norm(np.ones(len(fitness_vecs[0])), NORM_ORDER)
         consistency = diff_norm <= NOISE_WINDOW
     else:
-        is_outlier_arr = util.is_outlier(fitness_vecs)
+        is_outlier_arr = math_util.is_outlier(fitness_vecs)
         consistency = (~is_outlier_arr).sum() / len(is_outlier_arr)
     return consistency
 
@@ -661,35 +662,16 @@ def trial_data_dict_from_file(predir):
     return trial_data_dict
 
 
-def mock_spec_info_space(predir, trial_index=None, session_index=None):
-    '''Helper for retro analysis to build mock info_space and spec'''
-    from slm_lab.experiment.monitor import InfoSpace
-    _, _, _, spec_name, experiment_ts, _ = util.prepath_split(predir)
-    info_space = InfoSpace()
-    info_space.experiment_ts = experiment_ts
-    info_space.set('experiment', 0)
-    if trial_index is None:
-        filepath = f'{predir}/{spec_name}_spec.json'
-    else:
-        info_space.set('trial', trial_index)
-        filepath = f'{predir}/{spec_name}_t{trial_index}_spec.json'
-    if session_index is not None:
-        info_space.set('session', session_index)
-    spec = util.read(filepath)
-    return spec, info_space
-
-
 def retro_analyze_sessions(predir):
     '''Retro-analyze all session level datas.'''
     logger.info('Retro-analyzing sessions from file')
     from slm_lab.experiment.control import Session, SpaceSession
     for filename in os.listdir(predir):
         if filename.endswith('_session_df.csv'):
-            tn, sn = filename.replace('_session_df.csv', '').split('_')[-2:]
-            trial_index, session_index = int(tn[1:]), int(sn[1:])
-            # mock session
-            spec, info_space = mock_spec_info_space(predir, trial_index, session_index)
-            SessionClass = Session if util.is_singleton(spec) else SpaceSession
+            prepath = f'{predir}/{filename}'.replace('_session_df.csv', '')
+            spec, info_space = util.prepath_to_spec_info_space(prepath)
+            trial_index, session_index = util.prepath_to_idxs(prepath)
+            SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
             session = SessionClass(spec, info_space)
             session_data = session_data_from_file(predir, trial_index, session_index)
             analyze_session(session, session_data)
@@ -702,10 +684,9 @@ def retro_analyze_trials(predir):
     for filename in os.listdir(predir):
         if filename.endswith('_trial_data.json'):
             filepath = f'{predir}/{filename}'
-            tn = filename.replace('_trial_data.json', '').split('_')[-1]
-            trial_index = int(tn[1:])
-            # mock trial
-            spec, info_space = mock_spec_info_space(predir, trial_index)
+            prepath = filepath.replace('_trial_data.json', '')
+            spec, info_space = util.prepath_to_spec_info_space(prepath)
+            trial_index, _ = util.prepath_to_idxs(prepath)
             trial = Trial(spec, info_space)
             trial.session_data_dict = session_data_dict_from_file(predir, trial_index)
             trial_fitness_df = analyze_trial(trial)
@@ -723,8 +704,9 @@ def retro_analyze_experiment(predir):
     '''Retro-analyze all experiment level datas.'''
     logger.info('Retro-analyzing experiment from file')
     from slm_lab.experiment.control import Experiment
-    # mock experiment
-    spec, info_space = mock_spec_info_space(predir)
+    _, _, _, spec_name, _, _ = util.prepath_split(predir)
+    prepath = f'{predir}/{spec_name}'
+    spec, info_space = util.prepath_to_spec_info_space(prepath)
     experiment = Experiment(spec, info_space)
     experiment.trial_data_dict = trial_data_dict_from_file(predir)
     return analyze_experiment(experiment)
@@ -746,26 +728,3 @@ def retro_analyze(predir):
     retro_analyze_sessions(predir)
     retro_analyze_trials(predir)
     retro_analyze_experiment(predir)
-
-
-def plot_session_from_file(session_df_filepath):
-    '''
-    Method to plot session from its session_df file
-    @example
-
-    from slm_lab.experiment import analysis
-    filepath = 'data/reinforce_cartpole_2018_01_22_211751/reinforce_cartpole_t0_s0_session_df.csv'
-    analysis.plot_session_from_file(filepath)
-    '''
-    from slm_lab.experiment.monitor import InfoSpace
-    _, _, _, spec_name, _, _ = util.prepath_split(session_df_filepath)
-    session_spec = {'name': spec_name}
-    session_df = util.read(session_df_filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
-    session_data = util.session_df_to_data(session_df)
-    tn, sn = session_df_filepath.replace('_session_df.csv', '').split('_')[-2:]
-    info_space = InfoSpace()
-    info_space.set('experiment', 0)
-    info_space.set('trial', int(tn[1:]))
-    info_space.set('session', int(sn[1:]))
-    session_fig = plot_session(session_spec, info_space, session_data)
-    viz.save_image(session_fig, session_df_filepath.replace('_session_df.csv', '_session_graph.png'))

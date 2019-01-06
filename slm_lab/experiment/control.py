@@ -9,6 +9,7 @@ from slm_lab.env import EnvSpace, make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
 from slm_lab.lib import logger, util
+from slm_lab.spec import spec_util
 import os
 import torch.multiprocessing as mp
 
@@ -195,7 +196,7 @@ class Trial:
         self.data = None
 
         analysis.save_spec(spec, info_space, unit='trial')
-        self.is_singleton = util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
+        self.is_singleton = spec_util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
         self.SessionClass = Session if self.is_singleton else SpaceSession
         self.mp_runner = init_run_session if self.is_singleton else init_run_space_session
         logger.info(f'Initialized trial {self.index}')

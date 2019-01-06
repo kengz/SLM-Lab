@@ -3,6 +3,15 @@ import numpy as np
 import pytest
 
 
+@pytest.mark.parametrize('vec,res', [
+    ([1, 1, 1], [False, False, False]),
+    ([1, 1, 2], [False, False, True]),
+    ([[1, 1], [1, 1], [1, 2]], [False, False, True]),
+])
+def test_is_outlier(vec, res):
+    assert np.array_equal(math_util.is_outlier(vec), res)
+
+
 @pytest.mark.parametrize('start_val, end_val, start_step, end_step, step, correct', [
     (0.1, 0.0, 0, 100, 0, 0.1),
     (0.1, 0.0, 0, 100, 50, 0.05),

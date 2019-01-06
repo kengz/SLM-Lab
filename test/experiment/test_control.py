@@ -34,7 +34,7 @@ def test_trial(test_spec, test_info_space):
 
 def test_trial_demo(test_info_space):
     spec = spec_util.get('demo.json', 'dqn_cartpole')
-    spec = util.override_test_spec(spec)
+    spec = spec_util.override_test_spec(spec)
     spec['env'][0]['save_frequency'] = 1
     test_info_space.tick('trial')
     trial_data = Trial(spec, test_info_space).run()
@@ -43,7 +43,7 @@ def test_trial_demo(test_info_space):
 
 def test_experiment(test_info_space):
     spec = spec_util.get('demo.json', 'dqn_cartpole')
-    spec = util.override_test_spec(spec)
+    spec = spec_util.override_test_spec(spec)
     test_info_space.tick('experiment')
     experiment_data = Experiment(spec, test_info_space).run()
     assert isinstance(experiment_data, pd.DataFrame)
