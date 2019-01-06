@@ -55,7 +55,7 @@ class Session:
         if to_ckpt:
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            # run online eval for train mode using model saved above
+            # run online eval for train mode
             if util.get_lab_mode() == 'train' and self.spec['meta'].get('training_eval', False):
                 ckpt = f'epi{clock.epi}-totalt{clock.total_t}'
                 agent.save(ckpt=ckpt)

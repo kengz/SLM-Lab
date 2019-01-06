@@ -241,7 +241,7 @@ Run the demo to quickly see the lab in action (and to test your installation).
 
 It is `DQN` in `CartPole-v0`:
 
-1. see `slm_lab/spec/demo.json` for example spec:
+1. See `slm_lab/spec/demo.json` for example spec:
     ```json
     "dqn_cartpole": {
       "agent": [{
@@ -256,23 +256,16 @@ It is `DQN` in `CartPole-v0`:
     }
     ```
 
-2. see `config/experiments.json` to schedule experiments:
-    ```json
-    "demo.json": {
-      "dqn_cartpole": "dev"
-    }
-    ```
-    > To run faster, change lab mode from "dev" to "train" above and rendering will be disabled.
-
-3. launch terminal in the repo directory, run the lab:
+2. Launch terminal in the repo directory, run the lab with the demo spec in `dev` lab mode:
     ```shell
     conda activate lab
-    python run_lab.py
+    yarn start demo.json dqn_cartpole dev
     ```
     >To run any lab commands, conda environment must be activated first. See [Installation](#installation) for more.
-    >Alternatively, use the shorthand command `yarn start` to replace the last line
 
-4. This demo will run a single trial using the default parameters, and render the environment. After completion, check the output for data `data/dqn_cartpole_2018_06_16_214527/` (timestamp will differ). You should see some healthy graphs.
+    >`yarn start` is a shorthand for `python run_lab.py`
+
+3. This demo will run a single trial using the default parameters, and render the environment. After completion, check the output for data `data/dqn_cartpole_2018_06_16_214527/` (timestamp will differ). You should see some healthy graphs.
 
     ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_trial_graph.png)
     >Trial graph showing average envelope of repeated sessions.
@@ -280,7 +273,7 @@ It is `DQN` in `CartPole-v0`:
     ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
     >Session graph showing total rewards, exploration variable and loss for the episodes.
 
-5. Enjoy mode - when a session ends, a model file will automatically save. You can find the session `prepath` that ends in its trial and session numbers. The example above is trial 1 session 0, and you can see a pyotrch model saved at `data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_model_net.pth`. Use the following command to run from the saved folder in `data/`:
+4. Enjoy mode - when a session ends, a model file will automatically save. You can find the session `prepath` that ends in its trial and session numbers. The example above is trial 1 session 0, and you can see a pytorch model saved at `data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_model_net.pth`. Use the following command to run from the saved folder in `data/`:
     ```bash
     yarn start data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_spec.json dqn_cartpole enjoy@dqn_cartpole_t1_s0
     ```
@@ -288,7 +281,12 @@ It is `DQN` in `CartPole-v0`:
 
     >To run the best model, use the best saved checkpoint `enjoy@dqn_cartpole_t1_s0_ckptbest`
 
-6. Next, change the run mode from `"train"` to `"search"`  `config/experiments.json`, and rerun. This runs experiments of multiple trials with hyperparameter search. Environments will not be rendered.:
+5. The above was in `dev` mode. To run in proper training mode, which is faster without rendering, change the `dev` lab mode to `train`, and the same data is produced.
+    ```shell
+    yarn start demo.json dqn_cartpole train
+    ```
+
+6. Next, perform a hyperparameter search using the lab mode `search`. This runs experiments of multiple trials with hyperparameter search, defined at the bottom section of the demo spec.
     ```json
     "demo.json": {
       "dqn_cartpole": "search"
