@@ -129,15 +129,6 @@ def test_is_jupyter():
     assert not util.is_jupyter()
 
 
-@pytest.mark.parametrize('vec,res', [
-    ([1, 1, 1], [False, False, False]),
-    ([1, 1, 2], [False, False, True]),
-    ([[1, 1], [1, 1], [1, 2]], [False, False, True]),
-])
-def test_is_outlier(vec, res):
-    assert np.array_equal(util.is_outlier(vec), res)
-
-
 def test_ndenumerate_nonan():
     arr = np.full((2, 3), np.nan, dtype=object)
     np.fill_diagonal(arr, 1)

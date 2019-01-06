@@ -160,3 +160,35 @@ def periodic_decay(start_val, end_val, start_step, end_step, step, frequency=60.
     val = end_val * 0.5 * unit * (1 + np.cos(x) * (1 - x / x_freq))
     val = max(val, end_val)
     return val
+
+
+# misc math methods
+
+def is_outlier(points, thres=3.5):
+    '''
+    Detects outliers using MAD modified_z_score method, generalized to work on points.
+    From https://stackoverflow.com/a/22357811/3865298
+    @example
+
+    is_outlier([1, 1, 1])
+    # => array([False, False, False], dtype=bool)
+    is_outlier([1, 1, 2])
+    # => array([False, False,  True], dtype=bool)
+    is_outlier([[1, 1], [1, 1], [1, 2]])
+    # => array([False, False,  True], dtype=bool)
+    '''
+    points = np.array(points)
+    if len(points.shape) == 1:
+        points = points[:, None]
+    median = np.median(points, axis=0)
+    diff = np.sum((points - median)**2, axis=-1)
+    diff = np.sqrt(diff)
+    med_abs_deviation = np.median(diff)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        modified_z_score = 0.6745 * diff / med_abs_deviation
+        return modified_z_score > thres
+
+
+def to_one_hot(data, max_val):
+    '''Convert an int list of data into one-hot vectors'''
+    return np.eye(max_val)[np.array(data)]
