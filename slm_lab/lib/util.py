@@ -305,11 +305,6 @@ def is_outlier(points, thres=3.5):
         return modified_z_score > thres
 
 
-def is_singleton(spec):
-    '''Check if spec uses a singleton Session'''
-    return len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1
-
-
 def monkey_patch(base_cls, extend_cls):
     '''Monkey patch a base class with methods from extend_cls'''
     ext_fn_list = get_fn_list(extend_cls)
@@ -325,45 +320,6 @@ def ndenumerate_nonan(arr):
 def nonan_all(v):
     '''Generic np.all that also returns false if array is all np.nan'''
     return bool(np.all(v) and ~np.all(np.isnan(v)))
-
-
-def override_dev_spec(spec):
-    spec['meta']['max_session'] = 1
-    spec['meta']['max_trial'] = 2
-    return spec
-
-
-def override_enjoy_spec(spec):
-    spec['meta']['max_session'] = 1
-    return spec
-
-
-def override_eval_spec(spec, num_eval_epi=100):
-    for agent_spec in spec['agent']:
-        if 'max_size' in agent_spec['memory']:
-            agent_spec['memory']['max_size'] = 100
-    for env_spec in spec['env']:
-        # evaluate by episode; offset so epi is 0 - (num_eval_epi - 1)
-        env_spec['max_tick'] = num_eval_epi - 1
-        env_spec['max_tick_unit'] = 'epi'
-    return spec
-
-
-def override_test_spec(spec):
-    for agent_spec in spec['agent']:
-        # covers episodic and timestep
-        agent_spec['algorithm']['training_frequency'] = 1
-        agent_spec['algorithm']['training_start_step'] = 1
-        agent_spec['algorithm']['training_epoch'] = 1
-        agent_spec['algorithm']['training_batch_epoch'] = 1
-    for env_spec in spec['env']:
-        env_spec['max_t'] = 20
-        env_spec['max_tick'] = 3
-        env_spec['max_tick_unit'] = 'epi'
-        env_spec['save_frequency'] = 1000
-    spec['meta']['max_session'] = 1
-    spec['meta']['max_trial'] = 2
-    return spec
 
 
 def parallelize_fn(fn, args, num_cpus=NUM_CPUS):

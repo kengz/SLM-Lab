@@ -4,7 +4,8 @@ Handles the analyses of the info and data space for experiment evaluation and de
 '''
 from slm_lab.agent import AGENT_DATA_NAMES
 from slm_lab.env import ENV_DATA_NAMES
-from slm_lab.lib import logger, util, viz
+from slm_lab.lib import logger, math_util, util, viz
+from slm_lab.spec import spec_util
 import numpy as np
 import os
 import pandas as pd
@@ -147,7 +148,7 @@ def calc_consistency(aeb_fitness_df):
         diff_norm = np.linalg.norm(np.diff(fitness_vecs, axis=0), NORM_ORDER) / np.linalg.norm(np.ones(len(fitness_vecs[0])), NORM_ORDER)
         consistency = diff_norm <= NOISE_WINDOW
     else:
-        is_outlier_arr = util.is_outlier(fitness_vecs)
+        is_outlier_arr = math_util.is_outlier(fitness_vecs)
         consistency = (~is_outlier_arr).sum() / len(is_outlier_arr)
     return consistency
 
@@ -670,7 +671,7 @@ def retro_analyze_sessions(predir):
             prepath = f'{predir}/{filename}'.replace('_session_df.csv', '')
             spec, info_space = util.prepath_to_spec_info_space(prepath)
             trial_index, session_index = util.prepath_to_idxs(prepath)
-            SessionClass = Session if util.is_singleton(spec) else SpaceSession
+            SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
             session = SessionClass(spec, info_space)
             session_data = session_data_from_file(predir, trial_index, session_index)
             analyze_session(session, session_data)
