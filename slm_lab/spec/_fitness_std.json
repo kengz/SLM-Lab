@@ -53,5 +53,45 @@
     "rand_epi_reward": -250,
     "std_epi_reward": 200,
     "std_timestep": 150000
-  }
+  },
+  "BeamRiderNoFrameskip-v4": {
+    "rand_epi_reward": 363.9,
+    "std_epi_reward": 6846,
+    "std_timestep": 1000000
+  },
+  "BreakoutNoFrameskip-v4": {
+    "rand_epi_reward": 1.7,
+    "std_epi_reward": 401.2,
+    "std_timestep": 1000000
+  },
+  "EnduroNoFrameskip-v4": {
+    "rand_epi_reward": 0,
+    "std_epi_reward": 301.8,
+    "std_timestep": 1000000
+  },
+  "MsPacmanNoFrameskip-v4": {
+    "rand_epi_reward": 307.3,
+    "std_epi_reward": 2311,
+    "std_timestep": 1000000
+  },
+  "PongNoFrameskip-v4": {
+    "rand_epi_reward": -20.7,
+    "std_epi_reward": 18.9,
+    "std_timestep": 1000000
+  },
+  "QbertNoFrameskip-v4": {
+    "rand_epi_reward": 163.9,
+    "std_epi_reward": 10596,
+    "std_timestep": 1000000
+  },
+  "SeaquestNoFrameskip-v4": {
+    "rand_epi_reward": 68.4,
+    "std_epi_reward": 5286,
+    "std_timestep": 1000000
+  },
+  "SpaceInvadersNoFrameskip-v4": {
+    "rand_epi_reward": 148,
+    "std_epi_reward": 1976,
+    "std_timestep": 1000000
+  },
 }
