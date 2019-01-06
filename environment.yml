@@ -40,7 +40,7 @@ dependencies:
   - urllib3=1.22=py36_0
   - wheel=0.30.0=py36_2
   - xlrd=1.1.0=py_2
-  - pytorch=1.0.0
+  - pytorch-nightly=1.0.0
   - torchvision=0.2.1
   - pip:
     - atari-py==0.1.1

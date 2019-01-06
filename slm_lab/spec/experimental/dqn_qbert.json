@@ -68,7 +68,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 1,
+      "max_session": 6,
       "max_trial": 16,
       "training_eval": true,
       "search": "RandomSearch",

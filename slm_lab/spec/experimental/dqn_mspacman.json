@@ -1,9 +1,9 @@
 {
-  "ddqn_breakout": {
+  "dqn_mspacman": {
     "agent": [{
-      "name": "DoubleDQN",
+      "name": "DQN",
       "algorithm": {
-        "name": "DoubleDQN",
+        "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
@@ -56,7 +56,7 @@
       }
     }],
     "env": [{
-      "name": "BreakoutNoFrameskip-v4",
+      "name": "MsPacmanNoFrameskip-v4",
       "max_t": null,
       "max_tick_unit": "total_t",
       "max_tick": 10000000,

@@ -1,5 +1,5 @@
 {
-  "ddqn_breakout": {
+  "ddqn_mspacman": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {
@@ -56,7 +56,7 @@
       }
     }],
     "env": [{
-      "name": "BreakoutNoFrameskip-v4",
+      "name": "MsPacmanNoFrameskip-v4",
       "max_t": null,
       "max_tick_unit": "total_t",
       "max_tick": 10000000,

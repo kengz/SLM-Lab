@@ -616,7 +616,6 @@ def to_json(d, indent=2):
     return json.dumps(d, indent=indent, cls=LabJsonEncoder)
 
 
-
 def to_render():
     return get_lab_mode() in ('dev', 'enjoy') and os.environ.get('RENDER', 'true') == 'true'
 
@@ -642,12 +641,12 @@ def try_set_cuda_id(spec, info_space):
     trial_idx = info_space.get('trial') or 0
     session_idx = info_space.get('session') or 0
     job_idx = trial_idx * spec['meta']['max_session'] + session_idx
+    job_idx += int(os.environ.get('CUDA_ID_OFFSET', 0))
     device_count = torch.cuda.device_count()
     if device_count == 0:
         cuda_id = None
     else:
         cuda_id = job_idx % device_count
-        cuda_id += int(os.environ.get('CUDA_ID_OFFSET', 0))
 
     for agent_spec in spec['agent']:
         agent_spec['net']['cuda_id'] = cuda_id
