@@ -796,7 +796,8 @@ def crop_image(im):
 
 
 def normalize_image(im):
-    # NOTE: beware in its application, may cause loss to be 256 times lower due to smaller input values
+    '''Normalizing image by dividing max value 255'''
+    # NOTE: beware in its application, may cause loss to be 255 times lower due to smaller input values
     return np.divide(im, 255.0)
 
 
