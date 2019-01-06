@@ -46,12 +46,9 @@ class Session:
         '''Try to checkpoint agent and run_online_eval at the start, save_freq, and the end'''
         clock = env.clock
         tick = clock.get(env.max_tick_unit)
-        if util.get_lab_mode() in ('enjoy', 'eval'):
-            to_ckpt = False
-        elif tick <= env.max_tick:
+        to_ckpt = False
+        if util.get_lab_mode() not in ('enjoy', 'eval') and tick <= env.max_tick:
             to_ckpt = (tick % env.save_frequency == 0) or tick == env.max_tick
-        else:
-            to_ckpt = False
         if env.max_tick_unit == 'epi':  # extra condition for epi
             to_ckpt = to_ckpt and env.done
 
