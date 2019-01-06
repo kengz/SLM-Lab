@@ -71,7 +71,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 1,
+      "max_session": 6,
       "max_trial": 12,
       "search": "RandomSearch",
       "resources": {
@@ -162,7 +162,7 @@
     },
     "meta": {
       "distributed": false,
-      "max_session": 1,
+      "max_session": 6,
       "max_trial": 12,
       "training_eval": true,
       "search": "RandomSearch",
