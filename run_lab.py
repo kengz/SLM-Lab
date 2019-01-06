@@ -58,7 +58,7 @@ def run_old_mode(spec_file, spec_name, lab_mode):
         spec = spec_util.override_enjoy_spec(spec)
         Session(spec, info_space).run()
     elif lab_mode == 'eval':
-        spec = spec_util.override_eval_spec(spec, num_eval_epi=analysis.NUM_EVAL_EPI)
+        spec = spec_util.override_eval_spec(spec)
         Session(spec, info_space).run()
         util.clear_periodic_ckpt(prepath)  # cleanup after itself
         analysis.analyze_eval_trial(spec, info_space, predir)

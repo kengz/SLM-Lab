@@ -160,14 +160,11 @@ def override_enjoy_spec(spec):
     return spec
 
 
-def override_eval_spec(spec, num_eval_epi=100):
+def override_eval_spec(spec):
     for agent_spec in spec['agent']:
         if 'max_size' in agent_spec['memory']:
             agent_spec['memory']['max_size'] = 100
-    for env_spec in spec['env']:
-        # evaluate by episode; offset so epi is 0 - (num_eval_epi - 1)
-        env_spec['max_tick'] = num_eval_epi - 1
-        env_spec['max_tick_unit'] = 'epi'
+    # evaluate by episode is set in env clock init in env/base.py
     return spec
 
 
