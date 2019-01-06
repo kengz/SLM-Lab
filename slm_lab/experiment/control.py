@@ -49,7 +49,7 @@ class Session:
         if util.get_lab_mode() in ('enjoy', 'eval'):
             to_ckpt = False
         elif tick <= env.max_tick:
-            to_ckpt = tick % env.save_frequency == 0
+            to_ckpt = (tick % env.save_frequency == 0) or tick == env.max_tick
         else:
             to_ckpt = False
         if env.max_tick_unit == 'epi':  # extra condition for epi
