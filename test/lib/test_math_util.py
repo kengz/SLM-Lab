@@ -9,7 +9,7 @@ import pytest
     ([[1, 1], [1, 1], [1, 2]], [False, False, True]),
 ])
 def test_is_outlier(vec, res):
-    assert np.array_equal(util.is_outlier(vec), res)
+    assert np.array_equal(math_util.is_outlier(vec), res)
 
 
 @pytest.mark.parametrize('start_val, end_val, start_step, end_step, step, correct', [
