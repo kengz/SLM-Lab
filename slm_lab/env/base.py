@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from gym import spaces
+from slm_lab.experiment import analysis
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -100,6 +101,11 @@ class BaseEnv(ABC):
             'save_frequency',
             'reward_scale',
         ])
+        if util.get_lab_mode() == 'eval':
+            # override for eval, offset so epi is 0 - (num_eval_epi - 1)
+            logger.info(f'Override max_tick for eval mode to {analysis.NUM_EVAL_EPI} epi')
+            self.max_tick = analysis.NUM_EVAL_EPI - 1
+            self.max_tick_unit = 'epi'
         # set max_tick info to clock
         self.clock.max_tick = self.max_tick
         self.clock.max_tick_unit = self.max_tick_unit
