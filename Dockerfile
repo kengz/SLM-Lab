@@ -44,15 +44,12 @@ COPY package.json yarn.lock ./
 RUN yarn install
 
 COPY environment.yml environment.yml
-# Mac uses box2d-kengz, ubuntu uses box2d
 # install Python and Conda dependencies
 RUN . ~/miniconda3/etc/profile.d/conda.sh && \
     conda create -n lab python=3.6 -y && \
     conda activate lab && \
     conda env update -f environment.yml && \
     pip uninstall -y tensorflow tensorboard && \
-    pip uninstall -y box2d-kengz && \
-    pip install box2d && \
     conda clean -y --all && \
     rm -rf ~/.cache/pip
 

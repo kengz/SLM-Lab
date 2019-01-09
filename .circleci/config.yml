@@ -22,9 +22,6 @@ jobs:
           name: Install Python dependencies with Conda
           command: |
             conda env update -f environment.yml
-            conda activate lab
-            pip uninstall -y box2d-kengz box2d
-            pip install box2d
 
       - run:
           name: Run Python tests
