@@ -44,11 +44,10 @@ dependencies:
   - torchvision=0.2.1
   - pip:
     - atari-py==0.1.1
-    - box2d-kengz==2.3.3
     - cloudpickle==0.5.2
     - git+https://github.com/jackparmer/colorlover.git@d63b098530458223a985bef804ded0c9be9b00b2
     - deap==1.2.2
-    - gym==0.10.5
+    - gym==0.10.9
     - gym[atari]
     - gym[box2d]
     - gym[classic_control]
