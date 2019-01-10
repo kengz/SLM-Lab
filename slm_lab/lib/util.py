@@ -303,11 +303,7 @@ def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
     fn should take only a single arg.
     @returns {list} results Order preserved output from fn.
     '''
-    def pool_init():
-        # you can never be too safe in multiprocessing gc
-        import gc
-        gc.collect()
-    pool = mp.Pool(num_cpus, initializer=pool_init, maxtasksperchild=1)
+    pool = mp.Pool(num_cpus, maxtasksperchild=1)
     results = pool.map(fn, args)
     pool.close()
     pool.join()
