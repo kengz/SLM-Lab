@@ -95,6 +95,7 @@ class Session:
                 break
         if self.eval_proc is not None:  # wait for final eval before closing
             util.run_cmd_wait(self.eval_proc)
+            analysis.session_retro_eval(self)  # rerun failed eval
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
         return self.data
