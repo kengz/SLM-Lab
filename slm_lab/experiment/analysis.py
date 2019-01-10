@@ -605,6 +605,19 @@ def run_online_eval(spec, info_space, ckpt):
     return util.run_cmd(cmd)
 
 
+def run_online_eval_from_prepath(prepath):
+    '''Used by retro_eval'''
+    spec, info_space = util.prepath_to_spec_info_space(prepath)
+    ckpt = util.find_ckpt(prepath)
+    return run_online_eval(spec, info_space, ckpt)
+
+
+def run_wait_eval(prepath):
+    '''Used by retro_eval'''
+    eval_proc = run_online_eval_from_prepath(prepath)
+    util.run_cmd_wait(eval_proc)
+
+
 def session_data_from_file(predir, trial_index, session_index):
     '''Build session.session_data from file'''
     ckpt_str = '_ckpt-eval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
@@ -718,12 +731,42 @@ def retro_analyze(predir):
     This method has no side-effects, i.e. doesn't overwrite data it should not.
     @example
 
-    from slm_lab.experiment import analysis
-    predir = 'data/reinforce_cartpole_2018_01_22_211751'
-    analysis.retro_analyze(predir)
+    yarn run analyze data/reinforce_cartpole_2018_01_22_211751
     '''
     os.environ['PREPATH'] = f'{predir}/retro_analyze'  # to prevent overwriting log file
     logger.info(f'Retro-analyzing {predir}')
     retro_analyze_sessions(predir)
     retro_analyze_trials(predir)
     retro_analyze_experiment(predir)
+
+
+def retro_eval(predir, session_index=None):
+    '''
+    Method to run eval sessions by scanning a predir for ckpt files. Used to rerun failed eval sessions.
+    @example
+
+    yarn run retro_eval data/reinforce_cartpole_2018_01_22_211751
+    '''
+    logger.info(f'Retro-evaluate sessions from predir {predir}')
+    # collect all unique prepaths first
+    prepaths = []
+    s_filter = '' if session_index is None else f'_s{session_index}_'
+    for filename in os.listdir(predir):
+        if filename.endswith('model.pth') and s_filter in filename:
+            res = re.search('.+epi(\d+)-totalt(\d+)', filename)
+            if res is not None:
+                prepath = f'{predir}/{res[0]}'
+                if prepath not in prepaths:
+                    prepaths.append(prepath)
+    if ps.is_empty(prepaths):
+        return
+
+    logger.info(f'Starting retro eval')
+    util.parallelize_fn(run_wait_eval, prepaths)
+
+
+def session_retro_eval(session):
+    '''retro_eval but for session at the end to rerun failed evals'''
+    prepath = util.get_prepath(session.spec, session.info_space, unit='session')
+    predir, _, _, _, _, _ = util.prepath_split(prepath)
+    retro_eval(predir, session.index)

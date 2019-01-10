@@ -9,6 +9,7 @@
     "debug2": "LOG_LEVEL=DEBUG2 python run_lab.py",
     "debug3": "LOG_LEVEL=DEBUG3 python run_lab.py",
     "analyze": "python -c 'import sys; from slm_lab.experiment import analysis; analysis.retro_analyze(sys.argv[1])'",
+    "retro_eval": "python -c 'import sys; from slm_lab.experiment import analysis; analysis.retro_eval(sys.argv[1])'",
     "reset": "rm -rf data/* .cache __pycache__ */__pycache__ *egg-info .pytest* htmlcov .coverage* *.xml",
     "kill": "pkill -f run_lab; pkill -f slm-env; pkill -f ipykernel; pkill -f ray; pkill -f orca; pkill -f Xvfb",
     "update": "conda env update -f environment.yml; yarn install;",
