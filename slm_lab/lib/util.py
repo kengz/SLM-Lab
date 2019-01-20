@@ -524,6 +524,7 @@ def session_df_to_data(session_df):
     aeb_list = get_df_aeb_list(session_df)
     for aeb in aeb_list:
         aeb_df = session_df.loc[:, aeb]
+        aeb_df.reset_index(inplace=True)  # guard for eval append-row
         session_data[aeb] = aeb_df
     return session_data
 
