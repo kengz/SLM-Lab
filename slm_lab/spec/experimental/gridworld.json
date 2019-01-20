@@ -352,7 +352,7 @@
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -444,7 +444,7 @@
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -542,7 +542,7 @@
       "name": "DoubleDQN",
       "algorithm": {
         "name": "DoubleDQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -634,7 +634,7 @@
       "name": "DoubleDQN",
       "algorithm": {
         "name": "DoubleDQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
