@@ -1184,7 +1184,7 @@
       "name": "SARSA",
       "algorithm": {
         "name": "SARSA",
-        "action_pdtype": "default",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -1261,7 +1261,7 @@
       "name": "SARSA",
       "algorithm": {
         "name": "SARSA",
-        "action_pdtype": "default",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -1343,7 +1343,7 @@
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -1380,8 +1380,8 @@
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
-          "step_size": 400,
-          "gamma": 0.8,
+          "step_size": 600,
+          "gamma": 0.9,
         },
         "update_type": "polyak",
         "polyak_coef": 0,
@@ -1435,7 +1435,7 @@
       "name": "DQN",
       "algorithm": {
         "name": "DQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -1614,7 +1614,7 @@
       "name": "DRQN",
       "algorithm": {
         "name": "DQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -1802,7 +1802,7 @@
       "name": "DoubleDQN",
       "algorithm": {
         "name": "DoubleDQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -1986,7 +1986,7 @@
       "name": "DoubleDRQN",
       "algorithm": {
         "name": "DoubleDQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -2174,7 +2174,7 @@
       "name": "DuelingDQN",
       "algorithm": {
         "name": "DQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",

@@ -4,7 +4,7 @@
       "name": "HydraDQN",
       "algorithm": {
         "name": "HydraDQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "Categorical",
         "action_policy": "multi_boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -301,7 +301,7 @@
       "name": "HydraDQN",
       "algorithm": {
         "name": "HydraDQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "Categorical",
         "action_policy": "multi_boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
