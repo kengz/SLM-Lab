@@ -46,7 +46,7 @@ dependencies:
     - atari-py==0.1.1
     - box2d-py==2.3.8
     - cloudpickle==0.5.2
-    - git+https://github.com/jackparmer/colorlover.git@d63b098530458223a985bef804ded0c9be9b00b2
+    - colorlover==0.3.0
     - deap==1.2.2
     - gym==0.10.9
     - gym[atari]
