@@ -765,7 +765,10 @@ def retro_eval(predir, session_index=None):
         return
 
     logger.info(f'Starting retro eval')
-    util.parallelize_fn(run_wait_eval, prepaths)
+    rand_spec = util.prepath_to_spec(prepaths[0])  # get any prepath, read its max session
+    max_session = rand_spec['meta']['max_session']
+    # TODO figure out a way to cycle CUDA id
+    util.parallelize_fn(run_wait_eval, prepaths, num_cpus=max_session)
 
 
 def session_retro_eval(session):
