@@ -94,6 +94,7 @@ class Body:
         self.last_loss = np.nan  # the last non-nan loss, for printing
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
+        # body data for analysis.analyze_session, inherently episodic
         self.df = pd.DataFrame(columns=[
             'epi', 'total_t', 't', 'reward', 'loss', 'explore_var',
             'lr', 'action_ent', 'ent_coef', 'grad_norm'])
