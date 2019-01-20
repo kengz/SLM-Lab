@@ -734,7 +734,7 @@ def retro_analyze(predir):
     This method has no side-effects, i.e. doesn't overwrite data it should not.
     @example
 
-    yarn run analyze data/reinforce_cartpole_2018_01_22_211751
+    yarn run retro_analyze data/reinforce_cartpole_2018_01_22_211751
     '''
     os.environ['PREPATH'] = f'{predir}/retro_analyze'  # to prevent overwriting log file
     logger.info(f'Retro-analyzing {predir}')
@@ -765,9 +765,9 @@ def retro_eval(predir, session_index=None):
         return
 
     logger.info(f'Starting retro eval')
+    np.random.shuffle(prepaths)  # so that CUDA_ID by trial/session index is spread out
     rand_spec = util.prepath_to_spec(prepaths[0])  # get any prepath, read its max session
     max_session = rand_spec['meta']['max_session']
-    # TODO figure out a way to cycle CUDA id
     util.parallelize_fn(run_wait_eval, prepaths, num_cpus=max_session)
 
 
