@@ -477,7 +477,10 @@ def save_session_df(session_data, prepath, info_space):
         epi = int(re.search('epi(\d+)', ckpt)[1])
         totalt = int(re.search('totalt(\d+)', ckpt)[1])
         session_df = pd.concat(session_data, axis=1)
-        eval_session_df = pd.DataFrame(data=[session_df.mean()])
+        mean_sr = session_df.mean()
+        mean_sr.name = totalt  # set index to prevent all being the same
+        eval_session_df = pd.DataFrame(data=[mean_sr])
+        # set sr name too, to total_t
         for aeb in util.get_df_aeb_list(eval_session_df):
             eval_session_df.loc[:, aeb + ('epi',)] = epi
             eval_session_df.loc[:, aeb + ('total_t',)] = totalt
