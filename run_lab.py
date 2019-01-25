@@ -58,6 +58,8 @@ def run_old_mode(spec_file, spec_name, lab_mode):
         spec = spec_util.override_enjoy_spec(spec)
         Session(spec, info_space).run()
     elif lab_mode == 'eval':
+        # example eval command:
+        # python run_lab.py data/dqn_cartpole_2018_12_19_224811/dqn_cartpole_t0_spec.json dqn_cartpole eval@dqn_cartpole_t0_s1_ckpt-epi10-totalt1000
         spec = spec_util.override_eval_spec(spec)
         Session(spec, info_space).run()
         util.clear_periodic_ckpt(prepath)  # cleanup after itself
