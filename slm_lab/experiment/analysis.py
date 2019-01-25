@@ -355,6 +355,8 @@ def gather_aeb_rewards_df(aeb, session_datas, max_tick_unit):
         aeb_df = session_data[aeb]
         aeb_reward_sr = aeb_df['reward']
         aeb_reward_sr.index = aeb_df[max_tick_unit]
+        # guard for duplicate eval result
+        aeb_reward_sr = aeb_reward_sr[~aeb_reward_sr.index.duplicated()]
         if util.get_lab_mode() in ('enjoy', 'eval'):
             # guard for eval appending possibly not ordered
             aeb_reward_sr.sort_index(inplace=True)
@@ -598,7 +600,9 @@ def analyze_eval_trial(spec, info_space, predir):
 def run_online_eval(spec, info_space, ckpt):
     '''
     Calls a subprocess to run lab in eval mode with the constructed ckpt prepath, same as how one would manually run the bash cmd
-    e.g. python run_lab.py data/dqn_cartpole_2018_12_19_224811/dqn_cartpole_t0_spec.json dqn_cartpole eval@dqn_cartpole_t0_s1_ckpt-epi10-totalt1000
+    @example
+
+    python run_lab.py data/dqn_cartpole_2018_12_19_224811/dqn_cartpole_t0_spec.json dqn_cartpole eval@dqn_cartpole_t0_s1_ckpt-epi10-totalt1000
     '''
     prepath_t = util.get_prepath(spec, info_space, unit='trial')
     prepath_s = util.get_prepath(spec, info_space, unit='session')
@@ -734,7 +738,7 @@ def retro_analyze(predir):
     This method has no side-effects, i.e. doesn't overwrite data it should not.
     @example
 
-    yarn run retro_analyze data/reinforce_cartpole_2018_01_22_211751
+    yarn retro_analyze data/reinforce_cartpole_2018_01_22_211751
     '''
     os.environ['PREPATH'] = f'{predir}/retro_analyze'  # to prevent overwriting log file
     logger.info(f'Retro-analyzing {predir}')
@@ -748,7 +752,7 @@ def retro_eval(predir, session_index=None):
     Method to run eval sessions by scanning a predir for ckpt files. Used to rerun failed eval sessions.
     @example
 
-    yarn run retro_eval data/reinforce_cartpole_2018_01_22_211751
+    yarn retro_eval data/reinforce_cartpole_2018_01_22_211751
     '''
     logger.info(f'Retro-evaluate sessions from predir {predir}')
     # collect all unique prepaths first
