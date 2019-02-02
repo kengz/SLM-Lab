@@ -405,7 +405,7 @@ def calc_trial_df(trial_spec, info_space):
 
     trial_data = {}
     for aeb, df_list in aeb_transpose.items():
-        trial_data[aeb] = pd.concat(df_list).groupby(level=0).mean().reset_index(drop='True')
+        trial_data[aeb] = pd.concat(df_list).groupby(level=0).mean().reset_index(drop=True)
 
     trial_df = pd.concat(trial_data, axis=1)
     return trial_df
