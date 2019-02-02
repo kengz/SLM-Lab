@@ -19,6 +19,7 @@ class Memory(ABC):
         '''
         @param {*} body is the unit that stores its experience in this memory. Each body has a distinct memory.
         '''
+        from slm_lab.experiment import analysis
         self.memory_spec = memory_spec
         self.body = body
 
@@ -35,7 +36,7 @@ class Memory(ABC):
         self.total_reward_h = []
         self.avg_total_reward = 0
         self.avg_total_reward_h = []
-        self.avg_window = 100
+        self.avg_window = analysis.MA_WINDOW
 
     @abstractmethod
     def reset(self):
