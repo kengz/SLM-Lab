@@ -152,10 +152,14 @@ def calc_consistency(aeb_fitness_df):
     return consistency
 
 
-def calc_epi_reward_ma(aeb_df):
+def calc_epi_reward_ma(aeb_df, ckpt=None):
     '''Calculates the episode reward moving average with the MA_WINDOW'''
     rewards = aeb_df['reward']
-    aeb_df['reward_ma'] = rewards.rolling(window=MA_WINDOW, min_periods=0, center=False).mean()
+    if ckpt == 'eval':
+        # online eval mode reward is reward_ma from avg
+        aeb_df['reward_ma'] = rewards
+    else:
+        aeb_df['reward_ma'] = rewards.rolling(window=MA_WINDOW, min_periods=0, center=False).mean()
     return aeb_df
 
 
@@ -268,7 +272,7 @@ def calc_session_fitness_df(session, session_data):
     session_fitness_data = {}
     for aeb in session_data:
         aeb_df = session_data[aeb]
-        aeb_df = calc_epi_reward_ma(aeb_df)
+        aeb_df = calc_epi_reward_ma(aeb_df, ps.get(session.info_space, 'ckpt'))
         util.downcast_float32(aeb_df)
         body = session.aeb_space.body_space.data[aeb]
         aeb_fitness_sr = calc_aeb_fitness_sr(aeb_df, body.env.name)
@@ -396,7 +400,7 @@ def calc_trial_df(trial_spec, info_space):
     '''Calculate trial_df as mean of all session_df'''
     prepath = util.get_prepath(trial_spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
+    session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'), ps.get(info_space, 'ckpt'))
     aeb_transpose = {aeb: [] for aeb in session_datas[list(session_datas.keys())[0]]}
     max_tick_unit = ps.get(trial_spec, 'env.0.max_tick_unit')
     for s, session_data in session_datas.items():
@@ -415,7 +419,7 @@ def plot_trial(trial_spec, info_space):
     '''Plot the trial graph, 1 pane: mean and error envelope of reward graphs from all sessions. Each aeb_df gets its own color'''
     prepath = util.get_prepath(trial_spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
+    session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'), ps.get(info_space, 'ckpt'))
     rand_session_data = session_datas[list(session_datas.keys())[0]]
     max_tick_unit = ps.get(trial_spec, 'env.0.max_tick_unit')
     aeb_count = len(rand_session_data)
@@ -615,7 +619,7 @@ def analyze_eval_trial(spec, info_space, predir):
     '''Create a trial and run analysis to get the trial graph and other trial data'''
     from slm_lab.experiment.control import Trial
     trial = Trial(spec, info_space)
-    trial.session_data_dict = session_data_dict_from_file(predir, trial.index)
+    trial.session_data_dict = session_data_dict_from_file(predir, trial.index, ps.get(info_space, 'ckpt'))
     analyze_trial(trial)
 
 
@@ -647,9 +651,9 @@ def run_wait_eval(prepath):
     util.run_cmd_wait(eval_proc)
 
 
-def session_data_from_file(predir, trial_index, session_index):
+def session_data_from_file(predir, trial_index, session_index, ckpt=None):
     '''Build session.session_data from file'''
-    ckpt_str = '_ckpt-eval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
+    ckpt_str = '' if ckpt is None else f'_ckpt-{ckpt}'
     for filename in os.listdir(predir):
         if filename.endswith(f'_t{trial_index}_s{session_index}{ckpt_str}_session_df.csv'):
             filepath = f'{predir}/{filename}'
@@ -658,19 +662,19 @@ def session_data_from_file(predir, trial_index, session_index):
             return session_data
 
 
-def session_datas_from_file(predir, trial_spec, trial_index):
+def session_datas_from_file(predir, trial_spec, trial_index, ckpt=None):
     '''Return a dict of {session_index: session_data} for a trial'''
     session_datas = {}
     for s in range(trial_spec['meta']['max_session']):
-        session_data = session_data_from_file(predir, trial_index, s)
+        session_data = session_data_from_file(predir, trial_index, s, ckpt)
         if session_data is not None:
             session_datas[s] = session_data
     return session_datas
 
 
-def session_data_dict_from_file(predir, trial_index):
+def session_data_dict_from_file(predir, trial_index, ckpt=None):
     '''Build trial.session_data_dict from file'''
-    ckpt_str = 'ckpt-eval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
+    ckpt_str = '' if ckpt is None else f'_ckpt-{ckpt}'
     session_data_dict = {}
     for filename in os.listdir(predir):
         if f'_t{trial_index}_' in filename and filename.endswith(f'{ckpt_str}_session_fitness_df.csv'):
@@ -686,7 +690,7 @@ def session_data_dict_for_dist(spec, info_space):
     '''Method to retrieve session_datas (fitness df, so the same as session_data_dict above) when a trial with distributed sessions is done, to avoid messy multiprocessing data communication'''
     prepath = util.get_prepath(spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = session_data_dict_from_file(predir, info_space.get('trial'))
+    session_datas = session_data_dict_from_file(predir, info_space.get('trial'), ps.get(info_space, 'ckpt'))
     session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
     return session_datas
 
@@ -714,7 +718,7 @@ def retro_analyze_sessions(predir):
             trial_index, session_index = util.prepath_to_idxs(prepath)
             SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
             session = SessionClass(spec, info_space)
-            session_data = session_data_from_file(predir, trial_index, session_index)
+            session_data = session_data_from_file(predir, trial_index, session_index, ps.get(info_space, 'ckpt'))
             analyze_session(session, session_data)
 
 
