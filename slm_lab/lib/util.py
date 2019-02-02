@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from datetime import datetime
 from importlib import reload
 from slm_lab import ROOT_DIR
@@ -280,6 +281,20 @@ def is_jupyter():
     except NameError:
         return False
     return False
+
+
+@contextmanager
+def ctx_lab_mode(lab_mode):
+    '''
+    Set lab_mode for a context
+    @example
+    with util.ctx_lab_mode('eval'):
+        run_eval()
+    '''
+    prev_lab_mode = os.environ['lab_mode']
+    os.environ['lab_mode'] = lab_mode
+    yield
+    os.environ['lab_mode'] = prev_lab_mode
 
 
 def monkey_patch(base_cls, extend_cls):
