@@ -29,6 +29,7 @@ import numpy as np
 import pandas as pd
 import pydash as ps
 import time
+import torch
 
 # These correspond to the control unit classes, lower cased
 COOR_AXES = [
@@ -100,6 +101,8 @@ class Body:
             'lr', 'action_ent', 'ent_coef', 'grad_norm'])
 
         # diagnostics variables/stats from action_policy prob. dist.
+        self.action_tensor = None
+        self.action_pd = None  # for the latest action, to compute entropy and log prob
         self.entropies = []  # check exploration
         self.log_probs = []  # calculate loss
 
@@ -133,6 +136,15 @@ class Body:
         if self.action_pdtype in (None, 'default'):
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
 
+    def action_pd_update(self):
+        '''Calculate and update action entropy and log_prob using self.action_pd. Call this in agent.update()'''
+        if self.action_pd is None:  # skip if None
+            return
+        # sum for single and multi-action
+        self.entropies.append(self.action_pd.entropy().sum(dim=0))
+        self.log_probs.append(self.action_pd.log_prob(self.action_tensor).sum(dim=0))
+        assert not torch.isnan(self.log_probs[-1])
+
     def epi_reset(self):
         '''
         Handles any body attribute reset at the start of an episode.
@@ -165,6 +177,8 @@ class Body:
 
     def flush(self):
         '''Flush gradient-related variables after training step similar.'''
+        self.action_tensor = None
+        self.action_pd = None
         self.entropies = []
         self.log_probs = []
         self.grad_norms = []
