@@ -144,6 +144,8 @@ def retro_analyze_experiment(predir):
     _, _, _, spec_name, _, _ = util.prepath_split(predir)
     prepath = f'{predir}/{spec_name}'
     spec, info_space = util.prepath_to_spec_info_space(prepath)
+    if 'search' not in spec:
+        return
     experiment = Experiment(spec, info_space)
     experiment.trial_data_dict = trial_data_dict_from_file(predir)
     if not ps.is_empty(experiment.trial_data_dict):
