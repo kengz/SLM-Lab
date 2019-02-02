@@ -328,7 +328,7 @@ def plot_session(session_spec, info_space, session_data):
         aeb_str = f'{a}{e}{b}'
         aeb_df = session_data[(a, e, b)]
         aeb_df.fillna(0, inplace=True)  # for saving plot, cant have nan
-        fig_1 = viz.plot_line(aeb_df, 'reward', max_tick_unit, legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
+        fig_1 = viz.plot_line(aeb_df, 'reward_ma', max_tick_unit, legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
         fig.append_trace(fig_1.data[0], 1, 1)
 
         fig_2 = viz.plot_line(aeb_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
@@ -353,7 +353,7 @@ def gather_aeb_rewards_df(aeb, session_datas, max_tick_unit):
     aeb_session_rewards = {}
     for s, session_data in session_datas.items():
         aeb_df = session_data[aeb]
-        aeb_reward_sr = aeb_df['reward']
+        aeb_reward_sr = aeb_df['reward_ma']
         aeb_reward_sr.index = aeb_df[max_tick_unit]
         # guard for duplicate eval result
         aeb_reward_sr = aeb_reward_sr[~aeb_reward_sr.index.duplicated()]
