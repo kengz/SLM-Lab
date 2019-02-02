@@ -236,7 +236,10 @@ def get_prepath(spec, info_space, unit='experiment'):
     if unit == 'trial':
         prename += f'_t{trial_index}'
     elif unit == 'session':
-        prename += f'_t{trial_index}_s{session_index}'
+        if session_index is None:
+            prename += f'_t{trial_index}'
+        else:
+            prename += f'_t{trial_index}_s{session_index}'
     ckpt = ps.get(info_space, 'ckpt')
     if ckpt is not None:
         prename += f'_ckpt-{ckpt}'
