@@ -723,22 +723,25 @@ def retro_analyze_trials(predir):
     logger.info('Retro-analyzing trials from file')
     from slm_lab.experiment.control import Trial
     for filename in os.listdir(predir):
-        if filename.endswith('_trial_data.json'):
+        if filename.endswith('_trial_df.csv'):
             filepath = f'{predir}/{filename}'
-            prepath = filepath.replace('_trial_data.json', '')
+            prepath = filepath.replace('_trial_df.csv', '')
             spec, info_space = util.prepath_to_spec_info_space(prepath)
             trial_index, _ = util.prepath_to_idxs(prepath)
             trial = Trial(spec, info_space)
-            trial.session_data_dict = session_data_dict_from_file(predir, trial_index)
+            trial.session_data_dict = session_data_dict_from_file(predir, trial_index, ps.get(info_space, 'ckpt'))
             trial_fitness_df = analyze_trial(trial)
+
             # write trial_data that was written from ray search
-            fitness_vec = trial_fitness_df.iloc[0].to_dict()
-            fitness = calc_fitness(trial_fitness_df)
-            trial_data = util.read(filepath)
-            trial_data.update({
-                **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
-            })
-            util.write(trial_data, filepath)
+            trial_data_filepath = filepath.replace('_trial_df.csv', '_trial_data.json')
+            if os.path.exists(trial_data_filepath):
+                fitness_vec = trial_fitness_df.iloc[0].to_dict()
+                fitness = calc_fitness(trial_fitness_df)
+                trial_data = util.read(trial_data_filepath)
+                trial_data.update({
+                    **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
+                })
+                util.write(trial_data, trial_data_filepath)
 
 
 def retro_analyze_experiment(predir):
