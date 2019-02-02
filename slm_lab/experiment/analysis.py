@@ -471,6 +471,27 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
+def reindex_session_data(spec, session_data):
+    '''
+    Reindex session_data to make max_tick_unit column values round up to multiples of save_frequency
+    then reindex to start from min to max max_tick_unit with regular ticks at save_frequency
+    e.g. aeb_df in session_data with index total_t [100, 320, 700] with save_frequency 200
+    will have index [200, 400, 600, 800] with value front-filled
+    '''
+    freq = ps.get(spec, 'env.0.save_frequency')
+    max_tick_unit = ps.get(spec, 'env.0.max_tick_unit')
+    for aeb, aeb_df in session_data.items():
+        # div int then +1 for rounding up at freq
+        aeb_df.index = ((aeb_df[max_tick_unit] / freq).astype(int) + 1) * freq
+        aeb_df = aeb_df[~aeb_df.index.duplicated(keep='first')]
+        aeb_df.sort_index(inplace=True)
+        # reset index to tick from min to max are regular freq, and front-fill all row values for new idxs
+        idxs = np.arange(aeb_df.index[0], aeb_df.index[-1] + freq, freq)
+        aeb_df = aeb_df.reindex(idxs, method='ffill')
+        aeb_df[max_tick_unit] = aeb_df.index.values
+        session_data[aeb] = aeb_df
+
+
 def save_session_df(session_data, prepath, info_space):
     '''Save session_df, and if is in eval mode, modify it and save with append'''
     filepath = f'{prepath}_session_df.csv'
@@ -545,6 +566,7 @@ def analyze_session(session, session_data=None):
     if session_data is None:  # not from retro analysis
         session_data = get_session_data(session)
     session_fitness_df = calc_session_fitness_df(session, session_data)
+    reindex_session_data(session.spec, session_data)
     session_fig = plot_session(session.spec, session.info_space, session_data)
     save_session_data(session.spec, session.info_space, session_data, session_fitness_df, session_fig)
     return session_fitness_df
