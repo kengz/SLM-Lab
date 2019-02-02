@@ -233,10 +233,12 @@ def get_prepath(spec, info_space, unit='experiment'):
     prename = f'{spec_name}'
     trial_index = info_space.get('trial')
     session_index = info_space.get('session')
+    t_str = '' if trial_index is None else f'_t{trial_index}'
+    s_str = '' if session_index is None else f'_s{session_index}'
     if unit == 'trial':
-        prename += f'_t{trial_index}'
+        prename += t_str
     elif unit == 'session':
-        prename += f'_t{trial_index}_s{session_index}'
+        prename += f'{t_str}{s_str}'
     ckpt = ps.get(info_space, 'ckpt')
     if ckpt is not None:
         prename += f'_ckpt-{ckpt}'
@@ -340,8 +342,9 @@ def prepath_to_idxs(prepath):
     '''Extract trial index and session index from prepath if available'''
     _, _, prename, spec_name, _, _ = prepath_split(prepath)
     idxs_tail = prename.replace(spec_name, '').strip('_')
-    idxs_strs = idxs_tail.split('_')[:2]
-    assert len(idxs_strs) > 0, 'No trial/session indices found in prepath'
+    idxs_strs = ps.compact(idxs_tail.split('_')[:2])
+    if ps.is_empty(idxs_strs):
+        return None, None
     tidx = idxs_strs[0]
     assert tidx.startswith('t')
     trial_index = int(tidx.strip('t'))
@@ -524,7 +527,7 @@ def session_df_to_data(session_df):
     aeb_list = get_df_aeb_list(session_df)
     for aeb in aeb_list:
         aeb_df = session_df.loc[:, aeb]
-        aeb_df.reset_index(inplace=True)  # guard for eval append-row
+        aeb_df.reset_index(inplace=True, drop=True)  # guard for eval append-row
         session_data[aeb] = aeb_df
     return session_data
 

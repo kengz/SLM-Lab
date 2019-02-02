@@ -6,7 +6,7 @@ from copy import deepcopy
 from importlib import reload
 from slm_lab.agent import AgentSpace, Agent
 from slm_lab.env import EnvSpace, make_env
-from slm_lab.experiment import analysis, search
+from slm_lab.experiment import analysis, retro_analysis, search
 from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
@@ -95,7 +95,7 @@ class Session:
                 break
         if self.eval_proc is not None:  # wait for final eval before closing
             util.run_cmd_wait(self.eval_proc)
-            analysis.session_retro_eval(self)  # rerun failed eval
+            retro_analysis.session_retro_eval(self)  # rerun failed eval
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
         return self.data
@@ -208,7 +208,7 @@ class Trial:
             workers.append(w)
         for w in workers:
             w.join()
-        session_datas = analysis.session_data_dict_for_dist(self.spec, self.info_space)
+        session_datas = retro_analysis.session_data_dict_for_dist(self.spec, self.info_space)
         return session_datas
 
     def run_sessions(self):
