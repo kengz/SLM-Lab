@@ -47,7 +47,8 @@ class OpenAIEnv(BaseEnv):
                 env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False)
         self.u_env = env
         self._set_attr_from_u_env(self.u_env)
-        self.max_t = self.max_t or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_epi_steps')
+        self.max_t = self.max_t or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
+        assert self.max_t is not None
         if env_space is None:  # singleton mode
             pass
         else:

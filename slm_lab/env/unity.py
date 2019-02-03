@@ -66,6 +66,7 @@ class UnityEnv(BaseEnv):
         self.u_env = UnityEnvironment(file_name=get_env_path(self.name), worker_id=worker_id)
         self.patch_gym_spaces(self.u_env)
         self._set_attr_from_u_env(self.u_env)
+        assert self.max_t is not None
         if env_space is None:  # singleton mode
             pass
         else:
