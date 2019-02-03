@@ -33,6 +33,8 @@ class Session:
 
         # init singleton agent and env
         self.env = make_env(self.spec)
+        with util.ctx_lab_mode('eval'):  # env for eval
+            self.eval_env = make_env(self.spec)
         body = Body(self.env, self.spec['agent'])
         util.set_rand_seed(self.info_space.get_random_seed(), self.env)
         util.try_set_cuda_id(self.spec, self.info_space)
@@ -53,6 +55,7 @@ class Session:
             to_ckpt = to_ckpt and env.done
 
         if to_ckpt:
+            self.run_eval_episode()
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             # run online eval for train mode

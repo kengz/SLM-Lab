@@ -149,10 +149,14 @@ class Body:
         self.log_probs.append(self.action_pd.log_prob(self.action_tensor).sum(dim=0))
         assert not torch.isnan(self.log_probs[-1])
 
-    def calc_df_row(self, total_reward):
+    def calc_df_row(self, env, total_reward):
         '''Calculate a row for updating train_df or eval_df, given a total_reward.'''
-        row = {k: self.env.clock.get(k) for k in ['epi', 'total_t', 't']}
         row.update({
+            # epi and total_t are always measured from training env
+            'epi': self.env.clock.get('epi'),
+            'total_t': self.env.clock.get('total_t'),
+            # t and reward are measured from a given env or eval_env
+            't': env.clock.get('t'),
             'reward': total_reward,
             'loss': self.last_loss,
             'explore_var': self.explore_var,
@@ -177,7 +181,7 @@ class Body:
     def epi_update(self):
         '''Update to append data at the end of an episode (when env.done is true)'''
         assert self.env.done
-        row = self.calc_df_row(self.memory.total_reward)
+        row = self.calc_df_row(self.env, self.memory.total_reward)
         # append efficiently to df
         self.train_df.loc[len(self.train_df)] = row
         # update current reward_ma
@@ -185,7 +189,7 @@ class Body:
 
     def eval_update(self, total_reward):
         '''Update to append data at eval checkpoint'''
-        row = self.calc_df_row(total_reward)
+        row = self.calc_df_row(self.eval_env, total_reward)
         # append efficiently to df
         self.eval_df.loc[len(self.eval_df)] = row
 
