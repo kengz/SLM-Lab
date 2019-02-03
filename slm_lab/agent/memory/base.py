@@ -19,7 +19,6 @@ class Memory(ABC):
         '''
         @param {*} body is the unit that stores its experience in this memory. Each body has a distinct memory.
         '''
-        from slm_lab.experiment import analysis
         self.memory_spec = memory_spec
         self.body = body
 
@@ -36,7 +35,6 @@ class Memory(ABC):
         self.total_reward_h = []
         self.avg_total_reward = 0
         self.avg_total_reward_h = []
-        self.avg_window = analysis.MA_WINDOW
 
     @abstractmethod
     def reset(self):
@@ -54,6 +52,7 @@ class Memory(ABC):
 
     def base_update(self, action, reward, state, done):
         '''Method to do base memory update, like stats'''
+        from slm_lab.experiment import analysis
         if np.isnan(reward):  # the start of episode
             self.epi_reset(state)
             return
@@ -61,7 +60,7 @@ class Memory(ABC):
         self.total_reward += reward
         if done:
             self.total_reward_h.append(self.total_reward)
-            self.avg_total_reward = np.mean(self.total_reward_h[-self.avg_window:])
+            self.avg_total_reward = np.mean(self.total_reward_h[-analysis.MA_WINDOW:])
             self.avg_total_reward_h.append(self.avg_total_reward_h)
         return
 

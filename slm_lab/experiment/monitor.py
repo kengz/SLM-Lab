@@ -23,6 +23,7 @@ from gym import spaces
 from slm_lab.agent import AGENT_DATA_NAMES
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.env import ENV_DATA_NAMES
+from slm_lab.experiment import analysis
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import numpy as np
@@ -189,14 +190,14 @@ class Body:
         row = self.calc_df_row(self.env, self.memory.total_reward)
         # append efficiently to df
         self.train_df.loc[len(self.train_df)] = row
-        # update current reward_ma
-        self.current_reward_ma = self.memory.avg_total_reward
 
     def eval_update(self, eval_env, total_reward):
         '''Update to append data at eval checkpoint'''
         row = self.calc_df_row(eval_env, total_reward)
         # append efficiently to df
         self.eval_df.loc[len(self.eval_df)] = row
+        # update current reward_ma
+        self.current_reward_ma = self.eval_df[-analysis.MA_WINDOW:]['reward'].mean()
 
     def flush(self):
         '''Flush gradient-related variables after training step similar.'''
@@ -237,7 +238,7 @@ class Body:
         '''Log the summary for this body when its environment is done'''
         prefix = self.get_log_prefix()
         memory = self.memory
-        msg = f'{prefix}, loss: {self.last_loss:.8f}, total_reward: {memory.total_reward:.4f}, last-{memory.avg_window}-epi avg: {memory.avg_total_reward:.4f}'
+        msg = f'{prefix}, loss: {self.last_loss:.8f}, total_reward: {memory.total_reward:.4f}, last-{analysis.MA_WINDOW}-epi avg: {memory.avg_total_reward:.4f}'
         logger.info(msg)
 
     def space_init(self, aeb_space):
