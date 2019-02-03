@@ -92,12 +92,11 @@ class Body:
         self.nanflat_a_idx = self.a
         self.nanflat_e_idx = self.e
 
-        # stats variables
-        self.loss = np.nan  # training losses
-        self.last_loss = np.nan  # the last non-nan loss, for printing
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
 
+        # body stats variables
+        self.loss = np.nan  # training losses
         # diagnostics variables/stats from action_policy prob. dist.
         self.action_tensor = None
         self.action_pd = None  # for the latest action, to compute entropy and log prob
@@ -162,7 +161,7 @@ class Body:
             # t and reward are measured from a given env or eval_env
             't': env.clock.get('t'),
             'reward': total_reward,
-            'loss': self.last_loss,
+            'loss': self.loss,
             'lr': self.get_net_avg_lrs(),
             'explore_var': self.explore_var,
             'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
@@ -244,7 +243,7 @@ class Body:
         '''Log the summary for this body when its environment is done'''
         prefix = self.get_log_prefix()
         memory = self.memory
-        msg = f'{prefix}, loss: {self.last_loss:.8f}, total_reward: {memory.total_reward:.4f}, last-{analysis.MA_WINDOW}-epi avg: {memory.avg_total_reward:.4f}'
+        msg = f'{prefix}, loss: {self.loss:.8f}, total_reward: {memory.total_reward:.4f}, last-{analysis.MA_WINDOW}-epi avg: {memory.avg_total_reward:.4f}'
         logger.info(msg)
 
     def space_init(self, aeb_space):

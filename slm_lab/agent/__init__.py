@@ -72,9 +72,9 @@ class Agent:
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
         self.body.action_pd_update()
         self.body.memory.update(action, reward, state, done)
-        self.body.loss = loss = self.algorithm.train()
+        loss = self.algorithm.train()
         if not np.isnan(loss):  # set for log_summary()
-            self.body.last_loss = loss
+            self.body.loss = loss
         explore_var = self.algorithm.update()
         logger.debug(f'Agent {self.a} loss: {loss}, explore_var {explore_var}')
         if done:
@@ -140,9 +140,8 @@ class Agent:
         loss_a = self.algorithm.space_train()
         loss_a = util.guard_data_a(self, loss_a, 'loss')
         for eb, body in util.ndenumerate_nonan(self.body_a):
-            body.loss = loss_a[eb]
-            if not np.isnan(body.loss):  # set for log_summary()
-                body.last_loss = body.loss
+            if not np.isnan(loss_a[eb]):  # set for log_summary()
+                body.loss = loss_a[eb]
         explore_var_a = self.algorithm.space_update()
         explore_var_a = util.guard_data_a(self, explore_var_a, 'explore_var')
         logger.debug(f'Agent {self.a} loss: {loss_a}, explore_var_a {explore_var_a}')
