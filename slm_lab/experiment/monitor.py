@@ -22,6 +22,7 @@ Agents - AgentSpace - AEBSpace - EnvSpace - Envs
 from gym import spaces
 from slm_lab.agent import AGENT_DATA_NAMES
 from slm_lab.agent.algorithm import policy_util
+from slm_lab.agent.net import net_util
 from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.experiment import analysis
 from slm_lab.lib import logger, util
@@ -104,9 +105,8 @@ class Body:
         self.log_probs = []  # action log probs
         self.last_entropy = np.nan
         self.last_log_prob = np.nan
-
-        # store grad_norms and mean entropy of action dist each training step for debugging
-        self.grad_norms = []
+        # store grad_norm for debugging
+        self.grad_norm = np.nan
 
         # stores running mean and std dev of states
         self.state_mean = np.nan
@@ -152,6 +152,9 @@ class Body:
         assert not torch.isnan(self.log_probs[-1])
         self.last_entropy = self.entropies[-1].item()
         self.last_log_prob = self.log_probs[-1].item()
+        # net.grad_norms is only available in dev mode for efficiency
+        grad_norms = net_util.get_grad_norms(self.agent.algorithm)
+        self.grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
 
     def calc_df_row(self, env, total_reward):
         '''Calculate a row for updating train_df or eval_df, given a total_reward.'''
@@ -168,7 +171,7 @@ class Body:
             'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
             'entropy': self.last_entropy,
             'log_prob': self.last_log_prob,
-            'grad_norm': np.mean(self.grad_norms) if self.grad_norms else np.nan,
+            'grad_norm': self.grad_norm,
         }, dtype=np.float32)
         assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
         return row
@@ -182,7 +185,6 @@ class Body:
         assert t == 0, f'aeb: {self.aeb}, t: {t}'
         if hasattr(self, 'aeb_space'):
             self.space_fix_stats()
-        self.grad_norms = []
 
     def epi_update(self):
         '''Update to append data at the end of an episode (when env.done is true)'''
@@ -205,7 +207,6 @@ class Body:
         self.action_pd = None
         self.entropies = []
         self.log_probs = []
-        self.grad_norms = []
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))

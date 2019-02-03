@@ -162,7 +162,6 @@ class Reinforce(Algorithm):
 
     @lab_api
     def update(self):
-        net_util.try_store_grad_norm(self)
         self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
         if self.entropy_coef_spec is not None:
             self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)

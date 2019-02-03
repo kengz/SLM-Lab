@@ -245,9 +245,11 @@ def gen_assert_trained(pre_model):
     return assert_trained
 
 
-def try_store_grad_norm(algorithm):
-    '''Check and if needed, store algorithm's net.grad_norms to body.grad_norms for debugging'''
+def get_grad_norms(algorithm):
+    '''Gather all the net's grad norms of an algorithm for debugging'''
+    grad_norms = []
     for net_name in algorithm.net_names:
         net = getattr(algorithm, net_name)
         if net.grad_norms is not None:
-            algorithm.body.grad_norms.extend(net.grad_norms)
+            grad_norms.extend(net.grad_norms)
+    return grad_norms
