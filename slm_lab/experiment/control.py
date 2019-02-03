@@ -55,7 +55,8 @@ class Session:
             to_ckpt = to_ckpt and env.done
 
         if to_ckpt:
-            self.run_eval_episode()
+            with util.ctx_lab_mode('eval'):  # env for eval
+                self.run_eval_episode()
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             # run online eval for train mode
