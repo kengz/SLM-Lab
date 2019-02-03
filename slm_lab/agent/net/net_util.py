@@ -14,8 +14,14 @@ logger = logger.get_logger(__name__)
 class NoOpLRScheduler:
     '''Symbolic LRScheduler class for API consistency'''
 
+    def __init__(self, optim):
+        self.optim = optim
+
     def step(self, epoch=None):
         pass
+
+    def get_lr(self):
+        return self.optim.defaults['lr']
 
 
 def build_sequential(dims, activation):
@@ -56,7 +62,7 @@ def get_optim(cls, optim_spec):
 def get_lr_scheduler(cls, lr_scheduler_spec):
     '''Helper to parse lr_scheduler param and construct Pytorch optim.lr_scheduler'''
     if ps.is_empty(lr_scheduler_spec):
-        lr_scheduler = NoOpLRScheduler()
+        lr_scheduler = NoOpLRScheduler(cls.optim)
     else:
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, lr_scheduler_spec['name'])
         lr_scheduler_spec = ps.omit(lr_scheduler_spec, 'name')

@@ -162,7 +162,7 @@ class Body:
             't': env.clock.get('t'),
             'reward': total_reward,
             'loss': self.loss,
-            'lr': self.get_net_avg_lrs(),
+            'lr': self.get_mean_lr(),
             'explore_var': self.explore_var,
             'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
             'entropy': self.mean_entropy,
@@ -215,20 +215,17 @@ class Body:
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
 
-    def get_net_avg_lrs(self):
+    def get_mean_lr(self):
         '''Gets the average current learning rate of the algorithm's nets.'''
         if not hasattr(self.agent.algorithm, 'net_names'):
             return np.nan
         lrs = []
         for net_name in self.agent.algorithm.net_names:
+            # we are only interested in directly trainable network, so exclude target net
             if net_name is 'target_net':
                 continue
             net = getattr(self.agent.algorithm, net_name)
-            if net.lr_scheduler.__class__.__name__ == 'NoOpLRScheduler':
-                lr = net.optim_spec['lr']
-            else:
-                lr = net.lr_scheduler.get_lr()
-            lrs.append(lr)
+            lrs.append(net.lr_scheduler.get_lr())
         return np.mean(lrs)
 
     def get_log_prefix(self):
