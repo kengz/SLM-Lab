@@ -103,10 +103,10 @@ class Body:
         self.action_pd = None  # for the latest action, to compute entropy and log prob
         self.entropies = []  # action entropies for exploration
         self.log_probs = []  # action log probs
-        self.last_entropy = np.nan
-        self.last_log_prob = np.nan
-        # store grad_norm for debugging
-        self.grad_norm = np.nan
+        # mean values for debugging
+        self.mean_entropy = np.nan
+        self.mean_log_prob = np.nan
+        self.mean_grad_norm = np.nan
 
         # stores running mean and std dev of states
         self.state_mean = np.nan
@@ -147,14 +147,11 @@ class Body:
         if self.action_pd is None:  # skip if None
             return
         # mean for single and multi-action
-        self.entropies.append(self.action_pd.entropy().mean(dim=0))
-        self.log_probs.append(self.action_pd.log_prob(self.action_tensor).mean(dim=0))
-        assert not torch.isnan(self.log_probs[-1])
-        self.last_entropy = self.entropies[-1].item()
-        self.last_log_prob = self.log_probs[-1].item()
-        # net.grad_norms is only available in dev mode for efficiency
-        grad_norms = net_util.get_grad_norms(self.agent.algorithm)
-        self.grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
+        entropy = self.action_pd.entropy().mean(dim=0)
+        self.entropies.append(entropy)
+        log_prob = self.action_pd.log_prob(self.action_tensor).mean(dim=0)
+        self.log_probs.append(log_prob)
+        assert not torch.isnan(log_prob)
 
     def calc_df_row(self, env, total_reward):
         '''Calculate a row for updating train_df or eval_df, given a total_reward.'''
@@ -169,9 +166,9 @@ class Body:
             'lr': self.get_net_avg_lrs(),
             'explore_var': self.explore_var,
             'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
-            'entropy': self.last_entropy,
-            'log_prob': self.last_log_prob,
-            'grad_norm': self.grad_norm,
+            'entropy': self.mean_entropy,
+            'log_prob': self.mean_log_prob,
+            'grad_norm': self.mean_grad_norm,
         }, dtype=np.float32)
         assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
         return row
@@ -202,7 +199,15 @@ class Body:
         self.current_reward_ma = self.eval_df[-analysis.MA_WINDOW:]['reward'].mean()
 
     def flush(self):
-        '''Flush gradient-related variables after training step similar.'''
+        '''Update and flush gradient-related variables after training step similar.'''
+        # update
+        self.mean_entropy = torch.tensor(self.entropies).mean().item()
+        self.mean_log_prob = torch.tensor(self.log_probs).mean().item()
+        # net.grad_norms is only available in dev mode for efficiency
+        grad_norms = net_util.get_grad_norms(self.agent.algorithm)
+        self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
+
+        # flush
         self.action_tensor = None
         self.action_pd = None
         self.entropies = []
