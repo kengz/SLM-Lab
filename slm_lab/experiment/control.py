@@ -69,8 +69,7 @@ class Session:
 
     def run_eval_episode(self):
         self.eval_env.clock.tick('epi')
-        # logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.eval_env.clock.epi}')
-        logger.info('Running eval episode')
+        logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
         total_reward = 0
         reward, state, done = self.eval_env.reset()
         while not done:
@@ -80,8 +79,7 @@ class Session:
             total_reward += reward
         # update body.eval_df
         self.agent.body.eval_update(self.eval_env, total_reward)
-        logger.info(f'Eval episode done, total_reward: {total_reward}')
-        print(self.agent.body.eval_df)
+        self.agent.body.log_summary(mode='eval')
 
     def run_episode(self):
         self.env.clock.tick('epi')
@@ -95,7 +93,7 @@ class Session:
             reward, state, done = self.env.step(action)
             self.agent.update(action, reward, state, done)
         self.try_ckpt(self.agent, self.env)  # final timestep ckpt
-        self.agent.body.log_summary()
+        self.agent.body.log_summary(mode='train')
 
     def close(self):
         '''

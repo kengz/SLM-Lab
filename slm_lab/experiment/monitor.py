@@ -115,7 +115,7 @@ class Body:
 
         # store current and best reward_ma for model checkpointing and early termination if all the environments are solved
         self.best_reward_ma = -np.inf
-        self.current_reward_ma = np.nan
+        self.eval_reward_ma = np.nan
 
         # dataframes to track data for analysis.analyze_session
         # track training data within run_episode
@@ -195,7 +195,7 @@ class Body:
         # append efficiently to df
         self.eval_df.loc[len(self.eval_df)] = row
         # update current reward_ma
-        self.current_reward_ma = self.eval_df[-analysis.MA_WINDOW:]['reward'].mean()
+        self.eval_reward_ma = self.eval_df[-analysis.MA_WINDOW:]['reward'].mean()
 
     def flush(self):
         '''Update and flush gradient-related variables after training step similar.'''
@@ -233,14 +233,18 @@ class Body:
         spec = self.agent.spec
         info_space = self.agent.info_space
         clock = self.env.clock
-        prefix = f'{spec["name"]}_t{info_space.get("trial")}_s{info_space.get("session")}, aeb{self.aeb}, epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}'
+        prefix = f'{spec["name"]}_t{info_space.get("trial")}_s{info_space.get("session")}, aeb{self.aeb}'
         return prefix
 
-    def log_summary(self):
+    def log_summary(self, mode='train'):
         '''Log the summary for this body when its environment is done'''
         prefix = self.get_log_prefix()
-        memory = self.memory
-        msg = f'{prefix}, loss: {self.loss:.8f}, total_reward: {memory.total_reward:.4f}, last-{analysis.MA_WINDOW}-epi avg: {memory.avg_total_reward:.4f}'
+        df = self.eval_df if mode == 'eval' else self.train_df
+        last_row = df.iloc[-1]
+        row_str = ', '.join([f'{k}: {v:g}' for k, v in last_row.items()])
+        reward_ma = df[-analysis.MA_WINDOW:]['reward'].mean()
+        reward_ma_str = f'last-{analysis.MA_WINDOW}-epi avg: {reward_ma:g}'
+        msg = f'{prefix} [{mode}_df] {row_str}, {reward_ma_str}'
         logger.info(msg)
 
     def space_init(self, aeb_space):
@@ -421,7 +425,7 @@ class AEBSpace:
         for env in self.env_space.envs:
             if env.done:
                 for body in env.nanflat_body_e:
-                    body.log_summary()
+                    body.log_summary(mode='train')
             env.clock.tick(unit or ('epi' if env.done else 't'))
             end_session = not (env.clock.get(env.max_tick_unit) < env.max_tick)
             end_sessions.append(end_session)

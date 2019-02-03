@@ -205,7 +205,7 @@ Checkpoint and early termination analysis
 '''
 
 
-def get_reward_mas(agent, name='current_reward_ma'):
+def get_reward_mas(agent, name='eval_reward_ma'):
     '''Return array of the named reward_ma for all of an agent's bodies.'''
     bodies = getattr(agent, 'nanflat_body_a', [agent.body])
     return np.array([getattr(body, name) for body in bodies], dtype=np.float16)
@@ -220,22 +220,22 @@ def get_std_epi_rewards(agent):
 def new_best(agent):
     '''Check if algorithm is now the new best result, then update the new best'''
     best_reward_mas = get_reward_mas(agent, 'best_reward_ma')
-    current_reward_mas = get_reward_mas(agent, 'current_reward_ma')
-    best = (current_reward_mas >= best_reward_mas).all()
+    eval_reward_mas = get_reward_mas(agent, 'eval_reward_ma')
+    best = (eval_reward_mas >= best_reward_mas).all()
     if best:
         bodies = getattr(agent, 'nanflat_body_a', [agent.body])
         for body in bodies:
-            body.best_reward_ma = body.current_reward_ma
+            body.best_reward_ma = body.eval_reward_ma
     return best
 
 
 def all_solved(agent):
     '''Check if envs have all been solved using std from slm_lab/spec/_fitness_std.json'''
-    current_reward_mas = get_reward_mas(agent, 'current_reward_ma')
+    eval_reward_mas = get_reward_mas(agent, 'eval_reward_ma')
     std_epi_rewards = get_std_epi_rewards(agent)
     solved = (
         not np.isnan(std_epi_rewards).any() and
-        (current_reward_mas >= std_epi_rewards).all()
+        (eval_reward_mas >= std_epi_rewards).all()
     )
     return solved
 
