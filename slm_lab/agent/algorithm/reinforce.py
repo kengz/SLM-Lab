@@ -138,8 +138,7 @@ class Reinforce(Algorithm):
             # reset
             self.to_train = 0
             self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
-
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -157,7 +156,7 @@ class Reinforce(Algorithm):
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.body.entropy_coef * entropies)
         policy_loss = torch.sum(policy_loss)
-        logger.debug(f'Actor policy loss: {policy_loss:.4f}')
+        logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
 
     @lab_api

@@ -128,8 +128,8 @@ class SIL(ActorCritic):
         sil_policy_loss = self.sil_policy_loss_coef * torch.mean(- log_probs * clipped_advs)
         sil_val_loss = self.sil_val_loss_coef * torch.pow(clipped_advs, 2) / 2
         sil_val_loss = torch.mean(sil_val_loss)
-        logger.debug(f'SIL actor policy loss: {sil_policy_loss:.4f}')
-        logger.debug(f'SIL critic value loss: {sil_val_loss:.4f}')
+        logger.debug(f'SIL actor policy loss: {sil_policy_loss:g}')
+        logger.debug(f'SIL critic value loss: {sil_val_loss:g}')
         return sil_policy_loss, sil_val_loss
 
     def train_shared(self):
@@ -151,8 +151,7 @@ class SIL(ActorCritic):
                     total_sil_loss += sil_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
-
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -176,8 +175,7 @@ class SIL(ActorCritic):
                     total_sil_loss += sil_policy_loss + sil_val_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
-
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan

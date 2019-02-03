@@ -227,8 +227,7 @@ class ActorCritic(Reinforce):
             # reset
             self.to_train = 0
             self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
-
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -246,7 +245,7 @@ class ActorCritic(Reinforce):
             # reset
             self.to_train = 0
             self.body.flush()
-            logger.debug(f'Trained {self.name}, loss: {loss:.4f}')
+            logger.debug(f'Trained {self.name}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -281,7 +280,7 @@ class ActorCritic(Reinforce):
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.body.entropy_coef * entropies)
         policy_loss = torch.mean(policy_loss)
-        logger.debug(f'Actor policy loss: {policy_loss:.4f}')
+        logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
 
     def calc_val_loss(self, batch, v_targets):
@@ -290,7 +289,7 @@ class ActorCritic(Reinforce):
         v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze_(dim=-1)
         assert v_preds.shape == v_targets.shape
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
-        logger.debug(f'Critic value loss: {val_loss:.4f}')
+        logger.debug(f'Critic value loss: {val_loss:g}')
         return val_loss
 
     def calc_gae_advs_v_targets(self, batch):

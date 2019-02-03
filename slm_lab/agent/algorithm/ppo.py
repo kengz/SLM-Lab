@@ -145,7 +145,7 @@ class PPO(ActorCritic):
         logger.debug(f'ent_penalty: {ent_penalty}')
 
         policy_loss = clip_loss + ent_penalty
-        logger.debug(f'PPO Actor policy loss: {policy_loss:.4f}')
+        logger.debug(f'PPO Actor policy loss: {policy_loss:g}')
         return policy_loss
 
     def train_shared(self):
@@ -172,8 +172,7 @@ class PPO(ActorCritic):
             # reset
             self.to_train = 0
             self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
-
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -193,8 +192,7 @@ class PPO(ActorCritic):
             # reset
             self.to_train = 0
             self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
-
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
