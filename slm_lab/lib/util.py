@@ -294,7 +294,10 @@ def ctx_lab_mode(lab_mode):
     prev_lab_mode = os.environ.get('lab_mode')
     os.environ['lab_mode'] = lab_mode
     yield
-    os.environ['lab_mode'] = prev_lab_mode
+    if prev_lab_mode is None:
+        del os.environ['lab_mode']
+    else:
+        os.environ['lab_mode'] = prev_lab_mode
 
 
 def monkey_patch(base_cls, extend_cls):
