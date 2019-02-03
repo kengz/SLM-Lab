@@ -67,6 +67,22 @@ class Session:
             if tick > 0:  # nothing to analyze at start
                 analysis.analyze_session(self)
 
+    def run_eval_episode(self):
+        self.eval_env.clock.tick('epi')
+        # logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.eval_env.clock.epi}')
+        logger.info('Running eval episode')
+        total_reward = 0
+        reward, state, done = self.eval_env.reset()
+        while not done:
+            self.eval_env.clock.tick('t')
+            action = self.agent.act(state)
+            reward, state, done = self.eval_env.step(action)
+            total_reward += reward
+        # update body.eval_df
+        self.agent.body.eval_update(self.eval_env, total_reward)
+        logger.info(f'Eval episode done, total_reward: {total_reward}')
+        print(self.agent.body.eval_df)
+
     def run_episode(self):
         self.env.clock.tick('epi')
         logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.env.clock.epi}')

@@ -101,10 +101,11 @@ class Body:
         self.action_pd = None  # for the latest action, to compute entropy and log prob
         self.entropies = []  # action entropies for exploration
         self.log_probs = []  # action log probs
+        self.last_entropy = np.nan
+        self.last_log_prob = np.nan
 
         # store grad_norms and mean entropy of action dist each training step for debugging
         self.grad_norms = []
-        self.mean_entropy = np.nan
 
         # stores running mean and std dev of states
         self.state_mean = np.nan
@@ -119,8 +120,8 @@ class Body:
         # dataframes to track data for analysis.analyze_session
         # track training data within run_episode
         self.train_df = pd.DataFrame(columns=[
-            'epi', 'total_t', 't', 'reward', 'loss', 'explore_var',
-            'lr', 'action_ent', 'ent_coef', 'grad_norm'])
+            'epi', 'total_t', 't', 'reward', 'loss', 'lr',
+            'explore_var', 'entropy_coef', 'entropy', 'log_prob', 'grad_norm'])
         # track eval data within run_eval_episode. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
 
@@ -144,14 +145,16 @@ class Body:
         '''Calculate and update action entropy and log_prob using self.action_pd. Call this in agent.update()'''
         if self.action_pd is None:  # skip if None
             return
-        # sum for single and multi-action
-        self.entropies.append(self.action_pd.entropy().sum(dim=0))
-        self.log_probs.append(self.action_pd.log_prob(self.action_tensor).sum(dim=0))
+        # mean for single and multi-action
+        self.entropies.append(self.action_pd.entropy().mean(dim=0))
+        self.log_probs.append(self.action_pd.log_prob(self.action_tensor).mean(dim=0))
         assert not torch.isnan(self.log_probs[-1])
+        self.last_entropy = self.entropies[-1].item()
+        self.last_log_prob = self.log_probs[-1].item()
 
     def calc_df_row(self, env, total_reward):
         '''Calculate a row for updating train_df or eval_df, given a total_reward.'''
-        row.update({
+        row = pd.Series({
             # epi and total_t are always measured from training env
             'epi': self.env.clock.get('epi'),
             'total_t': self.env.clock.get('total_t'),
@@ -159,13 +162,15 @@ class Body:
             't': env.clock.get('t'),
             'reward': total_reward,
             'loss': self.last_loss,
-            'explore_var': self.explore_var,
             'lr': self.get_net_avg_lrs(),
-            'action_ent': self.mean_entropy,
-            'ent_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
+            'explore_var': self.explore_var,
+            'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
+            'entropy': self.last_entropy,
+            'log_prob': self.last_log_prob,
             'grad_norm': np.mean(self.grad_norms) if self.grad_norms else np.nan,
-        })
-        return pd.Series(row, dtype=np.float32)
+        }, dtype=np.float32)
+        assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
+        return row
 
     def epi_reset(self):
         '''
@@ -187,9 +192,9 @@ class Body:
         # update current reward_ma
         self.current_reward_ma = self.memory.avg_total_reward
 
-    def eval_update(self, total_reward):
+    def eval_update(self, eval_env, total_reward):
         '''Update to append data at eval checkpoint'''
-        row = self.calc_df_row(self.eval_env, total_reward)
+        row = self.calc_df_row(eval_env, total_reward)
         # append efficiently to df
         self.eval_df.loc[len(self.eval_df)] = row
 

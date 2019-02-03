@@ -143,8 +143,6 @@ class PPO(ActorCritic):
         entropies = torch.stack(self.body.entropies)
         ent_penalty = torch.mean(-self.body.entropy_coef * entropies)
         logger.debug(f'ent_penalty: {ent_penalty}')
-        # Store mean entropy for debug logging
-        self.body.mean_entropy = torch.mean(torch.tensor(self.body.entropies)).item()
 
         policy_loss = clip_loss + ent_penalty
         logger.debug(f'PPO Actor policy loss: {policy_loss:.4f}')
