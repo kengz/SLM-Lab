@@ -32,9 +32,6 @@ class Memory(ABC):
         self.state_buffer = deque(maxlen=0)
         # total_reward and its history over episodes
         self.total_reward = 0
-        self.total_reward_h = []
-        self.avg_total_reward = 0
-        self.avg_total_reward_h = []
 
     @abstractmethod
     def reset(self):
@@ -58,10 +55,6 @@ class Memory(ABC):
             return
 
         self.total_reward += reward
-        if done:
-            self.total_reward_h.append(self.total_reward)
-            self.avg_total_reward = np.mean(self.total_reward_h[-analysis.MA_WINDOW:])
-            self.avg_total_reward_h.append(self.avg_total_reward_h)
         return
 
     @abstractmethod
