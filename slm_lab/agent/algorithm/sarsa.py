@@ -151,7 +151,6 @@ class SARSA(Algorithm):
             self.to_train = 0
             self.body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
-
             return loss.item()
         else:
             return np.nan

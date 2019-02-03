@@ -95,16 +95,12 @@ class Body:
         self.last_loss = np.nan  # the last non-nan loss, for printing
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
-        # body data for analysis.analyze_session, inherently episodic
-        self.df = pd.DataFrame(columns=[
-            'epi', 'total_t', 't', 'reward', 'loss', 'explore_var',
-            'lr', 'action_ent', 'ent_coef', 'grad_norm'])
 
         # diagnostics variables/stats from action_policy prob. dist.
         self.action_tensor = None
         self.action_pd = None  # for the latest action, to compute entropy and log prob
-        self.entropies = []  # check exploration
-        self.log_probs = []  # calculate loss
+        self.entropies = []  # action entropies for exploration
+        self.log_probs = []  # action log probs
 
         # store grad_norms and mean entropy of action dist each training step for debugging
         self.grad_norms = []
@@ -119,6 +115,14 @@ class Body:
         # store current and best reward_ma for model checkpointing and early termination if all the environments are solved
         self.best_reward_ma = -np.inf
         self.current_reward_ma = np.nan
+
+        # dataframes to track data for analysis.analyze_session
+        # track training data within run_episode
+        self.train_df = pd.DataFrame(columns=[
+            'epi', 'total_t', 't', 'reward', 'loss', 'explore_var',
+            'lr', 'action_ent', 'ent_coef', 'grad_norm'])
+        # track eval data within run_eval_episode. the same as train_df except for reward
+        self.eval_df = self.train_df.copy()
 
         if aeb_space is None:  # singleton mode
             # the specific agent-env interface variables for a body
@@ -145,6 +149,20 @@ class Body:
         self.log_probs.append(self.action_pd.log_prob(self.action_tensor).sum(dim=0))
         assert not torch.isnan(self.log_probs[-1])
 
+    def calc_df_row(self, total_reward):
+        '''Calculate a row for updating train_df or eval_df, given a total_reward.'''
+        row = {k: self.env.clock.get(k) for k in ['epi', 'total_t', 't']}
+        row.update({
+            'reward': total_reward,
+            'loss': self.last_loss,
+            'explore_var': self.explore_var,
+            'lr': self.get_net_avg_lrs(),
+            'action_ent': self.mean_entropy,
+            'ent_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
+            'grad_norm': np.mean(self.grad_norms) if self.grad_norms else np.nan,
+        })
+        return pd.Series(row, dtype=np.float32)
+
     def epi_reset(self):
         '''
         Handles any body attribute reset at the start of an episode.
@@ -159,21 +177,17 @@ class Body:
     def epi_update(self):
         '''Update to append data at the end of an episode (when env.done is true)'''
         assert self.env.done
-        row = {k: self.env.clock.get(k) for k in ['epi', 'total_t', 't']}
-        row.update({
-            'reward': self.memory.total_reward,
-            'loss': self.last_loss,
-            'explore_var': self.explore_var,
-            'lr': self.get_net_avg_lrs(),
-            'action_ent': self.mean_entropy,
-            'ent_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
-            'grad_norm': np.mean(self.grad_norms) if self.grad_norms else np.nan,
-        })
+        row = self.calc_df_row(self.memory.total_reward)
         # append efficiently to df
-        self.df.loc[len(self.df)] = pd.Series(row, dtype=np.float32)
+        self.train_df.loc[len(self.train_df)] = row
         # update current reward_ma
         self.current_reward_ma = self.memory.avg_total_reward
-        return row
+
+    def eval_update(self, total_reward):
+        '''Update to append data at eval checkpoint'''
+        row = self.calc_df_row(total_reward)
+        # append efficiently to df
+        self.eval_df.loc[len(self.eval_df)] = row
 
     def flush(self):
         '''Flush gradient-related variables after training step similar.'''

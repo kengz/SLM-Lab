@@ -286,12 +286,12 @@ def is_jupyter():
 @contextmanager
 def ctx_lab_mode(lab_mode):
     '''
-    Set lab_mode for a context
+    Creates context to run method with a specific lab_mode
     @example
     with util.ctx_lab_mode('eval'):
         run_eval()
     '''
-    prev_lab_mode = os.environ['lab_mode']
+    prev_lab_mode = os.environ.get('lab_mode')
     os.environ['lab_mode'] = lab_mode
     yield
     os.environ['lab_mode'] = prev_lab_mode

@@ -271,7 +271,7 @@ def get_session_data(session):
     '''
     session_data = {}
     for aeb, body in util.ndenumerate_nonan(session.aeb_space.body_space.data):
-        session_data[aeb] = body.df.copy()
+        session_data[aeb] = body.eval_df.copy()
     return session_data
 
 
