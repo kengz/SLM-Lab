@@ -35,7 +35,11 @@ class OpenAIEnv(BaseEnv):
 
     def __init__(self, spec, e=None, env_space=None):
         super(OpenAIEnv, self).__init__(spec, e, env_space)
-        register_env(spec)  # register any additional environments first
+        try:
+            # register any additional environments first. guard for re-registration
+            register_env(spec)
+        except Exception as e:
+            pass
         env = gym.make(self.name)
         if 'NoFrameskip' in env.spec.id:  # for Atari
             stack_len = ps.get(spec, 'agent.0.memory.stack_len')
