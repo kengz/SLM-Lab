@@ -478,27 +478,6 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
-def reindex_session_data(spec, session_data):
-    '''
-    Reindex session_data to make max_tick_unit column values round up to multiples of eval_frequency
-    then reindex to start from min to max max_tick_unit with regular ticks at eval_frequency
-    e.g. aeb_df in session_data with index total_t [100, 320, 700] with eval_frequency 200
-    will have index [200, 400, 600, 800] with value front-filled
-    '''
-    freq = ps.get(spec, 'meta.eval_frequency')
-    max_tick_unit = ps.get(spec, 'meta.max_tick_unit')
-    for aeb, aeb_df in session_data.items():
-        # div int then +1 for rounding up at freq
-        aeb_df.index = ((aeb_df[max_tick_unit] / freq).astype(int) + 1) * freq
-        aeb_df = aeb_df[~aeb_df.index.duplicated(keep='first')]
-        aeb_df.sort_index(inplace=True)
-        # reset index to tick from min to max are regular freq, and front-fill all row values for new idxs
-        idxs = np.arange(aeb_df.index[0], aeb_df.index[-1] + freq, freq)
-        aeb_df = aeb_df.reindex(idxs, method='ffill')
-        aeb_df[max_tick_unit] = aeb_df.index.values
-        session_data[aeb] = aeb_df
-
-
 def save_session_df(session_data, filepath, info_space):
     '''Save session_df, and if is in eval mode, modify it and save with append'''
     if util.get_lab_mode() in ('enjoy', 'eval'):
@@ -567,7 +546,6 @@ def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
 def _analyze_session(session, session_data, body_df_kind='eval'):
     '''Helper method for analyze_session to run using eval_df and train_df'''
     session_fitness_df = calc_session_fitness_df(session, session_data)
-    reindex_session_data(session.spec, session_data)
     session_fig = plot_session(session.spec, session.info_space, session_data)
     save_session_data(session.spec, session.info_space, session_data, session_fitness_df, session_fig, body_df_kind)
     return session_fitness_df
