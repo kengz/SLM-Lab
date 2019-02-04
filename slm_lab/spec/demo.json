@@ -52,7 +52,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 10000
+      "max_tick": 30000
     }],
     "body": {
       "product": "outer",
