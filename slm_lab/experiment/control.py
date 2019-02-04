@@ -136,10 +136,12 @@ class SpaceSession(Session):
 
     def try_ckpt(self, agent_space, env_space):
         '''Try to checkpoint agent at the start, save_freq, and the end'''
-        for agent in agent_space.agents:
-            for body in agent.nanflat_body_a:
-                env = body.env
-                super(SpaceSession, self).try_ckpt(agent, env)
+        # TODO ckpt and eval not implemented for SpaceSession
+        pass
+        # for agent in agent_space.agents:
+        #     for body in agent.nanflat_body_a:
+        #         env = body.env
+        #         super(SpaceSession, self).try_ckpt(agent, env)
 
     def run_all_episodes(self):
         '''
