@@ -61,7 +61,7 @@ class Session:
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             if tick > 0:  # nothing to analyze at start
-                analysis.analyze_session(self)
+                analysis.analyze_session(self, eager_analyze_trial=True)
 
     def run_eval_episode(self):
         with util.ctx_lab_mode('eval'):  # enter eval context

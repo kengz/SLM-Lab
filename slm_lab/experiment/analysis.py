@@ -554,7 +554,7 @@ def _analyze_session(session, session_data, body_df_kind='eval'):
     return session_fitness_df
 
 
-def analyze_session(session, tmp_space_session_sub=False):
+def analyze_session(session, eager_analyze_trial=False, tmp_space_session_sub=False):
     '''
     Gather session data, plot, and return fitness df for high level agg.
     @returns {DataFrame} session_fitness_df Single-row df of session fitness vector (avg over aeb), indexed with session index.
@@ -564,6 +564,14 @@ def analyze_session(session, tmp_space_session_sub=False):
     session_fitness_df = _analyze_session(session, session_data, body_df_kind='train')
     session_data = get_session_data(session, body_df_kind='eval', tmp_space_session_sub=tmp_space_session_sub)
     session_fitness_df = _analyze_session(session, session_data, body_df_kind='eval')
+    if eager_analyze_trial:
+        # for live trial graph, analyze trial after analyzing session, this only takes a second
+        from slm_lab.experiment import retro_analysis
+        prepath = util.get_prepath(session.spec, session.info_space, unit='session')
+        # use new ones to prevent side effects
+        spec, info_space = util.prepath_to_spec_info_space(prepath)
+        predir, _, _, _, _, _ = util.prepath_split(prepath)
+        retro_analysis.analyze_eval_trial(spec, info_space, predir)
     return session_fitness_df
 
 
