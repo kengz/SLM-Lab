@@ -48,7 +48,7 @@ class Session:
         '''Try to checkpoint agent at the start, save_freq, and the end'''
         tick = env.clock.get(env.max_tick_unit)
         to_ckpt = False
-        if util.get_lab_mode() not in ('enjoy', 'eval') and tick <= env.max_tick:
+        if not util.in_eval_lab_modes() and tick <= env.max_tick:
             to_ckpt = (tick % env.eval_frequency == 0) or tick == env.max_tick
         if env.max_tick_unit == 'epi':  # extra condition for epi
             to_ckpt = to_ckpt and env.done
@@ -57,7 +57,7 @@ class Session:
             if self.spec['meta'].get('parallel_eval'):
                 retro_analysis.run_parallel_eval(self, agent, env)
             else:
-                with util.ctx_lab_mode('eval'):  # env for eval
+                with util.ctx_lab_mode('eval'):  # run eval in context
                     self.run_eval_episode()
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
@@ -105,7 +105,7 @@ class Session:
     def run(self):
         while self.env.clock.get(self.env.max_tick_unit) < self.env.max_tick:
             self.run_episode()
-            if util.get_lab_mode() not in ('enjoy', 'eval') and analysis.all_solved(self.agent):
+            if not util.in_eval_lab_modes() and analysis.all_solved(self.agent):
                 logger.info('All environments solved. Early exit.')
                 break
         retro_analysis.try_wait_parallel_eval(self)

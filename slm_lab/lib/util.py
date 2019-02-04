@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from datetime import datetime
 from importlib import reload
-from slm_lab import ROOT_DIR
+from slm_lab import ROOT_DIR, EVAL_MODES
 import cv2
 import json
 import numpy as np
@@ -271,6 +271,11 @@ def guard_data_a(cls, data_a, data_name):
             new_data_a[eb] = data_a
         data_a = new_data_a
     return data_a
+
+
+def in_eval_lab_modes():
+    '''Check if lab_mode is one of EVAL_MODES'''
+    return get_lab_mode() in EVAL_MODES
 
 
 def is_jupyter():

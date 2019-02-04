@@ -130,7 +130,7 @@ class VanillaDQN(SARSA):
         For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
         Otherwise this function does nothing.
         '''
-        if util.get_lab_mode() in ('enjoy', 'eval'):
+        if util.in_eval_lab_modes():
             self.body.flush()
             return np.nan
         clock = self.body.env.clock

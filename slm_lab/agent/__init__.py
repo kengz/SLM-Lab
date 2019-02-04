@@ -84,7 +84,7 @@ class Agent:
     @lab_api
     def save(self, ckpt=None):
         '''Save agent'''
-        if util.get_lab_mode() in ('enjoy', 'eval'):
+        if util.in_eval_lab_modes():
             # eval does not save new models
             return
         self.algorithm.save(ckpt=ckpt)

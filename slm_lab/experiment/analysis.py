@@ -362,7 +362,7 @@ def gather_aeb_rewards_df(aeb, session_datas, max_tick_unit):
         aeb_reward_sr.index = aeb_df[max_tick_unit]
         # guard for duplicate eval result
         aeb_reward_sr = aeb_reward_sr[~aeb_reward_sr.index.duplicated()]
-        if util.get_lab_mode() in ('enjoy', 'eval'):
+        if util.in_eval_lab_modes():
             # guard for eval appending possibly not ordered
             aeb_reward_sr.sort_index(inplace=True)
         aeb_session_rewards[s] = aeb_reward_sr
@@ -480,7 +480,7 @@ def plot_experiment(experiment_spec, experiment_df):
 
 def save_session_df(session_data, filepath, info_space):
     '''Save session_df, and if is in eval mode, modify it and save with append'''
-    if util.get_lab_mode() in ('enjoy', 'eval'):
+    if util.in_eval_lab_modes():
         ckpt = util.find_ckpt(info_space.eval_model_prepath)
         epi = int(re.search('epi(\d+)', ckpt)[1])
         totalt = int(re.search('totalt(\d+)', ckpt)[1])

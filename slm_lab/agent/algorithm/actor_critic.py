@@ -202,7 +202,7 @@ class ActorCritic(Reinforce):
     @lab_api
     def train(self):
         '''Trains the algorithm'''
-        if util.get_lab_mode() in ('enjoy', 'eval'):
+        if util.in_eval_lab_modes():
             self.body.flush()
             return np.nan
         if self.shared:

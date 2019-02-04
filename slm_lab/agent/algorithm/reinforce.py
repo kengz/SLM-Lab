@@ -127,7 +127,7 @@ class Reinforce(Algorithm):
 
     @lab_api
     def train(self):
-        if util.get_lab_mode() in ('enjoy', 'eval'):
+        if util.in_eval_lab_modes():
             self.body.flush()
             return np.nan
         clock = self.body.env.clock
