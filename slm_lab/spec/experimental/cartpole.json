@@ -45,7 +45,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -53,6 +52,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -128,7 +128,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -136,6 +135,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -215,7 +215,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -223,6 +222,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -302,7 +302,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -310,6 +309,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -392,7 +392,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -400,6 +399,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 23,
@@ -486,7 +486,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -494,6 +493,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -576,7 +576,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -584,6 +583,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -664,7 +664,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -672,6 +671,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -755,7 +755,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -763,6 +762,7 @@
     },
     "meta": {
       "distributed": true,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 23,
@@ -846,7 +846,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -854,6 +853,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -942,7 +942,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -950,6 +949,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -1044,7 +1044,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -1052,6 +1051,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -1141,7 +1141,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -1149,6 +1148,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -1224,7 +1224,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -1232,6 +1231,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -1305,7 +1305,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -1313,6 +1312,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
@@ -1392,7 +1392,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -1400,6 +1399,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
@@ -1484,7 +1484,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -1492,6 +1491,7 @@
     },
     "meta": {
       "distributed": true,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 23,
@@ -1571,7 +1571,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -1579,6 +1578,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
@@ -1666,7 +1666,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -1674,6 +1673,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
@@ -1760,7 +1760,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -1768,6 +1767,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
@@ -1851,7 +1851,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -1859,6 +1858,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
@@ -1943,7 +1943,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -1951,6 +1950,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
@@ -2038,7 +2038,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -2046,6 +2045,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
@@ -2132,7 +2132,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -2140,6 +2139,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
@@ -2223,7 +2223,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 40000,
-      "save_frequency": 5000,
     }],
     "body": {
       "product": "outer",
@@ -2231,6 +2230,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,

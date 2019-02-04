@@ -58,8 +58,7 @@
     "env": [{
       "name": "PongNoFrameskip-v4",
       "max_t": null,
-      "max_tick": 10000000,
-      "save_frequency": 100000
+      "max_tick": 10000000
     }],
     "body": {
       "product": "outer",
@@ -67,6 +66,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 10000,
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 16,

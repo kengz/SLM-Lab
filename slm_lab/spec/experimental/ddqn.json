@@ -53,7 +53,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 400,
-      "save_frequency": 300
     }],
     "body": {
       "product": "outer",
@@ -61,6 +60,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
@@ -136,7 +136,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 250,
-      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -144,6 +143,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
@@ -229,7 +229,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 250,
-      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -237,6 +236,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
@@ -322,7 +322,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 250,
-      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -330,6 +329,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
@@ -422,7 +422,6 @@
       "name": "BreakoutDeterministic-v4",
       "max_t": null,
       "max_tick": 50000,
-      "save_frequency": 10000
     }],
     "body": {
       "product": "outer",
@@ -430,6 +429,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
@@ -501,7 +501,6 @@
       "name": "BreakoutDeterministic-v4",
       "max_t": null,
       "max_tick": 50000,
-      "save_frequency": 10000
     }],
     "body": {
       "product": "outer",
@@ -509,6 +508,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,

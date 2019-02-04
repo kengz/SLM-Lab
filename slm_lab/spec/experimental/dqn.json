@@ -49,8 +49,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 250,
-      "save_frequency": 1000
+      "max_tick": 250
     }],
     "body": {
       "product": "outer",
@@ -58,6 +57,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
@@ -139,7 +139,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 250,
-      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -147,6 +146,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
@@ -228,7 +228,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 250,
-      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -236,6 +235,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
@@ -321,7 +321,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 250,
-      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -329,6 +328,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
@@ -414,7 +414,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 250,
-      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -422,6 +421,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
@@ -504,7 +504,6 @@
       "name": "LunarLander-v2",
       "max_t": null,
       "max_tick": 600,
-      "save_frequency": 1000
     }],
     "body": {
       "product": "outer",
@@ -512,6 +511,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
@@ -575,7 +575,6 @@
       "name": "PongNoFrameskip-v4",
       "max_t": null,
       "max_tick": 10000000,
-      "save_frequency": 100000
     }],
     "body": {
       "product": "outer",
@@ -583,6 +582,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 1,
       "max_trial": 16,

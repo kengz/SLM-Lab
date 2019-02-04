@@ -479,12 +479,12 @@ def plot_experiment(experiment_spec, experiment_df):
 
 def reindex_session_data(spec, session_data):
     '''
-    Reindex session_data to make max_tick_unit column values round up to multiples of save_frequency
-    then reindex to start from min to max max_tick_unit with regular ticks at save_frequency
-    e.g. aeb_df in session_data with index total_t [100, 320, 700] with save_frequency 200
+    Reindex session_data to make max_tick_unit column values round up to multiples of eval_frequency
+    then reindex to start from min to max max_tick_unit with regular ticks at eval_frequency
+    e.g. aeb_df in session_data with index total_t [100, 320, 700] with eval_frequency 200
     will have index [200, 400, 600, 800] with value front-filled
     '''
-    freq = ps.get(spec, 'env.0.save_frequency')
+    freq = ps.get(spec, 'meta.eval_frequency')
     max_tick_unit = ps.get(spec, 'meta.max_tick_unit')
     for aeb, aeb_df in session_data.items():
         # div int then +1 for rounding up at freq

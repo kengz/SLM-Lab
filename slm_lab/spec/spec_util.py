@@ -36,6 +36,7 @@ SPEC_FORMAT = {
     },
     "meta": {
         "distributed": bool,
+        "eval_frequency": int,
         "max_tick_unit": str,
         "max_session": int,
         "max_trial": (type(None), int),
@@ -178,7 +179,7 @@ def override_test_spec(spec):
     for env_spec in spec['env']:
         env_spec['max_t'] = 20
         env_spec['max_tick'] = 3
-        env_spec['save_frequency'] = 1000
+    spec['meta']['eval_frequency'] = 1000
     spec['meta']['max_tick_unit'] = 'epi'
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2

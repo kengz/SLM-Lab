@@ -47,7 +47,6 @@
       "name": "gridworld",
       "max_t": null,
       "max_tick": 1000,
-      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -55,6 +54,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
@@ -136,7 +136,6 @@
       "name": "gridworld",
       "max_t": null,
       "max_tick": 1000,
-      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -144,6 +143,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
@@ -221,7 +221,6 @@
       "name": "gridworld",
       "max_t": null,
       "max_tick": 1000,
-      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -229,6 +228,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
@@ -310,7 +310,6 @@
       "name": "gridworld",
       "max_t": null,
       "max_tick": 1000,
-      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -318,6 +317,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
@@ -402,7 +402,6 @@
       "name": "gridworld",
       "max_t": null,
       "max_tick": 1000,
-      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -410,6 +409,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
@@ -498,7 +498,6 @@
       "name": "gridworld",
       "max_t": null,
       "max_tick": 1000,
-      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -506,6 +505,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
@@ -592,7 +592,6 @@
       "name": "gridworld",
       "max_t": null,
       "max_tick": 1000,
-      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -600,6 +599,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
@@ -688,7 +688,6 @@
       "name": "gridworld",
       "max_t": null,
       "max_tick": 1000,
-      "save_frequency": 1500,
     }],
     "body": {
       "product": "outer",
@@ -696,6 +695,7 @@
     },
     "meta": {
       "distributed": false,
+      "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
