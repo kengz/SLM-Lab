@@ -89,8 +89,7 @@ class Body:
         self.env = env
         self.aeb = aeb
         self.a, self.e, self.b = aeb
-        self.nanflat_a_idx = self.a
-        self.nanflat_e_idx = self.e
+        self.nanflat_a_idx, self.nanflat_e_idx = self.a, self.e
 
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
@@ -251,8 +250,7 @@ class Body:
         '''Post init override for space body. Note that aeb is already correct from __init__'''
         self.aeb_space = aeb_space
         # to be reset properly later
-        self.nanflat_a_idx = None
-        self.nanflat_e_idx = None
+        self.nanflat_a_idx, self.nanflat_e_idx = None, None
 
         self.observation_space = self.env.observation_spaces[self.a]
         self.action_space = self.env.action_spaces[self.a]
