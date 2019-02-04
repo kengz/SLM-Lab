@@ -83,16 +83,47 @@ def analyze_eval_trial(spec, info_space, predir):
     analysis.analyze_trial(trial)
 
 
-def run_online_eval_from_prepath(prepath):
+def run_parallel_eval(spec, info_space, ckpt):
+    '''
+    Calls a subprocess to run lab in eval mode with the constructed ckpt prepath, same as how one would manually run the bash cmd
+    @example
+
+    python run_lab.py data/dqn_cartpole_2018_12_19_224811/dqn_cartpole_t0_spec.json dqn_cartpole eval@dqn_cartpole_t0_s1_ckpt-epi10-totalt1000
+    '''
+    prepath_t = util.get_prepath(spec, info_space, unit='trial')
+    prepath_s = util.get_prepath(spec, info_space, unit='session')
+    predir, _, prename, spec_name, _, _ = util.prepath_split(prepath_s)
+    cmd = f'python run_lab.py {prepath_t}_spec.json {spec_name} eval@{prename}_ckpt-{ckpt}'
+    logger.info(f'Running parallel eval for ckpt-{ckpt}')
+    return util.run_cmd(cmd)
+
+
+def run_parallel_eval(session, agent, env):
+    '''Plugin to session to run parallel eval for train mode'''
+    if util.get_lab_mode() == 'train':
+        ckpt = f'epi{env.clock.epi}-totalt{env.clock.total_t}'
+        agent.save(ckpt=ckpt)
+        # set reference to eval process for handling
+        session.eval_proc = run_parallel_eval(session.spec, session.info_space, ckpt)
+
+
+def try_wait_parallel_eval(session):
+    '''Plugin to wait for session's final parallel eval if any'''
+    if hasattr(session, 'eval_proc') and session.eval_proc is not None:  # wait for final eval before closing
+        util.run_cmd_wait(session.eval_proc)
+        session_retro_eval(session)  # rerun failed eval
+
+
+def run_parallel_eval_from_prepath(prepath):
     '''Used by retro_eval'''
     spec, info_space = util.prepath_to_spec_info_space(prepath)
     ckpt = util.find_ckpt(prepath)
-    return analysis.run_online_eval(spec, info_space, ckpt)
+    return run_parallel_eval(spec, info_space, ckpt)
 
 
 def run_wait_eval(prepath):
     '''Used by retro_eval'''
-    eval_proc = run_online_eval_from_prepath(prepath)
+    eval_proc = run_parallel_eval_from_prepath(prepath)
     util.run_cmd_wait(eval_proc)
 
 

@@ -70,7 +70,6 @@
       "distributed": false,
       "max_session": 6,
       "max_trial": 16,
-      "training_eval": true,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 16

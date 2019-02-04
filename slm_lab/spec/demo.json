@@ -64,7 +64,6 @@
       "distributed": false,
       "max_trial": 4,
       "max_session": 4,
-      "training_eval": false,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 4,
