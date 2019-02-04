@@ -236,15 +236,15 @@ class Body:
         prefix = f'{spec["name"]}_t{info_space.get("trial")}_s{info_space.get("session")}, aeb{self.aeb}'
         return prefix
 
-    def log_summary(self, mode='train'):
+    def log_summary(self, body_df_kind='eval'):
         '''Log the summary for this body when its environment is done'''
         prefix = self.get_log_prefix()
-        df = self.eval_df if mode == 'eval' else self.train_df
+        df = self.eval_df if body_df_kind == 'eval' else self.train_df
         last_row = df.iloc[-1]
         row_str = ', '.join([f'{k}: {v:g}' for k, v in last_row.items()])
         reward_ma = df[-analysis.MA_WINDOW:]['reward'].mean()
         reward_ma_str = f'last-{analysis.MA_WINDOW}-epi avg: {reward_ma:g}'
-        msg = f'{prefix} [{mode}_df] {row_str}, {reward_ma_str}'
+        msg = f'{prefix} [{body_df_kind}_df] {row_str}, {reward_ma_str}'
         logger.info(msg)
 
     def space_init(self, aeb_space):
@@ -425,7 +425,7 @@ class AEBSpace:
         for env in self.env_space.envs:
             if env.done:
                 for body in env.nanflat_body_e:
-                    body.log_summary(mode='train')
+                    body.log_summary(body_df_kind='train')
             env.clock.tick(unit or ('epi' if env.done else 't'))
             end_session = not (env.clock.get(env.max_tick_unit) < env.max_tick)
             end_sessions.append(end_session)

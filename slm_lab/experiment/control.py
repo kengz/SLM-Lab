@@ -76,7 +76,7 @@ class Session:
             total_reward += reward
         # update body.eval_df
         self.agent.body.eval_update(self.eval_env, total_reward)
-        self.agent.body.log_summary(mode='eval')
+        self.agent.body.log_summary(body_df_kind='eval')
 
     def run_episode(self):
         self.env.clock.tick('epi')
@@ -90,7 +90,7 @@ class Session:
             reward, state, done = self.env.step(action)
             self.agent.update(action, reward, state, done)
         self.try_ckpt(self.agent, self.env)  # final timestep ckpt
-        self.agent.body.log_summary(mode='train')
+        self.agent.body.log_summary(body_df_kind='train')
 
     def close(self):
         '''

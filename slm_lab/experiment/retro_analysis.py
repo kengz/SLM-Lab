@@ -132,14 +132,26 @@ def retro_analyze_sessions(predir):
     logger.info('Retro-analyzing sessions from file')
     from slm_lab.experiment.control import Session, SpaceSession
     for filename in os.listdir(predir):
+        # to account for both types of session_df
         if filename.endswith('_session_df.csv'):
-            prepath = f'{predir}/{filename}'.replace('_session_df.csv', '')
+            body_df_kind = 'eval'  # from body.eval_df
+            predix = ''
+            is_session_df = True
+        elif filename.endswith('_trainsession_df.csv'):
+            body_df_kind = 'train'  # from body.train_df
+            predix = 'train'
+            is_session_df = True
+        else:
+            is_session_df = False
+
+        if is_session_df:
+            prepath = f'{predir}/{filename}'.replace(f'_{prefix}session_df.csv', '')
             spec, info_space = util.prepath_to_spec_info_space(prepath)
             trial_index, session_index = util.prepath_to_idxs(prepath)
             SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
             session = SessionClass(spec, info_space)
             session_data = session_data_from_file(predir, trial_index, session_index, ps.get(info_space, 'ckpt'))
-            analysis.analyze_session(session, session_data)
+            analysis._analyze_session(session, session_data, body_df_kind)
 
 
 def retro_analyze_trials(predir):

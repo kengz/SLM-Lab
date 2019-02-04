@@ -264,14 +264,15 @@ def calc_mean_fitness(fitness_df):
     return fitness_df.mean(axis=1, level=3)
 
 
-def get_session_data(session):
+def get_session_data(session, body_df_kind='eval'):
     '''
-    Gather data from session: MDP, Agent, Env data, hashed by aeb; then aggregate.
-    @returns {dict, dict} session_mdp_data, session_data
+    Gather data from session from all the bodies
+    Depending on body_df_kind, will use eval_df or train_df
     '''
     session_data = {}
     for aeb, body in util.ndenumerate_nonan(session.aeb_space.body_space.data):
-        session_data[aeb] = body.eval_df.copy()
+        aeb_df = body.eval_df if body_df_kind == 'eval' else body.train_df
+        session_data[aeb] = aeb_df.copy()
     return session_data
 
 
@@ -498,9 +499,8 @@ def reindex_session_data(spec, session_data):
         session_data[aeb] = aeb_df
 
 
-def save_session_df(session_data, prepath, info_space):
+def save_session_df(session_data, filepath, info_space):
     '''Save session_df, and if is in eval mode, modify it and save with append'''
-    filepath = f'{prepath}_session_df.csv'
     if util.get_lab_mode() in ('enjoy', 'eval'):
         ckpt = util.find_ckpt(info_space.eval_model_prepath)
         epi = int(re.search('epi(\d+)', ckpt)[1])
@@ -522,7 +522,7 @@ def save_session_df(session_data, prepath, info_space):
         util.write(session_df, filepath)
 
 
-def save_session_data(spec, info_space, session_data, session_fitness_df, session_fig):
+def save_session_data(spec, info_space, session_data, session_fitness_df, session_fig, body_df_kind='eval'):
     '''
     Save the session data: session_df, session_fitness_df, session_graph.
     session_data is saved as session_df; multi-indexed with (a,e,b), 3 extra levels
@@ -532,10 +532,11 @@ def save_session_data(spec, info_space, session_data, session_fitness_df, sessio
     '''
     prepath = util.get_prepath(spec, info_space, unit='session')
     logger.info(f'Saving session data to {prepath}')
+    prefix = 'train' if body_df_kind == 'train' else ''
     if 'retro_analyze' not in os.environ['PREPATH']:
-        save_session_df(session_data, prepath, info_space)
-    util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
-    viz.save_image(session_fig, f'{prepath}_session_graph.png')
+        save_session_df(session_data, f'{prepath}_{prefix}session_df.csv', info_space)
+    util.write(session_fitness_df, f'{prepath}_{prefix}session_fitness_df.csv')
+    viz.save_image(session_fig, f'{prepath}_{prefix}session_graph.png')
 
 
 def save_trial_data(spec, info_space, trial_df, trial_fitness_df, trial_fig):
@@ -563,18 +564,25 @@ def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
     logger.info(f'All experiment data zipped to {predir}.zip')
 
 
-def analyze_session(session, session_data=None):
+def _analyze_session(session, session_data, body_df_kind='eval'):
+    '''Helper method for analyze_session to run using eval_df and train_df'''
+    session_fitness_df = calc_session_fitness_df(session, session_data)
+    reindex_session_data(session.spec, session_data)
+    session_fig = plot_session(session.spec, session.info_space, session_data)
+    save_session_data(session.spec, session.info_space, session_data, session_fitness_df, session_fig, body_df_kind)
+    return session_fitness_df
+
+
+def analyze_session(session):
     '''
     Gather session data, plot, and return fitness df for high level agg.
     @returns {DataFrame} session_fitness_df Single-row df of session fitness vector (avg over aeb), indexed with session index.
     '''
     logger.info('Analyzing session')
-    if session_data is None:  # not from retro analysis
-        session_data = get_session_data(session)
-    session_fitness_df = calc_session_fitness_df(session, session_data)
-    reindex_session_data(session.spec, session_data)
-    session_fig = plot_session(session.spec, session.info_space, session_data)
-    save_session_data(session.spec, session.info_space, session_data, session_fitness_df, session_fig)
+    session_data = get_session_data(session, body_df_kind='train')
+    _analyze_session(session, session_data, body_df_kind='train')
+    session_data = get_session_data(session, body_df_kind='eval')
+    session_fitness_df = _analyze_session(session, session_data, body_df_kind='eval')
     return session_fitness_df
 
 
