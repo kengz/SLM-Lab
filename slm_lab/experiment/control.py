@@ -58,7 +58,9 @@ class Session:
                 retro_analysis.run_parallel_eval(self, agent, env)
             else:
                 with util.ctx_lab_mode('eval'):  # run eval in context
+                    self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
                     self.run_eval_episode()
+                self.agent.algorithm.update()  # restore outside of ctx
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             if tick > 0:  # nothing to analyze at start
