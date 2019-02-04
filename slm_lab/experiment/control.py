@@ -171,7 +171,7 @@ class SpaceSession(Session):
 
     def run(self):
         self.run_all_episodes()
-        self.data = analysis.analyze_session(self)  # session fitness
+        self.data = analysis.analyze_session(self, tmp_space_session_sub=True)  # session fitness
         self.close()
         return self.data
 

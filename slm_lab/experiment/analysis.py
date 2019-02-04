@@ -264,7 +264,7 @@ def calc_mean_fitness(fitness_df):
     return fitness_df.mean(axis=1, level=3)
 
 
-def get_session_data(session, body_df_kind='eval'):
+def get_session_data(session, body_df_kind='eval', tmp_space_session_sub=False):
     '''
     Gather data from session from all the bodies
     Depending on body_df_kind, will use eval_df or train_df
@@ -272,6 +272,9 @@ def get_session_data(session, body_df_kind='eval'):
     session_data = {}
     for aeb, body in util.ndenumerate_nonan(session.aeb_space.body_space.data):
         aeb_df = body.eval_df if body_df_kind == 'eval' else body.train_df
+        # TODO tmp substitution since SpaceSession does not have run_eval_episode yet
+        if tmp_space_session_sub:
+            aeb_df = body.train_df
         session_data[aeb] = aeb_df.copy()
     return session_data
 
@@ -551,15 +554,15 @@ def _analyze_session(session, session_data, body_df_kind='eval'):
     return session_fitness_df
 
 
-def analyze_session(session):
+def analyze_session(session, tmp_space_session_sub=False):
     '''
     Gather session data, plot, and return fitness df for high level agg.
     @returns {DataFrame} session_fitness_df Single-row df of session fitness vector (avg over aeb), indexed with session index.
     '''
     logger.info('Analyzing session')
     session_data = get_session_data(session, body_df_kind='train')
-    _analyze_session(session, session_data, body_df_kind='train')
-    session_data = get_session_data(session, body_df_kind='eval')
+    session_fitness_df = _analyze_session(session, session_data, body_df_kind='train')
+    session_data = get_session_data(session, body_df_kind='eval', tmp_space_session_sub=tmp_space_session_sub)
     session_fitness_df = _analyze_session(session, session_data, body_df_kind='eval')
     return session_fitness_df
 
