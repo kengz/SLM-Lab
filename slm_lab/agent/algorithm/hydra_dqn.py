@@ -54,10 +54,7 @@ class HydraDQN(DQN):
         # use multi-policy. note arg change
         action_a, action_pd_a = self.action_policy(states, self, self.agent.nanflat_body_a, pdparam)
         for idx, body in enumerate(self.agent.nanflat_body_a):
-            action_pd = action_pd_a[idx]
-            body.entropies.append(action_pd.entropy())
-            body.log_probs.append(action_pd.log_prob(action_a[idx].float()))
-            assert not torch.isnan(body.log_probs[-1])
+            body.action_tensor, body.action_pd = action_a[idx], action_pd_a[idx]  # used for body.action_pd_update later
         return action_a.cpu().numpy()
 
     @lab_api
@@ -101,7 +98,7 @@ class HydraDQN(DQN):
         For each of the batches, the target Q values (q_targets) are computed and a single training step is taken k times
         Otherwise this function does nothing.
         '''
-        if util.get_lab_mode() in ('enjoy', 'eval'):
+        if util.in_eval_lab_modes():
             self.body.flush()
             return np.nan
         clock = self.body.env.clock  # main clock
@@ -120,8 +117,7 @@ class HydraDQN(DQN):
             self.to_train = 0
             for body in self.agent.nanflat_body_a:
                 body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
-
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan

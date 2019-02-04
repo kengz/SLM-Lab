@@ -1,6 +1,7 @@
+from contextlib import contextmanager
 from datetime import datetime
 from importlib import reload
-from slm_lab import ROOT_DIR
+from slm_lab import ROOT_DIR, EVAL_MODES
 import cv2
 import json
 import numpy as np
@@ -272,6 +273,11 @@ def guard_data_a(cls, data_a, data_name):
     return data_a
 
 
+def in_eval_lab_modes():
+    '''Check if lab_mode is one of EVAL_MODES'''
+    return get_lab_mode() in EVAL_MODES
+
+
 def is_jupyter():
     '''Check if process is in Jupyter kernel'''
     try:
@@ -280,6 +286,23 @@ def is_jupyter():
     except NameError:
         return False
     return False
+
+
+@contextmanager
+def ctx_lab_mode(lab_mode):
+    '''
+    Creates context to run method with a specific lab_mode
+    @example
+    with util.ctx_lab_mode('eval'):
+        run_eval()
+    '''
+    prev_lab_mode = os.environ.get('lab_mode')
+    os.environ['lab_mode'] = lab_mode
+    yield
+    if prev_lab_mode is None:
+        del os.environ['lab_mode']
+    else:
+        os.environ['lab_mode'] = prev_lab_mode
 
 
 def monkey_patch(base_cls, extend_cls):

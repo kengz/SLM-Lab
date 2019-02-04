@@ -14,11 +14,11 @@ import regex as re
 logger = logger.get_logger(__name__)
 
 
-def session_data_from_file(predir, trial_index, session_index, ckpt=None):
+def session_data_from_file(predir, trial_index, session_index, ckpt=None, prefix=''):
     '''Build session.session_data from file'''
     ckpt_str = '' if ckpt is None else f'_ckpt-{ckpt}'
     for filename in os.listdir(predir):
-        if filename.endswith(f'_t{trial_index}_s{session_index}{ckpt_str}_session_df.csv'):
+        if filename.endswith(f'_t{trial_index}_s{session_index}{ckpt_str}_{prefix}session_df.csv'):
             filepath = f'{predir}/{filename}'
             session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
             session_data = util.session_df_to_data(session_df)
@@ -83,16 +83,47 @@ def analyze_eval_trial(spec, info_space, predir):
     analysis.analyze_trial(trial)
 
 
-def run_online_eval_from_prepath(prepath):
+def run_parallel_eval(spec, info_space, ckpt):
+    '''
+    Calls a subprocess to run lab in eval mode with the constructed ckpt prepath, same as how one would manually run the bash cmd
+    @example
+
+    python run_lab.py data/dqn_cartpole_2018_12_19_224811/dqn_cartpole_t0_spec.json dqn_cartpole eval@dqn_cartpole_t0_s1_ckpt-epi10-totalt1000
+    '''
+    prepath_t = util.get_prepath(spec, info_space, unit='trial')
+    prepath_s = util.get_prepath(spec, info_space, unit='session')
+    predir, _, prename, spec_name, _, _ = util.prepath_split(prepath_s)
+    cmd = f'python run_lab.py {prepath_t}_spec.json {spec_name} eval@{prename}_ckpt-{ckpt}'
+    logger.info(f'Running parallel eval for ckpt-{ckpt}')
+    return util.run_cmd(cmd)
+
+
+def run_parallel_eval(session, agent, env):
+    '''Plugin to session to run parallel eval for train mode'''
+    if util.get_lab_mode() == 'train':
+        ckpt = f'epi{env.clock.epi}-totalt{env.clock.total_t}'
+        agent.save(ckpt=ckpt)
+        # set reference to eval process for handling
+        session.eval_proc = run_parallel_eval(session.spec, session.info_space, ckpt)
+
+
+def try_wait_parallel_eval(session):
+    '''Plugin to wait for session's final parallel eval if any'''
+    if hasattr(session, 'eval_proc') and session.eval_proc is not None:  # wait for final eval before closing
+        util.run_cmd_wait(session.eval_proc)
+        session_retro_eval(session)  # rerun failed eval
+
+
+def run_parallel_eval_from_prepath(prepath):
     '''Used by retro_eval'''
     spec, info_space = util.prepath_to_spec_info_space(prepath)
     ckpt = util.find_ckpt(prepath)
-    return analysis.run_online_eval(spec, info_space, ckpt)
+    return run_parallel_eval(spec, info_space, ckpt)
 
 
 def run_wait_eval(prepath):
     '''Used by retro_eval'''
-    eval_proc = run_online_eval_from_prepath(prepath)
+    eval_proc = run_parallel_eval_from_prepath(prepath)
     util.run_cmd_wait(eval_proc)
 
 
@@ -101,14 +132,26 @@ def retro_analyze_sessions(predir):
     logger.info('Retro-analyzing sessions from file')
     from slm_lab.experiment.control import Session, SpaceSession
     for filename in os.listdir(predir):
+        # to account for both types of session_df
         if filename.endswith('_session_df.csv'):
-            prepath = f'{predir}/{filename}'.replace('_session_df.csv', '')
+            body_df_kind = 'eval'  # from body.eval_df
+            prefix = ''
+            is_session_df = True
+        elif filename.endswith('_trainsession_df.csv'):
+            body_df_kind = 'train'  # from body.train_df
+            prefix = 'train'
+            is_session_df = True
+        else:
+            is_session_df = False
+
+        if is_session_df:
+            prepath = f'{predir}/{filename}'.replace(f'_{prefix}session_df.csv', '')
             spec, info_space = util.prepath_to_spec_info_space(prepath)
             trial_index, session_index = util.prepath_to_idxs(prepath)
             SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
             session = SessionClass(spec, info_space)
-            session_data = session_data_from_file(predir, trial_index, session_index, ps.get(info_space, 'ckpt'))
-            analysis.analyze_session(session, session_data)
+            session_data = session_data_from_file(predir, trial_index, session_index, ps.get(info_space, 'ckpt'), prefix)
+            analysis._analyze_session(session, session_data, body_df_kind)
 
 
 def retro_analyze_trials(predir):

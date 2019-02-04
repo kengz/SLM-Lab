@@ -18,7 +18,7 @@ def test_session_total_t(test_spec, test_info_space):
     spec = deepcopy(test_spec)
     env_spec = spec['env'][0]
     env_spec['max_tick'] = 30
-    env_spec['max_tick_unit'] = 'total_t'
+    spec['meta']['max_tick_unit'] = 'total_t'
     session = Session(spec, test_info_space)
     assert session.env.max_tick_unit == 'total_t'
     session_data = session.run()
@@ -35,7 +35,7 @@ def test_trial(test_spec, test_info_space):
 def test_trial_demo(test_info_space):
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     spec = spec_util.override_test_spec(spec)
-    spec['env'][0]['save_frequency'] = 1
+    spec['meta']['eval_frequency'] = 1
     test_info_space.tick('trial')
     trial_data = Trial(spec, test_info_space).run()
     assert isinstance(trial_data, pd.DataFrame)

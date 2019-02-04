@@ -70,8 +70,6 @@ class BaseEnv(ABC):
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 150,
-      "max_tick_unit": "epi",
-      "save_frequency": 50
     }],
 
     # or using total_t
@@ -79,8 +77,6 @@ class BaseEnv(ABC):
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 10000,
-      "max_tick_unit": "total_t",
-      "save_frequency": 50
     }],
     '''
 
@@ -93,12 +89,14 @@ class BaseEnv(ABC):
         util.set_attr(self, dict(
             reward_scale=1.0,
         ))
+        util.set_attr(self, spec['meta'], [
+            'eval_frequency',
+            'max_tick_unit',
+        ])
         util.set_attr(self, self.env_spec, [
             'name',
             'max_t',
             'max_tick',
-            'max_tick_unit',
-            'save_frequency',
             'reward_scale',
         ])
         if util.get_lab_mode() == 'eval':
