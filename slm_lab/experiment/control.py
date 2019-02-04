@@ -57,25 +57,26 @@ class Session:
             if self.spec['meta'].get('parallel_eval'):
                 retro_analysis.run_parallel_eval(self, agent, env)
             else:
-                with util.ctx_lab_mode('eval'):  # run eval in context
-                    self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
-                    self.run_eval_episode()
-                self.agent.algorithm.update()  # restore outside of ctx
+                self.run_eval_episode()
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             if tick > 0:  # nothing to analyze at start
                 analysis.analyze_session(self)
 
     def run_eval_episode(self):
-        self.eval_env.clock.tick('epi')
-        logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
-        total_reward = 0
-        reward, state, done = self.eval_env.reset()
-        while not done:
-            self.eval_env.clock.tick('t')
-            action = self.agent.act(state)
-            reward, state, done = self.eval_env.step(action)
-            total_reward += reward
+        with util.ctx_lab_mode('eval'):  # enter eval context
+            self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
+            self.eval_env.clock.tick('epi')
+            logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
+            total_reward = 0
+            reward, state, done = self.eval_env.reset()
+            while not done:
+                self.eval_env.clock.tick('t')
+                action = self.agent.act(state)
+                reward, state, done = self.eval_env.step(action)
+                total_reward += reward
+        # exit eval context, restore variables simply by updating
+        self.agent.algorithm.update()
         # update body.eval_df
         self.agent.body.eval_update(self.eval_env, total_reward)
         self.agent.body.log_summary(body_df_kind='eval')
