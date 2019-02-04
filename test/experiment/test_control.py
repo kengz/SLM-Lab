@@ -18,7 +18,7 @@ def test_session_total_t(test_spec, test_info_space):
     spec = deepcopy(test_spec)
     env_spec = spec['env'][0]
     env_spec['max_tick'] = 30
-    env_spec['max_tick_unit'] = 'total_t'
+    spec['meta']['max_tick_unit'] = 'total_t'
     session = Session(spec, test_info_space)
     assert session.env.max_tick_unit == 'total_t'
     session_data = session.run()

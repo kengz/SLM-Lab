@@ -53,7 +53,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 500,
-      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -62,6 +61,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -137,7 +137,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 500,
-      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -146,6 +145,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -221,7 +221,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 400,
-      "max_tick_unit": "epi",
       "save_frequency": 300
     }],
     "body": {
@@ -230,6 +229,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -309,7 +309,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 500,
-      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -318,6 +317,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -397,7 +397,6 @@
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 500,
-      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -406,6 +405,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -481,7 +481,6 @@
       "name": "Pendulum-v0",
       "max_t": null,
       "max_tick": 500,
-      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -490,6 +489,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -565,7 +565,6 @@
       "name": "Pendulum-v0",
       "max_t": null,
       "max_tick": 500,
-      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -574,6 +573,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -653,7 +653,6 @@
       "name": "Pendulum-v0",
       "max_t": null,
       "max_tick": 500,
-      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -662,6 +661,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -741,7 +741,6 @@
       "name": "Pendulum-v0",
       "max_t": null,
       "max_tick": 500,
-      "max_tick_unit": "epi",
       "save_frequency": 1000
     }],
     "body": {
@@ -750,6 +749,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -830,7 +830,6 @@
       "name": "Breakout-v0",
       "max_t": null,
       "max_tick": 1,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -838,6 +837,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -902,7 +902,6 @@
       "name": "Breakout-v0",
       "max_t": null,
       "max_tick": 1,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -910,6 +909,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"

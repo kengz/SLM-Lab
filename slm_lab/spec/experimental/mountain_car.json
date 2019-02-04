@@ -52,7 +52,6 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 2600,
       "save_frequency": 3000
     }],
@@ -62,6 +61,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -153,7 +153,6 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 2600,
       "save_frequency": 3000
     }],
@@ -163,6 +162,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -248,7 +248,6 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 2600,
       "save_frequency": 3000
     }],
@@ -258,6 +257,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -345,7 +345,6 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 2600,
       "save_frequency": 3000
     }],
@@ -355,6 +354,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -442,7 +442,6 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 1400,
       "save_frequency": 1600
     }],
@@ -452,6 +451,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -538,7 +538,6 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 1400,
       "save_frequency": 1600
     }],
@@ -548,6 +547,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -633,7 +633,6 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 1400,
       "save_frequency": 1600
     }],
@@ -643,6 +642,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -729,7 +729,6 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 1400,
       "save_frequency": 1600
     }],
@@ -739,6 +738,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",

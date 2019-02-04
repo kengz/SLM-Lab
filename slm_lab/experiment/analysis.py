@@ -324,7 +324,7 @@ def calc_trial_fitness_df(trial):
 
 def plot_session(session_spec, info_space, session_data):
     '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
-    max_tick_unit = ps.get(session_spec, 'env.0.max_tick_unit')
+    max_tick_unit = ps.get(session_spec, 'meta.max_tick_unit')
     aeb_count = len(session_data)
     palette = viz.get_palette(aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True, print_grid=False)
@@ -403,7 +403,7 @@ def calc_trial_df(trial_spec, info_space):
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, info_space.get('trial'), ps.get(info_space, 'ckpt'))
     aeb_transpose = {aeb: [] for aeb in session_datas[list(session_datas.keys())[0]]}
-    max_tick_unit = ps.get(trial_spec, 'env.0.max_tick_unit')
+    max_tick_unit = ps.get(trial_spec, 'meta.max_tick_unit')
     for s, session_data in session_datas.items():
         for aeb, aeb_df in session_data.items():
             aeb_transpose[aeb].append(aeb_df.sort_values(by=[max_tick_unit]).set_index(max_tick_unit, drop=False))
@@ -423,7 +423,7 @@ def plot_trial(trial_spec, info_space):
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, info_space.get('trial'), ps.get(info_space, 'ckpt'))
     rand_session_data = session_datas[list(session_datas.keys())[0]]
-    max_tick_unit = ps.get(trial_spec, 'env.0.max_tick_unit')
+    max_tick_unit = ps.get(trial_spec, 'meta.max_tick_unit')
     aeb_count = len(rand_session_data)
     palette = viz.get_palette(aeb_count)
     fig = None
@@ -485,7 +485,7 @@ def reindex_session_data(spec, session_data):
     will have index [200, 400, 600, 800] with value front-filled
     '''
     freq = ps.get(spec, 'env.0.save_frequency')
-    max_tick_unit = ps.get(spec, 'env.0.max_tick_unit')
+    max_tick_unit = ps.get(spec, 'meta.max_tick_unit')
     for aeb, aeb_df in session_data.items():
         # div int then +1 for rounding up at freq
         aeb_df.index = ((aeb_df[max_tick_unit] / freq).astype(int) + 1) * freq

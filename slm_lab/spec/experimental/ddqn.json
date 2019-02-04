@@ -52,7 +52,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 400,
       "save_frequency": 300
     }],
@@ -62,6 +61,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -135,7 +135,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 250,
       "save_frequency": 1000
     }],
@@ -145,6 +144,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -228,7 +228,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 250,
       "save_frequency": 1000
     }],
@@ -238,6 +237,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -321,7 +321,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 250,
       "save_frequency": 1000
     }],
@@ -331,6 +330,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -421,7 +421,6 @@
     "env": [{
       "name": "BreakoutDeterministic-v4",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 50000,
       "save_frequency": 10000
     }],
@@ -431,6 +430,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -500,7 +500,6 @@
     "env": [{
       "name": "BreakoutDeterministic-v4",
       "max_t": null,
-      "max_tick_unit": "epi",
       "max_tick": 50000,
       "save_frequency": 10000
     }],
@@ -510,6 +509,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"

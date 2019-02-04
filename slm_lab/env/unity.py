@@ -50,7 +50,6 @@ class UnityEnv(BaseEnv):
       "name": "gridworld",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
       "unity": {
         "gridSize": 6,
         "numObstacles": 2,

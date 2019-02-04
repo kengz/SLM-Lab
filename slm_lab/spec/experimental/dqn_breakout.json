@@ -58,7 +58,6 @@
     "env": [{
       "name": "BreakoutNoFrameskip-v4",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 10000000,
       "save_frequency": 100000
     }],
@@ -68,6 +67,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 16,
       "search": "RandomSearch",

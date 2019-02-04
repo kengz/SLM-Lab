@@ -44,7 +44,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -54,6 +53,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -127,7 +127,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -137,6 +136,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -214,7 +214,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -224,6 +223,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -301,7 +301,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -311,6 +310,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -391,7 +391,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -401,6 +400,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 23,
       "search": "RandomSearch",
@@ -485,7 +485,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -495,6 +494,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -575,7 +575,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -585,6 +584,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -663,7 +663,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -673,6 +672,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -754,7 +754,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -764,6 +763,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 23,
       "search": "RandomSearch",
@@ -845,7 +845,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -855,6 +854,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -941,7 +941,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -951,6 +950,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -1043,7 +1043,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -1053,6 +1052,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -1140,7 +1140,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -1150,6 +1149,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -1223,7 +1223,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -1233,6 +1232,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -1304,7 +1304,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -1314,6 +1313,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -1391,7 +1391,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -1401,6 +1400,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
@@ -1483,7 +1483,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -1493,6 +1492,7 @@
     },
     "meta": {
       "distributed": true,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 23,
       "search": "RandomSearch",
@@ -1570,7 +1570,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -1580,6 +1579,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
@@ -1665,7 +1665,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -1675,6 +1674,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
@@ -1759,7 +1759,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -1769,6 +1768,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
@@ -1850,7 +1850,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -1860,6 +1859,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
@@ -1942,7 +1942,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -1952,6 +1951,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
@@ -2037,7 +2037,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -2047,6 +2046,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
@@ -2131,7 +2131,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -2141,6 +2140,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
@@ -2222,7 +2222,6 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick_unit": "total_t",
       "max_tick": 40000,
       "save_frequency": 5000,
     }],
@@ -2232,6 +2231,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",

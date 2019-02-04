@@ -14,7 +14,6 @@
       "name": "gridworld",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
       "unity": {
         "gridSize": 6,
         "numObstacles": 2,
@@ -27,6 +26,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch",
@@ -63,7 +63,6 @@
       "name": "CartPole-v0",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -71,6 +70,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -95,7 +95,6 @@
       "name": "CartPole-v0",
       "max_t": 10,
       "max_tick": 1,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -103,6 +102,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -124,7 +124,6 @@
       "name": "CartPole-v0",
       "max_t": 10,
       "max_tick": 1,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -132,6 +131,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -153,7 +153,6 @@
       "name": "CartPole-v0",
       "max_t": 10,
       "max_tick": 1,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -161,6 +160,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -186,7 +186,6 @@
       "name": "CartPole-v0",
       "max_t": 10,
       "max_tick": 1,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -194,6 +193,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch",
@@ -215,7 +215,6 @@
       "name": "3dball",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -223,6 +222,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -252,7 +252,6 @@
       "name": "tennis",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -260,6 +259,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -280,12 +280,10 @@
       "name": "gridworld",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }, {
       "name": "3dball",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -293,6 +291,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -322,12 +321,10 @@
       "name": "tennis",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }, {
       "name": "tennis",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -335,6 +332,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -364,12 +362,10 @@
       "name": "gridworld",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }, {
       "name": "3dball",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "outer",
@@ -377,6 +373,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -406,12 +403,10 @@
       "name": "gridworld",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }, {
       "name": "3dball",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "inner",
@@ -419,6 +414,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -439,12 +435,10 @@
       "name": "gridworld",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }, {
       "name": "3dball",
       "max_t": 20,
       "max_tick": 3,
-      "max_tick_unit": "epi",
     }],
     "body": {
       "product": "custom",
@@ -466,6 +460,7 @@
     },
     "meta": {
       "distributed": false,
+      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
