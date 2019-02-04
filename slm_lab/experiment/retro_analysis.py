@@ -14,11 +14,11 @@ import regex as re
 logger = logger.get_logger(__name__)
 
 
-def session_data_from_file(predir, trial_index, session_index, ckpt=None):
+def session_data_from_file(predir, trial_index, session_index, ckpt=None, prefix=''):
     '''Build session.session_data from file'''
     ckpt_str = '' if ckpt is None else f'_ckpt-{ckpt}'
     for filename in os.listdir(predir):
-        if filename.endswith(f'_t{trial_index}_s{session_index}{ckpt_str}_session_df.csv'):
+        if filename.endswith(f'_t{trial_index}_s{session_index}{ckpt_str}_{prefix}session_df.csv'):
             filepath = f'{predir}/{filename}'
             session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
             session_data = util.session_df_to_data(session_df)
@@ -135,11 +135,11 @@ def retro_analyze_sessions(predir):
         # to account for both types of session_df
         if filename.endswith('_session_df.csv'):
             body_df_kind = 'eval'  # from body.eval_df
-            predix = ''
+            prefix = ''
             is_session_df = True
         elif filename.endswith('_trainsession_df.csv'):
             body_df_kind = 'train'  # from body.train_df
-            predix = 'train'
+            prefix = 'train'
             is_session_df = True
         else:
             is_session_df = False
@@ -150,7 +150,7 @@ def retro_analyze_sessions(predir):
             trial_index, session_index = util.prepath_to_idxs(prepath)
             SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
             session = SessionClass(spec, info_space)
-            session_data = session_data_from_file(predir, trial_index, session_index, ps.get(info_space, 'ckpt'))
+            session_data = session_data_from_file(predir, trial_index, session_index, ps.get(info_space, 'ckpt'), prefix)
             analysis._analyze_session(session, session_data, body_df_kind)
 
 
