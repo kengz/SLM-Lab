@@ -119,7 +119,7 @@ class Body:
         # dataframes to track data for analysis.analyze_session
         # track training data within run_episode
         self.train_df = pd.DataFrame(columns=[
-            'epi', 'total_t', 't', 'reward', 'loss', 'lr',
+            'epi', 'total_t', 't', 'wall_t', 'reward', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'log_prob', 'grad_norm'])
         # track eval data within run_eval_episode. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
@@ -159,6 +159,7 @@ class Body:
             'total_t': self.env.clock.get('total_t'),
             # t and reward are measured from a given env or eval_env
             't': env.clock.get('t'),
+            'wall_t': env.clock.get_elapsed_wall_t(),
             'reward': total_reward,
             'loss': self.loss,
             'lr': self.get_mean_lr(),

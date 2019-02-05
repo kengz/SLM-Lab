@@ -83,7 +83,7 @@ def analyze_eval_trial(spec, info_space, predir):
     analysis.analyze_trial(trial)
 
 
-def run_parallel_eval(spec, info_space, ckpt):
+def parallel_eval(spec, info_space, ckpt):
     '''
     Calls a subprocess to run lab in eval mode with the constructed ckpt prepath, same as how one would manually run the bash cmd
     @example
@@ -104,7 +104,7 @@ def run_parallel_eval(session, agent, env):
         ckpt = f'epi{env.clock.epi}-totalt{env.clock.total_t}'
         agent.save(ckpt=ckpt)
         # set reference to eval process for handling
-        session.eval_proc = run_parallel_eval(session.spec, session.info_space, ckpt)
+        session.eval_proc = parallel_eval(session.spec, session.info_space, ckpt)
 
 
 def try_wait_parallel_eval(session):
@@ -118,7 +118,7 @@ def run_parallel_eval_from_prepath(prepath):
     '''Used by retro_eval'''
     spec, info_space = util.prepath_to_spec_info_space(prepath)
     ckpt = util.find_ckpt(prepath)
-    return run_parallel_eval(spec, info_space, ckpt)
+    return parallel_eval(spec, info_space, ckpt)
 
 
 def run_wait_eval(prepath):
