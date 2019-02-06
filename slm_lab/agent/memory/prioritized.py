@@ -145,13 +145,9 @@ class PrioritizedReplay(Replay):
         '''Samples batch_size indices from memory in proportional to their priority.'''
         batch_idxs = np.zeros(batch_size)
         tree_idxs = np.zeros(batch_size, dtype=np.int)
-        segment = self.tree.total() / batch_size
 
         for i in range(batch_size):
-            a = segment * i
-            b = segment * (i + 1)
-
-            s = random.uniform(a, b)
+            s = random.uniform(0, self.tree.total())
             (tree_idx, p, idx) = self.tree.get(s)
             batch_idxs[i] = idx
             tree_idxs[i] = tree_idx
