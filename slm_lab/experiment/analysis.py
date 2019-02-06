@@ -521,14 +521,14 @@ def save_session_data(spec, info_space, session_data, session_fitness_df, sessio
     viz.save_image(session_fig, f'{prepath}_{prefix}session_graph.png')
 
 
-def save_trial_data(spec, info_space, trial_df, trial_fitness_df, trial_fig):
+def save_trial_data(spec, info_space, trial_df, trial_fitness_df, trial_fig, zip=True):
     '''Save the trial data: spec, trial_fitness_df.'''
     prepath = util.get_prepath(spec, info_space, unit='trial')
     logger.info(f'Saving trial data to {prepath}')
     util.write(trial_df, f'{prepath}_trial_df.csv')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
-    if util.get_lab_mode() == 'train':
+    if util.get_lab_mode() == 'train' and zip:
         predir, _, _, _, _, _ = util.prepath_split(prepath)
         shutil.make_archive(predir, 'zip', predir)
         logger.info(f'All trial data zipped to {predir}.zip')
@@ -575,7 +575,7 @@ def analyze_session(session, eager_analyze_trial=False, tmp_space_session_sub=Fa
     return session_fitness_df
 
 
-def analyze_trial(trial):
+def analyze_trial(trial, zip=True):
     '''
     Gather trial data, plot, and return trial df for high level agg.
     @returns {DataFrame} trial_fitness_df Single-row df of trial fitness vector (avg over aeb, sessions), indexed with trial index.
@@ -584,7 +584,7 @@ def analyze_trial(trial):
     trial_df = calc_trial_df(trial.spec, trial.info_space)
     trial_fitness_df = calc_trial_fitness_df(trial)
     trial_fig = plot_trial(trial.spec, trial.info_space)
-    save_trial_data(trial.spec, trial.info_space, trial_df, trial_fitness_df, trial_fig)
+    save_trial_data(trial.spec, trial.info_space, trial_df, trial_fitness_df, trial_fig, zip)
     return trial_fitness_df
 
 
