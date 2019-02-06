@@ -41,7 +41,7 @@ class TestPERMemory:
         assert memory.actions[memory.head] == exp[1]
         assert memory.rewards[memory.head] == exp[2]
         assert memory.dones[memory.head] == exp[4]
-        assert memory.priorities[memory.head] == 100000
+        assert memory.priorities[memory.head] == 1000
 
     def test_wrap(self, test_prioritized_replay_memory):
         '''Tests that the memory wraps round when it is at capacity'''
@@ -84,10 +84,10 @@ class TestPERMemory:
         for e in experiences:
             memory.add_experience(*e)
         batch = memory.sample()
-        assert memory.batch_idxs[0] == 0
-        assert memory.batch_idxs[1] == 1
-        assert memory.batch_idxs[2] == 2
-        assert memory.batch_idxs[3] == 3
+        assert 0 in memory.batch_idxs
+        assert 3 in memory.batch_idxs
+        assert 1 not in memory.batch_idxs
+        assert 2 not in memory.batch_idxs
 
     def test_reset(self, test_prioritized_replay_memory):
         '''Tests memory reset. Adds 2 experiences, then resets the memory and checks if all appropriate values have been zeroed'''
@@ -109,34 +109,29 @@ class TestPERMemory:
         assert memory.tree.total() == 0
 
     def test_update_priorities(self, test_prioritized_replay_memory):
-        '''Samples from memory, and updates priorities twice. Each time checks that correct experiences are updated. Finally checks that a new sampled batch corresponds to the prioritized distribution'''
+        '''Samples from memory, and updates priorities twice. Each time checks that the priorities are updated'''
         memory = test_prioritized_replay_memory[0]
         memory.reset()
         batch_size = test_prioritized_replay_memory[1]
         experiences = test_prioritized_replay_memory[2]
         for e in experiences:
             memory.add_experience(*e)
+        print(f'memory.priorities: {memory.priorities}')
         batch = memory.sample()
         # First update
+        # Manually change tree idxs and batch idxs
+        memory.batch_idxs = np.asarray([0, 1, 2, 3]).astype(int)
+        memory.tree_idxs = [3, 4, 5, 6]
         print(f'batch_size: {batch_size}, batch_idxs: {memory.batch_idxs}, tree_idxs: {memory.tree_idxs}')
         new_errors = torch.from_numpy(np.asarray([0, 10, 10, 20])).float().unsqueeze_(dim=1)
         print(f'new_errors: {new_errors}')
         memory.update_priorities(new_errors)
         memory.tree.print_tree()
+        print(f'memory.priorities: {memory.priorities}')
         assert memory.priorities[0] == 0
         assert memory.priorities[1] == 10
         assert memory.priorities[2] == 10
         assert memory.priorities[3] == 20
-        batch = memory.sample()
-        print(f'batch_size: {batch_size}, batch_idxs: {memory.batch_idxs}, tree_idxs: {memory.tree_idxs}')
-        assert memory.batch_idxs[0] == 1
-        assert memory.batch_idxs[1] == 2
-        assert memory.batch_idxs[2] == 3
-        assert memory.batch_idxs[3] == 3
-        assert batch['rewards'][0] == 6
-        assert batch['rewards'][1] == 7
-        assert batch['rewards'][2] == 8
-        assert batch['rewards'][3] == 8
         # Second update
         new_errors = torch.from_numpy(np.asarray([90, 0, 30, 0])).float().unsqueeze_(dim=1)
         # Manually change tree idxs and batch idxs
@@ -145,16 +140,8 @@ class TestPERMemory:
         print(f'new_errors: {new_errors}')
         memory.update_priorities(new_errors)
         memory.tree.print_tree()
+        print(f'memory.priorities: {memory.priorities}')
         assert memory.priorities[0] == 90
         assert memory.priorities[1] == 0
         assert memory.priorities[2] == 30
         assert memory.priorities[3] == 0
-        batch = memory.sample()
-        assert memory.batch_idxs[0] == 0
-        assert memory.batch_idxs[1] == 0
-        assert memory.batch_idxs[2] == 0
-        assert memory.batch_idxs[3] == 2
-        assert batch['rewards'][0] == 5
-        assert batch['rewards'][1] == 5
-        assert batch['rewards'][2] == 5
-        assert batch['rewards'][3] == 7
