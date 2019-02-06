@@ -293,7 +293,7 @@ It is `DQN` in `CartPole-v0`:
 
     When it ends, refer to `{prepath}_experiment_graph.png` and `{prepath}_experiment_df.csv` to find the best trials.
 
->If the demo fails, consult [Debugging](https://kengz.gitbooks.io/slm-lab/content/debugging.html).
+>If the demo fails, consult [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html).
 
 Now the lab is ready for usage.
 

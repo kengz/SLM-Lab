@@ -105,10 +105,7 @@ class SARSA(Algorithm):
         if self.normalize_state:
             state = policy_util.update_online_stats_and_normalize_state(body, state)
         action, action_pd = self.action_policy(state, self, body)
-        # sum for single and multi-action
-        body.entropies.append(action_pd.entropy().sum(dim=0))
-        body.log_probs.append(action_pd.log_prob(action.float()).sum(dim=0))
-        assert not torch.isnan(body.log_probs[-1])
+        body.action_tensor, body.action_pd = action, action_pd  # used for body.action_pd_update later
         if len(action.shape) == 0:  # scalar
             return action.cpu().numpy().astype(body.action_space.dtype).item()
         else:
@@ -142,7 +139,7 @@ class SARSA(Algorithm):
         Completes one training step for the agent if it is time to train.
         Otherwise this function does nothing.
         '''
-        if util.get_lab_mode() in ('enjoy', 'eval'):
+        if util.in_eval_lab_modes():
             self.body.flush()
             return np.nan
         clock = self.body.env.clock
@@ -153,8 +150,7 @@ class SARSA(Algorithm):
             # reset
             self.to_train = 0
             self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
-
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -162,6 +158,5 @@ class SARSA(Algorithm):
     @lab_api
     def update(self):
         '''Update the agent after training'''
-        net_util.try_store_grad_norm(self)
         self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
         return self.body.explore_var

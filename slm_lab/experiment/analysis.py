@@ -152,10 +152,14 @@ def calc_consistency(aeb_fitness_df):
     return consistency
 
 
-def calc_epi_reward_ma(aeb_df):
+def calc_epi_reward_ma(aeb_df, ckpt=None):
     '''Calculates the episode reward moving average with the MA_WINDOW'''
     rewards = aeb_df['reward']
-    aeb_df['reward_ma'] = rewards.rolling(window=MA_WINDOW, min_periods=0, center=False).mean()
+    if ckpt == 'eval':
+        # online eval mode reward is reward_ma from avg
+        aeb_df['reward_ma'] = rewards
+    else:
+        aeb_df['reward_ma'] = rewards.rolling(window=MA_WINDOW, min_periods=0, center=False).mean()
     return aeb_df
 
 
@@ -201,7 +205,7 @@ Checkpoint and early termination analysis
 '''
 
 
-def get_reward_mas(agent, name='current_reward_ma'):
+def get_reward_mas(agent, name='eval_reward_ma'):
     '''Return array of the named reward_ma for all of an agent's bodies.'''
     bodies = getattr(agent, 'nanflat_body_a', [agent.body])
     return np.array([getattr(body, name) for body in bodies], dtype=np.float16)
@@ -216,24 +220,32 @@ def get_std_epi_rewards(agent):
 def new_best(agent):
     '''Check if algorithm is now the new best result, then update the new best'''
     best_reward_mas = get_reward_mas(agent, 'best_reward_ma')
-    current_reward_mas = get_reward_mas(agent, 'current_reward_ma')
-    new_best = (current_reward_mas >= best_reward_mas).all()
-    if new_best:
+    eval_reward_mas = get_reward_mas(agent, 'eval_reward_ma')
+    best = (eval_reward_mas >= best_reward_mas).all()
+    if best:
         bodies = getattr(agent, 'nanflat_body_a', [agent.body])
         for body in bodies:
-            body.best_reward_ma = body.current_reward_ma
-    return new_best
+            body.best_reward_ma = body.eval_reward_ma
+    return best
 
 
 def all_solved(agent):
     '''Check if envs have all been solved using std from slm_lab/spec/_fitness_std.json'''
-    current_reward_mas = get_reward_mas(agent, 'current_reward_ma')
+    eval_reward_mas = get_reward_mas(agent, 'eval_reward_ma')
     std_epi_rewards = get_std_epi_rewards(agent)
     solved = (
         not np.isnan(std_epi_rewards).any() and
-        (current_reward_mas >= std_epi_rewards).all()
+        (eval_reward_mas >= std_epi_rewards).all()
     )
     return solved
+
+
+def is_unfit(fitness_df, session):
+    '''Check if a fitness_df is unfit. Used to determine of trial should stop running more sessions'''
+    if FITNESS_STD.get(session.spec['env'][0]['name']) is None:
+        return False  # fitness not known
+    mean_fitness_df = calc_mean_fitness(fitness_df)
+    return mean_fitness_df['strength'].iloc[0] < NOISE_WINDOW
 
 
 '''
@@ -252,14 +264,18 @@ def calc_mean_fitness(fitness_df):
     return fitness_df.mean(axis=1, level=3)
 
 
-def get_session_data(session):
+def get_session_data(session, body_df_kind='eval', tmp_space_session_sub=False):
     '''
-    Gather data from session: MDP, Agent, Env data, hashed by aeb; then aggregate.
-    @returns {dict, dict} session_mdp_data, session_data
+    Gather data from session from all the bodies
+    Depending on body_df_kind, will use eval_df or train_df
     '''
     session_data = {}
     for aeb, body in util.ndenumerate_nonan(session.aeb_space.body_space.data):
-        session_data[aeb] = body.df.copy()
+        aeb_df = body.eval_df if body_df_kind == 'eval' else body.train_df
+        # TODO tmp substitution since SpaceSession does not have run_eval_episode yet
+        if tmp_space_session_sub:
+            aeb_df = body.train_df
+        session_data[aeb] = aeb_df.copy()
     return session_data
 
 
@@ -268,7 +284,7 @@ def calc_session_fitness_df(session, session_data):
     session_fitness_data = {}
     for aeb in session_data:
         aeb_df = session_data[aeb]
-        aeb_df = calc_epi_reward_ma(aeb_df)
+        aeb_df = calc_epi_reward_ma(aeb_df, ps.get(session.info_space, 'ckpt'))
         util.downcast_float32(aeb_df)
         body = session.aeb_space.body_space.data[aeb]
         aeb_fitness_sr = calc_aeb_fitness_sr(aeb_df, body.env.name)
@@ -310,17 +326,9 @@ def calc_trial_fitness_df(trial):
     return trial_fitness_df
 
 
-def is_unfit(fitness_df, session):
-    '''Check if a fitness_df is unfit. Used to determine of trial should stop running more sessions'''
-    if FITNESS_STD.get(session.spec['env'][0]['name']) is None:
-        return False  # fitness not known
-    mean_fitness_df = calc_mean_fitness(fitness_df)
-    return mean_fitness_df['strength'].iloc[0] < NOISE_WINDOW
-
-
 def plot_session(session_spec, info_space, session_data):
     '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
-    max_tick_unit = ps.get(session_spec, 'env.0.max_tick_unit')
+    max_tick_unit = ps.get(session_spec, 'meta.max_tick_unit')
     aeb_count = len(session_data)
     palette = viz.get_palette(aeb_count)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True, print_grid=False)
@@ -328,7 +336,7 @@ def plot_session(session_spec, info_space, session_data):
         aeb_str = f'{a}{e}{b}'
         aeb_df = session_data[(a, e, b)]
         aeb_df.fillna(0, inplace=True)  # for saving plot, cant have nan
-        fig_1 = viz.plot_line(aeb_df, 'reward', max_tick_unit, legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
+        fig_1 = viz.plot_line(aeb_df, 'reward_ma', max_tick_unit, legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
         fig.append_trace(fig_1.data[0], 1, 1)
 
         fig_2 = viz.plot_line(aeb_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
@@ -353,11 +361,11 @@ def gather_aeb_rewards_df(aeb, session_datas, max_tick_unit):
     aeb_session_rewards = {}
     for s, session_data in session_datas.items():
         aeb_df = session_data[aeb]
-        aeb_reward_sr = aeb_df['reward']
+        aeb_reward_sr = aeb_df['reward_ma']
         aeb_reward_sr.index = aeb_df[max_tick_unit]
         # guard for duplicate eval result
         aeb_reward_sr = aeb_reward_sr[~aeb_reward_sr.index.duplicated()]
-        if util.get_lab_mode() in ('enjoy', 'eval'):
+        if util.in_eval_lab_modes():
             # guard for eval appending possibly not ordered
             aeb_reward_sr.sort_index(inplace=True)
         aeb_session_rewards[s] = aeb_reward_sr
@@ -394,18 +402,19 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, max_tick_unit):
 
 def calc_trial_df(trial_spec, info_space):
     '''Calculate trial_df as mean of all session_df'''
+    from slm_lab.experiment import retro_analysis
     prepath = util.get_prepath(trial_spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
+    session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, info_space.get('trial'), ps.get(info_space, 'ckpt'))
     aeb_transpose = {aeb: [] for aeb in session_datas[list(session_datas.keys())[0]]}
-    max_tick_unit = ps.get(trial_spec, 'env.0.max_tick_unit')
+    max_tick_unit = ps.get(trial_spec, 'meta.max_tick_unit')
     for s, session_data in session_datas.items():
         for aeb, aeb_df in session_data.items():
             aeb_transpose[aeb].append(aeb_df.sort_values(by=[max_tick_unit]).set_index(max_tick_unit, drop=False))
 
     trial_data = {}
     for aeb, df_list in aeb_transpose.items():
-        trial_data[aeb] = pd.concat(df_list).groupby(level=0).mean().reset_index(drop='True')
+        trial_data[aeb] = pd.concat(df_list).groupby(level=0).mean().reset_index(drop=True)
 
     trial_df = pd.concat(trial_data, axis=1)
     return trial_df
@@ -413,11 +422,12 @@ def calc_trial_df(trial_spec, info_space):
 
 def plot_trial(trial_spec, info_space):
     '''Plot the trial graph, 1 pane: mean and error envelope of reward graphs from all sessions. Each aeb_df gets its own color'''
+    from slm_lab.experiment import retro_analysis
     prepath = util.get_prepath(trial_spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = session_datas_from_file(predir, trial_spec, info_space.get('trial'))
+    session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, info_space.get('trial'), ps.get(info_space, 'ckpt'))
     rand_session_data = session_datas[list(session_datas.keys())[0]]
-    max_tick_unit = ps.get(trial_spec, 'env.0.max_tick_unit')
+    max_tick_unit = ps.get(trial_spec, 'meta.max_tick_unit')
     aeb_count = len(rand_session_data)
     palette = viz.get_palette(aeb_count)
     fig = None
@@ -471,10 +481,9 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
-def save_session_df(session_data, prepath, info_space):
+def save_session_df(session_data, filepath, info_space):
     '''Save session_df, and if is in eval mode, modify it and save with append'''
-    filepath = f'{prepath}_session_df.csv'
-    if util.get_lab_mode() in ('enjoy', 'eval'):
+    if util.in_eval_lab_modes():
         ckpt = util.find_ckpt(info_space.eval_model_prepath)
         epi = int(re.search('epi(\d+)', ckpt)[1])
         totalt = int(re.search('totalt(\d+)', ckpt)[1])
@@ -495,7 +504,7 @@ def save_session_df(session_data, prepath, info_space):
         util.write(session_df, filepath)
 
 
-def save_session_data(spec, info_space, session_data, session_fitness_df, session_fig):
+def save_session_data(spec, info_space, session_data, session_fitness_df, session_fig, body_df_kind='eval'):
     '''
     Save the session data: session_df, session_fitness_df, session_graph.
     session_data is saved as session_df; multi-indexed with (a,e,b), 3 extra levels
@@ -505,20 +514,21 @@ def save_session_data(spec, info_space, session_data, session_fitness_df, sessio
     '''
     prepath = util.get_prepath(spec, info_space, unit='session')
     logger.info(f'Saving session data to {prepath}')
+    prefix = 'train' if body_df_kind == 'train' else ''
     if 'retro_analyze' not in os.environ['PREPATH']:
-        save_session_df(session_data, prepath, info_space)
-    util.write(session_fitness_df, f'{prepath}_session_fitness_df.csv')
-    viz.save_image(session_fig, f'{prepath}_session_graph.png')
+        save_session_df(session_data, f'{prepath}_{prefix}session_df.csv', info_space)
+    util.write(session_fitness_df, f'{prepath}_{prefix}session_fitness_df.csv')
+    viz.save_image(session_fig, f'{prepath}_{prefix}session_graph.png')
 
 
-def save_trial_data(spec, info_space, trial_df, trial_fitness_df, trial_fig):
+def save_trial_data(spec, info_space, trial_df, trial_fitness_df, trial_fig, zip=True):
     '''Save the trial data: spec, trial_fitness_df.'''
     prepath = util.get_prepath(spec, info_space, unit='trial')
     logger.info(f'Saving trial data to {prepath}')
     util.write(trial_df, f'{prepath}_trial_df.csv')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
-    if util.get_lab_mode() == 'train':
+    if util.get_lab_mode() == 'train' and zip:
         predir, _, _, _, _, _ = util.prepath_split(prepath)
         shutil.make_archive(predir, 'zip', predir)
         logger.info(f'All trial data zipped to {predir}.zip')
@@ -536,21 +546,36 @@ def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
     logger.info(f'All experiment data zipped to {predir}.zip')
 
 
-def analyze_session(session, session_data=None):
+def _analyze_session(session, session_data, body_df_kind='eval'):
+    '''Helper method for analyze_session to run using eval_df and train_df'''
+    session_fitness_df = calc_session_fitness_df(session, session_data)
+    session_fig = plot_session(session.spec, session.info_space, session_data)
+    save_session_data(session.spec, session.info_space, session_data, session_fitness_df, session_fig, body_df_kind)
+    return session_fitness_df
+
+
+def analyze_session(session, eager_analyze_trial=False, tmp_space_session_sub=False):
     '''
     Gather session data, plot, and return fitness df for high level agg.
     @returns {DataFrame} session_fitness_df Single-row df of session fitness vector (avg over aeb), indexed with session index.
     '''
     logger.info('Analyzing session')
-    if session_data is None:  # not from retro analysis
-        session_data = get_session_data(session)
-    session_fitness_df = calc_session_fitness_df(session, session_data)
-    session_fig = plot_session(session.spec, session.info_space, session_data)
-    save_session_data(session.spec, session.info_space, session_data, session_fitness_df, session_fig)
+    session_data = get_session_data(session, body_df_kind='train')
+    session_fitness_df = _analyze_session(session, session_data, body_df_kind='train')
+    session_data = get_session_data(session, body_df_kind='eval', tmp_space_session_sub=tmp_space_session_sub)
+    session_fitness_df = _analyze_session(session, session_data, body_df_kind='eval')
+    if eager_analyze_trial:
+        # for live trial graph, analyze trial after analyzing session, this only takes a second
+        from slm_lab.experiment import retro_analysis
+        prepath = util.get_prepath(session.spec, session.info_space, unit='session')
+        # use new ones to prevent side effects
+        spec, info_space = util.prepath_to_spec_info_space(prepath)
+        predir, _, _, _, _, _ = util.prepath_split(prepath)
+        retro_analysis.analyze_eval_trial(spec, info_space, predir)
     return session_fitness_df
 
 
-def analyze_trial(trial):
+def analyze_trial(trial, zip=True):
     '''
     Gather trial data, plot, and return trial df for high level agg.
     @returns {DataFrame} trial_fitness_df Single-row df of trial fitness vector (avg over aeb, sessions), indexed with trial index.
@@ -559,7 +584,7 @@ def analyze_trial(trial):
     trial_df = calc_trial_df(trial.spec, trial.info_space)
     trial_fitness_df = calc_trial_fitness_df(trial)
     trial_fig = plot_trial(trial.spec, trial.info_space)
-    save_trial_data(trial.spec, trial.info_space, trial_df, trial_fitness_df, trial_fig)
+    save_trial_data(trial.spec, trial.info_space, trial_df, trial_fitness_df, trial_fig, zip)
     return trial_fitness_df
 
 
@@ -582,201 +607,3 @@ def analyze_experiment(experiment):
     experiment_fig = plot_experiment(experiment.spec, experiment_df)
     save_experiment_data(experiment.spec, experiment.info_space, experiment_df, experiment_fig)
     return experiment_df
-
-
-'''
-Retro analysis
-'''
-
-
-def analyze_eval_trial(spec, info_space, predir):
-    '''Create a trial and run analysis to get the trial graph and other trial data'''
-    from slm_lab.experiment.control import Trial
-    trial = Trial(spec, info_space)
-    trial.session_data_dict = session_data_dict_from_file(predir, trial.index)
-    analyze_trial(trial)
-
-
-def run_online_eval(spec, info_space, ckpt):
-    '''
-    Calls a subprocess to run lab in eval mode with the constructed ckpt prepath, same as how one would manually run the bash cmd
-    @example
-
-    python run_lab.py data/dqn_cartpole_2018_12_19_224811/dqn_cartpole_t0_spec.json dqn_cartpole eval@dqn_cartpole_t0_s1_ckpt-epi10-totalt1000
-    '''
-    prepath_t = util.get_prepath(spec, info_space, unit='trial')
-    prepath_s = util.get_prepath(spec, info_space, unit='session')
-    predir, _, prename, spec_name, _, _ = util.prepath_split(prepath_s)
-    cmd = f'python run_lab.py {prepath_t}_spec.json {spec_name} eval@{prename}_ckpt-{ckpt}'
-    logger.info(f'Running online eval for ckpt-{ckpt}')
-    return util.run_cmd(cmd)
-
-
-def run_online_eval_from_prepath(prepath):
-    '''Used by retro_eval'''
-    spec, info_space = util.prepath_to_spec_info_space(prepath)
-    ckpt = util.find_ckpt(prepath)
-    return run_online_eval(spec, info_space, ckpt)
-
-
-def run_wait_eval(prepath):
-    '''Used by retro_eval'''
-    eval_proc = run_online_eval_from_prepath(prepath)
-    util.run_cmd_wait(eval_proc)
-
-
-def session_data_from_file(predir, trial_index, session_index):
-    '''Build session.session_data from file'''
-    ckpt_str = '_ckpt-eval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
-    for filename in os.listdir(predir):
-        if filename.endswith(f'_t{trial_index}_s{session_index}{ckpt_str}_session_df.csv'):
-            filepath = f'{predir}/{filename}'
-            session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
-            session_data = util.session_df_to_data(session_df)
-            return session_data
-
-
-def session_datas_from_file(predir, trial_spec, trial_index):
-    '''Return a dict of {session_index: session_data} for a trial'''
-    session_datas = {}
-    for s in range(trial_spec['meta']['max_session']):
-        session_data = session_data_from_file(predir, trial_index, s)
-        if session_data is not None:
-            session_datas[s] = session_data
-    return session_datas
-
-
-def session_data_dict_from_file(predir, trial_index):
-    '''Build trial.session_data_dict from file'''
-    ckpt_str = 'ckpt-eval' if util.get_lab_mode() in ('enjoy', 'eval') else ''
-    session_data_dict = {}
-    for filename in os.listdir(predir):
-        if f'_t{trial_index}_' in filename and filename.endswith(f'{ckpt_str}_session_fitness_df.csv'):
-            filepath = f'{predir}/{filename}'
-            fitness_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0, dtype=np.float32)
-            util.fix_multi_index_dtype(fitness_df)
-            session_index = fitness_df.index[0]
-            session_data_dict[session_index] = fitness_df
-    return session_data_dict
-
-
-def session_data_dict_for_dist(spec, info_space):
-    '''Method to retrieve session_datas (fitness df, so the same as session_data_dict above) when a trial with distributed sessions is done, to avoid messy multiprocessing data communication'''
-    prepath = util.get_prepath(spec, info_space)
-    predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = session_data_dict_from_file(predir, info_space.get('trial'))
-    session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
-    return session_datas
-
-
-def trial_data_dict_from_file(predir):
-    '''Build experiment.trial_data_dict from file'''
-    trial_data_dict = {}
-    for filename in os.listdir(predir):
-        if filename.endswith('_trial_data.json'):
-            filepath = f'{predir}/{filename}'
-            exp_trial_data = util.read(filepath)
-            trial_index = exp_trial_data.pop('trial_index')
-            trial_data_dict[trial_index] = exp_trial_data
-    return trial_data_dict
-
-
-def retro_analyze_sessions(predir):
-    '''Retro-analyze all session level datas.'''
-    logger.info('Retro-analyzing sessions from file')
-    from slm_lab.experiment.control import Session, SpaceSession
-    for filename in os.listdir(predir):
-        if filename.endswith('_session_df.csv'):
-            prepath = f'{predir}/{filename}'.replace('_session_df.csv', '')
-            spec, info_space = util.prepath_to_spec_info_space(prepath)
-            trial_index, session_index = util.prepath_to_idxs(prepath)
-            SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
-            session = SessionClass(spec, info_space)
-            session_data = session_data_from_file(predir, trial_index, session_index)
-            analyze_session(session, session_data)
-
-
-def retro_analyze_trials(predir):
-    '''Retro-analyze all trial level datas.'''
-    logger.info('Retro-analyzing trials from file')
-    from slm_lab.experiment.control import Trial
-    for filename in os.listdir(predir):
-        if filename.endswith('_trial_data.json'):
-            filepath = f'{predir}/{filename}'
-            prepath = filepath.replace('_trial_data.json', '')
-            spec, info_space = util.prepath_to_spec_info_space(prepath)
-            trial_index, _ = util.prepath_to_idxs(prepath)
-            trial = Trial(spec, info_space)
-            trial.session_data_dict = session_data_dict_from_file(predir, trial_index)
-            trial_fitness_df = analyze_trial(trial)
-            # write trial_data that was written from ray search
-            fitness_vec = trial_fitness_df.iloc[0].to_dict()
-            fitness = calc_fitness(trial_fitness_df)
-            trial_data = util.read(filepath)
-            trial_data.update({
-                **fitness_vec, 'fitness': fitness, 'trial_index': trial_index,
-            })
-            util.write(trial_data, filepath)
-
-
-def retro_analyze_experiment(predir):
-    '''Retro-analyze all experiment level datas.'''
-    logger.info('Retro-analyzing experiment from file')
-    from slm_lab.experiment.control import Experiment
-    _, _, _, spec_name, _, _ = util.prepath_split(predir)
-    prepath = f'{predir}/{spec_name}'
-    spec, info_space = util.prepath_to_spec_info_space(prepath)
-    experiment = Experiment(spec, info_space)
-    experiment.trial_data_dict = trial_data_dict_from_file(predir)
-    return analyze_experiment(experiment)
-
-
-def retro_analyze(predir):
-    '''
-    Method to analyze experiment from file after it ran.
-    Read from files, constructs lab units, run retro analyses on all lab units.
-    This method has no side-effects, i.e. doesn't overwrite data it should not.
-    @example
-
-    yarn retro_analyze data/reinforce_cartpole_2018_01_22_211751
-    '''
-    os.environ['PREPATH'] = f'{predir}/retro_analyze'  # to prevent overwriting log file
-    logger.info(f'Retro-analyzing {predir}')
-    retro_analyze_sessions(predir)
-    retro_analyze_trials(predir)
-    retro_analyze_experiment(predir)
-
-
-def retro_eval(predir, session_index=None):
-    '''
-    Method to run eval sessions by scanning a predir for ckpt files. Used to rerun failed eval sessions.
-    @example
-
-    yarn retro_eval data/reinforce_cartpole_2018_01_22_211751
-    '''
-    logger.info(f'Retro-evaluate sessions from predir {predir}')
-    # collect all unique prepaths first
-    prepaths = []
-    s_filter = '' if session_index is None else f'_s{session_index}_'
-    for filename in os.listdir(predir):
-        if filename.endswith('model.pth') and s_filter in filename:
-            res = re.search('.+epi(\d+)-totalt(\d+)', filename)
-            if res is not None:
-                prepath = f'{predir}/{res[0]}'
-                if prepath not in prepaths:
-                    prepaths.append(prepath)
-    if ps.is_empty(prepaths):
-        return
-
-    logger.info(f'Starting retro eval')
-    np.random.shuffle(prepaths)  # so that CUDA_ID by trial/session index is spread out
-    rand_spec = util.prepath_to_spec(prepaths[0])  # get any prepath, read its max session
-    max_session = rand_spec['meta']['max_session']
-    util.parallelize_fn(run_wait_eval, prepaths, num_cpus=max_session)
-
-
-def session_retro_eval(session):
-    '''retro_eval but for session at the end to rerun failed evals'''
-    prepath = util.get_prepath(session.spec, session.info_space, unit='session')
-    predir, _, _, _, _, _ = util.prepath_split(prepath)
-    retro_eval(predir, session.index)
