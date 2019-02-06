@@ -14,8 +14,14 @@ logger = logger.get_logger(__name__)
 class NoOpLRScheduler:
     '''Symbolic LRScheduler class for API consistency'''
 
+    def __init__(self, optim):
+        self.optim = optim
+
     def step(self, epoch=None):
         pass
+
+    def get_lr(self):
+        return self.optim.defaults['lr']
 
 
 def build_sequential(dims, activation):
@@ -56,7 +62,7 @@ def get_optim(cls, optim_spec):
 def get_lr_scheduler(cls, lr_scheduler_spec):
     '''Helper to parse lr_scheduler param and construct Pytorch optim.lr_scheduler'''
     if ps.is_empty(lr_scheduler_spec):
-        lr_scheduler = NoOpLRScheduler()
+        lr_scheduler = NoOpLRScheduler(cls.optim)
     else:
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, lr_scheduler_spec['name'])
         lr_scheduler_spec = ps.omit(lr_scheduler_spec, 'name')
@@ -176,7 +182,7 @@ def load_algorithm(algorithm):
     '''Save all the nets for an algorithm'''
     agent = algorithm.agent
     net_names = algorithm.net_names
-    if util.get_lab_mode() in ('enjoy', 'eval'):
+    if util.in_eval_lab_modes():
         # load specific model in eval mode
         prepath = agent.info_space.eval_model_prepath
     else:
@@ -245,9 +251,11 @@ def gen_assert_trained(pre_model):
     return assert_trained
 
 
-def try_store_grad_norm(algorithm):
-    '''Check and if needed, store algorithm's net.grad_norms to body.grad_norms for debugging'''
+def get_grad_norms(algorithm):
+    '''Gather all the net's grad norms of an algorithm for debugging'''
+    grad_norms = []
     for net_name in algorithm.net_names:
         net = getattr(algorithm, net_name)
         if net.grad_norms is not None:
-            algorithm.body.grad_norms.extend(net.grad_norms)
+            grad_norms.extend(net.grad_norms)
+    return grad_norms

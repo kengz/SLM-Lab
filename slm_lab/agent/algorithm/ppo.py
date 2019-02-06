@@ -143,11 +143,9 @@ class PPO(ActorCritic):
         entropies = torch.stack(self.body.entropies)
         ent_penalty = torch.mean(-self.body.entropy_coef * entropies)
         logger.debug(f'ent_penalty: {ent_penalty}')
-        # Store mean entropy for debug logging
-        self.body.mean_entropy = torch.mean(torch.tensor(self.body.entropies)).item()
 
         policy_loss = clip_loss + ent_penalty
-        logger.debug(f'PPO Actor policy loss: {policy_loss:.4f}')
+        logger.debug(f'PPO Actor policy loss: {policy_loss:g}')
         return policy_loss
 
     def train_shared(self):
@@ -174,8 +172,7 @@ class PPO(ActorCritic):
             # reset
             self.to_train = 0
             self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
-
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -195,8 +192,7 @@ class PPO(ActorCritic):
             # reset
             self.to_train = 0
             self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
-
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -215,7 +211,6 @@ class PPO(ActorCritic):
 
     @lab_api
     def update(self):
-        net_util.try_store_grad_norm(self)
         self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
         if self.entropy_coef_spec is not None:
             self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
