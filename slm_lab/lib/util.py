@@ -1,6 +1,7 @@
+from contextlib import contextmanager
 from datetime import datetime
 from importlib import reload
-from slm_lab import ROOT_DIR
+from slm_lab import ROOT_DIR, EVAL_MODES
 import cv2
 import json
 import numpy as np
@@ -233,10 +234,12 @@ def get_prepath(spec, info_space, unit='experiment'):
     prename = f'{spec_name}'
     trial_index = info_space.get('trial')
     session_index = info_space.get('session')
+    t_str = '' if trial_index is None else f'_t{trial_index}'
+    s_str = '' if session_index is None else f'_s{session_index}'
     if unit == 'trial':
-        prename += f'_t{trial_index}'
+        prename += t_str
     elif unit == 'session':
-        prename += f'_t{trial_index}_s{session_index}'
+        prename += f'{t_str}{s_str}'
     ckpt = ps.get(info_space, 'ckpt')
     if ckpt is not None:
         prename += f'_ckpt-{ckpt}'
@@ -270,6 +273,11 @@ def guard_data_a(cls, data_a, data_name):
     return data_a
 
 
+def in_eval_lab_modes():
+    '''Check if lab_mode is one of EVAL_MODES'''
+    return get_lab_mode() in EVAL_MODES
+
+
 def is_jupyter():
     '''Check if process is in Jupyter kernel'''
     try:
@@ -278,6 +286,23 @@ def is_jupyter():
     except NameError:
         return False
     return False
+
+
+@contextmanager
+def ctx_lab_mode(lab_mode):
+    '''
+    Creates context to run method with a specific lab_mode
+    @example
+    with util.ctx_lab_mode('eval'):
+        run_eval()
+    '''
+    prev_lab_mode = os.environ.get('lab_mode')
+    os.environ['lab_mode'] = lab_mode
+    yield
+    if prev_lab_mode is None:
+        del os.environ['lab_mode']
+    else:
+        os.environ['lab_mode'] = prev_lab_mode
 
 
 def monkey_patch(base_cls, extend_cls):
@@ -340,8 +365,9 @@ def prepath_to_idxs(prepath):
     '''Extract trial index and session index from prepath if available'''
     _, _, prename, spec_name, _, _ = prepath_split(prepath)
     idxs_tail = prename.replace(spec_name, '').strip('_')
-    idxs_strs = idxs_tail.split('_')[:2]
-    assert len(idxs_strs) > 0, 'No trial/session indices found in prepath'
+    idxs_strs = ps.compact(idxs_tail.split('_')[:2])
+    if ps.is_empty(idxs_strs):
+        return None, None
     tidx = idxs_strs[0]
     assert tidx.startswith('t')
     trial_index = int(tidx.strip('t'))
@@ -524,7 +550,7 @@ def session_df_to_data(session_df):
     aeb_list = get_df_aeb_list(session_df)
     for aeb in aeb_list:
         aeb_df = session_df.loc[:, aeb]
-        aeb_df.reset_index(inplace=True)  # guard for eval append-row
+        aeb_df.reset_index(inplace=True, drop=True)  # guard for eval append-row
         session_data[aeb] = aeb_df
     return session_data
 

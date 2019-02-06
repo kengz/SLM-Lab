@@ -28,14 +28,16 @@ class OpenAIEnv(BaseEnv):
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 150,
-      "max_tick_unit": "epi",
-      "save_frequency": 50
     }],
     '''
 
     def __init__(self, spec, e=None, env_space=None):
         super(OpenAIEnv, self).__init__(spec, e, env_space)
-        register_env(spec)  # register any additional environments first
+        try:
+            # register any additional environments first. guard for re-registration
+            register_env(spec)
+        except Exception as e:
+            pass
         env = gym.make(self.name)
         if 'NoFrameskip' in env.spec.id:  # for Atari
             stack_len = ps.get(spec, 'agent.0.memory.stack_len')
@@ -47,7 +49,8 @@ class OpenAIEnv(BaseEnv):
                 env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False)
         self.u_env = env
         self._set_attr_from_u_env(self.u_env)
-        self.max_t = self.max_t or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_epi_steps')
+        self.max_t = self.max_t or self.u_env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
+        assert self.max_t is not None
         if env_space is None:  # singleton mode
             pass
         else:

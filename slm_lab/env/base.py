@@ -3,6 +3,7 @@ from gym import spaces
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+import time
 
 ENV_DATA_NAMES = ['reward', 'state', 'done']
 NUM_EVAL_EPI = 100  # set the number of episodes to eval a model ckpt
@@ -38,10 +39,14 @@ class Clock:
         self.t = 0
         self.total_t = 0
         self.epi = -1  # offset so epi is 0 when it gets ticked at start
+        self.start_wall_t = time.time()
 
-    def to_step(self):
-        '''Step signal from clock_speed. Step only if the base unit of time in this clock has moved. Used to control if env of different clock_speed should step()'''
-        return self.ticks % self.clock_speed == 0
+    def get(self, unit='t'):
+        return getattr(self, unit)
+
+    def get_elapsed_wall_t(self):
+        '''Calculate the elapsed wall time (int seconds) since self.start_wall_t'''
+        return int(time.time() - self.start_wall_t)
 
     def tick(self, unit='t'):
         if unit == 't':  # timestep
@@ -57,8 +62,9 @@ class Clock:
         else:
             raise KeyError
 
-    def get(self, unit='t'):
-        return getattr(self, unit)
+    def to_step(self):
+        '''Step signal from clock_speed. Step only if the base unit of time in this clock has moved. Used to control if env of different clock_speed should step()'''
+        return self.ticks % self.clock_speed == 0
 
 
 class BaseEnv(ABC):
@@ -70,8 +76,6 @@ class BaseEnv(ABC):
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 150,
-      "max_tick_unit": "epi",
-      "save_frequency": 50
     }],
 
     # or using total_t
@@ -79,8 +83,6 @@ class BaseEnv(ABC):
       "name": "CartPole-v0",
       "max_t": null,
       "max_tick": 10000,
-      "max_tick_unit": "total_t",
-      "save_frequency": 50
     }],
     '''
 
@@ -93,12 +95,14 @@ class BaseEnv(ABC):
         util.set_attr(self, dict(
             reward_scale=1.0,
         ))
+        util.set_attr(self, spec['meta'], [
+            'eval_frequency',
+            'max_tick_unit',
+        ])
         util.set_attr(self, self.env_spec, [
             'name',
             'max_t',
             'max_tick',
-            'max_tick_unit',
-            'save_frequency',
             'reward_scale',
         ])
         if util.get_lab_mode() == 'eval':

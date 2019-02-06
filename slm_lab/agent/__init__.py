@@ -70,10 +70,11 @@ class Agent:
     @lab_api
     def update(self, action, reward, state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
+        self.body.action_pd_update()
         self.body.memory.update(action, reward, state, done)
-        self.body.loss = loss = self.algorithm.train()
+        loss = self.algorithm.train()
         if not np.isnan(loss):  # set for log_summary()
-            self.body.last_loss = loss
+            self.body.loss = loss
         explore_var = self.algorithm.update()
         logger.debug(f'Agent {self.a} loss: {loss}, explore_var {explore_var}')
         if done:
@@ -83,7 +84,7 @@ class Agent:
     @lab_api
     def save(self, ckpt=None):
         '''Save agent'''
-        if util.get_lab_mode() in ('enjoy', 'eval'):
+        if util.in_eval_lab_modes():
             # eval does not save new models
             return
         self.algorithm.save(ckpt=ckpt)
@@ -134,13 +135,13 @@ class Agent:
     def space_update(self, action_a, reward_a, state_a, done_a):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
         for eb, body in util.ndenumerate_nonan(self.body_a):
+            body.action_pd_update()
             body.memory.update(action_a[eb], reward_a[eb], state_a[eb], done_a[eb])
         loss_a = self.algorithm.space_train()
         loss_a = util.guard_data_a(self, loss_a, 'loss')
         for eb, body in util.ndenumerate_nonan(self.body_a):
-            body.loss = loss_a[eb]
-            if not np.isnan(body.loss):  # set for log_summary()
-                body.last_loss = body.loss
+            if not np.isnan(loss_a[eb]):  # set for log_summary()
+                body.loss = loss_a[eb]
         explore_var_a = self.algorithm.space_update()
         explore_var_a = util.guard_data_a(self, explore_var_a, 'explore_var')
         logger.debug(f'Agent {self.a} loss: {loss_a}, explore_var_a {explore_var_a}')

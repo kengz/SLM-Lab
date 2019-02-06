@@ -6,7 +6,7 @@ from copy import deepcopy
 from importlib import reload
 from slm_lab.agent import AgentSpace, Agent
 from slm_lab.env import EnvSpace, make_env
-from slm_lab.experiment import analysis, search
+from slm_lab.experiment import analysis, retro_analysis, search
 from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
@@ -29,13 +29,15 @@ class Session:
         self.index = self.info_space.get('session')
         util.set_logger(self.spec, self.info_space, logger, 'session')
         self.data = None
-        self.eval_proc = None  # reference run_online_eval process
 
         # init singleton agent and env
         self.env = make_env(self.spec)
-        body = Body(self.env, self.spec['agent'])
         util.set_rand_seed(self.info_space.get_random_seed(), self.env)
+        with util.ctx_lab_mode('eval'):  # env for eval
+            self.eval_env = make_env(self.spec)
+            util.set_rand_seed(self.info_space.get_random_seed(), self.eval_env)
         util.try_set_cuda_id(self.spec, self.info_space)
+        body = Body(self.env, self.spec['agent'])
         self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
 
         enable_aeb_space(self)  # to use lab's data analysis framework
@@ -43,26 +45,41 @@ class Session:
         logger.info(f'Initialized session {self.index}')
 
     def try_ckpt(self, agent, env):
-        '''Try to checkpoint agent and run_online_eval at the start, save_freq, and the end'''
-        clock = env.clock
-        tick = clock.get(env.max_tick_unit)
+        '''Try to checkpoint agent at the start, save_freq, and the end'''
+        tick = env.clock.get(env.max_tick_unit)
         to_ckpt = False
-        if util.get_lab_mode() not in ('enjoy', 'eval') and tick <= env.max_tick:
-            to_ckpt = (tick % env.save_frequency == 0) or tick == env.max_tick
+        if not util.in_eval_lab_modes() and tick <= env.max_tick:
+            to_ckpt = (tick % env.eval_frequency == 0) or tick == env.max_tick
         if env.max_tick_unit == 'epi':  # extra condition for epi
             to_ckpt = to_ckpt and env.done
 
         if to_ckpt:
+            if self.spec['meta'].get('parallel_eval'):
+                retro_analysis.run_parallel_eval(self, agent, env)
+            else:
+                self.run_eval_episode()
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            # run online eval for train mode
-            if util.get_lab_mode() == 'train' and self.spec['meta'].get('training_eval', False):
-                ckpt = f'epi{clock.epi}-totalt{clock.total_t}'
-                agent.save(ckpt=ckpt)
-                # set reference to eval process for handling
-                self.eval_proc = analysis.run_online_eval(self.spec, self.info_space, ckpt)
             if tick > 0:  # nothing to analyze at start
-                analysis.analyze_session(self)
+                analysis.analyze_session(self, eager_analyze_trial=True)
+
+    def run_eval_episode(self):
+        with util.ctx_lab_mode('eval'):  # enter eval context
+            self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
+            self.eval_env.clock.tick('epi')
+            logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
+            total_reward = 0
+            reward, state, done = self.eval_env.reset()
+            while not done:
+                self.eval_env.clock.tick('t')
+                action = self.agent.act(state)
+                reward, state, done = self.eval_env.step(action)
+                total_reward += reward
+        # exit eval context, restore variables simply by updating
+        self.agent.algorithm.update()
+        # update body.eval_df
+        self.agent.body.eval_update(self.eval_env, total_reward)
+        self.agent.body.log_summary(body_df_kind='eval')
 
     def run_episode(self):
         self.env.clock.tick('epi')
@@ -76,7 +93,7 @@ class Session:
             reward, state, done = self.env.step(action)
             self.agent.update(action, reward, state, done)
         self.try_ckpt(self.agent, self.env)  # final timestep ckpt
-        self.agent.body.log_summary()
+        self.agent.body.log_summary(body_df_kind='train')
 
     def close(self):
         '''
@@ -85,17 +102,13 @@ class Session:
         '''
         self.agent.close()
         self.env.close()
+        self.eval_env.close()
         logger.info('Session done and closed.')
 
     def run(self):
         while self.env.clock.get(self.env.max_tick_unit) < self.env.max_tick:
             self.run_episode()
-            if util.get_lab_mode() not in ('enjoy', 'eval') and analysis.all_solved(self.agent):
-                logger.info('All environments solved. Early exit.')
-                break
-        if self.eval_proc is not None:  # wait for final eval before closing
-            util.run_cmd_wait(self.eval_proc)
-            analysis.session_retro_eval(self)  # rerun failed eval
+        retro_analysis.try_wait_parallel_eval(self)
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
         return self.data
@@ -110,7 +123,6 @@ class SpaceSession(Session):
         self.index = self.info_space.get('session')
         util.set_logger(self.spec, self.info_space, logger, 'session')
         self.data = None
-        self.eval_proc = None  # reference run_online_eval process
 
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
@@ -123,11 +135,13 @@ class SpaceSession(Session):
         logger.info(f'Initialized session {self.index}')
 
     def try_ckpt(self, agent_space, env_space):
-        '''Try to checkpoint agent and run_online_eval at the start, save_freq, and the end'''
-        for agent in agent_space.agents:
-            for body in agent.nanflat_body_a:
-                env = body.env
-                super(SpaceSession, self).try_ckpt(agent, env)
+        '''Try to checkpoint agent at the start, save_freq, and the end'''
+        # TODO ckpt and eval not implemented for SpaceSession
+        pass
+        # for agent in agent_space.agents:
+        #     for body in agent.nanflat_body_a:
+        #         env = body.env
+        #         super(SpaceSession, self).try_ckpt(agent, env)
 
     def run_all_episodes(self):
         '''
@@ -144,8 +158,7 @@ class SpaceSession(Session):
             reward_space, state_space, done_space = self.env_space.step(action_space)
             self.agent_space.update(action_space, reward_space, state_space, done_space)
         self.try_ckpt(self.agent_space, self.env_space)
-        if self.eval_proc is not None:  # wait for final eval before closing
-            util.run_cmd_wait(self.eval_proc)
+        retro_analysis.try_wait_parallel_eval(self)
 
     def close(self):
         '''
@@ -158,7 +171,7 @@ class SpaceSession(Session):
 
     def run(self):
         self.run_all_episodes()
-        self.data = analysis.analyze_session(self)  # session fitness
+        self.data = analysis.analyze_session(self, tmp_space_session_sub=True)  # session fitness
         self.close()
         return self.data
 
@@ -208,7 +221,7 @@ class Trial:
             workers.append(w)
         for w in workers:
             w.join()
-        session_datas = analysis.session_data_dict_for_dist(self.spec, self.info_space)
+        session_datas = retro_analysis.session_data_dict_for_dist(self.spec, self.info_space)
         return session_datas
 
     def run_sessions(self):

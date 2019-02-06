@@ -202,7 +202,7 @@ class ActorCritic(Reinforce):
     @lab_api
     def train(self):
         '''Trains the algorithm'''
-        if util.get_lab_mode() in ('enjoy', 'eval'):
+        if util.in_eval_lab_modes():
             self.body.flush()
             return np.nan
         if self.shared:
@@ -227,8 +227,7 @@ class ActorCritic(Reinforce):
             # reset
             self.to_train = 0
             self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:.8f}')
-
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -246,7 +245,7 @@ class ActorCritic(Reinforce):
             # reset
             self.to_train = 0
             self.body.flush()
-            logger.debug(f'Trained {self.name}, loss: {loss:.4f}')
+            logger.debug(f'Trained {self.name}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -280,10 +279,8 @@ class ActorCritic(Reinforce):
         if self.entropy_coef_spec is not None:
             entropies = torch.stack(self.body.entropies)
             policy_loss += (-self.body.entropy_coef * entropies)
-            # Store mean entropy for debug logging
-            self.body.mean_entropy = torch.mean(torch.tensor(self.body.entropies)).item()
         policy_loss = torch.mean(policy_loss)
-        logger.debug(f'Actor policy loss: {policy_loss:.4f}')
+        logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
 
     def calc_val_loss(self, batch, v_targets):
@@ -292,7 +289,7 @@ class ActorCritic(Reinforce):
         v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze_(dim=-1)
         assert v_preds.shape == v_targets.shape
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
-        logger.debug(f'Critic value loss: {val_loss:.4f}')
+        logger.debug(f'Critic value loss: {val_loss:g}')
         return val_loss
 
     def calc_gae_advs_v_targets(self, batch):
@@ -347,7 +344,6 @@ class ActorCritic(Reinforce):
 
     @lab_api
     def update(self):
-        net_util.try_store_grad_norm(self)
         self.body.explore_var = self.explore_var_scheduler.update(self, self.body.env.clock)
         if self.entropy_coef_spec is not None:
             self.body.entropy_coef = self.entropy_coef_scheduler.update(self, self.body.env.clock)
