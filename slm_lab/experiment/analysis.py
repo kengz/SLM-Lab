@@ -28,15 +28,8 @@ Fitness analysis
 
 def calc_strength_sr(aeb_df, rand_reward, std_reward):
     '''
-    Given an agent reward at a checkpoint, normalize it with a given baseline rand_reward and solution std_reward, i.e.
+    Calculate strength for each reward as
     strength = (reward - rand_reward) / (std_reward - rand_reward)
-    Agent strength in fitness is its maximum strength
-
-    **Properties:**
-    - random agent has strength 0, standard agent has strength 1.
-    - strength is standardized to be independent of the actual sign and scale of raw reward
-    - scales relative to std_reward: if an agent achieve x2 std_reward, the strength is x2, and so on.
-    This allows for standard comparison between agents on the same problem using an intuitive measurement of strength. With proper scaling by a difficulty factor, we can compare across problems of different difficulties.
     '''
     return (aeb_df['reward'] - rand_reward) / (std_reward - rand_reward)
 
