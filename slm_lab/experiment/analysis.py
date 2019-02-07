@@ -26,105 +26,64 @@ Fitness analysis
 '''
 
 
-def calc_strength(aeb_df, rand_epi_reward, std_epi_reward):
+def calc_strength_sr(aeb_df, rand_reward, std_reward):
     '''
-    For each episode, use the total rewards to calculate the strength as
-    strength_epi = (reward_epi - reward_rand) / (reward_std - reward_rand)
+    Given an agent reward at a checkpoint, normalize it with a given baseline rand_reward and solution std_reward, i.e.
+    strength = (reward - rand_reward) / (std_reward - rand_reward)
+    Agent strength in fitness is its maximum strength
+
     **Properties:**
     - random agent has strength 0, standard agent has strength 1.
-    - if an agent achieve x2 rewards, the strength is ~x2, and so on.
-    - strength of learning agent always tends toward positive regardless of the sign of rewards (some environments use negative rewards)
-    - scale of strength is always standard at 1 and its multiplies, regardless of the scale of actual rewards. Strength stays invariant even as reward gets rescaled.
+    - strength is standardized to be independent of the actual sign and scale of raw reward
+    - scales relative to std_reward: if an agent achieve x2 std_reward, the strength is x2, and so on.
     This allows for standard comparison between agents on the same problem using an intuitive measurement of strength. With proper scaling by a difficulty factor, we can compare across problems of different difficulties.
     '''
-    # use lower clip 0 for noise in reward to dip slighty below rand
-    return (aeb_df['reward'] - rand_epi_reward).clip(0.) / (std_epi_reward - rand_epi_reward)
+    return (aeb_df['reward'] - rand_reward) / (std_reward - rand_reward)
 
 
-def calc_stable_idx(aeb_df, min_strength_ma):
-    '''Calculate the index (epi) when strength first becomes stable (using moving mean and working backward)'''
-    above_std_strength_sr = (aeb_df['strength_ma'] >= min_strength_ma)
-    if above_std_strength_sr.any():
-        # if it achieved stable (ma) min_strength_ma at some point, the index when
-        std_strength_ra_idx = above_std_strength_sr.idxmax()
-        stable_idx = std_strength_ra_idx - (MA_WINDOW - 1)
-    else:
-        stable_idx = np.nan
-    return stable_idx
-
-
-def calc_std_strength_timestep(aeb_df):
+def calc_strength(aeb_df):
     '''
-    Calculate the timestep needed to achieve stable (within NOISE_WINDOW) std_strength.
-    For agent failing to achieve std_strength 1, it is meaningless to measure speed or give false interpolation, so set as inf (never).
+    Strength of an agent in fitness is its maximum strength_ma. Moving average is used to denoise signal.
+    For an agent total reward at a time, calculate strength by normalizing it with a given baseline rand_reward and solution std_reward, i.e.
+    strength = (reward - rand_reward) / (std_reward - rand_reward)
+
+    **Properties:**
+    - random agent has strength 0, standard agent has strength 1.
+    - strength is standardized to be independent of the actual sign and scale of raw reward
+    - scales relative to std_reward: if an agent achieve x2 std_reward, the strength is x2, and so on.
+    This allows for standard comparison between agents on the same problem using an intuitive measurement of strength. With proper scaling by a difficulty factor, we can compare across problems of different difficulties.
     '''
-    std_strength = 1.
-    stable_idx = calc_stable_idx(aeb_df, min_strength_ma=std_strength - NOISE_WINDOW)
-    if np.isnan(stable_idx):
-        std_strength_timestep = np.inf
-    else:
-        std_strength_timestep = aeb_df.loc[stable_idx, 'total_t'] / std_strength
-    return std_strength_timestep
+    return aeb_df['strength_ma'].max()
 
 
 def calc_speed(aeb_df, std_timestep):
     '''
-    For each session, measure the moving average for strength with interval = 100 episodes.
-    Next, measure the total timesteps up to the first episode that first surpasses standard strength, allowing for noise of 0.05.
-    Finally, calculate speed as
-    speed = timestep_std / timestep_solved
+    Find the maximum strength_ma, and the time to first reach it. Then the strength/time divided by the standard std_strength/std_timestep is speed, i.e.
+    speed = (max_strength_ma / timestep_to_first_reach) / (std_strength / std_timestep)
     **Properties:**
     - random agent has speed 0, standard agent has speed 1.
-    - if an agent takes x2 timesteps to exceed standard strength, we can say it is 2x slower.
-    - the speed of learning agent always tends toward positive regardless of the shape of the rewards curve
-    - the scale of speed is always standard at 1 and its multiplies, regardless of the absolute timesteps.
-    For agent failing to achieve standard strength 1, it is meaningless to measure speed or give false interpolation, so the speed is 0.
+    - if both agents reach the same max strength_ma, and one reaches it in half the timesteps, it is twice as fast.
+    - speed is standardized regardless of the scaling of absolute timesteps, or even the max strength attained
     This allows an intuitive measurement of learning speed and the standard comparison between agents on the same problem.
     '''
-    agent_timestep = calc_std_strength_timestep(aeb_df)
-    speed = std_timestep / agent_timestep
+    first_max_idx = aeb_df['strength_ma'].idxmax()  # this returns the first max
+    max_row = aeb_df.loc[first_max_idx]
+    std_strength = 1.
+    speed = (max_row['strength_ma'] / max_row['total_t']) / (std_strength / std_timestep)
     return speed
-
-
-def is_noisy_mono_inc(sr):
-    '''Check if sr is monotonically increasing, (given NOISE_WINDOW = 5%) within noise = 5% * std_strength = 0.05 * 1'''
-    zero_noise = -NOISE_WINDOW
-    mono_inc_sr = np.diff(sr) >= zero_noise
-    # restore sr to same length
-    mono_inc_sr = np.insert(mono_inc_sr, 0, np.nan)
-    return mono_inc_sr
 
 
 def calc_stability(aeb_df):
     '''
-    Find a baseline =
-    - 0. + noise for very weak solution
-    - max(strength_ma_epi) - noise for partial solution weak solution
-    - 1. - noise for solution achieving standard strength and beyond
-    So we get:
-    - weak_baseline = 0. + noise
-    - strong_baseline = min(max(strength_ma_epi), 1.) - noise
-    - baseline = max(weak_baseline, strong_baseline)
-
-    Let epi_baseline be the episode where baseline is first attained. Consider the episodes starting from epi_baseline, let #epi_+ be the number of episodes, and #epi_>= the number of episodes where strength_ma_epi is monotonically increasing.
-    Calculate stability as
-    stability = #epi_>= / #epi_+
+    Stability = fraction of monotonically increasing elements in the denoised series of strength_ma
     **Properties:**
     - stable agent has value 1, unstable agent < 1, and non-solution = 0.
-    - allows for drops strength MA of 5% to account for noise, which is invariant to the scale of rewards
-    - if strength is monotonically increasing (with 5% noise), then it is stable
+    - uses strength_ma to be more robust to noise
     - sharp gain in strength is considered stable
     - monotonically increasing implies strength can keep growing and as long as it does not fall much, it is considered stable
     '''
-    weak_baseline = 0. + NOISE_WINDOW
-    strong_baseline = min(aeb_df['strength_ma'].max(), 1.) - NOISE_WINDOW
-    baseline = max(weak_baseline, strong_baseline)
-    stable_idx = calc_stable_idx(aeb_df, min_strength_ma=baseline)
-    if np.isnan(stable_idx):
-        stability = 0.
-    else:
-        stable_df = aeb_df.loc[stable_idx:, 'strength_mono_inc']
-        stability = stable_df.sum() / len(stable_df)
+    mono_inc_sr = np.diff(aeb_df['strength_ma']) >= 0
+    stability = mono_inc_sr.sum() / mono_inc_sr.size
     return stability
 
 
@@ -179,20 +138,16 @@ def calc_fitness(fitness_vec):
 
 def calc_aeb_fitness_sr(aeb_df, env_name):
     '''Top level method to calculate fitness vector for AEB level data (strength, speed, stability)'''
-    no_fitness_sr = pd.Series({
-        'strength': 0., 'speed': 0., 'stability': 0.})
-    if len(aeb_df) < MA_WINDOW:
-        logger.warn(f'Run more than {MA_WINDOW} episodes to compute proper fitness')
-        return no_fitness_sr
     std = FITNESS_STD.get(env_name)
     if std is None:
         std = FITNESS_STD.get('template')
         logger.warn(f'The fitness standard for env {env_name} is not built yet. Contact author. Using a template standard for now.')
-    aeb_df['strength'] = calc_strength(aeb_df, std['rand_epi_reward'], std['std_epi_reward'])
-    aeb_df['strength_ma'] = aeb_df['strength'].rolling(MA_WINDOW).mean()
-    aeb_df['strength_mono_inc'] = is_noisy_mono_inc(aeb_df['strength']).astype(int)
 
-    strength = aeb_df['strength_ma'].max()
+    # calculate the strength sr and the moving-average (to denoise) first before calculating fitness
+    aeb_df['strength'] = calc_strength_sr(aeb_df, std['rand_epi_reward'], std['std_epi_reward'])
+    aeb_df['strength_ma'] = aeb_df['strength'].rolling(MA_WINDOW, min_periods=0, center=False).mean()
+
+    strength = calc_strength(aeb_df)
     speed = calc_speed(aeb_df, std['std_timestep'])
     stability = calc_stability(aeb_df)
     aeb_fitness_sr = pd.Series({
