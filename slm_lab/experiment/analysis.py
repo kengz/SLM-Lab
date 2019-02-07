@@ -71,15 +71,18 @@ def calc_speed(aeb_df, std_timestep):
 
 def calc_stability(aeb_df):
     '''
-    Stability = fraction of monotonically increasing elements in the denoised series of strength_ma
+    Stability = fraction of monotonically increasing elements in the denoised series of strength_ma, or 0 if strength_ma is all <= 0.
     **Properties:**
     - stable agent has value 1, unstable agent < 1, and non-solution = 0.
     - uses strength_ma to be more robust to noise
     - sharp gain in strength is considered stable
     - monotonically increasing implies strength can keep growing and as long as it does not fall much, it is considered stable
     '''
-    mono_inc_sr = np.diff(aeb_df['strength_ma']) >= 0
-    stability = mono_inc_sr.sum() / mono_inc_sr.size
+    if (aeb_df['strength_ma'].values <= 0.).all():
+        stability = 0.
+    else:
+        mono_inc_sr = np.diff(aeb_df['strength_ma']) >= 0.
+        stability = mono_inc_sr.sum() / mono_inc_sr.size
     return stability
 
 
@@ -196,7 +199,7 @@ def is_unfit(fitness_df, session):
     if FITNESS_STD.get(session.spec['env'][0]['name']) is None:
         return False  # fitness not known
     mean_fitness_df = calc_mean_fitness(fitness_df)
-    return mean_fitness_df['strength'].iloc[0] < NOISE_WINDOW
+    return mean_fitness_df['strength'].iloc[0] <= NOISE_WINDOW
 
 
 '''
