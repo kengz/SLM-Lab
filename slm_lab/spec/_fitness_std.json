@@ -12,7 +12,7 @@
   "CartPole-v0": {
     "rand_epi_reward": 22,
     "std_epi_reward": 195,
-    "std_timestep": 100000
+    "std_timestep": 50000
   },
   "MountainCar-v0": {
     "rand_epi_reward": -200,
