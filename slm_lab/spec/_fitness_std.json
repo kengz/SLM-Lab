@@ -2,7 +2,7 @@
   "template": {
     "rand_epi_reward": 0,
     "std_epi_reward": 1,
-    "std_timestep": 1
+    "std_timestep": 1000000
   },
   "Acrobot-v1": {
     "rand_epi_reward": -500,

@@ -62,7 +62,10 @@ def calc_speed(aeb_df, std_timestep):
     first_max_idx = aeb_df['strength_ma'].idxmax()  # this returns the first max
     max_row = aeb_df.loc[first_max_idx]
     std_strength = 1.
-    speed = (max_row['strength_ma'] / max_row['total_t']) / (std_strength / std_timestep)
+    if max_row['total_t'] == 0:  # especially for random agent
+        speed = 0.
+    else:
+        speed = (max_row['strength_ma'] / max_row['total_t']) / (std_strength / std_timestep)
     return speed
 
 
