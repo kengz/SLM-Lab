@@ -9,23 +9,26 @@
         "explore_var_spec": {
           "name": "linear_decay",
           "start_val": 1.0,
-          "end_val": 0.05,
-          "start_step": 30000,
+          "end_val": 0.01,
+          "start_step": 10000,
           "end_step": 1000000
         },
         "gamma": 0.99,
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_start_step": 30000,
+        "training_start_step": 10000,
         "normalize_state": false
       },
       "memory": {
         "name": "AtariReplay",
         "batch_size": 32,
-        "max_size": 250000,
+        "max_size": 200000,
         "stack_len": 4,
-        "use_cer": false
+        "use_cer": false,
+        "alpha": 0.6,
+        "epsilon": 1e-6,
+
       },
       "net": {
         "type": "ConvNet",
@@ -34,7 +37,7 @@
           [64, 4, 2, 0, 1],
           [64, 3, 1, 0, 1]
         ],
-        "fc_hid_layers": [512],
+        "fc_hid_layers": [256],
         "hid_layers_activation": "relu",
         "init_fn": null,
         "batch_norm": false,
@@ -50,8 +53,9 @@
           "momentum": 0.95
         },
         "lr_scheduler_spec": null,
-        "update_type": "replace",
-        "update_frequency": 10000,
+        "update_type": "polyak",
+        "update_frequency": 10,
+        "polyak_coef": 0.992,
         "gpu": true
       }
     }],
@@ -68,11 +72,11 @@
       "distributed": false,
       "eval_frequency": 10000,
       "max_tick_unit": "total_t",
-      "max_session": 6,
-      "max_trial": 16,
+      "max_session": 4,
+      "max_trial": 12,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 12
       }
     }
   }
