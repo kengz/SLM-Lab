@@ -1,33 +1,35 @@
 {
-  "dqn_per_qbert": {
+  "ppo_shared_seaquest": {
     "agent": [{
-      "name": "DQN",
+      "name": "PPO",
       "algorithm": {
-        "name": "DQN",
-        "action_pdtype": "Argmax",
-        "action_policy": "epsilon_greedy",
-        "explore_var_spec": {
-          "name": "linear_decay",
-          "start_val": 1.0,
-          "end_val": 0.01,
-          "start_step": 10000,
-          "end_step": 1000000
-        },
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
         "gamma": 0.99,
-        "training_batch_epoch": 1,
-        "training_epoch": 1,
-        "training_frequency": 4,
-        "training_start_step": 10000,
+        "lam": 0.95,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.0,
+          "start_step": 10000,
+          "end_step": 10000000
+        },
+        "entropy_coef_spec": {
+          "name": "no_decay",
+          "start_val": 0.01,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "val_loss_coef": 1.0,
+        "training_frequency": 1,
+        "training_epoch": 3,
         "normalize_state": false
       },
       "memory": {
-        "name": "AtariPrioritizedReplay",
-        "alpha": 0.6,
-        "epsilon": 0.0001,
-        "batch_size": 32,
-        "max_size": 200000,
-        "stack_len": 4,
-        "use_cer": false
+        "name": "OnPolicyAtariReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -41,24 +43,20 @@
         "init_fn": null,
         "batch_norm": false,
         "clip_grad_val": 1.0,
+        "use_same_optim": false,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "RMSprop",
-          "lr": 6.25e-5,
-          "alpha": 0.95,
-          "eps": 1e-1,
-          "momentum": 0.95
+          "name": "Adam",
+          "lr": 2.5e-4
         },
         "lr_scheduler_spec": null,
-        "update_type": "replace",
-        "update_frequency": 5000,
         "gpu": true
       }
     }],
     "env": [{
-      "name": "QbertNoFrameskip-v4",
+      "name": "SeaquestNoFrameskip-v4",
       "max_t": null,
       "max_tick": 10000000
     }],
@@ -71,10 +69,10 @@
       "eval_frequency": 10000,
       "max_tick_unit": "total_t",
       "max_session": 4,
-      "max_trial": 16,
+      "max_trial": 12,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 16
+        "num_cpus": 12
       }
     }
   }
