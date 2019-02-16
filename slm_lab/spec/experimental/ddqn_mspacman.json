@@ -50,8 +50,8 @@
           "momentum": 0.95
         },
         "lr_scheduler_spec": null,
-        "update_type": "replace",
-        "update_frequency": 5000,
+        "update_type": "polyak",
+        "polyak_coef": 0.9992,
         "gpu": true
       }
     }],
