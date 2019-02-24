@@ -26,9 +26,6 @@
         "max_size": 200000,
         "stack_len": 4,
         "use_cer": false,
-        "alpha": 0.6,
-        "epsilon": 1e-6,
-
       },
       "net": {
         "type": "ConvNet",
@@ -53,9 +50,8 @@
           "momentum": 0.95
         },
         "lr_scheduler_spec": null,
-        "update_type": "polyak",
-        "update_frequency": 10,
-        "polyak_coef": 0.992,
+        "update_type": "replace",
+        "update_frequency": 5000,
         "gpu": true
       }
     }],
