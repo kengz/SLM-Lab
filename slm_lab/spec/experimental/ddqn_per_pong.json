@@ -1,5 +1,5 @@
 {
-  "ddqn_pong": {
+  "ddqn_per_pong": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {
