@@ -51,7 +51,7 @@
         },
         "lr_scheduler_spec": null,
         "update_type": "replace",
-        "update_frequency": 5000,
+        "update_frequency": 1000,
         "gpu": true
       }
     }],
