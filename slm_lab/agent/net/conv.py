@@ -48,6 +48,7 @@ class ConvNet(Net, nn.Module):
         },
         "update_type": "replace",
         "update_frequency": 10000,
+        "update_frequency_short": 1000,
         "polyak_coef": 0.9,
         "gpu": true
     }
@@ -69,6 +70,7 @@ class ConvNet(Net, nn.Module):
         lr_scheduler_spec: Pytorch optim.lr_scheduler
         update_type: method to update network weights: 'replace' or 'polyak'
         update_frequency: how many total timesteps per update
+        update_frequency_short: how many total timesteps per update for the 2nd target net (used for DoubleDQN)
         polyak_coef: ratio of polyak weight update
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
@@ -85,6 +87,7 @@ class ConvNet(Net, nn.Module):
             lr_scheduler_spec=None,
             update_type='replace',
             update_frequency=1,
+            update_frequency_short=1,
             polyak_coef=0.0,
             gpu=False,
         ))
@@ -100,6 +103,7 @@ class ConvNet(Net, nn.Module):
             'lr_scheduler_spec',
             'update_type',
             'update_frequency',
+            'update_frequency_short',
             'polyak_coef',
             'gpu',
         ])

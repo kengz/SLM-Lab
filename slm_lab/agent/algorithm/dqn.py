@@ -285,6 +285,24 @@ class DoubleDQN(DQN):
     '''
     @lab_api
     def init_nets(self, global_nets=None):
-        super(DoubleDQN, self).init_nets(global_nets)
-        self.online_net = self.net
+        '''Initialize networks'''
+        super(DoubleDQN, self).init_nets(global_nets=global_nets)
+        if global_nets is None:
+            in_dim = self.body.state_dim
+            out_dim = net_util.get_out_dim(self.body)
+            NetClass = getattr(net, self.net_spec['type'])
+            self.target_net_2 = NetClass(self.net_spec, in_dim, out_dim)
+            self.net_names = ['net', 'target_net', 'target_net_2']
+        self.post_init_nets()
+        self.online_net = self.target_net_2
         self.eval_net = self.target_net
+
+    def update_nets(self):
+        super(DoubleDQN, self).update_nets()
+        total_t = self.body.env.clock.total_t
+        if total_t % self.net.update_frequency_short == 0:
+            if self.net.update_type == 'replace':
+                logger.debug('Updating target_net_2 by replacing')
+                net_util.copy(self.net, self.target_net_2)
+            else:
+                raise ValueError('Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
