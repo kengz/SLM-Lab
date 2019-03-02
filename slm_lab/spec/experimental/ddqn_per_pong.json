@@ -45,16 +45,12 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "RMSprop",
-          "lr": 6.25e-5,
-          "alpha": 0.95,
-          "eps": 1e-1,
-          "momentum": 0.95
+          "name": "Adam",
+          "lr": 2.5e-5,
         },
         "lr_scheduler_spec": null,
         "update_type": "replace",
-        "update_frequency": 5000,
-        "update_frequency_short": 1000,
+        "update_frequency": 1000,
         "gpu": true
       }
     }],
