@@ -1,5 +1,5 @@
 {
-  "dqn_per_enduro": {
+  "dqn_enduro": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -21,9 +21,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "AtariPrioritizedReplay",
-        "alpha": 0.6,
-        "epsilon": 0.0001,
+        "name": "AtariReplay",
         "batch_size": 32,
         "max_size": 200000,
         "stack_len": 4,
@@ -45,15 +43,12 @@
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
-          "name": "RMSprop",
-          "lr": 6.25e-5,
-          "alpha": 0.95,
-          "eps": 1e-1,
-          "momentum": 0.95
+          "name": "Adam",
+          "lr": 1e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "replace",
-        "update_frequency": 5000,
+        "update_frequency": 1000,
         "gpu": true
       }
     }],
