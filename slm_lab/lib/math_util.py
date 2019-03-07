@@ -105,13 +105,22 @@ def calc_q_value_logits(state_value, raw_advantages):
 
 
 def standardize(v):
-    '''Method to standardize a rank-1 tensor'''
-    v_std = v.std()
+    '''Method to standardize a rank-1 np array'''
+    v_stdev = v.std()
     # guard nan std by setting to 0 and add small const
-    v_std[v_std != v_std] = 0  # nan guard
-    v_std += 1e-08  # division guard
-    v = (v - v.mean()) / v_std
-    return v
+    v_stdev[v_stdev != v_stdev] = 0  # nan guard
+    v_stdev += 1e-08  # division guard
+    v_std = (v - v.mean()) / v_stdev
+    return v_std
+
+
+def normalize(v):
+    '''Method to normalize a rank-1 np array'''
+    v_min = v.min()
+    v_max = v.max()
+    v_range = v_max - v_min
+    v_norm = (v - v_min) / v_range
+    return v_norm
 
 
 # generic variable decay methods
