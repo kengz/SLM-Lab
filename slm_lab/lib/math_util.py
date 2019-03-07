@@ -119,6 +119,7 @@ def normalize(v):
     v_min = v.min()
     v_max = v.max()
     v_range = v_max - v_min
+    v_range += 1e-08  # division guard
     v_norm = (v - v_min) / v_range
     return v_norm
 
