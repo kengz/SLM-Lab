@@ -12,22 +12,6 @@ sudo apt-get update && \
     python3-dev zlib1g-dev libjpeg-dev cmake swig python-pyglet python3-opengl libboost-all-dev libsdl2-dev libosmesa6-dev patchelf ffmpeg xvfb && \
     sudo rm -rf /var/lib/apt/lists/*
 
-echo "--- Installing NodeJS Lab interface ---"
-if which node >/dev/null; then
-  echo "Nodejs is already installed"
-else
-  curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
-  sudo apt-get install -y nodejs
-  sudo npm install --unsafe-perm=true --allow-root -g yarn
-fi
-
-echo "--- Installing npm modules for Lab interface ---"
-if [ -d ./node_modules ]; then
-  echo "Npm modules are already installed"
-else
-  yarn install
-fi
-
 echo "--- Installing Conda ---"
 if which conda >/dev/null; then
   echo "Conda is already installed"

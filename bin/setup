@@ -32,6 +32,18 @@ else
   $BIN_DIR/setup_ubuntu
 fi
 
+# Run extra setup
+if [ "$1" == "extra" ]; then
+  echo "Running extra optional setup"
+  if [ $(uname) == "Darwin" ]; then
+    $BIN_DIR/setup_macOS_extra
+  elif [ -f '/etc/arch-release' ]; then
+    $BIN_DIR/setup_arch_extra
+  else
+    $BIN_DIR/setup_ubuntu_extra
+  fi
+fi
+
 echo "
 ------------------------------------------------
 
