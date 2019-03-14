@@ -22,7 +22,7 @@ dependencies:
   - pillow=5.0.0=py36_0
   - pip=9.0.1=py36_1
   - plotly=3.4.2
-  - plotly-orca=1.1.1
+  - plotly-orca=1.2.1
   - psutil=5.4.7
   - pycodestyle=2.3.1=py36_0
   - pydash=4.2.1=py_0
@@ -40,7 +40,7 @@ dependencies:
   - urllib3=1.22=py36_0
   - wheel=0.30.0=py36_2
   - xlrd=1.1.0=py_2
-  - pytorch-nightly=1.0.0
+  - pytorch=1.0.1=py36_0
   - pip:
     - atari-py==0.1.1
     - box2d-py==2.3.8
@@ -55,6 +55,5 @@ dependencies:
     - pyopengl==3.1.0
     - ray==0.5.3
     - redis==2.10.6
-    - unityagents==0.2.0
     - xvfbwrapper==0.2.9
     - vizdoom==1.1.6
