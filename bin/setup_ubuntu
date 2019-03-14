@@ -21,6 +21,13 @@ else
   sudo npm install --unsafe-perm=true --allow-root -g yarn
 fi
 
+echo "--- Installing npm modules for Lab interface ---"
+if [ -d ./node_modules ]; then
+  echo "Npm modules are already installed"
+else
+  yarn install
+fi
+
 echo "--- Installing Conda ---"
 if which conda >/dev/null; then
   echo "Conda is already installed"
@@ -30,13 +37,6 @@ else
   rm Miniconda3-latest-Linux-x86_64.sh
   echo '. ~/miniconda3/etc/profile.d/conda.sh' >> ~/.bashrc
   source ~/.bashrc
-fi
-
-echo "--- Installing npm modules for Lab interface ---"
-if [ -d ./node_modules ]; then
-  echo "Npm modules are already installed"
-else
-  yarn install
 fi
 
 echo "--- Installing Conda environment ---"
