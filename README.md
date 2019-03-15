@@ -213,7 +213,6 @@ Deep Reinforcement Learning is highly empirical. The lab enables rapid and massi
     ```shell
     cd SLM-Lab/
     bin/setup
-    conda activate lab
     ```
 
 >For optional extra setup, use `bin/setup extra` instead. E.g. to install Unity environments
