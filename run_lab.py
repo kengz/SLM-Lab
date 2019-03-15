@@ -1,7 +1,7 @@
 '''
 The entry point of SLM Lab
 Specify what to run in `config/experiments.json`
-Then run `yarn start` or `python run_lab.py`
+Then run `python run_lab.py` or `yarn start`
 '''
 import os
 # NOTE increase if needed. Pytorch thread overusage https://github.com/pytorch/pytorch/issues/975

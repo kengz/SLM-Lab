@@ -1,0 +1,26 @@
+#!/bin/bash --login
+# Sets up extra dependencies for Unity
+
+# Fail on the first error; killable by SIGINT
+set -e
+trap "exit" INT
+
+echo "--- Installing NodeJS Lab interface ---"
+if which node >/dev/null; then
+  echo "Nodejs is already installed"
+else
+  sudo pacman -Sy --needed nodejs npm
+  sudo npm install --unsafe-perm=true --allow-root -g yarn
+fi
+
+echo "--- Installing npm modules for Lab interface ---"
+if [ -d ./node_modules ]; then
+  echo "Npm modules are already installed"
+else
+  yarn install
+fi
+
+echo "--- Installing Unity ML agents ---"
+conda activate lab
+pip install unityagents==0.2.0
+pip uninstall -y tensorflow tensorboard

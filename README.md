@@ -213,10 +213,9 @@ Deep Reinforcement Learning is highly empirical. The lab enables rapid and massi
     ```shell
     cd SLM-Lab/
     bin/setup
-    yarn install
-    conda activate lab
     ```
 
+>For optional extra setup, use `bin/setup extra` instead. E.g. to install Unity environments
 >Alternatively, run the content of [`bin/setup_macOS` or `bin/setup_ubuntu`](https://github.com/kengz/SLM-Lab/tree/master/bin) on your terminal manually.
 >Docker image and Dockerfile with instructions are also available
 
@@ -228,10 +227,10 @@ To update SLM Lab, pull the latest git commits and run update:
 
 ```shell
 git pull
-conda env update -f environment.yml; yarn install;
+conda env update -f environment.yml
 ```
 
->Alternatively, use the shorthand command `yarn update` to replace the last line
+>To update Unity environments obtained from the `extra` setup, run `yarn install`
 
 ### Demo
 
@@ -259,11 +258,11 @@ It is `DQN` in `CartPole-v0`:
 2. Launch terminal in the repo directory, run the lab with the demo spec in `dev` lab mode:
     ```shell
     conda activate lab
-    yarn start demo.json dqn_cartpole dev
+    python run_lab.py demo.json dqn_cartpole dev
     ```
     >To run any lab commands, conda environment must be activated first. See [Installation](#installation) for more.
 
-    >`yarn start` is a shorthand for `python run_lab.py`
+    >With extra setup: `yarn start` can be used as a shorthand for `python run_lab.py`
 
 3. This demo will run a single trial using the default parameters, and render the environment. After completion, check the output for data `data/dqn_cartpole_2018_06_16_214527/` (timestamp will differ). You should see some healthy graphs.
 
@@ -275,7 +274,7 @@ It is `DQN` in `CartPole-v0`:
 
 4. Enjoy mode - when a session ends, a model file will automatically save. You can find the session `prepath` that ends in its trial and session numbers. The example above is trial 1 session 0, and you can see a pytorch model saved at `data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_model_net.pth`. Use the following command to run from the saved folder in `data/`:
     ```bash
-    yarn start data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_spec.json dqn_cartpole enjoy@dqn_cartpole_t1_s0
+    python run_lab.py data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_spec.json dqn_cartpole enjoy@dqn_cartpole_t1_s0
     ```
     >Enjoy mode will automatically disable learning and exploration. Graphs will still save.
 
@@ -283,12 +282,12 @@ It is `DQN` in `CartPole-v0`:
 
 5. The above was in `dev` mode. To run in proper training mode, which is faster without rendering, change the `dev` lab mode to `train`, and the same data is produced.
     ```shell
-    yarn start demo.json dqn_cartpole train
+    python run_lab.py demo.json dqn_cartpole train
     ```
 
 6. Next, perform a hyperparameter search using the lab mode `search`. This runs experiments of multiple trials with hyperparameter search, defined at the bottom section of the demo spec.
     ```bash
-    yarn start demo.json dqn_cartpole search
+    python run_lab.py demo.json dqn_cartpole search
     ```
 
     When it ends, refer to `{prepath}_experiment_graph.png` and `{prepath}_experiment_df.csv` to find the best trials.
