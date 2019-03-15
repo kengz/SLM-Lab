@@ -138,7 +138,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 250,
+      "max_tick": 100,
     }],
     "body": {
       "product": "outer",
@@ -148,28 +148,21 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
-      "max_session": 4,
-      "max_trial": 100,
+      "max_session": 2,
+      "max_trial": 16,
       "search": "RandomSearch"
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000],
-          }
+          "gamma__uniform": [0.8, 0.999],
         },
         "net": {
           "hid_layers__choice": [
             [32],
             [64],
-            [32, 16],
             [64, 32]
           ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
-          }
         }
       }]
     }
