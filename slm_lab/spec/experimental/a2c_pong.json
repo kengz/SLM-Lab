@@ -1,21 +1,14 @@
 {
-  "ppo_pong": {
+  "a2c_pong": {
     "agent": [{
-      "name": "PPO",
+      "name": "A2C",
       "algorithm": {
-        "name": "PPO",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 0.95,
-        "clip_eps_spec": {
-          "name": "linear_decay",
-          "start_val": 0.10,
-          "end_val": 0.0,
-          "start_step": 10000,
-          "end_step": 10000000
-        },
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
