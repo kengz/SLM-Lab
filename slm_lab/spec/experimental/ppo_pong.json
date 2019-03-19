@@ -8,8 +8,7 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": null,
-        "num_step_returns": 5,
+        "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
           "start_val": 0.10,
@@ -26,7 +25,7 @@
         },
         "val_loss_coef": 0.5,
         "training_frequency": 1,
-        "training_epoch": 3,
+        "training_epoch": 4,
         "normalize_state": false
       },
       "memory": {
