@@ -8,7 +8,8 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 0.95,
+        "lam": null,
+        "num_step_returns": 5,
         "clip_eps_spec": {
           "name": "linear_decay",
           "start_val": 0.10,
@@ -70,7 +71,7 @@
       "distributed": false,
       "eval_frequency": 10000,
       "max_tick_unit": "total_t",
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 4,
       "search": "RandomSearch",
       "resources": {

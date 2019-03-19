@@ -8,7 +8,8 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 0.95,
+        "lam": null,
+        "num_step_returns": 5,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -18,7 +19,7 @@
         },
         "val_loss_coef": 0.5,
         "training_frequency": 1,
-        "training_epoch": 3,
+        "training_epoch": 1,
         "normalize_state": false
       },
       "memory": {
@@ -63,7 +64,7 @@
       "distributed": false,
       "eval_frequency": 10000,
       "max_tick_unit": "total_t",
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 4,
       "search": "RandomSearch",
       "resources": {
