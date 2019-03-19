@@ -69,6 +69,15 @@
       "resources": {
         "num_cpus": 12
       }
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "actor_optim_spec": {
+            "lr__grid_search": [0.00025, 0.002, 0.02, 0.1]
+          }
+        }
+      }]
     }
   }
 }
