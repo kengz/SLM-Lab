@@ -10,14 +10,6 @@ sudo pacman -Suy
 sudo pacman -Sy --needed git cmake gcc
 sudo pacman -Sy --needed zlib libjpeg-turbo xorg-server-xvfb gst-libav xorg-server-devel python-opengl boost sdl swig base-devel gcc-libs hdf5 openblas
 
-echo "--- Installing NodeJS Lab interface ---"
-if which node >/dev/null; then
-  echo "Nodejs is already installed"
-else
-  sudo pacman -Sy --needed nodejs npm
-  sudo npm install --unsafe-perm=true --allow-root -g yarn
-fi
-
 echo "--- Installing Conda ---"
 if which conda >/dev/null; then
   echo "Conda is already installed"
@@ -25,13 +17,6 @@ else
   sudo pacman -Sy --needed python-conda
   echo '. /etc/profile.d/conda.sh' >> ~/.bashrc
   source ~/.bashrc
-fi
-
-echo "--- Installing npm modules for Lab interface ---"
-if [ -d ./node_modules ]; then
-  echo "Npm modules are already installed"
-else
-  yarn install
 fi
 
 echo "--- Installing Conda environment ---"
