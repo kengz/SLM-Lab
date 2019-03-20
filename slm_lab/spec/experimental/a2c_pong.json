@@ -41,17 +41,13 @@
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
-          "name": "SmoothL1Loss"
+          "name": "MSELoss"
         },
         "actor_optim_spec": {
           "name": "RMSprop",
           "lr": 7e-4,
           "alpha": 0.99,
           "eps": 1e-5
-        },
-        "actor_optim_spec": {
-          "name": "Adam",
-          "lr": 2.5e-4
         },
         "critic_optim_spec": null,
         "lr_scheduler_spec": null,
@@ -80,9 +76,12 @@
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "training_frequency__grid_search": [32, 64, 128, 256]
+        },
         "net": {
           "actor_optim_spec": {
-            "lr__grid_search": [7e-4, 7e-3, 7e-2, 0.1]
+            "lr__grid_search": [7e-4, 7e-3, 7e-2]
           }
         }
       }]
