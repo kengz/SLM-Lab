@@ -81,7 +81,7 @@
       "agent": [{
         "net": {
           "actor_optim_spec": {
-            "lr__grid_search": [0.00025, 0.002, 0.02, 0.1]
+            "lr__grid_search": [7e-4, 7e-3, 7e-2, 0.1]
           }
         }
       }]
