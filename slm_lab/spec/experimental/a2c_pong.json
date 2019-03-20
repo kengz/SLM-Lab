@@ -77,11 +77,11 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_frequency__grid_search": [32, 64, 128, 256]
+          "training_frequency__grid_search": [64, 256]
         },
         "net": {
           "actor_optim_spec": {
-            "lr__grid_search": [7e-4, 7e-3, 7e-2]
+            "lr__grid_search": [7e-4, 7e-3]
           }
         }
       }]
