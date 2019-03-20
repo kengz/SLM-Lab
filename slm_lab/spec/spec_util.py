@@ -116,6 +116,7 @@ def get(spec_file, spec_name):
 
     spec = spec_util.get('base.json', 'base_case_openai')
     '''
+    spec_file = spec_file.replace(SPEC_DIR, '')  # cleanup
     if 'data/' in spec_file:
         assert spec_name in spec_file, 'spec_file in data/ must be lab-generated and contains spec_name'
         spec = util.read(spec_file)
