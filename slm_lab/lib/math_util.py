@@ -79,21 +79,21 @@ def calc_nstep_returns(batch, gamma, n, next_v_preds):
     return nstep_rets
 
 
-def calc_gaes(rewards, v_preds, next_v_preds, gamma, lam):
+def calc_gaes(rewards, v_preds, gamma, lam):
     '''
-    Calculate GAE
-    See http://www.breloff.com/DeepRL-OnlineGAE/ for clear example.
-    v_preds are values predicted for current states
-    next_v_preds are values predicted for next states
-    NOTE for standardization trick, do it out of here
+    Calculate GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
+    v_preds are values predicted for current states, with one last element as the final next_state
+    delta is defined as r + gamma * V(s') - V(s) in eqn 10
+    GAE is defined in eqn 16
+    NOTE any standardization is done outside of this method
     '''
     T = len(rewards)
     assert not torch.isnan(rewards).any()
-    assert T == len(v_preds)
+    assert T + 1 == len(v_preds)  # v_preds includes states and 1 last next_state
     gaes = torch.empty(T, dtype=torch.float32, device=v_preds.device)
     future_gae = 0.0
     for t in reversed(range(T)):
-        delta = rewards[t] + gamma * next_v_preds[t] - v_preds[t]
+        delta = rewards[t] + gamma * v_preds[t+1] - v_preds[t]
         gaes[t] = future_gae = delta + gamma * lam * future_gae
     assert not torch.isnan(gaes).any(), f'GAE has nan: {gaes}'
     return gaes
