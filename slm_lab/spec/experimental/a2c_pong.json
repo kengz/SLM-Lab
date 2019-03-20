@@ -18,12 +18,13 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 128,
+        "training_frequency": 64,
         "training_epoch": 1,
         "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyAtariBatchReplay"
+        "name": "OnPolicyAtariBatchReplay",
+        "stack_len": 4
       },
       "net": {
         "type": "ConvNet",
