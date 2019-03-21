@@ -99,10 +99,10 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 
 To update SLM Lab, pull the latest git commits and run update:
 
-    ```shell
-    git pull
-    conda env update -f environment.yml
-    ```
+```shell
+git pull
+conda env update -f environment.yml
+```
 
 >To update Unity environments obtained from the `extra` setup, run `yarn install`
 
