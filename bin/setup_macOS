@@ -23,21 +23,6 @@ for item in "${hb_list[@]}"; do
   brew info "${item}" | grep --quiet "Not installed" && brew install "${item}"
 done
 
-echo "--- Installing NodeJS Lab interface ---"
-if which node >/dev/null; then
-  echo "NodeJS is already installed"
-else
-  brew install node
-  brew install yarn
-fi
-
-echo "--- Installing npm modules for Lab interface ---"
-if [ -d ./node_modules ]; then
-  echo "Npm modules are already installed"
-else
-  yarn install
-fi
-
 echo "--- Installing Conda ---"
 if which conda >/dev/null; then
   echo "Conda is already installed"

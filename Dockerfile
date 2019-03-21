@@ -22,11 +22,6 @@ RUN apt-get update && \
     python3-dev zlib1g-dev libjpeg-dev cmake swig python-pyglet python3-opengl libboost-all-dev libsdl2-dev libosmesa6-dev patchelf ffmpeg xvfb && \
     rm -rf /var/lib/apt/lists/*
 
-# NodeJS and yarn for unity package management and command
-RUN curl -sL https://deb.nodesource.com/setup_11.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g yarn
-
 RUN curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
     bash Miniconda3-latest-Linux-x86_64.sh -b && \
     rm Miniconda3-latest-Linux-x86_64.sh && \
@@ -40,18 +35,26 @@ RUN mkdir -p /root/SLM-Lab
 WORKDIR /root/SLM-Lab
 
 # install dependencies, only retrigger on dependency changes
-COPY package.json yarn.lock ./
-RUN yarn install
-
 COPY environment.yml environment.yml
 # install Python and Conda dependencies
 RUN . ~/miniconda3/etc/profile.d/conda.sh && \
     conda create -n lab python=3.6 -y && \
     conda activate lab && \
     conda env update -f environment.yml && \
-    pip uninstall -y tensorflow tensorboard && \
     conda clean -y --all && \
     rm -rf ~/.cache/pip
+
+# Install extra dependencies for Unity ML agent
+# NodeJS and yarn for unity package management and command
+RUN curl -sL https://deb.nodesource.com/setup_11.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g yarn
+COPY package.json yarn.lock ./
+RUN yarn install
+RUN . ~/miniconda3/etc/profile.d/conda.sh && \
+    conda activate lab && \
+    pip install unityagents==0.2.0 && \
+    pip uninstall -y tensorflow tensorboard
 
 # copy file at last to not trigger changes above unnecessarily
 COPY . .
