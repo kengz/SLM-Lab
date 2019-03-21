@@ -82,11 +82,11 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
     assert T + 1 == len(v_preds)  # v_preds includes states and 1 last next_state
     gaes = torch.empty(T, dtype=torch.float32, device=v_preds.device)
     future_gae = 0.0  # this will autocast to tensor below
+    # to multiply with not_dones to handle episode boundary (last state has no V(s'))
+    not_dones = 1 - dones
     for t in reversed(range(T)):
-        # multiply with not_done to handle episode boundary (last state has no V(s'))
-        not_done = 1 - dones[t]
-        delta = rewards[t] + gamma * v_preds[t + 1] * not_done - v_preds[t]
-        gaes[t] = future_gae = delta + gamma * lam * not_done * future_gae
+        delta = rewards[t] + gamma * v_preds[t + 1] * not_dones[t] - v_preds[t]
+        gaes[t] = future_gae = delta + gamma * lam * not_dones[t] * future_gae
     assert not torch.isnan(gaes).any(), f'GAE has nan: {gaes}'
     return gaes
 
