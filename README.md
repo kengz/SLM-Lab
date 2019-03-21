@@ -76,6 +76,103 @@ SLM Lab is created for deep reinforcement learning research and applications. Th
 - analytical clarity with auto-generated results and graphs at session, trial, experiment levels
 - fitness metric as a richer measurement of an algorithm's performance
 
+## Installation
+
+1. Clone the [SLM-Lab repo](https://github.com/kengz/SLM-Lab):
+    ```shell
+    git clone https://github.com/kengz/SLM-Lab.git
+    ```
+
+2. Install dependencies (or inspect `bin/setup_*` first):
+    ```shell
+    cd SLM-Lab/
+    bin/setup
+    ```
+
+>For optional extra setup, use `bin/setup extra` instead. E.g. to install Unity environments
+>Alternatively, run the content of [`bin/setup_macOS` or `bin/setup_ubuntu`](https://github.com/kengz/SLM-Lab/tree/master/bin) on your terminal manually.
+>Docker image and Dockerfile with instructions are also available
+
+>Useful reference: [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html)
+
+### Update
+
+To update SLM Lab, pull the latest git commits and run update:
+
+    ```shell
+    git pull
+    conda env update -f environment.yml
+    ```
+
+>To update Unity environments obtained from the `extra` setup, run `yarn install`
+
+### Demo
+
+Run the demo to quickly see the lab in action (and to test your installation).
+
+![](https://kengz.gitbooks.io/slm-lab/content/assets/demo.png)
+
+It is `DQN` in `CartPole-v0`:
+
+1. See `slm_lab/spec/demo.json` for example spec:
+    ```json
+    "dqn_cartpole": {
+      "agent": [{
+        "name": "DQN",
+        "algorithm": {
+          "name": "DQN",
+          "action_pdtype": "Argmax",
+          "action_policy": "epsilon_greedy",
+        ...
+        }
+      }]
+    }
+    ```
+
+2. Launch terminal in the repo directory, run the lab with the demo spec in `dev` lab mode:
+    ```shell
+    conda activate lab
+    python run_lab.py slm_lab/spec/demo.json dqn_cartpole dev
+    ```
+    >To run any lab commands, conda environment must be activated first. See [Installation](#installation) for more.
+    >Spec file is autoresolved from `slm_lab/spec/`, so you may use just `demo.json` too.
+
+    >With extra setup: `yarn start` can be used as a shorthand for `python run_lab.py`
+
+3. This demo will run a single trial using the default parameters, and render the environment. After completion, check the output for data `data/dqn_cartpole_2018_06_16_214527/` (timestamp will differ). You should see some healthy graphs.
+
+    ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_trial_graph.png)
+    >Trial graph showing average envelope of repeated sessions.
+
+    ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
+    >Session graph showing total rewards, exploration variable and loss for the episodes.
+
+4. Enjoy mode - when a session ends, a model file will automatically save. You can find the session `prepath` that ends in its trial and session numbers. The example above is trial 1 session 0, and you can see a pytorch model saved at `data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_model_net.pth`. Use the following command to run from the saved folder in `data/`:
+    ```bash
+    python run_lab.py data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_spec.json dqn_cartpole enjoy@dqn_cartpole_t1_s0
+    ```
+    >Enjoy mode will automatically disable learning and exploration. Graphs will still save.
+
+    >To run the best model, use the best saved checkpoint `enjoy@dqn_cartpole_t1_s0_ckptbest`
+
+5. The above was in `dev` mode. To run in proper training mode, which is faster without rendering, change the `dev` lab mode to `train`, and the same data is produced.
+    ```shell
+    python run_lab.py slm_lab/spec/demo.json dqn_cartpole train
+    ```
+
+6. Next, perform a hyperparameter search using the lab mode `search`. This runs experiments of multiple trials with hyperparameter search, defined at the bottom section of the demo spec.
+    ```bash
+    python run_lab.py slm_lab/spec/demo.json dqn_cartpole search
+    ```
+
+    When it ends, refer to `{prepath}_experiment_graph.png` and `{prepath}_experiment_df.csv` to find the best trials.
+
+>If the demo fails, consult [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html).
+
+Now the lab is ready for usage.
+
+**Read on: [Github](https://github.com/kengz/SLM-Lab) | [Documentation](https://kengz.gitbooks.io/slm-lab/content/)**
+
 ## Implementations
 
 SLM Lab implements most of the recent canonical algorithms and various extensions. These are used as the base of research. All the implementations follow this design:
@@ -201,103 +298,6 @@ Deep Reinforcement Learning is highly empirical. The lab enables rapid and massi
 
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
 >Session graph showing total rewards, exploration variable and loss for the episodes.
-
-## Installation
-
-1. Clone the [SLM-Lab repo](https://github.com/kengz/SLM-Lab):
-    ```shell
-    git clone https://github.com/kengz/SLM-Lab.git
-    ```
-
-2. Install dependencies (or inspect `bin/setup_*` first):
-    ```shell
-    cd SLM-Lab/
-    bin/setup
-    ```
-
->For optional extra setup, use `bin/setup extra` instead. E.g. to install Unity environments
->Alternatively, run the content of [`bin/setup_macOS` or `bin/setup_ubuntu`](https://github.com/kengz/SLM-Lab/tree/master/bin) on your terminal manually.
->Docker image and Dockerfile with instructions are also available
-
->Useful reference: [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html)
-
-### Update
-
-To update SLM Lab, pull the latest git commits and run update:
-
-    ```shell
-    git pull
-    conda env update -f environment.yml
-    ```
-
->To update Unity environments obtained from the `extra` setup, run `yarn install`
-
-### Demo
-
-Run the demo to quickly see the lab in action (and to test your installation).
-
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo.png)
-
-It is `DQN` in `CartPole-v0`:
-
-1. See `slm_lab/spec/demo.json` for example spec:
-    ```json
-    "dqn_cartpole": {
-      "agent": [{
-        "name": "DQN",
-        "algorithm": {
-          "name": "DQN",
-          "action_pdtype": "Argmax",
-          "action_policy": "epsilon_greedy",
-        ...
-        }
-      }]
-    }
-    ```
-
-2. Launch terminal in the repo directory, run the lab with the demo spec in `dev` lab mode:
-    ```shell
-    conda activate lab
-    python run_lab.py slm_lab/spec/demo.json dqn_cartpole dev
-    ```
-    >To run any lab commands, conda environment must be activated first. See [Installation](#installation) for more.
-    >Spec file is autoresolved from `slm_lab/spec/`, so you may use just `demo.json` too.
-
-    >With extra setup: `yarn start` can be used as a shorthand for `python run_lab.py`
-
-3. This demo will run a single trial using the default parameters, and render the environment. After completion, check the output for data `data/dqn_cartpole_2018_06_16_214527/` (timestamp will differ). You should see some healthy graphs.
-
-    ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_trial_graph.png)
-    >Trial graph showing average envelope of repeated sessions.
-
-    ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
-    >Session graph showing total rewards, exploration variable and loss for the episodes.
-
-4. Enjoy mode - when a session ends, a model file will automatically save. You can find the session `prepath` that ends in its trial and session numbers. The example above is trial 1 session 0, and you can see a pytorch model saved at `data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_t1_s0_model_net.pth`. Use the following command to run from the saved folder in `data/`:
-    ```bash
-    python run_lab.py data/dqn_cartpole_2018_06_16_214527/dqn_cartpole_spec.json dqn_cartpole enjoy@dqn_cartpole_t1_s0
-    ```
-    >Enjoy mode will automatically disable learning and exploration. Graphs will still save.
-
-    >To run the best model, use the best saved checkpoint `enjoy@dqn_cartpole_t1_s0_ckptbest`
-
-5. The above was in `dev` mode. To run in proper training mode, which is faster without rendering, change the `dev` lab mode to `train`, and the same data is produced.
-    ```shell
-    python run_lab.py slm_lab/spec/demo.json dqn_cartpole train
-    ```
-
-6. Next, perform a hyperparameter search using the lab mode `search`. This runs experiments of multiple trials with hyperparameter search, defined at the bottom section of the demo spec.
-    ```bash
-    python run_lab.py slm_lab/spec/demo.json dqn_cartpole search
-    ```
-
-    When it ends, refer to `{prepath}_experiment_graph.png` and `{prepath}_experiment_df.csv` to find the best trials.
-
->If the demo fails, consult [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html).
-
-Now the lab is ready for usage.
-
-**Read on: [Github](https://github.com/kengz/SLM-Lab) | [Documentation](https://kengz.gitbooks.io/slm-lab/content/)**
 
 ## Citing
 
