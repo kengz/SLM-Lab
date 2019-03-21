@@ -304,7 +304,7 @@ class ActorCritic(Reinforce):
         v_preds = self.calc_v(states)
         next_v_preds = v_preds[1:]  # shift for only the next states
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
+        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
         adv_targets = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds, self.gamma, self.lam)
         adv_targets = math_util.standardize(adv_targets)
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
@@ -320,8 +320,8 @@ class ActorCritic(Reinforce):
         next_v_preds = self.calc_v(batch['next_states'])
         v_preds = self.calc_v(batch['states'])
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
-        nstep_returns = math_util.calc_nstep_returns(batch, self.gamma, self.num_step_returns, next_v_preds)
+        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
+        nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, self.num_step_returns, next_v_preds)
         nstep_advs = nstep_returns - v_preds
         adv_targets = nstep_advs
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
@@ -334,7 +334,7 @@ class ActorCritic(Reinforce):
         next_v_preds = self.calc_v(batch['next_states'])
         # Equivalent to 1-step return
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
+        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
         adv_targets = v_targets  # Plain Q estimate, called adv for API consistency
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
