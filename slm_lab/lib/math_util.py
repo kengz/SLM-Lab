@@ -13,19 +13,18 @@ logger = logger.get_logger(__name__)
 # Policy Gradient calc
 # advantage functions
 
-def calc_returns(batch, gamma):
+def calc_returns(rewards, dones, gamma):
     '''
     Calculate the simple returns (full rollout) for advantage
     i.e. sum discounted rewards up till termination
     '''
-    rewards = batch['rewards']
     is_tensor = torch.is_tensor(rewards)
     if is_tensor:
         assert not torch.isnan(rewards).any()
     else:
         assert not np.any(np.isnan(rewards))
     # handle epi-end, to not sum past current episode
-    not_dones = 1 - batch['dones']
+    not_dones = 1 - dones
     T = len(rewards)
     if is_tensor:
         rets = torch.empty(T, dtype=torch.float32, device=rewards.device)
@@ -38,19 +37,7 @@ def calc_returns(batch, gamma):
     return rets
 
 
-def calc_gammas(batch, gamma):
-    '''Calculate the gammas to the right power for multiplication with rewards'''
-    dones = batch['dones']
-    news = torch.cat([torch.ones((1,), device=dones.device), dones[:-1]])
-    gammas = torch.empty_like(news)
-    cur_gamma = 1.0
-    for t, new in enumerate(news):
-        cur_gamma = new * 1.0 + (1 - new) * cur_gamma * gamma
-        gammas[t] = cur_gamma
-    return gammas
-
-
-def calc_nstep_returns(batch, gamma, n, next_v_preds):
+def calc_nstep_returns(rewards, dones, gamma, n, next_v_preds):
     '''
     Calculate the n-step returns for advantage
     see n-step return in: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
@@ -58,43 +45,48 @@ def calc_nstep_returns(batch, gamma, n, next_v_preds):
         sum discounted rewards up till step n (0 to n-1 that is),
         then add v_pred for n as final term
     '''
-    rets = batch['rewards'].clone()  # prevent mutation
+    rets = rewards.clone()  # prevent mutation
     next_v_preds = next_v_preds.clone()  # prevent mutation
     nstep_rets = torch.zeros_like(rets) + rets
     cur_gamma = gamma
+    not_dones = 1 - dones
     for i in range(1, n):
+        # TODO shifting is expensive. rewrite
         # Shift returns by one and zero last element of each episode
         rets[:-1] = rets[1:]
-        rets *= (1 - batch['dones'])
+        rets *= not_dones
         # Also shift V(s_t+1) so final terms use V(s_t+n)
         next_v_preds[:-1] = next_v_preds[1:]
-        next_v_preds *= (1 - batch['dones'])
+        next_v_preds *= not_dones
         # Accumulate return
         nstep_rets += cur_gamma * rets
         # Update current gamma
         cur_gamma *= cur_gamma
     # Add final terms. Note no next state if epi is done
-    final_terms = cur_gamma * next_v_preds * (1 - batch['dones'])
+    final_terms = cur_gamma * next_v_preds * not_dones
     nstep_rets += final_terms
     return nstep_rets
 
 
-def calc_gaes(rewards, v_preds, next_v_preds, gamma, lam):
+def calc_gaes(rewards, dones, v_preds, gamma, lam):
     '''
-    Calculate GAE
-    See http://www.breloff.com/DeepRL-OnlineGAE/ for clear example.
-    v_preds are values predicted for current states
-    next_v_preds are values predicted for next states
-    NOTE for standardization trick, do it out of here
+    Calculate GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
+    v_preds are values predicted for current states, with one last element as the final next_state
+    delta is defined as r + gamma * V(s') - V(s) in eqn 10
+    GAE is defined in eqn 16
+    This method computes in torch tensor to prevent unnecessary moves between devices (e.g. GPU tensor to CPU numpy)
+    NOTE any standardization is done outside of this method
     '''
     T = len(rewards)
     assert not torch.isnan(rewards).any()
-    assert T == len(v_preds)
+    assert T + 1 == len(v_preds)  # v_preds includes states and 1 last next_state
     gaes = torch.empty(T, dtype=torch.float32, device=v_preds.device)
-    future_gae = 0.0
+    future_gae = 0.0  # this will autocast to tensor below
+    # to multiply with not_dones to handle episode boundary (last state has no V(s'))
+    not_dones = 1 - dones
     for t in reversed(range(T)):
-        delta = rewards[t] + gamma * next_v_preds[t] - v_preds[t]
-        gaes[t] = future_gae = delta + gamma * lam * future_gae
+        delta = rewards[t] + gamma * v_preds[t + 1] * not_dones[t] - v_preds[t]
+        gaes[t] = future_gae = delta + gamma * lam * not_dones[t] * future_gae
     assert not torch.isnan(gaes).any(), f'GAE has nan: {gaes}'
     return gaes
 
@@ -105,13 +97,23 @@ def calc_q_value_logits(state_value, raw_advantages):
 
 
 def standardize(v):
-    '''Method to standardize a rank-1 tensor'''
-    v_std = v.std()
+    '''Method to standardize a rank-1 np array'''
+    v_stdev = v.std()
     # guard nan std by setting to 0 and add small const
-    v_std[v_std != v_std] = 0  # nan guard
-    v_std += 1e-08  # division guard
-    v = (v - v.mean()) / v_std
-    return v
+    v_stdev[v_stdev != v_stdev] = 0  # nan guard
+    v_stdev += 1e-08  # division guard
+    v_std = (v - v.mean()) / v_stdev
+    return v_std
+
+
+def normalize(v):
+    '''Method to normalize a rank-1 np array'''
+    v_min = v.min()
+    v_max = v.max()
+    v_range = v_max - v_min
+    v_range += 1e-08  # division guard
+    v_norm = (v - v_min) / v_range
+    return v_norm
 
 
 # generic variable decay methods

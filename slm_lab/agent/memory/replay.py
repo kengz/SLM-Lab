@@ -70,7 +70,7 @@ class Replay(Memory):
             elif k == 'actions':
                 setattr(self, k, np.zeros(self.actions_shape, dtype=self.body.action_space.dtype))
             else:
-                setattr(self, k, np.zeros(self.scalar_shape))
+                setattr(self, k, np.zeros(self.scalar_shape, dtype=np.float16))
         self.true_size = 0
         self.head = -1
         self.state_buffer.clear()

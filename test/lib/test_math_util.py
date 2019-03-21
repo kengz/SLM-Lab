@@ -1,6 +1,20 @@
 from slm_lab.lib import math_util
 import numpy as np
 import pytest
+import torch
+
+
+def test_calc_gaes():
+    rewards = torch.tensor([1., 0., 1., 1., 0., 1., 1., 1.])
+    dones = torch.tensor([0., 0., 1., 1., 0., 0., 0., 0.])
+    v_preds = torch.tensor([1.1, 0.1, 1.1, 1.1, 0.1, 1.1, 1.1, 1.1, 1.1])
+    assert len(v_preds) == len(rewards) + 1  # includes last state
+    gamma = 0.99
+    lam = 0.95
+    gaes = math_util.calc_gaes(rewards, dones, v_preds, gamma, lam)
+    res = torch.tensor([0.84070045, 0.89495, -0.1, -0.1, 3.616724, 2.7939649, 1.9191545, 0.989])
+    # use allclose instead of equal to account for atol
+    assert torch.allclose(gaes, res)
 
 
 @pytest.mark.parametrize('vec,res', [
