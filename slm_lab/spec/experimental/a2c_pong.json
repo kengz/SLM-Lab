@@ -68,10 +68,10 @@
       "eval_frequency": 10000,
       "max_tick_unit": "total_t",
       "max_session": 1,
-      "max_trial": 32,
+      "max_trial": 12,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 32
+        "num_cpus": 12
       }
     },
     "search": {
