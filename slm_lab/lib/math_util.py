@@ -79,22 +79,25 @@ def calc_nstep_returns(batch, gamma, n, next_v_preds):
     return nstep_rets
 
 
-def calc_gaes(rewards, v_preds, gamma, lam):
+def calc_gaes(rewards, dones, v_preds, gamma, lam):
     '''
     Calculate GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
     v_preds are values predicted for current states, with one last element as the final next_state
     delta is defined as r + gamma * V(s') - V(s) in eqn 10
     GAE is defined in eqn 16
+    This method computes in torch tensor to prevent unnecessary moves between devices (e.g. GPU tensor to CPU numpy)
     NOTE any standardization is done outside of this method
     '''
     T = len(rewards)
     assert not torch.isnan(rewards).any()
     assert T + 1 == len(v_preds)  # v_preds includes states and 1 last next_state
     gaes = torch.empty(T, dtype=torch.float32, device=v_preds.device)
-    future_gae = 0.0
+    future_gae = 0.0  # this will autocast to tensor below
     for t in reversed(range(T)):
-        delta = rewards[t] + gamma * v_preds[t+1] - v_preds[t]
-        gaes[t] = future_gae = delta + gamma * lam * future_gae
+        # multiply with not_done to handle episode boundary (last state has no V(s'))
+        not_done = 1 - dones[t]
+        delta = rewards[t] + gamma * v_preds[t + 1] * not_done - v_preds[t]
+        gaes[t] = future_gae = delta + gamma * lam * not_done * future_gae
     assert not torch.isnan(gaes).any(), f'GAE has nan: {gaes}'
     return gaes
 
