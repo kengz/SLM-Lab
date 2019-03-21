@@ -13,19 +13,18 @@ logger = logger.get_logger(__name__)
 # Policy Gradient calc
 # advantage functions
 
-def calc_returns(batch, gamma):
+def calc_returns(rewards, dones, gamma):
     '''
     Calculate the simple returns (full rollout) for advantage
     i.e. sum discounted rewards up till termination
     '''
-    rewards = batch['rewards']
     is_tensor = torch.is_tensor(rewards)
     if is_tensor:
         assert not torch.isnan(rewards).any()
     else:
         assert not np.any(np.isnan(rewards))
     # handle epi-end, to not sum past current episode
-    not_dones = 1 - batch['dones']
+    not_dones = 1 - dones
     T = len(rewards)
     if is_tensor:
         rets = torch.empty(T, dtype=torch.float32, device=rewards.device)

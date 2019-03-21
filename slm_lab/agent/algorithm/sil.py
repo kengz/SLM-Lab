@@ -94,7 +94,7 @@ class SIL(ActorCritic):
         '''Modify the onpolicy sample to also append to replay'''
         batch = self.body.memory.sample()
         batch = {k: np.concatenate(v) for k, v in batch.items()}  # concat episodic memory
-        batch['rets'] = math_util.calc_returns(batch, self.gamma)
+        batch['rets'] = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
         for idx in range(len(batch['dones'])):
             tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]
             self.body.replay_memory.add_experience(*tuples)
