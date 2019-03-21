@@ -300,15 +300,12 @@ class ActorCritic(Reinforce):
         before output, adv_targets is standardized (so v_targets used the unstandardized version)
         Used for training with GAE
         '''
-        v_preds = self.calc_v(batch['states'])
-        # calc next_state boundary value and concat with above for efficiency
-        next_v_pred_tail = self.calc_v(batch['next_states'][-1:])
-        next_v_preds = torch.cat([v_preds[1:], next_v_pred_tail], dim=0)
-        # v targets = r_t + gamma * V(s_(t+1))
-        v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
-        # ensure val for next_state is 0 at done
-        next_v_preds = next_v_preds * (1 - batch['dones'])
-        adv_targets = math_util.calc_gaes(batch['rewards'], v_preds, next_v_preds, self.gamma, self.lam)
+        states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
+        v_preds = self.calc_v(states)
+        next_v_preds = v_preds[1:]  # shift for only the next states
+        # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
+        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
+        adv_targets = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds, self.gamma, self.lam)
         adv_targets = math_util.standardize(adv_targets)
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
@@ -322,9 +319,9 @@ class ActorCritic(Reinforce):
         '''
         next_v_preds = self.calc_v(batch['next_states'])
         v_preds = self.calc_v(batch['states'])
-        # v targets = r_t + gamma * V(s_(t+1))
-        v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
-        nstep_returns = math_util.calc_nstep_returns(batch, self.gamma, self.num_step_returns, next_v_preds)
+        # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
+        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
+        nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, self.num_step_returns, next_v_preds)
         nstep_advs = nstep_returns - v_preds
         adv_targets = nstep_advs
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
@@ -336,8 +333,8 @@ class ActorCritic(Reinforce):
         '''
         next_v_preds = self.calc_v(batch['next_states'])
         # Equivalent to 1-step return
-        # v targets = r_t + gamma * V(s_(t+1))
-        v_targets = math_util.calc_nstep_returns(batch, self.gamma, 1, next_v_preds)
+        # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
+        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
         adv_targets = v_targets  # Plain Q estimate, called adv for API consistency
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
