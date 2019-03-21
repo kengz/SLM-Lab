@@ -71,17 +71,20 @@
       "eval_frequency": 10000,
       "max_tick_unit": "total_t",
       "max_session": 1,
-      "max_trial": 4,
+      "max_trial": 32,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 4
+        "num_cpus": 32
       }
     },
     "search": {
       "agent": [{
+        "algorithm": {
+          "training_frequency__grid_search": [32, 64, 128, 256]
+        },
         "net": {
           "actor_optim_spec": {
-            "lr__grid_search": [0.00025, 0.002, 0.02, 0.1]
+            "lr__grid_search": [7e-4, 7e-3, 7e-2]
           }
         }
       }]
