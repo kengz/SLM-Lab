@@ -38,18 +38,6 @@ def calc_returns(batch, gamma):
     return rets
 
 
-def calc_gammas(batch, gamma):
-    '''Calculate the gammas to the right power for multiplication with rewards'''
-    dones = batch['dones']
-    news = torch.cat([torch.ones((1,), device=dones.device), dones[:-1]])
-    gammas = torch.empty_like(news)
-    cur_gamma = 1.0
-    for t, new in enumerate(news):
-        cur_gamma = new * 1.0 + (1 - new) * cur_gamma * gamma
-        gammas[t] = cur_gamma
-    return gammas
-
-
 def calc_nstep_returns(batch, gamma, n, next_v_preds):
     '''
     Calculate the n-step returns for advantage
