@@ -1,5 +1,5 @@
 {
-  "dqn_per_enduro": {
+  "dqn_per_enduro_2k": {
     "agent": [{
       "name": "DQN",
       "algorithm": {

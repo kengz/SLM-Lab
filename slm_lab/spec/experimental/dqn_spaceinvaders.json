@@ -1,5 +1,5 @@
 {
-  "dqn_spaceinvaders": {
+  "dqn_spaceinvaders_2k": {
     "agent": [{
       "name": "DQN",
       "algorithm": {

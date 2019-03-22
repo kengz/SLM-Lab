@@ -1,5 +1,5 @@
 {
-  "ddqn_per_seaquest": {
+  "ddqn_per_seaquest_2k": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {

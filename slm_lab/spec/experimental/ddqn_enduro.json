@@ -1,5 +1,5 @@
 {
-  "ddqn_enduro": {
+  "ddqn_enduro_2k": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {

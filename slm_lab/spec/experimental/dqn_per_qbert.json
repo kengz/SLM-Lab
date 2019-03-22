@@ -1,5 +1,5 @@
 {
-  "dqn_per_qbert": {
+  "dqn_per_qbert_2k": {
     "agent": [{
       "name": "DQN",
       "algorithm": {

@@ -1,5 +1,5 @@
 {
-  "ddqn_per_spaceinvaders": {
+  "ddqn_per_spaceinvaders_2k": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {

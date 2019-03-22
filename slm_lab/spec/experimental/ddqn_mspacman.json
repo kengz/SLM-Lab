@@ -1,5 +1,5 @@
 {
-  "ddqn_mspacman": {
+  "ddqn_mspacman_2k": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {
