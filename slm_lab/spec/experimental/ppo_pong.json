@@ -24,7 +24,7 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 1,
+        "training_frequency": 256,
         "training_epoch": 4,
         "normalize_state": false
       },
