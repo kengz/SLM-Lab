@@ -28,17 +28,17 @@
       },
       "net": {
         "type": "ConvNet",
-        "shared": true,
+        "shared": false,
         "conv_hid_layers": [
           [32, 8, 4, 0, 1],
           [64, 4, 2, 0, 1],
           [64, 3, 1, 0, 1]
         ],
         "fc_hid_layers": [256],
-        "hid_layers_activation": "relu",
-        "init_fn": null,
+        "hid_layers_activation": "tanh",
+        "init_fn": "xavier_uniform_",
         "batch_norm": false,
-        "clip_grad_val": 0.5,
+        "clip_grad_val": 10.0,
         "use_same_optim": false,
         "loss_spec": {
           "name": "MSELoss"
@@ -49,7 +49,12 @@
           "alpha": 0.99,
           "eps": 1e-5
         },
-        "critic_optim_spec": null,
+        "critic_optim_spec": {
+          "name": "RMSprop",
+          "lr": 7e-4,
+          "alpha": 0.99,
+          "eps": 1e-5
+        },
         "lr_scheduler_spec": null,
         "gpu": true
       }

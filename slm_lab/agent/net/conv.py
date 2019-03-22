@@ -53,7 +53,7 @@ class ConvNet(Net, nn.Module):
     }
     '''
 
-    def __init__(self, net_spec, in_dim, out_dim):
+    def __init__(self, net_spec, in_dim, out_dim, output_activation=False):
         '''
         net_spec:
         conv_hid_layers: list containing dimensions of the convolutional hidden layers. Asssumed to all come before the flat layers.
@@ -118,9 +118,15 @@ class ConvNet(Net, nn.Module):
 
         # tails. avoid list for single-tail for compute speed
         if ps.is_integer(self.out_dim):
-            self.model_tail = nn.Linear(tail_in_dim, self.out_dim)
+            if output_activation:
+                self.model_tail = net_util.build_sequential([tail_in_dim, self.out_dim], self.hid_layers_activation)
+            else:
+                self.model_tail = nn.Linear(tail_in_dim, self.out_dim)
         else:
-            self.model_tails = nn.ModuleList([nn.Linear(tail_in_dim, out_d) for out_d in self.out_dim])
+            if output_activation:
+                self.model_tails = nn.ModuleList([net_util.build_sequential([tail_in_dim, out_d], self.hid_layers_activation) for out_d in self.out_dim])
+            else:
+                self.model_tails = nn.ModuleList([nn.Linear(tail_in_dim, out_d) for out_d in self.out_dim])
 
         net_util.init_layers(self, self.init_fn)
         for module in self.modules():

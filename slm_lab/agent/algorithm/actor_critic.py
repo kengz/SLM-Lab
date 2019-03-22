@@ -156,7 +156,7 @@ class ActorCritic(Reinforce):
             if not self.shared:  # add separate network for critic
                 critic_out_dim = 1
                 CriticNetClass = getattr(net, critic_net_spec['type'])
-                self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
+                self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim, False)
                 self.net_names.append('critic')
         else:
             util.set_attr(self, global_nets)
