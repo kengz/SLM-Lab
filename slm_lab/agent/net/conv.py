@@ -53,7 +53,7 @@ class ConvNet(Net, nn.Module):
     }
     '''
 
-    def __init__(self, net_spec, in_dim, out_dim, output_activation=False):
+    def __init__(self, net_spec, in_dim, out_dim, output_activation=True):
         '''
         net_spec:
         conv_hid_layers: list containing dimensions of the convolutional hidden layers. Asssumed to all come before the flat layers.
