@@ -122,11 +122,9 @@ def try_preprocess(state, algorithm, body, append=True):
 def cond_squeeze(out):
     '''Helper to squeeze output depending if it is tensor (discrete pdparam) or list of tensors (continuous pdparam of loc and scale)'''
     if isinstance(out, list):
-        for out_t in out:
-            out_t.squeeze_(dim=0)
+        return [out_t.squeeze(dim=0) for out_t in out]
     else:
-        out.squeeze_(dim=0)
-    return out
+        return out.squeeze(dim=0)
 
 
 def init_action_pd(state, algorithm, body, append=True):

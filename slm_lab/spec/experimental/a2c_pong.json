@@ -35,7 +35,7 @@
           [64, 3, 1, 0, 1]
         ],
         "fc_hid_layers": [256],
-        "hid_layers_activation": "tanh",
+        "hid_layers_activation": "relu",
         "init_fn": "xavier_uniform_",
         "batch_norm": false,
         "clip_grad_val": 10.0,

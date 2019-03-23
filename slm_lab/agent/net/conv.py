@@ -119,12 +119,12 @@ class ConvNet(Net, nn.Module):
         # tails. avoid list for single-tail for compute speed
         if ps.is_integer(self.out_dim):
             if output_activation:
-                self.model_tail = net_util.build_sequential([tail_in_dim, self.out_dim], self.hid_layers_activation)
+                self.model_tail = net_util.build_sequential([tail_in_dim, self.out_dim], 'tanh')
             else:
                 self.model_tail = nn.Linear(tail_in_dim, self.out_dim)
         else:
             if output_activation:
-                self.model_tails = nn.ModuleList([net_util.build_sequential([tail_in_dim, out_d], self.hid_layers_activation) for out_d in self.out_dim])
+                self.model_tails = nn.ModuleList([net_util.build_sequential([tail_in_dim, out_d], 'tanh') for out_d in self.out_dim])
             else:
                 self.model_tails = nn.ModuleList([nn.Linear(tail_in_dim, out_d) for out_d in self.out_dim])
 
