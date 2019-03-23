@@ -1,5 +1,5 @@
 {
-  "ddqn_per_spaceinvaders": {
+  "ddqn_per_spaceinvaders_2k": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {
@@ -46,11 +46,11 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 5.0e-5,
+          "lr": 2.5e-5,
         },
         "lr_scheduler_spec": null,
         "update_type": "replace",
-        "update_frequency": 1000,
+        "update_frequency": 2000,
         "gpu": true
       }
     }],
