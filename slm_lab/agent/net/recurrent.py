@@ -116,7 +116,7 @@ class RecurrentNet(Net, nn.Module):
             self.rnn_input_dim = self.in_dim
 
         # RNN model
-        self.rnn_model = getattr(nn, self.cell_type)(
+        self.rnn_model = getattr(nn, net_util.get_nn_name(self.cell_type))(
             input_size=self.rnn_input_dim,
             hidden_size=self.rnn_hidden_size,
             num_layers=self.rnn_num_layers,

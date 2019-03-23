@@ -23,7 +23,7 @@ class NoOpLRScheduler:
 
 
 def build_sequential(dims, activation):
-    '''Build the Sequential model by interleaving nn.Linear and activation_fn'''
+    '''Build a Sequential model by interleaving nn.Linear and activation_fn'''
     assert len(dims) >= 2, 'dims need to at least contain input, output'
     dim_pairs = list(zip(dims[:-1], dims[1:]))
     layers = []
@@ -34,18 +34,24 @@ def build_sequential(dims, activation):
     return model
 
 
+def get_nn_name(uncased_name):
+    '''Helper to get the proper name in PyTorch nn given a case-insensitive name'''
+    for nn_name in nn.__dict__:
+        if uncased_name.lower() == nn_name.lower():
+            return nn_name
+    raise ValueError(f'Name {uncased_name} not found in {nn.__dict__}')
+
+
 def get_activation_fn(activation):
     '''Helper to generate activation function layers for net'''
     activation = activation or 'relu'
-    for nn_name in nn.__dict__:
-        if activation.lower() == nn_name.lower():
-            ActivationClass = getattr(nn, nn_name)
-            return ActivationClass()
+    ActivationClass = getattr(nn, get_nn_name(activation))
+    return ActivationClass()
 
 
 def get_loss_fn(cls, loss_spec):
     '''Helper to parse loss param and construct loss_fn for net'''
-    LossClass = getattr(nn, loss_spec['name'])
+    LossClass = getattr(nn, get_nn_name(loss_spec['name']))
     loss_spec = ps.omit(loss_spec, 'name')
     loss_fn = LossClass(**loss_spec)
     return loss_fn
