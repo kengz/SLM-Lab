@@ -95,6 +95,7 @@ def get_policy_out_dim(body):
             if action_dim == 1:
                 policy_out_dim = 2  # singleton stay as int
             else:
+                # TODO change this to one slicable layer for efficiency
                 policy_out_dim = action_dim * [2]
     return policy_out_dim
 
@@ -115,16 +116,17 @@ def get_out_dim(body, add_critic=False):
 def init_layers(net, init_fn):
     if init_fn is None:
         return
+    hid_layers_activation = get_nn_name(net.hid_layers_activation)
     if init_fn == 'xavier_uniform_':
         try:
-            gain = nn.init.calculate_gain(net.hid_layers_activation)
+            gain = nn.init.calculate_gain(hid_layers_activation)
         except ValueError:
             gain = 1
         init_fn = partial(nn.init.xavier_uniform_, gain=gain)
     elif 'kaiming' in init_fn:
-        assert net.hid_layers_activation in ['relu', 'leaky_relu'], f'Kaiming initialization not supported for {net.hid_layers_activation}'
+        assert hid_layers_activation in ['ReLU', 'LeakyReLU'], f'Kaiming initialization not supported for {hid_layers_activation}'
         init_fn = nn.init.__dict__[init_fn]
-        init_fn = partial(init_fn, nonlinearity=net.hid_layers_activation)
+        init_fn = partial(init_fn, nonlinearity=hid_layers_activation)
     else:
         init_fn = nn.init.__dict__[init_fn]
     net.apply(partial(init_parameters, init_fn=init_fn))
@@ -137,7 +139,7 @@ def init_parameters(module, init_fn):
     The only exception is BatchNorm layers, for which we use uniform initialization
     '''
     bias_init = 0.01
-    classname = module.__class__.__name__
+    classname = util.get_class_name(module)
     if 'BatchNorm' in classname:
         init_fn(module.weight)
         nn.init.constant_(module.bias, bias_init)
