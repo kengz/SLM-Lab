@@ -110,7 +110,7 @@ class RecurrentNet(Net, nn.Module):
         # fc layer: state processing model
         if not ps.is_empty(self.fc_hid_layers):
             fc_dims = [self.in_dim] + self.fc_hid_layers
-            self.fc_model = net_util.build_sequential(fc_dims, self.hid_layers_activation)
+            self.fc_model = net_util.build_fc_model(fc_dims, self.hid_layers_activation)
             self.rnn_input_dim = fc_dims[-1]
         else:
             self.rnn_input_dim = self.in_dim

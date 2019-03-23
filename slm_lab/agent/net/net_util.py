@@ -22,8 +22,8 @@ class NoOpLRScheduler:
         return self.optim.defaults['lr']
 
 
-def build_sequential(dims, activation=None):
-    '''Build a Sequential model by interleaving nn.Linear and activation_fn'''
+def build_fc_model(dims, activation=None):
+    '''Build a full-connected model by interleaving nn.Linear and activation_fn'''
     assert len(dims) >= 2, 'dims need to at least contain input, output'
     # shift dims and make pairs of (in, out) dims per layer
     dim_pairs = list(zip(dims[:-1], dims[1:]))
@@ -59,14 +59,6 @@ def get_loss_fn(cls, loss_spec):
     return loss_fn
 
 
-def get_optim(cls, optim_spec):
-    '''Helper to parse optim param and construct optim for net'''
-    OptimClass = getattr(torch.optim, optim_spec['name'])
-    optim_spec = ps.omit(optim_spec, 'name')
-    optim = OptimClass(cls.parameters(), **optim_spec)
-    return optim
-
-
 def get_lr_scheduler(cls, lr_scheduler_spec):
     '''Helper to parse lr_scheduler param and construct Pytorch optim.lr_scheduler'''
     if ps.is_empty(lr_scheduler_spec):
@@ -76,6 +68,14 @@ def get_lr_scheduler(cls, lr_scheduler_spec):
         lr_scheduler_spec = ps.omit(lr_scheduler_spec, 'name')
         lr_scheduler = LRSchedulerClass(cls.optim, **lr_scheduler_spec)
     return lr_scheduler
+
+
+def get_optim(cls, optim_spec):
+    '''Helper to parse optim param and construct optim for net'''
+    OptimClass = getattr(torch.optim, optim_spec['name'])
+    optim_spec = ps.omit(optim_spec, 'name')
+    optim = OptimClass(cls.parameters(), **optim_spec)
+    return optim
 
 
 def get_policy_out_dim(body):
