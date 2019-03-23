@@ -6,8 +6,6 @@ import pydash as ps
 import torch
 import torch.nn as nn
 
-
-NN_LOWCASE_LOOKUP = {nn_name.lower(): nn_name for nn_name in nn.__dict__}
 logger = logger.get_logger(__name__)
 
 
@@ -38,9 +36,11 @@ def build_sequential(dims, activation):
 
 def get_activation_fn(activation):
     '''Helper to generate activation function layers for net'''
-    nn_name = NN_LOWCASE_LOOKUP.get(activation) or NN_LOWCASE_LOOKUP['relu']
-    ActivationClass = getattr(nn, nn_name)
-    return ActivationClass()
+    activation = activation or 'relu'
+    for nn_name in nn.__dict__:
+        if activation.lower() == nn_name.lower():
+            ActivationClass = getattr(nn, nn_name)
+            return ActivationClass()
 
 
 def get_loss_fn(cls, loss_spec):
