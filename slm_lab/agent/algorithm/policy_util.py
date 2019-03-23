@@ -387,7 +387,7 @@ def update_online_stats(body, state):
     '''
     logger.debug(f'mean: {body.state_mean}, std: {body.state_std_dev}, num examples: {body.state_n}')
     # Assumes only one state is given
-    if ("Atari" in body.memory.__class__.__name__):
+    if ('Atari' in util.get_class_name(body.memory)):
         assert state.ndim == 3
     elif getattr(body.memory, 'raw_state_dim', False):
         assert state.size == body.memory.raw_state_dim
@@ -420,11 +420,11 @@ def normalize_state(body, state):
     '''
     same_shape = False if type(state) == list else state.shape == body.state_mean.shape
     has_preprocess = getattr(body.memory, 'preprocess_state', False)
-    if ('Atari' in body.memory.__class__.__name__):
+    if ('Atari' in util.get_class_name(body.memory)):
         # never normalize atari, it has its own normalization step
         logger.debug('skipping normalizing for Atari, already handled by preprocess')
         return state
-    elif ('Replay' in body.memory.__class__.__name__) and has_preprocess:
+    elif ('Replay' in util.get_class_name(body.memory)) and has_preprocess:
         # normalization handled by preprocess_state function in the memory
         logger.debug('skipping normalizing, already handled by preprocess')
         return state
