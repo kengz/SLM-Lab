@@ -161,7 +161,7 @@ class ActorCritic(Reinforce):
             # main actor network, may contain out_dim self.shared == True
             NetClass = getattr(net, actor_net_spec['type'])
             # TODO also test when disabled, has some backprop error
-            actor_net_spec['out_layer_activation'] = 'relu'
+            actor_net_spec['out_layer_activation'] = 'tanh'
             self.net = NetClass(actor_net_spec, in_dim, out_dim)
             self.net_names = ['net']
             if not self.shared:  # add separate network for critic
@@ -316,14 +316,14 @@ class ActorCritic(Reinforce):
         next_v_preds = v_preds[1:]  # shift for only the next states
 
         # NOTE tmp hack: reward shaping. super inefficient now
-        dones = batch['dones'].numpy().tolist()
-        rewards = batch['rewards'].numpy().tolist()
+        dones = batch['dones'].cpu().numpy().tolist()
+        rewards = batch['rewards'].cpu().numpy().tolist()
         value = v_preds[-2].item() # -1 is last next_v_pred, -2 is last v_pred
         if dones[-1] == 0.0:
             shaped_rewards = shape_rewards(rewards + [value], dones + [0], self.gamma)[:-1]
         else:
             shaped_rewards = shape_rewards(rewards, dones, self.gamma)
-        shaped_rewards = torch.from_numpy(np.array(shaped_rewards, dtype=np.float32))
+        shaped_rewards = torch.from_numpy(np.array(shaped_rewards, dtype=np.float32), device=v_preds.device)
 
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
         v_targets = math_util.calc_nstep_returns(shaped_rewards, batch['dones'], self.gamma, 1, next_v_preds)
