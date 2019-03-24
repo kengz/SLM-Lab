@@ -12,8 +12,8 @@
         "num_step_returns": null,
         "entropy_coef_spec": {
           "name": "no_decay",
-          "start_val": 0.01,
-          "end_val": 0.01,
+          "start_val": 0.05,
+          "end_val": 0.05,
           "start_step": 0,
           "end_step": 0
         },
@@ -36,7 +36,7 @@
         ],
         "fc_hid_layers": [256],
         "hid_layers_activation": "relu",
-        "init_fn": "xavier_normal_",
+        "init_fn": null,
         "batch_norm": false,
         "clip_grad_val": 0.1,
         "use_same_optim": false,

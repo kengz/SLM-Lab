@@ -152,7 +152,7 @@ class ActorCritic(Reinforce):
             # main actor network, may contain out_dim self.shared == True
             NetClass = getattr(net, actor_net_spec['type'])
             # TODO also test when disabled, has some backprop error
-            # actor_net_spec['out_layer_activation'] = 'relu'
+            actor_net_spec['out_layer_activation'] = 'relu'
             self.net = NetClass(actor_net_spec, in_dim, out_dim)
             self.net_names = ['net']
             if not self.shared:  # add separate network for critic
