@@ -323,7 +323,7 @@ class ActorCritic(Reinforce):
             shaped_rewards = shape_rewards(rewards + [value], dones + [0], self.gamma)[:-1]
         else:
             shaped_rewards = shape_rewards(rewards, dones, self.gamma)
-        shaped_rewards = torch.from_numpy(np.array(shaped_rewards, dtype=np.float32), device=v_preds.device)
+        shaped_rewards = torch.from_numpy(np.array(shaped_rewards, dtype=np.float32)).to(device=v_preds.device)
 
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
         v_targets = math_util.calc_nstep_returns(shaped_rewards, batch['dones'], self.gamma, 1, next_v_preds)
