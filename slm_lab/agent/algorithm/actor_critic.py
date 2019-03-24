@@ -297,7 +297,7 @@ class ActorCritic(Reinforce):
     def calc_val_loss(self, batch, v_targets):
         '''Calculate the critic's value loss'''
         v_targets = v_targets.unsqueeze(dim=-1)
-        v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze_(dim=-1)
+        v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze(dim=-1)
         assert v_preds.shape == v_targets.shape
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
         logger.debug(f'Critic value loss: {val_loss:g}')
@@ -326,7 +326,7 @@ class ActorCritic(Reinforce):
         shaped_rewards = torch.from_numpy(np.array(shaped_rewards, dtype=np.float32)).to(device=v_preds.device)
 
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(shaped_rewards, batch['dones'], self.gamma, 1, next_v_preds)
+        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
         adv_targets = math_util.calc_gaes(shaped_rewards, batch['dones'], v_preds, self.gamma, self.lam)
         adv_targets = math_util.standardize(adv_targets)
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
