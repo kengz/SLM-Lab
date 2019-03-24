@@ -244,18 +244,25 @@ def gen_assert_trained(pre_model):
 
     def assert_trained(post_model, loss):
         post_weights = [param.clone() for param in post_model.parameters()]
-        if loss == 0:
+        if loss == 0.0:
             # TODO if without momentum, weights should not change too
             for p_name, param in post_model.named_parameters():
                 assert param.grad.norm() == 0
         else:
-            assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), f'Model parameter is not updated in training_step(), check if your tensor is detached from graph. loss: {loss}'
-            min_norm = 0
+            try:
+                assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), f'Model parameter is not updated in training_step(), check if your tensor is detached from graph. Loss: {loss:g}'
+                logger.info(f'Model parameter is updated in training_step(). Loss: {loss: g}')
+            except Exception as e:
+                logger.error(e)
+                if os.environ.get('PY_ENV') == 'test':
+                    raise(e)
+            min_norm = 0.0
             max_norm = 1e5
             for p_name, param in post_model.named_parameters():
                 try:
                     grad_norm = param.grad.norm()
-                    assert min_norm < grad_norm < max_norm, f'Gradient norm for {p_name} is {grad_norm}, fails the extreme value check {min_norm} < grad_norm < {max_norm}. Loss: {loss}. Check your network and loss computation. Consider using the "clip_grad_val" net parameter.'
+                    assert min_norm < grad_norm < max_norm, f'Gradient norm for {p_name} is {grad_norm:g}, fails the extreme value check {min_norm} < grad_norm < {max_norm}. Loss: {loss:g}. Check your network and loss computation.'
+                    logger.info(f'Gradient norm for {p_name} is {grad_norm:g}; passes value check.')
                 except Exception as e:
                     logger.warn(e)
         logger.debug('Passed network weight update assertation in dev lab_mode.')
