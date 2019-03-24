@@ -115,7 +115,7 @@ def try_preprocess(state, algorithm, body, append=True):
     if hasattr(body.memory, 'preprocess_state'):
         state = body.memory.preprocess_state(state, append=append)
     # as float, and always as minibatch for net input
-    state = torch.from_numpy(state).float().unsqueeze_(dim=0)
+    state = torch.from_numpy(state).float().unsqueeze(dim=0)
     return state
 
 

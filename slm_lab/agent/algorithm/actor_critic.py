@@ -151,12 +151,14 @@ class ActorCritic(Reinforce):
             out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
             # main actor network, may contain out_dim self.shared == True
             NetClass = getattr(net, actor_net_spec['type'])
+            # TODO also test when disabled, has some backprop error
+            # actor_net_spec['out_layer_activation'] = 'relu'
             self.net = NetClass(actor_net_spec, in_dim, out_dim)
             self.net_names = ['net']
             if not self.shared:  # add separate network for critic
                 critic_out_dim = 1
                 CriticNetClass = getattr(net, critic_net_spec['type'])
-                self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim, False)
+                self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
                 self.net_names.append('critic')
         else:
             util.set_attr(self, global_nets)
@@ -168,7 +170,7 @@ class ActorCritic(Reinforce):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
-        pdparam = super(ActorCritic, self).calc_pdparam(x, evaluate=evaluate, net=net)
+        pdparam = super(ActorCritic, self).calc_pdparam(x/255., evaluate=evaluate, net=net)
         if self.shared:  # output: policy, value
             if len(pdparam) == 2:  # single policy outputs, value
                 pdparam = pdparam[0]

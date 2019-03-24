@@ -31,6 +31,7 @@ class ConvNet(Net, nn.Module):
         ],
         "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
+        "out_layer_activation": "tanh",
         "init_fn": null,
         "batch_norm": false,
         "clip_grad_val": 1.0,
@@ -53,14 +54,16 @@ class ConvNet(Net, nn.Module):
     }
     '''
 
-    def __init__(self, net_spec, in_dim, out_dim, output_activation=True):
+    def __init__(self, net_spec, in_dim, out_dim):
         '''
         net_spec:
-        conv_hid_layers: list containing dimensions of the convolutional hidden layers. Asssumed to all come before the flat layers.
+        conv_hid_layers: list containing dimensions of the convolutional hidden layers, each is a list representing hid_layer = out_d, kernel, stride, padding, dilation.
+            Asssumed to all come before the flat layers.
             Note: a convolutional layer should specify the in_channel, out_channels, kernel_size, stride (of kernel steps), padding, and dilation (spacing between kernel points) E.g. [3, 16, (5, 5), 1, 0, (2, 2)]
             For more details, see http://pytorch.org/docs/master/nn.html#conv2d and https://github.com/vdumoulin/conv_arithmetic/blob/master/README.md
         fc_hid_layers: list of fc layers following the convolutional layers
         hid_layers_activation: activation function for the hidden layers
+        out_layer_activation: activation function for the output layer
         init_fn: weight initialization function
         batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
         clip_grad_val: clip gradient norm if value is not None
@@ -77,6 +80,7 @@ class ConvNet(Net, nn.Module):
         super(ConvNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
+            out_layer_activation=None,
             init_fn=None,
             batch_norm=True,
             clip_grad_val=None,
@@ -92,6 +96,7 @@ class ConvNet(Net, nn.Module):
             'conv_hid_layers',
             'fc_hid_layers',
             'hid_layers_activation',
+            'out_layer_activation',
             'init_fn',
             'batch_norm',
             'clip_grad_val',
@@ -109,24 +114,18 @@ class ConvNet(Net, nn.Module):
         self.conv_out_dim = self.get_conv_output_size()
 
         # fc layer
-        if not ps.is_empty(self.fc_hid_layers):
+        if ps.is_empty(self.fc_hid_layers):
+            tail_in_dim = self.conv_out_dim
+        else:
             # fc layer from flattened conv
             self.fc_model = self.build_fc_layers(self.fc_hid_layers)
             tail_in_dim = self.fc_hid_layers[-1]
-        else:
-            tail_in_dim = self.conv_out_dim
 
         # tails. avoid list for single-tail for compute speed
         if ps.is_integer(self.out_dim):
-            if output_activation:
-                self.model_tail = net_util.build_sequential([tail_in_dim, self.out_dim], 'tanh')
-            else:
-                self.model_tail = nn.Linear(tail_in_dim, self.out_dim)
+            self.model_tail = net_util.build_fc_model([tail_in_dim, self.out_dim], self.out_layer_activation)
         else:
-            if output_activation:
-                self.model_tails = nn.ModuleList([net_util.build_sequential([tail_in_dim, out_d], 'tanh') for out_d in self.out_dim])
-            else:
-                self.model_tails = nn.ModuleList([nn.Linear(tail_in_dim, out_d) for out_d in self.out_dim])
+            self.model_tails = nn.ModuleList([net_util.build_fc_model([tail_in_dim, out_d], self.out_layer_activation) for out_d in self.out_dim])
 
         net_util.init_layers(self, self.init_fn)
         for module in self.modules():
@@ -169,7 +168,7 @@ class ConvNet(Net, nn.Module):
         '''
         assert not ps.is_empty(fc_hid_layers)
         dims = [self.conv_out_dim] + fc_hid_layers
-        fc_model = net_util.build_sequential(dims, self.hid_layers_activation)
+        fc_model = net_util.build_fc_model(dims, self.hid_layers_activation)
         return fc_model
 
     def forward(self, x):
