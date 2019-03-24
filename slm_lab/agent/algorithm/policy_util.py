@@ -156,6 +156,7 @@ def sample_action_pd(ActionPD, pdparam, body):
     else:  # continuous outputs a list, loc and scale
         assert len(pdparam) == 2, pdparam
         # scale (stdev) must be >0, use softplus
+        # TODO split activation function to tanh and softplus and prevent inplace modification
         if pdparam[1] < 5:
             pdparam[1] = torch.log(1 + torch.exp(pdparam[1])) + 1e-8
         action_pd = ActionPD(*pdparam)
