@@ -11,6 +11,15 @@ import torch
 logger = logger.get_logger(__name__)
 
 
+def shape_rewards(rewards, dones, gamma):
+    discounted = []
+    r = 0
+    for reward, done in zip(rewards[::-1], dones[::-1]):
+        r = reward + gamma * r * (1. - done)
+        discounted.append(r)
+    return discounted[::-1]
+
+
 class ActorCritic(Reinforce):
     '''
     Implementation of single threaded Advantage Actor Critic
@@ -170,7 +179,7 @@ class ActorCritic(Reinforce):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
-        pdparam = super(ActorCritic, self).calc_pdparam(x/255., evaluate=evaluate, net=net)
+        pdparam = super(ActorCritic, self).calc_pdparam(x / 255., evaluate=evaluate, net=net)
         if self.shared:  # output: policy, value
             if len(pdparam) == 2:  # single policy outputs, value
                 pdparam = pdparam[0]
@@ -305,9 +314,20 @@ class ActorCritic(Reinforce):
         states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
         v_preds = self.calc_v(states)
         next_v_preds = v_preds[1:]  # shift for only the next states
+
+        # NOTE tmp hack: reward shaping. super inefficient now
+        dones = batch['dones'].numpy().tolist()
+        rewards = batch['rewards'].numpy().tolist()
+        value = v_preds[-2].item() # -1 is last next_v_pred, -2 is last v_pred
+        if dones[-1] == 0.0:
+            shaped_rewards = shape_rewards(rewards + [value], dones + [0], self.gamma)[:-1]
+        else:
+            shaped_rewards = shape_rewards(rewards, dones, self.gamma)
+        shaped_rewards = torch.from_numpy(np.array(shaped_rewards, dtype=np.float32))
+
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
-        adv_targets = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds, self.gamma, self.lam)
+        v_targets = math_util.calc_nstep_returns(shaped_rewards, batch['dones'], self.gamma, 1, next_v_preds)
+        adv_targets = math_util.calc_gaes(shaped_rewards, batch['dones'], v_preds, self.gamma, self.lam)
         adv_targets = math_util.standardize(adv_targets)
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
