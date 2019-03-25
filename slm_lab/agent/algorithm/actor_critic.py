@@ -324,23 +324,21 @@ class ActorCritic(Reinforce):
         Used for training with N-step (not GAE)
         Returns 2-tuple for API-consistency with GAE
         '''
+        # for state in batch['states']:
+        #     logger.info('rendering a state')
+        #     for slice in state:
+        #         print('slice', slice.shape, slice)
+        #         util.debug_image(slice.numpy().astype(np.uint8))
+        v_preds = self.calc_v(batch['states'])
         states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
         full_v_preds = self.calc_v(states)
+        # logger.info(f'v_preds {full_v_preds}')
         next_v_preds = full_v_preds[1:]  # shift for only the next states
         v_preds = full_v_preds[:-1]
 
-        # NOTE reward shaping trick to prevent bootstrap collapse
-        v_pred = v_preds[-1]  # the last v_pred
-        shaped_rewards = math_util.calc_shaped_rewards(batch['rewards'], batch['dones'], v_pred, self.gamma)
-
-        # NOTE hack to follow OpenAI fully
-        adv_targets = shaped_rewards - v_preds
-        v_targets = shaped_rewards
-        return adv_targets, v_targets
-
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
-        nstep_returns = math_util.calc_nstep_returns(shaped_rewards, batch['dones'], self.gamma, self.num_step_returns, next_v_preds)
+        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], v_preds, self.gamma, 1)
+        nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], v_preds, self.gamma, self.num_step_returns)
         nstep_advs = nstep_returns - v_preds
         adv_targets = nstep_advs
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
