@@ -1,5 +1,5 @@
 {
-  "dqn_breakout": {
+  "dqn_breakout_big": {
     "agent": [{
       "name": "DQN",
       "algorithm": {

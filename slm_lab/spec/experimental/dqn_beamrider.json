@@ -1,5 +1,5 @@
 {
-  "dqn_beamrider": {
+  "dqn_beamrider_big": {
     "agent": [{
       "name": "DQN",
       "algorithm": {

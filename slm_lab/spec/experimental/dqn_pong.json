@@ -1,5 +1,5 @@
 {
-  "dqn_pong": {
+  "dqn_pong_big": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
