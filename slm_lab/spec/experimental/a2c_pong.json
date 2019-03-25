@@ -8,8 +8,8 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 0.95,
-        "num_step_returns": null,
+        "lam": null,
+        "num_step_returns": 1,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -55,7 +55,10 @@
           "alpha": 0.99,
           "eps": 1e-5
         },
-        "lr_scheduler_spec": null,
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "total_t": 10000000
+        },
         "gpu": true
       }
     }],
