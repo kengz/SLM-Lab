@@ -1,39 +1,36 @@
 {
-  "ppo_shared_breakout": {
+  "dqn_per_spaceinvaders": {
     "agent": [{
-      "name": "PPO",
+      "name": "DQN",
       "algorithm": {
-        "name": "PPO",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "lam": 0.95,
-        "clip_eps_spec": {
+        "name": "DQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
-          "end_val": 0.0,
-          "start_step": 10000,
-          "end_step": 10000000
-        },
-        "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.01,
+          "start_val": 1.0,
           "end_val": 0.01,
-          "start_step": 0,
-          "end_step": 0
+          "start_step": 10000,
+          "end_step": 1000000
         },
-        "val_loss_coef": 1.0,
-        "training_frequency": 1,
-        "training_epoch": 3,
+        "gamma": 0.99,
+        "training_batch_epoch": 1,
+        "training_epoch": 1,
+        "training_frequency": 4,
+        "training_start_step": 10000,
         "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyAtariReplay"
+        "name": "AtariPrioritizedReplay",
+        "alpha": 0.6,
+        "epsilon": 0.0001,
+        "batch_size": 32,
+        "max_size": 200000,
+        "stack_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "ConvNet",
-        "shared": true,
         "conv_hid_layers": [
           [32, 8, 4, 0, 1],
           [64, 4, 2, 0, 1],
@@ -43,21 +40,22 @@
         "hid_layers_activation": "relu",
         "init_fn": null,
         "batch_norm": false,
-        "clip_grad_val": 1.0,
-        "use_same_optim": false,
+        "clip_grad_val": 10.0,
         "loss_spec": {
           "name": "SmoothL1Loss"
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 2.5e-4
+          "lr": 2.5e-5,
         },
         "lr_scheduler_spec": null,
+        "update_type": "replace",
+        "update_frequency": 1000,
         "gpu": true
       }
     }],
     "env": [{
-      "name": "BreakoutNoFrameskip-v4",
+      "name": "SpaceInvadersNoFrameskip-v4",
       "max_t": null,
       "max_tick": 10000000
     }],
@@ -70,10 +68,10 @@
       "eval_frequency": 10000,
       "max_tick_unit": "total_t",
       "max_session": 4,
-      "max_trial": 12,
+      "max_trial": 16,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 12
+        "num_cpus": 16
       }
     }
   }

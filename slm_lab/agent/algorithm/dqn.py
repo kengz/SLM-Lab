@@ -219,13 +219,9 @@ class DQNBase(VanillaDQN):
             if self.net.update_type == 'replace':
                 logger.debug('Updating target_net by replacing')
                 net_util.copy(self.net, self.target_net)
-                self.online_net = self.target_net
-                self.eval_net = self.target_net
             elif self.net.update_type == 'polyak':
                 logger.debug('Updating net by averaging')
                 net_util.polyak_update(self.net, self.target_net, self.net.polyak_coef)
-                self.online_net = self.target_net
-                self.eval_net = self.target_net
             else:
                 raise ValueError('Unknown net.update_type. Should be "replace" or "polyak". Exiting.')
 
@@ -292,14 +288,3 @@ class DoubleDQN(DQN):
         super(DoubleDQN, self).init_nets(global_nets)
         self.online_net = self.net
         self.eval_net = self.target_net
-
-    def update_nets(self):
-        res = super(DoubleDQN, self).update_nets()
-        total_t = self.body.env.clock.total_t
-        if self.net.update_type == 'replace':
-            if total_t % self.net.update_frequency == 0:
-                self.online_net = self.net
-                self.eval_net = self.target_net
-        elif self.net.update_type == 'polyak':
-            self.online_net = self.net
-            self.eval_net = self.target_net
