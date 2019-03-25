@@ -11,15 +11,6 @@ import torch
 logger = logger.get_logger(__name__)
 
 
-def shape_rewards(rewards, dones, gamma):
-    discounted = []
-    r = 0
-    for reward, done in zip(rewards[::-1], dones[::-1]):
-        r = reward + gamma * r * (1. - done)
-        discounted.append(r)
-    return discounted[::-1]
-
-
 class ActorCritic(Reinforce):
     '''
     Implementation of single threaded Advantage Actor Critic
@@ -315,20 +306,14 @@ class ActorCritic(Reinforce):
         v_preds = self.calc_v(states)
         next_v_preds = v_preds[1:]  # shift for only the next states
 
-        # NOTE tmp hack: reward shaping. super inefficient now
-        dones = batch['dones'].cpu().numpy().tolist()
-        rewards = batch['rewards'].cpu().numpy().tolist()
-        value = v_preds[-2].item() # -1 is last next_v_pred, -2 is last v_pred
-        if dones[-1] == 0.0:
-            shaped_rewards = shape_rewards(rewards + [value], dones + [0], self.gamma)[:-1]
-        else:
-            shaped_rewards = shape_rewards(rewards, dones, self.gamma)
-        shaped_rewards = torch.from_numpy(np.array(shaped_rewards, dtype=np.float32)).to(device=v_preds.device)
+        # NOTE reward shaping trick to prevent bootstrap collapse
+        v_pred = v_preds[-2]  # get the last v_pred at -2, since -1 is the last_next_v_pred
+        shaped_rewards = math_util.calc_shaped_rewards(batch['rewards'], batch['dones'], v_pred, self.gamma)
 
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
         v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
         adv_targets = math_util.calc_gaes(shaped_rewards, batch['dones'], v_preds, self.gamma, self.lam)
-        adv_targets = math_util.standardize(adv_targets)
+        # adv_targets = math_util.standardize(adv_targets)
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
@@ -339,11 +324,18 @@ class ActorCritic(Reinforce):
         Used for training with N-step (not GAE)
         Returns 2-tuple for API-consistency with GAE
         '''
-        next_v_preds = self.calc_v(batch['next_states'])
-        v_preds = self.calc_v(batch['states'])
+        states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
+        full_v_preds = self.calc_v(states)
+        next_v_preds = full_v_preds[1:]  # shift for only the next states
+        v_preds = full_v_preds[:-1]
+
+        # NOTE reward shaping trick to prevent bootstrap collapse
+        v_pred = v_preds[-1]  # the last v_pred
+        shaped_rewards = math_util.calc_shaped_rewards(batch['rewards'], batch['dones'], v_pred, self.gamma)
+
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
         v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
-        nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, self.num_step_returns, next_v_preds)
+        nstep_returns = math_util.calc_nstep_returns(shaped_rewards, batch['dones'], self.gamma, self.num_step_returns, next_v_preds)
         nstep_advs = nstep_returns - v_preds
         adv_targets = nstep_advs
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')

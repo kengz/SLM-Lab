@@ -96,6 +96,26 @@ def calc_q_value_logits(state_value, raw_advantages):
     return state_value + raw_advantages - mean_adv
 
 
+def calc_shaped_rewards(rewards, dones, v_pred, gamma):
+    '''
+    Trick from OpenAI baselines to shape rewards for training
+    https://github.com/openai/baselines/blob/master/baselines/a2c/runner.py#L60-L63
+    This prevents near-instant policy collapse when training policy-methods on sparse rewards,
+    in which the sparse signals cause quick saturation of network output policy to have extreme unchanging probabilities
+    This method computes in torch tensor to prevent unnecessary moves between devices (e.g. GPU tensor to CPU numpy)
+    '''
+    T = len(rewards)
+    assert not torch.isnan(rewards).any()
+    shaped_rewards = torch.empty(T, dtype=torch.float32, device=rewards.device)
+    # set bootstrapped reward to v_pred if not done, else 0
+    shaped_reward = v_pred if dones[-1].item() == 0.0 else 0.0
+    not_dones = 1 - dones
+    for t in reversed(range(T)):
+        shaped_reward = rewards[t] + gamma * shaped_reward * not_dones[t]
+        shaped_rewards[t] = shaped_reward
+    return shaped_rewards
+
+
 def standardize(v):
     '''Method to standardize a rank-1 np array'''
     assert len(v) > 1, 'Cannot standardize vector of size 1'

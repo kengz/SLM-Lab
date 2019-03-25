@@ -17,6 +17,24 @@ def test_calc_gaes():
     assert torch.allclose(gaes, res)
 
 
+def test_calc_shaped_rewards():
+    rewards = torch.tensor([1., 0., 1., 1., 0., 1., 1., 1.])
+    dones = torch.tensor([0., 0., 1., 0., 0., 0., 0., 0.])
+    v_pred = torch.tensor(2.1)
+    gamma = 0.99
+    shaped_rewards = math_util.calc_shaped_rewards(rewards, dones, v_pred, gamma)
+    # when last is not done, doesn't use valye bootstrap
+    res = torch.tensor([1.9801, 0.99, 1.0, 5.90807411479, 4.957650621, 5.0077279, 4.04821, 3.079])
+    # use allclose instead of equal to account for atol
+    assert torch.allclose(shaped_rewards, res)
+
+    # when last is done, doesn't use valye bootstrap
+    dones = torch.tensor([0., 0., 1., 0., 0., 0., 0., 1.])
+    shaped_rewards = math_util.calc_shaped_rewards(rewards, dones, v_pred, gamma)
+    res = torch.tensor([1.9801, 0.99, 1.0, 3.9109950099999997, 2.9403989999999998, 2.9701, 1.99, 1.0])
+    assert torch.allclose(shaped_rewards, res)
+
+
 @pytest.mark.parametrize('vec,res', [
     ([1, 1, 1], [False, False, False]),
     ([1, 1, 2], [False, False, True]),
