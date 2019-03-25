@@ -1,5 +1,5 @@
 {
-  "ddqn_spaceinvaders_2k": {
+  "ddqn_spaceinvaders": {
     "agent": [{
       "name": "DoubleDQN",
       "algorithm": {
@@ -48,7 +48,7 @@
         },
         "lr_scheduler_spec": null,
         "update_type": "replace",
-        "update_frequency": 2000,
+        "update_frequency": 1000,
         "gpu": true
       }
     }],

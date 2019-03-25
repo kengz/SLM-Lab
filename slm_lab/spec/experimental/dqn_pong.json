@@ -1,5 +1,5 @@
 {
-  "dqn_pong_2k": {
+  "dqn_pong": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
@@ -48,7 +48,7 @@
         },
         "lr_scheduler_spec": null,
         "update_type": "replace",
-        "update_frequency": 2000,
+        "update_frequency": 1000,
         "gpu": true
       }
     }],
