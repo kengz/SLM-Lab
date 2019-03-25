@@ -125,7 +125,16 @@ class ConvNet(Net, nn.Module):
         if ps.is_integer(self.out_dim):
             self.model_tail = net_util.build_fc_model([tail_in_dim, self.out_dim], self.out_layer_activation)
         else:
-            self.model_tails = nn.ModuleList([net_util.build_fc_model([tail_in_dim, out_d], self.out_layer_activation) for out_d in self.out_dim])
+            layers = []
+            for idx, out_d in enumerate(self.out_dim):
+                # NOTE tmp hack to let policy use activate only
+                if idx == 0:  # policy tail
+                    out_layer_activation = self.out_layer_activation
+                else:
+                    out_layer_activation = None
+                layer = net_util.build_fc_model([tail_in_dim, out_d], out_layer_activation)
+                layers.append(layer)
+            self.model_tails = nn.ModuleList(layers)
 
         net_util.init_layers(self, self.init_fn)
         for module in self.modules():
