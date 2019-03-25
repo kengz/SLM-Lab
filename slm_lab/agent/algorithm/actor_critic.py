@@ -333,6 +333,11 @@ class ActorCritic(Reinforce):
         v_pred = v_preds[-1]  # the last v_pred
         shaped_rewards = math_util.calc_shaped_rewards(batch['rewards'], batch['dones'], v_pred, self.gamma)
 
+        # NOTE hack to follow OpenAI fully
+        adv_targets = shaped_rewards - v_preds
+        v_targets = shaped_rewards
+        return adv_targets, v_targets
+
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
         v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
         nstep_returns = math_util.calc_nstep_returns(shaped_rewards, batch['dones'], self.gamma, self.num_step_returns, next_v_preds)
