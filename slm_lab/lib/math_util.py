@@ -43,136 +43,29 @@ def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
     Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
     R^(n)_t = r_{t+1} + gamma r_{t+2} + ... + gamma^(n-1) r_{t+n} + gamma^(n) V(s_{t+n})
     For edge case where there is no r term, substitute with V and end the sum,
-    e.g. for max t = 5, R^(3)_4 = r_5 + gamma V(s_5)
+    If r_k doesn't exist, directly substitute its place with V(s_k) and shorten the sum
+    NOTE: check the slow method in unit test for comparison
     '''
-    T = len(rewards) - n - 1
+    T = len(rewards)
     assert not torch.isnan(rewards).any()
     rets = torch.zeros(T, dtype=torch.float32, device=v_preds.device)
     # to multiply with not_dones to handle episode boundary (last state has no V(s'))
-    # not_dones = 1 - dones
-    gammas = 1.
-    # gammas = 1 * not_dones[1:T + 1]
-    # pretend t = 0
+    dones = torch.cat([dones, torch.ones(n)])
+    rewards = torch.cat([rewards, torch.zeros(n)])
+    v_preds = torch.cat([v_preds, torch.zeros(n)])
+    not_dones = 1. - dones
+    gammas = 1.  # gamma ^ 0 = 1 for i = 0
+    # pretend you're computing at a specific index of t
     for idx in range(n):  # iterate and add each t+i term for each t
         i = idx + 1
-        rets += gammas * rewards[i:T + i]
-        # gammas *= gamma * not_dones[i:T + i]
-        gammas *= gamma
+        # substitution mechanism, if rewards runs out at an index, replace with v_pred at the same index. revert back to v_pred because it was not summed in previous loop step
+        rets += gammas * (not_dones[i:T + i] * rewards[i:T + i] + dones[i:T + i] * v_preds[i - 1:T + i - 1])
+        # if there is replacement at an index, make gamma 0 to prevent summing further
+        gammas *= gamma * not_dones[i:T + i]
     # finally, add the V(s_(t+n)) term
-    # rets += gammas * v_preds[n:T + n] * not_dones[n:T + n]
     rets += gammas * v_preds[n:T + n]
     assert not torch.isnan(rets).any(), f'nstep rets have nan: {rets}'
     return rets
-
-
-def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
-    '''
-    Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
-    R^(n)_t = r_{t+1} + gamma r_{t+2} + ... + gamma^(n-1) r_{t+n} + gamma^(n) V(s_{t+n})
-    For edge case where there is no r term, substitute with V and end the sum,
-    e.g. for max t = 5, R^(3)_4 = r_5 + gamma V(s_5)
-    '''
-    # TMP
-    # T = len(rewards) - n - 1
-    T = len(rewards)
-    assert len(v_preds) = T + 1
-    assert not torch.isnan(rewards).any()
-    rets = torch.zeros(T, dtype=torch.float32, device=v_preds.device)
-    # to multiply with not_dones to handle episode boundary (last state has no V(s'))
-    # not_dones = 1 - dones
-    for t in range(T):
-        ret = 0.0
-        cur_gamma = 1.0
-        for idx in range(n):
-            i = idx + 1
-            # short circuit if this reward does not exist
-            if t + i >= T or dones[t + i]:
-                i -= 1  # set it back to index of last valid reward
-                break
-            ret += cur_gamma * rewards[t + i]
-            cur_gamma *= gamma
-        ret += cur_gamma * v_preds[t + i]
-        rets[t] = ret
-    return rets
-
-# TODO handle full length, short circuit terms
-
-
-# rewards = torch.tensor([0., 1., 2., 3., 4., 5., 6., ])
-# dones = torch.tensor([0., 0., 0., 0., 1., 0., 0., ])
-# v_preds = torch.tensor([1., 2., 3., 4., 5., 6., 7.])
-# gamma = 0.99
-# n = 3
-# not_dones = 1 - dones
-# nstep_rets = calc_nstep_returns(rewards, dones, v_preds, gamma, n)
-# nstep_rets = calc_nstep_returns_slow(rewards, dones, v_preds, gamma, n)
-# nstep_rets
-# 6 + 0.99 * 7
-# 1 + 0.99*2 + 0.99*0.99*3 + 0.99*0.99*0.99*4
-#
-# nstep_rets2 = calc_nstep_returns2(rewards, dones, v_preds, gamma, n)
-#
-# n = 3
-# res_list = []
-# for t in range(len(rewards) - n - 1):
-#     ret = 0.0
-#     for idx in range(n):
-#         i = idx + 1
-#         ret += np.power(gamma, i - 1) * rewards[t + i]
-#     ret += np.power(gamma, n) * v_preds[t + n]
-#     res_list.append(ret)
-#
-# res_list
-#
-# for t in range(len(rewards) - n - 1):
-#     res = rewards[t + 1] + np.power(gamma, 1) * rewards[t + 2] + np.power(gamma, 2) * rewards[t + 3] + np.power(gamma, 3) * v_preds[t + 3]
-#     print(f'{nstep_rets[t]} vs {res}')
-#     assert nstep_rets[t] == res, f'{nstep_rets[t]} vs {res}'
-
-#
-#     slot t=1
-#     rewards[1+0]
-#     + gamma^1 rewards[1+1]
-#     + gamma^2 rewards[1+2]
-#     + gamma^n v_preds[1+n]
-#
-#     slot t=2
-#     rewards[2+0]
-#     + gamma^1 rewards[2+1]
-#     + gamma^2 rewards[2+2]
-#     + gamma^n v_preds[2+n]
-#
-#     for i in range(n):
-#         rewards[t+i]
-#     rets[t] = rewards[t] + gamma * rewards[t+1] + gamma * next_v_preds[t]
-#     delta = rewards[t] + gamma * next_v_preds[t + 1] * not_dones[t] - next_v_preds[t]
-#     rets[t] = future_ret = delta + gamma * lam * not_dones[t] * future_ret
-    # assert not torch.isnan(rets).any(), f'GAE has nan: {rets}'
-    # return rets
-
-
-def calc_nstep_returns2(rewards, dones, next_v_preds, gamma, n):
-    rets = rewards.clone()  # prevent mutation
-    next_v_preds = next_v_preds.clone()  # prevent mutation
-    nstep_rets = torch.zeros_like(rets) + (torch.cat([rets[1:], torch.zeros(1)))
-    cur_gamma = gamma
-    not_dones = 1 - dones
-    for i in range(1, n):
-        # TODO shifting is expensive. rewrite
-        # Shift returns by one and zero last element of each episode
-        rets[:-1] = rets[1:]
-        rets *= not_dones
-        # Also shift V(s_t+1) so final terms use V(s_t+n)
-        next_v_preds[:-1] = next_v_preds[1:]
-        next_v_preds *= not_dones
-        # Accumulate return
-        nstep_rets += cur_gamma * rets
-        # Update current gamma
-        cur_gamma *= cur_gamma
-    # Add final terms. Note no next state if epi is done
-    final_terms = cur_gamma * next_v_preds * not_dones
-    nstep_rets += final_terms
-    return nstep_rets
 
 
 def calc_gaes(rewards, dones, v_preds, gamma, lam):

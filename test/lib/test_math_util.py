@@ -4,6 +4,35 @@ import pytest
 import torch
 
 
+def calc_nstep_returns_slow(rewards, dones, v_preds, gamma, n):
+    '''
+    Slower method to check the correctness of calc_nstep_returns
+    Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
+    R^(n)_t = r_{t+1} + gamma r_{t+2} + ... + gamma^(n-1) r_{t+n} + gamma^(n) V(s_{t+n})
+    For edge case where there is no r term, substitute with V and end the sum,
+    e.g. for max t = 5, R^(3)_4 = r_5 + gamma V(s_5)
+    '''
+    T = len(rewards)
+    assert not torch.isnan(rewards).any()
+    rets = torch.zeros(T, dtype=torch.float32, device=v_preds.device)
+    # to multiply with not_dones to handle episode boundary (last state has no V(s'))
+    # not_dones = 1 - dones
+    for t in range(T):
+        ret = 0.0
+        cur_gamma = 1.0
+        for idx in range(n):
+            i = idx + 1
+            # short circuit if this reward does not exist
+            if t + i >= T or dones[t + i]:
+                i -= 1  # set it back to index of last valid reward
+                break
+            ret += cur_gamma * rewards[t + i]
+            cur_gamma *= gamma
+        ret += cur_gamma * v_preds[t + i]
+        rets[t] = ret
+    return rets
+
+
 def test_calc_gaes():
     rewards = torch.tensor([1., 0., 1., 1., 0., 1., 1., 1.])
     dones = torch.tensor([0., 0., 1., 1., 0., 0., 0., 0.])
@@ -15,6 +44,31 @@ def test_calc_gaes():
     res = torch.tensor([0.84070045, 0.89495, -0.1, -0.1, 3.616724, 2.7939649, 1.9191545, 0.989])
     # use allclose instead of equal to account for atol
     assert torch.allclose(gaes, res)
+
+
+def test_calc_nstep_returns():
+    rewards = torch.tensor([0., 1., 2., 3., 4., 5., 6., ])
+    v_preds = torch.tensor([1., 2., 3., 4., 5., 6., 7.])
+    gamma = 0.99
+    n = 3
+
+    dones = torch.tensor([0., 0., 0., 0., 0., 0., 0., ])
+    nstep_rets = math_util.calc_nstep_returns(rewards, dones, v_preds, gamma, n)
+    res = calc_nstep_returns_slow(rewards, dones, v_preds, gamma, n)
+    # use allclose instead of equal to account for atol
+    assert torch.allclose(nstep_rets, res)
+
+    dones = torch.tensor([0., 0., 0., 0., 1., 0., 0., ])
+    nstep_rets = math_util.calc_nstep_returns(rewards, dones, v_preds, gamma, n)
+    res = calc_nstep_returns_slow(rewards, dones, v_preds, gamma, n)
+    # use allclose instead of equal to account for atol
+    assert torch.allclose(nstep_rets, res)
+
+    dones = torch.tensor([0., 0., 0., 0., 0., 0., 1., ])
+    nstep_rets = math_util.calc_nstep_returns(rewards, dones, v_preds, gamma, n)
+    res = calc_nstep_returns_slow(rewards, dones, v_preds, gamma, n)
+    # use allclose instead of equal to account for atol
+    assert torch.allclose(nstep_rets, res)
 
 
 def test_calc_shaped_rewards():
