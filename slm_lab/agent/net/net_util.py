@@ -63,6 +63,10 @@ def get_lr_scheduler(cls, lr_scheduler_spec):
     '''Helper to parse lr_scheduler param and construct Pytorch optim.lr_scheduler'''
     if ps.is_empty(lr_scheduler_spec):
         lr_scheduler = NoOpLRScheduler(cls.optim)
+    elif lr_scheduler_spec['name'] == 'LinearToZero':
+        LRSchedulerClass = getattr(torch.optim.lr_scheduler, 'LambdaLR')
+        total_t = float(lr_scheduler_spec['total_t'])
+        lr_scheduler = LRSchedulerClass(cls.optim, lr_lambda=lambda x: 1 - x / total_t)
     else:
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, lr_scheduler_spec['name'])
         lr_scheduler_spec = ps.omit(lr_scheduler_spec, 'name')
