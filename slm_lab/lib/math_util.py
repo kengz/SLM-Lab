@@ -50,9 +50,9 @@ def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
     assert not torch.isnan(rewards).any()
     rets = torch.zeros(T, dtype=torch.float32, device=v_preds.device)
     # to multiply with not_dones to handle episode boundary (last state has no V(s'))
-    dones = torch.cat([dones, torch.ones(n)])
-    rewards = torch.cat([rewards, torch.zeros(n)])
-    v_preds = torch.cat([v_preds, torch.zeros(n)])
+    dones = torch.cat([dones, torch.ones(n, device=v_preds.device)])
+    rewards = torch.cat([rewards, torch.zeros(n, device=v_preds.device)])
+    v_preds = torch.cat([v_preds, torch.zeros(n, device=v_preds.device)])
     not_dones = 1. - dones
     gammas = 1.  # gamma ^ 0 = 1 for i = 0
     # pretend you're computing at a specific index of t
