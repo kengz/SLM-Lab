@@ -38,30 +38,31 @@ def calc_returns(rewards, dones, gamma):
     return rets
 
 
-# def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
-#     '''
-#     Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
-#     R^(n)_t = r_{t+1} + gamma r_{t+2} + ... + gamma^(n-1) r_{t+n} + gamma^(n) V(s_{t+n})
-#     For edge case where there is no r term, substitute with V and end the sum,
-#     e.g. for max t = 5, R^(3)_4 = r_5 + gamma V(s_5)
-#     '''
-#     # TMP
-#     T = len(rewards) - n - 1
-#     assert not torch.isnan(rewards).any()
-#     rets = torch.zeros(T, dtype=torch.float32, device=v_preds.device)
-#     # to multiply with not_dones to handle episode boundary (last state has no V(s'))
-#     not_dones = 1 - dones
-#     gammas = 1 * not_dones[1:T + 1]
-#     for idx in range(n):  # iterate and add each t+i term for each t
-#         i = idx + 1
-#         rets += gammas * rewards[i:T + i]
-#         # gammas *= gamma * not_dones[i:T + i]
-#         gammas *= gamma
-#     # finally, add the V(s_(t+n)) term
-#     # rets += gammas * v_preds[n:T + n] * not_dones[n:T + n]
-#     rets += gammas * v_preds[n:T + n]
-#     assert not torch.isnan(rets).any(), f'nstep rets have nan: {rets}'
-#     return rets
+def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
+    '''
+    Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
+    R^(n)_t = r_{t+1} + gamma r_{t+2} + ... + gamma^(n-1) r_{t+n} + gamma^(n) V(s_{t+n})
+    For edge case where there is no r term, substitute with V and end the sum,
+    e.g. for max t = 5, R^(3)_4 = r_5 + gamma V(s_5)
+    '''
+    T = len(rewards) - n - 1
+    assert not torch.isnan(rewards).any()
+    rets = torch.zeros(T, dtype=torch.float32, device=v_preds.device)
+    # to multiply with not_dones to handle episode boundary (last state has no V(s'))
+    # not_dones = 1 - dones
+    gammas = 1.
+    # gammas = 1 * not_dones[1:T + 1]
+    # pretend t = 0
+    for idx in range(n):  # iterate and add each t+i term for each t
+        i = idx + 1
+        rets += gammas * rewards[i:T + i]
+        # gammas *= gamma * not_dones[i:T + i]
+        gammas *= gamma
+    # finally, add the V(s_(t+n)) term
+    # rets += gammas * v_preds[n:T + n] * not_dones[n:T + n]
+    rets += gammas * v_preds[n:T + n]
+    assert not torch.isnan(rets).any(), f'nstep rets have nan: {rets}'
+    return rets
 
 
 def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
@@ -74,6 +75,7 @@ def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
     # TMP
     # T = len(rewards) - n - 1
     T = len(rewards)
+    assert len(v_preds) = T + 1
     assert not torch.isnan(rewards).any()
     rets = torch.zeros(T, dtype=torch.float32, device=v_preds.device)
     # to multiply with not_dones to handle episode boundary (last state has no V(s'))
@@ -149,28 +151,28 @@ def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
     # return rets
 
 
-# def calc_nstep_returns2(rewards, dones, next_v_preds, gamma, n):
-#     rets = rewards.clone()  # prevent mutation
-#     next_v_preds = next_v_preds.clone()  # prevent mutation
-#     nstep_rets = torch.zeros_like(rets) + rets
-#     cur_gamma = gamma
-#     not_dones = 1 - dones
-#     for i in range(1, n):
-#         # TODO shifting is expensive. rewrite
-#         # Shift returns by one and zero last element of each episode
-#         rets[:-1] = rets[1:]
-#         rets *= not_dones
-#         # Also shift V(s_t+1) so final terms use V(s_t+n)
-#         next_v_preds[:-1] = next_v_preds[1:]
-#         next_v_preds *= not_dones
-#         # Accumulate return
-#         nstep_rets += cur_gamma * rets
-#         # Update current gamma
-#         cur_gamma *= cur_gamma
-#     # Add final terms. Note no next state if epi is done
-#     final_terms = cur_gamma * next_v_preds * not_dones
-#     nstep_rets += final_terms
-#     return nstep_rets
+def calc_nstep_returns2(rewards, dones, next_v_preds, gamma, n):
+    rets = rewards.clone()  # prevent mutation
+    next_v_preds = next_v_preds.clone()  # prevent mutation
+    nstep_rets = torch.zeros_like(rets) + (torch.cat([rets[1:], torch.zeros(1)))
+    cur_gamma = gamma
+    not_dones = 1 - dones
+    for i in range(1, n):
+        # TODO shifting is expensive. rewrite
+        # Shift returns by one and zero last element of each episode
+        rets[:-1] = rets[1:]
+        rets *= not_dones
+        # Also shift V(s_t+1) so final terms use V(s_t+n)
+        next_v_preds[:-1] = next_v_preds[1:]
+        next_v_preds *= not_dones
+        # Accumulate return
+        nstep_rets += cur_gamma * rets
+        # Update current gamma
+        cur_gamma *= cur_gamma
+    # Add final terms. Note no next state if epi is done
+    final_terms = cur_gamma * next_v_preds * not_dones
+    nstep_rets += final_terms
+    return nstep_rets
 
 
 def calc_gaes(rewards, dones, v_preds, gamma, lam):
