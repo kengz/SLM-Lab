@@ -155,6 +155,7 @@ class Body:
         '''Calculate a row for updating train_df or eval_df, given a total_reward.'''
         total_t = self.env.clock.get('total_t')
         wall_t = env.clock.get_elapsed_wall_t()
+        fps = 0 if wall_t == 0 else total_t / wall_t
         row = pd.Series({
             # epi and total_t are always measured from training env
             'epi': self.env.clock.get('epi'),
@@ -162,7 +163,7 @@ class Body:
             # t and reward are measured from a given env or eval_env
             't': env.clock.get('t'),
             'wall_t': wall_t,
-            'fps': total_t / wall_t,
+            'fps': fps,
             'reward': total_reward,
             'loss': self.loss,
             'lr': self.get_mean_lr(),

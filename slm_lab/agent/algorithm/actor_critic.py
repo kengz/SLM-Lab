@@ -112,7 +112,7 @@ class ActorCritic(Reinforce):
         elif self.num_step_returns is not None:
             self.calc_advs_v_targets = self.calc_nstep_advs_v_targets
         else:
-            self.calc_advs_v_targets = self.calc_td_advs_v_targets
+            raise ValueError('Specify lam or num_step_returns to use GAE or Nstep-returns advantage')
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -302,17 +302,10 @@ class ActorCritic(Reinforce):
         before output, adv_targets is standardized (so v_targets used the unstandardized version)
         Used for training with GAE
         '''
-        states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
-        v_preds = self.calc_v(states)
-        next_v_preds = v_preds[1:]  # shift for only the next states
-
-        # NOTE reward shaping trick to prevent bootstrap collapse
-        v_pred = v_preds[-2]  # get the last v_pred at -2, since -1 is the last_next_v_pred
-        shaped_rewards = math_util.calc_shaped_rewards(batch['rewards'], batch['dones'], v_pred, self.gamma)
-
+        v_preds = self.calc_v(batch['states'])
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
-        adv_targets = math_util.calc_gaes(shaped_rewards, batch['dones'], v_preds, self.gamma, self.lam)
+        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], v_preds, self.gamma, 1)
+        adv_targets = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds, self.gamma, self.lam)
         # adv_targets = math_util.standardize(adv_targets)
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
@@ -324,35 +317,11 @@ class ActorCritic(Reinforce):
         Used for training with N-step (not GAE)
         Returns 2-tuple for API-consistency with GAE
         '''
-        # for state in batch['states']:
-        #     logger.info('rendering a state')
-        #     for slice in state:
-        #         print('slice', slice.shape, slice)
-        #         util.debug_image(slice.numpy().astype(np.uint8))
         v_preds = self.calc_v(batch['states'])
-        states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
-        full_v_preds = self.calc_v(states)
-        # logger.info(f'v_preds {full_v_preds}')
-        next_v_preds = full_v_preds[1:]  # shift for only the next states
-        v_preds = full_v_preds[:-1]
-
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
         v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], v_preds, self.gamma, 1)
         nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], v_preds, self.gamma, self.num_step_returns)
-        nstep_advs = nstep_returns - v_preds
-        adv_targets = nstep_advs
-        logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
-        return adv_targets, v_targets
-
-    def calc_td_advs_v_targets(self, batch):
-        '''
-        Estimate Q(s_t, a_t) with r_t + gamma * V(s_t+1 ) for simplest AC algorithm
-        '''
-        next_v_preds = self.calc_v(batch['next_states'])
-        # Equivalent to 1-step return
-        # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
-        adv_targets = v_targets  # Plain Q estimate, called adv for API consistency
+        adv_targets = nstep_returns - v_preds
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
