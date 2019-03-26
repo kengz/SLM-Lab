@@ -10,7 +10,7 @@ def calc_nstep_returns_slow(rewards, dones, v_preds, gamma, n):
     Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
     R^(n)_t = r_{t+1} + gamma r_{t+2} + ... + gamma^(n-1) r_{t+n} + gamma^(n) V(s_{t+n})
     For edge case where there is no r term, substitute with V and end the sum,
-    e.g. for max t = 5, R^(3)_4 = r_5 + gamma V(s_5)
+    If r_k doesn't exist, directly substitute its place with V(s_k) and shorten the sum
     '''
     T = len(rewards)
     assert not torch.isnan(rewards).any()
