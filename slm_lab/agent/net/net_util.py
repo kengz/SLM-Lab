@@ -201,17 +201,13 @@ def copy(src_net, tar_net):
     tar_net.load_state_dict(src_net.state_dict())
 
 
-def polyak_update(src_net, tar_net, beta=0.5):
-    '''Polyak weight update to update a target tar_net'''
-    tar_params = tar_net.named_parameters()
-    src_params = src_net.named_parameters()
-    src_dict_params = dict(src_params)
-
-    for name, tar_param in tar_params:
-        if name in src_dict_params:
-            src_dict_params[name].data.copy_(beta * tar_param.data + (1 - beta) * src_dict_params[name].data)
-
-    tar_net.load_state_dict(src_dict_params)
+def polyak_update(src_net, tar_net, retain_ratio=0.5):
+    '''
+    Polyak weight update to update a target tar_net, retain old weights by its ratio, i.e.
+    target <- retain_ratio * source + (1 - retain_ratio) * target
+    '''
+    for src_param, tar_param in zip(src_net.parameters(), tar_net.named_parameters()):
+        tar_param.data.copy_(retain_ratio * src_param.data + (1.0 - retain_ratio) * tar_param.data)
 
 
 def to_assert_trained():
