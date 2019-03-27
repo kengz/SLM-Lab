@@ -352,11 +352,13 @@ class OnPolicyAtariReplay(OnPolicyReplay):
         # clip reward, done here to minimize change to only training data data
         super(OnPolicyAtariReplay, self).add_experience(state, action, np.sign(reward), next_state, done)
 
+
 class OnPolicyAtariBatchReplay(OnPolicyBatchReplay, OnPolicyAtariReplay):
     '''
     OnPolicyBatchReplay with Atari concat
     '''
     pass
+
 
 class OnPolicyImageReplay(OnPolicyReplay):
     '''
