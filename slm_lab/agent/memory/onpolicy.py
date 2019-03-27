@@ -211,7 +211,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
             self.warn_size_once('Large memory size: {}'.format(self.true_size))
         self.seen_size += 1
         # Decide if agent is to train
-        if done or len(self.states) == self.body.agent.algorithm.training_frequency:
+        if len(self.states) == self.body.agent.algorithm.training_frequency:
             self.body.agent.algorithm.to_train = 1
 
     def sample(self):
@@ -352,6 +352,11 @@ class OnPolicyAtariReplay(OnPolicyReplay):
         # clip reward, done here to minimize change to only training data data
         super(OnPolicyAtariReplay, self).add_experience(state, action, np.sign(reward), next_state, done)
 
+class OnPolicyAtariBatchReplay(OnPolicyBatchReplay, OnPolicyAtariReplay):
+    '''
+    OnPolicyBatchReplay with Atari concat
+    '''
+    pass
 
 class OnPolicyImageReplay(OnPolicyReplay):
     '''
