@@ -91,6 +91,23 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
     return gaes
 
 
+def calc_shaped_rewards(rewards, dones, v_pred, gamma):
+    '''
+    OpenAI nstep returns
+    https://github.com/openai/baselines/blob/3f2f45acef0fdfdba723f0c087c9d1408f9c45a6/baselines/a2c/utils.py#L147
+    '''
+    T = len(rewards)
+    assert not torch.isnan(rewards).any()
+    shaped_rewards = torch.empty(T, dtype=torch.float32, device=rewards.device)
+    # set bootstrapped reward to v_pred if not done, else 0
+    shaped_reward = v_pred if dones[-1].item() == 0.0 else 0.0
+    not_dones = 1 - dones
+    for t in reversed(range(T)):
+        shaped_reward = rewards[t] + gamma * shaped_reward * not_dones[t]
+        shaped_rewards[t] = shaped_reward
+    return shaped_rewards
+
+
 def calc_q_value_logits(state_value, raw_advantages):
     mean_adv = raw_advantages.mean(dim=-1).unsqueeze(dim=-1)
     return state_value + raw_advantages - mean_adv

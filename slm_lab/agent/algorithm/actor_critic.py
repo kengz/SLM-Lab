@@ -112,7 +112,7 @@ class ActorCritic(Reinforce):
         elif self.num_step_returns is not None:
             self.calc_advs_v_targets = self.calc_nstep_advs_v_targets
         else:
-            raise ValueError('Specify lam or num_step_returns to use GAE or Nstep-returns advantage')
+            self.calc_advs_v_targets = self.openai_nstep_advs_v_targets
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -322,6 +322,20 @@ class ActorCritic(Reinforce):
         v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], v_preds, self.gamma, 1)
         nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], v_preds, self.gamma, self.num_step_returns)
         adv_targets = nstep_returns - v_preds
+        logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
+        return adv_targets, v_targets
+
+    def openai_nstep_advs_v_targets(self, batch):
+        '''
+        Calculate N-step returns with variable steps depending on the position in the batch. Each element gets the maximum number of steps possible. If batch_size = 8, then t1 gets 8 steps of returns, t2 = 7 steps, etc.
+        See https://github.com/openai/baselines/blob/3f2f45acef0fdfdba723f0c087c9d1408f9c45a6/baselines/a2c/utils.py#L147
+        '''
+        v_preds_all = self.calc_v(torch.cat([batch['states'], batch['next_states'][-1, :].unsqueeze(0)], dim=-0))
+        v_preds = v_preds_all[:-1]
+        v_next_preds = v_preds_all[1:]
+        nstep_returns = math_util.calc_shaped_rewards(batch['rewards'], batch['dones'], v_next_preds[-1], self.gamma)
+        adv_targets = nstep_returns - v_preds
+        v_targets = nstep_returns
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
