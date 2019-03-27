@@ -122,17 +122,19 @@ def get_out_dim(body, add_critic=False):
 def init_layers(net, init_fn):
     if init_fn is None:
         return
-    hid_layers_activation = get_nn_name(net.hid_layers_activation)
+    nonlinearity = get_nn_name(net.hid_layers_activation).lower()
+    if nonlinearity == 'leakyrelu':
+        nonlinearity = 'leaky_relu'
     if init_fn == 'xavier_uniform_':
         try:
-            gain = nn.init.calculate_gain(hid_layers_activation)
+            gain = nn.init.calculate_gain(nonlinearity)
         except ValueError:
             gain = 1
         init_fn = partial(nn.init.xavier_uniform_, gain=gain)
     elif 'kaiming' in init_fn:
-        assert hid_layers_activation in ['ReLU', 'LeakyReLU'], f'Kaiming initialization not supported for {hid_layers_activation}'
+        assert nonlinearity in ['relu', 'leaky_relu'], f'Kaiming initialization not supported for {nonlinearity}'
         init_fn = nn.init.__dict__[init_fn]
-        init_fn = partial(init_fn, nonlinearity=hid_layers_activation)
+        init_fn = partial(init_fn, nonlinearity=nonlinearity)
     else:
         init_fn = nn.init.__dict__[init_fn]
     net.apply(partial(init_parameters, init_fn=init_fn))
