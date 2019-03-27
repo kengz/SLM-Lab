@@ -163,7 +163,7 @@ class ConvNet(Net, nn.Module):
         '''
         assert not ps.is_empty(fc_hid_layers)
         dims = [self.conv_out_dim] + fc_hid_layers
-        fc_model = net_util.build_sequential(dims, self.hid_layers_activation)
+        fc_model = net_util.build_fc_model(dims, self.hid_layers_activation)
         return fc_model
 
     def forward(self, x):

@@ -86,7 +86,7 @@ class MLPNet(Net, nn.Module):
         ])
 
         dims = [self.in_dim] + self.hid_layers
-        self.model = net_util.build_sequential(dims, self.hid_layers_activation)
+        self.model = net_util.build_fc_model(dims, self.hid_layers_activation)
         # add last layer with no activation
         # tails. avoid list for single-tail for compute speed
         if ps.is_integer(self.out_dim):
@@ -250,7 +250,7 @@ class HydraMLPNet(Net, nn.Module):
         self.model_heads = self.build_model_heads(in_dim)
         heads_out_dim = np.sum([head_hid_layers[-1] for head_hid_layers in self.head_hid_layers])
         dims = [heads_out_dim] + self.body_hid_layers
-        self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
+        self.model_body = net_util.build_fc_model(dims, self.hid_layers_activation)
         self.model_tails = self.build_model_tails(out_dim)
 
         net_util.init_layers(self, self.init_fn)
@@ -269,7 +269,7 @@ class HydraMLPNet(Net, nn.Module):
         model_heads = nn.ModuleList()
         for in_d, hid_layers in zip(in_dim, self.head_hid_layers):
             dims = [in_d] + hid_layers
-            model_head = net_util.build_sequential(dims, self.hid_layers_activation)
+            model_head = net_util.build_fc_model(dims, self.hid_layers_activation)
             model_heads.append(model_head)
         return model_heads
 
@@ -283,7 +283,7 @@ class HydraMLPNet(Net, nn.Module):
             assert len(self.tail_hid_layers) == len(out_dim), 'Hydra tail hid_params inconsistent with number out dims'
             for out_d, hid_layers in zip(out_dim, self.tail_hid_layers):
                 dims = hid_layers
-                model_tail = net_util.build_sequential(dims, self.hid_layers_activation)
+                model_tail = net_util.build_fc_model(dims, self.hid_layers_activation)
                 model_tail.add_module(str(len(model_tail)), nn.Linear(dims[-1], out_d))
                 model_tails.append(model_tail)
         return model_tails
@@ -401,7 +401,7 @@ class DuelingMLPNet(MLPNet):
         # Guard against inappropriate algorithms and environments
         # Build model body
         dims = [self.in_dim] + self.hid_layers
-        self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
+        self.model_body = net_util.build_fc_model(dims, self.hid_layers_activation)
         # output layers
         self.v = nn.Linear(dims[-1], 1)  # state value
         self.adv = nn.Linear(dims[-1], out_dim)  # action dependent raw advantage
