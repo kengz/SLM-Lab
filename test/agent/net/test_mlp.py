@@ -54,11 +54,9 @@ def test_wrap_eval():
 
 
 def test_training_step():
-    assert_trained = net_util.gen_assert_trained(net)
     y = torch.rand((batch_size, out_dim))
     loss = net.training_step(x=x, y=y)
     assert loss != 0.0
-    assert_trained(net, loss)
 
 
 def test_no_lr_scheduler():

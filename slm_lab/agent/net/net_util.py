@@ -1,4 +1,4 @@
-from functools import partial
+from functools import partial, wraps
 from slm_lab import ROOT_DIR
 from slm_lab.lib import logger, util
 import numpy as np
@@ -123,17 +123,19 @@ def get_out_dim(body, add_critic=False):
 def init_layers(net, init_fn):
     if init_fn is None:
         return
-    hid_layers_activation = get_nn_name(net.hid_layers_activation)
+    nonlinearity = get_nn_name(net.hid_layers_activation).lower()
+    if nonlinearity == 'leakyrelu':
+        nonlinearity = 'leaky_relu'
     if init_fn == 'xavier_uniform_':
         try:
-            gain = nn.init.calculate_gain(hid_layers_activation)
+            gain = nn.init.calculate_gain(nonlinearity)
         except ValueError:
             gain = 1
         init_fn = partial(nn.init.xavier_uniform_, gain=gain)
     elif 'kaiming' in init_fn:
-        assert hid_layers_activation in ['ReLU', 'LeakyReLU'], f'Kaiming initialization not supported for {hid_layers_activation}'
+        assert nonlinearity in ['relu', 'leaky_relu'], f'Kaiming initialization not supported for {nonlinearity}'
         init_fn = nn.init.__dict__[init_fn]
-        init_fn = partial(init_fn, nonlinearity=hid_layers_activation)
+        init_fn = partial(init_fn, nonlinearity=nonlinearity)
     else:
         init_fn = nn.init.__dict__[init_fn]
     net.apply(partial(init_parameters, init_fn=init_fn))
@@ -216,62 +218,74 @@ def copy(src_net, tar_net):
     tar_net.load_state_dict(src_net.state_dict())
 
 
-def polyak_update(src_net, tar_net, beta=0.5):
-    '''Polyak weight update to update a target tar_net'''
-    tar_params = tar_net.named_parameters()
-    src_params = src_net.named_parameters()
-    src_dict_params = dict(src_params)
-
-    for name, tar_param in tar_params:
-        if name in src_dict_params:
-            src_dict_params[name].data.copy_(beta * tar_param.data + (1 - beta) * src_dict_params[name].data)
-
-    tar_net.load_state_dict(src_dict_params)
+def polyak_update(src_net, tar_net, old_ratio=0.5):
+    '''
+    Polyak weight update to update a target tar_net, retain old weights by its ratio, i.e.
+    target <- old_ratio * source + (1 - old_ratio) * target
+    '''
+    for src_param, tar_param in zip(src_net.parameters(), tar_net.parameters()):
+        tar_param.data.copy_(old_ratio * src_param.data + (1.0 - old_ratio) * tar_param.data)
 
 
-def to_assert_trained():
+def to_check_training_step():
     '''Condition for running assert_trained'''
     return os.environ.get('PY_ENV') == 'test' or util.get_lab_mode() == 'dev'
 
 
-def gen_assert_trained(pre_model):
+def dev_check_training_step(fn):
     '''
-    Generate assert_trained function used to check weight updates
+    Decorator to check if net.training_step actually updates the network weights properly
+    Triggers only if to_check_training_step is True (dev/test mode)
     @example
 
-    assert_trained = gen_assert_trained(model)
-    # ...
-    loss.backward()
-    optim.step()
-    assert_trained(model, loss)
+    @net_util.dev_check_training_step
+    def training_step(self, ...):
+        ...
     '''
-    pre_weights = [param.clone() for param in pre_model.parameters()]
+    @wraps(fn)
+    def check_fn(*args, **kwargs):
+        if not to_check_training_step():
+            return fn(*args, **kwargs)
 
-    def assert_trained(post_model, loss):
-        post_weights = [param.clone() for param in post_model.parameters()]
+        net = args[0]  # first arg self
+        # get pre-update parameters to compare
+        pre_params = [param.clone() for param in net.parameters()]
+
+        # run training_step, get loss
+        loss = fn(*args, **kwargs)
+
+        # get post-update parameters to compare
+        post_params = [param.clone() for param in net.parameters()]
         if loss == 0.0:
-            # TODO if without momentum, weights should not change too
-            for p_name, param in post_model.named_parameters():
+            # if loss is 0, there should be no updates
+            # TODO if without momentum, parameters should not change too
+            for p_name, param in net.named_parameters():
                 assert param.grad.norm() == 0
         else:
+            # check parameter updates
             try:
-                assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_weights, post_weights)), f'Model parameter is not updated in training_step(), check if your tensor is detached from graph. Loss: {loss:g}'
+                assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_params, post_params)), f'Model parameter is not updated in training_step(), check if your tensor is detached from graph. Loss: {loss:g}'
                 logger.info(f'Model parameter is updated in training_step(). Loss: {loss: g}')
             except Exception as e:
                 logger.error(e)
                 if os.environ.get('PY_ENV') == 'test':
+                    # raise error if in unit test
                     raise(e)
-            min_norm = 0.0
-            max_norm = 1e5
-            for p_name, param in post_model.named_parameters():
+
+            # check grad norms
+            min_norm, max_norm = 0.0, 1e5
+            for p_name, param in net.named_parameters():
                 try:
                     grad_norm = param.grad.norm()
                     assert min_norm < grad_norm < max_norm, f'Gradient norm for {p_name} is {grad_norm:g}, fails the extreme value check {min_norm} < grad_norm < {max_norm}. Loss: {loss:g}. Check your network and loss computation.'
                     logger.info(f'Gradient norm for {p_name} is {grad_norm:g}; passes value check.')
                 except Exception as e:
                     logger.warn(e)
-        logger.debug('Passed network weight update assertation in dev lab_mode.')
-    return assert_trained
+        logger.debug('Passed network parameter update check.')
+        # store grad norms for debugging
+        net.store_grad_norms()
+        return loss
+    return check_fn
 
 
 def get_grad_norms(algorithm):
