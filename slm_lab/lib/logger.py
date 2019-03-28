@@ -19,8 +19,8 @@ NEW_LVLS = {'DEBUG2': 9, 'DEBUG3': 8}
 for name, val in NEW_LVLS.items():
     logging.addLevelName(val, name)
     setattr(logging, name, val)
-LOG_FORMAT = '[%(asctime)s %(levelname)s %(filename)s %(funcName)s] %(message)s'
-color_formatter = colorlog.ColoredFormatter('%(log_color)s[%(asctime)s %(levelname)s %(filename)s %(funcName)s]%(reset)s %(message)s')
+LOG_FORMAT = '[%(asctime)s PID:%(process)d %(levelname)s %(filename)s %(funcName)s] %(message)s'
+color_formatter = colorlog.ColoredFormatter('%(log_color)s[%(asctime)s PID:%(process)d %(levelname)s %(filename)s %(funcName)s]%(reset)s %(message)s')
 sh = logging.StreamHandler(sys.stdout)
 sh.setFormatter(color_formatter)
 lab_logger = logging.getLogger()
