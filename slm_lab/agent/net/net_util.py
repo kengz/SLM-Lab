@@ -280,9 +280,6 @@ def dev_check_training_step(fn):
                     logger.info(f'Gradient norm for {p_name} is {grad_norm:g}; passes value check.')
                 except Exception as e:
                     logger.warn(e)
-                    if os.environ.get('PY_ENV') == 'test':
-                        # raise error if in unit test
-                        raise(e)
         logger.debug('Passed network parameter update check.')
         # store grad norms for debugging
         net.store_grad_norms()
