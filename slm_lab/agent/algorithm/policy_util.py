@@ -152,7 +152,12 @@ def sample_action_pd(ActionPD, pdparam, body):
     '''
     pdparam = cond_squeeze(pdparam)
     if body.is_discrete:
-        action_pd = ActionPD(logits=pdparam)
+        # Add noise to logits to create variability in action probabilities with a batch at the beginning of training as used in OpenAI baselines CategoricalPd
+        u = np.random.uniform(size=list(pdparam.size()))
+        u = np.log(-np.log(u))
+        noisy_logits = pdparam - torch.tensor(u, device=body.agent.algorithm.net.device, dtype=pdparam.dtype)
+        action_pd = ActionPD(logits=noisy_logits)
+        # print(f'action probs: {action_pd.probs}')
     else:  # continuous outputs a list, loc and scale
         assert len(pdparam) == 2, pdparam
         # scale (stdev) must be >0, use softplus
