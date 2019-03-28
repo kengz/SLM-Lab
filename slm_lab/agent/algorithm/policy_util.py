@@ -27,7 +27,7 @@ logger = logger.get_logger(__name__)
 ACTION_PDS = {
     'continuous': ['Normal', 'Beta', 'Gumbel', 'LogNormal'],
     'multi_continuous': ['MultivariateNormal'],
-    'discrete': ['Categorical', 'Argmax'],
+    'discrete': ['Categorical', 'Argmax', 'CategoricalCustom'],
     'multi_discrete': ['MultiCategorical'],
     'multi_binary': ['Bernoulli'],
 }
@@ -51,6 +51,18 @@ class Argmax(distributions.Categorical):
             logits = new_logits
 
         super(Argmax, self).__init__(probs=probs, logits=logits, validate_args=validate_args)
+
+
+class CategoricalCustom(distributions.Categorical):
+    def __init__(self, probs=None, logits=None, validate_args=None):
+        super(CategoricalCustom, self).__init__(probs=probs, logits=logits, validate_args=validate_args)
+        self.raw_logits = logits
+
+    def sample(self, sample_shape=torch.Size()):
+        '''Gumbel softmax sampling'''
+        u = torch.empty(self.raw_logits.size(), device=self.raw_logits.device, dtype=self.raw_logits.dtype).uniform_(0, 1)
+        noisy_logits = self.raw_logits - torch.log(-torch.log(u))
+        return torch.argmax(noisy_logits, dim=0)
 
 
 class MultiCategorical(distributions.Categorical):
@@ -104,6 +116,7 @@ class MultiCategorical(distributions.Categorical):
 
 setattr(distributions, 'Argmax', Argmax)
 setattr(distributions, 'MultiCategorical', MultiCategorical)
+setattr(distributions, 'CategoricalCustom', CategoricalCustom)
 
 
 # base methods
@@ -152,12 +165,7 @@ def sample_action_pd(ActionPD, pdparam, body):
     '''
     pdparam = cond_squeeze(pdparam)
     if body.is_discrete:
-        # Add noise to logits to create variability in action probabilities with a batch at the beginning of training as used in OpenAI baselines CategoricalPd
-        u = np.random.uniform(size=list(pdparam.size()))
-        u = np.log(-np.log(u))
-        noisy_logits = pdparam - torch.tensor(u, device=body.agent.algorithm.net.device, dtype=pdparam.dtype)
-        action_pd = ActionPD(logits=noisy_logits)
-        # print(f'action probs: {action_pd.probs}')
+        action_pd = ActionPD(logits=pdparam)
     else:  # continuous outputs a list, loc and scale
         assert len(pdparam) == 2, pdparam
         # scale (stdev) must be >0, use softplus
