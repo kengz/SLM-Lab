@@ -188,14 +188,14 @@ class ActorCritic(Reinforce):
             else:
                 net.train()
                 out = net(x)
-            v = out[-1].squeeze_(dim=1)  # get value only
+            v = out[-1].squeeze(dim=1)  # get value only
         else:
             if evaluate:
                 out = self.critic.wrap_eval(x)
             else:
                 self.critic.train()
                 out = self.critic(x)
-            v = out.squeeze_(dim=1)
+            v = out.squeeze(dim=1)
         logger.debug(f'v: {v}')
         return v
 
@@ -286,7 +286,7 @@ class ActorCritic(Reinforce):
     def calc_val_loss(self, batch, v_targets):
         '''Calculate the critic's value loss'''
         v_targets = v_targets.unsqueeze(dim=-1)
-        v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze_(dim=-1)
+        v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze(dim=-1)
         assert v_preds.shape == v_targets.shape
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
         logger.debug(f'Critic value loss: {val_loss:g}')
