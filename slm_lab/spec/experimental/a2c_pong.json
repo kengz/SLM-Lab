@@ -4,12 +4,12 @@
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
-        "action_pdtype": "CategoricalCustom",
+        "action_pdtype": "Categorical",
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": null,
-        "num_step_returns": null,
+        "num_step_returns": 5,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -32,7 +32,7 @@
         "conv_hid_layers": [
           [32, 8, 4, 0, 1],
           [64, 4, 2, 0, 1],
-          [64, 3, 1, 0, 1]
+          [32, 3, 1, 0, 1]
         ],
         "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
@@ -55,10 +55,7 @@
           "alpha": 0.99,
           "eps": 1e-5
         },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "total_t": 10000000
-        },
+        "lr_scheduler_spec": null,
         "gpu": true
       }
     }],
