@@ -30,7 +30,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "selu",
-        "clip_grad_val": 1.0,
+        "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -60,7 +60,7 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 5000,
       "max_tick_unit": "total_t",
       "max_trial": 4,
       "max_session": 1,
