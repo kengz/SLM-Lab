@@ -18,7 +18,7 @@
         "training_epoch": 4,
         "training_frequency": 8,
         "training_start_step": 32,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
@@ -30,7 +30,7 @@
         "type": "MLPNet",
         "hid_layers": [64],
         "hid_layers_activation": "selu",
-        "clip_grad_val": null,
+        "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -44,8 +44,8 @@
           "gamma": 0.9,
         },
         "update_type": "polyak",
-        "update_frequency": 1,
-        "polyak_coef": 0,
+        "update_frequency": 32,
+        "polyak_coef": 0.1,
         "gpu": false
       }
     }],
@@ -63,7 +63,7 @@
       "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_trial": 4,
-      "max_session": 4,
+      "max_session": 1,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 4,
