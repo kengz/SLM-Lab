@@ -1,6 +1,7 @@
 from functools import partial, wraps
 from slm_lab import ROOT_DIR
 from slm_lab.lib import logger, util
+import numpy as np
 import os
 import pydash as ps
 import torch
@@ -146,7 +147,7 @@ def init_parameters(module, init_fn):
     Initializes module's biases to either 0.01 or 0.0, depending on module
     The only exception is BatchNorm layers, for which we use uniform initialization
     '''
-    bias_init = 0.01
+    bias_init = 0.0
     classname = util.get_class_name(module)
     if 'BatchNorm' in classname:
         init_fn(module.weight)
@@ -158,7 +159,7 @@ def init_parameters(module, init_fn):
             elif 'bias' in name:
                 nn.init.constant_(param, 0.0)
     elif 'Linear' in classname or ('Conv' in classname and 'Net' not in classname):
-        init_fn(module.weight)
+        init_fn(module.weight, gain=np.sqrt(2))
         nn.init.constant_(module.bias, bias_init)
 
 
