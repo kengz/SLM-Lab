@@ -302,11 +302,11 @@ class ActorCritic(Reinforce):
         before output, adv_targets is standardized (so v_targets used the unstandardized version)
         Used for training with GAE
         '''
-        v_preds = self.calc_v(batch['states'])
-        # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], v_preds, self.gamma, 1)
+        states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
+        v_preds = self.calc_v(states)
         adv_targets = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds, self.gamma, self.lam)
-        # adv_targets = math_util.standardize(adv_targets)
+        v_targets = adv_targets + v_preds[:-1]
+        adv_targets = math_util.standardize(adv_targets)
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
