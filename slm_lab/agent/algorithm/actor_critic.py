@@ -319,8 +319,9 @@ class ActorCritic(Reinforce):
         '''
         v_preds = self.calc_v(batch['states'])
         # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], v_preds, self.gamma, 1)
-        nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], v_preds, self.gamma, self.num_step_returns)
+        # v_targets = math_util.calc_nstep_returns_slow(batch['rewards'], batch['dones'], v_preds, self.gamma, 1)
+        nstep_returns = math_util.calc_nstep_returns_slow(batch['rewards'], batch['dones'], v_preds, self.gamma, self.num_step_returns)
+        v_targets = nstep_returns
         adv_targets = nstep_returns - v_preds
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
