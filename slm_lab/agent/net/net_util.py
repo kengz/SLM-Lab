@@ -146,7 +146,7 @@ def init_parameters(module, init_fn):
     Initializes module's biases to either 0.01 or 0.0, depending on module
     The only exception is BatchNorm layers, for which we use uniform initialization
     '''
-    bias_init = 0.01
+    bias_init = 0.0
     classname = util.get_class_name(module)
     if 'BatchNorm' in classname:
         init_fn(module.weight)

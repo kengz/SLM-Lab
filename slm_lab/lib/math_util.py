@@ -92,7 +92,7 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
 
 
 def calc_q_value_logits(state_value, raw_advantages):
-    mean_adv = raw_advantages.mean(dim=-1).unsqueeze_(dim=-1)
+    mean_adv = raw_advantages.mean(dim=-1).unsqueeze(dim=-1)
     return state_value + raw_advantages - mean_adv
 
 
