@@ -111,6 +111,7 @@ class Reinforce(Algorithm):
             state = policy_util.update_online_stats_and_normalize_state(body, state)
         action, action_pd = self.action_policy(state, self, body)
         body.action_tensor, body.action_pd = action, action_pd  # used for body.action_pd_update later
+        body.action_pd_update()
         if len(action.shape) == 0:  # scalar
             return action.cpu().numpy().astype(body.action_space.dtype).item()
         else:

@@ -68,16 +68,16 @@ class Agent:
         return action
 
     @lab_api
-    def update(self, action, reward, state, done):
+    def update(self, state, action, reward, next_state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
-        self.body.action_pd_update()
-        self.body.memory.update(action, reward, state, done)
+        # self.body.action_pd_update()
+        self.body.memory.update(state, action, reward, next_state, done)
         loss = self.algorithm.train()
         if not np.isnan(loss):  # set for log_summary()
             self.body.loss = loss
         explore_var = self.algorithm.update()
         logger.debug(f'Agent {self.a} loss: {loss}, explore_var {explore_var}')
-        if done:
+        if done.any():
             self.body.epi_update()
         return loss, explore_var
 

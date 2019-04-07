@@ -68,6 +68,21 @@ def calc_nstep_returns_slow(rewards, dones, v_preds, gamma, n):
     return rets
 
 
+def calc_nstep_returns_slow2(rewards, dones, v_preds, gamma, n):
+    '''
+    if last state was terminal:
+        R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1} + gamma^(n) V(s_{t+n})
+    else:
+        R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1}
+    '''
+    assert not torch.isnan(rewards).any()
+    rets = torch.zeros((rewards.shape[0] + 1, rewards.shape[1]), dtype=torch.float32, device=v_preds.device)
+    rets[-1] = v_preds
+    for t in reversed(range(n)):
+        rets[t] = rewards[t] + gamma * rets[t + 1] * 1 - dones[t]
+    return rets[:-1, :]
+
+
 def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
     '''
     Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf

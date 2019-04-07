@@ -61,12 +61,13 @@ class OnPolicyReplay(Memory):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
     @lab_api
-    def update(self, action, reward, state, done):
+    def update(self, state, action, reward, next_state, done):
         '''Interface method to update memory'''
-        self.base_update(action, reward, state, done)
-        if not np.isnan(reward):  # not the start of episode
-            self.add_experience(self.last_state, action, reward, state, done)
-        self.last_state = state
+        self.base_update(state, action, reward, next_state, done)
+        # if not np.isnan(reward):  # not the start of episode
+        #     self.add_experience(state, action, reward, next_state, done)
+        self.add_experience(state, action, reward, next_state, done)
+        # self.last_state = state
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Interface helper method for update() to add experience to memory'''

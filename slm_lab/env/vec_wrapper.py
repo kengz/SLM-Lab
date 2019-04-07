@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from gym import spaces
 from slm_lab.env.wrapper import make_env
-from slm_lab.lib import logger
+from slm_lab.lib import logger, util
 import contextlib
 import ctypes
 import gym
@@ -490,14 +490,15 @@ class VecFrameStack(VecEnvWrapper):
         self.venv = venv
         self.nstack = nstack
         wos = venv.observation_space  # wrapped ob space
-        low = np.repeat(wos.low, self.nstack, axis=-1)
-        high = np.repeat(wos.high, self.nstack, axis=-1)
+        low = np.repeat(wos.low, self.nstack, axis=0)
+        high = np.repeat(wos.high, self.nstack, axis=0)
         self.stackedobs = np.zeros((venv.num_envs,) + low.shape, low.dtype)
         observation_space = spaces.Box(low=low, high=high, dtype=venv.observation_space.dtype)
         VecEnvWrapper.__init__(self, venv, observation_space=observation_space)
 
     def step_wait(self):
         obs, rews, news, infos = self.venv.step_wait()
+        util.debug_image(np.transpose(obs[0][0:1], (1, 2, 0)))
         self.stackedobs = np.roll(self.stackedobs, shift=-1, axis=-1)
         for (i, new) in enumerate(news):
             if new:

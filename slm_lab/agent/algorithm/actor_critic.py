@@ -152,7 +152,7 @@ class ActorCritic(Reinforce):
             # main actor network, may contain out_dim self.shared == True
             NetClass = getattr(net, actor_net_spec['type'])
             # TODO also test when disabled, has some backprop error
-            actor_net_spec['out_layer_activation'] = 'tanh'
+            # actor_net_spec['out_layer_activation'] = 'tanh'
             self.net = NetClass(actor_net_spec, in_dim, out_dim)
             self.net_names = ['net']
             if not self.shared:  # add separate network for critic
@@ -170,6 +170,7 @@ class ActorCritic(Reinforce):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
+        util.debug_image(np.transpose(x[0][0:1].numpy(), (1, 2, 0)))
         pdparam = super(ActorCritic, self).calc_pdparam(x / 255., evaluate=evaluate, net=net)
         if self.shared:  # output: policy, value
             if len(pdparam) == 2:  # single policy outputs, value
@@ -288,7 +289,9 @@ class ActorCritic(Reinforce):
     def calc_val_loss(self, batch, v_targets):
         '''Calculate the critic's value loss'''
         v_targets = v_targets.unsqueeze(dim=-1)
-        v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze(dim=-1)
+        states = batch['states']
+        states = torch.reshape(states, (-1, states.shape[2], states.shape[3], states.shape[4]))
+        v_preds = self.calc_v(states, evaluate=False).unsqueeze(dim=-1)
         assert v_preds.shape == v_targets.shape
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
         logger.debug(f'Critic value loss: {val_loss:g}')
@@ -317,14 +320,21 @@ class ActorCritic(Reinforce):
         Used for training with N-step (not GAE)
         Returns 2-tuple for API-consistency with GAE
         '''
-        v_preds = self.calc_v(batch['states'])
-        # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        # v_targets = math_util.calc_nstep_returns_slow(batch['rewards'], batch['dones'], v_preds, self.gamma, 1)
-        nstep_returns = math_util.calc_nstep_returns_slow(batch['rewards'], batch['dones'], v_preds, self.gamma, self.num_step_returns)
+        num_envs = batch['states'].shape[1]
+        states = torch.cat((batch['states'].clone(), batch['next_states'][-1:, :, :, :, :]), dim=0)  # prevent double-pass
+        states = torch.reshape(states, (-1, states.shape[2], states.shape[3], states.shape[4]))
+        v_all = self.calc_v(states)
+        v_all = torch.reshape(v_all, (-1, num_envs))
+        next_v_preds = v_all[-1:, :]
+        v_preds = v_all[:-1, :]
+        nstep_returns = math_util.calc_nstep_returns_slow2(batch['rewards'], batch['dones'], next_v_preds, self.gamma, self.num_step_returns)
+        # flatten nstep_returns and v_preds
+        nstep_returns = torch.reshape(nstep_returns, (-1,))
+        v_preds = torch.reshape(v_preds, (-1,))
         v_targets = nstep_returns
         adv_targets = nstep_returns - v_preds
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
-        return adv_targets, v_targets
+        return adv_targets.detach(), v_targets.detach()
 
     def openai_nstep_advs_v_targets(self, batch):
         '''
