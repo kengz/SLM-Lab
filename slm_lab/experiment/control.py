@@ -112,7 +112,6 @@ class Session:
                 except Exception as e:
                     pass
             vaction = np.asarray(vaction)
-            print(type(vstate), type(vaction), type(vreward), type(vnext_state), type(vdone))
             self.agent.update(vstate, vaction, vreward, vnext_state, vdone)
             # for action, reward, state, done in zip(vaction, vreward, vstate, vdone):
             #     self.agent.update(action, reward, state, done)

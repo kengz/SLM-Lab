@@ -52,17 +52,14 @@ class Memory(ABC):
     def base_update(self, state, action, reward, next_state, done):
         '''Method to do base memory update, like stats'''
         from slm_lab.experiment import analysis
-        print(reward)
         # if np.isnan(reward):  # the start of episode
         #     self.epi_reset(state)
         #     return
 
         self.total_reward += reward
         self.total_reward_vec += reward
-        print(done)
         if np.any(done):
             for i, d in enumerate(done):
-                print(done, i, d)
                 if d:
                     print(f'epi reward process {i}: {self.total_reward_vec[i]}')
                     self.total_reward_vec[i] = 0.0

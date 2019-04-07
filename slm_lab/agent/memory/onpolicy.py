@@ -203,7 +203,6 @@ class OnPolicyBatchReplay(OnPolicyReplay):
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Interface helper method for update() to add experience to memory'''
-        print(state.shape, action.shape, reward.shape, next_state.shape, done.shape)
         self.most_recent = [state, action, reward, next_state, done]
         for idx, k in enumerate(self.data_keys):
             getattr(self, k).append(self.most_recent[idx])
