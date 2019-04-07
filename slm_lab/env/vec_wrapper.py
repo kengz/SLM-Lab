@@ -1,4 +1,4 @@
-# From OpenAI CITE TODO
+# From OpenAI & pytorch-a2c-ppo-acktr-gail CITE TODO
 """
 An interface for asynchronous vectorized environments.
 """
@@ -490,6 +490,7 @@ class VecFrameStack(VecEnvWrapper):
         self.venv = venv
         self.nstack = nstack
         wos = venv.observation_space  # wrapped ob space
+        self.shape_dim0 = wos.shape[0]
         low = np.repeat(wos.low, self.nstack, axis=0)
         high = np.repeat(wos.high, self.nstack, axis=0)
         self.stackedobs = np.zeros((venv.num_envs,) + low.shape, low.dtype)
@@ -498,18 +499,17 @@ class VecFrameStack(VecEnvWrapper):
 
     def step_wait(self):
         obs, rews, news, infos = self.venv.step_wait()
-        util.debug_image(np.transpose(obs[0][0:1], (1, 2, 0)))
-        self.stackedobs = np.roll(self.stackedobs, shift=-1, axis=-1)
+        self.stackedobs[:, :-self.shape_dim0] = self.stackedobs[:, self.shape_dim0:]
         for (i, new) in enumerate(news):
             if new:
                 self.stackedobs[i] = 0
-        self.stackedobs[..., -obs.shape[-1]:] = obs
+        self.stackedobs[:, -self.shape_dim0:] = obs
         return self.stackedobs, rews, news, infos
 
     def reset(self):
         obs = self.venv.reset()
         self.stackedobs[...] = 0
-        self.stackedobs[..., -obs.shape[-1]:] = obs
+        self.stackedobs[:, -self.shape_dim0:] = obs
         return self.stackedobs
 
 
