@@ -28,6 +28,13 @@ _NP_TO_CT = {
 }
 
 
+def copy_obs_dict(obs):
+    """
+    Deep-copy an observation dict.
+    """
+    return {k: np.copy(v) for k, v in obs.items()}
+
+
 def dict_to_obs(obs_dict):
     """
     Convert an observation dict into a raw array if the
@@ -525,15 +532,24 @@ def make_venv(env_name, seed=0, num_processes=4):
     venv = VecFrameStack(venv, frame_stack_size)
     return venv
 
-#
+
 # env_name = 'PongNoFrameskip-v4'
 # seed = 0
-# num_processes = 2
+# num_processes = 4
+# import time
 #
 # venv = make_venv(env_name, seed, num_processes)
 # states = venv.reset()
-#
-# states.shape
-#
-# venv.action_space.sample()
-# venv.step([venv.action_space.sample()] * 2)
+# start_t = time.time()
+# t= 0
+# while True:
+#     t += num_processes
+#     state, reward, done, _info = venv.step([venv.action_space.sample()] * num_processes)
+#     if done.any():
+#         venv.reset()
+#         # print('done')
+#     if t > 10000:
+#         break
+# total_sec = time.time() - start_t
+# print('total_sec', total_sec)
+# print('fps', t / total_sec)

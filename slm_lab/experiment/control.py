@@ -88,16 +88,41 @@ class Session:
         # reward, state, done = self.env.reset()
         vreward, vstate, vdone = self.env.reset()
         self.agent.reset(vstate[0])
-        while not vdone.all():
+        total_reward = 0.0
+        # import time
+        # start_t = time.time()
+        while True:
             # self.try_ckpt(self.agent, self.env)
-            self.env.clock.tick('t')
             vaction = []
             for reward, state, done in zip(vreward, vstate, vdone):
+                self.env.clock.tick('t')
                 action = self.agent.act(state)
                 vaction.append(action)
             vreward, vstate, vdone = self.env.step(vaction)
+            if vdone[0]:
+                logger.info(f'actual venv[0] total_reward {total_reward}')
+                total_reward = 0.0
+            else:
+                total_reward += vreward[0]
+            if self.env.clock.get('t') % 1000 == 0:
+                try:
+                    self.agent.body.log_summary(body_df_kind='train')
+                    logger.warn('do not trust the reward log above from body')
+                except Exception as e:
+                    pass
             for action, reward, state, done in zip(vaction, vreward, vstate, vdone):
                 self.agent.update(action, reward, state, done)
+                if self.env.clock.get('t') >= self.env.clock.max_tick:
+                    logger.info('Done')
+                    break
+
+            # self.env.clock.tick('t')
+            # vaction = [self.env.u_env.action_space.sample()] * 4
+            # vreward, vstate, vdone = self.env.step(vaction)
+            # if self.env.clock.get('t') % 2500 == 0:
+            #     total_s = time.time() - start_t
+            #     fps = 4 * self.env.clock.get('t') / total_s
+            #     logger.info(f'FPS {fps}')
         # self.try_ckpt(self.agent, self.env)  # final timestep ckpt
         self.agent.body.log_summary(body_df_kind='train')
 
