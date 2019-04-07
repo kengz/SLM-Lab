@@ -91,6 +91,8 @@ class Session:
         total_reward = 0.0
         # import time
         # start_t = time.time()
+        from collections import deque
+        reward_history = deque(maxlen=100)
         while True:
             # self.try_ckpt(self.agent, self.env)
             vaction = []
@@ -100,16 +102,12 @@ class Session:
                 vaction.append(action)
             vreward, vstate, vdone = self.env.step(vaction)
             if vdone[0]:
-                logger.info(f'actual venv[0] total_reward {total_reward}')
+                reward_history.append(total_reward)
+                avg_reward = np.mean(reward_history)
+                logger.info(f'total_t {self.env.clock.get("total_t")} total_reward {total_reward} avg_reward {avg_reward}')
                 total_reward = 0.0
             else:
                 total_reward += vreward[0]
-            if self.env.clock.get('t') % 1000 == 0:
-                try:
-                    self.agent.body.log_summary(body_df_kind='train')
-                    logger.warn('do not trust the reward log above from body')
-                except Exception as e:
-                    pass
             for action, reward, state, done in zip(vaction, vreward, vstate, vdone):
                 self.agent.update(action, reward, state, done)
                 if self.env.clock.get('t') >= self.env.clock.max_tick:
@@ -124,7 +122,7 @@ class Session:
             #     fps = 4 * self.env.clock.get('t') / total_s
             #     logger.info(f'FPS {fps}')
         # self.try_ckpt(self.agent, self.env)  # final timestep ckpt
-        self.agent.body.log_summary(body_df_kind='train')
+        # self.agent.body.log_summary(body_df_kind='train')
 
     def close(self):
         '''
