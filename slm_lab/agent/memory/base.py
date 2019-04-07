@@ -32,6 +32,7 @@ class Memory(ABC):
         self.state_buffer = deque(maxlen=0)
         # total_reward and its history over episodes
         self.total_reward = 0
+        self.total_reward_vec = np.zeros(shape=4)
 
     @abstractmethod
     def reset(self):
@@ -43,24 +44,34 @@ class Memory(ABC):
         self.last_state = state
         self.body.epi_reset()
         self.total_reward = 0
+        self.total_reward_vec = np.zeros(shape=4)
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
-    def base_update(self, action, reward, state, done):
+    def base_update(self, state, action, reward, next_state, done):
         '''Method to do base memory update, like stats'''
         from slm_lab.experiment import analysis
-        if np.isnan(reward):  # the start of episode
-            self.epi_reset(state)
-            return
+        print(reward)
+        # if np.isnan(reward):  # the start of episode
+        #     self.epi_reset(state)
+        #     return
 
         self.total_reward += reward
+        self.total_reward_vec += reward
+        print(done)
+        if np.any(done):
+            for i, d in enumerate(done):
+                print(done, i, d)
+                if d:
+                    print(f'epi reward process {i}: {self.total_reward_vec[i]}')
+                    self.total_reward_vec[i] = 0.0
         return
 
     @abstractmethod
-    def update(self, action, reward, state, done):
+    def update(self, state, action, reward, next_state, done):
         '''Implement memory update given the full info from the latest timestep. Hint: use self.last_state to construct SARS. NOTE: guard for np.nan reward and done when individual env resets.'''
-        self.base_update(action, reward, state, done)
+        self.base_update(state, action, reward, next_state, done)
         raise NotImplementedError
 
     @abstractmethod

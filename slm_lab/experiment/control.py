@@ -12,6 +12,7 @@ from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import os
 import torch.multiprocessing as mp
+import numpy as np
 
 
 class Session:
@@ -98,7 +99,7 @@ class Session:
                 self.env.clock.tick('t')
                 action = self.agent.act(state)
                 vaction.append(action)
-            vreward, vstate, vdone = self.env.step(vaction)
+            vreward, vnext_state, vdone = self.env.step(vaction)
             if vdone[0]:
                 logger.info(f'actual venv[0] total_reward {total_reward}')
                 total_reward = 0.0
@@ -110,11 +111,15 @@ class Session:
                     logger.warn('do not trust the reward log above from body')
                 except Exception as e:
                     pass
-            for action, reward, state, done in zip(vaction, vreward, vstate, vdone):
-                self.agent.update(action, reward, state, done)
-                if self.env.clock.get('t') >= self.env.clock.max_tick:
-                    logger.info('Done')
-                    break
+            vaction = np.asarray(vaction)
+            print(type(vstate), type(vaction), type(vreward), type(vnext_state), type(vdone))
+            self.agent.update(vstate, vaction, vreward, vnext_state, vdone)
+            # for action, reward, state, done in zip(vaction, vreward, vstate, vdone):
+            #     self.agent.update(action, reward, state, done)
+            if self.env.clock.get('t') >= self.env.clock.max_tick:
+                logger.info('Done')
+                break
+            vstate = vnext_state
 
             # self.env.clock.tick('t')
             # vaction = [self.env.u_env.action_space.sample()] * 4

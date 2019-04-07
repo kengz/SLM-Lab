@@ -61,12 +61,13 @@ class OnPolicyReplay(Memory):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
     @lab_api
-    def update(self, action, reward, state, done):
+    def update(self, state, action, reward, next_state, done):
         '''Interface method to update memory'''
-        self.base_update(action, reward, state, done)
-        if not np.isnan(reward):  # not the start of episode
-            self.add_experience(self.last_state, action, reward, state, done)
-        self.last_state = state
+        self.base_update(state, action, reward, next_state, done)
+        # if not np.isnan(reward):  # not the start of episode
+        #     self.add_experience(state, action, reward, next_state, done)
+        self.add_experience(state, action, reward, next_state, done)
+        # self.last_state = state
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Interface helper method for update() to add experience to memory'''
@@ -202,6 +203,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Interface helper method for update() to add experience to memory'''
+        print(state.shape, action.shape, reward.shape, next_state.shape, done.shape)
         self.most_recent = [state, action, reward, next_state, done]
         for idx, k in enumerate(self.data_keys):
             getattr(self, k).append(self.most_recent[idx])
@@ -211,7 +213,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
             self.warn_size_once('Large memory size: {}'.format(self.true_size))
         self.seen_size += 1
         # Decide if agent is to train
-        if len(self.states) == self.body.agent.algorithm.training_frequency or done:
+        if len(self.states) == self.body.agent.algorithm.training_frequency:
             self.body.agent.algorithm.to_train = 1
 
     def sample(self):
