@@ -104,14 +104,14 @@ class Session:
                 total_reward = 0.0
             else:
                 total_reward += vreward[0]
+            if self.env.clock.get('t') % 1000 == 0:
+                try:
+                    self.agent.body.log_summary(body_df_kind='train')
+                    logger.warn('do not trust the reward log above from body')
+                except Exception as e:
+                    pass
             for action, reward, state, done in zip(vaction, vreward, vstate, vdone):
                 self.agent.update(action, reward, state, done)
-                if self.env.clock.get('t') % 1000 == 0:
-                    try:
-                        self.agent.body.log_summary(body_df_kind='train')
-                        logger.warn('do not trust the reward log above from body')
-                    except Exception as e:
-                        pass
                 if self.env.clock.get('t') >= self.env.clock.max_tick:
                     logger.info('Done')
                     break
