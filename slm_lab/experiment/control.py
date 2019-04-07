@@ -57,7 +57,8 @@ class Session:
             if self.spec['meta'].get('parallel_eval'):
                 retro_analysis.run_parallel_eval(self, agent, env)
             else:
-                self.run_eval_episode()
+                pass
+                # self.run_eval_episode()
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             if tick > 0:  # nothing to analyze at start
@@ -84,15 +85,20 @@ class Session:
     def run_episode(self):
         self.env.clock.tick('epi')
         logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.env.clock.epi}')
-        reward, state, done = self.env.reset()
-        self.agent.reset(state)
-        while not done:
-            self.try_ckpt(self.agent, self.env)
+        # reward, state, done = self.env.reset()
+        vreward, vstate, vdone = self.env.reset()
+        self.agent.reset(vstate[0])
+        while not vdone.all():
+            # self.try_ckpt(self.agent, self.env)
             self.env.clock.tick('t')
-            action = self.agent.act(state)
-            reward, state, done = self.env.step(action)
-            self.agent.update(action, reward, state, done)
-        self.try_ckpt(self.agent, self.env)  # final timestep ckpt
+            vaction = []
+            for reward, state, done in zip(vreward, vstate, vdone):
+                action = self.agent.act(state)
+                vaction.append(action)
+            vreward, vstate, vdone = self.env.step(vaction)
+            for action, reward, state, done in zip(vaction, vreward, vstate, vdone):
+                self.agent.update(action, reward, state, done)
+        # self.try_ckpt(self.agent, self.env)  # final timestep ckpt
         self.agent.body.log_summary(body_df_kind='train')
 
     def close(self):

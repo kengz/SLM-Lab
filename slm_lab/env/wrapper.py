@@ -4,7 +4,6 @@
 from collections import deque
 from gym import spaces
 from slm_lab.lib import util
-import cv2
 import gym
 import numpy as np
 
@@ -226,7 +225,20 @@ def wrap_deepmind(env, episode_life=True, clip_rewards=True, stack_len=None):
         env = FireResetEnv(env)
     if clip_rewards:
         env = ClipRewardEnv(env)
-    env = TransformImage(env)
     if stack_len is not None:
         env = FrameStack(env, stack_len)
+    env = TransformImage(env)
+    return env
+
+
+def make_env(name, seed, stack_len=None):
+    env = gym.make(name)
+    env.seed(seed)
+    if 'NoFrameskip' in env.spec.id:  # for Atari
+        env = wrap_atari(env)
+        # no reward clipping in training since Atari Memory classes handle it
+        if util.get_lab_mode() == 'eval':
+            env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=False)
+        else:
+            env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=True)
     return env
