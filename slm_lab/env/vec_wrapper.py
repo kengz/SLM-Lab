@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from gym import spaces
 from slm_lab.env.wrapper import make_env
-from slm_lab.lib import logger
+from slm_lab.lib import logger, util
 import contextlib
 import ctypes
 import gym
@@ -498,6 +498,7 @@ class VecFrameStack(VecEnvWrapper):
 
     def step_wait(self):
         obs, rews, news, infos = self.venv.step_wait()
+        util.debug_image(np.transpose(obs[0][0:1], (1, 2, 0)))
         self.stackedobs = np.roll(self.stackedobs, shift=-1, axis=-1)
         for (i, new) in enumerate(news):
             if new:
