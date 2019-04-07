@@ -170,7 +170,6 @@ class ActorCritic(Reinforce):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
-        util.debug_image(np.transpose(x[0][0:1].numpy(), (1, 2, 0)))
         pdparam = super(ActorCritic, self).calc_pdparam(x / 255., evaluate=evaluate, net=net)
         if self.shared:  # output: policy, value
             if len(pdparam) == 2:  # single policy outputs, value
