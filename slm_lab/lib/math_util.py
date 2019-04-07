@@ -75,23 +75,19 @@ def calc_nstep_returns_slow2(rewards, dones, v_preds, gamma, n):
     else:
         R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1}
     '''
-    T = len(rewards)
     assert not torch.isnan(rewards).any()
-    # print(T, n)
-    assert T <= n
-    rets = torch.zeros(T, dtype=torch.float32, device=v_preds.device)
-    R = v_preds
-    if dones[-1]:
-        R = 0.0
-    for t in reversed(range(min(T, n))):
-        R = rewards[t] + gamma * R
-        rets[t] = R
-    #     print(f'returns {rets}')
-    # print(f'rewards: {rewards}')
-    # print(f'v preds {v_preds}')
-    # print(f'dones {dones}')
-    # print(f'returns {rets}')
-    return rets
+    rets = torch.zeros((rewards.shape[0] + 1, rewards.shape[1]), dtype=torch.float32, device=v_preds.device)
+    print(f'rets: {rets.shape}')
+    rets[-1] = v_preds
+    for t in reversed(range(n)):
+        rets[t] = rewards[t] + gamma * rets[t + 1] * 1 - dones[t]
+        # print(f'returns {rets}')
+    print(f'rewards: {rewards}')
+    print(f'v preds {v_preds}')
+    print(f'dones {dones}')
+    print(f'returns {rets[:-1, :]}')
+    # sys.exit()
+    return rets[:-1, :]
 
 
 def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
