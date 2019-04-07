@@ -189,9 +189,11 @@ class Body:
     def epi_update(self):
         '''Update to append data at the end of an episode (when env.done is true)'''
         # assert self.env.done
-        row = self.calc_df_row(self.env, self.memory.total_reward)
+        # muted for venv
+        # row = self.calc_df_row(self.env, self.memory.total_reward)
         # append efficiently to df
-        self.train_df.loc[len(self.train_df)] = row
+        # self.train_df.loc[len(self.train_df)] = row
+        pass
 
     def eval_update(self, eval_env, total_reward):
         '''Update to append data at eval checkpoint'''
