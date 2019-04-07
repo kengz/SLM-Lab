@@ -211,7 +211,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
             self.warn_size_once('Large memory size: {}'.format(self.true_size))
         self.seen_size += 1
         # Decide if agent is to train
-        if len(self.states) == self.body.agent.algorithm.training_frequency:
+        if len(self.states) == self.body.agent.algorithm.training_frequency or done:
             self.body.agent.algorithm.to_train = 1
 
     def sample(self):
