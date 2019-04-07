@@ -3,6 +3,7 @@ from collections import deque
 from slm_lab.lib import logger, util
 import numpy as np
 import pydash as ps
+from slm_lab.env.openai import _NUM_PROCESSES
 
 logger = logger.get_logger(__name__)
 
@@ -32,7 +33,7 @@ class Memory(ABC):
         self.state_buffer = deque(maxlen=0)
         # total_reward and its history over episodes
         self.total_reward = 0
-        self.total_reward_vec = np.zeros(shape=4)
+        self.total_reward_vec = np.zeros(shape=_NUM_PROCESSES)
 
     @abstractmethod
     def reset(self):
@@ -44,7 +45,7 @@ class Memory(ABC):
         self.last_state = state
         self.body.epi_reset()
         self.total_reward = 0
-        self.total_reward_vec = np.zeros(shape=4)
+        self.total_reward_vec = np.zeros(shape=_NUM_PROCESSES)
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))

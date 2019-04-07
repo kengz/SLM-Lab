@@ -9,6 +9,8 @@ import pydash as ps
 
 logger = logger.get_logger(__name__)
 
+_NUM_PROCESSES = 4
+
 
 def guard_reward(reward):
     '''Some gym environments have buggy format and reward is in a np array'''
@@ -39,7 +41,7 @@ class OpenAIEnv(BaseEnv):
         except Exception as e:
             pass
         # TODO hard-set here
-        self.num_processes = 4
+        self.num_processes = _NUM_PROCESSES
         stack_len = ps.get(spec, 'agent.0.memory.stack_len')
         dummy_env = make_env(self.name, stack_len)
         env = make_venv(self.name, seed=0, num_processes=self.num_processes)
