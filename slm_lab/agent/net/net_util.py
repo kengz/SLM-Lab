@@ -159,11 +159,9 @@ def init_parameters(module, init_fn):
             elif 'bias' in name:
                 nn.init.constant_(param, 0.0)
     elif 'Linear' in classname:
-        print(classname)
         init_fn(module.weight, gain=0.01)
         nn.init.constant_(module.bias, bias_init)
     elif ('Conv' in classname and 'Net' not in classname):
-        print(classname)
         init_fn(module.weight, gain=nn.init.calculate_gain('relu'))
         nn.init.constant_(module.bias, bias_init)
 
