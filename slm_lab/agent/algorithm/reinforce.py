@@ -110,12 +110,18 @@ class Reinforce(Algorithm):
         if self.normalize_state:
             state = policy_util.update_online_stats_and_normalize_state(body, state)
         action, action_pd = self.action_policy(state, self, body)
-        body.action_tensor, body.action_pd = action, action_pd  # used for body.action_pd_update later
-        body.action_pd_update()
-        if len(action.shape) == 0:  # scalar
-            return action.cpu().numpy().astype(body.action_space.dtype).item()
+        actions = []
+        for a, ap in zip(action, action_pd):
+            body.action_tensor, body.action_pd = a, ap  # used for body.action_pd_update later
+            body.action_pd_update()
+            if len(a.shape) == 0:  # scalar
+                actions.append(a.cpu().numpy().astype(body.action_space.dtype).item())
+            else:
+                actions.append(a.cpu().numpy())
+        if len(actions) == 1:
+            return actions[0]
         else:
-            return action.cpu().numpy()
+            return actions
 
     @lab_api
     def sample(self):

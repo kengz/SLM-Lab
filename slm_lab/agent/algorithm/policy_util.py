@@ -151,8 +151,9 @@ def init_action_pd(state, algorithm, body, append=True):
     pdtypes = ACTION_PDS[body.action_type]
     assert body.action_pdtype in pdtypes, f'Pdtype {body.action_pdtype} is not compatible/supported with action_type {body.action_type}. Options are: {ACTION_PDS[body.action_type]}'
     ActionPD = getattr(distributions, body.action_pdtype)
-
     state = try_preprocess(state, algorithm, body, append=append)
+    if len(state.shape) == 5:
+        state = torch.squeeze(state, dim=0)
     state = state.to(algorithm.net.device)
     pdparam = algorithm.calc_pdparam(state, evaluate=False)
     return ActionPD, pdparam, body
@@ -183,8 +184,13 @@ def sample_action_pd(ActionPD, pdparam, body):
 def default(state, algorithm, body):
     '''Plain policy by direct sampling using outputs of net as logits and constructing ActionPD as appropriate'''
     ActionPD, pdparam, body = init_action_pd(state, algorithm, body)
-    action, action_pd = sample_action_pd(ActionPD, pdparam, body)
-    return action, action_pd
+    actions = []
+    action_pds = []
+    for i in range(pdparam.shape[0]):
+        action, action_pd = sample_action_pd(ActionPD, pdparam[i:i + 1], body)
+        actions.append(action)
+        action_pds.append(action_pd)
+    return actions, action_pds
 
 
 def random(state, algorithm, body):
