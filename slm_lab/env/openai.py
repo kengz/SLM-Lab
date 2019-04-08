@@ -9,7 +9,7 @@ import pydash as ps
 
 logger = logger.get_logger(__name__)
 
-_NUM_PROCESSES = 4
+_NUM_PROCESSES = 16
 
 
 def guard_reward(reward):
