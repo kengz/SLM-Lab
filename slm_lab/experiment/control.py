@@ -6,6 +6,7 @@ from copy import deepcopy
 from importlib import reload
 from slm_lab.agent import AgentSpace, Agent
 from slm_lab.env import EnvSpace, make_env
+from slm_lab.env.openai import _NUM_PROCESSES
 from slm_lab.experiment import analysis, retro_analysis, search
 from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
 from slm_lab.lib import logger, util
@@ -96,11 +97,15 @@ class Session:
         reward_history = deque(maxlen=100)
         while True:
             # self.try_ckpt(self.agent, self.env)
-            vaction = []
-            for reward, state, done in zip(vreward, vstate, vdone):
+            # vaction = []
+            # for reward, state, done in zip(vreward, vstate, vdone):
+            #     self.env.clock.tick('t')
+            #     action = self.agent.act(state)
+            #     vaction.append(action)
+            vaction = self.agent.act(vstate)
+            for i in range(_NUM_PROCESSES):
                 self.env.clock.tick('t')
-                action = self.agent.act(state)
-                vaction.append(action)
+            # print(f'vaction: {vaction}')
             if self.env.clock.get('total_t') % 2000 == 0:
                 total_t = self.env.clock.get('total_t')
                 wall_t = self.env.clock.get_elapsed_wall_t()
