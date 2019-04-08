@@ -101,6 +101,11 @@ class Session:
                 self.env.clock.tick('t')
                 action = self.agent.act(state)
                 vaction.append(action)
+            if self.env.clock.get('total_t') % 2000 == 0:
+                total_t = self.env.clock.get('total_t')
+                wall_t = self.env.clock.get_elapsed_wall_t()
+                fps = 0 if wall_t == 0 else total_t / wall_t
+                print(f'total_t: {total_t}, fps: {fps}')
             vaction = np.asarray(vaction)
             vreward, vnext_state, vdone = self.env.step(vaction)
             if vdone[0]:
