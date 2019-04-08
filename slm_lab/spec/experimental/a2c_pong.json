@@ -9,7 +9,7 @@
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": null,
-        "num_step_returns": 32,
+        "num_step_returns": 5,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -18,7 +18,7 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 32,
+        "training_frequency": 5,
         "training_epoch": 1,
         "normalize_state": false
       },
@@ -36,7 +36,7 @@
         ],
         "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
-        "init_fn": null,
+        "init_fn": "orthogonal_",
         "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
@@ -72,7 +72,7 @@
       "distributed": false,
       "eval_frequency": 10000,
       "max_tick_unit": "total_t",
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 5,
       "search": "RandomSearch",
       "resources": {
