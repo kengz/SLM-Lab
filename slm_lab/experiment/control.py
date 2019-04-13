@@ -126,7 +126,7 @@ class Session:
             if self.env.clock.get('t') >= self.env.clock.max_tick:
                 logger.info('Done')
                 break
-            vstate = vnext_state
+            vstate = vnext_state.copy()
 
             # self.env.clock.tick('t')
             # vaction = [self.env.u_env.action_space.sample()] * 4
