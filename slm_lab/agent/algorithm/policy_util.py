@@ -115,18 +115,16 @@ def try_preprocess(state, algorithm, body, append=True):
     if hasattr(body.memory, 'preprocess_state'):
         state = body.memory.preprocess_state(state, append=append)
     # as float, and always as minibatch for net input
-    state = torch.from_numpy(state).float().unsqueeze_(dim=0)
+    state = torch.from_numpy(state).float().unsqueeze(dim=0)
     return state
 
 
 def cond_squeeze(out):
     '''Helper to squeeze output depending if it is tensor (discrete pdparam) or list of tensors (continuous pdparam of loc and scale)'''
     if isinstance(out, list):
-        for out_t in out:
-            out_t.squeeze_(dim=0)
+        return [out_t.squeeze(dim=0) for out_t in out]
     else:
-        out.squeeze_(dim=0)
-    return out
+        return out.squeeze(dim=0)
 
 
 def init_action_pd(state, algorithm, body, append=True):
@@ -230,7 +228,7 @@ def multi_default(states, algorithm, body_list, pdparam):
     pdparam = self.calc_pdparam(state, evaluate=False)
     action_a, action_pd_a = self.action_policy(pdparam, self, body_list)
     '''
-    pdparam.squeeze_(dim=0)
+    pdparam = pdparam.squeeze(dim=0)
     # assert pdparam has been chunked
     assert len(pdparam.shape) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
     action_list, action_pd_a = [], []
@@ -241,19 +239,19 @@ def multi_default(states, algorithm, body_list, pdparam):
         action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
-    action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze_(dim=1)
+    action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
     return action_a, action_pd_a
 
 
 def multi_random(states, algorithm, body_list, pdparam):
     '''Apply random policy body-wise.'''
-    pdparam.squeeze_(dim=0)
+    pdparam = pdparam.squeeze(dim=0)
     action_list, action_pd_a = [], []
     for idx, body in body_list:
         action, action_pd = random(states[idx], algorithm, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
-    action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze_(dim=1)
+    action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
     return action_a, action_pd_a
 
 
@@ -272,13 +270,12 @@ def multi_epsilon_greedy(states, algorithm, body_list, pdparam):
             action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
-    action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze_(dim=1)
+    action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
     return action_a, action_pd_a
 
 
 def multi_boltzmann(states, algorithm, body_list, pdparam):
     '''Apply Boltzmann policy body-wise'''
-    # pdparam.squeeze_(dim=0)
     assert len(pdparam) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
     action_list, action_pd_a = [], []
     for idx, sub_pdparam in enumerate(pdparam):
@@ -290,7 +287,7 @@ def multi_boltzmann(states, algorithm, body_list, pdparam):
         action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
         action_list.append(action)
         action_pd_a.append(action_pd)
-    action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze_(dim=1)
+    action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
     return action_a, action_pd_a
 
 
@@ -389,7 +386,7 @@ def update_online_stats(body, state):
     '''
     logger.debug(f'mean: {body.state_mean}, std: {body.state_std_dev}, num examples: {body.state_n}')
     # Assumes only one state is given
-    if ("Atari" in body.memory.__class__.__name__):
+    if ('Atari' in util.get_class_name(body.memory)):
         assert state.ndim == 3
     elif getattr(body.memory, 'raw_state_dim', False):
         assert state.size == body.memory.raw_state_dim
@@ -422,11 +419,11 @@ def normalize_state(body, state):
     '''
     same_shape = False if type(state) == list else state.shape == body.state_mean.shape
     has_preprocess = getattr(body.memory, 'preprocess_state', False)
-    if ('Atari' in body.memory.__class__.__name__):
+    if ('Atari' in util.get_class_name(body.memory)):
         # never normalize atari, it has its own normalization step
         logger.debug('skipping normalizing for Atari, already handled by preprocess')
         return state
-    elif ('Replay' in body.memory.__class__.__name__) and has_preprocess:
+    elif ('Replay' in util.get_class_name(body.memory)) and has_preprocess:
         # normalization handled by preprocess_state function in the memory
         logger.debug('skipping normalizing, already handled by preprocess')
         return state

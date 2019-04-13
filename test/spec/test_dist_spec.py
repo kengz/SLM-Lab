@@ -28,9 +28,7 @@ def run_trial_test_dist(spec_file, spec_name=False):
         net = list(global_nets[0].values())[0]
     else:
         net = list(global_nets.values())[0]
-    assert_trained = net_util.gen_assert_trained(net)
     session_datas = trial.parallelize_sessions(global_nets)
-    assert_trained(net, loss=1.0)
     trial.session_data_dict = {data.index[0]: data for data in session_datas}
     trial_data = analysis.analyze_trial(trial)
     trial.close()

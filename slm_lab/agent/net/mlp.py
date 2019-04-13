@@ -86,7 +86,7 @@ class MLPNet(Net, nn.Module):
         ])
 
         dims = [self.in_dim] + self.hid_layers
-        self.model = net_util.build_sequential(dims, self.hid_layers_activation)
+        self.model = net_util.build_fc_model(dims, self.hid_layers_activation)
         # add last layer with no activation
         # tails. avoid list for single-tail for compute speed
         if ps.is_integer(self.out_dim):
@@ -115,6 +115,7 @@ class MLPNet(Net, nn.Module):
         else:
             return self.model_tail(x)
 
+    @net_util.dev_check_training_step
     def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_clock=None):
         '''
         Takes a single training step: one forward and one backwards pass
@@ -129,15 +130,10 @@ class MLPNet(Net, nn.Module):
             out = self(x)
             loss = self.loss_fn(out, y)
         assert not torch.isnan(loss).any(), loss
-        if net_util.to_assert_trained():
-            assert_trained = net_util.gen_assert_trained(self)
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()
-        if net_util.to_assert_trained():
-            assert_trained(self, loss)
-            self.store_grad_norms()
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
@@ -250,7 +246,7 @@ class HydraMLPNet(Net, nn.Module):
         self.model_heads = self.build_model_heads(in_dim)
         heads_out_dim = np.sum([head_hid_layers[-1] for head_hid_layers in self.head_hid_layers])
         dims = [heads_out_dim] + self.body_hid_layers
-        self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
+        self.model_body = net_util.build_fc_model(dims, self.hid_layers_activation)
         self.model_tails = self.build_model_tails(out_dim)
 
         net_util.init_layers(self, self.init_fn)
@@ -269,7 +265,7 @@ class HydraMLPNet(Net, nn.Module):
         model_heads = nn.ModuleList()
         for in_d, hid_layers in zip(in_dim, self.head_hid_layers):
             dims = [in_d] + hid_layers
-            model_head = net_util.build_sequential(dims, self.hid_layers_activation)
+            model_head = net_util.build_fc_model(dims, self.hid_layers_activation)
             model_heads.append(model_head)
         return model_heads
 
@@ -283,7 +279,7 @@ class HydraMLPNet(Net, nn.Module):
             assert len(self.tail_hid_layers) == len(out_dim), 'Hydra tail hid_params inconsistent with number out dims'
             for out_d, hid_layers in zip(out_dim, self.tail_hid_layers):
                 dims = hid_layers
-                model_tail = net_util.build_sequential(dims, self.hid_layers_activation)
+                model_tail = net_util.build_fc_model(dims, self.hid_layers_activation)
                 model_tail.add_module(str(len(model_tail)), nn.Linear(dims[-1], out_d))
                 model_tails.append(model_tail)
         return model_tails
@@ -300,6 +296,7 @@ class HydraMLPNet(Net, nn.Module):
             outs.append(model_tail(body_x))
         return outs
 
+    @net_util.dev_check_training_step
     def training_step(self, xs=None, ys=None, loss=None, retain_graph=False, lr_clock=None):
         '''
         Takes a single training step: one forward and one backwards pass. Both x and y are lists of the same length, one x and y per environment
@@ -315,15 +312,10 @@ class HydraMLPNet(Net, nn.Module):
                 total_loss += loss
             loss = total_loss
         assert not torch.isnan(loss).any(), loss
-        if net_util.to_assert_trained():
-            assert_trained = net_util.gen_assert_trained(self)
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()
-        if net_util.to_assert_trained():
-            assert_trained(self, loss)
-            self.store_grad_norms()
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
@@ -401,7 +393,7 @@ class DuelingMLPNet(MLPNet):
         # Guard against inappropriate algorithms and environments
         # Build model body
         dims = [self.in_dim] + self.hid_layers
-        self.model_body = net_util.build_sequential(dims, self.hid_layers_activation)
+        self.model_body = net_util.build_fc_model(dims, self.hid_layers_activation)
         # output layers
         self.v = nn.Linear(dims[-1], 1)  # state value
         self.adv = nn.Linear(dims[-1], out_dim)  # action dependent raw advantage

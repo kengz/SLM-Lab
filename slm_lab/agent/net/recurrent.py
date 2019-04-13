@@ -110,13 +110,13 @@ class RecurrentNet(Net, nn.Module):
         # fc layer: state processing model
         if not ps.is_empty(self.fc_hid_layers):
             fc_dims = [self.in_dim] + self.fc_hid_layers
-            self.fc_model = net_util.build_sequential(fc_dims, self.hid_layers_activation)
+            self.fc_model = net_util.build_fc_model(fc_dims, self.hid_layers_activation)
             self.rnn_input_dim = fc_dims[-1]
         else:
             self.rnn_input_dim = self.in_dim
 
         # RNN model
-        self.rnn_model = getattr(nn, self.cell_type)(
+        self.rnn_model = getattr(nn, net_util.get_nn_name(self.cell_type))(
             input_size=self.rnn_input_dim,
             hidden_size=self.rnn_hidden_size,
             num_layers=self.rnn_num_layers,
@@ -161,6 +161,7 @@ class RecurrentNet(Net, nn.Module):
         else:
             return self.model_tail(hid_x)
 
+    @net_util.dev_check_training_step
     def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_clock=None):
         '''Takes a single training step: one forward and one backwards pass'''
         if hasattr(self, 'model_tails') and x is not None:
@@ -172,15 +173,10 @@ class RecurrentNet(Net, nn.Module):
             out = self(x)
             loss = self.loss_fn(out, y)
         assert not torch.isnan(loss).any(), loss
-        if net_util.to_assert_trained():
-            assert_trained = net_util.gen_assert_trained(self)
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()
-        if net_util.to_assert_trained():
-            assert_trained(self, loss)
-            self.store_grad_norms()
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 

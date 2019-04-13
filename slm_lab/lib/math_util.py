@@ -92,17 +92,14 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
 
 
 def calc_q_value_logits(state_value, raw_advantages):
-    mean_adv = raw_advantages.mean(dim=-1).unsqueeze_(dim=-1)
+    mean_adv = raw_advantages.mean(dim=-1).unsqueeze(dim=-1)
     return state_value + raw_advantages - mean_adv
 
 
 def standardize(v):
     '''Method to standardize a rank-1 np array'''
-    v_stdev = v.std()
-    # guard nan std by setting to 0 and add small const
-    v_stdev[v_stdev != v_stdev] = 0  # nan guard
-    v_stdev += 1e-08  # division guard
-    v_std = (v - v.mean()) / v_stdev
+    assert len(v) > 1, 'Cannot standardize vector of size 1'
+    v_std = (v - v.mean()) / (v.std() + 1e-08)
     return v_std
 
 
