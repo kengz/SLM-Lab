@@ -120,7 +120,7 @@ class Session:
                 total_reward = 0.0
             else:
                 total_reward += vreward[0]
-            self.agent.update(vstate, vaction, vreward, vnext_state, vdone)
+            self.agent.update(vstate.copy(), vaction, vreward.copy(), vnext_state.copy(), vdone.copy())
             # for action, reward, state, done in zip(vaction, vreward, vstate, vdone):
             #     self.agent.update(action, reward, state, done)
             if self.env.clock.get('t') >= self.env.clock.max_tick:
