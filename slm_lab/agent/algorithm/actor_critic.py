@@ -184,19 +184,20 @@ class ActorCritic(Reinforce):
         Forward-pass to calculate the predicted state-value from critic.
         '''
         net = self.net if net is None else net
+        scaled_x = x / 255.0
         if self.shared:  # output: policy, value
             if evaluate:
-                out = net.wrap_eval(x)
+                out = net.wrap_eval(scaled_x)
             else:
                 net.train()
-                out = net(x)
+                out = net(scaled_x)
             v = out[-1].squeeze(dim=1)  # get value only
         else:
             if evaluate:
-                out = self.critic.wrap_eval(x)
+                out = self.critic.wrap_eval(scaled_x)
             else:
                 self.critic.train()
-                out = self.critic(x)
+                out = self.critic(scaled_x)
             v = out.squeeze(dim=1)
         logger.debug(f'v: {v}')
         return v
