@@ -122,7 +122,7 @@ def get_out_dim(body, add_critic=False):
 
 def init_layers(net, init_fn):
     if init_fn is None:
-        return
+        init_fn = 'xavier_uniform_'
     nonlinearity = get_nn_name(net.hid_layers_activation).lower()
     if nonlinearity == 'leakyrelu':
         nonlinearity = 'leaky_relu'
