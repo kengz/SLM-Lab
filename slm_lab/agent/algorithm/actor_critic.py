@@ -277,24 +277,47 @@ class ActorCritic(Reinforce):
     def calc_policy_loss(self, batch, advs):
         '''Calculate the actor's policy loss'''
         assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
+        # states = batch["states"]
+        # actions = batch["actions"]
+        # print(f'states {states.shape}')
+        # print(f'actions {actions.shape}')
+        # states = torch.reshape(states, (-1, states.shape[2], states.shape[3], states.shape[4]))
+        # actions = torch.reshape(actions, (-1, 1)).int()
+        # print(f'states {states.shape}')
+        # print(f'actions {actions.shape}')
+        # logits = self.calc_pdparam(states, evaluate=False)
+        # print(f'logits {logits.shape}')
+        # dist = torch.distributions.Categorical(logits=logits)
+        # print(f'dist probs: {dist.probs.shape}, {dist.probs}')
+        # print(f'actions: {actions.shape}, {actions}')
+        # action_log_probs = dist.log_prob(actions.squeeze(-1)).view(actions.size(0), -1).sum(-1).unsqueeze(-1)
+        # print(f'action log probs: {action_log_probs.shape}, {action_log_probs}')
+        # dist_entropy = dist.entropy().mean()
+        # print(f'entropy: {dist_entropy}')
+        # policy_loss_alt = - self.policy_loss_coef * (action_log_probs * advs).mean() - self.body.entropy_coef * dist_entropy
+        # logger.info(f'Actor ALT entropies: {dist_entropy:g}')
+        # logger.info(f'Actor ALT policy loss: {policy_loss_alt:g}')
+
         log_probs = torch.stack(self.body.log_probs)
-        policy_loss = - self.policy_loss_coef * log_probs * advs
+        policy_loss = - self.policy_loss_coef * log_probs * advs.squeeze(-1)
         if self.entropy_coef_spec is not None:
             entropies = torch.stack(self.body.entropies)
+            # print(f'actor orig: entropies {entropies}')
+            entropies_mean = entropies.mean().detach()
             policy_loss += (-self.body.entropy_coef * entropies)
         policy_loss = torch.mean(policy_loss)
+        logger.debug(f'Actor entropies: {entropies_mean:g}')
         logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
 
     def calc_val_loss(self, batch, v_targets):
         '''Calculate the critic's value loss'''
-        v_targets = v_targets.unsqueeze(dim=-1)
         states = batch['states']
         states = torch.reshape(states, (-1, states.shape[2], states.shape[3], states.shape[4]))
         v_preds = self.calc_v(states, evaluate=False).unsqueeze(dim=-1)
         assert v_preds.shape == v_targets.shape
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
-        logger.debug(f'Critic value loss: {val_loss:g}')
+        logger.info(f'Critic value loss: {val_loss:g}')
         return val_loss
 
     def calc_gae_advs_v_targets(self, batch):
@@ -329,8 +352,8 @@ class ActorCritic(Reinforce):
         v_preds = v_all[:-1, :]
         nstep_returns = math_util.calc_nstep_returns_slow2(batch['rewards'], batch['dones'], next_v_preds, self.gamma, self.num_step_returns)
         # flatten nstep_returns and v_preds
-        nstep_returns = torch.reshape(nstep_returns, (-1,))
-        v_preds = torch.reshape(v_preds, (-1,))
+        nstep_returns = torch.reshape(nstep_returns, (-1, 1))
+        v_preds = torch.reshape(v_preds, (-1, 1))
         v_targets = nstep_returns
         adv_targets = nstep_returns - v_preds
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
