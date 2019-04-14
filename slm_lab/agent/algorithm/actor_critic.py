@@ -277,37 +277,38 @@ class ActorCritic(Reinforce):
     def calc_policy_loss(self, batch, advs):
         '''Calculate the actor's policy loss'''
         assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
-        # states = batch["states"]
-        # actions = batch["actions"]
+        states = batch["states"]
+        actions = batch["actions"]
         # print(f'states {states.shape}')
         # print(f'actions {actions.shape}')
-        # states = torch.reshape(states, (-1, states.shape[2], states.shape[3], states.shape[4]))
-        # actions = torch.reshape(actions, (-1, 1)).int()
+        states = torch.reshape(states, (-1, states.shape[2], states.shape[3], states.shape[4]))
+        actions = torch.reshape(actions, (-1, 1)).int()
         # print(f'states {states.shape}')
         # print(f'actions {actions.shape}')
-        # logits = self.calc_pdparam(states, evaluate=False)
+        logits = self.calc_pdparam(states, evaluate=False)
         # print(f'logits {logits.shape}')
-        # dist = torch.distributions.Categorical(logits=logits)
+        dist = torch.distributions.Categorical(logits=logits)
         # print(f'dist probs: {dist.probs.shape}, {dist.probs}')
         # print(f'actions: {actions.shape}, {actions}')
-        # action_log_probs = dist.log_prob(actions.squeeze(-1)).view(actions.size(0), -1).sum(-1).unsqueeze(-1)
+        action_log_probs = dist.log_prob(actions.squeeze(-1)).view(actions.size(0), -1).sum(-1).unsqueeze(-1)
         # print(f'action log probs: {action_log_probs.shape}, {action_log_probs}')
-        # dist_entropy = dist.entropy().mean()
-        # print(f'entropy: {dist_entropy}')
-        # policy_loss_alt = - self.policy_loss_coef * (action_log_probs * advs).mean() - self.body.entropy_coef * dist_entropy
+        dist_entropy = dist.entropy().mean()
+        # print(f'entropy: {dist.entropy()}')
+        policy_loss_alt = - self.policy_loss_coef * (action_log_probs * advs).mean() - self.body.entropy_coef * dist_entropy
         # logger.info(f'Actor ALT entropies: {dist_entropy:g}')
         # logger.info(f'Actor ALT policy loss: {policy_loss_alt:g}')
+        policy_loss = policy_loss_alt
 
-        log_probs = torch.stack(self.body.log_probs)
-        policy_loss = - self.policy_loss_coef * log_probs * advs.squeeze(-1)
-        if self.entropy_coef_spec is not None:
-            entropies = torch.stack(self.body.entropies)
-            # print(f'actor orig: entropies {entropies}')
-            entropies_mean = entropies.mean().detach()
-            policy_loss += (-self.body.entropy_coef * entropies)
-        policy_loss = torch.mean(policy_loss)
-        logger.debug(f'Actor entropies: {entropies_mean:g}')
-        logger.debug(f'Actor policy loss: {policy_loss:g}')
+        # log_probs = torch.stack(self.body.log_probs)
+        # policy_loss = - self.policy_loss_coef * log_probs * advs.squeeze(-1)
+        # if self.entropy_coef_spec is not None:
+        #     entropies = torch.stack(self.body.entropies)
+        #     print(f'actor orig: entropies {entropies}')
+        #     entropies_mean = entropies.mean().detach()
+        #     policy_loss += (-self.body.entropy_coef * entropies)
+        # policy_loss = torch.mean(policy_loss)
+        # logger.info(f'Actor entropies: {entropies_mean:g}')
+        # logger.info(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
 
     def calc_val_loss(self, batch, v_targets):
