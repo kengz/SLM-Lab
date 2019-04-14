@@ -91,8 +91,6 @@ class Session:
         vreward, vstate, vdone = self.env.reset()
         self.agent.reset(vstate[0])
         total_reward = 0.0
-        # import time
-        # start_t = time.time()
         from collections import deque
         reward_history = deque(maxlen=100)
         while True:
@@ -105,7 +103,6 @@ class Session:
             vaction = self.agent.act(vstate)
             for i in range(_NUM_PROCESSES):
                 self.env.clock.tick('t')
-            # print(f'vaction: {vaction}')
             if self.env.clock.get('total_t') % 2000 == 0:
                 total_t = self.env.clock.get('total_t')
                 wall_t = self.env.clock.get_elapsed_wall_t()

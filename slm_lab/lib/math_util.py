@@ -38,37 +38,7 @@ def calc_returns(rewards, dones, gamma):
     return rets
 
 
-def calc_nstep_returns_slow(rewards, dones, v_preds, gamma, n):
-    '''
-    Slower method to check the correctness of calc_nstep_returns
-    Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
-    R^(n)_t = r_{t+1} + gamma r_{t+2} + ... + gamma^(n-1) r_{t+n} + gamma^(n) V(s_{t+n})
-    For edge case where there is no r term, substitute with V and end the sum,
-    If r_k doesn't exist, directly substitute its place with V(s_k) and shorten the sum
-    '''
-    T = len(rewards)
-    assert not torch.isnan(rewards).any()
-    rets = torch.zeros(T, dtype=torch.float32, device=v_preds.device)
-    # to multiply with not_dones to handle episode boundary (last state has no V(s'))
-    # not_dones = 1 - dones
-    for t in range(T):
-        ret = 0.0
-        cur_gamma = 1.0
-        for idx in range(n):
-            # i = idx + 1
-            i = idx
-            # short circuit if this reward does not exist
-            if t + i >= T or dones[t + i]:
-                i -= 1  # set it back to index of last valid reward
-                break
-            ret += cur_gamma * rewards[t + i]
-            cur_gamma *= gamma
-        ret += cur_gamma * v_preds[t + i]
-        rets[t] = ret
-    return rets
-
-
-def calc_nstep_returns_slow2(rewards, dones, v_preds, gamma, n):
+def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
     '''
     if last state was terminal:
         R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1} + gamma^(n) V(s_{t+n})
@@ -83,7 +53,7 @@ def calc_nstep_returns_slow2(rewards, dones, v_preds, gamma, n):
     return rets[:-1, :]
 
 
-def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
+def calc_nstep_returns_old(rewards, dones, v_preds, gamma, n):
     '''
     Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
     R^(n)_t = r_{t+1} + gamma r_{t+2} + ... + gamma^(n-1) r_{t+n} + gamma^(n) V(s_{t+n})
