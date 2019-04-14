@@ -280,7 +280,6 @@ class ActorCritic(Reinforce):
         policy_loss = - self.policy_loss_coef * log_probs * advs.squeeze(-1)
         if self.entropy_coef_spec is not None:
             entropies = torch.stack(self.body.entropies)
-            print(f'actor orig: entropies {entropies}')
             entropies_mean = entropies.mean().detach()
             policy_loss += (-self.body.entropy_coef * entropies)
         policy_loss = torch.mean(policy_loss)
