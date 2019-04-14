@@ -317,7 +317,7 @@ class ActorCritic(Reinforce):
         v_preds = self.calc_v(states, evaluate=False).unsqueeze(dim=-1)
         assert v_preds.shape == v_targets.shape
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
-        logger.info(f'Critic value loss: {val_loss:g}')
+        logger.debug(f'Critic value loss: {val_loss:g}')
         return val_loss
 
     def calc_gae_advs_v_targets(self, batch):
