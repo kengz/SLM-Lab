@@ -9,12 +9,6 @@ import torch.nn as nn
 logger = logger.get_logger(__name__)
 
 
-def init(module, weight_init, bias_init, gain=1):
-    weight_init(module.weight.data, gain=gain)
-    bias_init(module.bias.data)
-    return module
-
-
 class ConvNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized convolutional neural network,
@@ -138,17 +132,11 @@ class ConvNet(Net, nn.Module):
                     out_layer_activation = self.out_layer_activation
                 else:
                     out_layer_activation = None
-                # init from pytorch-a2c-ppo-acktr-gail
-                # TODO ref properly
-                if idx == 0:
-                    init_fn = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0), gain=0.01)
-                else:
-                    init_fn = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0))
-                layer = net_util.build_fc_model([tail_in_dim, out_d], init_fn, out_layer_activation)
+                layer = net_util.build_fc_model([tail_in_dim, out_d], out_layer_activation)
                 layers.append(layer)
             self.model_tails = nn.ModuleList(layers)
 
-        # net_util.init_layers(self, self.init_fn)
+        net_util.init_layers(self, self.init_fn)
         for module in self.modules():
             module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
@@ -171,13 +159,10 @@ class ConvNet(Net, nn.Module):
         '''
         conv_layers = []
         in_d = self.in_dim[0]  # input channel
-        # init from pytorch-a2c-ppo-acktr-gail
-        # TODO ref properly
-        init_ = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0), nn.init.calculate_gain('relu'))
         for i, hid_layer in enumerate(conv_hid_layers):
             hid_layer = [tuple(e) if ps.is_list(e) else e for e in hid_layer]  # guard list-to-tuple
             # hid_layer = out_d, kernel, stride, padding, dilation
-            conv_layers.append(init_(nn.Conv2d(in_d, *hid_layer)))
+            conv_layers.append(nn.Conv2d(in_d, *hid_layer))
             conv_layers.append(net_util.get_activation_fn(self.hid_layers_activation))
             # Don't include batch norm in the first layer
             if self.batch_norm and i != 0:
@@ -192,10 +177,7 @@ class ConvNet(Net, nn.Module):
         '''
         assert not ps.is_empty(fc_hid_layers)
         dims = [self.conv_out_dim] + fc_hid_layers
-        # init from pytorch-a2c-ppo-acktr-gail
-        # TODO ref properly
-        init_fn = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0), nn.init.calculate_gain('relu'))
-        fc_model = net_util.build_fc_model(dims, init_fn, self.hid_layers_activation)
+        fc_model = net_util.build_fc_model(dims, self.hid_layers_activation)
         return fc_model
 
     def forward(self, x):

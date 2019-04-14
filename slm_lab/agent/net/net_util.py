@@ -23,14 +23,14 @@ class NoOpLRScheduler:
         return self.optim.defaults['lr']
 
 
-def build_fc_model(dims, init_fn, activation=None):
+def build_fc_model(dims, activation=None):
     '''Build a full-connected model by interleaving nn.Linear and activation_fn'''
     assert len(dims) >= 2, 'dims need to at least contain input, output'
     # shift dims and make pairs of (in, out) dims per layer
     dim_pairs = list(zip(dims[:-1], dims[1:]))
     layers = []
     for in_d, out_d in dim_pairs:
-        layers.append(init_fn(nn.Linear(in_d, out_d)))
+        layers.append(nn.Linear(in_d, out_d))
         if activation is not None:
             layers.append(get_activation_fn(activation))
     model = nn.Sequential(*layers)
@@ -159,7 +159,7 @@ def init_parameters(module, init_fn):
             elif 'bias' in name:
                 nn.init.constant_(param, 0.0)
     elif 'Linear' in classname:
-        init_fn(module.weight, gain=0.01)
+        init_fn(module.weight, nn.init.calculate_gain('relu'))
         nn.init.constant_(module.bias, bias_init)
     elif ('Conv' in classname and 'Net' not in classname):
         init_fn(module.weight, gain=nn.init.calculate_gain('relu'))
