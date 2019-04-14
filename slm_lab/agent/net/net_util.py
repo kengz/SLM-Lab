@@ -121,8 +121,9 @@ def get_out_dim(body, add_critic=False):
 
 
 def init_layers(net, init_fn):
+    init_fn_name = init_fn
     if init_fn is None:
-        init_fn = 'xavier_uniform_'
+        return
     nonlinearity = get_nn_name(net.hid_layers_activation).lower()
     if nonlinearity == 'leakyrelu':
         nonlinearity = 'leaky_relu'
@@ -138,10 +139,13 @@ def init_layers(net, init_fn):
         init_fn = partial(init_fn, nonlinearity=nonlinearity)
     else:
         init_fn = nn.init.__dict__[init_fn]
-    net.apply(partial(init_parameters, init_fn=init_fn))
+    if init_fn_name == 'xavier_uniform_':
+        net.apply(partial(init_parameters, init_fn=init_fn, use_gain=False))
+    else:
+        net.apply(partial(init_parameters, init_fn=init_fn))
 
 
-def init_parameters(module, init_fn):
+def init_parameters(module, init_fn, use_gain=True):
     '''
     Initializes module's weights using init_fn, which is the name of function from from nn.init
     Initializes module's biases to either 0.01 or 0.0, depending on module
@@ -159,10 +163,16 @@ def init_parameters(module, init_fn):
             elif 'bias' in name:
                 nn.init.constant_(param, 0.0)
     elif 'Linear' in classname:
-        init_fn(module.weight, nn.init.calculate_gain('relu'))
+        if use_gain:
+            init_fn(module.weight, nn.init.calculate_gain('relu'))
+        else:
+            init_fn(module.weight)
         nn.init.constant_(module.bias, bias_init)
     elif ('Conv' in classname and 'Net' not in classname):
-        init_fn(module.weight, gain=nn.init.calculate_gain('relu'))
+        if use_gain:
+            init_fn(module.weight, gain=nn.init.calculate_gain('relu'))
+        else:
+            init_fn(module.weight)
         nn.init.constant_(module.bias, bias_init)
 
 
