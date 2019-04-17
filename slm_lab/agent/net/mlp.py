@@ -285,6 +285,8 @@ class HydraMLPNet(Net, nn.Module):
 
     def build_model_tails(self, out_dim, out_layer_activation):
         '''Build each model_tail. These are stored as Sequential models in model_tails'''
+        if not ps.is_list(out_layer_activation):
+            out_layer_activation = [out_layer_activation] * len(out_dim)
         model_tails = nn.ModuleList()
         if ps.is_empty(self.tail_hid_layers):
             for out_d, out_activ in zip(out_dim, out_layer_activation):
