@@ -4,7 +4,6 @@
 from collections import deque
 from gym import spaces
 from slm_lab.lib import util
-import cv2
 import gym
 import numpy as np
 
@@ -21,7 +20,7 @@ class NoopResetEnv(gym.Wrapper):
         assert env.unwrapped.get_action_meanings()[0] == 'NOOP'
 
     def reset(self, **kwargs):
-        ''' Do no-op action for a number of steps in [1, noop_max].'''
+        '''Do no-op action for a number of steps in [1, noop_max].'''
         self.env.reset(**kwargs)
         if self.override_num_noops is not None:
             noops = self.override_num_noops
@@ -151,8 +150,8 @@ class TransformImage(gym.ObservationWrapper):
 
     def observation(self, frame):
         frame = util.transform_image(frame, method='openai')
+        frame = np.transpose(frame)  # reverses all axes
         frame = np.expand_dims(frame, -1)
-        frame = np.swapaxes(frame, 2, 0)
         return frame
 
 
