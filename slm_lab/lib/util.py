@@ -781,17 +781,19 @@ def transform_image(im, method='openai'):
         raise ValueError('method must be one of: nature, openai')
 
 
-def debug_image(im):
+def debug_image(im, is_chw=True):
     '''
     Renders an image for debugging; pauses process until key press
-    Handles tensor/numpy and different conventions among libraries
+    Handles tensor/numpy and conventions among libraries
     '''
     if torch.is_tensor(im):  # if PyTorch tensor, get numpy
         im = im.cpu().numpy()
-    if np.argmin(im.shape) == 0:  # if channel-first, transpose all axes
+    if is_chw:  # pytorch c,h,w convention
         im = np.transpose(im)
-    # typecast and accommodate from RGB (numpy) to BGR (cv2)
-    im = cv2.cvtColor(im.astype(np.uint8), cv2.COLOR_BGR2RGB)
+    im = im.astype(np.uint8)  # typecast guard
+    if im.shape[0] == 3:  # RGB image
+        # accommodate from RGB (numpy) to BGR (cv2)
+        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
     cv2.imshow('debug image', im)
     cv2.waitKey(0)
 

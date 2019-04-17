@@ -151,7 +151,7 @@ class TransformImage(gym.ObservationWrapper):
     def observation(self, frame):
         frame = util.transform_image(frame, method='openai')
         frame = np.transpose(frame)  # reverses all axes
-        frame = np.expand_dims(frame, -1)
+        frame = np.expand_dims(frame, 0)
         return frame
 
 
