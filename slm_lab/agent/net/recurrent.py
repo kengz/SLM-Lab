@@ -27,6 +27,7 @@ class RecurrentNet(Net, nn.Module):
         "cell_type": "GRU",
         "fc_hid_layers": [],
         "hid_layers_activation": "relu",
+        "out_layer_activation": null,
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "bidirectional": False,
@@ -58,6 +59,7 @@ class RecurrentNet(Net, nn.Module):
         cell_type: any of RNN, LSTM, GRU
         fc_hid_layers: list of fc layers preceeding the RNN layers
         hid_layers_activation: activation function for the fc hidden layers
+        out_layer_activation: activation function for the output layer, same shape as out_dim
         rnn_hidden_size: rnn hidden_size
         rnn_num_layers: number of recurrent layers
         bidirectional: if RNN should be bidirectional
@@ -76,6 +78,7 @@ class RecurrentNet(Net, nn.Module):
         super(RecurrentNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
+            out_layer_activation=None,
             cell_type='GRU',
             rnn_num_layers=1,
             bidirectional=False,
@@ -93,6 +96,7 @@ class RecurrentNet(Net, nn.Module):
             'cell_type',
             'fc_hid_layers',
             'hid_layers_activation',
+            'out_layer_activation',
             'rnn_hidden_size',
             'rnn_num_layers',
             'bidirectional',
@@ -107,13 +111,13 @@ class RecurrentNet(Net, nn.Module):
             'polyak_coef',
             'gpu',
         ])
-        # fc layer: state processing model
-        if not ps.is_empty(self.fc_hid_layers):
+        # fc body: state processing model
+        if ps.is_empty(self.fc_hid_layers):
+            self.rnn_input_dim = self.in_dim
+        else:
             fc_dims = [self.in_dim] + self.fc_hid_layers
             self.fc_model = net_util.build_fc_model(fc_dims, self.hid_layers_activation)
             self.rnn_input_dim = fc_dims[-1]
-        else:
-            self.rnn_input_dim = self.in_dim
 
         # RNN model
         self.rnn_model = getattr(nn, net_util.get_nn_name(self.cell_type))(
@@ -124,9 +128,16 @@ class RecurrentNet(Net, nn.Module):
 
         # tails. avoid list for single-tail for compute speed
         if ps.is_integer(self.out_dim):
-            self.model_tail = nn.Linear(self.rnn_hidden_size, self.out_dim)
+            self.model_tail = net_util.build_fc_model([self.rnn_hidden_size, self.out_dim], self.out_layer_activation)
         else:
-            self.model_tails = nn.ModuleList([nn.Linear(self.rnn_hidden_size, out_d) for out_d in self.out_dim])
+            if not ps.is_list(self.out_layer_activation):
+                self.out_layer_activation = [self.out_layer_activation] * len(out_dim)
+            assert len(self.out_layer_activation) == len(self.out_dim)
+            tails = []
+            for out_d, out_activ in zip(self.out_dim, self.out_layer_activation):
+                tail = net_util.build_fc_model([self.rnn_hidden_size, out_d], out_activ)
+                tails.append(tail)
+            self.model_tails = nn.ModuleList(tails)
 
         net_util.init_layers(self, self.init_fn)
         for module in self.modules():
