@@ -782,8 +782,17 @@ def transform_image(im, method='openai'):
 
 
 def debug_image(im):
-    '''Use this method to render image the agent sees; waits for a key press before continuing'''
-    cv2.imshow('image', im)
+    '''
+    Renders an image for debugging; pauses process until key press
+    Handles tensor/numpy and different conventions among libraries
+    '''
+    if torch.is_tensor(im):  # if PyTorch tensor, get numpy
+        im = im.cpu().numpy()
+    if np.argmin(im.shape) == 0:  # if channel-first, transpose all axes
+        im = np.transpose(im)
+    # typecast and accommodate from RGB (numpy) to BGR (cv2)
+    im = cv2.cvtColor(im.astype(np.uint8), cv2.COLOR_BGR2RGB)
+    cv2.imshow('debug image', im)
     cv2.waitKey(0)
 
 
