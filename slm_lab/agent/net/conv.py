@@ -31,6 +31,7 @@ class ConvNet(Net, nn.Module):
         ],
         "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
+        "out_layer_activation": "tanh",
         "init_fn": null,
         "batch_norm": false,
         "clip_grad_val": 1.0,
@@ -56,11 +57,13 @@ class ConvNet(Net, nn.Module):
     def __init__(self, net_spec, in_dim, out_dim):
         '''
         net_spec:
-        conv_hid_layers: list containing dimensions of the convolutional hidden layers. Asssumed to all come before the flat layers.
+        conv_hid_layers: list containing dimensions of the convolutional hidden layers, each is a list representing hid_layer = out_d, kernel, stride, padding, dilation.
+            Asssumed to all come before the flat layers.
             Note: a convolutional layer should specify the in_channel, out_channels, kernel_size, stride (of kernel steps), padding, and dilation (spacing between kernel points) E.g. [3, 16, (5, 5), 1, 0, (2, 2)]
             For more details, see http://pytorch.org/docs/master/nn.html#conv2d and https://github.com/vdumoulin/conv_arithmetic/blob/master/README.md
         fc_hid_layers: list of fc layers following the convolutional layers
         hid_layers_activation: activation function for the hidden layers
+        out_layer_activation: activation function for the output layer, same shape as out_dim
         init_fn: weight initialization function
         batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
         clip_grad_val: clip gradient norm if value is not None
@@ -77,6 +80,7 @@ class ConvNet(Net, nn.Module):
         super(ConvNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
+            out_layer_activation=None,
             init_fn=None,
             batch_norm=True,
             clip_grad_val=None,
@@ -92,6 +96,7 @@ class ConvNet(Net, nn.Module):
             'conv_hid_layers',
             'fc_hid_layers',
             'hid_layers_activation',
+            'out_layer_activation',
             'init_fn',
             'batch_norm',
             'clip_grad_val',
@@ -104,23 +109,30 @@ class ConvNet(Net, nn.Module):
             'gpu',
         ])
 
-        # conv layer
+        # conv body
         self.conv_model = self.build_conv_layers(self.conv_hid_layers)
         self.conv_out_dim = self.get_conv_output_size()
 
-        # fc layer
-        if not ps.is_empty(self.fc_hid_layers):
-            # fc layer from flattened conv
-            self.fc_model = self.build_fc_layers(self.fc_hid_layers)
-            tail_in_dim = self.fc_hid_layers[-1]
-        else:
+        # fc body
+        if ps.is_empty(self.fc_hid_layers):
             tail_in_dim = self.conv_out_dim
+        else:
+            # fc body from flattened conv
+            self.fc_model = net_util.build_fc_model([self.conv_out_dim] + self.fc_hid_layers, self.hid_layers_activation)
+            tail_in_dim = self.fc_hid_layers[-1]
 
         # tails. avoid list for single-tail for compute speed
         if ps.is_integer(self.out_dim):
-            self.model_tail = nn.Linear(tail_in_dim, self.out_dim)
+            self.model_tail = net_util.build_fc_model([tail_in_dim, self.out_dim], self.out_layer_activation)
         else:
-            self.model_tails = nn.ModuleList([nn.Linear(tail_in_dim, out_d) for out_d in self.out_dim])
+            if not ps.is_list(self.out_layer_activation):
+                self.out_layer_activation = [self.out_layer_activation] * len(out_dim)
+            assert len(self.out_layer_activation) == len(self.out_dim)
+            tails = []
+            for out_d, out_activ in zip(self.out_dim, self.out_layer_activation):
+                tail = net_util.build_fc_model([tail_in_dim, out_d], out_activ)
+                tails.append(tail)
+            self.model_tails = nn.ModuleList(tails)
 
         net_util.init_layers(self, self.init_fn)
         for module in self.modules():
@@ -156,15 +168,6 @@ class ConvNet(Net, nn.Module):
             in_d = hid_layer[0]  # update to out_d
         conv_model = nn.Sequential(*conv_layers)
         return conv_model
-
-    def build_fc_layers(self, fc_hid_layers):
-        '''
-        Builds all of the fc layers in the network and store in a Sequential model
-        '''
-        assert not ps.is_empty(fc_hid_layers)
-        dims = [self.conv_out_dim] + fc_hid_layers
-        fc_model = net_util.build_fc_model(dims, self.hid_layers_activation)
-        return fc_model
 
     def forward(self, x):
         '''
@@ -292,21 +295,22 @@ class DuelingConvNet(ConvNet):
         # Guard against inappropriate algorithms and environments
         assert isinstance(out_dim, int)
 
-        # conv layer
+        # conv body
         self.conv_model = self.build_conv_layers(self.conv_hid_layers)
         self.conv_out_dim = self.get_conv_output_size()
 
-        # fc layer
-        if not ps.is_empty(self.fc_hid_layers):
-            # fc layer from flattened conv
-            self.fc_model = self.build_fc_layers(self.fc_hid_layers)
-            tail_in_dim = self.fc_hid_layers[-1]
-        else:
+        # fc body
+        if ps.is_empty(self.fc_hid_layers):
             tail_in_dim = self.conv_out_dim
+        else:
+            # fc layer from flattened conv
+            self.fc_model = net_util.build_fc_model([self.conv_out_dim] + self.fc_hid_layers, self.hid_layers_activation)
+            tail_in_dim = self.fc_hid_layers[-1]
 
         # tails. avoid list for single-tail for compute speed
         self.v = nn.Linear(tail_in_dim, 1)  # state value
-        self.adv = nn.Linear(tail_in_dim, out_dim[0])  # action dependent raw advantage
+        self.adv = nn.Linear(tail_in_dim, out_dim)  # action dependent raw advantage
+        self.model_tails = nn.ModuleList(self.v, self.adv)
 
         net_util.init_layers(self, self.init_fn)
         for module in self.modules():

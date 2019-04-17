@@ -20,6 +20,7 @@ class MLPNet(Net, nn.Module):
         "shared": true,
         "hid_layers": [32],
         "hid_layers_activation": "relu",
+        "out_layer_activation": null,
         "init_fn": "xavier_uniform_",
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -46,6 +47,7 @@ class MLPNet(Net, nn.Module):
         net_spec:
         hid_layers: list containing dimensions of the hidden layers
         hid_layers_activation: activation function for the hidden layers
+        out_layer_activation: activation function for the output layer, same shape as out_dim
         init_fn: weight initialization function
         clip_grad_val: clip gradient norm if value is not None
         loss_spec: measure of error between model predictions and correct outputs
@@ -60,6 +62,7 @@ class MLPNet(Net, nn.Module):
         super(MLPNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
+            out_layer_activation=None,
             init_fn=None,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
@@ -74,6 +77,7 @@ class MLPNet(Net, nn.Module):
             'shared',
             'hid_layers',
             'hid_layers_activation',
+            'out_layer_activation',
             'init_fn',
             'clip_grad_val',
             'loss_spec',
@@ -90,9 +94,16 @@ class MLPNet(Net, nn.Module):
         # add last layer with no activation
         # tails. avoid list for single-tail for compute speed
         if ps.is_integer(self.out_dim):
-            self.model_tail = nn.Linear(dims[-1], self.out_dim)
+            self.model_tail = net_util.build_fc_model([dims[-1], self.out_dim], self.out_layer_activation)
         else:
-            self.model_tails = nn.ModuleList([nn.Linear(dims[-1], out_d) for out_d in self.out_dim])
+            if not ps.is_list(self.out_layer_activation):
+                self.out_layer_activation = [self.out_layer_activation] * len(out_dim)
+            assert len(self.out_layer_activation) == len(self.out_dim)
+            tails = []
+            for out_d, out_activ in zip(self.out_dim, self.out_layer_activation):
+                tail = net_util.build_fc_model([dims[-1], out_d], out_activ)
+                tails.append(tail)
+            self.model_tails = nn.ModuleList(tails)
 
         net_util.init_layers(self, self.init_fn)
         for module in self.modules():
@@ -160,6 +171,7 @@ class HydraMLPNet(Net, nn.Module):
             [] # tail, no hidden layers
         ],
         "hid_layers_activation": "relu",
+        "out_layer_activation": null,
         "init_fn": "xavier_uniform_",
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -209,6 +221,7 @@ class HydraMLPNet(Net, nn.Module):
         super(HydraMLPNet, self).__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
+            out_layer_activation=None,
             init_fn=None,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
@@ -222,6 +235,7 @@ class HydraMLPNet(Net, nn.Module):
         util.set_attr(self, self.net_spec, [
             'hid_layers',
             'hid_layers_activation',
+            'out_layer_activation',
             'init_fn',
             'clip_grad_val',
             'loss_spec',
@@ -247,7 +261,7 @@ class HydraMLPNet(Net, nn.Module):
         heads_out_dim = np.sum([head_hid_layers[-1] for head_hid_layers in self.head_hid_layers])
         dims = [heads_out_dim] + self.body_hid_layers
         self.model_body = net_util.build_fc_model(dims, self.hid_layers_activation)
-        self.model_tails = self.build_model_tails(out_dim)
+        self.model_tails = self.build_model_tails(self.out_dim, self.out_layer_activation)
 
         net_util.init_layers(self, self.init_fn)
         for module in self.modules():
@@ -269,18 +283,22 @@ class HydraMLPNet(Net, nn.Module):
             model_heads.append(model_head)
         return model_heads
 
-    def build_model_tails(self, out_dim):
+    def build_model_tails(self, out_dim, out_layer_activation):
         '''Build each model_tail. These are stored as Sequential models in model_tails'''
+        if not ps.is_list(out_layer_activation):
+            out_layer_activation = [out_layer_activation] * len(out_dim)
         model_tails = nn.ModuleList()
         if ps.is_empty(self.tail_hid_layers):
-            for out_d in out_dim:
-                model_tails.append(nn.Linear(self.body_hid_layers[-1], out_d))
+            for out_d, out_activ in zip(out_dim, out_layer_activation):
+                tail = net_util.build_fc_model([self.body_hid_layers[-1], out_d], out_activ)
+                model_tails.append(tail)
         else:
             assert len(self.tail_hid_layers) == len(out_dim), 'Hydra tail hid_params inconsistent with number out dims'
-            for out_d, hid_layers in zip(out_dim, self.tail_hid_layers):
+            for out_d, out_activ, hid_layers in zip(out_dim, out_layer_activation, self.tail_hid_layers):
                 dims = hid_layers
                 model_tail = net_util.build_fc_model(dims, self.hid_layers_activation)
-                model_tail.add_module(str(len(model_tail)), nn.Linear(dims[-1], out_d))
+                tail_out = net_util.build_fc_model([dims[-1], out_d], out_activ)
+                model_tail.add_module(str(len(model_tail)), tail_out)
                 model_tails.append(model_tail)
         return model_tails
 
