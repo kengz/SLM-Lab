@@ -2,12 +2,12 @@
 The monitor module with data_space
 Monitors agents, environments, sessions, trials, experiments, evolutions, and handles all the data produced by the Lab components.
 InfoSpace handles the unified hyperdimensional data for SLM Lab, used for analysis and experiment planning. Sources data from monitor.
-Each dataframe resolves from the coarsest dimension to the finest, with data coordinates coor in the form: (evolution,experiment,trial,session,agent,env,body)
+Each dataframe resolves from the coarsest dimension to the finest, with data coordinates coor in the form: (experiment,trial,session,agent,env,body)
 The resolution after session is the AEB space, hence it is a subspace.
 AEB space is not necessarily tabular, and hence the data is NoSQL.
 
 The data_space is congruent to the coor, with proper resolution.
-E.g. (evolution,experiment,trial,session) specifies the session_data of a session, ran over multiple episodes on the AEB space.
+E.g. (experiment,trial,session) specifies the session_data of a session, ran over multiple episodes on the AEB space.
 
 Space ordering:
 InfoSpace: the general space for complete information
@@ -35,7 +35,6 @@ import torch
 
 # These correspond to the control unit classes, lower cased
 COOR_AXES = [
-    'evolution',
     'experiment',
     'trial',
     'session',
