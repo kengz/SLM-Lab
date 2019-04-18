@@ -116,8 +116,8 @@ class MultiCategorical(distributions.Categorical):
 
 
 setattr(distributions, 'Argmax', Argmax)
-setattr(distributions, 'MultiCategorical', MultiCategorical)
 setattr(distributions, 'GumbelCategorical', GumbelCategorical)
+setattr(distributions, 'MultiCategorical', MultiCategorical)
 
 
 # base methods
