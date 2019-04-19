@@ -564,7 +564,7 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
-def set_rand_seed(random_seed, env_space):
+def set_random_seed(random_seed, env_space):
     '''Set all the module random seeds'''
     torch.cuda.manual_seed_all(random_seed)
     torch.manual_seed(random_seed)

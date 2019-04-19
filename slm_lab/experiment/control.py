@@ -32,10 +32,10 @@ class Session:
 
         # init singleton agent and env
         self.env = make_env(self.spec)
-        util.set_rand_seed(self.info_space.get_random_seed(), self.env)
+        util.set_random_seed(self.info_space.get_random_seed(), self.env)
         with util.ctx_lab_mode('eval'):  # env for eval
             self.eval_env = make_env(self.spec)
-            util.set_rand_seed(self.info_space.get_random_seed(), self.eval_env)
+            util.set_random_seed(self.info_space.get_random_seed(), self.eval_env)
         util.try_set_cuda_id(self.spec, self.info_space)
         body = Body(self.env, self.spec['agent'])
         self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
@@ -127,7 +127,7 @@ class SpaceSession(Session):
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.aeb_space.init_body_space()
-        util.set_rand_seed(self.info_space.get_random_seed(), self.env_space)
+        util.set_random_seed(self.info_space.get_random_seed(), self.env_space)
         util.try_set_cuda_id(self.spec, self.info_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
 
