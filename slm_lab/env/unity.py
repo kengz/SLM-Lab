@@ -62,7 +62,8 @@ class UnityEnv(BaseEnv):
         super(UnityEnv, self).__init__(spec, e, env_space)
         util.set_attr(self, self.env_spec, ['unity'])
         worker_id = int(f'{os.getpid()}{self.e+int(ps.unique_id())}'[-4:])
-        self.u_env = UnityEnvironment(file_name=get_env_path(self.name), worker_id=worker_id)
+        seed = ps.get(spec, 'meta.random_seed')
+        self.u_env = UnityEnvironment(file_name=get_env_path(self.name), worker_id=worker_id, seed=seed)
         self.patch_gym_spaces(self.u_env)
         self._set_attr_from_u_env(self.u_env)
         assert self.max_t is not None
