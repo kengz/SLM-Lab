@@ -651,7 +651,7 @@ def to_torch_batch(batch, device, is_episodic):
     return batch
 
 
-def try_set_cuda_id(spec, info_space):
+def set_cuda_id(spec, info_space):
     '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
     # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
     # see issues https://github.com/pytorch/pytorch/issues/334 https://github.com/pytorch/pytorch/issues/3491 https://github.com/pytorch/pytorch/issues/9996
