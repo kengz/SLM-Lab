@@ -1,10 +1,9 @@
 from copy import deepcopy
-from slm_lab.experiment.control import Session, Trial, Experiment
+from flaky import flaky
 from slm_lab.experiment import analysis
-from slm_lab.lib import util
+from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.spec import spec_util
 import pandas as pd
-import pytest
 
 
 def test_session(test_spec, test_info_space):
@@ -42,10 +41,24 @@ def test_trial_demo(test_info_space):
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     analysis.save_spec(spec, test_info_space, unit='experiment')
     spec = spec_util.override_test_spec(spec)
-    spec['meta']['eval_frequency'] = 1
     test_info_space.tick('trial')
     trial_data = Trial(spec, test_info_space).run()
     assert isinstance(trial_data, pd.DataFrame)
+
+
+@flaky
+def test_demo_performance(test_info_space):
+    spec = spec_util.get('demo.json', 'dqn_cartpole')
+    analysis.save_spec(spec, test_info_space, unit='experiment')
+    for env_spec in spec['env']:
+        env_spec['max_tick'] = 2000
+    test_info_space.tick('trial')
+    trial = Trial(spec, test_info_space)
+    test_info_space.tick('session')
+    session = Session(spec, test_info_space)
+    session.run()
+    last_reward = session.agent.body.train_df.iloc[-1]['reward']
+    assert last_reward > 50, f'last_reward is too low: {last_reward}'
 
 
 def test_experiment(test_info_space):

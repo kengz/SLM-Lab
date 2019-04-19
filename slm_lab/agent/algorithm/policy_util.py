@@ -27,7 +27,7 @@ logger = logger.get_logger(__name__)
 ACTION_PDS = {
     'continuous': ['Normal', 'Beta', 'Gumbel', 'LogNormal'],
     'multi_continuous': ['MultivariateNormal'],
-    'discrete': ['Categorical', 'Argmax'],
+    'discrete': ['Categorical', 'Argmax', 'GumbelCategorical'],
     'multi_discrete': ['MultiCategorical'],
     'multi_binary': ['Bernoulli'],
 }
@@ -51,6 +51,19 @@ class Argmax(distributions.Categorical):
             logits = new_logits
 
         super(Argmax, self).__init__(probs=probs, logits=logits, validate_args=validate_args)
+
+
+class GumbelCategorical(distributions.Categorical):
+    '''
+    Special Categorical using Gumbel distribution to simulate softmax categorical for discrete action.
+    Similar to OpenAI's https://github.com/openai/baselines/blob/98257ef8c9bd23a24a330731ae54ed086d9ce4a7/baselines/a2c/utils.py#L8-L10
+    Explanation http://amid.fish/assets/gumbel.html
+    '''
+    def sample(self, sample_shape=torch.Size()):
+        '''Gumbel softmax sampling'''
+        u = torch.empty(self.logits.size(), device=self.logits.device, dtype=self.logits.dtype).uniform_(0, 1)
+        noisy_logits = self.logits - torch.log(-torch.log(u))
+        return torch.argmax(noisy_logits, dim=0)
 
 
 class MultiCategorical(distributions.Categorical):
@@ -103,6 +116,7 @@ class MultiCategorical(distributions.Categorical):
 
 
 setattr(distributions, 'Argmax', Argmax)
+setattr(distributions, 'GumbelCategorical', GumbelCategorical)
 setattr(distributions, 'MultiCategorical', MultiCategorical)
 
 
