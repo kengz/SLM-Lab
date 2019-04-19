@@ -564,23 +564,20 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
-def set_random_seed(random_seed, env_space):
-    '''Set all the module random seeds'''
-    torch.cuda.manual_seed_all(random_seed)
-    torch.manual_seed(random_seed)
-    np.random.seed(random_seed)
-    envs = env_space.envs if hasattr(env_space, 'envs') else [env_space]
-    for env in envs:
-        try:
-            env.u_env.seed(random_seed)
-        except Exception as e:
-            pass
-
-
 def set_logger(spec, info_space, logger, unit=None):
     '''Set the logger for a lab unit give its spec and info_space'''
     os.environ['PREPATH'] = get_prepath(spec, info_space, unit=unit)
     reload(logger)  # to set session-specific logger
+
+
+def set_random_seed(trial, session, spec):
+    '''Generate and set random seed for relevant modules, and record it in spec.meta.random_seed'''
+    random_seed = int(1e5 * (trial or 0) + 1e3 * (session or 0) + time.time())
+    torch.cuda.manual_seed_all(random_seed)
+    torch.manual_seed(random_seed)
+    np.random.seed(random_seed)
+    spec['meta']['random_seed'] = random_seed
+    return random_seed
 
 
 def _sizeof(obj, seen=None):

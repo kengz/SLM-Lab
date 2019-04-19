@@ -27,15 +27,15 @@ class Session:
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
+        util.set_random_seed(self.info_space.get('trial'), self.index, self.spec)
         util.set_logger(self.spec, self.info_space, logger, 'session')
         self.data = None
+        analysis.save_spec(spec, info_space, unit='session')
 
         # init singleton agent and env
         self.env = make_env(self.spec)
-        util.set_random_seed(self.info_space.get_random_seed(), self.env)
         with util.ctx_lab_mode('eval'):  # env for eval
             self.eval_env = make_env(self.spec)
-            util.set_random_seed(self.info_space.get_random_seed(), self.eval_env)
         util.try_set_cuda_id(self.spec, self.info_space)
         body = Body(self.env, self.spec['agent'])
         self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
@@ -121,13 +121,14 @@ class SpaceSession(Session):
         self.spec = spec
         self.info_space = info_space
         self.index = self.info_space.get('session')
+        util.set_random_seed(self.info_space.get('trial'), self.index, self.spec)
         util.set_logger(self.spec, self.info_space, logger, 'session')
         self.data = None
+        analysis.save_spec(spec, info_space, unit='session')
 
         self.aeb_space = AEBSpace(self.spec, self.info_space)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.aeb_space.init_body_space()
-        util.set_random_seed(self.info_space.get_random_seed(), self.env_space)
         util.try_set_cuda_id(self.spec, self.info_space)
         self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
 
@@ -205,8 +206,8 @@ class Trial:
         util.set_logger(self.spec, self.info_space, logger, 'trial')
         self.session_data_dict = {}
         self.data = None
-
         analysis.save_spec(spec, info_space, unit='trial')
+
         self.is_singleton = spec_util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
         self.SessionClass = Session if self.is_singleton else SpaceSession
         self.mp_runner = init_run_session if self.is_singleton else init_run_space_session
