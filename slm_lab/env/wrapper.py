@@ -1,6 +1,6 @@
-# Module of custom Atari wrappers modified from OpenAI baselines (MIT)
-# these don't come with Gym but are crucial for Atari to work
-#  https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
+# Generic env wrappers, including for Atari/images
+# They don't come with Gym but are crucial for Atari to work
+# Many were adapted from OpenAI Baselines (MIT) https://github.com/openai/baselines/blob/master/baselines/common/atari_wrappers.py
 from collections import deque
 from gym import spaces
 from slm_lab.lib import util
@@ -10,7 +10,8 @@ import numpy as np
 
 class NoopResetEnv(gym.Wrapper):
     def __init__(self, env, noop_max=30):
-        '''Sample initial states by taking random number of no-ops on reset.
+        '''
+        Sample initial states by taking random number of no-ops on reset.
         No-op is assumed to be action 0.
         '''
         gym.Wrapper.__init__(self, env)
@@ -25,7 +26,7 @@ class NoopResetEnv(gym.Wrapper):
         if self.override_num_noops is not None:
             noops = self.override_num_noops
         else:
-            noops = self.unwrapped.np_random.randint(1, self.noop_max + 1)  # pylint: disable=E1101
+            noops = self.unwrapped.np_random.randint(1, self.noop_max + 1)
         assert noops > 0
         obs = None
         for _ in range(noops):
@@ -61,7 +62,8 @@ class FireResetEnv(gym.Wrapper):
 
 class EpisodicLifeEnv(gym.Wrapper):
     def __init__(self, env):
-        '''Make end-of-life == end-of-episode, but only reset on true game over.
+        '''
+        Make end-of-life == end-of-episode, but only reset on true game over.
         Done by DeepMind for the DQN and co. since it helps value estimation.
         '''
         gym.Wrapper.__init__(self, env)
@@ -83,7 +85,8 @@ class EpisodicLifeEnv(gym.Wrapper):
         return obs, reward, done, info
 
     def reset(self, **kwargs):
-        '''Reset only when lives are exhausted.
+        '''
+        Reset only when lives are exhausted.
         This way all states are still reachable even though lives are episodic,
         and the learner need not know about any of this behind-the-scenes.
         '''
@@ -97,9 +100,7 @@ class EpisodicLifeEnv(gym.Wrapper):
 
 
 class MaxAndSkipEnv(gym.Wrapper):
-    '''
-    OpenAI max-skipframe wrapper from baselines (not available from gym itself)
-    '''
+    '''OpenAI max-skipframe wrapper used for a NoFrameskip env'''
 
     def __init__(self, env, skip=4):
         '''Return only every `skip`-th frame'''
@@ -141,7 +142,8 @@ class TransformImage(gym.ObservationWrapper):
         Apply image preprocessing:
         - grayscale
         - downsize to 84x84
-        - transform shape from w,h,c to PyTorch format c,h,w '''
+        - transpose shape from w,h,c to PyTorch format c,h,w
+        '''
         gym.ObservationWrapper.__init__(self, env)
         self.width = 84
         self.height = 84
@@ -157,7 +159,8 @@ class TransformImage(gym.ObservationWrapper):
 
 class LazyFrames(object):
     def __init__(self, frames):
-        '''This object ensures that common frames between the observations are only stored once.
+        '''
+        This object ensures that common frames between the observations are only stored once.
         It exists purely to optimize memory usage which can be huge for DQN's 1M frames replay buffers.
         This object should only be converted to numpy array before being passed to the model.
         '''
@@ -228,4 +231,19 @@ def wrap_deepmind(env, episode_life=True, clip_rewards=True, stack_len=None):
     env = TransformImage(env)
     if stack_len is not None:
         env = FrameStack(env, stack_len)
+    return env
+
+
+def make_gym_env(name, seed=None, stack_len=None):
+    '''General method to create any Gym env; auto wraps Atari'''
+    env = gym.make(name)
+    if seed is not None:
+        env.seed(seed)
+    if 'NoFrameskip' in env.spec.id:  # for Atari
+        env = wrap_atari(env)
+        # no reward clipping to allow monitoring; Atari memory clips it
+        if util.get_lab_mode() == 'eval':
+            env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=False)
+        else:
+            env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=True)
     return env

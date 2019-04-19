@@ -1,5 +1,5 @@
 from slm_lab.env.base import BaseEnv, ENV_DATA_NAMES
-from slm_lab.env.wrapper import wrap_atari, wrap_deepmind
+from slm_lab.env.wrapper import make_gym_env
 from slm_lab.env.registration import register_env
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -27,7 +27,7 @@ class OpenAIEnv(BaseEnv):
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 150,
+      "max_tick": 10000,
     }],
     '''
 
@@ -38,16 +38,9 @@ class OpenAIEnv(BaseEnv):
             register_env(spec)
         except Exception as e:
             pass
-        env = gym.make(self.name)
-        if 'NoFrameskip' in env.spec.id:  # for Atari
-            stack_len = ps.get(spec, 'agent.0.memory.stack_len')
-            env = wrap_atari(env)
-            if util.get_lab_mode() == 'eval':
-                env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=False)
-            else:
-                # no reward clipping in training since Atari Memory classes handle it
-                env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False)
-        self.u_env = env
+        seed = ps.get(spec, 'meta.random_seed')
+        stack_len = ps.get(spec, 'agent.0.memory.stack_len')
+        self.u_env = make_gym_env(self.name, seed, stack_len)
         self._set_attr_from_u_env(self.u_env)
         self.max_t = self.max_t or self.u_env.spec.max_episode_steps
         assert self.max_t is not None
