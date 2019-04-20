@@ -188,13 +188,23 @@ class LazyFrames(object):
 
 class FrameStack(gym.Wrapper):
     def __init__(self, env, k):
-        '''Stack k last frames. Returns lazy array, which is much more memory efficient.'''
+        '''Stack last k frames; or concat them if frames are vectors. Returns lazy array, which is much more memory efficient.'''
         gym.Wrapper.__init__(self, env)
         self.k = k
         self.frames = deque([], maxlen=k)
-        shp = env.observation_space.shape
+        old_shape = env.observation_space.shape
+        if len(old_shape) > 1 and old_shape[0] == 1:
+            # greyscale image c,w,h or a tensor stackable on axis=0
+            shape = (k, ) + old_shape[1:]
+        elif len(old_shape) == 1:
+            # vector, to concat instead of stack
+            shape = (k * old_shape[0],)
+        else:
+            raise NotImplementedError
         self.observation_space = spaces.Box(
-            low=0, high=255, shape=(k, ) + shp[1:], dtype=env.observation_space.dtype)
+            low=np.min(env.observation_space.low),
+            high=np.max(env.observation_space.high),
+            shape=shape, dtype=env.observation_space.dtype)
 
     def reset(self):
         ob = self.env.reset()
@@ -246,4 +256,7 @@ def make_gym_env(name, seed=None, stack_len=None):
             env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=False)
         else:
             env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=True)
+    else:
+        if stack_len is not None:
+            env = FrameStack(env, stack_len)
     return env
