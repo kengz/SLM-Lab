@@ -11,15 +11,6 @@ import pydash as ps
 logger = logger.get_logger(__name__)
 
 
-def guard_reward(reward):
-    '''Some gym environments have buggy format and reward is in a np array'''
-    if np.isscalar(reward):
-        return reward
-    else:  # some gym envs have weird reward format
-        assert len(reward) == 1
-        return reward[0]
-
-
 class OpenAIEnv(BaseEnv):
     '''
     Wrapper for OpenAI Gym env to work with the Lab.
@@ -71,7 +62,6 @@ class OpenAIEnv(BaseEnv):
         if not self.is_discrete:  # guard for continuous
             action = np.array([action])
         state, reward, done, _info = self.u_env.step(action)
-        reward = guard_reward(reward)
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
