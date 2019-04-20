@@ -267,7 +267,7 @@ class VecEnv(ABC):
 class DummyVecEnv(VecEnv):
     '''
     VecEnv that does runs multiple environments sequentially, that is, the step and reset commands are send to one environment at a time.
-    Useful when debugging and when num_env == 1 (in the latter case, avoids communication overhead)
+    Useful when debugging and when num_envs == 1 (in the latter case, avoids communication overhead)
     '''
 
     def __init__(self, env_fns):
@@ -487,7 +487,7 @@ def make_gym_venv(name, seed=0, stack_len=None, num_envs=4):
     '''General method to create any parallel vectorized Gym env; auto wraps Atari'''
     venv = [
         # don't stack on individual env, but stack as vector
-        partial(make_gym_env, name, seed+i, stack_len=None)
+        partial(make_gym_env, name, seed + i, stack_len=None)
         for i in range(num_envs)
     ]
     if len(venv) > 1:
