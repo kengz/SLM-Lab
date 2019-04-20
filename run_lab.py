@@ -3,9 +3,6 @@ The entry point of SLM Lab
 Specify what to run in `config/experiments.json`
 Then run `python run_lab.py` or `yarn start`
 '''
-import os
-# NOTE increase if needed. Pytorch thread overusage https://github.com/pytorch/pytorch/issues/975
-os.environ['OMP_NUM_THREADS'] = '1'
 from slm_lab import EVAL_MODES, TRAIN_MODES
 from slm_lab.experiment import analysis, retro_analysis
 from slm_lab.experiment.control import Session, Trial, Experiment
@@ -13,7 +10,9 @@ from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 from xvfbwrapper import Xvfb
+import os
 import sys
+import torch
 import torch.multiprocessing as mp
 
 
@@ -72,7 +71,7 @@ def run_old_mode(spec_file, spec_name, lab_mode):
 def run_by_mode(spec_file, spec_name, lab_mode):
     '''The main run lab function for all lab_modes'''
     logger.info(f'Running lab in mode: {lab_mode}')
-    # '@' is reserved for 'enjoy@{prename}'
+    # '@' is reserved for EVAL_MODES
     os.environ['lab_mode'] = lab_mode.split('@')[0]
     if lab_mode in TRAIN_MODES:
         run_new_mode(spec_file, spec_name, lab_mode)
@@ -94,6 +93,7 @@ def main():
 
 
 if __name__ == '__main__':
+    torch.set_num_threads(1)  # prevent multithread slowdown
     mp.set_start_method('spawn')  # for distributed pytorch to work
     if sys.platform == 'darwin':
         # avoid xvfb for MacOS: https://github.com/nipy/nipype/issues/1400
