@@ -257,7 +257,7 @@ class VecEnv(ABC):
         else:
             return self
 
-    def get_viewer(se≥lf):
+    def get_viewer(self):
         if self.viewer is None:
             from gym.envs.classic_control import rendering
             self.viewer = rendering.SimpleImageViewer()
@@ -494,5 +494,6 @@ def make_gym_venv(name, seed=0, stack_len=None, num_envs=4):
         venv = ShmemVecEnv(venv, context='fork')
     else:
         venv = DummyVecEnv(venv)
-    venv = VecFrameStack(venv, stack_len)
+    if stack_len is not None:
+        venv = VecFrameStack(venv, stack_len)
     return venv
