@@ -136,7 +136,7 @@ class ClipRewardEnv(gym.RewardWrapper):
         return np.sign(reward)
 
 
-class TransformImage(gym.ObservationWrapper):
+class PreprocessImage(gym.ObservationWrapper):
     def __init__(self, env):
         '''
         Apply image preprocessing:
@@ -151,8 +151,7 @@ class TransformImage(gym.ObservationWrapper):
             low=0, high=255, shape=(1, self.width, self.height), dtype=np.uint8)
 
     def observation(self, frame):
-        frame = util.transform_image(frame, method='openai')
-        return frame
+        return util.preprocess_image(frame)
 
 
 class LazyFrames(object):
@@ -236,7 +235,7 @@ def wrap_deepmind(env, episode_life=True, clip_rewards=True, stack_len=None):
         env = FireResetEnv(env)
     if clip_rewards:
         env = ClipRewardEnv(env)
-    env = TransformImage(env)
+    env = PreprocessImage(env)
     if stack_len is not None:
         env = FrameStack(env, stack_len)
     return env
@@ -244,7 +243,7 @@ def wrap_deepmind(env, episode_life=True, clip_rewards=True, stack_len=None):
 
 def wrap_image_env(env, stack_len=None):
     '''Wrap image-based environment'''
-    env = TransformImage(env)
+    env = PreprocessImage(env)
     if stack_len is not None:
         env = FrameStack(env, stack_len)
     return env

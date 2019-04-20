@@ -727,11 +727,11 @@ def write_as_plain(data, data_path):
     return data_path
 
 
-# Atari image transformation
+# Atari image preprocessing
 
 
 def to_opencv_image(im):
-    '''Transform to OpenCV image shape h,w,c'''
+    '''Convert to OpenCV image shape h,w,c'''
     shape = im.shape
     if len(shape) == 3 and shape[0] < shape[-1]:
         return im.transpose(1, 2, 0)
@@ -740,7 +740,7 @@ def to_opencv_image(im):
 
 
 def to_pytorch_image(im):
-    '''Transform to PyTorch image shape c,h,w'''
+    '''Convert to PyTorch image shape c,h,w'''
     shape = im.shape
     if len(shape) == 3 and shape[-1] < shape[0]:
         return im.transpose(2, 0, 1)
@@ -756,50 +756,22 @@ def resize_image(im, w_h):
     return cv2.resize(im, w_h, interpolation=cv2.INTER_AREA)
 
 
-def crop_image(im):
-    '''Crop away the unused top-bottom game borders of Atari'''
-    return im[18:102, :]
-
-
 def normalize_image(im):
     '''Normalizing image by dividing max value 255'''
     # NOTE: beware in its application, may cause loss to be 255 times lower due to smaller input values
     return np.divide(im, 255.0)
 
 
-def nature_transform_image(im):
+def preprocess_image(im):
     '''
-    Image preprocessing from the paper "Playing Atari with Deep Reinforcement Learning, 2013, Mnih et al"
-    Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84 without the game border
-    '''
-    im = to_opencv_image(im)
-    im = grayscale_image(im)
-    im = resize_image(im, (84, 110))
-    im = crop_image(im)
-    im = np.expand_dims(im, 0)
-    return im
-
-
-def openai_transform_image(im):
-    '''
-    Image transformation using OpenAI's baselines method: grayscale, resize
-    Instead of cropping as done in nature_transform_image(), this resizes and stretches the image.
+    Image preprocessing using OpenAI Baselines method: grayscale, resize
+    This resize uses stretching instead of cropping
     '''
     im = to_opencv_image(im)
     im = grayscale_image(im)
     im = resize_image(im, (84, 84))
     im = np.expand_dims(im, 0)
     return im
-
-
-def transform_image(im, method='openai'):
-    '''Apply image transformation using nature or openai method'''
-    if method == 'nature':
-        return nature_transform_image(im)
-    elif method == 'openai':
-        return openai_transform_image(im)
-    else:
-        raise ValueError('method must be one of: nature, openai')
 
 
 def debug_image(im):
