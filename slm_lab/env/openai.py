@@ -105,7 +105,6 @@ class OpenAIEnv(BaseEnv):
         if not self.is_discrete:
             action = np.array([action])
         state, reward, done, _info = self.u_env.step(action)
-        reward = guard_reward(reward)
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
