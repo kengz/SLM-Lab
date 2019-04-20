@@ -776,6 +776,7 @@ def nature_transform_image(im):
     im = grayscale_image(im)
     im = resize_image(im, (84, 110))
     im = crop_image(im)
+    im = np.expand_dims(im, 0)
     return im
 
 
@@ -787,6 +788,7 @@ def openai_transform_image(im):
     im = to_opencv_image(im)
     im = grayscale_image(im)
     im = resize_image(im, (84, 84))
+    im = np.expand_dims(im, 0)
     return im
 
 
