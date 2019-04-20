@@ -194,13 +194,13 @@ class FrameStack(gym.Wrapper):
         self.frames = deque([], maxlen=k)
         old_shape = env.observation_space.shape
         if len(old_shape) > 1 and old_shape[0] == 1:
-            # greyscale image c,w,h or a tensor stackable on axis=0
+            # grayscale image c,w,h or a tensor stackable on axis=0
             shape = (k, ) + old_shape[1:]
         elif len(old_shape) == 1:
             # vector, to concat instead of stack
             shape = (k * old_shape[0],)
         else:
-            raise NotImplementedError
+            raise NotImplementedError(f'State shape {old_shape} cannot be stacked. Grayscale images or make state stackable on axis=0, e.g. (1, 84, 84)')
         self.observation_space = spaces.Box(
             low=np.min(env.observation_space.low),
             high=np.max(env.observation_space.high),

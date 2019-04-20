@@ -761,7 +761,7 @@ def nature_transform_image(im):
 
 def openai_transform_image(im):
     '''
-    Image transformation using OpenAI's baselines method: greyscale, resize
+    Image transformation using OpenAI's baselines method: grayscale, resize
     Instead of cropping as done in nature_transform_image(), this resizes and stretches the image.
     '''
     im = grayscale_image(im)
@@ -797,7 +797,7 @@ def debug_image(im, is_chw=True):
 
 
 def mpl_debug_image(im):
-    '''Uses matplotlib to plot image with bigger size, axes, and false color on greyscaled images'''
+    '''Uses matplotlib to plot image with bigger size, axes, and false color on grayscaled images'''
     import matplotlib.pyplot as plt
     plt.figure()
     plt.imshow(im)

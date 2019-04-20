@@ -1,5 +1,6 @@
 from slm_lab.env.base import BaseEnv, ENV_DATA_NAMES
 from slm_lab.env.wrapper import make_gym_env
+from slm_lab.env.vec_env import make_gym_venv
 from slm_lab.env.registration import register_env
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -26,6 +27,7 @@ class OpenAIEnv(BaseEnv):
     e.g. env_spec
     "env": [{
       "name": "CartPole-v0",
+      "num_envs": null,
       "max_t": null,
       "max_tick": 10000,
     }],
@@ -40,7 +42,11 @@ class OpenAIEnv(BaseEnv):
             pass
         seed = ps.get(spec, 'meta.random_seed')
         stack_len = ps.get(spec, 'agent.0.memory.stack_len')
-        self.u_env = make_gym_env(self.name, seed, stack_len)
+        num_envs = ps.get(spec, f'env.{self.e}.num_envs')
+        if num_envs is None:
+            self.u_env = make_gym_env(self.name, seed, stack_len)
+        else:  # make vector environment
+            self.u_env = make_gym_venv(self.name, seed, stack_len, num_envs)
         self._set_attr_from_u_env(self.u_env)
         self.max_t = self.max_t or self.u_env.spec.max_episode_steps
         assert self.max_t is not None
