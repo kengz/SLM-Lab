@@ -1,9 +1,10 @@
 # inspired by nsavinov/gym-vizdoom and ppaquette/gym-doom
-import numpy as np
-import gym.spaces as spaces
 from gym import Env
 from gym.envs.classic_control import rendering
+from slm_lab.lib import util
 from vizdoom import DoomGame
+import gym.spaces as spaces
+import numpy as np
 
 
 class VizDoomEnv(Env):
@@ -15,7 +16,7 @@ class VizDoomEnv(Env):
     def __init__(self, cfg_name, repeat=1):
         super(VizDoomEnv, self).__init__()
         self.game = DoomGame()
-        self.game.load_config('./slm_lab/env/vizdoom/cfgs/' + cfg_name + '.cfg')
+        self.game.load_config(f'./slm_lab/env/vizdoom/cfgs/{cfg_name}.cfg')
         self._viewer = None
         self.repeat = 1
         # TODO In future, need to update action to handle (continuous) DELTA buttons using gym's Box space
@@ -47,7 +48,6 @@ class VizDoomEnv(Env):
         return observation, reward, done, info
 
     def reset(self):
-        # self.seed(seed)
         self.game.new_episode()
         return self.game.get_state().screen_buffer
 
@@ -69,7 +69,7 @@ class VizDoomEnv(Env):
         elif mode is 'human':
             if self._viewer is None:
                 self._viewer = rendering.SimpleImageViewer()
-            self._viewer.imshow(img.transpose(1, 2, 0))
+            self._viewer.imshow(util.to_opencv_image(img))
 
     def _get_game_variables(self, state_variables):
         info = {}

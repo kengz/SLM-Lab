@@ -172,7 +172,7 @@ class ConvNet(Net, nn.Module):
     def forward(self, x):
         '''
         The feedforward step
-        Note that PyTorch takes (c,w,h) but gym provides (w,h,c), so preprocessing must be done before passing to network
+        Note that PyTorch takes (c,h,w) but gym provides (h,w,c), so preprocessing must be done before passing to network
         '''
         x = self.conv_model(x)
         x = x.view(x.size(0), -1)  # to (batch_size, -1)

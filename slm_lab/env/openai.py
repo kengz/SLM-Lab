@@ -1,5 +1,6 @@
 from slm_lab.env.base import BaseEnv, ENV_DATA_NAMES
 from slm_lab.env.wrapper import make_gym_env
+from slm_lab.env.vec_env import make_gym_venv
 from slm_lab.env.registration import register_env
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -10,15 +11,6 @@ import pydash as ps
 logger = logger.get_logger(__name__)
 
 
-def guard_reward(reward):
-    '''Some gym environments have buggy format and reward is in a np array'''
-    if np.isscalar(reward):
-        return reward
-    else:  # some gym envs have weird reward format
-        assert len(reward) == 1
-        return reward[0]
-
-
 class OpenAIEnv(BaseEnv):
     '''
     Wrapper for OpenAI Gym env to work with the Lab.
@@ -26,6 +18,7 @@ class OpenAIEnv(BaseEnv):
     e.g. env_spec
     "env": [{
       "name": "CartPole-v0",
+      "num_envs": null,
       "max_t": null,
       "max_tick": 10000,
     }],
@@ -40,7 +33,11 @@ class OpenAIEnv(BaseEnv):
             pass
         seed = ps.get(spec, 'meta.random_seed')
         stack_len = ps.get(spec, 'agent.0.memory.stack_len')
-        self.u_env = make_gym_env(self.name, seed, stack_len)
+        num_envs = ps.get(spec, f'env.{self.e}.num_envs')
+        if num_envs is None:
+            self.u_env = make_gym_env(self.name, seed, stack_len)
+        else:  # make vector environment
+            self.u_env = make_gym_venv(self.name, seed, stack_len, num_envs)
         self._set_attr_from_u_env(self.u_env)
         self.max_t = self.max_t or self.u_env.spec.max_episode_steps
         assert self.max_t is not None
@@ -65,7 +62,6 @@ class OpenAIEnv(BaseEnv):
         if not self.is_discrete:  # guard for continuous
             action = np.array([action])
         state, reward, done, _info = self.u_env.step(action)
-        reward = guard_reward(reward)
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
@@ -109,7 +105,6 @@ class OpenAIEnv(BaseEnv):
         if not self.is_discrete:
             action = np.array([action])
         state, reward, done, _info = self.u_env.step(action)
-        reward = guard_reward(reward)
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()

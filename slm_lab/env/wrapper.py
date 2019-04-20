@@ -136,13 +136,13 @@ class ClipRewardEnv(gym.RewardWrapper):
         return np.sign(reward)
 
 
-class TransformImage(gym.ObservationWrapper):
+class PreprocessImage(gym.ObservationWrapper):
     def __init__(self, env):
         '''
         Apply image preprocessing:
         - grayscale
         - downsize to 84x84
-        - transpose shape from w,h,c to PyTorch format c,h,w
+        - transpose shape from h,w,c to PyTorch format c,h,w
         '''
         gym.ObservationWrapper.__init__(self, env)
         self.width = 84
@@ -151,10 +151,7 @@ class TransformImage(gym.ObservationWrapper):
             low=0, high=255, shape=(1, self.width, self.height), dtype=np.uint8)
 
     def observation(self, frame):
-        frame = util.transform_image(frame, method='openai')
-        frame = np.transpose(frame)  # reverses all axes
-        frame = np.expand_dims(frame, 0)
-        return frame
+        return util.preprocess_image(frame)
 
 
 class LazyFrames(object):
@@ -188,13 +185,23 @@ class LazyFrames(object):
 
 class FrameStack(gym.Wrapper):
     def __init__(self, env, k):
-        '''Stack k last frames. Returns lazy array, which is much more memory efficient.'''
+        '''Stack last k frames; or concat them if frames are vectors. Returns lazy array, which is much more memory efficient.'''
         gym.Wrapper.__init__(self, env)
         self.k = k
         self.frames = deque([], maxlen=k)
-        shp = env.observation_space.shape
+        old_shape = env.observation_space.shape
+        if len(old_shape) > 1 and old_shape[0] == 1:
+            # grayscale image c,w,h or a tensor stackable on axis=0
+            shape = (k, ) + old_shape[1:]
+        elif len(old_shape) == 1:
+            # vector, to concat instead of stack
+            shape = (k * old_shape[0],)
+        else:
+            raise NotImplementedError(f'State shape {old_shape} cannot be stacked. Grayscale images or make state stackable on axis=0, e.g. (1, 84, 84)')
         self.observation_space = spaces.Box(
-            low=0, high=255, shape=(k, ) + shp[1:], dtype=env.observation_space.dtype)
+            low=np.min(env.observation_space.low),
+            high=np.max(env.observation_space.high),
+            shape=shape, dtype=env.observation_space.dtype)
 
     def reset(self):
         ob = self.env.reset()
@@ -228,7 +235,15 @@ def wrap_deepmind(env, episode_life=True, clip_rewards=True, stack_len=None):
         env = FireResetEnv(env)
     if clip_rewards:
         env = ClipRewardEnv(env)
-    env = TransformImage(env)
+    env = PreprocessImage(env)
+    if stack_len is not None:
+        env = FrameStack(env, stack_len)
+    return env
+
+
+def wrap_image_env(env, stack_len=None):
+    '''Wrap image-based environment'''
+    env = PreprocessImage(env)
     if stack_len is not None:
         env = FrameStack(env, stack_len)
     return env
@@ -239,11 +254,15 @@ def make_gym_env(name, seed=None, stack_len=None):
     env = gym.make(name)
     if seed is not None:
         env.seed(seed)
-    if 'NoFrameskip' in env.spec.id:  # for Atari
+    if 'NoFrameskip' in env.spec.id:  # Atari
         env = wrap_atari(env)
         # no reward clipping to allow monitoring; Atari memory clips it
-        if util.get_lab_mode() == 'eval':
-            env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=False)
-        else:
-            env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=True)
+        clip_rewards = False
+        episode_life = util.get_lab_mode() != 'eval'
+        env = wrap_deepmind(env, clip_rewards, episode_life, stack_len)
+    elif len(env.observation_space.shape) == 3:  # image-state env
+        env = wrap_image_env(env, stack_len)
+    else:  # vector-state env
+        if stack_len is not None:
+            env = FrameStack(env, stack_len)
     return env
