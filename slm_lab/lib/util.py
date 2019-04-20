@@ -729,6 +729,25 @@ def write_as_plain(data, data_path):
 
 # Atari image transformation
 
+
+def to_opencv_image(im):
+    '''Transform to OpenCV image shape h,w,c'''
+    shape = im.shape
+    if len(shape) == 3 and shape[0] < shape[-1]:
+        return im.transpose(1, 2, 0)
+    else:
+        return im
+
+
+def to_pytorch_image(im):
+    '''Transform to PyTorch image shape c,h,w'''
+    shape = im.shape
+    if len(shape) == 3 and shape[-1] < shape[0]:
+        return im.transpose(2, 0, 1)
+    else:
+        return im
+
+
 def grayscale_image(im):
     return cv2.cvtColor(im, cv2.COLOR_RGB2GRAY)
 
@@ -753,6 +772,7 @@ def nature_transform_image(im):
     Image preprocessing from the paper "Playing Atari with Deep Reinforcement Learning, 2013, Mnih et al"
     Takes an RGB image and converts it to grayscale, downsizes to 110 x 84 and crops to square 84 x 84 without the game border
     '''
+    im = to_opencv_image(im)
     im = grayscale_image(im)
     im = resize_image(im, (84, 110))
     im = crop_image(im)
@@ -764,6 +784,7 @@ def openai_transform_image(im):
     Image transformation using OpenAI's baselines method: grayscale, resize
     Instead of cropping as done in nature_transform_image(), this resizes and stretches the image.
     '''
+    im = to_opencv_image(im)
     im = grayscale_image(im)
     im = resize_image(im, (84, 84))
     return im
@@ -779,26 +800,17 @@ def transform_image(im, method='openai'):
         raise ValueError('method must be one of: nature, openai')
 
 
-def debug_image(im, is_chw=True):
+def debug_image(im):
     '''
     Renders an image for debugging; pauses process until key press
     Handles tensor/numpy and conventions among libraries
     '''
     if torch.is_tensor(im):  # if PyTorch tensor, get numpy
         im = im.cpu().numpy()
-    if is_chw:  # pytorch c,h,w convention
-        im = np.transpose(im)
+    im = to_opencv_image(im)
     im = im.astype(np.uint8)  # typecast guard
     if im.shape[0] == 3:  # RGB image
         # accommodate from RGB (numpy) to BGR (cv2)
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
     cv2.imshow('debug image', im)
     cv2.waitKey(0)
-
-
-def mpl_debug_image(im):
-    '''Uses matplotlib to plot image with bigger size, axes, and false color on grayscaled images'''
-    import matplotlib.pyplot as plt
-    plt.figure()
-    plt.imshow(im)
-    plt.show()

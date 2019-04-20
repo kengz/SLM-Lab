@@ -1,9 +1,10 @@
 # inspired by nsavinov/gym-vizdoom and ppaquette/gym-doom
-import numpy as np
-import gym.spaces as spaces
 from gym import Env
 from gym.envs.classic_control import rendering
+from slm_lab.lib import util
 from vizdoom import DoomGame
+import gym.spaces as spaces
+import numpy as np
 
 
 class VizDoomEnv(Env):
@@ -68,7 +69,7 @@ class VizDoomEnv(Env):
         elif mode is 'human':
             if self._viewer is None:
                 self._viewer = rendering.SimpleImageViewer()
-            self._viewer.imshow(img.transpose(1, 2, 0))
+            self._viewer.imshow(util.to_opencv_image(img))
 
     def _get_game_variables(self, state_variables):
         info = {}

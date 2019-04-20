@@ -224,3 +224,19 @@ def test_read_file_not_found():
     fake_rel_path = 'test/lib/test_util.py_fake'
     with pytest.raises(FileNotFoundError) as excinfo:
         util.read(fake_rel_path)
+
+
+def test_to_opencv_image():
+    im = np.zeros((80, 100, 3))
+    assert util.to_opencv_image(im).shape == (80, 100, 3)
+
+    im = np.zeros((3, 80, 100))
+    assert util.to_opencv_image(im).shape == (80, 100, 3)
+
+
+def test_to_pytorch_image():
+    im = np.zeros((80, 100, 3))
+    assert util.to_pytorch_image(im).shape == (3, 80, 100)
+
+    im = np.zeros((3, 80, 100))
+    assert util.to_pytorch_image(im).shape == (3, 80, 100)

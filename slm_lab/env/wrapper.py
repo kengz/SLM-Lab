@@ -142,7 +142,7 @@ class TransformImage(gym.ObservationWrapper):
         Apply image preprocessing:
         - grayscale
         - downsize to 84x84
-        - transpose shape from w,h,c to PyTorch format c,h,w
+        - transpose shape from h,w,c to PyTorch format c,h,w
         '''
         gym.ObservationWrapper.__init__(self, env)
         self.width = 84
