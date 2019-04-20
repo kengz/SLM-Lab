@@ -244,19 +244,28 @@ def wrap_deepmind(env, episode_life=True, clip_rewards=True, stack_len=None):
     return env
 
 
+def wrap_image_env(env, stack_len=None):
+    '''Wrap image-based environment'''
+    env = TransformImage(env)
+    if stack_len is not None:
+        env = FrameStack(env, stack_len)
+    return env
+
+
 def make_gym_env(name, seed=None, stack_len=None):
     '''General method to create any Gym env; auto wraps Atari'''
     env = gym.make(name)
     if seed is not None:
         env.seed(seed)
-    if 'NoFrameskip' in env.spec.id:  # for Atari
+    if 'NoFrameskip' in env.spec.id:  # Atari
         env = wrap_atari(env)
         # no reward clipping to allow monitoring; Atari memory clips it
-        if util.get_lab_mode() == 'eval':
-            env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=False)
-        else:
-            env = wrap_deepmind(env, stack_len=stack_len, clip_rewards=False, episode_life=True)
-    else:
+        clip_rewards = False
+        episode_life = util.get_lab_mode() != 'eval'
+        env = wrap_deepmind(env, clip_rewards, episode_life, stack_len)
+    elif len(env.observation_space.shape) == 3:  # image-state env
+        env = wrap_image_env(env, stack_len)
+    else:  # vector-state env
         if stack_len is not None:
             env = FrameStack(env, stack_len)
     return env
