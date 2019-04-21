@@ -188,7 +188,7 @@ class AgentSpace:
             state_a = state_space.get(a=agent.a)
             agent.space_reset(state_a)
         _action_space, _loss_space, _explore_var_space = self.aeb_space.add(AGENT_DATA_NAMES, (_action_v, _loss_v, _explore_var_v))
-        logger.debug3(f'action_space: {_action_space}')
+        logger.debug(f'action_space: {_action_space}')
         return _action_space
 
     @lab_api
@@ -201,7 +201,7 @@ class AgentSpace:
             action_a = agent.space_act(state_a)
             action_v[a, 0:len(action_a)] = action_a
         action_space, = self.aeb_space.add(data_names, (action_v,))
-        logger.debug3(f'\naction_space: {action_space}')
+        logger.debug(f'\naction_space: {action_space}')
         return action_space
 
     @lab_api
@@ -219,7 +219,7 @@ class AgentSpace:
             loss_v[a, 0:len(loss_a)] = loss_a
             explore_var_v[a, 0:len(explore_var_a)] = explore_var_a
         loss_space, explore_var_space = self.aeb_space.add(data_names, (loss_v, explore_var_v))
-        logger.debug3(f'\nloss_space: {loss_space}\nexplore_var_space: {explore_var_space}')
+        logger.debug(f'\nloss_space: {loss_space}\nexplore_var_space: {explore_var_space}')
         return loss_space, explore_var_space
 
     @lab_api
