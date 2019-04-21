@@ -5,7 +5,7 @@ from slm_lab.lib.decorator import lab_api
 import numpy as np
 import time
 
-ENV_DATA_NAMES = ['reward', 'state', 'done']
+ENV_DATA_NAMES = ['state', 'reward', 'done']
 NUM_EVAL_EPI = 100  # set the number of episodes to eval a model ckpt
 logger = logger.get_logger(__name__)
 
@@ -162,7 +162,7 @@ class BaseEnv(ABC):
     @abstractmethod
     @lab_api
     def step(self, action):
-        '''Step method, return reward, state, done'''
+        '''Step method, return state, reward, done, info'''
         raise NotImplementedError
 
     @abstractmethod
@@ -192,5 +192,5 @@ class BaseEnv(ABC):
 
     @lab_api
     def space_step(self, action_e):
-        '''Space (multi-env) step method, return reward_e, state_e, done_e'''
+        '''Space (multi-env) step method, return state_e, reward_e, done_e, info_e'''
         raise NotImplementedError

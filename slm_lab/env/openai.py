@@ -61,15 +61,14 @@ class OpenAIEnv(BaseEnv):
     def step(self, action):
         if not self.is_discrete:  # guard for continuous
             action = np.array([action])
-        state, reward, done, _info = self.u_env.step(action)
+        state, reward, done, info = self.u_env.step(action)
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
-        if self.max_t is not None:
-            done = done or self.clock.t > self.max_t
+        done = done or self.clock.t > self.max_t
         self.done = done
-        logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
-        return reward, state, done
+        logger.debug(f'Env {self.e} step state: {state}, reward: {reward}, done: {done}')
+        return state, reward, done, info
 
     @lab_api
     def close(self):
@@ -87,7 +86,7 @@ class OpenAIEnv(BaseEnv):
 
     @lab_api
     def space_reset(self):
-        _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        state_e, _reward_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for ab, body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[ab] = state
@@ -101,18 +100,20 @@ class OpenAIEnv(BaseEnv):
     def space_step(self, action_e):
         action = action_e[(0, 0)]  # single body
         if self.done:  # space envs run continually without a central reset signal
-            return self.space_reset()
+            _reward_e, state_e, done_e = self.space_reset()
+            return state_e, _reward_e, done_e, None
         if not self.is_discrete:
             action = np.array([action])
-        state, reward, done, _info = self.u_env.step(action)
+        state, reward, done, info = self.u_env.step(action)
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
         self.done = done = done or self.clock.t > self.max_t
-        reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        state_e, reward_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for ab, body in util.ndenumerate_nonan(self.body_e):
-            reward_e[ab] = reward
             state_e[ab] = state
+            reward_e[ab] = reward
             done_e[ab] = done
-        logger.debug(f'Env {self.e} step reward_e: {reward_e}, state_e: {state_e}, done_e: {done_e}')
-        return reward_e, state_e, done_e
+        info_e = info
+        logger.debug(f'Env {self.e} step state_e: {state_e}, reward_e: {reward_e}, done_e: {done_e}')
+        return state_e, reward_e, done_e, info_e
