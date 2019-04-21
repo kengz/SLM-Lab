@@ -167,7 +167,7 @@ class UnityEnv(BaseEnv):
         self._check_u_brain_to_agent()
         self.done = False
         env_info_dict = self.u_env.reset(train_mode=(util.get_lab_mode() != 'dev'), config=self.env_spec.get('unity'))
-        _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        state_e, _reward_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self._get_env_info(env_info_dict, a)
             self._check_u_agent_to_body(env_info_a, a)
@@ -185,7 +185,7 @@ class UnityEnv(BaseEnv):
             return state_e, _reward_e, done_e, None
         action_e = util.nanflatten(action_e)
         env_info_dict = self.u_env.step(action_e)
-        reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        state_e, reward_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self._get_env_info(env_info_dict, a)
             state_e[(a, b)] = env_info_a.states[b]

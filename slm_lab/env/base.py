@@ -5,7 +5,7 @@ from slm_lab.lib.decorator import lab_api
 import numpy as np
 import time
 
-ENV_DATA_NAMES = ['reward', 'state', 'done']
+ENV_DATA_NAMES = ['state', 'reward', 'done']
 NUM_EVAL_EPI = 100  # set the number of episodes to eval a model ckpt
 logger = logger.get_logger(__name__)
 

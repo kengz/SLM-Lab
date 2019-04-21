@@ -86,7 +86,7 @@ class OpenAIEnv(BaseEnv):
 
     @lab_api
     def space_reset(self):
-        _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        state_e, _reward_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for ab, body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[ab] = state
@@ -109,7 +109,7 @@ class OpenAIEnv(BaseEnv):
         if util.to_render():
             self.u_env.render()
         self.done = done = done or self.clock.t > self.max_t
-        reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        state_e, reward_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for ab, body in util.ndenumerate_nonan(self.body_e):
             state_e[ab] = state
             reward_e[ab] = reward
