@@ -187,7 +187,7 @@ class BaseEnv(ABC):
 
     @lab_api
     def space_reset(self):
-        '''Space (multi-env) reset method, return _reward_e, state_e, done_e'''
+        '''Space (multi-env) reset method, return state_e'''
         raise NotImplementedError
 
     @lab_api

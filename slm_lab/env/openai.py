@@ -85,21 +85,22 @@ class OpenAIEnv(BaseEnv):
 
     @lab_api
     def space_reset(self):
-        state_e, _reward_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        self.done = False
+        state_e, = self.env_space.aeb_space.init_data_s(['state'], e=self.e)
         for ab, body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[ab] = state
-            done_e[ab] = self.done = False
         if util.to_render():
             self.u_env.render()
-        logger.debug(f'Env {self.e} reset reward_e: {_reward_e}, state_e: {state_e}, done_e: {done_e}')
-        return _reward_e, state_e, done_e
+        logger.debug(f'Env {self.e} reset state_e: {state_e}')
+        return state_e
 
     @lab_api
     def space_step(self, action_e):
         action = action_e[(0, 0)]  # single body
         if self.done:  # space envs run continually without a central reset signal
-            _reward_e, state_e, done_e = self.space_reset()
+            state_e = self.space_reset()
+            _reward_e, done_e = self.env_space.aeb_space.init_data_s(['reward', 'done'], e=self.e)
             return state_e, _reward_e, done_e, None
         if not self.is_discrete:
             action = np.array([action])

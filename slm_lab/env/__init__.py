@@ -52,14 +52,13 @@ class EnvSpace:
     @lab_api
     def reset(self):
         logger.debug3('EnvSpace.reset')
-        state_v, _reward_v, done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
+        state_v, = self.aeb_space.init_data_v(['state'])
         for env in self.envs:
-            _reward_e, state_e, done_e = env.space_reset()
+            state_e = env.space_reset()
             state_v[env.e, 0:len(state_e)] = state_e
-            done_v[env.e, 0:len(done_e)] = done_e
-        state_space, _reward_space, done_space = self.aeb_space.add(ENV_DATA_NAMES, (state_v, _reward_v, done_v))
+        state_space = self.aeb_space.add('state', state_v)
         logger.debug3(f'\nstate_space: {state_space}')
-        return _reward_space, state_space, done_space
+        return state_space
 
     @lab_api
     def step(self, action_space):

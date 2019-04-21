@@ -154,7 +154,7 @@ class SpaceSession(Session):
         Will terminate when all envs done are done.
         '''
         all_done = self.aeb_space.tick('epi')
-        reward_space, state_space, done_space = self.env_space.reset()
+        state_space = self.env_space.reset()
         self.agent_space.reset(state_space)
         while not all_done:
             self.try_ckpt(self.agent_space, self.env_space)
