@@ -64,16 +64,18 @@ class EnvSpace:
     @lab_api
     def step(self, action_space):
         reward_v, state_v, done_v = self.aeb_space.init_data_v(ENV_DATA_NAMES)
+        info_v = []
         for env in self.envs:
             e = env.e
             action_e = action_space.get(e=e)
-            reward_e, state_e, done_e = env.space_step(action_e)
+            state_e, reward_e, done_e, info_e = env.space_step(action_e)
             reward_v[e, 0:len(reward_e)] = reward_e
             state_v[e, 0:len(state_e)] = state_e
             done_v[e, 0:len(done_e)] = done_e
+            info_v.append(info_e)
         reward_space, state_space, done_space = self.aeb_space.add(ENV_DATA_NAMES, (reward_v, state_v, done_v))
-        logger.debug3(f'\nreward_space: {reward_space}\nstate_space: {state_space}\ndone_space: {done_space}')
-        return reward_space, state_space, done_space
+        logger.debug3(f'\nstate_space: {state_space}\nreward_space: {reward_space}\ndone_space: {done_space}')
+        return state_space, reward_space, done_space, info_v
 
     @lab_api
     def close(self):

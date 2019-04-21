@@ -73,7 +73,8 @@ class Session:
             while not done:
                 self.eval_env.clock.tick('t')
                 action = self.agent.act(state)
-                reward, state, done = self.eval_env.step(action)
+                next_state, reward, done, info = self.eval_env.step(action)
+                state = next_state
                 total_reward += reward
         # exit eval context, restore variables simply by updating
         self.agent.algorithm.update()
@@ -90,7 +91,7 @@ class Session:
             self.try_ckpt(self.agent, self.env)
             self.env.clock.tick('t')
             action = self.agent.act(state)
-            reward, next_state, done = self.env.step(action)
+            next_state, reward, done, info = self.env.step(action)
             self.agent.update(state, action, reward, next_state, done)
             state = next_state
         self.try_ckpt(self.agent, self.env)  # final timestep ckpt
@@ -157,7 +158,7 @@ class SpaceSession(Session):
             self.try_ckpt(self.agent_space, self.env_space)
             all_done = self.aeb_space.tick()
             action_space = self.agent_space.act(state_space)
-            reward_space, next_state_space, done_space = self.env_space.step(action_space)
+            next_state_space, reward_space, done_space, info_v = self.env_space.step(action_space)
             self.agent_space.update(state_space, action_space, reward_space, next_state_space, done_space)
             state_space = next_state_space
         self.try_ckpt(self.agent_space, self.env_space)
