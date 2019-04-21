@@ -201,11 +201,12 @@ class Body:
         # update current reward_ma
         self.total_reward_ma = self.train_df[-analysis.MA_WINDOW:]['reward'].mean()
         self.train_df.iloc[-1]['reward_ma'] = self.total_reward_ma
+        self.total_reward = np.nan  # reset
 
     def eval_update(self, eval_env, total_reward):
         '''Update to append data at eval checkpoint'''
         row = self.calc_df_row(eval_env)
-        row['total_reward'] = total_reward
+        row['reward'] = total_reward
         # append efficiently to df
         self.eval_df.loc[len(self.eval_df)] = row
         # update current reward_ma
