@@ -112,6 +112,7 @@ class Body:
         self.state_n = 0
 
         self.total_reward = np.nan
+        self.total_reward_ma = np.nan
         # store current and best reward_ma for model checkpointing and early termination if all the environments are solved
         self.best_reward_ma = -np.inf
         self.eval_reward_ma = np.nan
@@ -119,7 +120,7 @@ class Body:
         # dataframes to track data for analysis.analyze_session
         # track training data within run_episode
         self.train_df = pd.DataFrame(columns=[
-            'epi', 'total_t', 't', 'wall_t', 'fps', 'reward', 'loss', 'lr',
+            'epi', 'total_t', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'log_prob', 'grad_norm'])
         # track eval data within run_eval_episode. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
@@ -169,6 +170,7 @@ class Body:
             'wall_t': wall_t,
             'fps': fps,
             'reward': self.total_reward,
+            'reward_ma': np.nan,  # update outside
             'loss': self.loss,
             'lr': self.get_mean_lr(),
             'explore_var': self.explore_var,
@@ -196,6 +198,9 @@ class Body:
         row = self.calc_df_row(self.env)
         # append efficiently to df
         self.train_df.loc[len(self.train_df)] = row
+        # update current reward_ma
+        self.total_reward_ma = self.train_df[-analysis.MA_WINDOW:]['reward'].mean()
+        self.train_df.iloc[-1]['reward_ma'] = self.total_reward_ma
 
     def eval_update(self, eval_env, total_reward):
         '''Update to append data at eval checkpoint'''
@@ -205,6 +210,7 @@ class Body:
         self.eval_df.loc[len(self.eval_df)] = row
         # update current reward_ma
         self.eval_reward_ma = self.eval_df[-analysis.MA_WINDOW:]['reward'].mean()
+        self.eval_df.iloc[-1]['reward_ma'] = self.eval_reward_ma
 
     def flush(self):
         '''Update and flush gradient-related variables after training step similar.'''
@@ -248,12 +254,15 @@ class Body:
     def log_summary(self, body_df_kind='eval'):
         '''Log the summary for this body when its environment is done'''
         prefix = self.get_log_prefix()
-        df = self.eval_df if body_df_kind == 'eval' else self.train_df
+        if body_df_kind == 'eval':
+            df = self.eval_df
+            reward_ma = self.eval_reward_ma
+        else:
+            df = self.train_df
+            reward_ma = self.total_reward_ma
         last_row = df.iloc[-1]
         row_str = ', '.join([f'{k}: {v:g}' for k, v in last_row.items()])
-        reward_ma = df[-analysis.MA_WINDOW:]['reward'].mean()
-        reward_ma_str = f'last-{analysis.MA_WINDOW}-epi avg: {reward_ma:g}'
-        msg = f'{prefix} [{body_df_kind}_df] {row_str}, {reward_ma_str}'
+        msg = f'{prefix} [{body_df_kind}_df] {row_str}'
         logger.info(msg)
 
     def space_init(self, aeb_space):
