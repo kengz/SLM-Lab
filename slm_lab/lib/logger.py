@@ -14,11 +14,6 @@ class FixedList(list):
         pass
 
 
-# extra debugging level deeper than the default debug
-NEW_LVLS = {'DEBUG2': 9, 'DEBUG3': 8}
-for name, val in NEW_LVLS.items():
-    logging.addLevelName(val, name)
-    setattr(logging, name, val)
 LOG_FORMAT = '[%(asctime)s PID:%(process)d %(levelname)s %(filename)s %(funcName)s] %(message)s'
 color_formatter = colorlog.ColoredFormatter('%(log_color)s[%(asctime)s PID:%(process)d %(levelname)s %(filename)s %(funcName)s]%(reset)s %(message)s')
 sh = logging.StreamHandler(sys.stdout)
@@ -67,14 +62,6 @@ def debug(msg, *args, **kwargs):
     return lab_logger.debug(msg, *args, **kwargs)
 
 
-def debug2(msg, *args, **kwargs):
-    return lab_logger.log(NEW_LVLS['DEBUG2'], msg, *args, **kwargs)
-
-
-def debug3(msg, *args, **kwargs):
-    return lab_logger.log(NEW_LVLS['DEBUG3'], msg, *args, **kwargs)
-
-
 def error(msg, *args, **kwargs):
     return lab_logger.error(msg, *args, **kwargs)
 
@@ -93,17 +80,7 @@ def warn(msg, *args, **kwargs):
 
 def get_logger(__name__):
     '''Create a child logger specific to a module'''
-    module_logger = logging.getLogger(__name__)
-
-    def debug2(msg, *args, **kwargs):
-        return module_logger.log(NEW_LVLS['DEBUG2'], msg, *args, **kwargs)
-
-    def debug3(msg, *args, **kwargs):
-        return module_logger.log(NEW_LVLS['DEBUG3'], msg, *args, **kwargs)
-
-    setattr(module_logger, 'debug2', debug2)
-    setattr(module_logger, 'debug3', debug3)
-    return module_logger
+    return logging.getLogger(__name__)
 
 
 def toggle_debug(modules, level='DEBUG'):

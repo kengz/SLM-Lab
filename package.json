@@ -6,8 +6,6 @@
   "scripts": {
     "start": "python run_lab.py",
     "debug": "LOG_LEVEL=DEBUG python run_lab.py",
-    "debug2": "LOG_LEVEL=DEBUG2 python run_lab.py",
-    "debug3": "LOG_LEVEL=DEBUG3 python run_lab.py",
     "retro_analyze": "python -c 'import sys; from slm_lab.experiment import retro_analysis; retro_analysis.retro_analyze(sys.argv[1])'",
     "retro_eval": "python -c 'import sys; from slm_lab.experiment import retro_analysis; retro_analysis.retro_eval(sys.argv[1])'",
     "reset": "rm -rf data/* .cache __pycache__ */__pycache__ *egg-info .pytest* htmlcov .coverage* *.xml",
