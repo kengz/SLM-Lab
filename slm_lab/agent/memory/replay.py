@@ -82,13 +82,14 @@ class Replay(Memory):
         super(Replay, self).epi_reset(self.preprocess_state(state, append=False))
 
     @lab_api
-    def update(self, action, reward, state, done):
+    def update(self, state, action, reward, next_state, done):
         '''Interface method to update memory'''
-        self.base_update(action, reward, state, done)
-        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
+        self.base_update(state, action, reward, next_state, done)
+        # prevent conflict with preprocess in epi_reset
+        state = self.preprocess_state(state, append=False)
+        next_state = self.preprocess_state(next_state, append=False)
         if not np.isnan(reward):  # not the start of episode
-            self.add_experience(self.last_state, action, reward, state, done)
-        self.last_state = state
+            self.add_experience(state, action, reward, next_state, done)
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
@@ -199,7 +200,7 @@ class SILReplay(Replay):
         self.reset()
 
     @lab_api
-    def update(self, action, reward, state, done):
+    def update(self, state, action, reward, next_state, done):
         '''Interface method to update memory'''
         raise AssertionError('Do not call SIL memory in main API control loop')
 

@@ -61,12 +61,11 @@ class OnPolicyReplay(Memory):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
     @lab_api
-    def update(self, action, reward, state, done):
+    def update(self, state, action, reward, next_state, done):
         '''Interface method to update memory'''
-        self.base_update(action, reward, state, done)
+        self.base_update(state, action, reward, next_state, done)
         if not np.isnan(reward):  # not the start of episode
-            self.add_experience(self.last_state, action, reward, state, done)
-        self.last_state = state
+            self.add_experience(state, action, reward, next_state, done)
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Interface helper method for update() to add experience to memory'''
@@ -326,13 +325,14 @@ class OnPolicyConcatReplay(OnPolicyReplay):
         return np.concatenate(self.state_buffer)
 
     @lab_api
-    def update(self, action, reward, state, done):
+    def update(self, state, action, reward, next_state, done):
         '''Interface method to update memory'''
-        self.base_update(action, reward, state, done)
-        state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
+        self.base_update(state, action, reward, next_state, done)
+        # prevent conflict with preprocess in epi_reset
+        state = self.preprocess_state(state, append=False)
+        next_state = self.preprocess_state(next_state, append=False)
         if not np.isnan(reward):  # not the start of episode
-            self.add_experience(self.last_state, action, reward, state, done)
-        self.last_state = state
+            self.add_experience(state, action, reward, next_state, done)
 
 
 class OnPolicyAtariReplay(OnPolicyReplay):
