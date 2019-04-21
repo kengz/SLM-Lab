@@ -65,8 +65,7 @@ class OpenAIEnv(BaseEnv):
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
-        if self.max_t is not None:
-            done = done or self.clock.t > self.max_t
+        done = done or self.clock.t > self.max_t
         self.done = done
         logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
         return reward, state, done
