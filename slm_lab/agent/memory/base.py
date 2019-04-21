@@ -41,15 +41,9 @@ class Memory(ABC):
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
-    def base_update(self, state, action, reward, next_state, done):
-        '''Method to do base memory update, like stats'''
-        if np.isnan(reward):  # the start of episode
-            self.epi_reset(next_state)
-
     @abstractmethod
     def update(self, state, action, reward, next_state, done):
         '''Implement memory update given the full info from the latest timestep. NOTE: guard for np.nan reward and done when individual env resets.'''
-        self.base_update(state, action, reward, next_state, done)
         raise NotImplementedError
 
     @abstractmethod

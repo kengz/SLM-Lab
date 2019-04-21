@@ -63,8 +63,9 @@ class OnPolicyReplay(Memory):
     @lab_api
     def update(self, state, action, reward, next_state, done):
         '''Interface method to update memory'''
-        self.base_update(state, action, reward, next_state, done)
-        if not np.isnan(reward):  # not the start of episode
+        if np.isnan(reward):  # start of episode
+            self.epi_reset(next_state)
+        else:
             self.add_experience(state, action, reward, next_state, done)
 
     def add_experience(self, state, action, reward, next_state, done):
@@ -327,11 +328,12 @@ class OnPolicyConcatReplay(OnPolicyReplay):
     @lab_api
     def update(self, state, action, reward, next_state, done):
         '''Interface method to update memory'''
-        self.base_update(state, action, reward, next_state, done)
-        # prevent conflict with preprocess in epi_reset
-        state = self.preprocess_state(state, append=False)
-        next_state = self.preprocess_state(next_state, append=False)
-        if not np.isnan(reward):  # not the start of episode
+        if np.isnan(reward):  # start of episode
+            self.epi_reset(next_state)
+        else:
+            # prevent conflict with preprocess in epi_reset
+            state = self.preprocess_state(state, append=False)
+            next_state = self.preprocess_state(next_state, append=False)
             self.add_experience(state, action, reward, next_state, done)
 
 
