@@ -16,7 +16,7 @@ class TestPERMemory:
 
     def test_prioritized_replay_memory_init(self, test_prioritized_replay_memory):
         memory = test_prioritized_replay_memory[0]
-        assert memory.true_size == 0
+        assert memory.size == 0
         assert memory.states.shape == (memory.max_size, memory.body.state_dim)
         assert memory.actions.shape == (memory.max_size,)
         assert memory.rewards.shape == (memory.max_size,)
@@ -34,7 +34,7 @@ class TestPERMemory:
         experiences = test_prioritized_replay_memory[2]
         exp = experiences[0]
         memory.add_experience(*exp)
-        assert memory.true_size == 1
+        assert memory.size == 1
         assert memory.head == 0
         # Handle states and actions with multiple dimensions
         assert np.array_equal(memory.states[memory.head], exp[0])
@@ -52,7 +52,7 @@ class TestPERMemory:
         for e in experiences:
             memory.add_experience(*e)
             num_added += 1
-            assert memory.true_size == min(memory.max_size, num_added)
+            assert memory.size == min(memory.max_size, num_added)
             assert memory.head == (num_added - 1) % memory.max_size
             write = (num_added - 1) % memory.max_size + 1
             if write == memory.max_size:
@@ -99,7 +99,7 @@ class TestPERMemory:
             memory.add_experience(*e)
         memory.reset()
         assert memory.head == -1
-        assert memory.true_size == 0
+        assert memory.size == 0
         assert np.sum(memory.states) == 0
         assert np.sum(memory.actions) == 0
         assert np.sum(memory.rewards) == 0

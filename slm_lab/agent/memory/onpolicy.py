@@ -42,7 +42,7 @@ class OnPolicyReplay(Memory):
         self.state_buffer = deque(maxlen=0)  # for API consistency
         # Don't want total experiences reset when memory is
         self.is_episodic = True
-        self.true_size = 0  # to number of experiences stored
+        self.size = 0  # to number of experiences stored
         self.seen_size = 0  # the number of experiences seen, including those stored and discarded
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones']
@@ -55,7 +55,7 @@ class OnPolicyReplay(Memory):
             setattr(self, k, [])
         self.cur_epi_data = {k: [] for k in self.data_keys}
         self.most_recent = [None] * len(self.data_keys)
-        self.true_size = 0  # Size of the current memory
+        self.size = 0  # Size of the current memory
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
@@ -82,9 +82,9 @@ class OnPolicyReplay(Memory):
             if len(self.states) == self.body.agent.algorithm.training_frequency:
                 self.body.agent.algorithm.to_train = 1
         # Track memory size and num experiences
-        self.true_size += 1
-        if self.true_size > 1000:
-            self.warn_size_once('Large memory size: {}'.format(self.true_size))
+        self.size += 1
+        if self.size > 1000:
+            self.warn_size_once('Large memory size: {}'.format(self.size))
         self.seen_size += 1
 
     def get_most_recent_experience(self):
@@ -205,9 +205,9 @@ class OnPolicyBatchReplay(OnPolicyReplay):
         for idx, k in enumerate(self.data_keys):
             getattr(self, k).append(self.most_recent[idx])
         # Track memory size and num experiences
-        self.true_size += 1
-        if self.true_size > 1000:
-            self.warn_size_once('Large memory size: {}'.format(self.true_size))
+        self.size += 1
+        if self.size > 1000:
+            self.warn_size_once('Large memory size: {}'.format(self.size))
         self.seen_size += 1
         # Decide if agent is to train
         if len(self.states) == self.body.agent.algorithm.training_frequency:

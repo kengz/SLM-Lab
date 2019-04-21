@@ -16,7 +16,7 @@ class TestMemory:
 
     def test_memory_init(self, test_memory):
         memory = test_memory[0]
-        assert memory.true_size == 0
+        assert memory.size == 0
         assert memory.states.shape == (memory.max_size, memory.body.state_dim)
         assert memory.actions.shape == (memory.max_size,)
         assert memory.rewards.shape == (memory.max_size,)
@@ -29,7 +29,7 @@ class TestMemory:
         experiences = test_memory[2]
         exp = experiences[0]
         memory.add_experience(*exp)
-        assert memory.true_size == 1
+        assert memory.size == 1
         assert memory.head == 0
         # Handle states and actions with multiple dimensions
         assert np.array_equal(memory.states[memory.head], exp[0])
@@ -46,7 +46,7 @@ class TestMemory:
         for e in experiences:
             memory.add_experience(*e)
             num_added += 1
-            assert memory.true_size == min(memory.max_size, num_added)
+            assert memory.size == min(memory.max_size, num_added)
             assert memory.head == (num_added - 1) % memory.max_size
 
     def test_sample(self, test_memory):
@@ -85,7 +85,7 @@ class TestMemory:
 
     def test_sample_next_states(self, test_memory):
         memory = test_memory[0]
-        idxs = np.array(range(memory.true_size))
+        idxs = np.array(range(memory.size))
         next_states = memory._sample_next_states(idxs)
         assert np.array_equal(next_states[len(next_states) - 1], memory.latest_next_state)
 
@@ -99,7 +99,7 @@ class TestMemory:
             memory.add_experience(*e)
         memory.reset()
         assert memory.head == -1
-        assert memory.true_size == 0
+        assert memory.size == 0
         assert np.sum(memory.states) == 0
         assert np.sum(memory.actions) == 0
         assert np.sum(memory.rewards) == 0
