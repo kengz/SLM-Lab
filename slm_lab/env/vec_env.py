@@ -375,19 +375,13 @@ class ShmemVecEnv(VecEnv):
     Optimized version of SubprocVecEnv that uses shared variables to communicate observations.
     '''
 
-    def __init__(self, env_fns, spaces=None, context='spawn'):
-        '''
-        If you don't specify observation_space, we'll have to create a dummy environment to get it.
-        '''
+    def __init__(self, env_fns, context='spawn'):
         ctx = mp.get_context(context)
-        if spaces:
-            observation_space, action_space = spaces
-        else:
-            logger.info('Creating dummy env object to get spaces')
-            dummy = env_fns[0]()
-            observation_space, action_space = dummy.observation_space, dummy.action_space
-            dummy.close()
-            del dummy
+        dummy = env_fns[0]()
+        observation_space, action_space = dummy.observation_space, dummy.action_space
+        self.spec = dummy.spec
+        dummy.close()
+        del dummy
         VecEnv.__init__(self, len(env_fns), observation_space, action_space)
         self.obs_keys, self.obs_shapes, self.obs_dtypes = obs_space_info(observation_space)
         self.obs_bufs = [
