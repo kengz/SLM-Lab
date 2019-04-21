@@ -155,8 +155,8 @@ class Body:
         '''Interface update method for body at agent.update()'''
         self.total_reward = math_util.nan_add(self.total_reward, reward)
 
-    def calc_df_row(self, env, total_reward):
-        '''Calculate a row for updating train_df or eval_df, given a total_reward.'''
+    def calc_df_row(self, env):
+        '''Calculate a row for updating train_df or eval_df.'''
         total_t = self.env.clock.get('total_t')
         wall_t = env.clock.get_elapsed_wall_t()
         fps = 0 if wall_t == 0 else total_t / wall_t
@@ -168,7 +168,7 @@ class Body:
             't': env.clock.get('t'),
             'wall_t': wall_t,
             'fps': fps,
-            'reward': total_reward,
+            'reward': self.total_reward,
             'loss': self.loss,
             'lr': self.get_mean_lr(),
             'explore_var': self.explore_var,
@@ -193,13 +193,14 @@ class Body:
     def epi_update(self):
         '''Update to append data at the end of an episode (when env.done is true)'''
         assert self.env.done
-        row = self.calc_df_row(self.env, self.total_reward)
+        row = self.calc_df_row(self.env)
         # append efficiently to df
         self.train_df.loc[len(self.train_df)] = row
 
     def eval_update(self, eval_env, total_reward):
         '''Update to append data at eval checkpoint'''
-        row = self.calc_df_row(eval_env, total_reward)
+        row = self.calc_df_row(eval_env)
+        row['total_reward'] = total_reward
         # append efficiently to df
         self.eval_df.loc[len(self.eval_df)] = row
         # update current reward_ma
