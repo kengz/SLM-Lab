@@ -111,6 +111,7 @@ class Body:
         self.state_std_dev = np.nan
         self.state_n = 0
 
+        self.total_reward = None
         # store current and best reward_ma for model checkpointing and early termination if all the environments are solved
         self.best_reward_ma = -np.inf
         self.eval_reward_ma = np.nan
@@ -138,6 +139,15 @@ class Body:
         self.action_pdtype = agent_spec[self.a]['algorithm'].get('action_pdtype')
         if self.action_pdtype in (None, 'default'):
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
+
+    def update(self, state, action, reward, next_state, done):
+        if done:
+            self.total_reward = None
+        else:
+            if self.total_reward is None:
+                self.total_reward = reward
+            else:
+                self.total_reward += reward
 
     def action_pd_update(self):
         '''Calculate and update action entropy and log_prob using self.action_pd. Call this in agent.update()'''
@@ -188,7 +198,7 @@ class Body:
     def epi_update(self):
         '''Update to append data at the end of an episode (when env.done is true)'''
         assert self.env.done
-        row = self.calc_df_row(self.env, self.memory.total_reward)
+        row = self.calc_df_row(self.env, self.total_reward)
         # append efficiently to df
         self.train_df.loc[len(self.train_df)] = row
 

@@ -28,8 +28,6 @@ class Memory(ABC):
         self.warn_size_once = ps.once(lambda msg: logger.warn(msg))
         # for API consistency, reset to some max_len in your specific memory class
         self.state_buffer = deque(maxlen=0)
-        # total_reward and its history over episodes
-        self.total_reward = 0
 
     @abstractmethod
     def reset(self):
@@ -39,7 +37,6 @@ class Memory(ABC):
     def epi_reset(self, state):
         '''Method to reset at new episode'''
         self.body.epi_reset()
-        self.total_reward = 0
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
@@ -48,10 +45,6 @@ class Memory(ABC):
         '''Method to do base memory update, like stats'''
         if np.isnan(reward):  # the start of episode
             self.epi_reset(next_state)
-            return
-
-        self.total_reward += reward
-        return
 
     @abstractmethod
     def update(self, state, action, reward, next_state, done):
