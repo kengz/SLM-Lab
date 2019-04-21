@@ -173,7 +173,7 @@ class UnityEnv(BaseEnv):
             state = env_info_a.states[b]
             state_e[(a, b)] = state
         logger.debug(f'Env {self.e} reset state_e: {state_e}')
-        return _reward_e, state_e, done_e
+        return state_e
 
     @lab_api
     def space_step(self, action_e):
