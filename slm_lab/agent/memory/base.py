@@ -24,8 +24,6 @@ class Memory(ABC):
 
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
-        # the basic variables for every memory
-        self.last_state = None
         # method to log size warning only once to prevent spamming log
         self.warn_size_once = ps.once(lambda msg: logger.warn(msg))
         # for API consistency, reset to some max_len in your specific memory class
@@ -40,27 +38,25 @@ class Memory(ABC):
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
-        self.last_state = state
         self.body.epi_reset()
         self.total_reward = 0
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
-    def base_update(self, action, reward, state, done):
+    def base_update(self, state, action, reward, next_state, done):
         '''Method to do base memory update, like stats'''
-        from slm_lab.experiment import analysis
         if np.isnan(reward):  # the start of episode
-            self.epi_reset(state)
+            self.epi_reset(next_state)
             return
 
         self.total_reward += reward
         return
 
     @abstractmethod
-    def update(self, action, reward, state, done):
-        '''Implement memory update given the full info from the latest timestep. Hint: use self.last_state to construct SARS. NOTE: guard for np.nan reward and done when individual env resets.'''
-        self.base_update(action, reward, state, done)
+    def update(self, state, action, reward, next_state, done):
+        '''Implement memory update given the full info from the latest timestep. NOTE: guard for np.nan reward and done when individual env resets.'''
+        self.base_update(state, action, reward, next_state, done)
         raise NotImplementedError
 
     @abstractmethod

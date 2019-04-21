@@ -68,10 +68,10 @@ class Agent:
         return action
 
     @lab_api
-    def update(self, action, reward, state, done):
+    def update(self, state, action, reward, next_state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
         self.body.action_pd_update()
-        self.body.memory.update(action, reward, state, done)
+        self.body.memory.update(state, action, reward, next_state, done)
         loss = self.algorithm.train()
         if not np.isnan(loss):  # set for log_summary()
             self.body.loss = loss
@@ -132,11 +132,11 @@ class Agent:
         return action_a
 
     @lab_api
-    def space_update(self, action_a, reward_a, state_a, done_a):
+    def space_update(self, state_a, action_a, reward_a, next_state_a, done_a):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
         for eb, body in util.ndenumerate_nonan(self.body_a):
             body.action_pd_update()
-            body.memory.update(action_a[eb], reward_a[eb], state_a[eb], done_a[eb])
+            body.memory.update(state_a[eb], action_a[eb], reward_a[eb], next_state_a[eb], done_a[eb])
         loss_a = self.algorithm.space_train()
         loss_a = util.guard_data_a(self, loss_a, 'loss')
         for eb, body in util.ndenumerate_nonan(self.body_a):
@@ -204,16 +204,17 @@ class AgentSpace:
         return action_space
 
     @lab_api
-    def update(self, action_space, reward_space, state_space, done_space):
+    def update(self, state_space, action_space, reward_space, next_state_space, done_space):
         data_names = ('loss', 'explore_var')
         loss_v, explore_var_v = self.aeb_space.init_data_v(data_names)
         for agent in self.agents:
             a = agent.a
+            state_a = state_space.get(a=a)
             action_a = action_space.get(a=a)
             reward_a = reward_space.get(a=a)
-            state_a = state_space.get(a=a)
+            next_state_a = next_state_space.get(a=a)
             done_a = done_space.get(a=a)
-            loss_a, explore_var_a = agent.space_update(action_a, reward_a, state_a, done_a)
+            loss_a, explore_var_a = agent.space_update(state_a, action_a, reward_a, next_state_a, done_a)
             loss_v[a, 0:len(loss_a)] = loss_a
             explore_var_v[a, 0:len(explore_var_a)] = explore_var_a
         loss_space, explore_var_space = self.aeb_space.add(data_names, (loss_v, explore_var_v))

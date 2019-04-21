@@ -90,8 +90,9 @@ class Session:
             self.try_ckpt(self.agent, self.env)
             self.env.clock.tick('t')
             action = self.agent.act(state)
-            reward, state, done = self.env.step(action)
-            self.agent.update(action, reward, state, done)
+            reward, next_state, done = self.env.step(action)
+            self.agent.update(state, action, reward, next_state, done)
+            state = next_state
         self.try_ckpt(self.agent, self.env)  # final timestep ckpt
         self.agent.body.log_summary(body_df_kind='train')
 
@@ -156,8 +157,9 @@ class SpaceSession(Session):
             self.try_ckpt(self.agent_space, self.env_space)
             all_done = self.aeb_space.tick()
             action_space = self.agent_space.act(state_space)
-            reward_space, state_space, done_space = self.env_space.step(action_space)
-            self.agent_space.update(action_space, reward_space, state_space, done_space)
+            reward_space, next_state_space, done_space = self.env_space.step(action_space)
+            self.agent_space.update(state_space, action_space, reward_space, next_state_space, done_space)
+            state_space = next_state_space
         self.try_ckpt(self.agent_space, self.env_space)
         retro_analysis.try_wait_parallel_eval(self)
 
