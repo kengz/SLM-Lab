@@ -10,6 +10,70 @@ import torch
 logger = logger.get_logger(__name__)
 
 
+# general math methods
+
+
+def is_outlier(points, thres=3.5):
+    '''
+    Detects outliers using MAD modified_z_score method, generalized to work on points.
+    From https://stackoverflow.com/a/22357811/3865298
+    @example
+
+    is_outlier([1, 1, 1])
+    # => array([False, False, False], dtype=bool)
+    is_outlier([1, 1, 2])
+    # => array([False, False,  True], dtype=bool)
+    is_outlier([[1, 1], [1, 1], [1, 2]])
+    # => array([False, False,  True], dtype=bool)
+    '''
+    points = np.array(points)
+    if len(points.shape) == 1:
+        points = points[:, None]
+    median = np.median(points, axis=0)
+    diff = np.sum((points - median)**2, axis=-1)
+    diff = np.sqrt(diff)
+    med_abs_deviation = np.median(diff)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        modified_z_score = 0.6745 * diff / med_abs_deviation
+        return modified_z_score > thres
+
+
+def nan_add(a1, a2):
+    '''Add np arrays and reset any nan to 0. Used for adding total_reward'''
+    a1_isnan = np.isnan(a1)
+    if a1_isnan.all():
+        return a2
+    else:
+        if a1_isnan.any():  # reset nan to 0 pre-sum
+            a1 = np.nan_to_num(a1)
+        a12 = a1 + a2
+        if np.isnan(a12).any():  # reset nan to 0 post-sum
+            a12 = np.nan_to_num(a12)
+        return a12
+
+
+def normalize(v):
+    '''Method to normalize a rank-1 np array'''
+    v_min = v.min()
+    v_max = v.max()
+    v_range = v_max - v_min
+    v_range += 1e-08  # division guard
+    v_norm = (v - v_min) / v_range
+    return v_norm
+
+
+def standardize(v):
+    '''Method to standardize a rank-1 np array'''
+    assert len(v) > 1, 'Cannot standardize vector of size 1'
+    v_std = (v - v.mean()) / (v.std() + 1e-08)
+    return v_std
+
+
+def to_one_hot(data, max_val):
+    '''Convert an int list of data into one-hot vectors'''
+    return np.eye(max_val)[np.array(data)]
+
+
 # Policy Gradient calc
 # advantage functions
 
@@ -96,23 +160,6 @@ def calc_q_value_logits(state_value, raw_advantages):
     return state_value + raw_advantages - mean_adv
 
 
-def standardize(v):
-    '''Method to standardize a rank-1 np array'''
-    assert len(v) > 1, 'Cannot standardize vector of size 1'
-    v_std = (v - v.mean()) / (v.std() + 1e-08)
-    return v_std
-
-
-def normalize(v):
-    '''Method to normalize a rank-1 np array'''
-    v_min = v.min()
-    v_max = v.max()
-    v_range = v_max - v_min
-    v_range += 1e-08  # division guard
-    v_norm = (v - v_min) / v_range
-    return v_norm
-
-
 # generic variable decay methods
 
 def no_decay(start_val, end_val, start_step, end_step, step):
@@ -159,35 +206,3 @@ def periodic_decay(start_val, end_val, start_step, end_step, step, frequency=60.
     val = end_val * 0.5 * unit * (1 + np.cos(x) * (1 - x / x_freq))
     val = max(val, end_val)
     return val
-
-
-# misc math methods
-
-def is_outlier(points, thres=3.5):
-    '''
-    Detects outliers using MAD modified_z_score method, generalized to work on points.
-    From https://stackoverflow.com/a/22357811/3865298
-    @example
-
-    is_outlier([1, 1, 1])
-    # => array([False, False, False], dtype=bool)
-    is_outlier([1, 1, 2])
-    # => array([False, False,  True], dtype=bool)
-    is_outlier([[1, 1], [1, 1], [1, 2]])
-    # => array([False, False,  True], dtype=bool)
-    '''
-    points = np.array(points)
-    if len(points.shape) == 1:
-        points = points[:, None]
-    median = np.median(points, axis=0)
-    diff = np.sum((points - median)**2, axis=-1)
-    diff = np.sqrt(diff)
-    med_abs_deviation = np.median(diff)
-    with np.errstate(divide='ignore', invalid='ignore'):
-        modified_z_score = 0.6745 * diff / med_abs_deviation
-        return modified_z_score > thres
-
-
-def to_one_hot(data, max_val):
-    '''Convert an int list of data into one-hot vectors'''
-    return np.eye(max_val)[np.array(data)]

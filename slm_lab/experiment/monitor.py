@@ -25,7 +25,7 @@ from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.net import net_util
 from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.experiment import analysis
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.spec import spec_util
 import numpy as np
 import pandas as pd
@@ -111,7 +111,7 @@ class Body:
         self.state_std_dev = np.nan
         self.state_n = 0
 
-        self.total_reward = None
+        self.total_reward = np.nan
         # store current and best reward_ma for model checkpointing and early termination if all the environments are solved
         self.best_reward_ma = -np.inf
         self.eval_reward_ma = np.nan
@@ -140,15 +140,6 @@ class Body:
         if self.action_pdtype in (None, 'default'):
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
 
-    def update(self, state, action, reward, next_state, done):
-        if done:
-            self.total_reward = None
-        else:
-            if self.total_reward is None:
-                self.total_reward = reward
-            else:
-                self.total_reward += reward
-
     def action_pd_update(self):
         '''Calculate and update action entropy and log_prob using self.action_pd. Call this in agent.update()'''
         if self.action_pd is None:  # skip if None
@@ -159,6 +150,10 @@ class Body:
         log_prob = self.action_pd.log_prob(self.action_tensor).mean(dim=0)
         self.log_probs.append(log_prob)
         assert not torch.isnan(log_prob)
+
+    def update(self, state, action, reward, next_state, done):
+        '''Interface update method for body at agent.update()'''
+        self.total_reward = math_util.nan_add(self.total_reward, reward)
 
     def calc_df_row(self, env, total_reward):
         '''Calculate a row for updating train_df or eval_df, given a total_reward.'''
