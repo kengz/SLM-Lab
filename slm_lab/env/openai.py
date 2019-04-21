@@ -49,13 +49,12 @@ class OpenAIEnv(BaseEnv):
 
     @lab_api
     def reset(self):
-        _reward = np.nan
+        self.done = False
         state = self.u_env.reset()
-        self.done = done = False
         if util.to_render():
             self.u_env.render()
-        logger.debug(f'Env {self.e} reset reward: {_reward}, state: {state}, done: {done}')
-        return _reward, state, done
+        logger.debug(f'Env {self.e} reset state: {state}')
+        return state
 
     @lab_api
     def step(self, action):

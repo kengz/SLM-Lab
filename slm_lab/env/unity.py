@@ -127,14 +127,13 @@ class UnityEnv(BaseEnv):
 
     @lab_api
     def reset(self):
-        _reward = np.nan
+        self.done = False
         env_info_dict = self.u_env.reset(train_mode=(util.get_lab_mode() != 'dev'), config=self.env_spec.get('unity'))
         a, b = 0, 0  # default singleton aeb
         env_info_a = self._get_env_info(env_info_dict, a)
         state = env_info_a.states[b]
-        self.done = done = False
-        logger.debug(f'Env {self.e} reset reward: {_reward}, state: {state}, done: {done}')
-        return _reward, state, done
+        logger.debug(f'Env {self.e} reset state: {state}')
+        return state
 
     @lab_api
     def step(self, action):

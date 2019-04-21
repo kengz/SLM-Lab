@@ -156,7 +156,7 @@ class BaseEnv(ABC):
     @abstractmethod
     @lab_api
     def reset(self):
-        '''Reset method, return _reward, state, done'''
+        '''Reset method, return state'''
         raise NotImplementedError
 
     @abstractmethod
