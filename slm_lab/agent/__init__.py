@@ -183,7 +183,6 @@ class AgentSpace:
 
     @lab_api
     def reset(self, state_space):
-        logger.debug3('AgentSpace.reset')
         _action_v, _loss_v, _explore_var_v = self.aeb_space.init_data_v(AGENT_DATA_NAMES)
         for agent in self.agents:
             state_a = state_space.get(a=agent.a)
