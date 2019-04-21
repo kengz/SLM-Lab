@@ -24,8 +24,6 @@ class Memory(ABC):
 
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
-        # method to log size warning only once to prevent spamming log
-        self.warn_size_once = ps.once(lambda msg: logger.warn(msg))
         # for API consistency, reset to some max_len in your specific memory class
         self.state_buffer = deque(maxlen=0)
 

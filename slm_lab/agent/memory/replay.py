@@ -48,8 +48,8 @@ class Replay(Memory):
         self.state_buffer = deque(maxlen=0)  # for API consistency
         self.is_episodic = False
         self.batch_idxs = None
-        self.size = 0  # to number of experiences stored
-        self.seen_size = 0  # the number of experiences seen, including those stored and discarded
+        self.size = 0  # total experiences stored
+        self.seen_size = 0  # total experiences seen cumulatively
         self.head = -1  # index of most recent experience
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones']
