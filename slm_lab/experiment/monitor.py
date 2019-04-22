@@ -246,14 +246,19 @@ class Body:
 
     def get_log_prefix(self):
         '''Get the prefix for logging'''
-        spec = self.agent.spec
+        spec_name = self.agent.spec['name']
         info_space = self.agent.info_space
-        clock = self.env.clock
-        prefix = f'{spec["name"]}_t{info_space.get("trial")}_s{info_space.get("session")}, aeb{self.aeb}'
+        trial_index = info_space.get('trial')
+        session_index = info_space.get('session')
+        aeb_str = str(self.aeb).replace(' ', '')
+        prefix = f'Trial {trial_index} session {session_index} {spec_name}_t{trial_index}_s{session_index}, aeb{aeb_str}'
         return prefix
 
-    def log_summary(self, body_df_kind='eval'):
-        '''Log the summary for this body when its environment is done'''
+    def log_summary(self, body_df_kind='train'):
+        '''
+        Log the summary for this body when its environment is done
+        @param str:body_df_kind 'train' or 'eval'
+        '''
         prefix = self.get_log_prefix()
         if body_df_kind == 'eval':
             df = self.eval_df
@@ -443,7 +448,7 @@ class AEBSpace:
         for env in self.env_space.envs:
             if env.done:
                 for body in env.nanflat_body_e:
-                    body.log_summary(body_df_kind='train')
+                    body.log_summary('train')
             env.clock.tick(unit or ('epi' if env.done else 't'))
             end_session = not (env.clock.get() < env.clock.max_tick)
             end_sessions.append(end_session)

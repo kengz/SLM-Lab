@@ -81,10 +81,11 @@ class Session:
         self.agent.algorithm.update()
         # update body.eval_df
         self.agent.body.eval_update(self.eval_env, total_reward)
-        self.agent.body.log_summary(body_df_kind='eval')
+        self.agent.body.log_summary('eval')
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_tick'''
+        logger.info(f'Running RL loop for trial {self.info_space.get("trial")} session {self.index}')
         clock = self.env.clock
         state = self.env.reset()
         self.agent.reset(state)
@@ -92,7 +93,7 @@ class Session:
         while True:
             if done:  # before starting another episode
                 self.try_ckpt(self.agent, self.env)
-                self.agent.body.log_summary(body_df_kind='train')
+                self.agent.body.log_summary('train')
                 if clock.get() < clock.max_tick:  # reset and continue
                     clock.tick('epi')
                     state = self.env.reset()
