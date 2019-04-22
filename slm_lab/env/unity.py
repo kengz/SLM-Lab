@@ -143,7 +143,9 @@ class UnityEnv(BaseEnv):
         state = env_info_a.states[b]
         reward = env_info_a.rewards[b] * self.reward_scale
         done = env_info_a.local_done[b]
-        self.done = done = done or self.clock.t > self.max_t
+        if self.clock.t > self.max_t:
+            done = True
+        self.done = done
         logger.debug(f'Env {self.e} step state: {state}, reward: {reward}, done: {done}')
         return state, reward, done, env_info_a
 
