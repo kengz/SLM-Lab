@@ -84,7 +84,7 @@ class Replay(Memory):
     @lab_api
     def update(self, state, action, reward, next_state, done):
         '''Interface method to update memory'''
-        if np.isnan(reward):  # start of episode
+        if np.isnan(reward).all():  # start of episode
             self.epi_reset(next_state)
         else:
             # prevent conflict with preprocess in epi_reset

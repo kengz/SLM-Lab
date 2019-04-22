@@ -86,7 +86,7 @@ def calc_returns(rewards, dones, gamma):
     if is_tensor:
         assert not torch.isnan(rewards).any()
     else:
-        assert not np.any(np.isnan(rewards))
+        assert not np.isnan(rewards).any()
     # handle epi-end, to not sum past current episode
     not_dones = 1 - dones
     T = len(rewards)
