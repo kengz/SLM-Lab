@@ -4,6 +4,26 @@ import pytest
 import torch
 
 
+@pytest.mark.parametrize('vec,res', [
+    ([1, 1, 1], [False, False, False]),
+    ([1, 1, 2], [False, False, True]),
+    ([[1, 1], [1, 1], [1, 2]], [False, False, True]),
+])
+def test_is_outlier(vec, res):
+    assert np.array_equal(math_util.is_outlier(vec), res)
+
+
+def test_nan_add():
+    r0 = np.nan
+    r1 = np.array([1.0, 1.0])
+    r2 = np.array([np.nan, 2.0])
+    r3 = np.array([3.0, 3.0])
+
+    assert np.array_equal(math_util.nan_add(r0, r1), r1)
+    assert np.array_equal(math_util.nan_add(r1, r2), np.array([0.0, 3.0]))
+    assert np.array_equal(math_util.nan_add(r2, r3), np.array([3.0, 5.0]))
+
+
 def test_calc_gaes():
     rewards = torch.tensor([1., 0., 1., 1., 0., 1., 1., 1.])
     dones = torch.tensor([0., 0., 1., 1., 0., 0., 0., 0.])
@@ -15,15 +35,6 @@ def test_calc_gaes():
     res = torch.tensor([0.84070045, 0.89495, -0.1, -0.1, 3.616724, 2.7939649, 1.9191545, 0.989])
     # use allclose instead of equal to account for atol
     assert torch.allclose(gaes, res)
-
-
-@pytest.mark.parametrize('vec,res', [
-    ([1, 1, 1], [False, False, False]),
-    ([1, 1, 2], [False, False, True]),
-    ([[1, 1], [1, 1], [1, 2]], [False, False, True]),
-])
-def test_is_outlier(vec, res):
-    assert np.array_equal(math_util.is_outlier(vec), res)
 
 
 @pytest.mark.parametrize('start_val, end_val, start_step, end_step, step, correct', [

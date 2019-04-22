@@ -38,6 +38,6 @@ def timeit(fn):
         start = time.time()
         output = fn(*args, **kwargs)
         end = time.time()
-        logger.debug3(f'Timed: {fn.__name__} {round((end - start) * 1000, 4)}ms')
+        logger.debug(f'Timed: {fn.__name__} {round((end - start) * 1000, 4)}ms')
         return output
     return time_fn

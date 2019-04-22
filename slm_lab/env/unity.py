@@ -127,14 +127,13 @@ class UnityEnv(BaseEnv):
 
     @lab_api
     def reset(self):
-        _reward = np.nan
+        self.done = False
         env_info_dict = self.u_env.reset(train_mode=(util.get_lab_mode() != 'dev'), config=self.env_spec.get('unity'))
         a, b = 0, 0  # default singleton aeb
         env_info_a = self._get_env_info(env_info_dict, a)
         state = env_info_a.states[b]
-        self.done = done = False
-        logger.debug(f'Env {self.e} reset reward: {_reward}, state: {state}, done: {done}')
-        return _reward, state, done
+        logger.debug(f'Env {self.e} reset state: {state}')
+        return state
 
     @lab_api
     def step(self, action):
@@ -164,24 +163,24 @@ class UnityEnv(BaseEnv):
 
     @lab_api
     def space_reset(self):
-        self._check_u_brain_to_agent()
         self.done = False
+        self._check_u_brain_to_agent()
         env_info_dict = self.u_env.reset(train_mode=(util.get_lab_mode() != 'dev'), config=self.env_spec.get('unity'))
-        state_e, _reward_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        state_e, = self.env_space.aeb_space.init_data_s(['state'], e=self.e)
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self._get_env_info(env_info_dict, a)
             self._check_u_agent_to_body(env_info_a, a)
             state = env_info_a.states[b]
             state_e[(a, b)] = state
-            done_e[(a, b)] = self.done
-        logger.debug(f'Env {self.e} reset reward_e: {_reward_e}, state_e: {state_e}, done_e: {done_e}')
-        return _reward_e, state_e, done_e
+        logger.debug(f'Env {self.e} reset state_e: {state_e}')
+        return state_e
 
     @lab_api
     def space_step(self, action_e):
         # TODO implement clock_speed: step only if self.clock.to_step()
         if self.done:
-            _reward_e, state_e, done_e = self.space_reset()
+            state_e = self.space_reset()
+            _reward_e, done_e = self.env_space.aeb_space.init_data_s(['reward', 'done'], e=self.e)
             return state_e, _reward_e, done_e, None
         action_e = util.nanflatten(action_e)
         env_info_dict = self.u_env.step(action_e)

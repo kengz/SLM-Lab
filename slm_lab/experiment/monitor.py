@@ -25,7 +25,7 @@ from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.net import net_util
 from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.experiment import analysis
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.spec import spec_util
 import numpy as np
 import pandas as pd
@@ -111,6 +111,8 @@ class Body:
         self.state_std_dev = np.nan
         self.state_n = 0
 
+        self.total_reward = np.nan
+        self.total_reward_ma = np.nan
         # store current and best reward_ma for model checkpointing and early termination if all the environments are solved
         self.best_reward_ma = -np.inf
         self.eval_reward_ma = np.nan
@@ -118,7 +120,7 @@ class Body:
         # dataframes to track data for analysis.analyze_session
         # track training data within run_episode
         self.train_df = pd.DataFrame(columns=[
-            'epi', 'total_t', 't', 'wall_t', 'fps', 'reward', 'loss', 'lr',
+            'epi', 'total_t', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'log_prob', 'grad_norm'])
         # track eval data within run_eval_episode. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
@@ -150,8 +152,12 @@ class Body:
         self.log_probs.append(log_prob)
         assert not torch.isnan(log_prob)
 
-    def calc_df_row(self, env, total_reward):
-        '''Calculate a row for updating train_df or eval_df, given a total_reward.'''
+    def update(self, state, action, reward, next_state, done):
+        '''Interface update method for body at agent.update()'''
+        self.total_reward = math_util.nan_add(self.total_reward, reward)
+
+    def calc_df_row(self, env):
+        '''Calculate a row for updating train_df or eval_df.'''
         total_t = self.env.clock.get('total_t')
         wall_t = env.clock.get_elapsed_wall_t()
         fps = 0 if wall_t == 0 else total_t / wall_t
@@ -163,7 +169,8 @@ class Body:
             't': env.clock.get('t'),
             'wall_t': wall_t,
             'fps': fps,
-            'reward': total_reward,
+            'reward': self.total_reward,
+            'reward_ma': np.nan,  # update outside
             'loss': self.loss,
             'lr': self.get_mean_lr(),
             'explore_var': self.explore_var,
@@ -188,17 +195,23 @@ class Body:
     def epi_update(self):
         '''Update to append data at the end of an episode (when env.done is true)'''
         assert self.env.done
-        row = self.calc_df_row(self.env, self.memory.total_reward)
+        row = self.calc_df_row(self.env)
         # append efficiently to df
         self.train_df.loc[len(self.train_df)] = row
+        # update current reward_ma
+        self.total_reward_ma = self.train_df[-analysis.MA_WINDOW:]['reward'].mean()
+        self.train_df.iloc[-1]['reward_ma'] = self.total_reward_ma
+        self.total_reward = np.nan  # reset
 
     def eval_update(self, eval_env, total_reward):
         '''Update to append data at eval checkpoint'''
-        row = self.calc_df_row(eval_env, total_reward)
+        row = self.calc_df_row(eval_env)
+        row['reward'] = total_reward
         # append efficiently to df
         self.eval_df.loc[len(self.eval_df)] = row
         # update current reward_ma
         self.eval_reward_ma = self.eval_df[-analysis.MA_WINDOW:]['reward'].mean()
+        self.eval_df.iloc[-1]['reward_ma'] = self.eval_reward_ma
 
     def flush(self):
         '''Update and flush gradient-related variables after training step similar.'''
@@ -242,12 +255,15 @@ class Body:
     def log_summary(self, body_df_kind='eval'):
         '''Log the summary for this body when its environment is done'''
         prefix = self.get_log_prefix()
-        df = self.eval_df if body_df_kind == 'eval' else self.train_df
+        if body_df_kind == 'eval':
+            df = self.eval_df
+            reward_ma = self.eval_reward_ma
+        else:
+            df = self.train_df
+            reward_ma = self.total_reward_ma
         last_row = df.iloc[-1]
         row_str = ', '.join([f'{k}: {v:g}' for k, v in last_row.items()])
-        reward_ma = df[-analysis.MA_WINDOW:]['reward'].mean()
-        reward_ma_str = f'last-{analysis.MA_WINDOW}-epi avg: {reward_ma:g}'
-        msg = f'{prefix} [{body_df_kind}_df] {row_str}, {reward_ma_str}'
+        msg = f'{prefix} [{body_df_kind}_df] {row_str}'
         logger.info(msg)
 
     def space_init(self, aeb_space):

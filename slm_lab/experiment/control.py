@@ -69,7 +69,8 @@ class Session:
             self.eval_env.clock.tick('epi')
             logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
             total_reward = 0
-            reward, state, done = self.eval_env.reset()
+            state = self.eval_env.reset()
+            done = False
             while not done:
                 self.eval_env.clock.tick('t')
                 action = self.agent.act(state)
@@ -85,7 +86,8 @@ class Session:
     def run_episode(self):
         self.env.clock.tick('epi')
         logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.env.clock.epi}')
-        reward, state, done = self.env.reset()
+        state = self.env.reset()
+        done = False
         self.agent.reset(state)
         while not done:
             self.try_ckpt(self.agent, self.env)
@@ -152,7 +154,7 @@ class SpaceSession(Session):
         Will terminate when all envs done are done.
         '''
         all_done = self.aeb_space.tick('epi')
-        reward_space, state_space, done_space = self.env_space.reset()
+        state_space = self.env_space.reset()
         self.agent_space.reset(state_space)
         while not all_done:
             self.try_ckpt(self.agent_space, self.env_space)

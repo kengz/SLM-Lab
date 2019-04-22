@@ -48,8 +48,8 @@ class Replay(Memory):
         self.state_buffer = deque(maxlen=0)  # for API consistency
         self.is_episodic = False
         self.batch_idxs = None
-        self.true_size = 0  # to number of experiences stored
-        self.seen_size = 0  # the number of experiences seen, including those stored and discarded
+        self.size = 0  # total experiences stored
+        self.seen_size = 0  # total experiences seen cumulatively
         self.head = -1  # index of most recent experience
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones']
@@ -71,7 +71,7 @@ class Replay(Memory):
                 setattr(self, k, np.zeros(self.actions_shape, dtype=self.body.action_space.dtype))
             else:
                 setattr(self, k, np.zeros(self.scalar_shape, dtype=np.float16))
-        self.true_size = 0
+        self.size = 0
         self.head = -1
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
@@ -84,11 +84,12 @@ class Replay(Memory):
     @lab_api
     def update(self, state, action, reward, next_state, done):
         '''Interface method to update memory'''
-        self.base_update(state, action, reward, next_state, done)
-        # prevent conflict with preprocess in epi_reset
-        state = self.preprocess_state(state, append=False)
-        next_state = self.preprocess_state(next_state, append=False)
-        if not np.isnan(reward):  # not the start of episode
+        if np.isnan(reward):  # start of episode
+            self.epi_reset(next_state)
+        else:
+            # prevent conflict with preprocess in epi_reset
+            state = self.preprocess_state(state, append=False)
+            next_state = self.preprocess_state(next_state, append=False)
             self.add_experience(state, action, reward, next_state, done)
 
     def add_experience(self, state, action, reward, next_state, done):
@@ -101,8 +102,8 @@ class Replay(Memory):
         self.latest_next_state = next_state
         self.dones[self.head] = done
         # Actually occupied size of memory
-        if self.true_size < self.max_size:
-            self.true_size += 1
+        if self.size < self.max_size:
+            self.size += 1
         self.seen_size += 1
 
     @lab_api
@@ -132,7 +133,7 @@ class Replay(Memory):
         # idxs for next state is state idxs + 1
         ns_batch_idxs = batch_idxs + 1
         # find the locations to be replaced with latest_next_state
-        latest_ns_locs = np.argwhere(ns_batch_idxs == self.true_size).flatten()
+        latest_ns_locs = np.argwhere(ns_batch_idxs == self.size).flatten()
         to_replace = latest_ns_locs.size != 0
         # set to 0, a safe sentinel for ns_batch_idxs due to the +1 above
         # then sample safely from self.states, and replace at locs with latest_next_state
@@ -145,7 +146,7 @@ class Replay(Memory):
 
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
-        batch_idxs = np.random.randint(self.true_size, size=batch_size)
+        batch_idxs = np.random.randint(self.size, size=batch_size)
         if self.use_cer:  # add the latest sample
             batch_idxs[-1] = self.head
         return batch_idxs

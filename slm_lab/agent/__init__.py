@@ -71,6 +71,7 @@ class Agent:
     def update(self, state, action, reward, next_state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
         self.body.action_pd_update()
+        self.body.update(state, action, reward, next_state, done)
         self.body.memory.update(state, action, reward, next_state, done)
         loss = self.algorithm.train()
         if not np.isnan(loss):  # set for log_summary()
@@ -136,6 +137,7 @@ class Agent:
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
         for eb, body in util.ndenumerate_nonan(self.body_a):
             body.action_pd_update()
+            body.update(state_a[eb], action_a[eb], reward_a[eb], next_state_a[eb], done_a[eb])
             body.memory.update(state_a[eb], action_a[eb], reward_a[eb], next_state_a[eb], done_a[eb])
         loss_a = self.algorithm.space_train()
         loss_a = util.guard_data_a(self, loss_a, 'loss')
@@ -181,13 +183,12 @@ class AgentSpace:
 
     @lab_api
     def reset(self, state_space):
-        logger.debug3('AgentSpace.reset')
         _action_v, _loss_v, _explore_var_v = self.aeb_space.init_data_v(AGENT_DATA_NAMES)
         for agent in self.agents:
             state_a = state_space.get(a=agent.a)
             agent.space_reset(state_a)
         _action_space, _loss_space, _explore_var_space = self.aeb_space.add(AGENT_DATA_NAMES, (_action_v, _loss_v, _explore_var_v))
-        logger.debug3(f'action_space: {_action_space}')
+        logger.debug(f'action_space: {_action_space}')
         return _action_space
 
     @lab_api
@@ -200,7 +201,7 @@ class AgentSpace:
             action_a = agent.space_act(state_a)
             action_v[a, 0:len(action_a)] = action_a
         action_space, = self.aeb_space.add(data_names, (action_v,))
-        logger.debug3(f'\naction_space: {action_space}')
+        logger.debug(f'\naction_space: {action_space}')
         return action_space
 
     @lab_api
@@ -218,7 +219,7 @@ class AgentSpace:
             loss_v[a, 0:len(loss_a)] = loss_a
             explore_var_v[a, 0:len(explore_var_a)] = explore_var_a
         loss_space, explore_var_space = self.aeb_space.add(data_names, (loss_v, explore_var_v))
-        logger.debug3(f'\nloss_space: {loss_space}\nexplore_var_space: {explore_var_space}')
+        logger.debug(f'\nloss_space: {loss_space}\nexplore_var_space: {explore_var_space}')
         return loss_space, explore_var_space
 
     @lab_api
