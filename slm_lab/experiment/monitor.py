@@ -122,7 +122,7 @@ class Body:
         self.train_df = pd.DataFrame(columns=[
             'epi', 'total_t', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'log_prob', 'grad_norm'])
-        # track eval data within run_eval_episode. the same as train_df except for reward
+        # track eval data within run_eval. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
 
         if aeb_space is None:  # singleton mode

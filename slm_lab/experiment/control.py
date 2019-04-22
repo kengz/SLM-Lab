@@ -66,7 +66,7 @@ class Session:
             agent.body.log_summary('train')
 
         if self.to_ckpt(env, 'eval'):
-            total_reward = self.run_eval_episode()
+            total_reward = self.run_eval()
             agent.body.eval_ckpt(self.eval_env, total_reward)
             agent.body.log_summary('eval')
             if analysis.new_best(agent):
@@ -74,7 +74,7 @@ class Session:
             if env.clock.get() > 0:  # nothing to analyze at start
                 analysis.analyze_session(self, eager_analyze_trial=True)
 
-    def run_eval_episode(self):
+    def run_eval(self):
         logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
         with util.ctx_lab_mode('eval'):  # enter eval context
             self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
