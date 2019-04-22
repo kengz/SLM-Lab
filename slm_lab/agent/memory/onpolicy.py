@@ -74,7 +74,7 @@ class OnPolicyReplay(Memory):
         for idx, k in enumerate(self.data_keys):
             self.cur_epi_data[k].append(self.most_recent[idx])
         # If episode ended, add to memory and clear cur_epi_data
-        if done:
+        if util.epi_done(done):
             for k in self.data_keys:
                 getattr(self, k).append(self.cur_epi_data[k])
             self.cur_epi_data = {k: [] for k in self.data_keys}

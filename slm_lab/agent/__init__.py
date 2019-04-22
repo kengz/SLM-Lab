@@ -78,7 +78,7 @@ class Agent:
             self.body.loss = loss
         explore_var = self.algorithm.update()
         logger.debug(f'Agent {self.a} loss: {loss}, explore_var {explore_var}')
-        if done:
+        if util.epi_done(done):
             self.body.epi_update()
         return loss, explore_var
 

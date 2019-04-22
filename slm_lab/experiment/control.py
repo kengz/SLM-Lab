@@ -91,7 +91,7 @@ class Session:
         self.agent.reset(state)
         done = False
         while True:
-            if done:  # before starting another episode
+            if util.epi_done(done): # before starting another episode
                 self.try_ckpt(self.agent, self.env)
                 self.agent.body.log_summary('train')
                 if clock.get() < clock.max_tick:  # reset and continue
