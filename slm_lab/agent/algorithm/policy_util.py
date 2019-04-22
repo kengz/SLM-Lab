@@ -340,7 +340,7 @@ class VarScheduler:
         '''Get an updated value for var'''
         if (util.in_eval_lab_modes()) or self._updater_name == 'no_decay':
             return self.end_val
-        step = clock.get(clock.max_tick_unit)
+        step = clock.get()
         val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
         return val
 

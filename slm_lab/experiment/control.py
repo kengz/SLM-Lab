@@ -46,7 +46,7 @@ class Session:
 
     def try_ckpt(self, agent, env):
         '''Try to checkpoint agent at the start, save_freq, and the end'''
-        tick = env.clock.get(env.max_tick_unit)
+        tick = env.clock.get()
         to_ckpt = False
         if not util.in_eval_lab_modes() and tick <= env.max_tick:
             to_ckpt = (tick % env.eval_frequency == 0) or tick == env.max_tick
@@ -110,7 +110,7 @@ class Session:
         logger.info('Session done and closed.')
 
     def run(self):
-        while self.env.clock.get(self.env.max_tick_unit) < self.env.max_tick:
+        while self.env.clock.get() < self.env.clock.max_tick:
             self.run_episode()
         retro_analysis.try_wait_parallel_eval(self)
         self.data = analysis.analyze_session(self)  # session fitness
