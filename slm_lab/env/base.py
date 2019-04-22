@@ -77,6 +77,7 @@ class BaseEnv(ABC):
     e.g. env_spec
     "env": [{
       "name": "CartPole-v0",
+      "num_envs": null,
       "max_t": null,
       "max_tick": 150,
     }],
@@ -84,6 +85,7 @@ class BaseEnv(ABC):
     # or using total_t
     "env": [{
       "name": "CartPole-v0",
+      "num_envs": null,
       "max_t": null,
       "max_tick": 10000,
     }],
@@ -94,7 +96,9 @@ class BaseEnv(ABC):
         self.clock_speed = 1
         self.done = False
         self.env_spec = spec['env'][self.e]
+        # set default
         util.set_attr(self, dict(
+            num_envs=None,
             reward_scale=1.0,
         ))
         util.set_attr(self, spec['meta'], [
@@ -103,6 +107,7 @@ class BaseEnv(ABC):
         ])
         util.set_attr(self, self.env_spec, [
             'name',
+            'num_envs',
             'max_t',
             'max_tick',
             'reward_scale',
