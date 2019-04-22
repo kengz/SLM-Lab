@@ -40,7 +40,7 @@ class Clock:
         self.ticks = 0  # multiple ticks make a timestep; used for clock speed
         self.t = 0
         self.total_t = 0
-        self.epi = -1  # offset so epi is 0 when it gets ticked at start
+        self.epi = 0
         self.start_wall_t = time.time()
 
     def get(self, unit=None):

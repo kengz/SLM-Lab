@@ -83,21 +83,28 @@ class Session:
         self.agent.body.eval_update(self.eval_env, total_reward)
         self.agent.body.log_summary(body_df_kind='eval')
 
-    def run_episode(self):
-        self.env.clock.tick('epi')
-        logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.env.clock.epi}')
+    def run_rl(self):
+        '''Run the main RL loop until clock.max_tick'''
+        clock = self.env.clock
         state = self.env.reset()
-        done = False
         self.agent.reset(state)
-        while not done:
+        done = False
+        while True:
+            if done:  # before starting another episode
+                self.try_ckpt(self.agent, self.env)
+                self.agent.body.log_summary(body_df_kind='train')
+                if clock.get() < clock.max_tick:  # reset and continue
+                    clock.tick('epi')
+                    state = self.env.reset()
+                    done = False
+                else:  # exit loop
+                    break
             self.try_ckpt(self.agent, self.env)
-            self.env.clock.tick('t')
+            clock.tick('t')
             action = self.agent.act(state)
             next_state, reward, done, info = self.env.step(action)
             self.agent.update(state, action, reward, next_state, done)
             state = next_state
-        self.try_ckpt(self.agent, self.env)  # final timestep ckpt
-        self.agent.body.log_summary(body_df_kind='train')
 
     def close(self):
         '''
@@ -110,8 +117,7 @@ class Session:
         logger.info('Session done and closed.')
 
     def run(self):
-        while self.env.clock.get() < self.env.clock.max_tick:
-            self.run_episode()
+        self.run_rl()
         retro_analysis.try_wait_parallel_eval(self)
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()

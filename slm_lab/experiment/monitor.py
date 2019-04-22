@@ -118,7 +118,7 @@ class Body:
         self.eval_reward_ma = np.nan
 
         # dataframes to track data for analysis.analyze_session
-        # track training data within run_episode
+        # track training data per episode
         self.train_df = pd.DataFrame(columns=[
             'epi', 'total_t', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'log_prob', 'grad_norm'])
