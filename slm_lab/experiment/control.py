@@ -53,11 +53,7 @@ class Session:
         if env.max_tick_unit == 'epi':  # extra condition for epi
             to_ckpt = to_ckpt and env.done
 
-        if to_ckpt:
-            if self.spec['meta'].get('parallel_eval'):
-                retro_analysis.run_parallel_eval(self, agent, env)
-            else:
-                self.run_eval_episode()
+            self.run_eval_episode()
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             if tick > 0:  # nothing to analyze at start
@@ -118,7 +114,6 @@ class Session:
 
     def run(self):
         self.run_rl()
-        retro_analysis.try_wait_parallel_eval(self)
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
         return self.data
@@ -170,7 +165,6 @@ class SpaceSession(Session):
             self.agent_space.update(state_space, action_space, reward_space, next_state_space, done_space)
             state_space = next_state_space
         self.try_ckpt(self.agent_space, self.env_space)
-        retro_analysis.try_wait_parallel_eval(self)
 
     def close(self):
         '''
