@@ -44,19 +44,20 @@ class Session:
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-    def to_ckpt(self, env):
-        '''Determine whether to run checkpointing'''
+    def to_ckpt(self, env, mode='ckpt'):
+        '''Determine whether to run ckpt/eval'''
         to_ckpt = False
         tick = env.clock.get()
+        frequency = env.ckpt_frequency if mode == 'ckpt' else env.eval_frequency
         if not util.in_eval_lab_modes() and tick <= env.max_tick:
-            to_ckpt = (tick % env.eval_frequency == 0) or tick == env.max_tick
+            to_ckpt = (tick % frequency == 0) or tick == env.max_tick
         if env.max_tick_unit == 'epi':  # extra condition for epi
             to_ckpt = to_ckpt and env.done
         return to_ckpt
 
     def try_ckpt(self, agent, env):
         '''Try to checkpoint agent at the start, save_freq, and the end'''
-        if self.to_ckpt(env):
+        if self.to_ckpt(env, 'ckpt'):
             agent.body.train_ckpt()
             agent.body.log_summary('train')
             self.run_eval_episode()
