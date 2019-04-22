@@ -44,26 +44,32 @@ class Session:
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-    def try_ckpt(self, agent, env):
-        '''Try to checkpoint agent at the start, save_freq, and the end'''
-        tick = env.clock.get()
+    def to_ckpt(self, env):
+        '''Determine whether to run checkpointing'''
         to_ckpt = False
+        tick = env.clock.get()
         if not util.in_eval_lab_modes() and tick <= env.max_tick:
             to_ckpt = (tick % env.eval_frequency == 0) or tick == env.max_tick
         if env.max_tick_unit == 'epi':  # extra condition for epi
             to_ckpt = to_ckpt and env.done
+        return to_ckpt
 
+    def try_ckpt(self, agent, env):
+        '''Try to checkpoint agent at the start, save_freq, and the end'''
+        if self.to_ckpt(env):
+            agent.body.train_ckpt()
+            agent.body.log_summary('train')
             self.run_eval_episode()
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            if tick > 0:  # nothing to analyze at start
+            if env.clock.get() > 0:  # nothing to analyze at start
                 analysis.analyze_session(self, eager_analyze_trial=True)
 
     def run_eval_episode(self):
+        logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
         with util.ctx_lab_mode('eval'):  # enter eval context
             self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
             self.eval_env.clock.tick('epi')
-            logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
             total_reward = 0
             state = self.eval_env.reset()
             done = False
@@ -88,7 +94,6 @@ class Session:
         while True:
             if util.epi_done(done):  # before starting another episode
                 self.try_ckpt(self.agent, self.env)
-                self.agent.body.log_summary('train')
                 if clock.get() < clock.max_tick:  # reset and continue
                     clock.tick('epi')
                     state = self.env.reset()
