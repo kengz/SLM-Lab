@@ -117,6 +117,14 @@ def downcast_float32(df):
     return df
 
 
+def epi_done(done):
+    '''
+    General method to check if episode is done for both single and vectorized env
+    Only return True for singleton done since vectorized env does not have a natural episode boundary
+    '''
+    return np.isscalar(done) and done
+
+
 def find_ckpt(prepath):
     '''Find the ckpt-lorem-ipsum in a string and return lorem-ipsum'''
     if 'ckpt' in prepath:

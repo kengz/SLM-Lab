@@ -226,7 +226,7 @@ def get_session_data(session, body_df_kind='eval', tmp_space_session_sub=False):
     session_data = {}
     for aeb, body in util.ndenumerate_nonan(session.aeb_space.body_space.data):
         aeb_df = body.eval_df if body_df_kind == 'eval' else body.train_df
-        # TODO tmp substitution since SpaceSession does not have run_eval_episode yet
+        # TODO tmp substitution since SpaceSession does not have run_eval yet
         if tmp_space_session_sub:
             aeb_df = body.train_df
         session_data[aeb] = aeb_df.copy()

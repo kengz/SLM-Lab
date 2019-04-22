@@ -122,7 +122,7 @@ class Body:
         self.train_df = pd.DataFrame(columns=[
             'epi', 'total_t', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'log_prob', 'grad_norm'])
-        # track eval data within run_eval_episode. the same as train_df except for reward
+        # track eval data within run_eval. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
 
         if aeb_space is None:  # singleton mode
@@ -192,9 +192,8 @@ class Body:
         if hasattr(self, 'aeb_space'):
             self.space_fix_stats()
 
-    def epi_update(self):
-        '''Update to append data at the end of an episode (when env.done is true)'''
-        assert self.env.done
+    def train_ckpt(self):
+        '''Checkpoint to update body.train_df data'''
         row = self.calc_df_row(self.env)
         # append efficiently to df
         self.train_df.loc[len(self.train_df)] = row
@@ -203,8 +202,8 @@ class Body:
         self.train_df.iloc[-1]['reward_ma'] = self.total_reward_ma
         self.total_reward = np.nan  # reset
 
-    def eval_update(self, eval_env, total_reward):
-        '''Update to append data at eval checkpoint'''
+    def eval_ckpt(self, eval_env, total_reward):
+        '''Checkpoint to update body.eval_df data'''
         row = self.calc_df_row(eval_env)
         row['reward'] = total_reward
         # append efficiently to df

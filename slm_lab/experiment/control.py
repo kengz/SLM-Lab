@@ -44,33 +44,44 @@ class Session:
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-    def try_ckpt(self, agent, env):
-        '''Try to checkpoint agent at the start, save_freq, and the end'''
-        tick = env.clock.get()
-        to_ckpt = False
-        if not util.in_eval_lab_modes() and tick <= env.max_tick:
-            to_ckpt = (tick % env.eval_frequency == 0) or tick == env.max_tick
-        if env.max_tick_unit == 'epi':  # extra condition for epi
-            to_ckpt = to_ckpt and env.done
+    def to_ckpt(self, env, mode='eval'):
+        '''Check with clock and lab_mode whether to run log/eval ckpt: at the start, save_freq, and the end'''
+        clock = env.clock
+        tick = clock.get()
+        if util.in_eval_lab_modes() or tick > clock.max_tick:
+            return False
+        frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
+        if frequency is None:  # default episodic
+            to_ckpt = env.done
+        elif clock.max_tick_unit == 'epi' and not env.done:
+            to_ckpt = False
+        else:
+            to_ckpt = (tick % frequency == 0) or tick == clock.max_tick
+        return to_ckpt
 
-        if to_ckpt:
-            if self.spec['meta'].get('parallel_eval'):
-                retro_analysis.run_parallel_eval(self, agent, env)
-            else:
-                self.run_eval_episode()
+    def try_ckpt(self, agent, env):
+        '''Check then run checkpoint log/eval'''
+        if self.to_ckpt(env, 'log'):
+            agent.body.train_ckpt()
+            agent.body.log_summary('train')
+
+        if self.to_ckpt(env, 'eval'):
+            total_reward = self.run_eval()
+            agent.body.eval_ckpt(self.eval_env, total_reward)
+            agent.body.log_summary('eval')
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            if tick > 0:  # nothing to analyze at start
+            if env.clock.get() > 0:  # nothing to analyze at start
                 analysis.analyze_session(self, eager_analyze_trial=True)
 
-    def run_eval_episode(self):
+    def run_eval(self):
+        logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
         with util.ctx_lab_mode('eval'):  # enter eval context
             self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
             self.eval_env.clock.tick('epi')
-            logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
-            total_reward = 0
             state = self.eval_env.reset()
             done = False
+            total_reward = 0
             while not done:
                 self.eval_env.clock.tick('t')
                 action = self.agent.act(state)
@@ -79,9 +90,7 @@ class Session:
                 total_reward += reward
         # exit eval context, restore variables simply by updating
         self.agent.algorithm.update()
-        # update body.eval_df
-        self.agent.body.eval_update(self.eval_env, total_reward)
-        self.agent.body.log_summary('eval')
+        return total_reward
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_tick'''
@@ -91,9 +100,8 @@ class Session:
         self.agent.reset(state)
         done = False
         while True:
-            if done:  # before starting another episode
+            if util.epi_done(done):  # before starting another episode
                 self.try_ckpt(self.agent, self.env)
-                self.agent.body.log_summary('train')
                 if clock.get() < clock.max_tick:  # reset and continue
                     clock.tick('epi')
                     state = self.env.reset()
@@ -119,7 +127,6 @@ class Session:
 
     def run(self):
         self.run_rl()
-        retro_analysis.try_wait_parallel_eval(self)
         self.data = analysis.analyze_session(self)  # session fitness
         self.close()
         return self.data
@@ -171,7 +178,6 @@ class SpaceSession(Session):
             self.agent_space.update(state_space, action_space, reward_space, next_state_space, done_space)
             state_space = next_state_space
         self.try_ckpt(self.agent_space, self.env_space)
-        retro_analysis.try_wait_parallel_eval(self)
 
     def close(self):
         '''

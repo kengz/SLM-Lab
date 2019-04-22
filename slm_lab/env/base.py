@@ -37,7 +37,6 @@ class Clock:
         self.max_tick = max_tick
         self.max_tick_unit = max_tick_unit
         self.clock_speed = int(clock_speed)
-        self.ticks = 0  # multiple ticks make a timestep; used for clock speed
         self.t = 0
         self.total_t = 0
         self.epi = 0
@@ -53,21 +52,13 @@ class Clock:
 
     def tick(self, unit='t'):
         if unit == 't':  # timestep
-            if self.to_step():
-                self.t += 1
-                self.total_t += 1
-            else:
-                pass
-            self.ticks += 1
+            self.t += self.clock_speed
+            self.total_t += self.clock_speed
         elif unit == 'epi':  # episode, reset timestep
             self.epi += 1
             self.t = 0
         else:
             raise KeyError
-
-    def to_step(self):
-        '''Step signal from clock_speed. Step only if the base unit of time in this clock has moved. Used to control if env of different clock_speed should step()'''
-        return self.ticks % self.clock_speed == 0
 
 
 class BaseEnv(ABC):
@@ -77,6 +68,7 @@ class BaseEnv(ABC):
     e.g. env_spec
     "env": [{
       "name": "CartPole-v0",
+      "num_envs": null,
       "max_t": null,
       "max_tick": 150,
     }],
@@ -84,6 +76,7 @@ class BaseEnv(ABC):
     # or using total_t
     "env": [{
       "name": "CartPole-v0",
+      "num_envs": null,
       "max_t": null,
       "max_tick": 10000,
     }],
@@ -91,18 +84,22 @@ class BaseEnv(ABC):
 
     def __init__(self, spec, e=None, env_space=None):
         self.e = e or 0  # for compatibility with env_space
-        self.clock_speed = 1
         self.done = False
         self.env_spec = spec['env'][self.e]
+        # set default
         util.set_attr(self, dict(
+            log_frequency=None,  # default to log at epi done
+            num_envs=None,
             reward_scale=1.0,
         ))
         util.set_attr(self, spec['meta'], [
+            'log_frequency',
             'eval_frequency',
             'max_tick_unit',
         ])
         util.set_attr(self, self.env_spec, [
             'name',
+            'num_envs',
             'max_t',
             'max_tick',
             'reward_scale',
@@ -112,6 +109,7 @@ class BaseEnv(ABC):
             logger.info(f'Override max_tick for eval mode to {NUM_EVAL_EPI} epi')
             self.max_tick = NUM_EVAL_EPI - 1
             self.max_tick_unit = 'epi'
+        self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
         self.clock = Clock(self.max_tick, self.max_tick_unit, self.clock_speed)
 
     def _set_attr_from_u_env(self, u_env):

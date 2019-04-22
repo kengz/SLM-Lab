@@ -78,8 +78,6 @@ class Agent:
             self.body.loss = loss
         explore_var = self.algorithm.update()
         logger.debug(f'Agent {self.a} loss: {loss}, explore_var {explore_var}')
-        if done:
-            self.body.epi_update()
         return loss, explore_var
 
     @lab_api
@@ -147,9 +145,10 @@ class Agent:
         explore_var_a = self.algorithm.space_update()
         explore_var_a = util.guard_data_a(self, explore_var_a, 'explore_var')
         logger.debug(f'Agent {self.a} loss: {loss_a}, explore_var_a {explore_var_a}')
+        # TODO below scheduled for update to be consistent with non-space mode
         for eb, body in util.ndenumerate_nonan(self.body_a):
             if body.env.done:
-                body.epi_update()
+                body.train_ckpt()
         return loss_a, explore_var_a
 
 

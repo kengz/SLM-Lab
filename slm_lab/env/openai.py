@@ -33,11 +33,12 @@ class OpenAIEnv(BaseEnv):
             pass
         seed = ps.get(spec, 'meta.random_seed')
         stack_len = ps.get(spec, 'agent.0.memory.stack_len')
-        num_envs = ps.get(spec, f'env.{self.e}.num_envs')
-        if num_envs is None:
+        if util.get_lab_mode() == 'eval':
+            self.num_envs = None
+        if self.num_envs is None:
             self.u_env = make_gym_env(self.name, seed, stack_len)
         else:  # make vector environment
-            self.u_env = make_gym_venv(self.name, seed, stack_len, num_envs)
+            self.u_env = make_gym_venv(self.name, seed, stack_len, self.num_envs)
         self._set_attr_from_u_env(self.u_env)
         self.max_t = self.max_t or self.u_env.spec.max_episode_steps
         assert self.max_t is not None
@@ -64,7 +65,8 @@ class OpenAIEnv(BaseEnv):
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
-        done = done or self.clock.t > self.max_t
+        if self.clock.t > self.max_t:
+            done = True
         self.done = done
         logger.debug(f'Env {self.e} step state: {state}, reward: {reward}, done: {done}')
         return state, reward, done, info
@@ -108,7 +110,9 @@ class OpenAIEnv(BaseEnv):
         reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
-        self.done = done = done or self.clock.t > self.max_t
+        if self.clock.t > self.max_t:
+            done = True
+        self.done = done
         state_e, reward_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
         for ab, body in util.ndenumerate_nonan(self.body_e):
             state_e[ab] = state
