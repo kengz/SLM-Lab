@@ -33,15 +33,18 @@ def set_gym_space_attr(gym_space):
 class Clock:
     '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0 and epi=0'''
 
-    def __init__(self, clock_speed=1):
+    def __init__(self, max_tick=int(1e7), max_tick_unit='total_t', clock_speed=1):
+        self.max_tick = max_tick
+        self.max_tick_unit = max_tick_unit
         self.clock_speed = int(clock_speed)
         self.ticks = 0  # multiple ticks make a timestep; used for clock speed
         self.t = 0
         self.total_t = 0
-        self.epi = -1  # offset so epi is 0 when it gets ticked at start
+        self.epi = 0
         self.start_wall_t = time.time()
 
-    def get(self, unit='t'):
+    def get(self, unit=None):
+        unit = unit or self.max_tick_unit
         return getattr(self, unit)
 
     def get_elapsed_wall_t(self):
@@ -89,7 +92,6 @@ class BaseEnv(ABC):
     def __init__(self, spec, e=None, env_space=None):
         self.e = e or 0  # for compatibility with env_space
         self.clock_speed = 1
-        self.clock = Clock(self.clock_speed)
         self.done = False
         self.env_spec = spec['env'][self.e]
         util.set_attr(self, dict(
@@ -110,9 +112,7 @@ class BaseEnv(ABC):
             logger.info(f'Override max_tick for eval mode to {NUM_EVAL_EPI} epi')
             self.max_tick = NUM_EVAL_EPI - 1
             self.max_tick_unit = 'epi'
-        # set max_tick info to clock
-        self.clock.max_tick = self.max_tick
-        self.clock.max_tick_unit = self.max_tick_unit
+        self.clock = Clock(self.max_tick, self.max_tick_unit, self.clock_speed)
 
     def _set_attr_from_u_env(self, u_env):
         '''Set the observation, action dimensions and action type from u_env'''
