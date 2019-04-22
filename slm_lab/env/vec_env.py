@@ -453,6 +453,7 @@ class VecFrameStack(VecEnvWrapper):
     def __init__(self, venv, k):
         self.venv = venv
         self.k = k
+        self.spec = venv.spec
         wos = venv.observation_space  # wrapped ob space
         self.shape_dim0 = wos.shape[0]
         low = np.repeat(wos.low, self.k, axis=0)
