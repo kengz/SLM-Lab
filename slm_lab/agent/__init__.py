@@ -79,7 +79,7 @@ class Agent:
         explore_var = self.algorithm.update()
         logger.debug(f'Agent {self.a} loss: {loss}, explore_var {explore_var}')
         if util.epi_done(done):
-            self.body.epi_update()
+            self.body.train_ckpt()
         return loss, explore_var
 
     @lab_api
@@ -149,7 +149,7 @@ class Agent:
         logger.debug(f'Agent {self.a} loss: {loss_a}, explore_var_a {explore_var_a}')
         for eb, body in util.ndenumerate_nonan(self.body_a):
             if body.env.done:
-                body.epi_update()
+                body.train_ckpt()
         return loss_a, explore_var_a
 
 

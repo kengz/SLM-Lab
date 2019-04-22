@@ -79,8 +79,7 @@ class Session:
                 total_reward += reward
         # exit eval context, restore variables simply by updating
         self.agent.algorithm.update()
-        # update body.eval_df
-        self.agent.body.eval_update(self.eval_env, total_reward)
+        self.agent.body.eval_ckpt(self.eval_env, total_reward)
         self.agent.body.log_summary('eval')
 
     def run_rl(self):
@@ -91,7 +90,7 @@ class Session:
         self.agent.reset(state)
         done = False
         while True:
-            if util.epi_done(done): # before starting another episode
+            if util.epi_done(done):  # before starting another episode
                 self.try_ckpt(self.agent, self.env)
                 self.agent.body.log_summary('train')
                 if clock.get() < clock.max_tick:  # reset and continue
