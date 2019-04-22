@@ -44,23 +44,31 @@ class Session:
         logger.info(util.self_desc(self))
         logger.info(f'Initialized session {self.index}')
 
-    def to_ckpt(self, env, mode='ckpt'):
-        '''Determine whether to run ckpt/eval'''
-        to_ckpt = False
-        tick = env.clock.get()
-        frequency = env.ckpt_frequency if mode == 'ckpt' else env.eval_frequency
-        if not util.in_eval_lab_modes() and tick <= env.max_tick:
-            to_ckpt = (tick % frequency == 0) or tick == env.max_tick
-        if env.max_tick_unit == 'epi':  # extra condition for epi
-            to_ckpt = to_ckpt and env.done
+    def to_ckpt(self, env, mode='eval'):
+        '''Check with clock and lab_mode whether to run log/eval ckpt: at the start, save_freq, and the end'''
+        clock = env.clock
+        tick = clock.get()
+        if util.in_eval_lab_modes() or tick > clock.max_tick:
+            return False
+        frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
+        if frequency is None:  # default episodic
+            to_ckpt = env.done
+        elif clock.max_tick_unit == 'epi' and not env.done:
+            to_ckpt = False
+        else:
+            to_ckpt = (tick % frequency == 0) or tick == clock.max_tick
         return to_ckpt
 
     def try_ckpt(self, agent, env):
-        '''Try to checkpoint agent at the start, save_freq, and the end'''
-        if self.to_ckpt(env, 'ckpt'):
+        '''Check then run checkpoint log/eval'''
+        if self.to_ckpt(env, 'log'):
             agent.body.train_ckpt()
             agent.body.log_summary('train')
-            self.run_eval_episode()
+
+        if self.to_ckpt(env, 'eval'):
+            total_reward = self.run_eval_episode()
+            agent.body.eval_ckpt(self.eval_env, total_reward)
+            agent.body.log_summary('eval')
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             if env.clock.get() > 0:  # nothing to analyze at start
@@ -71,9 +79,9 @@ class Session:
         with util.ctx_lab_mode('eval'):  # enter eval context
             self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
             self.eval_env.clock.tick('epi')
-            total_reward = 0
             state = self.eval_env.reset()
             done = False
+            total_reward = 0
             while not done:
                 self.eval_env.clock.tick('t')
                 action = self.agent.act(state)
@@ -82,8 +90,7 @@ class Session:
                 total_reward += reward
         # exit eval context, restore variables simply by updating
         self.agent.algorithm.update()
-        self.agent.body.eval_ckpt(self.eval_env, total_reward)
-        self.agent.body.log_summary('eval')
+        return total_reward
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_tick'''
@@ -95,7 +102,6 @@ class Session:
         while True:
             if util.epi_done(done):  # before starting another episode
                 self.try_ckpt(self.agent, self.env)
-                self.agent.body.log_summary('train')
                 if clock.get() < clock.max_tick:  # reset and continue
                     clock.tick('epi')
                     state = self.env.reset()

@@ -98,10 +98,12 @@ class BaseEnv(ABC):
         self.env_spec = spec['env'][self.e]
         # set default
         util.set_attr(self, dict(
+            log_frequency=None, # default to log at epi done
             num_envs=None,
             reward_scale=1.0,
         ))
         util.set_attr(self, spec['meta'], [
+            'log_frequency',
             'eval_frequency',
             'max_tick_unit',
         ])
