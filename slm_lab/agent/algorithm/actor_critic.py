@@ -112,7 +112,7 @@ class ActorCritic(Reinforce):
         elif self.num_step_returns is not None:
             self.calc_advs_v_targets = self.calc_nstep_advs_v_targets
         else:
-            self.calc_advs_v_targets = self.calc_td_advs_v_targets
+            self.calc_advs_v_targets = self.openai_nstep_advs_v_targets
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -278,16 +278,20 @@ class ActorCritic(Reinforce):
         policy_loss = - self.policy_loss_coef * log_probs * advs
         if self.entropy_coef_spec is not None:
             entropies = torch.stack(self.body.entropies)
+            entropies_mean = entropies.mean().detach()
             policy_loss += (-self.body.entropy_coef * entropies)
         policy_loss = torch.mean(policy_loss)
+        logger.debug(f'Actor entropies: {entropies_mean:g}')
         logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
 
     def calc_val_loss(self, batch, v_targets):
         '''Calculate the critic's value loss'''
-        v_targets = v_targets.unsqueeze(dim=-1)
-        v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze(dim=-1)
-        assert v_preds.shape == v_targets.shape
+        states = batch['states']
+        if self.body.is_venv:
+            states = math_util.venv_unpack(states)
+        v_preds = self.calc_v(states, evaluate=False)
+        assert v_preds.shape == v_targets.shape, f'{v_preds.shape} != {v_targets.shape}'
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
         logger.debug(f'Critic value loss: {val_loss:g}')
         return val_loss
@@ -302,10 +306,8 @@ class ActorCritic(Reinforce):
         '''
         states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
         v_preds = self.calc_v(states)
-        next_v_preds = v_preds[1:]  # shift for only the next states
-        # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
         adv_targets = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds, self.gamma, self.lam)
+        v_targets = adv_targets + v_preds[:-1]
         adv_targets = math_util.standardize(adv_targets)
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
@@ -317,25 +319,35 @@ class ActorCritic(Reinforce):
         Used for training with N-step (not GAE)
         Returns 2-tuple for API-consistency with GAE
         '''
-        next_v_preds = self.calc_v(batch['next_states'])
-        v_preds = self.calc_v(batch['states'])
-        # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
-        nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, self.num_step_returns, next_v_preds)
-        nstep_advs = nstep_returns - v_preds
-        adv_targets = nstep_advs
+        states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
+        if self.body.is_venv:
+            states = math_util.venv_unpack(states)
+        v_all = self.calc_v(states)
+        if self.body.is_venv:
+            v_all = math_util.venv_pack(v_all, self.body.env.num_envs)
+        next_v_preds = v_all[-1:]
+        v_preds = v_all[:-1]
+        nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_preds, self.gamma, self.num_step_returns)
+        if self.body.is_venv:
+            nstep_returns = math_util.venv_unpack(nstep_returns)
+            v_preds = math_util.venv_unpack(v_preds)
+        v_targets = nstep_returns
+        adv_targets = nstep_returns - v_preds
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
-        return adv_targets, v_targets
+        return adv_targets.detach(), v_targets.detach()
 
-    def calc_td_advs_v_targets(self, batch):
+    def openai_nstep_advs_v_targets(self, batch):
         '''
-        Estimate Q(s_t, a_t) with r_t + gamma * V(s_t+1 ) for simplest AC algorithm
+        Calculate N-step returns with variable steps depending on the position in the batch. Each element gets the maximum number of steps possible. If batch_size = 8, then t1 gets 8 steps of returns, t2 = 7 steps, etc.
+        See https://github.com/openai/baselines/blob/3f2f45acef0fdfdba723f0c087c9d1408f9c45a6/baselines/a2c/utils.py#L147
         '''
-        next_v_preds = self.calc_v(batch['next_states'])
-        # Equivalent to 1-step return
-        # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
-        adv_targets = v_targets  # Plain Q estimate, called adv for API consistency
+        # TODO is this method needed?
+        v_preds_all = self.calc_v(torch.cat([batch['states'], batch['next_states'][-1, :].unsqueeze(0)], dim=-0))
+        v_preds = v_preds_all[:-1]
+        v_next_preds = v_preds_all[1:]
+        nstep_returns = math_util.calc_shaped_rewards(batch['rewards'], batch['dones'], v_next_preds[-1], self.gamma)
+        adv_targets = nstep_returns - v_preds
+        v_targets = nstep_returns
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
         return adv_targets, v_targets
 
