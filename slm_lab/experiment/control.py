@@ -51,7 +51,9 @@ class Session:
         if util.in_eval_lab_modes() or tick > clock.max_tick:
             return False
         frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
-        if frequency is None:  # default episodic
+        if mode == 'log' and tick == 0:
+            to_ckpt = False
+        elif frequency is None:  # default episodic
             to_ckpt = env.done
         elif clock.max_tick_unit == 'epi' and not env.done:
             to_ckpt = False
