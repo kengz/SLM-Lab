@@ -74,6 +74,16 @@ def to_one_hot(data, max_val):
     return np.eye(max_val)[np.array(data)]
 
 
+def venv_pack(batch_tensor, num_envs):
+    '''Apply the reverse of venv_unpack to pack a batch tensor from (b*num_envs, *shape) to (b, num_envs, *shape)'''
+    shape = list(batch_tensor.shape)
+    if len(shape) < 2:  # scalar data (b, num_envs,)
+        return batch_tensor.reshape(-1, num_envs)
+    else:  # non-scalar data (b, num_envs, *shape)
+        pack_shape = [-1, num_envs] + shape[1:]
+        return batch_tensor.reshape(pack_shape)
+
+
 def venv_unpack(batch_tensor):
     '''
     Unpack a sampled vec env batch tensor
