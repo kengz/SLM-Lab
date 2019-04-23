@@ -1,18 +1,5 @@
-'''
-Action policy methods to sampling actions
-Algorithm provides a `calc_pdparam` which takes a state and do a forward pass through its net,
-and the pdparam is used to construct an action probability distribution as appropriate per the action type as indicated by the body
-Then the prob. dist. is used to sample action.
-
-The default form looks like:
-```
-ActionPD, pdparam, body = init_action_pd(state, algorithm, body)
-action, action_pd = sample_action_pd(ActionPD, pdparam, body)
-```
-
-We can also augment pdparam before sampling - as in the case of Boltzmann sampling,
-or do epsilon-greedy to use pdparam-sampling or random sampling.
-'''
+# Action policy module
+# Constructs action probability distribution used by agent to sample action and calculate log_prob, entropy, etc.
 from slm_lab.env.wrapper import LazyFrames
 from slm_lab.lib import distribution, logger, math_util, util
 from torch import distributions
@@ -36,7 +23,7 @@ ACTION_PDS = {
 }
 
 
-# base methods
+# action_policy base methods
 
 def try_preprocess(state, algorithm, body, append=True):
     '''Try calling preprocess as implemented in body's memory to use for net input'''
@@ -45,42 +32,40 @@ def try_preprocess(state, algorithm, body, append=True):
     if hasattr(body.memory, 'preprocess_state'):
         state = body.memory.preprocess_state(state, append=append)
     # as float, and always as minibatch for net input
-    state = torch.from_numpy(state).float().unsqueeze(dim=0)
+    # state = torch.from_numpy(state).float().unsqueeze(dim=0)
+    state = torch.from_numpy(state).float()
     return state
-
-
-def cond_squeeze(out):
-    '''Helper to squeeze output depending if it is tensor (discrete pdparam) or list of tensors (continuous pdparam of loc and scale)'''
-    if isinstance(out, list):
-        return [out_t.squeeze(dim=0) for out_t in out]
-    else:
-        return out.squeeze(dim=0)
 
 
 def init_action_pd(state, algorithm, body, append=True):
     '''
-    Build the proper action prob. dist. to use for action sampling.
-    state is passed through algorithm's net via calc_pdparam, which the algorithm must implement using its proper net.
-    This will return body, ActionPD and pdparam to allow augmentation, e.g. applying temperature tau to pdparam for boltzmann.
-    Then, output must be called with sample_action_pd(body, ActionPD, pdparam) to sample action.
-    @returns {cls, tensor, *} ActionPD, pdparam, body
+    Initialize the class (determined by ACTION_PDS) and parameter for an action prob. dist. used to sample actions, e.g. action_pd = Categorical(logits=pdparam)
+    @param tensor:state For pdparam = net(state)
+    @param algorithm The algorithm containing self.net
+    @param body Body which links algorithm to the env which the action is for
+    @returns (Distribution:ActionPD, tensor:pdparam)
+    @example
+
+    ActionPD, pdparam = init_action_pd(state, algorithm, body)
+    action_pd = ActionPD(logits=pdparam)  # e.g. ActionPD is Categorical
+    action = action_pd.sample()
     '''
     pdtypes = ACTION_PDS[body.action_type]
-    assert body.action_pdtype in pdtypes, f'Pdtype {body.action_pdtype} is not compatible/supported with action_type {body.action_type}. Options are: {ACTION_PDS[body.action_type]}'
-    ActionPD = getattr(distributions, body.action_pdtype)
+    assert body.action_pdtype in pdtypes, f'Pdtype {body.action_pdtype} is not compatible/supported with action_type {body.action_type}. Options are: {pdtypes}'
 
+    ActionPD = getattr(distributions, body.action_pdtype)
     state = try_preprocess(state, algorithm, body, append=append)
     state = state.to(algorithm.net.device)
     pdparam = algorithm.calc_pdparam(state, evaluate=False)
-    return ActionPD, pdparam, body
+    return ActionPD, pdparam
 
 
-def sample_action_pd(ActionPD, pdparam, body):
+def _get_action_pd(ActionPD, pdparam, body):
     '''
-    This uses the outputs from init_action_pd and an optionally augmented pdparam to construct a action_pd for sampling action
-    @returns {tensor, distribution} action, action_pd A sampled action, and the prob. dist. used for sampling to enable calculations like kl, entropy, etc. later.
+    Build the action_pd for discrete and continuous actions conditionally:
+    - discrete: action_pd = ActionPD(logits)
+    - continuous: action_pd = ActionPD(loc, scale)
     '''
-    pdparam = cond_squeeze(pdparam)
     if body.is_discrete:
         action_pd = ActionPD(logits=pdparam)
     else:  # continuous outputs a list, loc and scale
@@ -89,42 +74,48 @@ def sample_action_pd(ActionPD, pdparam, body):
         if pdparam[1] < 5:
             pdparam[1] = torch.log(1 + torch.exp(pdparam[1])) + 1e-8
         action_pd = ActionPD(*pdparam)
+    return action_pd
+
+
+def _sample_action(ActionPD, pdparam, body):
+    '''
+    Convenient method to sample action using output from init_action_pd
+    Builds action_pd, and internally store relevant variables to body
+    @returns tensor:action A sampled action
+    @example
+
+    ActionPD, pdparam = init_action_pd(state, algorithm, body)
+    action = _sample_action(ActionPD, pdparam, body)
+    '''
+    action_pd = _get_action_pd(ActionPD, pdparam, body)
     action = action_pd.sample()
-    return action, action_pd
+    body.store_action_pd(action, action_pd)
+    return action
 
 
-# interface action sampling methods
+def sample_action(ActionPD, pdparam, body):
+    '''Wrapper method for _sample_action to sample both batched and singleton action'''
+    if len(pdparam.shape) == 2:  # batched
+        return torch.stack([_sample_action(ActionPD, p, body) for p in pdparam])
+    else:
+        return _sample_action(ActionPD, pdparam, body)
+
+
+# action_policy used by agent
 
 
 def default(state, algorithm, body):
-    '''Plain policy by direct sampling using outputs of net as logits and constructing ActionPD as appropriate'''
-    ActionPD, pdparam, body = init_action_pd(state, algorithm, body)
-    action, action_pd = sample_action_pd(ActionPD, pdparam, body)
-    return action, action_pd
+    '''Plain policy by direct sampling from a default action probability defined by ACTION_PDS'''
+    ActionPD, pdparam = init_action_pd(state, algorithm, body)
+    action = sample_action(ActionPD, pdparam, body)
+    return action
 
 
 def random(state, algorithm, body):
-    '''Random action sampling that returns the same data format as default(), but without forward pass. Uses gym.space.sample()'''
-    state = try_preprocess(state, algorithm, body, append=True)  # for consistency with init_action_pd inner logic
-    if body.action_type == 'discrete':
-        action_pd = distributions.Categorical(logits=torch.ones(body.action_space.high, device=algorithm.net.device))
-    elif body.action_type == 'continuous':
-        # Possibly this should this have a 'device' set
-        action_pd = distributions.Uniform(
-            low=torch.tensor(body.action_space.low).float(),
-            high=torch.tensor(body.action_space.high).float())
-    elif body.action_type == 'multi_discrete':
-        action_pd = distributions.Categorical(
-            logits=torch.ones(body.action_space.high.size, body.action_space.high[0], device=algorithm.net.device))
-    elif body.action_type == 'multi_continuous':
-        raise NotImplementedError
-    elif body.action_type == 'multi_binary':
-        raise NotImplementedError
-    else:
-        raise NotImplementedError
+    '''Random action using gym.action_space.sample(), with the same format as default()'''
     sample = body.action_space.sample()
     action = torch.tensor(sample, device=algorithm.net.device)
-    return action, action_pd
+    return action
 
 
 def epsilon_greedy(state, algorithm, body):
@@ -141,13 +132,15 @@ def boltzmann(state, algorithm, body):
     Boltzmann policy: adjust pdparam with temperature tau; the higher the more randomness/noise in action.
     '''
     tau = body.explore_var
-    ActionPD, pdparam, body = init_action_pd(state, algorithm, body)
+    ActionPD, pdparam = init_action_pd(state, algorithm, body)
     pdparam /= tau
-    action, action_pd = sample_action_pd(ActionPD, pdparam, body)
-    return action, action_pd
+    action = sample_action(ActionPD, pdparam, body)
+    return action
 
 
-# multi-body policy with a single forward pass to calc pdparam
+# multi-body action_policy used by agent
+
+# TODO fix later using similar batch action method
 
 def multi_default(states, algorithm, body_list, pdparam):
     '''
@@ -156,69 +149,63 @@ def multi_default(states, algorithm, body_list, pdparam):
     @example
 
     pdparam = self.calc_pdparam(state, evaluate=False)
-    action_a, action_pd_a = self.action_policy(pdparam, self, body_list)
+    action_a = self.action_policy(pdparam, self, body_list)
     '''
-    pdparam = pdparam.squeeze(dim=0)
     # assert pdparam has been chunked
     assert len(pdparam.shape) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
-    action_list, action_pd_a = [], []
+    action_list = []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
         try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with init_action_pd inner logic
         ActionPD = getattr(distributions, body.action_pdtype)
-        action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
+        action = sample_action(ActionPD, sub_pdparam, body)
         action_list.append(action)
-        action_pd_a.append(action_pd)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
-    return action_a, action_pd_a
+    return action_a
 
 
 def multi_random(states, algorithm, body_list, pdparam):
     '''Apply random policy body-wise.'''
-    pdparam = pdparam.squeeze(dim=0)
-    action_list, action_pd_a = [], []
+    action_list = []
     for idx, body in body_list:
-        action, action_pd = random(states[idx], algorithm, body)
+        action = random(states[idx], algorithm, body)
         action_list.append(action)
-        action_pd_a.append(action_pd)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
-    return action_a, action_pd_a
+    return action_a
 
 
 def multi_epsilon_greedy(states, algorithm, body_list, pdparam):
     '''Apply epsilon-greedy policy body-wise'''
     assert len(pdparam) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
-    action_list, action_pd_a = [], []
+    action_list = []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
         epsilon = body.explore_var
         if epsilon > np.random.rand():
-            action, action_pd = random(states[idx], algorithm, body)
+            action = random(states[idx], algorithm, body)
         else:
             try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with init_action_pd inner logic
             ActionPD = getattr(distributions, body.action_pdtype)
-            action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
+            action = sample_action(ActionPD, sub_pdparam, body)
         action_list.append(action)
-        action_pd_a.append(action_pd)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
-    return action_a, action_pd_a
+    return action_a
 
 
 def multi_boltzmann(states, algorithm, body_list, pdparam):
     '''Apply Boltzmann policy body-wise'''
     assert len(pdparam) > 1 and len(pdparam) == len(body_list), f'pdparam shape: {pdparam.shape}, bodies: {len(body_list)}'
-    action_list, action_pd_a = [], []
+    action_list = []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
         try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with init_action_pd inner logic
         tau = body.explore_var
         sub_pdparam /= tau
         ActionPD = getattr(distributions, body.action_pdtype)
-        action, action_pd = sample_action_pd(ActionPD, sub_pdparam, body)
+        action = sample_action(ActionPD, sub_pdparam, body)
         action_list.append(action)
-        action_pd_a.append(action_pd)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
-    return action_a, action_pd_a
+    return action_a
 
 
 # action policy update methods
@@ -296,7 +283,7 @@ def calc_log_probs(algorithm, net, body, batch):
     for idx, pdparam in enumerate(pdparams):
         if not is_multi_action:  # already cloned  for multi_action above
             pdparam = pdparam.clone()  # clone for grad safety
-        _action, action_pd = sample_action_pd(ActionPD, pdparam, body)
+        action_pd = _get_action_pd(ActionPD, pdparam, body)
         log_probs.append(action_pd.log_prob(actions[idx].float()).sum(dim=0))
     log_probs = torch.stack(log_probs)
     assert not torch.isnan(log_probs).any(), f'log_probs: {log_probs}, \npdparams: {pdparams} \nactions: {actions}'

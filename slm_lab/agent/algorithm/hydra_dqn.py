@@ -52,7 +52,7 @@ class HydraDQN(DQN):
         xs = [torch.from_numpy(state).float() for state in states]
         pdparam = self.calc_pdparam(xs, evaluate=False)
         # use multi-policy. note arg change
-        action_a, action_pd_a = self.action_policy(states, self, self.agent.nanflat_body_a, pdparam)
+        action_a = self.action_policy(states, self, self.agent.nanflat_body_a, pdparam)
         return action_a.cpu().numpy()
 
     @lab_api

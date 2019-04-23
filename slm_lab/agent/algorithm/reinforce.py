@@ -109,7 +109,7 @@ class Reinforce(Algorithm):
         body = self.body
         if self.normalize_state:
             state = policy_util.update_online_stats_and_normalize_state(body, state)
-        action, action_pd = self.action_policy(state, self, body)
+        action = self.action_policy(state, self, body)
         if len(action.shape) == 0:  # scalar
             return action.cpu().numpy().astype(body.action_space.dtype).item()
         else:
