@@ -139,8 +139,22 @@ class Body:
         if self.action_pdtype in (None, 'default'):
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
 
+    def epi_reset(self):
+        '''
+        Handles any body attribute reset at the start of an episode.
+        This method is called automatically at base memory.epi_reset().
+        '''
+        t = self.env.clock.t
+        assert t == 0, f'aeb: {self.aeb}, t: {t}'
+        if hasattr(self, 'aeb_space'):
+            self.space_fix_stats()
+
+    def update(self, state, action, reward, next_state, done):
+        '''Interface update method for body at agent.update()'''
+        self.total_reward = math_util.nan_add(self.total_reward, reward)
+
     def action_pd_update(self, action, action_pd):
-        '''Calculate and update action entropy and log_prob using self.action_pd. Call this in agent.update()'''
+        '''Calculate and store this body's action entropy and log_prob. Call this in policy_util'''
         # mean for single and multi-action
         entropy = action_pd.entropy().mean(dim=0)
         self.entropies.append(entropy)
@@ -148,9 +162,21 @@ class Body:
         self.log_probs.append(log_prob)
         assert not torch.isnan(log_prob)
 
-    def update(self, state, action, reward, next_state, done):
-        '''Interface update method for body at agent.update()'''
-        self.total_reward = math_util.nan_add(self.total_reward, reward)
+    def flush(self):
+        '''Update and flush gradient-related variables after training step similar.'''
+        # update
+        self.mean_entropy = torch.tensor(self.entropies).mean().item()
+        self.mean_log_prob = torch.tensor(self.log_probs).mean().item()
+        # net.grad_norms is only available in dev mode for efficiency
+        grad_norms = net_util.get_grad_norms(self.agent.algorithm)
+        self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
+
+        # flush
+        self.entropies = []
+        self.log_probs = []
+
+    def __str__(self):
+        return 'body: ' + util.to_json(util.get_class_attr(self))
 
     def calc_df_row(self, env):
         '''Calculate a row for updating train_df or eval_df.'''
@@ -178,16 +204,6 @@ class Body:
         assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
         return row
 
-    def epi_reset(self):
-        '''
-        Handles any body attribute reset at the start of an episode.
-        This method is called automatically at base memory.epi_reset().
-        '''
-        t = self.env.clock.t
-        assert t == 0, f'aeb: {self.aeb}, t: {t}'
-        if hasattr(self, 'aeb_space'):
-            self.space_fix_stats()
-
     def train_ckpt(self):
         '''Checkpoint to update body.train_df data'''
         row = self.calc_df_row(self.env)
@@ -207,22 +223,6 @@ class Body:
         # update current reward_ma
         self.eval_reward_ma = self.eval_df[-analysis.MA_WINDOW:]['reward'].mean()
         self.eval_df.iloc[-1]['reward_ma'] = self.eval_reward_ma
-
-    def flush(self):
-        '''Update and flush gradient-related variables after training step similar.'''
-        # update
-        self.mean_entropy = torch.tensor(self.entropies).mean().item()
-        self.mean_log_prob = torch.tensor(self.log_probs).mean().item()
-        # net.grad_norms is only available in dev mode for efficiency
-        grad_norms = net_util.get_grad_norms(self.agent.algorithm)
-        self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
-
-        # flush
-        self.entropies = []
-        self.log_probs = []
-
-    def __str__(self):
-        return 'body: ' + util.to_json(util.get_class_attr(self))
 
     def get_mean_lr(self):
         '''Gets the average current learning rate of the algorithm's nets.'''
