@@ -193,7 +193,7 @@ class Body:
             't': env.clock.get('t'),
             'wall_t': wall_t,
             'fps': fps,
-            'reward': self.total_reward,
+            'reward': np.mean(self.total_reward),  # guard for vec env
             'reward_ma': np.nan,  # update outside
             'loss': self.loss,
             'lr': self.get_mean_lr(),
