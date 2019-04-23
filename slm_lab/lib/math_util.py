@@ -74,6 +74,18 @@ def to_one_hot(data, max_val):
     return np.eye(max_val)[np.array(data)]
 
 
+def unpack_venv_batch(batch_tensor):
+    '''
+    Reshape a sampled vec env batch tensor
+    e.g. for a state with original shape (4, ), vec env should return vec state with shape (num_envs, 4) to store in memory
+    When sampled with batch_size, we should get shape (batch_size, num_envs, 4). But we need to unpack the num_envs dimension to get (new_batch_size, 4) for passing to a network. This method does that.
+    '''
+    shape = list(batch_tensor.shape)
+    assert len(shape) > 2, f'venv batch should produce shape (batch_size, num_envs, *data_shape)'
+    unpack_shape = [-1] + shape[2:]
+    return batch_tensor.reshape(unpack_shape)
+
+
 # Policy Gradient calc
 # advantage functions
 
@@ -82,6 +94,7 @@ def calc_returns(rewards, dones, gamma):
     Calculate the simple returns (full rollout) for advantage
     i.e. sum discounted rewards up till termination
     '''
+    # TODO standardize to take tensor only
     is_tensor = torch.is_tensor(rewards)
     if is_tensor:
         assert not torch.isnan(rewards).any()
@@ -101,35 +114,49 @@ def calc_returns(rewards, dones, gamma):
     return rets
 
 
-def calc_nstep_returns(rewards, dones, gamma, n, next_v_preds):
+def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
     '''
-    Calculate the n-step returns for advantage
-    see n-step return in: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
-    i.e. for each timestep t:
-        sum discounted rewards up till step n (0 to n-1 that is),
-        then add v_pred for n as final term
+    if last state was terminal:
+        R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1} + gamma^(n) V(s_{t+n})
+    else:
+        R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1}
     '''
-    rets = rewards.clone()  # prevent mutation
-    next_v_preds = next_v_preds.clone()  # prevent mutation
-    nstep_rets = torch.zeros_like(rets) + rets
-    cur_gamma = gamma
-    not_dones = 1 - dones
-    for i in range(1, n):
-        # TODO shifting is expensive. rewrite
-        # Shift returns by one and zero last element of each episode
-        rets[:-1] = rets[1:]
-        rets *= not_dones
-        # Also shift V(s_t+1) so final terms use V(s_t+n)
-        next_v_preds[:-1] = next_v_preds[1:]
-        next_v_preds *= not_dones
-        # Accumulate return
-        nstep_rets += cur_gamma * rets
-        # Update current gamma
-        cur_gamma *= cur_gamma
-    # Add final terms. Note no next state if epi is done
-    final_terms = cur_gamma * next_v_preds * not_dones
-    nstep_rets += final_terms
-    return nstep_rets
+    assert not torch.isnan(rewards).any()
+    rets = torch.zeros((rewards.shape[0] + 1, rewards.shape[1]), dtype=torch.float32, device=v_preds.device)
+    rets[-1] = v_preds
+    for t in reversed(range(n)):
+        rets[t] = rewards[t] + gamma * rets[t + 1] * 1 - dones[t]
+    return rets[:-1, :]
+
+
+def calc_nstep_returns_old(rewards, dones, v_preds, gamma, n):
+    '''
+    Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
+    R^(n)_t = r_{t+1} + gamma r_{t+2} + ... + gamma^(n-1) r_{t+n} + gamma^(n) V(s_{t+n})
+    For edge case where there is no r term, substitute with V and end the sum,
+    If r_k doesn't exist, directly substitute its place with V(s_k) and shorten the sum
+    NOTE: check the slow method in unit test for comparison
+    '''
+    T = len(rewards)
+    assert not torch.isnan(rewards).any()
+    rets = torch.zeros(T, dtype=torch.float32, device=v_preds.device)
+    # to multiply with not_dones to handle episode boundary (last state has no V(s'))
+    dones = torch.cat((dones, torch.ones(n, device=v_preds.device)))
+    rewards = torch.cat((rewards, torch.zeros(n, device=v_preds.device)))
+    v_preds = torch.cat((v_preds, torch.zeros(n, device=v_preds.device)))
+    not_dones = 1. - dones
+    gammas = 1.  # gamma ^ 0 = 1 for i = 0
+    # pretend you're computing at a specific index of t
+    for idx in range(n):  # iterate and add each t+i term for each t
+        i = idx + 1
+        # substitution mechanism, if rewards runs out at an index, replace with v_pred at the same index. revert back to v_pred because it was not summed in previous loop step
+        rets += gammas * (not_dones[i:T + i] * rewards[i:T + i] + dones[i:T + i] * v_preds[i - 1:T + i - 1])
+        # if there is replacement at an index, make gamma 0 to prevent summing further
+        gammas *= gamma * not_dones[i:T + i]
+    # finally, add the V(s_(t+n)) term
+    rets += gammas * v_preds[n:T + n]
+    assert not torch.isnan(rets).any(), f'nstep rets have nan: {rets}'
+    return rets
 
 
 def calc_gaes(rewards, dones, v_preds, gamma, lam):
@@ -153,6 +180,23 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
         gaes[t] = future_gae = delta + gamma * lam * not_dones[t] * future_gae
     assert not torch.isnan(gaes).any(), f'GAE has nan: {gaes}'
     return gaes
+
+
+def calc_shaped_rewards(rewards, dones, v_pred, gamma):
+    '''
+    OpenAI nstep returns
+    https://github.com/openai/baselines/blob/3f2f45acef0fdfdba723f0c087c9d1408f9c45a6/baselines/a2c/utils.py#L147
+    '''
+    T = len(rewards)
+    assert not torch.isnan(rewards).any()
+    shaped_rewards = torch.empty(T, dtype=torch.float32, device=rewards.device)
+    # set bootstrapped reward to v_pred if not done, else 0
+    shaped_reward = v_pred if dones[-1].item() == 0.0 else 0.0
+    not_dones = 1 - dones
+    for t in reversed(range(T)):
+        shaped_reward = rewards[t] + gamma * shaped_reward * not_dones[t]
+        shaped_rewards[t] = shaped_reward
+    return shaped_rewards
 
 
 def calc_q_value_logits(state_value, raw_advantages):
