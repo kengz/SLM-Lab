@@ -153,8 +153,10 @@ class Body:
         '''Interface update method for body at agent.update()'''
         self.total_reward = math_util.nan_add(self.total_reward, reward)
 
-    def action_pd_update(self, action, action_pd):
+    def store_action_pd(self, action, action_pd):
         '''Calculate and store this body's action entropy and log_prob. Call this in policy_util'''
+        if util.in_eval_lab_modes():  # don't store on eval mode
+            return
         # mean for single and multi-action
         entropy = action_pd.entropy().mean(dim=0)
         self.entropies.append(entropy)
