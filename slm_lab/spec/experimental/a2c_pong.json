@@ -37,6 +37,7 @@
         "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
+        "normalize": true,
         "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,

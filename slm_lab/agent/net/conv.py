@@ -33,6 +33,7 @@ class ConvNet(Net, nn.Module):
         "hid_layers_activation": "relu",
         "out_layer_activation": "tanh",
         "init_fn": null,
+        "normalize": false,
         "batch_norm": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -65,6 +66,7 @@ class ConvNet(Net, nn.Module):
         hid_layers_activation: activation function for the hidden layers
         out_layer_activation: activation function for the output layer, same shape as out_dim
         init_fn: weight initialization function
+        normalize: whether to divide by 255.0 to normalize image input
         batch_norm: whether to add batch normalization after each convolutional layer, excluding the input layer.
         clip_grad_val: clip gradient norm if value is not None
         loss_spec: measure of error between model predictions and correct outputs
@@ -82,6 +84,7 @@ class ConvNet(Net, nn.Module):
         util.set_attr(self, dict(
             out_layer_activation=None,
             init_fn=None,
+            normalize=False,
             batch_norm=True,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
@@ -98,6 +101,7 @@ class ConvNet(Net, nn.Module):
             'hid_layers_activation',
             'out_layer_activation',
             'init_fn',
+            'normalize',
             'batch_norm',
             'clip_grad_val',
             'loss_spec',
@@ -174,6 +178,8 @@ class ConvNet(Net, nn.Module):
         The feedforward step
         Note that PyTorch takes (c,h,w) but gym provides (h,w,c), so preprocessing must be done before passing to network
         '''
+        if self.normalize:
+            x = x / 255.0
         x = self.conv_model(x)
         x = x.view(x.size(0), -1)  # to (batch_size, -1)
         if hasattr(self, 'fc_model'):
@@ -238,6 +244,7 @@ class DuelingConvNet(ConvNet):
         "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
         "init_fn": "xavier_uniform_",
+        "normalize": false,
         "batch_norm": false,
         "clip_grad_val": 1.0,
         "loss_spec": {
@@ -266,6 +273,7 @@ class DuelingConvNet(ConvNet):
         # set default
         util.set_attr(self, dict(
             init_fn=None,
+            normalize=False,
             batch_norm=False,
             clip_grad_val=None,
             loss_spec={'name': 'MSELoss'},
@@ -281,6 +289,7 @@ class DuelingConvNet(ConvNet):
             'fc_hid_layers',
             'hid_layers_activation',
             'init_fn',
+            'normalize',
             'batch_norm',
             'clip_grad_val',
             'loss_spec',
@@ -321,6 +330,8 @@ class DuelingConvNet(ConvNet):
 
     def forward(self, x):
         '''The feedforward step'''
+        if self.normalize:
+            x = x / 255.0
         x = self.conv_model(x)
         x = x.view(x.size(0), -1)  # to (batch_size, -1)
         if hasattr(self, 'fc_model'):
