@@ -53,8 +53,6 @@ class HydraDQN(DQN):
         pdparam = self.calc_pdparam(xs, evaluate=False)
         # use multi-policy. note arg change
         action_a, action_pd_a = self.action_policy(states, self, self.agent.nanflat_body_a, pdparam)
-        for idx, body in enumerate(self.agent.nanflat_body_a):
-            body.action_tensor, body.action_pd = action_a[idx], action_pd_a[idx]  # used for body.action_pd_update later
         return action_a.cpu().numpy()
 
     @lab_api

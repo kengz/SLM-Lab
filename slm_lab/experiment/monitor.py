@@ -96,8 +96,6 @@ class Body:
         # body stats variables
         self.loss = np.nan  # training losses
         # diagnostics variables/stats from action_policy prob. dist.
-        self.action_tensor = None
-        self.action_pd = None  # for the latest action, to compute entropy and log prob
         self.entropies = []  # action entropies for exploration
         self.log_probs = []  # action log probs
         # mean values for debugging
@@ -141,14 +139,12 @@ class Body:
         if self.action_pdtype in (None, 'default'):
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
 
-    def action_pd_update(self):
+    def action_pd_update(self, action, action_pd):
         '''Calculate and update action entropy and log_prob using self.action_pd. Call this in agent.update()'''
-        if self.action_pd is None:  # skip if None
-            return
         # mean for single and multi-action
-        entropy = self.action_pd.entropy().mean(dim=0)
+        entropy = action_pd.entropy().mean(dim=0)
         self.entropies.append(entropy)
-        log_prob = self.action_pd.log_prob(self.action_tensor).mean(dim=0)
+        log_prob = action_pd.log_prob(action).mean(dim=0)
         self.log_probs.append(log_prob)
         assert not torch.isnan(log_prob)
 
@@ -222,8 +218,6 @@ class Body:
         self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
 
         # flush
-        self.action_tensor = None
-        self.action_pd = None
         self.entropies = []
         self.log_probs = []
 
