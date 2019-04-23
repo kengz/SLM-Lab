@@ -24,12 +24,16 @@ def test_nan_add():
     assert np.array_equal(math_util.nan_add(r2, r3), np.array([3.0, 5.0]))
 
 
-def test_unpack_venv_batch():
-    base_shape = [2, 2]
-    num_envs = 4
+@pytest.mark.parametrize('base_shape', [
+    [],  # scalar
+    [2],  # vector
+    [4, 84, 84],  # image
+])
+def test_venv_unpack(base_shape):
     batch_size = 5
+    num_envs = 4
     batch_arr = np.zeros([batch_size, num_envs] + base_shape)
-    unpacked_arr = math_util.unpack_venv_batch(batch_arr)
+    unpacked_arr = math_util.venv_unpack(batch_arr)
     assert list(unpacked_arr.shape) == [batch_size * num_envs] + base_shape
 
 

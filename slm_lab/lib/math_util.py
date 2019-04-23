@@ -74,16 +74,18 @@ def to_one_hot(data, max_val):
     return np.eye(max_val)[np.array(data)]
 
 
-def unpack_venv_batch(batch_tensor):
+def venv_unpack(batch_tensor):
     '''
-    Reshape a sampled vec env batch tensor
+    Unpack a sampled vec env batch tensor
     e.g. for a state with original shape (4, ), vec env should return vec state with shape (num_envs, 4) to store in memory
-    When sampled with batch_size, we should get shape (batch_size, num_envs, 4). But we need to unpack the num_envs dimension to get (new_batch_size, 4) for passing to a network. This method does that.
+    When sampled with batch_size b, we should get shape (b, num_envs, 4). But we need to unpack the num_envs dimension to get (b * num_envs, 4) for passing to a network. This method does that.
     '''
     shape = list(batch_tensor.shape)
-    assert len(shape) > 2, f'venv batch should produce shape (batch_size, num_envs, *data_shape)'
-    unpack_shape = [-1] + shape[2:]
-    return batch_tensor.reshape(unpack_shape)
+    if len(shape) < 3:  # scalar data (b, num_envs,)
+        return batch_tensor.flatten()
+    else:  # non-scalar data (b, num_envs, *shape)
+        unpack_shape = [-1] + shape[2:]
+        return batch_tensor.reshape(unpack_shape)
 
 
 # Policy Gradient calc
