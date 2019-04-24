@@ -21,7 +21,7 @@ class Argmax(distributions.Categorical):
             new_logits[max_idx] = logits[max_idx]
             logits = new_logits
 
-        super(Argmax, self).__init__(probs=probs, logits=logits, validate_args=validae_args)
+        super(Argmax, self).__init__(probs=probs, logits=logits, validate_args=validate_args)
 
 
 class GumbelCategorical(distributions.Categorical):
