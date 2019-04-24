@@ -58,7 +58,8 @@ class Session:
         elif clock.max_tick_unit == 'epi' and not env.done:
             to_ckpt = False
         else:
-            to_ckpt = (tick % frequency == 0) or tick == clock.max_tick
+            rem = env.num_envs or 1
+            to_ckpt = (tick % frequency < rem) or tick == clock.max_tick
         return to_ckpt
 
     def try_ckpt(self, agent, env):
