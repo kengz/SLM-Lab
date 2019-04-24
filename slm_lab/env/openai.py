@@ -33,10 +33,10 @@ class OpenAIEnv(BaseEnv):
             pass
         seed = ps.get(spec, 'meta.random_seed')
         stack_len = ps.get(spec, 'agent.0.memory.stack_len')
-        if self.is_venv:
-            self.u_env = make_gym_env(self.name, seed, stack_len)
-        else:  # make vector environment
+        if self.is_venv:  # make vector environment
             self.u_env = make_gym_venv(self.name, seed, stack_len, self.num_envs)
+        else:
+            self.u_env = make_gym_env(self.name, seed, stack_len)
         self._set_attr_from_u_env(self.u_env)
         self.max_t = self.max_t or self.u_env.spec.max_episode_steps
         assert self.max_t is not None
