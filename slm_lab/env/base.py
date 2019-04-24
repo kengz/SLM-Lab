@@ -105,10 +105,12 @@ class BaseEnv(ABC):
             'reward_scale',
         ])
         if util.get_lab_mode() == 'eval':
+            self.num_envs = None  # use singleton for eval
             # override for eval, offset so epi is 0 - (num_eval_epi - 1)
             logger.info(f'Override max_tick for eval mode to {NUM_EVAL_EPI} epi')
             self.max_tick = NUM_EVAL_EPI - 1
             self.max_tick_unit = 'epi'
+        self.is_venv = self.num_envs is not None
         self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
         self.clock = Clock(self.max_tick, self.max_tick_unit, self.clock_speed)
 
