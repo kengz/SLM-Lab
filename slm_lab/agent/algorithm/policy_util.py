@@ -32,7 +32,7 @@ def try_preprocess(state, algorithm, body, append=True):
     if hasattr(body.memory, 'preprocess_state'):
         state = body.memory.preprocess_state(state, append=append)
     state = torch.from_numpy(state).float()
-    if util.in_eval_lab_modes() or not body.env.is_venv:
+    if not body.env.is_venv or util.in_eval_lab_modes():
         # singleton state, unsqueeze as minibatch for net input
         state = state.unsqueeze(dim=0)
     else:  # venv state at train is already batched = num_envs
@@ -116,7 +116,7 @@ def default(state, algorithm, body):
 
 def random(state, algorithm, body):
     '''Random action using gym.action_space.sample(), with the same format as default()'''
-    if not util.in_eval_lab_modes() and body.env.is_venv:
+    if body.env.is_venv and not util.in_eval_lab_modes():
         _action = [body.action_space.sample() for _ in range(body.env.num_envs)]
     else:
         _action = body.action_space.sample()
