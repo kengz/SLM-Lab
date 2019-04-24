@@ -73,7 +73,7 @@
     "meta": {
       "distributed": false,
       "log_frequency": 1000,
-      "eval_frequency": 10000,
+      "eval_frequency": 100000,
       "max_tick_unit": "total_t",
       "max_session": 1,
       "max_trial": 5,
