@@ -84,7 +84,7 @@ class Replay(Memory):
     @lab_api
     def update(self, state, action, reward, next_state, done):
         '''Interface method to update memory'''
-        if np.isnan(reward):  # start of episode
+        if not self.body.env.is_venv and np.isnan(reward):  # start of episode (venv is not episodic)
             self.epi_reset(next_state)
         else:
             # prevent conflict with preprocess in epi_reset
