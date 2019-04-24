@@ -139,11 +139,10 @@ class ConvNet(Net, nn.Module):
             self.model_tails = nn.ModuleList(tails)
 
         net_util.init_layers(self, self.init_fn)
-        for module in self.modules():
-            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
+        self.to(self.device)
 
     def __str__(self):
         return super(ConvNet, self).__str__() + f'\noptim: {self.optim}'
@@ -322,11 +321,10 @@ class DuelingConvNet(ConvNet):
         self.model_tails = nn.ModuleList(self.v, self.adv)
 
         net_util.init_layers(self, self.init_fn)
-        for module in self.modules():
-            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
+        self.to(self.device)
 
     def forward(self, x):
         '''The feedforward step'''

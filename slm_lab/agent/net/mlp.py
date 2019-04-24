@@ -106,11 +106,10 @@ class MLPNet(Net, nn.Module):
             self.model_tails = nn.ModuleList(tails)
 
         net_util.init_layers(self, self.init_fn)
-        for module in self.modules():
-            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
+        self.to(self.device)
 
     def __str__(self):
         return super(MLPNet, self).__str__() + f'\noptim: {self.optim}'
@@ -264,11 +263,10 @@ class HydraMLPNet(Net, nn.Module):
         self.model_tails = self.build_model_tails(self.out_dim, self.out_layer_activation)
 
         net_util.init_layers(self, self.init_fn)
-        for module in self.modules():
-            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
+        self.to(self.device)
 
     def __str__(self):
         return super(HydraMLPNet, self).__str__() + f'\noptim: {self.optim}'
@@ -416,11 +414,10 @@ class DuelingMLPNet(MLPNet):
         self.v = nn.Linear(dims[-1], 1)  # state value
         self.adv = nn.Linear(dims[-1], out_dim)  # action dependent raw advantage
         net_util.init_layers(self, self.init_fn)
-        for module in self.modules():
-            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
+        self.to(self.device)
 
     def forward(self, x):
         '''The feedforward step'''
