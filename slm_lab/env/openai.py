@@ -33,9 +33,7 @@ class OpenAIEnv(BaseEnv):
             pass
         seed = ps.get(spec, 'meta.random_seed')
         stack_len = ps.get(spec, 'agent.0.memory.stack_len')
-        if util.get_lab_mode() == 'eval':
-            self.num_envs = None
-        if self.num_envs is None:
+        if self.is_venv:
             self.u_env = make_gym_env(self.name, seed, stack_len)
         else:  # make vector environment
             self.u_env = make_gym_venv(self.name, seed, stack_len, self.num_envs)

@@ -90,9 +90,6 @@ class Body:
         self.a, self.e, self.b = aeb
         self.nanflat_a_idx, self.nanflat_e_idx = self.a, self.e
 
-        # whether environment is vectorized
-        self.is_venv = env.num_envs is not None
-
         # for action policy exploration, so be set in algo during init_algorithm_params()
         self.explore_var = np.nan
 

@@ -32,7 +32,7 @@ def try_preprocess(state, algorithm, body, append=True):
     if hasattr(body.memory, 'preprocess_state'):
         state = body.memory.preprocess_state(state, append=append)
     state = torch.from_numpy(state).float()
-    if util.in_eval_lab_modes() or not body.is_venv:
+    if util.in_eval_lab_modes() or not body.env.is_venv:
         # singleton state, unsqueeze as minibatch for net input
         state = state.unsqueeze(dim=0)
     else:  # venv state at train is already batched = num_envs

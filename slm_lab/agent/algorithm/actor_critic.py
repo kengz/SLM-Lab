@@ -288,7 +288,7 @@ class ActorCritic(Reinforce):
     def calc_val_loss(self, batch, v_targets):
         '''Calculate the critic's value loss'''
         states = batch['states']
-        if self.body.is_venv:
+        if self.body.env.is_venv:
             states = math_util.venv_unpack(states)
         v_preds = self.calc_v(states, evaluate=False)
         assert v_preds.shape == v_targets.shape, f'{v_preds.shape} != {v_targets.shape}'
@@ -320,15 +320,15 @@ class ActorCritic(Reinforce):
         Returns 2-tuple for API-consistency with GAE
         '''
         states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
-        if self.body.is_venv:
+        if self.body.env.is_venv:
             states = math_util.venv_unpack(states)
         v_all = self.calc_v(states)
-        if self.body.is_venv:
+        if self.body.env.is_venv:
             v_all = math_util.venv_pack(v_all, self.body.env.num_envs)
         next_v_preds = v_all[-1:]
         v_preds = v_all[:-1]
         nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_preds, self.gamma, self.num_step_returns)
-        if self.body.is_venv:
+        if self.body.env.is_venv:
             nstep_returns = math_util.venv_unpack(nstep_returns)
             v_preds = math_util.venv_unpack(v_preds)
         v_targets = nstep_returns
