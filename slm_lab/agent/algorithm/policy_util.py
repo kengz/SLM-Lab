@@ -116,8 +116,11 @@ def default(state, algorithm, body):
 
 def random(state, algorithm, body):
     '''Random action using gym.action_space.sample(), with the same format as default()'''
-    np_action = body.action_space.sample()
-    action = torch.tensor(np_action, device=algorithm.net.device)
+    if not util.in_eval_lab_modes() and body.env.is_venv:
+        _action = [body.action_space.sample() for _ in range(body.env.num_envs)]
+    else:
+        _action = body.action_space.sample()
+    action = torch.tensor(_action, device=algorithm.net.device)
     return action
 
 
