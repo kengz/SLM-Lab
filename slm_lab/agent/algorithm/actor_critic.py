@@ -334,7 +334,7 @@ class ActorCritic(Reinforce):
         v_targets = nstep_returns
         adv_targets = nstep_returns - v_preds
         logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
-        return adv_targets.detach(), v_targets.detach()
+        return adv_targets, v_targets
 
     def openai_nstep_advs_v_targets(self, batch):
         '''
