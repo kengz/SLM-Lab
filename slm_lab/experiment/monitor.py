@@ -96,6 +96,7 @@ class Body:
         # body stats variables
         self.loss = np.nan  # training losses
         # diagnostics variables/stats from action_policy prob. dist.
+        self.v_preds = []  # store v_preds computed alongside action
         self.entropies = []  # action entropies for exploration
         self.log_probs = []  # action log probs
         # mean values for debugging
@@ -174,6 +175,7 @@ class Body:
         self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
 
         # flush
+        self.v_preds = []
         self.entropies = []
         self.log_probs = []
 

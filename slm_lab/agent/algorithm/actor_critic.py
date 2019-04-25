@@ -169,11 +169,21 @@ class ActorCritic(Reinforce):
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
         pdparam = super(ActorCritic, self).calc_pdparam(x, evaluate=evaluate, net=net)
-        if self.shared:  # output: policy, value
-            if len(pdparam) == 2:  # single policy outputs, value
-                pdparam = pdparam[0]
-            else:  # multiple policy outputs, value
+        if self.shared:
+            assert ps.is_list(pdparam), f'Shared output should be a list [pdparam, v]'
+            if len(pdparam) == 2:  # single policy
+                pdparam, v_pred = pdparam
+            else:  # multiple-task policies, still assumes 1 value
                 pdparam = pdparam[:-1]
+                v_pred = pdparam[-1]
+        else:  # pdparam is proper, need to calculate v
+            if evaluate:
+                v_pred = self.critic.wrap_eval(x)
+            else:
+                self.critic.train()
+                v_pred = self.critic(x)
+        if not util.in_eval_lab_modes() and not evaluate:  # store for computing advantage when training
+            self.body.v_preds.append(v_pred)
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
@@ -184,20 +194,19 @@ class ActorCritic(Reinforce):
         net = self.net if net is None else net
         if self.shared:  # output: policy, value
             if evaluate:
-                out = net.wrap_eval(x)
+                v_pred = net.wrap_eval(x)
             else:
                 net.train()
-                out = net(x)
-            v = out[-1].squeeze(dim=1)  # get value only
+                v_pred = net(x)
+            v_pred = v_pred[-1]
         else:
             if evaluate:
-                out = self.critic.wrap_eval(x)
+                v_pred = self.critic.wrap_eval(x)
             else:
                 self.critic.train()
-                out = self.critic(x)
-            v = out.squeeze(dim=1)
-        logger.debug(f'v: {v}')
-        return v
+                v_pred = self.critic(x)
+        logger.debug(f'v_pred: {v_pred}')
+        return v_pred
 
     @lab_api
     def train(self):
