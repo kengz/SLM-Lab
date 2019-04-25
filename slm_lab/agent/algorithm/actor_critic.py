@@ -168,15 +168,16 @@ class ActorCritic(Reinforce):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
-        pdparam = super(ActorCritic, self).calc_pdparam(x, evaluate=evaluate, net=net)
+        out = super(ActorCritic, self).calc_pdparam(x, evaluate=evaluate, net=net)
         if self.shared:
-            assert ps.is_list(pdparam), f'Shared output should be a list [pdparam, v]'
-            if len(pdparam) == 2:  # single policy
-                pdparam, v_pred = pdparam
+            assert ps.is_list(out), f'Shared output should be a list [pdparam, v]'
+            if len(out) == 2:  # single policy
+                pdparam, v_pred = out
             else:  # multiple-task policies, still assumes 1 value
-                pdparam = pdparam[:-1]
-                v_pred = pdparam[-1]
-        else:  # pdparam is proper, need to calculate v
+                pdparam = out[:-1]
+                v_pred = out[-1]
+        else:  # out is pdparam, need to calculate v
+            pdparam = out
             if evaluate:
                 v_pred = self.critic.wrap_eval(x)
             else:
