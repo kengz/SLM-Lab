@@ -296,10 +296,9 @@ class ActorCritic(Reinforce):
 
     def calc_val_loss(self, batch, v_targets):
         '''Calculate the critic's value loss'''
-        states = batch['states']
+        v_preds = torch.cat(self.body.v_preds).squeeze(dim=1)
         if self.body.env.is_venv:
-            states = math_util.venv_unpack(states)
-        v_preds = self.calc_v(states, evaluate=False)
+            v_preds = math_util.venv_unpack(v_preds)
         assert v_preds.shape == v_targets.shape, f'{v_preds.shape} != {v_targets.shape}'
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
         logger.debug(f'Critic value loss: {val_loss:g}')
@@ -328,14 +327,10 @@ class ActorCritic(Reinforce):
         Used for training with N-step (not GAE)
         Returns 2-tuple for API-consistency with GAE
         '''
-        states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
-        if self.body.env.is_venv:
-            states = math_util.venv_unpack(states)
-        v_all = self.calc_v(states)
-        if self.body.env.is_venv:
-            v_all = math_util.venv_pack(v_all, self.body.env.num_envs)
-        next_v_preds = v_all[-1:]
-        v_preds = v_all[:-1]
+        v_pred_tail = self.calc_v(batch['next_states'][-1], evaluate=False)
+        v_all = self.body.v_preds + [v_pred_tail]
+        v_preds = torch.cat(v_all[:-1]).squeeze(dim=1).detach()
+        next_v_preds = torch.cat(v_all[-1:]).squeeze(dim=1).detach()
         nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_preds, self.gamma, self.num_step_returns)
         if self.body.env.is_venv:
             nstep_returns = math_util.venv_unpack(nstep_returns)
