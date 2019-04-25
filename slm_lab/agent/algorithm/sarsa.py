@@ -84,16 +84,12 @@ class SARSA(Algorithm):
         self.post_init_nets()
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True, net=None):
+    def calc_pdparam(self, x, net=None):
         '''
         To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
         net = self.net if net is None else net
-        if evaluate:
-            net.eval()
-        else:
-            net.train()
         pdparam = net(x)
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
@@ -112,7 +108,6 @@ class SARSA(Algorithm):
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
-        self.net.eval()
         q_preds = self.net(batch['states'])
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         next_q_preds = self.net(batch['next_states'])

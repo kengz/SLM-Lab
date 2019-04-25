@@ -32,11 +32,11 @@ class HydraDQN(DQN):
         self.eval_net = self.target_net
 
     @lab_api
-    def calc_pdparam(self, xs, evaluate=True, net=None):
+    def calc_pdparam(self, xs, net=None):
         '''
         Calculate pdparams for multi-action by chunking the network logits output
         '''
-        pdparam = SARSA.calc_pdparam(self, xs, evaluate=evaluate, net=net)
+        pdparam = SARSA.calc_pdparam(self, xs, net=net)
         return pdparam
 
     @lab_api
@@ -50,7 +50,7 @@ class HydraDQN(DQN):
                 state = policy_util.update_online_stats_and_normalize_state(body, state)
             states.append(state)
         xs = [torch.from_numpy(state).float() for state in states]
-        pdparam = self.calc_pdparam(xs, evaluate=False)
+        pdparam = self.calc_pdparam(xs)
         # use multi-policy. note arg change
         action_a = self.action_policy(states, self, self.agent.nanflat_body_a, pdparam)
         return action_a.cpu().numpy()
@@ -70,9 +70,6 @@ class HydraDQN(DQN):
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss for Hydra network by apply the singleton logic on generalized aggregate.'''
-        self.net.eval()
-        self.online_net.eval()
-        self.eval_net.eval()
         q_preds = torch.stack(self.net(batch['states']))
         act_q_preds = q_preds.gather(-1, torch.stack(batch['actions']).long().unsqueeze(-1)).squeeze(-1)
         # Use online_net to select actions in next state

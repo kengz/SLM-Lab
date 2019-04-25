@@ -143,6 +143,7 @@ class ConvNet(Net, nn.Module):
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
         self.to(self.device)
+        self.train()
 
     def __str__(self):
         return super(ConvNet, self).__str__() + f'\noptim: {self.optim}'
@@ -198,7 +199,6 @@ class ConvNet(Net, nn.Module):
         if hasattr(self, 'model_tails') and x is not None:
             raise ValueError('Loss computation from x,y not supported for multitails')
         self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
-        self.train()
         self.optim.zero_grad()
         if loss is None:
             out = self(x)
@@ -318,6 +318,7 @@ class DuelingConvNet(ConvNet):
         self.optim = net_util.get_optim(self, self.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
         self.to(self.device)
+        self.train()
 
     def forward(self, x):
         '''The feedforward step'''

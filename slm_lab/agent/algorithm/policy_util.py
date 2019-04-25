@@ -59,7 +59,7 @@ def init_action_pd(state, algorithm, body, append=True):
     ActionPD = getattr(distributions, body.action_pdtype)
     state = try_preprocess(state, algorithm, body, append=append)
     state = state.to(algorithm.net.device)
-    pdparam = algorithm.calc_pdparam(state, evaluate=False)
+    pdparam = algorithm.calc_pdparam(state)
     return ActionPD, pdparam
 
 
@@ -154,7 +154,7 @@ def multi_default(states, algorithm, body_list, pdparam):
     Note, for efficiency, do a single forward pass to calculate pdparam, then call this policy like:
     @example
 
-    pdparam = self.calc_pdparam(state, evaluate=False)
+    pdparam = self.calc_pdparam(state)
     action_a = self.action_policy(pdparam, self, body_list)
     '''
     # assert pdparam has been chunked

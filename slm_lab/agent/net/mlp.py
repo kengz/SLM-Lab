@@ -134,7 +134,6 @@ class MLPNet(Net, nn.Module):
         if hasattr(self, 'model_tails') and x is not None:
             raise ValueError('Loss computation from x,y not supported for multitails')
         self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
-        self.train()
         self.optim.zero_grad()
         if loss is None:
             out = self(x)
@@ -310,7 +309,6 @@ class HydraMLPNet(Net, nn.Module):
         Takes a single training step: one forward and one backwards pass. Both x and y are lists of the same length, one x and y per environment
         '''
         self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
-        self.train()
         self.optim.zero_grad()
         if loss is None:
             outs = self(xs)

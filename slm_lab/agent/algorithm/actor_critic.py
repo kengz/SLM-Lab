@@ -164,11 +164,11 @@ class ActorCritic(Reinforce):
         self.post_init_nets()
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True, net=None):
+    def calc_pdparam(self, x, net=None):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
-        out = super(ActorCritic, self).calc_pdparam(x, evaluate=evaluate, net=net)
+        out = super(ActorCritic, self).calc_pdparam(x, net=net)
         if self.shared:
             assert ps.is_list(out), f'Shared output should be a list [pdparam, v]'
             if len(out) == 2:  # single policy
@@ -178,32 +178,20 @@ class ActorCritic(Reinforce):
                 v_pred = out[-1]
         else:  # out is pdparam, need to calculate v
             pdparam = out
-            if evaluate:
-                self.critic.eval()
-            else:
-                self.critic.train()
             v_pred = self.critic(x)
-        if not util.in_eval_lab_modes() and not evaluate:  # store for computing advantage when training
+        if not util.in_eval_lab_modes():  # store for computing advantage when training
             self.body.v_preds.append(v_pred)
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
-    def calc_v(self, x, evaluate=True, net=None):
+    def calc_v(self, x, net=None):
         '''
         Forward-pass to calculate the predicted state-value from critic.
         '''
         net = self.net if net is None else net
         if self.shared:  # output: policy, value
-            if evaluate:
-                net.eval()
-            else:
-                net.train()
             v_pred = net(x)[-1]
         else:
-            if evaluate:
-                self.critic.eval()
-            else:
-                self.critic.train()
             v_pred = self.critic(x)
         logger.debug(f'v_pred: {v_pred}')
         return v_pred
