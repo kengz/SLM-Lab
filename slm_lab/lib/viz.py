@@ -1,6 +1,5 @@
 '''
 The data visualization module
-TODO pie, swarm, box plots
 '''
 from plotly import (
     graph_objs as go,
@@ -218,7 +217,6 @@ def save_image(figure, filepath=None):
     filepath = util.smart_path(filepath)
     try:
         pio.write_image(figure, filepath)
-        logger.info(f'Graph saved to {filepath}')
     except Exception as e:
         logger.warn(
             f'{e}\nFailed to generate graph. Fix the issue and run retro-analysis to generate graphs.')
