@@ -54,11 +54,6 @@ def test_forward():
     assert y.shape == (batch_size, out_dim)
 
 
-def test_wrap_eval():
-    y = net.wrap_eval(x)
-    assert y.shape == (batch_size, out_dim)
-
-
 def test_training_step():
     y = torch.rand((batch_size, out_dim))
     loss = net.training_step(x=x, y=y)

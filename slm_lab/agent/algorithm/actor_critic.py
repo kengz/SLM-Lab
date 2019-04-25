@@ -164,11 +164,11 @@ class ActorCritic(Reinforce):
         self.post_init_nets()
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True, net=None):
+    def calc_pdparam(self, x, net=None):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
-        pdparam = super(ActorCritic, self).calc_pdparam(x, evaluate=evaluate, net=net)
+        pdparam = super(ActorCritic, self).calc_pdparam(x, net=net)
         if self.shared:  # output: policy, value
             if len(pdparam) == 2:  # single policy outputs, value
                 pdparam = pdparam[0]
@@ -177,27 +177,17 @@ class ActorCritic(Reinforce):
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
-    def calc_v(self, x, evaluate=True, net=None):
+    def calc_v(self, x, net=None):
         '''
         Forward-pass to calculate the predicted state-value from critic.
         '''
         net = self.net if net is None else net
         if self.shared:  # output: policy, value
-            if evaluate:
-                out = net.wrap_eval(x)
-            else:
-                net.train()
-                out = net(x)
-            v = out[-1].squeeze(dim=1)  # get value only
+            v_pred = net(x)[-1].squeeze(dim=1)
         else:
-            if evaluate:
-                out = self.critic.wrap_eval(x)
-            else:
-                self.critic.train()
-                out = self.critic(x)
-            v = out.squeeze(dim=1)
-        logger.debug(f'v: {v}')
-        return v
+            v_pred = self.critic(x).squeeze(dim=1)
+        logger.debug(f'v_pred: {v_pred}')
+        return v_pred
 
     @lab_api
     def train(self):
@@ -286,7 +276,7 @@ class ActorCritic(Reinforce):
     def calc_val_loss(self, batch, v_targets):
         '''Calculate the critic's value loss'''
         v_targets = v_targets.unsqueeze(dim=-1)
-        v_preds = self.calc_v(batch['states'], evaluate=False).unsqueeze(dim=-1)
+        v_preds = self.calc_v(batch['states']).unsqueeze(dim=-1)
         assert v_preds.shape == v_targets.shape
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
         logger.debug(f'Critic value loss: {val_loss:g}')

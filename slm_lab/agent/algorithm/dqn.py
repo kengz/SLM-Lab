@@ -92,9 +92,9 @@ class VanillaDQN(SARSA):
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
-        q_preds = self.net.wrap_eval(batch['states'])
+        q_preds = self.net(batch['states'])
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
-        next_q_preds = self.net.wrap_eval(batch['next_states'])
+        next_q_preds = self.net(batch['next_states'])
         # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
         max_next_q_preds, _ = next_q_preds.max(dim=-1, keepdim=True)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
@@ -196,12 +196,12 @@ class DQNBase(VanillaDQN):
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
-        q_preds = self.net.wrap_eval(batch['states'])
+        q_preds = self.net(batch['states'])
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         # Use online_net to select actions in next state
-        online_next_q_preds = self.online_net.wrap_eval(batch['next_states'])
+        online_next_q_preds = self.online_net(batch['next_states'])
         # Use eval_net to calculate next_q_preds for actions chosen by online_net
-        next_q_preds = self.eval_net.wrap_eval(batch['next_states'])
+        next_q_preds = self.eval_net(batch['next_states'])
         max_next_q_preds = next_q_preds.gather(-1, online_next_q_preds.argmax(dim=-1, keepdim=True)).squeeze(-1)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
         max_q_targets = max_q_targets.detach()

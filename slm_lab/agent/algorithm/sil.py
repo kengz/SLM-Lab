@@ -121,7 +121,7 @@ class SIL(ActorCritic):
         This is called on a randomly-sample batch from experience replay
         '''
         returns = batch['rets']
-        v_preds = self.calc_v(batch['states'], evaluate=False)
+        v_preds = self.calc_v(batch['states'])
         clipped_advs = torch.clamp(returns - v_preds, min=0.0)
         log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
 
