@@ -1,6 +1,5 @@
 '''
 The data visualization module
-TODO pie, swarm, box plots
 '''
 from plotly import (
     graph_objs as go,
