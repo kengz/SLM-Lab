@@ -215,7 +215,8 @@ class ActorCritic(Reinforce):
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
-            advs, v_targets = self.calc_advs_v_targets(batch)
+            with torch.no_grad():
+                advs, v_targets = self.calc_advs_v_targets(batch)
             policy_loss = self.calc_policy_loss(batch, advs)  # from actor
             val_loss = self.calc_val_loss(batch, v_targets)  # from critic
             loss = policy_loss + val_loss
@@ -248,7 +249,8 @@ class ActorCritic(Reinforce):
 
     def train_actor(self, batch):
         '''Trains the actor when the actor and critic are separate networks'''
-        advs, _v_targets = self.calc_advs_v_targets(batch)
+        with torch.no_grad():
+            advs, _v_targets = self.calc_advs_v_targets(batch)
         policy_loss = self.calc_policy_loss(batch, advs)
         self.net.training_step(loss=policy_loss, lr_clock=self.body.env.clock)
         return policy_loss
@@ -258,7 +260,8 @@ class ActorCritic(Reinforce):
         total_val_loss = torch.tensor(0.0, device=self.net.device)
         # training iters only applicable to separate critic network
         for _ in range(self.training_epoch):
-            _advs, v_targets = self.calc_advs_v_targets(batch)
+            with torch.no_grad():
+                _advs, v_targets = self.calc_advs_v_targets(batch)
             val_loss = self.calc_val_loss(batch, v_targets)
             self.critic.training_step(loss=val_loss, lr_clock=self.body.env.clock)
             total_val_loss += val_loss
