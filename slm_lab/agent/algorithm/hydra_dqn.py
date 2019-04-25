@@ -70,12 +70,15 @@ class HydraDQN(DQN):
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss for Hydra network by apply the singleton logic on generalized aggregate.'''
-        q_preds = torch.stack(self.net.wrap_eval(batch['states']))
+        self.net.eval()
+        self.online_net.eval()
+        self.eval_net.eval()
+        q_preds = torch.stack(self.net(batch['states']))
         act_q_preds = q_preds.gather(-1, torch.stack(batch['actions']).long().unsqueeze(-1)).squeeze(-1)
         # Use online_net to select actions in next state
-        online_next_q_preds = torch.stack(self.online_net.wrap_eval(batch['next_states']))
+        online_next_q_preds = torch.stack(self.online_net(batch['next_states']))
         # Use eval_net to calculate next_q_preds for actions chosen by online_net
-        next_q_preds = torch.stack(self.eval_net.wrap_eval(batch['next_states']))
+        next_q_preds = torch.stack(self.eval_net(batch['next_states']))
         max_next_q_preds = online_next_q_preds.gather(-1, next_q_preds.argmax(dim=-1, keepdim=True)).squeeze(-1)
         max_q_targets = torch.stack(batch['rewards']) + self.gamma * (1 - torch.stack(batch['dones'])) * max_next_q_preds
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)

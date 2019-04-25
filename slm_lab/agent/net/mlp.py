@@ -147,14 +147,6 @@ class MLPNet(Net, nn.Module):
         logger.debug(f'Net training_step loss: {loss}')
         return loss
 
-    def wrap_eval(self, x):
-        '''
-        Completes one feedforward step, ensuring net is set to evaluation model
-        returns: network output given input x
-        '''
-        self.eval()
-        return self(x)
-
 
 class HydraMLPNet(Net, nn.Module):
     '''
@@ -334,14 +326,6 @@ class HydraMLPNet(Net, nn.Module):
         self.optim.step()
         logger.debug(f'Net training_step loss: {loss}')
         return loss
-
-    def wrap_eval(self, x):
-        '''
-        Completes one feedforward step, ensuring net is set to evaluation model
-        returns: network output given input x
-        '''
-        self.eval()
-        return self(x)
 
 
 class DuelingMLPNet(MLPNet):

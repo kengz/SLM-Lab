@@ -97,10 +97,10 @@ class Reinforce(Algorithm):
         '''
         net = self.net if net is None else net
         if evaluate:
-            pdparam = net.wrap_eval(x)
+            net.eval()
         else:
             net.train()
-            pdparam = net(x)
+        pdparam = net(x)
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
 

@@ -91,10 +91,10 @@ class SARSA(Algorithm):
         '''
         net = self.net if net is None else net
         if evaluate:
-            pdparam = net.wrap_eval(x)
+            net.eval()
         else:
             net.train()
-            pdparam = net(x)
+        pdparam = net(x)
         logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
@@ -112,9 +112,10 @@ class SARSA(Algorithm):
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
-        q_preds = self.net.wrap_eval(batch['states'])
+        self.net.eval()
+        q_preds = self.net(batch['states'])
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
-        next_q_preds = self.net.wrap_eval(batch['next_states'])
+        next_q_preds = self.net(batch['next_states'])
         act_next_q_preds = q_preds.gather(-1, batch['next_actions'].long().unsqueeze(-1)).squeeze(-1)
         act_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * act_next_q_preds
         q_loss = self.net.loss_fn(act_q_preds, act_q_targets)
