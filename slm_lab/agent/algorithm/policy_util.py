@@ -294,7 +294,6 @@ def calc_log_probs(algorithm, net, body, batch):
         log_probs.append(action_pd.log_prob(actions[idx].float()).sum(dim=0))
     log_probs = torch.stack(log_probs)
     assert not torch.isnan(log_probs).any(), f'log_probs: {log_probs}, \npdparams: {pdparams} \nactions: {actions}'
-    logger.debug(f'log_probs: {log_probs}')
     return log_probs
 
 
@@ -379,10 +378,8 @@ def update_online_stats_and_normalize_state(body, state):
     '''
     Convenience combination function for updating running state mean and std_dev and normalizing the state in one go.
     '''
-    logger.debug(f'state: {state}')
     update_online_stats(body, state)
     state = normalize_state(body, state)
-    logger.debug(f'normalized state: {state}')
     return state
 
 
@@ -390,8 +387,6 @@ def normalize_states_and_next_states(body, batch, episodic_flag=None):
     '''
     Convenience function for normalizing the states and next states in a batch of data
     '''
-    logger.debug(f'states: {batch["states"]}')
-    logger.debug(f'next states: {batch["next_states"]}')
     episodic = episodic_flag if episodic_flag is not None else body.memory.is_episodic
     logger.debug(f'Episodic: {episodic}, episodic_flag: {episodic_flag}, body.memory: {body.memory.is_episodic}')
     if episodic:
@@ -406,6 +401,4 @@ def normalize_states_and_next_states(body, batch, episodic_flag=None):
     else:
         batch['states'] = normalize_state(body, batch['states'])
         batch['next_states'] = normalize_state(body, batch['next_states'])
-    logger.debug(f'normalized states: {batch["states"]}')
-    logger.debug(f'normalized next states: {batch["next_states"]}')
     return batch

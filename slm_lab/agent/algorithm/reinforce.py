@@ -97,7 +97,6 @@ class Reinforce(Algorithm):
         '''
         net = self.net if net is None else net
         pdparam = net(x)
-        logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
     @lab_api

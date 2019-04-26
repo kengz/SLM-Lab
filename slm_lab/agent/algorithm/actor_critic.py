@@ -181,7 +181,6 @@ class ActorCritic(Reinforce):
             v_pred = self.critic(x)
         if not util.in_eval_lab_modes():  # store for computing advantage when training
             self.body.v_preds.append(v_pred)
-        logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
     def calc_v(self, x, net=None):
