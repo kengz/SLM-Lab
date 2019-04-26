@@ -101,10 +101,10 @@ class SARSA(Algorithm):
         if self.normalize_state:
             state = policy_util.update_online_stats_and_normalize_state(body, state)
         action = self.action_policy(state, self, body)
-        if len(action.shape) == 0:  # scalar
-            return action.cpu().numpy().astype(body.action_space.dtype).item()
-        else:
+        if body.action_type.startswith('multi'):  # non-scalar
             return action.cpu().numpy()
+        else:
+            return action.cpu().item()
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
