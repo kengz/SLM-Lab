@@ -105,10 +105,10 @@ class Reinforce(Algorithm):
         if self.normalize_state:
             state = policy_util.update_online_stats_and_normalize_state(body, state)
         action = self.action_policy(state, self, body)
-        if body.action_type.startswith('multi'):  # non-scalar
-            return action.cpu().numpy()
-        else:
+        if len(action) == 1:  # scalar
             return action.cpu().item()
+        else:
+            return action.cpu().numpy()
 
     @lab_api
     def sample(self):
