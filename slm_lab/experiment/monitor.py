@@ -135,10 +135,12 @@ class Body:
         else:
             self.space_init(aeb_space)
 
+        # set the ActionPD class for sampling action
         self.action_type = get_action_type(self.action_space)
         self.action_pdtype = agent_spec[self.a]['algorithm'].get('action_pdtype')
         if self.action_pdtype in (None, 'default'):
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
+        self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
 
     def epi_reset(self):
         '''
@@ -159,17 +161,17 @@ class Body:
         if util.in_eval_lab_modes():  # don't store on eval mode
             return
         # mean for single and multi-action
-        entropy = action_pd.entropy().mean(dim=0)
+        entropy = action_pd.entropy()
         self.entropies.append(entropy)
-        log_prob = action_pd.log_prob(action).mean(dim=0)
+        log_prob = action_pd.log_prob(action)
         self.log_probs.append(log_prob)
-        assert not torch.isnan(log_prob)
+        assert not torch.isnan(log_prob).any()
 
     def flush(self):
         '''Update and flush gradient-related variables after training step similar.'''
         # update
-        self.mean_entropy = torch.tensor(self.entropies).mean().item()
-        self.mean_log_prob = torch.tensor(self.log_probs).mean().item()
+        self.mean_entropy = torch.cat(self.entropies).mean().item()
+        self.mean_log_prob = torch.cat(self.log_probs).mean().item()
         # net.grad_norms is only available in dev mode for efficiency
         grad_norms = net_util.get_grad_norms(self.agent.algorithm)
         self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)

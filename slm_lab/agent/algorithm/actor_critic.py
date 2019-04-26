@@ -270,11 +270,11 @@ class ActorCritic(Reinforce):
 
     def calc_policy_loss(self, batch, advs):
         '''Calculate the actor's policy loss'''
-        assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
-        log_probs = torch.stack(self.body.log_probs)
+        log_probs = torch.cat(self.body.log_probs)
+        assert len(log_probs) == len(advs), f'batch_size of log_probs {len(log_probs)} vs advs: {len(advs)}'
         policy_loss = - self.policy_loss_coef * log_probs * advs
         if self.entropy_coef_spec is not None:
-            entropies = torch.stack(self.body.entropies)
+            entropies = torch.cat(self.body.entropies)
             entropies_mean = entropies.mean().detach()
             policy_loss += (-self.body.entropy_coef * entropies)
         policy_loss = torch.mean(policy_loss)

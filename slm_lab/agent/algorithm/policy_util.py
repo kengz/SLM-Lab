@@ -25,6 +25,17 @@ ACTION_PDS = {
 
 # action_policy base methods
 
+def get_action_pd_cls(action_pdtype, action_type):
+    '''
+    Verify and get the action prob. distribution class for construction
+    Called by body at init to set its own ActionPD
+    '''
+    pdtypes = ACTION_PDS[action_type]
+    assert action_pdtype in pdtypes, f'Pdtype {action_pdtype} is not compatible/supported with action_type {action_type}. Options are: {pdtypes}'
+    ActionPD = getattr(distributions, action_pdtype)
+    return ActionPD
+
+
 def try_preprocess(state, algorithm, body, append=True):
     '''Try calling preprocess as implemented in body's memory to use for net input'''
     if isinstance(state, LazyFrames):
@@ -40,38 +51,34 @@ def try_preprocess(state, algorithm, body, append=True):
     return state
 
 
-def init_action_pd(state, algorithm, body, append=True):
+def calc_pdparam(state, algorithm, body, append=True):
     '''
-    Initialize the class (determined by ACTION_PDS) and parameter for an action prob. dist. used to sample actions, e.g. action_pd = Categorical(logits=pdparam)
+    Prepare the state and run algorithm.calc_pdparam to get pdparam for action_pd
     @param tensor:state For pdparam = net(state)
     @param algorithm The algorithm containing self.net
     @param body Body which links algorithm to the env which the action is for
-    @returns (Distribution:ActionPD, tensor:pdparam)
+    @returns tensor:pdparam
     @example
 
-    ActionPD, pdparam = init_action_pd(state, algorithm, body)
+    pdparam = calc_pdparam(state, algorithm, body)
     action_pd = ActionPD(logits=pdparam)  # e.g. ActionPD is Categorical
     action = action_pd.sample()
     '''
-    pdtypes = ACTION_PDS[body.action_type]
-    assert body.action_pdtype in pdtypes, f'Pdtype {body.action_pdtype} is not compatible/supported with action_type {body.action_type}. Options are: {pdtypes}'
-
-    ActionPD = getattr(distributions, body.action_pdtype)
     state = try_preprocess(state, algorithm, body, append=append)
     state = state.to(algorithm.net.device)
     pdparam = algorithm.calc_pdparam(state)
-    return ActionPD, pdparam
+    return pdparam
 
 
-def _get_action_pd(ActionPD, pdparam, body):
+def init_action_pd(ActionPD, pdparam):
     '''
-    Build the action_pd for discrete and continuous actions conditionally:
+    Initialize the action_pd for discrete or continuous actions:
     - discrete: action_pd = ActionPD(logits)
     - continuous: action_pd = ActionPD(loc, scale)
     '''
-    if body.is_discrete:
+    if 'logits' in ActionPD.arg_constraints:  # discrete
         action_pd = ActionPD(logits=pdparam)
-    else:  # continuous outputs a list, loc and scale
+    else:  # continuous, args = loc and scale
         assert len(pdparam) == 2, pdparam
         # scale (stdev) must be >0, use softplus
         if pdparam[1] < 5:
@@ -80,37 +87,33 @@ def _get_action_pd(ActionPD, pdparam, body):
     return action_pd
 
 
-def _sample_action(ActionPD, pdparam, body):
+def sample_action(ActionPD, pdparam):
     '''
-    Convenient method to sample action using output from init_action_pd
-    Builds action_pd, and internally store relevant variables to body
-    @returns tensor:action A sampled action
+    Convenience method to sample action(s) from action_pd = ActionPD(pdparam)
+    Works with batched pdparam too
+    @returns tensor:action Sampled action(s)
     @example
 
-    ActionPD, pdparam = init_action_pd(state, algorithm, body)
-    action = _sample_action(ActionPD, pdparam, body)
+    # policy contains:
+    pdparam = calc_pdparam(state, algorithm, body)
+    action = sample_action(body.ActionPD, pdparam)
     '''
-    action_pd = _get_action_pd(ActionPD, pdparam, body)
+    action_pd = init_action_pd(ActionPD, pdparam)
     action = action_pd.sample()
-    body.store_action_pd(action, action_pd)
-    return action
-
-
-def sample_action(ActionPD, pdparam, body):
-    '''Wrapper method for _sample_action to sample both batched and singleton action'''
-    if len(pdparam.shape) == 2:  # batched
-        return torch.stack([_sample_action(ActionPD, p, body) for p in pdparam])
-    else:
-        return _sample_action(ActionPD, pdparam, body)
+    # return action
+    # TODO swap back
+    return action, action_pd
 
 
 # action_policy used by agent
 
 
 def default(state, algorithm, body):
-    '''Plain policy by direct sampling from a default action probability defined by ACTION_PDS'''
-    ActionPD, pdparam = init_action_pd(state, algorithm, body)
-    action = sample_action(ActionPD, pdparam, body)
+    '''Plain policy by direct sampling from a default action probability defined by body.ActionPD'''
+    pdparam = calc_pdparam(state, algorithm, body)
+    # action = sample_action(body.ActionPD, pdparam)
+    action, action_pd = sample_action(body.ActionPD, pdparam)
+    body.store_action_pd(action, action_pd)  # TODO remove this tmp
     return action
 
 
@@ -120,7 +123,7 @@ def random(state, algorithm, body):
         _action = [body.action_space.sample() for _ in range(body.env.num_envs)]
     else:
         _action = body.action_space.sample()
-    action = torch.tensor(_action, device=algorithm.net.device)
+    action = torch.tensor(_action)
     return action
 
 
@@ -138,9 +141,9 @@ def boltzmann(state, algorithm, body):
     Boltzmann policy: adjust pdparam with temperature tau; the higher the more randomness/noise in action.
     '''
     tau = body.explore_var
-    ActionPD, pdparam = init_action_pd(state, algorithm, body)
+    pdparam = calc_pdparam(state, algorithm, body)
     pdparam /= tau
-    action = sample_action(ActionPD, pdparam, body)
+    action = sample_action(body.ActionPD, pdparam)
     return action
 
 
@@ -162,9 +165,8 @@ def multi_default(states, algorithm, body_list, pdparam):
     action_list = []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
-        try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with init_action_pd inner logic
-        ActionPD = getattr(distributions, body.action_pdtype)
-        action = sample_action(ActionPD, sub_pdparam, body)
+        try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with singleton inner logic
+        action = sample_action(body.ActionPD, sub_pdparam)
         action_list.append(action)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
     return action_a
@@ -190,9 +192,8 @@ def multi_epsilon_greedy(states, algorithm, body_list, pdparam):
         if epsilon > np.random.rand():
             action = random(states[idx], algorithm, body)
         else:
-            try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with init_action_pd inner logic
-            ActionPD = getattr(distributions, body.action_pdtype)
-            action = sample_action(ActionPD, sub_pdparam, body)
+            try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with singleton inner logic
+            action = sample_action(body.ActionPD, sub_pdparam)
         action_list.append(action)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
     return action_a
@@ -204,11 +205,10 @@ def multi_boltzmann(states, algorithm, body_list, pdparam):
     action_list = []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
-        try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with init_action_pd inner logic
+        try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with singleton inner logic
         tau = body.explore_var
         sub_pdparam /= tau
-        ActionPD = getattr(distributions, body.action_pdtype)
-        action = sample_action(ActionPD, sub_pdparam, body)
+        action = sample_action(body.ActionPD, sub_pdparam)
         action_list.append(action)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
     return action_a
@@ -270,6 +270,7 @@ def guard_multi_pdparams(pdparams, body):
 
 
 def calc_log_probs(algorithm, net, body, batch):
+    # TODO retire this
     '''
     Method to calculate log_probs fresh from batch data
     Body already stores log_prob from self.net. This is used for PPO where log_probs needs to be recalculated.
@@ -289,7 +290,7 @@ def calc_log_probs(algorithm, net, body, batch):
     for idx, pdparam in enumerate(pdparams):
         if not is_multi_action:  # already cloned  for multi_action above
             pdparam = pdparam.clone()  # clone for grad safety
-        action_pd = _get_action_pd(ActionPD, pdparam, body)
+        action_pd = init_action_pd(ActionPD, pdparam)
         log_probs.append(action_pd.log_prob(actions[idx].float()).sum(dim=0))
     log_probs = torch.stack(log_probs)
     assert not torch.isnan(log_probs).any(), f'log_probs: {log_probs}, \npdparams: {pdparams} \nactions: {actions}'
