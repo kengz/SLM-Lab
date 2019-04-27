@@ -172,13 +172,11 @@ class ActorCritic(Reinforce):
         if self.shared:
             assert ps.is_list(out), f'Shared output should be a list [pdparam, v]'
             if len(out) == 2:  # single policy
-                pdparam, v_pred = out
+                pdparam = out[0]
             else:  # multiple-task policies, still assumes 1 value
                 pdparam = out[:-1]
-                v_pred = out[-1]
-        else:  # out is pdparam, need to calculate v
+        else:  # out is pdparam
             pdparam = out
-            v_pred = self.critic(x)
         return pdparam
 
     def calc_v(self, x, net=None):
@@ -264,23 +262,28 @@ class ActorCritic(Reinforce):
 
     def calc_policy_loss(self, batch, advs):
         '''Calculate the actor's policy loss'''
-        log_probs = torch.cat(self.body.log_probs)
+        states = batch['states']
+        actions = batch['actions']
+        if self.body.env.is_venv:
+            states = math_util.venv_unpack(states)
+            actions = math_util.venv_unpack(actions)
+        action_pd = policy_util.calc_action_pd(states, self, self.body)
+        log_probs = action_pd.log_prob(actions)
         assert len(log_probs) == len(advs), f'batch_size of log_probs {len(log_probs)} vs advs: {len(advs)}'
         policy_loss = - self.policy_loss_coef * log_probs * advs
         if self.entropy_coef_spec is not None:
-            entropies = torch.cat(self.body.entropies)
-            entropies_mean = entropies.mean().detach()
+            entropies = action_pd.entropy()
             policy_loss += (-self.body.entropy_coef * entropies)
         policy_loss = torch.mean(policy_loss)
-        logger.debug(f'Actor entropies: {entropies_mean:g}')
         logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
 
     def calc_val_loss(self, batch, v_targets):
         '''Calculate the critic's value loss'''
-        v_preds = torch.cat(self.body.v_preds).squeeze(dim=1)
+        states = batch['states']
         if self.body.env.is_venv:
-            v_preds = math_util.venv_unpack(v_preds)
+            states = math_util.venv_unpack(states)
+        v_preds = self.calc_v(states).squeeze(dim=-1)
         assert v_preds.shape == v_targets.shape, f'{v_preds.shape} != {v_targets.shape}'
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
         logger.debug(f'Critic value loss: {val_loss:g}')
@@ -309,10 +312,17 @@ class ActorCritic(Reinforce):
         Used for training with N-step (not GAE)
         Returns 2-tuple for API-consistency with GAE
         '''
-        v_pred_tail = self.calc_v(batch['next_states'][-1])
-        v_all = self.body.v_preds + [v_pred_tail]
-        v_preds = torch.cat(v_all[:-1]).squeeze(dim=1).detach()
-        next_v_preds = torch.cat(v_all[-1:]).squeeze(dim=1).detach()
+        states = batch['states']
+        next_state = batch['next_states'][-1:]
+        # next_state = batch['next_states'][-self.body.env.num_envs:]
+        all_states = torch.cat((states, next_state), dim=0)  # prevent double-pass
+        if self.body.env.is_venv:
+            all_states = math_util.venv_unpack(all_states)
+        v_all = self.calc_v(all_states)
+        if self.body.env.is_venv:
+            v_all = math_util.venv_pack(v_all, self.body.env.num_envs)
+        v_preds = v_all[:-1].squeeze(dim=-1).detach()
+        next_v_preds = v_all[-1:].squeeze(dim=-1).detach()
         nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_preds, self.gamma, self.num_step_returns)
         if self.body.env.is_venv:
             nstep_returns = math_util.venv_unpack(nstep_returns)
