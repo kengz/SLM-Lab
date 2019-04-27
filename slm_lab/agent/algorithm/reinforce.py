@@ -143,11 +143,12 @@ class Reinforce(Algorithm):
         advs = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
         advs = math_util.standardize(advs)
         logger.debug(f'advs: {advs}')
-        assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
-        log_probs = torch.stack(self.body.log_probs)
+        action_pd = policy_util.calc_action_pd(batch['states'], self, self.body)
+        log_probs = action_pd.log_prob(batch['actions'])
+        assert len(log_probs) == len(advs), f'batch_size of log_probs {len(log_probs)} vs advs: {len(advs)}'
         policy_loss = - log_probs * advs
         if self.entropy_coef_spec is not None:
-            entropies = torch.stack(self.body.entropies)
+            entropies = action_pd.entropy()
             policy_loss += (-self.body.entropy_coef * entropies)
         policy_loss = torch.sum(policy_loss)
         logger.debug(f'Actor policy loss: {policy_loss:g}')

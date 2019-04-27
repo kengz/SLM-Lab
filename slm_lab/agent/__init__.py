@@ -23,6 +23,7 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
+import torch
 
 AGENT_DATA_NAMES = ['action', 'loss', 'explore_var']
 logger = logger.get_logger(__name__)
@@ -63,7 +64,8 @@ class Agent:
     @lab_api
     def act(self, state):
         '''Standard act method from algorithm.'''
-        action = self.algorithm.act(state)
+        with torch.no_grad():  # for efficiency, only calc grad in algorithm.train
+            action = self.algorithm.act(state)
         logger.debug(f'Agent {self.a} act: {action}')
         return action
 
@@ -125,7 +127,8 @@ class Agent:
     @lab_api
     def space_act(self, state_a):
         '''Standard act method from algorithm.'''
-        action_a = self.algorithm.space_act(state_a)
+        with torch.no_grad():
+            action_a = self.algorithm.space_act(state_a)
         logger.debug(f'Agent {self.a} act: {action_a}')
         return action_a
 

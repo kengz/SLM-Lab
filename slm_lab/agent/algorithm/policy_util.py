@@ -64,8 +64,9 @@ def calc_pdparam(state, algorithm, body, append=True):
     action_pd = ActionPD(logits=pdparam)  # e.g. ActionPD is Categorical
     action = action_pd.sample()
     '''
-    state = try_preprocess(state, algorithm, body, append=append)
-    state = state.to(algorithm.net.device)
+    if not torch.is_tensor(state):  # dont need to cast from numpy
+        state = try_preprocess(state, algorithm, body, append=append)
+        state = state.to(algorithm.net.device)
     pdparam = algorithm.calc_pdparam(state)
     return pdparam
 
@@ -100,9 +101,17 @@ def sample_action(ActionPD, pdparam):
     '''
     action_pd = init_action_pd(ActionPD, pdparam)
     action = action_pd.sample()
-    # return action
-    # TODO swap back
-    return action, action_pd
+    return action
+
+
+def calc_action_pd(state, algorithm, body):
+    '''
+    Do calc_pdparam from state and get action_pd to calc log_prob, entropy, etc.
+    This is used for batched loss calculation for efficiency
+    '''
+    pdparam = calc_pdparam(state, algorithm, body)
+    action_pd = init_action_pd(body.ActionPD, pdparam)
+    return action_pd
 
 
 # action_policy used by agent
@@ -111,9 +120,7 @@ def sample_action(ActionPD, pdparam):
 def default(state, algorithm, body):
     '''Plain policy by direct sampling from a default action probability defined by body.ActionPD'''
     pdparam = calc_pdparam(state, algorithm, body)
-    # action = sample_action(body.ActionPD, pdparam)
-    action, action_pd = sample_action(body.ActionPD, pdparam)
-    body.store_action_pd(action, action_pd)  # TODO remove this tmp
+    action = sample_action(body.ActionPD, pdparam)
     return action
 
 
@@ -123,7 +130,7 @@ def random(state, algorithm, body):
         _action = [body.action_space.sample() for _ in range(body.env.num_envs)]
     else:
         _action = body.action_space.sample()
-    action = torch.tensor(_action)
+    action = torch.tensor([_action])
     return action
 
 

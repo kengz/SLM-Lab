@@ -156,17 +156,6 @@ class Body:
         '''Interface update method for body at agent.update()'''
         self.total_reward = math_util.nan_add(self.total_reward, reward)
 
-    def store_action_pd(self, action, action_pd):
-        '''Calculate and store this body's action entropy and log_prob. Call this in policy_util'''
-        if util.in_eval_lab_modes():  # don't store on eval mode
-            return
-        # mean for single and multi-action
-        entropy = action_pd.entropy()
-        self.entropies.append(entropy)
-        log_prob = action_pd.log_prob(action)
-        self.log_probs.append(log_prob)
-        assert not torch.isnan(log_prob).any()
-
     def flush(self):
         '''Update and flush gradient-related variables after training step similar.'''
         # update
