@@ -78,10 +78,10 @@ def venv_pack(batch_tensor, num_envs):
     '''Apply the reverse of venv_unpack to pack a batch tensor from (b*num_envs, *shape) to (b, num_envs, *shape)'''
     shape = list(batch_tensor.shape)
     if len(shape) < 2:  # scalar data (b, num_envs,)
-        return batch_tensor.reshape(-1, num_envs)
+        return batch_tensor.view(-1, num_envs)
     else:  # non-scalar data (b, num_envs, *shape)
         pack_shape = [-1, num_envs] + shape[1:]
-        return batch_tensor.reshape(pack_shape)
+        return batch_tensor.view(pack_shape)
 
 
 def venv_unpack(batch_tensor):
@@ -92,10 +92,10 @@ def venv_unpack(batch_tensor):
     '''
     shape = list(batch_tensor.shape)
     if len(shape) < 3:  # scalar data (b, num_envs,)
-        return batch_tensor.flatten()
+        return batch_tensor.view(-1)
     else:  # non-scalar data (b, num_envs, *shape)
         unpack_shape = [-1] + shape[2:]
-        return batch_tensor.reshape(unpack_shape)
+        return batch_tensor.view(unpack_shape)
 
 
 # Policy Gradient calc
