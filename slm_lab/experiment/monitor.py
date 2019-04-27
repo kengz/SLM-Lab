@@ -90,19 +90,14 @@ class Body:
         self.a, self.e, self.b = aeb
         self.nanflat_a_idx, self.nanflat_e_idx = self.a, self.e
 
-        # for action policy exploration, so be set in algo during init_algorithm_params()
-        self.explore_var = np.nan
+        # variables set during init_algorithm_params
+        self.explore_var = np.nan  # action exploration: epsilon or tau
+        self.entropy_coef = np.nan  # entropy for exploration
 
-        # body stats variables
-        self.loss = np.nan  # training losses
-        # diagnostics variables/stats from action_policy prob. dist.
-        self.v_preds = []  # store v_preds computed alongside action
-        self.entropies = []  # action entropies for exploration
-        self.log_probs = []  # action log probs
-        # mean values for debugging
-        self.mean_entropy = np.nan
-        self.mean_log_prob = np.nan
-        self.mean_grad_norm = np.nan
+        # debugging/logging variables, set in train or loss function
+        self.loss = np.nan
+        self.log_probs = torch.tensor(np.nan)
+        self.entropies = torch.tensor(np.nan)
 
         # stores running mean and std dev of states
         self.state_mean = np.nan
@@ -149,26 +144,10 @@ class Body:
         '''
         t = self.env.clock.t
         assert t == 0, f'aeb: {self.aeb}, t: {t}'
-        if hasattr(self, 'aeb_space'):
-            self.space_fix_stats()
 
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
         self.total_reward = math_util.nan_add(self.total_reward, reward)
-
-    def flush(self):
-        '''Update and flush gradient-related variables after training step similar.'''
-        # update
-        self.mean_entropy = torch.cat(self.entropies).mean().item()
-        self.mean_log_prob = torch.cat(self.log_probs).mean().item()
-        # net.grad_norms is only available in dev mode for efficiency
-        grad_norms = net_util.get_grad_norms(self.agent.algorithm)
-        self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
-
-        # flush
-        self.v_preds = []
-        self.entropies = []
-        self.log_probs = []
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
@@ -178,6 +157,13 @@ class Body:
         total_t = self.env.clock.get('total_t')
         wall_t = env.clock.get_elapsed_wall_t()
         fps = 0 if wall_t == 0 else total_t / wall_t
+
+        # update debugging variables
+        mean_entropy = self.entropies.mean().item()
+        mean_log_prob = self.log_probs.mean().item()
+        grad_norms = net_util.get_grad_norms(self.agent.algorithm)
+        mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
+
         row = pd.Series({
             # epi and total_t are always measured from training env
             'epi': self.env.clock.get('epi'),
@@ -192,9 +178,9 @@ class Body:
             'lr': self.get_mean_lr(),
             'explore_var': self.explore_var,
             'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
-            'entropy': self.mean_entropy,
-            'log_prob': self.mean_log_prob,
-            'grad_norm': self.mean_grad_norm,
+            'entropy': mean_entropy,
+            'log_prob': mean_log_prob,
+            'grad_norm': mean_grad_norm,
         }, dtype=np.float32)
         assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
         return row
@@ -271,12 +257,6 @@ class Body:
         self.state_dim = self.observable_dim['state']
         self.action_dim = self.env._get_action_dim(self.action_space)
         self.is_discrete = self.env._is_discrete(self.action_space)
-
-    def space_fix_stats(self):
-        '''the space control loop will make agent append stat at done, so to offset for that, pop it at reset'''
-        for action_stat in [self.entropies, self.log_probs]:
-            if len(action_stat) > 0:
-                action_stat.pop()
 
 
 class DataSpace:

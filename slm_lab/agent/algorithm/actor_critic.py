@@ -179,8 +179,6 @@ class ActorCritic(Reinforce):
         else:  # out is pdparam, need to calculate v
             pdparam = out
             v_pred = self.critic(x)
-        if not util.in_eval_lab_modes():  # store for computing advantage when training
-            self.body.v_preds.append(v_pred)
         return pdparam
 
     def calc_v(self, x, net=None):
@@ -199,7 +197,6 @@ class ActorCritic(Reinforce):
     def train(self):
         '''Trains the algorithm'''
         if util.in_eval_lab_modes():
-            self.body.flush()
             return np.nan
         if self.shared:
             return self.train_shared()
@@ -222,7 +219,6 @@ class ActorCritic(Reinforce):
             self.net.training_step(loss=loss, lr_clock=clock)
             # reset
             self.to_train = 0
-            self.body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
@@ -240,7 +236,6 @@ class ActorCritic(Reinforce):
             loss = val_loss + abs(policy_loss)
             # reset
             self.to_train = 0
-            self.body.flush()
             logger.debug(f'Trained {self.name}, loss: {loss:g}')
             return loss.item()
         else:

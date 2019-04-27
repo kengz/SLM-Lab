@@ -171,7 +171,6 @@ class PPO(ActorCritic):
             loss = total_loss / self.training_epoch
             # reset
             self.to_train = 0
-            self.body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
@@ -191,7 +190,6 @@ class PPO(ActorCritic):
             loss = val_loss + policy_loss
             # reset
             self.to_train = 0
-            self.body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:

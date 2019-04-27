@@ -122,7 +122,6 @@ class Reinforce(Algorithm):
     @lab_api
     def train(self):
         if util.in_eval_lab_modes():
-            self.body.flush()
             return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
@@ -131,7 +130,6 @@ class Reinforce(Algorithm):
             self.net.training_step(loss=loss, lr_clock=clock)
             # reset
             self.to_train = 0
-            self.body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
