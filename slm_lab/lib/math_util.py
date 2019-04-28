@@ -135,7 +135,7 @@ def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
     If r_k doesn't exist, directly substitute its place with V(s_k) and shorten the sum
     '''
     rets = torch.zeros(rewards.shape, dtype=torch.float32, device=rewards.device)
-    future_ret = v_preds[-1] * (1 - dones[-1])
+    future_ret = v_preds[-1]
     for t in reversed(range(n)):
         # compute while handling episodic boundary for future term to use v_preds if done
         # future_ret = rewards[t] + gamma * (future_ret * (1 - dones[t]) + dones[t] * v_preds[t])
