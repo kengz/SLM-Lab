@@ -74,6 +74,30 @@ def to_one_hot(data, max_val):
     return np.eye(max_val)[np.array(data)]
 
 
+def venv_pack(batch_tensor, num_envs):
+    '''Apply the reverse of venv_unpack to pack a batch tensor from (b*num_envs, *shape) to (b, num_envs, *shape)'''
+    shape = list(batch_tensor.shape)
+    if len(shape) < 2:  # scalar data (b, num_envs,)
+        return batch_tensor.view(-1, num_envs)
+    else:  # non-scalar data (b, num_envs, *shape)
+        pack_shape = [-1, num_envs] + shape[1:]
+        return batch_tensor.view(pack_shape)
+
+
+def venv_unpack(batch_tensor):
+    '''
+    Unpack a sampled vec env batch tensor
+    e.g. for a state with original shape (4, ), vec env should return vec state with shape (num_envs, 4) to store in memory
+    When sampled with batch_size b, we should get shape (b, num_envs, 4). But we need to unpack the num_envs dimension to get (b * num_envs, 4) for passing to a network. This method does that.
+    '''
+    shape = list(batch_tensor.shape)
+    if len(shape) < 3:  # scalar data (b, num_envs,)
+        return batch_tensor.view(-1)
+    else:  # non-scalar data (b, num_envs, *shape)
+        unpack_shape = [-1] + shape[2:]
+        return batch_tensor.view(unpack_shape)
+
+
 # Policy Gradient calc
 # advantage functions
 
@@ -86,7 +110,7 @@ def calc_returns(rewards, dones, gamma):
     if is_tensor:
         assert not torch.isnan(rewards).any()
     else:
-        assert not np.any(np.isnan(rewards))
+        assert not np.isnan(rewards).any()
     # handle epi-end, to not sum past current episode
     not_dones = 1 - dones
     T = len(rewards)
