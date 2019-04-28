@@ -128,17 +128,19 @@ def calc_returns(rewards, dones, gamma):
 
 def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
     '''
-    if last state was terminal:
-        R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1} + gamma^(n) V(s_{t+n})
-    else:
-        R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1}
+    Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
+    Also see Algorithm S3 from A3C paper for the calculation used below
+    R^(n)_t = r_{t+1} + gamma r_{t+2} + ... + gamma^(n-1) r_{t+n} + gamma^(n) V(s_{t+n})
+    For edge case where there is no r term, substitute with V and end the sum,
+    If r_k doesn't exist, directly substitute its place with V(s_k) and shorten the sum
     '''
-    assert not torch.isnan(rewards).any()
-    rets = torch.zeros((rewards.shape[0] + 1, rewards.shape[1]), dtype=torch.float32, device=v_preds.device)
-    rets[-1] = v_preds
+    rets = torch.zeros(rewards.shape, dtype=torch.float32, device=rewards.device)
+    future_ret = v_preds[-1] * (1 - dones[-1])
     for t in reversed(range(n)):
-        rets[t] = rewards[t] + gamma * rets[t + 1] * 1 - dones[t]
-    return rets[:-1, :]
+        # compute while handling episodic boundary for future term to use v_preds if done
+        future_ret = rewards[t] + gamma * (future_ret * (1 - dones[t]) + dones[t] * v_preds[t])
+        rets[t] = future_ret
+    return rets
 
 
 def calc_nstep_returns_old(rewards, dones, v_preds, gamma, n):
