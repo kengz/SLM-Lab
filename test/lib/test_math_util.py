@@ -32,7 +32,7 @@ def test_nan_add():
 def test_venv_pack(base_shape):
     batch_size = 5
     num_envs = 4
-    batch_arr = np.zeros([batch_size, num_envs] + base_shape)
+    batch_arr = torch.zeros([batch_size, num_envs] + base_shape)
     unpacked_arr = math_util.venv_unpack(batch_arr)
     packed_arr = math_util.venv_pack(unpacked_arr, num_envs)
     assert list(packed_arr.shape) == [batch_size, num_envs] + base_shape
@@ -46,7 +46,7 @@ def test_venv_pack(base_shape):
 def test_venv_unpack(base_shape):
     batch_size = 5
     num_envs = 4
-    batch_arr = np.zeros([batch_size, num_envs] + base_shape)
+    batch_arr = torch.zeros([batch_size, num_envs] + base_shape)
     unpacked_arr = math_util.venv_unpack(batch_arr)
     assert list(unpacked_arr.shape) == [batch_size * num_envs] + base_shape
 
