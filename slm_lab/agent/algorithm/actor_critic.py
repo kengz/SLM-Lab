@@ -191,12 +191,12 @@ class ActorCritic(Reinforce):
             else:
                 v_pred = self.net(x)[-1].squeeze(dim=-1)
         else:
-            v_pred = self.critic(x)
+            v_pred = self.critic(x).squeeze(dim=-1)
         return v_pred
 
     def calc_pdparam_v(self, batch):
-        '''Efficiently forward to get pdparam and v for loss computation'''
         states = batch['states']
+        '''Efficiently forward to get pdparam and v by batch for loss computation'''
         if self.body.env.is_venv:
             states = math_util.venv_unpack(states)
         pdparam = self.calc_pdparam(states)

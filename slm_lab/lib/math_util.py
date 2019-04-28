@@ -129,10 +129,8 @@ def calc_returns(rewards, dones, gamma):
 def calc_nstep_returns(rewards, dones, next_v_pred, gamma, n):
     '''
     Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
-    Also see Algorithm S3 from A3C paper for the calculation used below
-    R^(n)_t = r_{t+1} + gamma r_{t+2} + ... + gamma^(n-1) r_{t+n} + gamma^(n) V(s_{t+n})
-    For edge case where there is no r term, substitute with V and end the sum,
-    If r_k doesn't exist, directly substitute its place with V(s_k) and shorten the sum
+    Also see Algorithm S3 from A3C paper https://arxiv.org/pdf/1602.01783.pdf for the calculation used below
+    R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1} + gamma^(n) V(s_{t+n})
     '''
     rets = torch.zeros(rewards.shape, dtype=torch.float32, device=rewards.device)
     future_ret = next_v_pred
