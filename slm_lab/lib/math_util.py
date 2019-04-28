@@ -105,8 +105,6 @@ def calc_returns(rewards, dones, gamma):
     '''
     Calculate the simple returns (full rollout) i.e. sum discounted rewards up till termination
     '''
-    is_tensor = torch.is_tensor(rewards)
-    # handle epi-end, to not sum past current episode
     T = len(rewards)
     rets = torch.zeros_like(rewards)
     future_ret = torch.tensor(0.0, dtype=rewards.dtype)
