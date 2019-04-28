@@ -115,7 +115,8 @@ class Session:
             self.try_ckpt(self.agent, self.env)
             clock.tick('t')
             action = self.agent.act(state)
-            next_state, reward, done, info = self.env.step(action)
+            next_state, reward, done, info = self.env.u_env.step(action)
+            # next_state, reward, done, info = self.env.step(action)
             self.agent.update(state, action, reward, next_state, done)
             state = next_state
 
