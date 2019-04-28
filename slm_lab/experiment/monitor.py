@@ -137,14 +137,6 @@ class Body:
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
         self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
 
-    def epi_reset(self):
-        '''
-        Handles any body attribute reset at the start of an episode.
-        This method is called automatically at base memory.epi_reset().
-        '''
-        t = self.env.clock.t
-        assert t == 0, f'aeb: {self.aeb}, t: {t}'
-
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
         self.total_reward = math_util.nan_add(self.total_reward, reward)

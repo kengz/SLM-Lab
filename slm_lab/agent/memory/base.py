@@ -34,7 +34,6 @@ class Memory(ABC):
 
     def epi_reset(self, state):
         '''Method to reset at new episode'''
-        self.body.epi_reset()
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
