@@ -24,12 +24,16 @@ class Random(Algorithm):
     @lab_api
     def init_nets(self, global_nets=None):
         '''Initialize the neural network from the spec'''
-        pass
+        self.net_names = []
 
     @lab_api
     def act(self, state):
         '''Random action'''
-        action = self.body.action_space.sample()
+        body = self.body
+        if body.env.is_venv and not util.in_eval_lab_modes():
+            action = np.array([body.action_space.sample() for _ in range(body.env.num_envs)])
+        else:
+            action = body.action_space.sample()
         return action
 
     @lab_api
