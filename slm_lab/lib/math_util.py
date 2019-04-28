@@ -132,11 +132,11 @@ def calc_nstep_returns(rewards, dones, next_v_pred, gamma, n):
     Also see Algorithm S3 from A3C paper https://arxiv.org/pdf/1602.01783.pdf for the calculation used below
     R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1} + gamma^(n) V(s_{t+n})
     '''
-    rets = torch.zeros(rewards.shape, dtype=torch.float32, device=rewards.device)
+    rets = torch.zeros_like(rewards)
     future_ret = next_v_pred
+    not_dones = 1 - dones
     for t in reversed(range(n)):
-        future_ret = rewards[t] + gamma * future_ret * (1 - dones[t])
-        rets[t] = future_ret
+        rets[t] = future_ret = rewards[t] + gamma * future_ret * not_dones[t]
     return rets
 
 
