@@ -99,6 +99,7 @@ class Session:
         '''Run the main RL loop until clock.max_tick'''
         logger.info(f'Running RL loop for trial {self.info_space.get("trial")} session {self.index}')
         clock = self.env.clock
+        clock.reset()
         state = self.env.reset()
         self.agent.reset(state)
         done = False

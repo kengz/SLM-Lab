@@ -37,6 +37,9 @@ class Clock:
         self.max_tick = max_tick
         self.max_tick_unit = max_tick_unit
         self.clock_speed = int(clock_speed)
+        self.reset()
+
+    def reset(self):
         self.t = 0
         self.total_t = 0
         self.epi = 0
