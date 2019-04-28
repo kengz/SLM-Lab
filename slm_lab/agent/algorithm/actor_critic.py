@@ -228,7 +228,7 @@ class ActorCritic(Reinforce):
         with torch.no_grad():
             next_v_pred = self.calc_v(batch['next_states'][-1], use_cache=False)
         v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_pred, self.gamma, self.num_step_returns)
-        advs = v_targets - v_preds
+        advs = (v_targets - v_preds).detach()
         if self.body.env.is_venv:
             advs = math_util.venv_unpack(advs)
             v_targets = math_util.venv_unpack(v_targets)
