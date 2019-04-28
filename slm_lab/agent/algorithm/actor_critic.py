@@ -204,10 +204,6 @@ class ActorCritic(Reinforce):
         return pdparam, v_pred
 
     def calc_ret_advs_v_targets(self, batch):
-        '''
-        Calculate N-step returns with variable steps depending on the position in the batch. Each element gets the maximum number of steps possible. If batch_size = 8, then t1 gets 8 steps of returns, t2 = 7 steps, etc.
-        See https://github.com/openai/baselines/blob/3f2f45acef0fdfdba723f0c087c9d1408f9c45a6/baselines/a2c/utils.py#L147
-        '''
         # TODO is this method needed?
         v_preds_all = self.calc_v(torch.cat([batch['states'], batch['next_states'][-1, :].unsqueeze(0)], dim=-0))
         v_preds = v_preds_all[:-1]
@@ -225,10 +221,11 @@ class ActorCritic(Reinforce):
         '''
         with torch.no_grad():
             next_v_pred = self.calc_v(batch['next_states'][-1], use_cache=False)
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_pred, self.gamma, self.num_step_returns)
         v_preds = v_preds.detach()  # adv does not accumulate grad
         if self.body.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
+
+        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_pred, self.gamma, self.num_step_returns)
         advs = v_targets - v_preds
         if self.body.env.is_venv:
             advs = math_util.venv_unpack(advs)
@@ -236,19 +233,24 @@ class ActorCritic(Reinforce):
         logger.debug(f'advs: {advs}\nv_targets: {v_targets}')
         return advs, v_targets
 
-    def calc_gae_advs_v_targets(self, batch):
+    def calc_gae_advs_v_targets(self, batch, v_preds):
         '''
-        Calculate the GAE advantages and value targets for training actor and critic respectively
-        advs = GAE (see math_util method)
+        Calculate GAE as advantage; from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
         v_targets = advs + v_preds
-        before output, advs is standardized (so v_targets used the unstandardized version)
-        Used for training with GAE
         '''
-        states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
-        v_preds = self.calc_v(states)
-        advs = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds, self.gamma, self.lam)
-        v_targets = advs + v_preds[:-1]
-        advs = math_util.standardize(advs)
+        with torch.no_grad():
+            next_v_pred = self.calc_v(batch['next_states'][-1], use_cache=False)
+        v_preds = v_preds.detach()  # adv does not accumulate grad
+        if self.body.env.is_venv:
+            v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
+
+        v_preds_all = torch.cat((v_preds, next_v_pred.unsqueeze(dim=0)), dim=0)
+        advs = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds_all, self.gamma, self.lam)
+        v_targets = advs + v_preds
+        advs = math_util.standardize(advs)  # standardize only for advs, not v_targets
+        if self.body.env.is_venv:
+            advs = math_util.venv_unpack(advs)
+            v_targets = math_util.venv_unpack(v_targets)
         logger.debug(f'advs: {advs}\nv_targets: {v_targets}')
         return advs, v_targets
 
