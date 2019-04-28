@@ -180,13 +180,16 @@ class ActorCritic(Reinforce):
             pdparam = out
         return pdparam
 
-    def calc_v(self, x, net=None):
+    def calc_v(self, x, net=None, use_cache=True):
         '''
         Forward-pass to calculate the predicted state-value from critic.
         '''
         net = self.net if net is None else net
         if self.shared:  # output: policy, value
-            v_pred = self.v_pred  # uses cache from calc_pdparam to prevent double-pass
+            if use_cache:  # uses cache from calc_pdparam to prevent double-pass
+                v_pred = self.v_pred
+            else:
+                v_pred = self.net(x)[-1].squeeze(dim=-1)
         else:
             v_pred = self.critic(x)
         return v_pred
@@ -223,7 +226,9 @@ class ActorCritic(Reinforce):
         v_preds_d = v_preds.detach()
         if self.body.env.is_venv:
             v_preds_d = math_util.venv_pack(v_preds_d, self.body.env.num_envs)
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], v_preds_d, self.gamma, self.num_step_returns)
+        with torch.no_grad():
+            next_v_pred = self.calc_v(batch['next_states'][-1], use_cache=False)
+        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_pred, self.gamma, self.num_step_returns)
         advs = v_targets - v_preds_d
         if self.body.env.is_venv:
             advs = math_util.venv_unpack(advs)

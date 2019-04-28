@@ -126,7 +126,7 @@ def calc_returns(rewards, dones, gamma):
     return rets
 
 
-def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
+def calc_nstep_returns(rewards, dones, next_v_pred, gamma, n):
     '''
     Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
     Also see Algorithm S3 from A3C paper for the calculation used below
@@ -135,10 +135,8 @@ def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
     If r_k doesn't exist, directly substitute its place with V(s_k) and shorten the sum
     '''
     rets = torch.zeros(rewards.shape, dtype=torch.float32, device=rewards.device)
-    future_ret = v_preds[-1]
+    future_ret = next_v_pred
     for t in reversed(range(n)):
-        # compute while handling episodic boundary for future term to use v_preds if done
-        # future_ret = rewards[t] + gamma * (future_ret * (1 - dones[t]) + dones[t] * v_preds[t])
         future_ret = rewards[t] + gamma * future_ret * (1 - dones[t])
         rets[t] = future_ret
     return rets
