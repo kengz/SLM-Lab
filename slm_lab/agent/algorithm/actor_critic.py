@@ -223,12 +223,13 @@ class ActorCritic(Reinforce):
         Calculate N-step returns as advantage = nstep_returns - v_pred
         See n-step advantage under http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_5_actor_critic_pdf.pdf
         '''
+        v_preds = v_preds.detach()  # adv does not accumulate grad
         if self.body.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
         with torch.no_grad():
             next_v_pred = self.calc_v(batch['next_states'][-1], use_cache=False)
         v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_pred, self.gamma, self.num_step_returns)
-        advs = (v_targets - v_preds).detach()
+        advs = v_targets - v_preds
         if self.body.env.is_venv:
             advs = math_util.venv_unpack(advs)
             v_targets = math_util.venv_unpack(v_targets)
