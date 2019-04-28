@@ -49,7 +49,7 @@ def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
     rets = torch.zeros((rewards.shape[0] + 1, rewards.shape[1]), dtype=torch.float32, device=v_preds.device)
     rets[-1] = v_preds
     for t in reversed(range(n)):
-        rets[t] = rewards[t] + gamma * rets[t + 1] * 1 - dones[t]
+        rets[t] = rewards[t] + gamma * rets[t + 1] * (1 - dones[t])
     return rets[:-1, :]
 
 
