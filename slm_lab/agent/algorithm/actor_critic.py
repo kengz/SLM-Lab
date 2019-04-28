@@ -261,9 +261,9 @@ class ActorCritic(Reinforce):
         log_probs = action_pd.log_prob(actions)
         assert log_probs.shape == advs.shape, f'{log_probs.shape} != advs: {advs.shape}'
         policy_loss = - self.policy_loss_coef * (log_probs * advs).mean()
-        # if self.entropy_coef_spec:
-        #     entropy = action_pd.entropy().mean()
-        #     policy_loss += (-self.body.entropy_coef * entropy)
+        if self.entropy_coef_spec:
+            entropy = action_pd.entropy().mean()
+            policy_loss += (-self.body.entropy_coef * entropy)
         logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
 
