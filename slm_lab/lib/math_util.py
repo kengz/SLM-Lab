@@ -138,7 +138,8 @@ def calc_nstep_returns(rewards, dones, v_preds, gamma, n):
     future_ret = v_preds[-1] * (1 - dones[-1])
     for t in reversed(range(n)):
         # compute while handling episodic boundary for future term to use v_preds if done
-        future_ret = rewards[t] + gamma * (future_ret * (1 - dones[t]) + dones[t] * v_preds[t])
+        # future_ret = rewards[t] + gamma * (future_ret * (1 - dones[t]) + dones[t] * v_preds[t])
+        future_ret = rewards[t] + gamma * future_ret * (1 - dones[t]
         rets[t] = future_ret
     return rets
 
