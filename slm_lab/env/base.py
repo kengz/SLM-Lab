@@ -90,7 +90,7 @@ class BaseEnv(ABC):
         util.set_attr(self, dict(
             log_frequency=None,  # default to log at epi done
             num_envs=None,
-            reward_scale=1.0,
+            reward_scale=None,
         ))
         util.set_attr(self, spec['meta'], [
             'log_frequency',
