@@ -68,7 +68,7 @@ class Session:
             agent.body.train_ckpt()
             agent.body.log_summary('train')
 
-        if self.to_ckpt(env, 'eval'):
+        if self.to_ckpt(env, 'eval') and False:
             total_reward = self.run_eval()
             agent.body.eval_ckpt(self.eval_env, total_reward)
             agent.body.log_summary('eval')
@@ -117,9 +117,8 @@ class Session:
             action = self.agent.act(state)
             next_state, reward, done, info = self.env.u_env.step(action)
             # next_state, reward, done, info = self.env.step(action)
-            # TODO tmp hack to fix
-            self.agent.update(state.copy(), action, reward.copy(), next_state.copy(), done.copy())
-            state = next_state.copy()
+            self.agent.update(state, action, reward, next_state, done)
+            state = next_state
 
     def close(self):
         '''
