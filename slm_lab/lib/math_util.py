@@ -103,22 +103,16 @@ def venv_unpack(batch_tensor):
 
 def calc_returns(rewards, dones, gamma):
     '''
-    Calculate the simple returns (full rollout) for advantage
-    i.e. sum discounted rewards up till termination
+    Calculate the simple returns (full rollout) i.e. sum discounted rewards up till termination
     '''
-    # TODO standardize to take tensor only
     is_tensor = torch.is_tensor(rewards)
     # handle epi-end, to not sum past current episode
-    not_dones = 1 - dones
     T = len(rewards)
-    if is_tensor:
-        rets = torch.empty(T, dtype=torch.float32, device=rewards.device)
-    else:
-        rets = np.empty(T, dtype='float32')
-    future_ret = 0.0
+    rets = torch.zeros_like(rewards)
+    future_ret = torch.tensor(0.0, dtype=rewards.dtype)
+    not_dones = 1 - dones
     for t in reversed(range(T)):
-        future_ret = rewards[t] + gamma * future_ret * not_dones[t]
-        rets[t] = future_ret
+        rets[t] = future_ret = rewards[t] + gamma * future_ret * not_dones[t]
     return rets
 
 
@@ -148,7 +142,7 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
     T = len(rewards)
     assert T + 1 == len(v_preds)  # v_preds includes states and 1 last next_state
     gaes = torch.zeros_like(rewards)
-    future_gae = torch.tensor(0.0, dtype=torch.float32)
+    future_gae = torch.tensor(0.0, dtype=rewards.dtype)
     # to multiply with not_dones to handle episode boundary (last state has no V(s'))
     not_dones = 1 - dones
     for t in reversed(range(T)):

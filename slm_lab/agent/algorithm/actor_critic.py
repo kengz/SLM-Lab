@@ -18,8 +18,8 @@ class ActorCritic(Reinforce):
     https://arxiv.org/abs/1602.01783
     Algorithm specific spec param:
     memory.name: batch (through OnPolicyBatchReplay memory class) or episodic through (OnPolicyReplay memory class)
-    lam: if not null, used as the lambda value of generalized advantage estimation (GAE) introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. The algorithm becomes A2C. This lambda controls the bias variance tradeoff for GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
-    num_step_returns: if lam is null and this is not null, specifies the number of steps for N-step returns from "Asynchronous Methods for Deep Reinforcement Learning". The algorithm becomes A2C.
+    lam: if not null, used as the lambda value of generalized advantage estimation (GAE) introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. This lambda controls the bias variance tradeoff for GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias. Algorithm becomes A2C(GAE).
+    num_step_returns: if lam is null and this is not null, specifies the number of steps for N-step returns from "Asynchronous Methods for Deep Reinforcement Learning". The algorithm becomes A2C(Nstep).
     If both lam and num_step_returns are null, use the default TD error. Then the algorithm stays as AC.
     net.type: whether the actor and critic should share params (e.g. through 'MLPNetShared') or have separate params (e.g. through 'MLPNetSeparate'). If param sharing is used then there is also the option to control the weight given to the policy and value components of the loss function through 'policy_loss_coef' and 'val_loss_coef'
     Algorithm - separate actor and critic:
@@ -112,7 +112,7 @@ class ActorCritic(Reinforce):
         elif self.num_step_returns is not None:
             self.calc_advs_v_targets = self.calc_nstep_advs_v_targets
         else:
-            self.calc_advs_v_targets = self.openai_nstep_advs_v_targets
+            self.calc_advs_v_targets = self.calc_ret_advs_v_targets
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -203,20 +203,23 @@ class ActorCritic(Reinforce):
         v_pred = self.calc_v(states)  # uses self.v_pred from calc_pdparam if self.shared
         return pdparam, v_pred
 
-    def calc_ret_advs_v_targets(self, batch):
-        # TODO is this method needed?
-        v_preds_all = self.calc_v(torch.cat([batch['states'], batch['next_states'][-1, :].unsqueeze(0)], dim=-0))
-        v_preds = v_preds_all[:-1]
-        v_next_preds = v_preds_all[1:]
-        nstep_returns = math_util.calc_shaped_rewards(batch['rewards'], batch['dones'], v_next_preds[-1], self.gamma)
-        advs = nstep_returns - v_preds
-        v_targets = nstep_returns
+    def calc_ret_advs_v_targets(self, batch, v_preds):
+        '''Calculate plain returns, and advs = rets - v_preds, v_targets = rets'''
+        v_preds = v_preds.detach()  # adv does not accumulate grad
+        if self.body.env.is_venv:
+            v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
+        rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
+        advs = rets - v_preds
+        v_targets = rets
+        if self.body.env.is_venv:
+            advs = math_util.venv_unpack(advs)
+            v_targets = math_util.venv_unpack(v_targets)
         logger.debug(f'advs: {advs}\nv_targets: {v_targets}')
         return advs, v_targets
 
     def calc_nstep_advs_v_targets(self, batch, v_preds):
         '''
-        Calculate N-step returns as advantage = nstep_returns - v_pred
+        Calculate N-step returns, and advs = nstep_rets - v_preds, v_targets = nstep_rets
         See n-step advantage under http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_5_actor_critic_pdf.pdf
         '''
         with torch.no_grad():
@@ -224,9 +227,9 @@ class ActorCritic(Reinforce):
         v_preds = v_preds.detach()  # adv does not accumulate grad
         if self.body.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
-
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_pred, self.gamma, self.num_step_returns)
-        advs = v_targets - v_preds
+        nstep_rets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_pred, self.gamma, self.num_step_returns)
+        advs = nstep_rets - v_preds
+        v_targets = nstep_rets
         if self.body.env.is_venv:
             advs = math_util.venv_unpack(advs)
             v_targets = math_util.venv_unpack(v_targets)
@@ -235,15 +238,14 @@ class ActorCritic(Reinforce):
 
     def calc_gae_advs_v_targets(self, batch, v_preds):
         '''
-        Calculate GAE as advantage; from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
-        v_targets = advs + v_preds
+        Calculate GAE, and advs = GAE, v_targets = advs + v_preds
+        See GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
         '''
         with torch.no_grad():
             next_v_pred = self.calc_v(batch['next_states'][-1], use_cache=False)
         v_preds = v_preds.detach()  # adv does not accumulate grad
         if self.body.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
-
         v_preds_all = torch.cat((v_preds, next_v_pred.unsqueeze(dim=0)), dim=0)
         advs = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds_all, self.gamma, self.lam)
         v_targets = advs + v_preds
