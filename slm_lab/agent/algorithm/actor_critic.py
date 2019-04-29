@@ -195,8 +195,8 @@ class ActorCritic(Reinforce):
         return v_pred
 
     def calc_pdparam_v(self, batch):
-        states = batch['states']
         '''Efficiently forward to get pdparam and v by batch for loss computation'''
+        states = batch['states']
         if self.body.env.is_venv:
             states = math_util.venv_unpack(states)
         pdparam = self.calc_pdparam(states)
