@@ -103,57 +103,29 @@ def venv_unpack(batch_tensor):
 
 def calc_returns(rewards, dones, gamma):
     '''
-    Calculate the simple returns (full rollout) for advantage
-    i.e. sum discounted rewards up till termination
+    Calculate the simple returns (full rollout) i.e. sum discounted rewards up till termination
     '''
-    is_tensor = torch.is_tensor(rewards)
-    if is_tensor:
-        assert not torch.isnan(rewards).any()
-    else:
-        assert not np.isnan(rewards).any()
-    # handle epi-end, to not sum past current episode
-    not_dones = 1 - dones
     T = len(rewards)
-    if is_tensor:
-        rets = torch.empty(T, dtype=torch.float32, device=rewards.device)
-    else:
-        rets = np.empty(T, dtype='float32')
-    future_ret = 0.0
+    rets = torch.zeros_like(rewards)
+    future_ret = torch.tensor(0.0, dtype=rewards.dtype)
+    not_dones = 1 - dones
     for t in reversed(range(T)):
-        future_ret = rewards[t] + gamma * future_ret * not_dones[t]
-        rets[t] = future_ret
+        rets[t] = future_ret = rewards[t] + gamma * future_ret * not_dones[t]
     return rets
 
 
-def calc_nstep_returns(rewards, dones, gamma, n, next_v_preds):
+def calc_nstep_returns(rewards, dones, next_v_pred, gamma, n):
     '''
-    Calculate the n-step returns for advantage
-    see n-step return in: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
-    i.e. for each timestep t:
-        sum discounted rewards up till step n (0 to n-1 that is),
-        then add v_pred for n as final term
+    Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
+    Also see Algorithm S3 from A3C paper https://arxiv.org/pdf/1602.01783.pdf for the calculation used below
+    R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1} + gamma^(n) V(s_{t+n})
     '''
-    rets = rewards.clone()  # prevent mutation
-    next_v_preds = next_v_preds.clone()  # prevent mutation
-    nstep_rets = torch.zeros_like(rets) + rets
-    cur_gamma = gamma
+    rets = torch.zeros_like(rewards)
+    future_ret = next_v_pred
     not_dones = 1 - dones
-    for i in range(1, n):
-        # TODO shifting is expensive. rewrite
-        # Shift returns by one and zero last element of each episode
-        rets[:-1] = rets[1:]
-        rets *= not_dones
-        # Also shift V(s_t+1) so final terms use V(s_t+n)
-        next_v_preds[:-1] = next_v_preds[1:]
-        next_v_preds *= not_dones
-        # Accumulate return
-        nstep_rets += cur_gamma * rets
-        # Update current gamma
-        cur_gamma *= cur_gamma
-    # Add final terms. Note no next state if epi is done
-    final_terms = cur_gamma * next_v_preds * not_dones
-    nstep_rets += final_terms
-    return nstep_rets
+    for t in reversed(range(n)):
+        rets[t] = future_ret = rewards[t] + gamma * future_ret * not_dones[t]
+    return rets
 
 
 def calc_gaes(rewards, dones, v_preds, gamma, lam):
@@ -166,16 +138,14 @@ def calc_gaes(rewards, dones, v_preds, gamma, lam):
     NOTE any standardization is done outside of this method
     '''
     T = len(rewards)
-    assert not torch.isnan(rewards).any()
     assert T + 1 == len(v_preds)  # v_preds includes states and 1 last next_state
-    gaes = torch.empty(T, dtype=torch.float32, device=v_preds.device)
-    future_gae = 0.0  # this will autocast to tensor below
+    gaes = torch.zeros_like(rewards)
+    future_gae = torch.tensor(0.0, dtype=rewards.dtype)
     # to multiply with not_dones to handle episode boundary (last state has no V(s'))
     not_dones = 1 - dones
     for t in reversed(range(T)):
         delta = rewards[t] + gamma * v_preds[t + 1] * not_dones[t] - v_preds[t]
         gaes[t] = future_gae = delta + gamma * lam * not_dones[t] * future_gae
-    assert not torch.isnan(gaes).any(), f'GAE has nan: {gaes}'
     return gaes
 
 
