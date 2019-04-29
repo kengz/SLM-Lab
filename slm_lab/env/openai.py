@@ -50,7 +50,7 @@ class OpenAIEnv(BaseEnv):
     def reset(self):
         self.done = False
         state = self.u_env.reset()
-        if util.to_render():
+        if self.to_render:
             self.u_env.render()
         return state
 
@@ -61,7 +61,7 @@ class OpenAIEnv(BaseEnv):
         state, reward, done, info = self.u_env.step(action)
         if self.reward_scale is not None:
             reward *= self.reward_scale
-        if util.to_render():
+        if self.to_render:
             self.u_env.render()
         if not self.is_venv and self.clock.t > self.max_t:
             done = True
@@ -89,7 +89,7 @@ class OpenAIEnv(BaseEnv):
         for ab, body in util.ndenumerate_nonan(self.body_e):
             state = self.u_env.reset()
             state_e[ab] = state
-        if util.to_render():
+        if self.to_render:
             self.u_env.render()
         return state_e
 
@@ -105,7 +105,7 @@ class OpenAIEnv(BaseEnv):
         state, reward, done, info = self.u_env.step(action)
         if self.reward_scale is not None:
             reward *= self.reward_scale
-        if util.to_render():
+        if self.to_render:
             self.u_env.render()
         if not self.is_venv and self.clock.t > self.max_t:
             done = True

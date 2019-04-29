@@ -116,6 +116,7 @@ class BaseEnv(ABC):
         self.is_venv = self.num_envs is not None
         self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
         self.clock = Clock(self.max_tick, self.max_tick_unit, self.clock_speed)
+        self.to_render = util.to_render()
 
     def _set_attr_from_u_env(self, u_env):
         '''Set the observation, action dimensions and action type from u_env'''
