@@ -23,8 +23,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyAtariBatchReplay",
-        "stack_len": 4
+        "name": "OnPolicyAtariBatchReplay"
       },
       "net": {
         "type": "ConvNet",
