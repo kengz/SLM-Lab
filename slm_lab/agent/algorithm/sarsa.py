@@ -6,7 +6,6 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
-import torch
 
 logger = logger.get_logger(__name__)
 
@@ -100,10 +99,7 @@ class SARSA(Algorithm):
         if self.normalize_state:
             state = policy_util.update_online_stats_and_normalize_state(body, state)
         action = self.action_policy(state, self, body)
-        if len(action) == 1:  # scalar
-            return action.cpu().item()
-        else:
-            return action.cpu().numpy()
+        return action.cpu().squeeze().numpy()  # squeeze to handle scalar
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
