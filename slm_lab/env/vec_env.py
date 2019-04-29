@@ -469,13 +469,13 @@ class VecFrameStack(VecEnvWrapper):
             if new:
                 self.stackedobs[i] = 0
         self.stackedobs[:, -self.shape_dim0:] = obs
-        return self.stackedobs, rews, news, infos
+        return self.stackedobs.copy(), rews, news, infos
 
     def reset(self):
         obs = self.venv.reset()
         self.stackedobs[...] = 0
         self.stackedobs[:, -self.shape_dim0:] = obs
-        return self.stackedobs
+        return self.stackedobs.copy()
 
 
 def make_gym_venv(name, seed=0, stack_len=None, num_envs=4):
