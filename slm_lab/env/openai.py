@@ -52,7 +52,6 @@ class OpenAIEnv(BaseEnv):
         state = self.u_env.reset()
         if util.to_render():
             self.u_env.render()
-        logger.debug(f'Env {self.e} reset state: {state}')
         return state
 
     @lab_api
@@ -67,7 +66,6 @@ class OpenAIEnv(BaseEnv):
         if not self.is_venv and self.clock.t > self.max_t:
             done = True
         self.done = done
-        logger.debug(f'Env {self.e} step state: {state}, reward: {reward}, done: {done}')
         return state, reward, done, info
 
     @lab_api
@@ -93,7 +91,6 @@ class OpenAIEnv(BaseEnv):
             state_e[ab] = state
         if util.to_render():
             self.u_env.render()
-        logger.debug(f'Env {self.e} reset state_e: {state_e}')
         return state_e
 
     @lab_api
@@ -119,5 +116,4 @@ class OpenAIEnv(BaseEnv):
             reward_e[ab] = reward
             done_e[ab] = done
         info_e = info
-        logger.debug(f'Env {self.e} step state_e: {state_e}, reward_e: {reward_e}, done_e: {done_e}')
         return state_e, reward_e, done_e, info_e

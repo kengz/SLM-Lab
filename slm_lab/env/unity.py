@@ -132,7 +132,6 @@ class UnityEnv(BaseEnv):
         a, b = 0, 0  # default singleton aeb
         env_info_a = self._get_env_info(env_info_dict, a)
         state = env_info_a.states[b]
-        logger.debug(f'Env {self.e} reset state: {state}')
         return state
 
     @lab_api
@@ -148,7 +147,6 @@ class UnityEnv(BaseEnv):
         if not self.is_venv and self.clock.t > self.max_t:
             done = True
         self.done = done
-        logger.debug(f'Env {self.e} step state: {state}, reward: {reward}, done: {done}')
         return state, reward, done, env_info_a
 
     @lab_api
@@ -176,7 +174,6 @@ class UnityEnv(BaseEnv):
             self._check_u_agent_to_body(env_info_a, a)
             state = env_info_a.states[b]
             state_e[(a, b)] = state
-        logger.debug(f'Env {self.e} reset state_e: {state_e}')
         return state_e
 
     @lab_api
@@ -199,5 +196,4 @@ class UnityEnv(BaseEnv):
             done_e[(a, b)] = env_info_a.local_done[b]
         info_e = env_info_dict
         self.done = (util.nonan_all(done_e) or self.clock.t > self.max_t)
-        logger.debug(f'Env {self.e} step state_e: {state_e}, reward_e: {reward_e}, done_e: {done_e}')
         return state_e, reward_e, done_e, info_e
