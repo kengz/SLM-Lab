@@ -58,7 +58,7 @@ def test_demo_performance(test_info_space):
     session = Session(spec, test_info_space)
     session.run()
     last_reward = session.agent.body.train_df.iloc[-1]['reward']
-    assert last_reward > 50, f'last_reward is too low: {last_reward}'
+    assert last_reward > 30, f'last_reward is too low: {last_reward}'
 
 
 def test_experiment(test_info_space):
