@@ -242,10 +242,11 @@ class ActorCritic(Reinforce):
         See GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
         '''
         with torch.no_grad():
-            next_v_pred = self.calc_v(batch['next_states'][-1], use_cache=False).unsqueeze(dim=0)
+            next_v_pred = self.calc_v(batch['next_states'][-1], use_cache=False)
         v_preds = v_preds.detach()  # adv does not accumulate grad
         if self.body.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
+            next_v_pred = next_v_pred.unsqueeze(dim=0)
         v_preds_all = torch.cat((v_preds, next_v_pred), dim=0)
         advs = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds_all, self.gamma, self.lam)
         v_targets = advs + v_preds
