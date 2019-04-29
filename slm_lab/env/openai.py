@@ -60,7 +60,8 @@ class OpenAIEnv(BaseEnv):
         if not self.is_discrete:  # guard for continuous
             action = np.array([action])
         state, reward, done, info = self.u_env.step(action)
-        reward *= self.reward_scale
+        if self.reward_scale is not None:
+            reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
         if not self.is_venv and self.clock.t > self.max_t:
@@ -105,7 +106,8 @@ class OpenAIEnv(BaseEnv):
         if not self.is_discrete:
             action = np.array([action])
         state, reward, done, info = self.u_env.step(action)
-        reward *= self.reward_scale
+        if self.reward_scale is not None:
+            reward *= self.reward_scale
         if util.to_render():
             self.u_env.render()
         if not self.is_venv and self.clock.t > self.max_t:
