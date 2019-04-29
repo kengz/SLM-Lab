@@ -90,19 +90,13 @@ class Body:
         self.a, self.e, self.b = aeb
         self.nanflat_a_idx, self.nanflat_e_idx = self.a, self.e
 
-        # for action policy exploration, so be set in algo during init_algorithm_params()
-        self.explore_var = np.nan
+        # variables set during init_algorithm_params
+        self.explore_var = np.nan  # action exploration: epsilon or tau
+        self.entropy_coef = np.nan  # entropy for exploration
 
-        # body stats variables
-        self.loss = np.nan  # training losses
-        # diagnostics variables/stats from action_policy prob. dist.
-        self.action_tensor = None
-        self.action_pd = None  # for the latest action, to compute entropy and log prob
-        self.entropies = []  # action entropies for exploration
-        self.log_probs = []  # action log probs
-        # mean values for debugging
+        # debugging/logging variables, set in train or loss function
+        self.loss = np.nan
         self.mean_entropy = np.nan
-        self.mean_log_prob = np.nan
         self.mean_grad_norm = np.nan
 
         # stores running mean and std dev of states
@@ -121,7 +115,7 @@ class Body:
         # track training data per episode
         self.train_df = pd.DataFrame(columns=[
             'epi', 'total_t', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
-            'explore_var', 'entropy_coef', 'entropy', 'log_prob', 'grad_norm'])
+            'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
         # track eval data within run_eval. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
 
@@ -136,31 +130,31 @@ class Body:
         else:
             self.space_init(aeb_space)
 
+        # set the ActionPD class for sampling action
         self.action_type = get_action_type(self.action_space)
         self.action_pdtype = agent_spec[self.a]['algorithm'].get('action_pdtype')
         if self.action_pdtype in (None, 'default'):
             self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
-
-    def action_pd_update(self):
-        '''Calculate and update action entropy and log_prob using self.action_pd. Call this in agent.update()'''
-        if self.action_pd is None:  # skip if None
-            return
-        # mean for single and multi-action
-        entropy = self.action_pd.entropy().mean(dim=0)
-        self.entropies.append(entropy)
-        log_prob = self.action_pd.log_prob(self.action_tensor).mean(dim=0)
-        self.log_probs.append(log_prob)
-        assert not torch.isnan(log_prob)
+        self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
 
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
         self.total_reward = math_util.nan_add(self.total_reward, reward)
+
+    def __str__(self):
+        return 'body: ' + util.to_json(util.get_class_attr(self))
 
     def calc_df_row(self, env):
         '''Calculate a row for updating train_df or eval_df.'''
         total_t = self.env.clock.get('total_t')
         wall_t = env.clock.get_elapsed_wall_t()
         fps = 0 if wall_t == 0 else total_t / wall_t
+
+        # update debugging variables
+        if net_util.to_check_training_step():
+            grad_norms = net_util.get_grad_norms(self.agent.algorithm)
+            self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
+
         row = pd.Series({
             # epi and total_t are always measured from training env
             'epi': self.env.clock.get('epi'),
@@ -176,21 +170,10 @@ class Body:
             'explore_var': self.explore_var,
             'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
             'entropy': self.mean_entropy,
-            'log_prob': self.mean_log_prob,
             'grad_norm': self.mean_grad_norm,
         }, dtype=np.float32)
         assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
         return row
-
-    def epi_reset(self):
-        '''
-        Handles any body attribute reset at the start of an episode.
-        This method is called automatically at base memory.epi_reset().
-        '''
-        t = self.env.clock.t
-        assert t == 0, f'aeb: {self.aeb}, t: {t}'
-        if hasattr(self, 'aeb_space'):
-            self.space_fix_stats()
 
     def train_ckpt(self):
         '''Checkpoint to update body.train_df data'''
@@ -211,24 +194,6 @@ class Body:
         # update current reward_ma
         self.eval_reward_ma = self.eval_df[-analysis.MA_WINDOW:]['reward'].mean()
         self.eval_df.iloc[-1]['reward_ma'] = self.eval_reward_ma
-
-    def flush(self):
-        '''Update and flush gradient-related variables after training step similar.'''
-        # update
-        self.mean_entropy = torch.tensor(self.entropies).mean().item()
-        self.mean_log_prob = torch.tensor(self.log_probs).mean().item()
-        # net.grad_norms is only available in dev mode for efficiency
-        grad_norms = net_util.get_grad_norms(self.agent.algorithm)
-        self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
-
-        # flush
-        self.action_tensor = None
-        self.action_pd = None
-        self.entropies = []
-        self.log_probs = []
-
-    def __str__(self):
-        return 'body: ' + util.to_json(util.get_class_attr(self))
 
     def get_mean_lr(self):
         '''Gets the average current learning rate of the algorithm's nets.'''
@@ -282,12 +247,6 @@ class Body:
         self.state_dim = self.observable_dim['state']
         self.action_dim = self.env._get_action_dim(self.action_space)
         self.is_discrete = self.env._is_discrete(self.action_space)
-
-    def space_fix_stats(self):
-        '''the space control loop will make agent append stat at done, so to offset for that, pop it at reset'''
-        for action_stat in [self.entropies, self.log_probs]:
-            if len(action_stat) > 0:
-                action_stat.pop()
 
 
 class DataSpace:

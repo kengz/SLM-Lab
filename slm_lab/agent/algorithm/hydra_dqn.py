@@ -52,9 +52,7 @@ class HydraDQN(DQN):
         xs = [torch.from_numpy(state).float() for state in states]
         pdparam = self.calc_pdparam(xs)
         # use multi-policy. note arg change
-        action_a, action_pd_a = self.action_policy(states, self, self.agent.nanflat_body_a, pdparam)
-        for idx, body in enumerate(self.agent.nanflat_body_a):
-            body.action_tensor, body.action_pd = action_a[idx], action_pd_a[idx]  # used for body.action_pd_update later
+        action_a = self.action_policy(states, self, self.agent.nanflat_body_a, pdparam)
         return action_a.cpu().numpy()
 
     @lab_api
@@ -99,7 +97,6 @@ class HydraDQN(DQN):
         Otherwise this function does nothing.
         '''
         if util.in_eval_lab_modes():
-            self.body.flush()
             return np.nan
         clock = self.body.env.clock  # main clock
         tick = util.s_get(self, 'aeb_space.clock').get(clock.max_tick_unit)
@@ -115,8 +112,6 @@ class HydraDQN(DQN):
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0
-            for body in self.agent.nanflat_body_a:
-                body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:

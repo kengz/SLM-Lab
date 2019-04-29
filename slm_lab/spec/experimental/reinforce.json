@@ -370,7 +370,7 @@
       "name": "Reinforce",
       "algorithm": {
         "name": "Reinforce",
-        "action_pdtype": "default",
+        "action_pdtype": "MultiCategorical",
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
@@ -418,7 +418,7 @@
     "env": [{
       "name": "vizdoom-v0",
       "cfg_name": "basic",
-      "max_t": null,
+      "max_t": 400000,
       "max_tick": 100
     }],
     "body": {

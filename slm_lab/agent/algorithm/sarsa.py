@@ -6,6 +6,7 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
+import torch
 
 logger = logger.get_logger(__name__)
 
@@ -90,7 +91,6 @@ class SARSA(Algorithm):
         '''
         net = self.net if net is None else net
         pdparam = net(x)
-        logger.debug(f'pdparam: {pdparam}')
         return pdparam
 
     @lab_api
@@ -99,8 +99,7 @@ class SARSA(Algorithm):
         body = self.body
         if self.normalize_state:
             state = policy_util.update_online_stats_and_normalize_state(body, state)
-        action, action_pd = self.action_policy(state, self, body)
-        body.action_tensor, body.action_pd = action, action_pd  # used for body.action_pd_update later
+        action = self.action_policy(state, self, body)
         return action.cpu().squeeze().numpy()  # squeeze to handle scalar
 
     def calc_q_loss(self, batch):
@@ -132,7 +131,6 @@ class SARSA(Algorithm):
         Otherwise this function does nothing.
         '''
         if util.in_eval_lab_modes():
-            self.body.flush()
             return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
@@ -141,7 +139,6 @@ class SARSA(Algorithm):
             self.net.training_step(loss=loss, lr_clock=clock)
             # reset
             self.to_train = 0
-            self.body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:

@@ -131,7 +131,6 @@ class VanillaDQN(SARSA):
         Otherwise this function does nothing.
         '''
         if util.in_eval_lab_modes():
-            self.body.flush()
             return np.nan
         clock = self.body.env.clock
         tick = clock.get()
@@ -147,7 +146,6 @@ class VanillaDQN(SARSA):
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0
-            self.body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:

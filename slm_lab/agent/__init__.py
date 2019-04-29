@@ -23,6 +23,7 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
+import torch
 
 AGENT_DATA_NAMES = ['action', 'loss', 'explore_var']
 logger = logger.get_logger(__name__)
@@ -63,14 +64,14 @@ class Agent:
     @lab_api
     def act(self, state):
         '''Standard act method from algorithm.'''
-        action = self.algorithm.act(state)
+        with torch.no_grad():  # for efficiency, only calc grad in algorithm.train
+            action = self.algorithm.act(state)
         logger.debug(f'Agent {self.a} act: {action}')
         return action
 
     @lab_api
     def update(self, state, action, reward, next_state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
-        self.body.action_pd_update()
         self.body.update(state, action, reward, next_state, done)
         self.body.memory.update(state, action, reward, next_state, done)
         loss = self.algorithm.train()
@@ -126,7 +127,8 @@ class Agent:
     @lab_api
     def space_act(self, state_a):
         '''Standard act method from algorithm.'''
-        action_a = self.algorithm.space_act(state_a)
+        with torch.no_grad():
+            action_a = self.algorithm.space_act(state_a)
         logger.debug(f'Agent {self.a} act: {action_a}')
         return action_a
 
@@ -134,7 +136,6 @@ class Agent:
     def space_update(self, state_a, action_a, reward_a, next_state_a, done_a):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
         for eb, body in util.ndenumerate_nonan(self.body_a):
-            body.action_pd_update()
             body.update(state_a[eb], action_a[eb], reward_a[eb], next_state_a[eb], done_a[eb])
             body.memory.update(state_a[eb], action_a[eb], reward_a[eb], next_state_a[eb], done_a[eb])
         loss_a = self.algorithm.space_train()

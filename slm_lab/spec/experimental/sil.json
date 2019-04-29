@@ -69,7 +69,7 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 100,
       "search": "RandomSearch"
     },
