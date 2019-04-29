@@ -64,7 +64,7 @@
       "name": "PongNoFrameskip-v4",
       "num_envs": 16,
       "max_t": null,
-      "max_tick": 10000000
+      "max_tick": 1e7
     }],
     "body": {
       "product": "outer",

@@ -97,7 +97,7 @@ class Session:
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_tick'''
-        logger.info(f'Running RL loop for trial {self.info_space.get("trial")} session {self.index}')
+        logger.info(f'Running RL loop training for trial {self.info_space.get("trial")} session {self.index}')
         clock = self.env.clock
         state = self.env.reset()
         self.agent.reset(state)
