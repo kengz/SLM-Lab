@@ -78,7 +78,8 @@ class MultiCategorical(distributions.Categorical):
         return torch.stack([cat.sample(sample_shape=sample_shape) for cat in self.categoricals])
 
     def log_prob(self, value):
-        return torch.stack([cat.log_prob(value[idx]) for idx, cat in enumerate(self.categoricals)])
+        value_t = value.transpose(0, 1)
+        return torch.stack([cat.log_prob(value_t[idx]) for idx, cat in enumerate(self.categoricals)])
 
     def entropy(self):
         return torch.stack([cat.entropy() for cat in self.categoricals])
