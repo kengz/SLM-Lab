@@ -277,7 +277,6 @@ def update_online_stats(body, state):
         variance = S_n / (n - 1)
         std_dev = sqrt(variance)
     '''
-    logger.debug(f'mean: {body.state_mean}, std: {body.state_std_dev}, num examples: {body.state_n}')
     # Assumes only one state is given
     if ('Atari' in util.get_class_name(body.memory)):
         assert state.ndim == 3
@@ -301,7 +300,6 @@ def update_online_stats(body, state):
         # Guard against very small std devs
         if (body.state_std_dev < 1e-8).any():
             body.state_std_dev[np.where(body.state_std_dev < 1e-8)] += 1e-8
-    logger.debug(f'new mean: {body.state_mean}, new std: {body.state_std_dev}, num examples: {body.state_n}')
 
 
 def normalize_state(body, state):
@@ -314,11 +312,9 @@ def normalize_state(body, state):
     has_preprocess = getattr(body.memory, 'preprocess_state', False)
     if ('Atari' in util.get_class_name(body.memory)):
         # never normalize atari, it has its own normalization step
-        logger.debug('skipping normalizing for Atari, already handled by preprocess')
         return state
     elif ('Replay' in util.get_class_name(body.memory)) and has_preprocess:
         # normalization handled by preprocess_state function in the memory
-        logger.debug('skipping normalizing, already handled by preprocess')
         return state
     elif same_shape:
         # if not atari, always normalize the state the first time we see it during act
@@ -329,7 +325,6 @@ def normalize_state(body, state):
             return np.clip((state - body.state_mean) / body.state_std_dev, -10, 10)
     else:
         # broadcastable sample from an un-normalized memory so we should normalize
-        logger.debug('normalizing sample from memory')
         if np.sum(body.state_std_dev) == 0:
             return np.clip(state - body.state_mean, -10, 10)
         else:

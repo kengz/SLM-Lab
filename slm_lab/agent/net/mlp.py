@@ -143,7 +143,6 @@ class MLPNet(Net, nn.Module):
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()
-        logger.debug(f'Net training_step loss: {loss}')
         return loss
 
 
@@ -322,7 +321,6 @@ class HydraMLPNet(Net, nn.Module):
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()
-        logger.debug(f'Net training_step loss: {loss}')
         return loss
 
 
