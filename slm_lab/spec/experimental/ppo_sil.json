@@ -33,7 +33,7 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -134,7 +134,7 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -235,7 +235,7 @@
       },
       "memory": {
         "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SILSeqReplay",
+        "sil_replay_name": "SeqReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -340,7 +340,7 @@
       },
       "memory": {
         "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SILSeqReplay",
+        "sil_replay_name": "SeqReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -445,7 +445,7 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -546,7 +546,7 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -647,7 +647,7 @@
       },
       "memory": {
         "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SILSeqReplay",
+        "sil_replay_name": "SeqReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -752,7 +752,7 @@
       },
       "memory": {
         "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SILSeqReplay",
+        "sil_replay_name": "SeqReplay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true

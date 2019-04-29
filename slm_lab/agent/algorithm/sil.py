@@ -45,7 +45,7 @@ class SIL(ActorCritic):
     e.g. special memory_spec
     "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -94,7 +94,6 @@ class SIL(ActorCritic):
         '''Modify the onpolicy sample to also append to replay'''
         batch = self.body.memory.sample()
         batch = {k: np.concatenate(v) for k, v in batch.items()}  # concat episodic memory
-        batch['rets'] = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
         for idx in range(len(batch['dones'])):
             tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]
             self.body.replay_memory.add_experience(*tuples)
@@ -110,7 +109,6 @@ class SIL(ActorCritic):
             batch = policy_util.normalize_states_and_next_states(
                 self.body, batch, episodic_flag=self.body.replay_memory.is_episodic)
         batch = util.to_torch_batch(batch, self.net.device, self.body.replay_memory.is_episodic)
-        assert not torch.isnan(batch['states']).any(), batch['states']
         return batch
 
     def calc_sil_policy_val_loss(self, batch, pdparams):
@@ -120,8 +118,8 @@ class SIL(ActorCritic):
         sil_val_loss = (max(R - v_pred, 0)^2) / 2
         This is called on a randomly-sample batch from experience replay
         '''
-        rets = batch['rets']
         v_preds = self.calc_v(batch['states'], use_cache=False)
+        rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
         clipped_advs = torch.clamp(rets - v_preds, min=0.0)
 
         action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
@@ -196,7 +194,7 @@ class PPOSIL(SIL, PPO):
     e.g. special memory_spec
     "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true

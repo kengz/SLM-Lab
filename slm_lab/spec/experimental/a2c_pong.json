@@ -23,8 +23,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyAtariBatchReplay",
-        "stack_len": 4
+        "name": "OnPolicyAtariBatchReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -37,6 +36,7 @@
         "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
+        "normalize": true,
         "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
@@ -56,7 +56,7 @@
           "eps": 1e-5
         },
         "lr_scheduler_spec": null,
-        "gpu": false
+        "gpu": true
       }
     }],
     "env": [{
@@ -71,7 +71,8 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 10000,
+      "log_frequency": 50000,
+      "eval_frequency": 50000,
       "max_tick_unit": "total_t",
       "max_session": 1,
       "max_trial": 5,
