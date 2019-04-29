@@ -6,6 +6,7 @@ from torch import distributions
 import numpy as np
 import pydash as ps
 import torch
+import torch.nn.functional as F
 
 logger = logger.get_logger(__name__)
 
@@ -80,11 +81,11 @@ def init_action_pd(ActionPD, pdparam):
     if 'logits' in ActionPD.arg_constraints:  # discrete
         action_pd = ActionPD(logits=pdparam)
     else:  # continuous, args = loc and scale
-        assert len(pdparam) == 2, pdparam
-        # scale (stdev) must be >0, use softplus
-        if pdparam[1] < 5:
-            pdparam[1] = torch.log(1 + torch.exp(pdparam[1])) + 1e-8
-        action_pd = ActionPD(*pdparam)
+        # TODO do as multitail list pdparams in the future to control activation
+        loc, scale = pdparam.transpose(0, 1)
+        # scale (stdev) must be > 0, use softplus with positive
+        scale = F.softplus(scale) + 1e-8
+        action_pd = ActionPD(loc=loc, scale=scale)
     return action_pd
 
 
