@@ -410,7 +410,7 @@
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 64,
         "max_size": 100000,
         "use_cer": true

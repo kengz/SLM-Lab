@@ -181,52 +181,6 @@ class SeqReplay(Replay):
         return np.stack(self.state_buffer)
 
 
-class SILReplay(Replay):
-    '''
-    Special Replay for SIL, which adds the returns calculated from its OnPolicyReplay
-
-    e.g. memory_spec
-    "memory": {
-        "name": "SILReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
-    }
-    '''
-
-    def __init__(self, memory_spec, body):
-        super(SILReplay, self).__init__(memory_spec, body)
-        # adds a 'rets' scalar to the data_keys and call reset again
-        self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'rets']
-        self.reset()
-
-    @lab_api
-    def update(self, state, action, reward, next_state, done):
-        '''Interface method to update memory'''
-        raise AssertionError('Do not call SIL memory in main API control loop')
-
-    def add_experience(self, state, action, reward, next_state, done, ret):
-        '''Used to add memory from onpolicy memory'''
-        super(SILReplay, self).add_experience(state, action, reward, next_state, done)
-        self.rets[self.head] = ret
-
-
-class SILSeqReplay(SILReplay, SeqReplay):
-    '''
-    Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as SILReplay memory
-
-    e.g. memory_spec
-    "memory": {
-        "name": "SILSeqReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
-    }
-    * seq_len provided by net_spec
-    '''
-    pass
-
-
 class ConcatReplay(Replay):
     '''
     Preprocesses a state to be the concatenation of the last n states. Otherwise the same as Replay memory
