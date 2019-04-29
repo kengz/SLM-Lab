@@ -258,18 +258,7 @@ class ActorCritic(Reinforce):
 
     def calc_policy_loss(self, batch, pdparams, advs):
         '''Calculate the actor's policy loss'''
-        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
-        actions = batch['actions']
-        if self.body.env.is_venv:
-            actions = math_util.venv_unpack(actions)
-        log_probs = action_pd.log_prob(actions)
-        assert log_probs.shape == advs.shape, f'{log_probs.shape} != advs: {advs.shape}'
-        policy_loss = - self.policy_loss_coef * (log_probs * advs).mean()
-        if self.entropy_coef_spec:
-            entropy = action_pd.entropy().mean()
-            policy_loss += (-self.body.entropy_coef * entropy)
-        logger.debug(f'Actor policy loss: {policy_loss:g}')
-        return policy_loss
+        return super(ActorCritic, self).calc_policy_loss(batch, pdparams, advs)
 
     def calc_val_loss(self, v_preds, v_targets):
         '''Calculate the critic's value loss'''
