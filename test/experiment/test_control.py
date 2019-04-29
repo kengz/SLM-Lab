@@ -4,6 +4,7 @@ from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.spec import spec_util
 import pandas as pd
+import pytest
 
 
 def test_session(test_spec, test_info_space):
@@ -46,6 +47,7 @@ def test_trial_demo(test_info_space):
     assert isinstance(trial_data, pd.DataFrame)
 
 
+@pytest.mark.skip(reason="Unstable")
 @flaky
 def test_demo_performance(test_info_space):
     spec = spec_util.get('demo.json', 'dqn_cartpole')
@@ -58,7 +60,7 @@ def test_demo_performance(test_info_space):
     session = Session(spec, test_info_space)
     session.run()
     last_reward = session.agent.body.train_df.iloc[-1]['reward']
-    assert last_reward > 30, f'last_reward is too low: {last_reward}'
+    assert last_reward > 50, f'last_reward is too low: {last_reward}'
 
 
 def test_experiment(test_info_space):
