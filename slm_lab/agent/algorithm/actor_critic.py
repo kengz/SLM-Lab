@@ -18,8 +18,8 @@ class ActorCritic(Reinforce):
     https://arxiv.org/abs/1602.01783
     Algorithm specific spec param:
     memory.name: batch (through OnPolicyBatchReplay memory class) or episodic through (OnPolicyReplay memory class)
-    lam: if not null, used as the lambda value of generalized advantage estimation (GAE) introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. The algorithm becomes A2C. This lambda controls the bias variance tradeoff for GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias.
-    num_step_returns: if lam is null and this is not null, specifies the number of steps for N-step returns from "Asynchronous Methods for Deep Reinforcement Learning". The algorithm becomes A2C.
+    lam: if not null, used as the lambda value of generalized advantage estimation (GAE) introduced in "High-Dimensional Continuous Control Using Generalized Advantage Estimation https://arxiv.org/abs/1506.02438. This lambda controls the bias variance tradeoff for GAE. Floating point value between 0 and 1. Lower values correspond to more bias, less variance. Higher values to more variance, less bias. Algorithm becomes A2C(GAE).
+    num_step_returns: if lam is null and this is not null, specifies the number of steps for N-step returns from "Asynchronous Methods for Deep Reinforcement Learning". The algorithm becomes A2C(Nstep).
     If both lam and num_step_returns are null, use the default TD error. Then the algorithm stays as AC.
     net.type: whether the actor and critic should share params (e.g. through 'MLPNetShared') or have separate params (e.g. through 'MLPNetSeparate'). If param sharing is used then there is also the option to control the weight given to the policy and value components of the loss function through 'policy_loss_coef' and 'val_loss_coef'
     Algorithm - separate actor and critic:
@@ -106,13 +106,13 @@ class ActorCritic(Reinforce):
         if self.entropy_coef_spec is not None:
             self.entropy_coef_scheduler = policy_util.VarScheduler(self.entropy_coef_spec)
             self.body.entropy_coef = self.entropy_coef_scheduler.start_val
-        # Select appropriate methods to calculate adv_targets and v_targets for training
+        # Select appropriate methods to calculate advs and v_targets for training
         if self.lam is not None:
             self.calc_advs_v_targets = self.calc_gae_advs_v_targets
         elif self.num_step_returns is not None:
             self.calc_advs_v_targets = self.calc_nstep_advs_v_targets
         else:
-            self.calc_advs_v_targets = self.calc_td_advs_v_targets
+            self.calc_advs_v_targets = self.calc_ret_advs_v_targets
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -168,166 +168,129 @@ class ActorCritic(Reinforce):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
-        pdparam = super(ActorCritic, self).calc_pdparam(x, net=net)
-        if self.shared:  # output: policy, value
-            if len(pdparam) == 2:  # single policy outputs, value
-                pdparam = pdparam[0]
-            else:  # multiple policy outputs, value
-                pdparam = pdparam[:-1]
-        logger.debug(f'pdparam: {pdparam}')
+        out = super(ActorCritic, self).calc_pdparam(x, net=net)
+        if self.shared:
+            assert ps.is_list(out), f'Shared output should be a list [pdparam, v]'
+            if len(out) == 2:  # single policy
+                pdparam = out[0]
+            else:  # multiple-task policies, still assumes 1 value
+                pdparam = out[:-1]
+            self.v_pred = out[-1].view(-1)  # cache for loss calc to prevent double-pass
+        else:  # out is pdparam
+            pdparam = out
         return pdparam
 
-    def calc_v(self, x, net=None):
+    def calc_v(self, x, net=None, use_cache=True):
         '''
         Forward-pass to calculate the predicted state-value from critic.
         '''
         net = self.net if net is None else net
         if self.shared:  # output: policy, value
-            v_pred = net(x)[-1].squeeze(dim=1)
+            if use_cache:  # uses cache from calc_pdparam to prevent double-pass
+                v_pred = self.v_pred
+            else:
+                v_pred = self.net(x)[-1].view(-1)
         else:
-            v_pred = self.critic(x).squeeze(dim=1)
-        logger.debug(f'v_pred: {v_pred}')
+            v_pred = self.critic(x).view(-1)
         return v_pred
 
-    @lab_api
-    def train(self):
-        '''Trains the algorithm'''
-        if util.in_eval_lab_modes():
-            self.body.flush()
-            return np.nan
-        if self.shared:
-            return self.train_shared()
-        else:
-            return self.train_separate()
+    def calc_pdparam_v(self, batch):
+        '''Efficiently forward to get pdparam and v by batch for loss computation'''
+        states = batch['states']
+        if self.body.env.is_venv:
+            states = math_util.venv_unpack(states)
+        pdparam = self.calc_pdparam(states)
+        v_pred = self.calc_v(states)  # uses self.v_pred from calc_pdparam if self.shared
+        return pdparam, v_pred
 
-    def train_shared(self):
-        '''
-        Trains the network when the actor and critic share parameters
-        loss = self.policy_loss_coef * policy_loss + self.val_loss_coef * val_loss
-        '''
-        clock = self.body.env.clock
-        if self.to_train == 1:
-            batch = self.sample()
-            with torch.no_grad():
-                advs, v_targets = self.calc_advs_v_targets(batch)
-            policy_loss = self.calc_policy_loss(batch, advs)  # from actor
-            val_loss = self.calc_val_loss(batch, v_targets)  # from critic
-            loss = policy_loss + val_loss
-            self.net.training_step(loss=loss, lr_clock=clock)
-            # reset
-            self.to_train = 0
-            self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
-            return loss.item()
-        else:
-            return np.nan
+    def calc_ret_advs_v_targets(self, batch, v_preds):
+        '''Calculate plain returns, and advs = rets - v_preds, v_targets = rets'''
+        v_preds = v_preds.detach()  # adv does not accumulate grad
+        if self.body.env.is_venv:
+            v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
+        rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
+        advs = rets - v_preds
+        v_targets = rets
+        if self.body.env.is_venv:
+            advs = math_util.venv_unpack(advs)
+            v_targets = math_util.venv_unpack(v_targets)
+        logger.debug(f'advs: {advs}\nv_targets: {v_targets}')
+        return advs, v_targets
 
-    def train_separate(self):
+    def calc_nstep_advs_v_targets(self, batch, v_preds):
         '''
-        Trains the network when the actor and critic are separate networks
-        loss = val_loss + abs(policy_loss)
+        Calculate N-step returns, and advs = nstep_rets - v_preds, v_targets = nstep_rets
+        See n-step advantage under http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_5_actor_critic_pdf.pdf
         '''
-        if self.to_train == 1:
-            batch = self.sample()
-            policy_loss = self.train_actor(batch)
-            val_loss = self.train_critic(batch)
-            loss = val_loss + abs(policy_loss)
-            # reset
-            self.to_train = 0
-            self.body.flush()
-            logger.debug(f'Trained {self.name}, loss: {loss:g}')
-            return loss.item()
-        else:
-            return np.nan
-
-    def train_actor(self, batch):
-        '''Trains the actor when the actor and critic are separate networks'''
         with torch.no_grad():
-            advs, _v_targets = self.calc_advs_v_targets(batch)
-        policy_loss = self.calc_policy_loss(batch, advs)
-        self.net.training_step(loss=policy_loss, lr_clock=self.body.env.clock)
-        return policy_loss
+            next_v_pred = self.calc_v(batch['next_states'][-1], use_cache=False)
+        v_preds = v_preds.detach()  # adv does not accumulate grad
+        if self.body.env.is_venv:
+            v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
+        nstep_rets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], next_v_pred, self.gamma, self.num_step_returns)
+        advs = nstep_rets - v_preds
+        v_targets = nstep_rets
+        if self.body.env.is_venv:
+            advs = math_util.venv_unpack(advs)
+            v_targets = math_util.venv_unpack(v_targets)
+        logger.debug(f'advs: {advs}\nv_targets: {v_targets}')
+        return advs, v_targets
 
-    def train_critic(self, batch):
-        '''Trains the critic when the actor and critic are separate networks'''
-        total_val_loss = torch.tensor(0.0, device=self.net.device)
-        # training iters only applicable to separate critic network
-        for _ in range(self.training_epoch):
-            with torch.no_grad():
-                _advs, v_targets = self.calc_advs_v_targets(batch)
-            val_loss = self.calc_val_loss(batch, v_targets)
-            self.critic.training_step(loss=val_loss, lr_clock=self.body.env.clock)
-            total_val_loss += val_loss
-        val_loss = total_val_loss / self.training_epoch
-        return val_loss
+    def calc_gae_advs_v_targets(self, batch, v_preds):
+        '''
+        Calculate GAE, and advs = GAE, v_targets = advs + v_preds
+        See GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
+        '''
+        with torch.no_grad():
+            next_v_pred = self.calc_v(batch['next_states'][-1], use_cache=False)
+        v_preds = v_preds.detach()  # adv does not accumulate grad
+        if self.body.env.is_venv:
+            v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
+        v_preds_all = torch.cat((v_preds, next_v_pred), dim=0)
+        advs = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds_all, self.gamma, self.lam)
+        v_targets = advs + v_preds
+        advs = math_util.standardize(advs)  # standardize only for advs, not v_targets
+        if self.body.env.is_venv:
+            advs = math_util.venv_unpack(advs)
+            v_targets = math_util.venv_unpack(v_targets)
+        logger.debug(f'advs: {advs}\nv_targets: {v_targets}')
+        return advs, v_targets
 
-    def calc_policy_loss(self, batch, advs):
+    def calc_policy_loss(self, batch, pdparams, advs):
         '''Calculate the actor's policy loss'''
-        assert len(self.body.log_probs) == len(advs), f'batch_size of log_probs {len(self.body.log_probs)} vs advs: {len(advs)}'
-        log_probs = torch.stack(self.body.log_probs)
-        policy_loss = - self.policy_loss_coef * log_probs * advs
-        if self.entropy_coef_spec is not None:
-            entropies = torch.stack(self.body.entropies)
-            policy_loss += (-self.body.entropy_coef * entropies)
-        policy_loss = torch.mean(policy_loss)
-        logger.debug(f'Actor policy loss: {policy_loss:g}')
-        return policy_loss
+        return super(ActorCritic, self).calc_policy_loss(batch, pdparams, advs)
 
-    def calc_val_loss(self, batch, v_targets):
+    def calc_val_loss(self, v_preds, v_targets):
         '''Calculate the critic's value loss'''
-        v_targets = v_targets.unsqueeze(dim=-1)
-        v_preds = self.calc_v(batch['states']).unsqueeze(dim=-1)
-        assert v_preds.shape == v_targets.shape
+        assert v_preds.shape == v_targets.shape, f'{v_preds.shape} != {v_targets.shape}'
         val_loss = self.val_loss_coef * self.net.loss_fn(v_preds, v_targets)
         logger.debug(f'Critic value loss: {val_loss:g}')
         return val_loss
 
-    def calc_gae_advs_v_targets(self, batch):
-        '''
-        Calculate the GAE advantages and value targets for training actor and critic respectively
-        adv_targets = GAE (see math_util method)
-        v_targets = adv_targets + v_preds
-        before output, adv_targets is standardized (so v_targets used the unstandardized version)
-        Used for training with GAE
-        '''
-        states = torch.cat((batch['states'], batch['next_states'][-1:]), dim=0)  # prevent double-pass
-        v_preds = self.calc_v(states)
-        next_v_preds = v_preds[1:]  # shift for only the next states
-        # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
-        adv_targets = math_util.calc_gaes(batch['rewards'], batch['dones'], v_preds, self.gamma, self.lam)
-        adv_targets = math_util.standardize(adv_targets)
-        logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
-        return adv_targets, v_targets
-
-    def calc_nstep_advs_v_targets(self, batch):
-        '''
-        Calculate N-step returns advantage = nstep_returns - v_pred
-        See n-step advantage under http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_5_actor_critic_pdf.pdf
-        Used for training with N-step (not GAE)
-        Returns 2-tuple for API-consistency with GAE
-        '''
-        next_v_preds = self.calc_v(batch['next_states'])
-        v_preds = self.calc_v(batch['states'])
-        # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
-        nstep_returns = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, self.num_step_returns, next_v_preds)
-        nstep_advs = nstep_returns - v_preds
-        adv_targets = nstep_advs
-        logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
-        return adv_targets, v_targets
-
-    def calc_td_advs_v_targets(self, batch):
-        '''
-        Estimate Q(s_t, a_t) with r_t + gamma * V(s_t+1 ) for simplest AC algorithm
-        '''
-        next_v_preds = self.calc_v(batch['next_states'])
-        # Equivalent to 1-step return
-        # v_target = r_t + gamma * V(s_(t+1)), i.e. 1-step return
-        v_targets = math_util.calc_nstep_returns(batch['rewards'], batch['dones'], self.gamma, 1, next_v_preds)
-        adv_targets = v_targets  # Plain Q estimate, called adv for API consistency
-        logger.debug(f'adv_targets: {adv_targets}\nv_targets: {v_targets}')
-        return adv_targets, v_targets
+    def train(self):
+        '''Train actor critic by computing the loss in batch efficiently'''
+        if util.in_eval_lab_modes():
+            return np.nan
+        clock = self.body.env.clock
+        if self.to_train == 1:
+            batch = self.sample()
+            pdparams, v_preds = self.calc_pdparam_v(batch)
+            advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
+            policy_loss = self.calc_policy_loss(batch, pdparams, advs)  # from actor
+            val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
+            if self.shared:  # shared network
+                loss = policy_loss + val_loss
+                self.net.training_step(loss=loss, lr_clock=clock)
+            else:
+                self.net.training_step(loss=policy_loss, lr_clock=clock)
+                self.critic.training_step(loss=val_loss, lr_clock=clock)
+                loss = policy_loss + val_loss
+            # reset
+            self.to_train = 0
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
+            return loss.item()
+        else:
+            return np.nan
 
     @lab_api
     def update(self):

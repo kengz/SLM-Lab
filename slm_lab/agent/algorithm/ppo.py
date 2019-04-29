@@ -109,7 +109,7 @@ class PPO(ActorCritic):
         self.old_net = deepcopy(self.net)
         assert id(self.old_net) != id(self.net)
 
-    def calc_policy_loss(self, batch, advs):
+    def calc_policy_loss(self, batch, pdparams, advs):
         '''
         The PPO loss function (subscript t is omitted)
         L^{CLIP+VF+S} = E[ L^CLIP - c1 * L^VF + c2 * S[pi](s) ]
@@ -123,91 +123,77 @@ class PPO(ActorCritic):
         3. S = E[ entropy ]
         '''
         clip_eps = self.body.clip_eps
+        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+        states = batch['states']
+        actions = batch['actions']
+        if self.body.env.is_venv:
+            states = math_util.venv_unpack(states)
+            actions = math_util.venv_unpack(actions)
 
         # L^CLIP
-        log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
-        old_log_probs = policy_util.calc_log_probs(self, self.old_net, self.body, batch).detach()
+        log_probs = action_pd.log_prob(actions)
+        with torch.no_grad():
+            old_pdparams = self.calc_pdparam(states, net=self.old_net)
+            old_action_pd = policy_util.init_action_pd(self.body.ActionPD, old_pdparams)
+            old_log_probs = old_action_pd.log_prob(actions)
         assert log_probs.shape == old_log_probs.shape
-        assert advs.shape[0] == log_probs.shape[0]  # batch size
         ratios = torch.exp(log_probs - old_log_probs)  # clip to prevent overflow
         logger.debug(f'ratios: {ratios}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
         # flip sign because need to maximize
-        clip_loss = -torch.mean(torch.min(sur_1, sur_2))
+        clip_loss = -torch.min(sur_1, sur_2).mean()
         logger.debug(f'clip_loss: {clip_loss}')
 
         # L^VF (inherit from ActorCritic)
 
         # S entropy bonus
-        entropies = torch.stack(self.body.entropies)
-        ent_penalty = torch.mean(-self.body.entropy_coef * entropies)
+        entropy = action_pd.entropy().mean()
+        self.body.mean_entropy = entropy  # update logging variable
+        ent_penalty = -self.body.entropy_coef * entropy
         logger.debug(f'ent_penalty: {ent_penalty}')
 
         policy_loss = clip_loss + ent_penalty
         logger.debug(f'PPO Actor policy loss: {policy_loss:g}')
         return policy_loss
 
-    def train_shared(self):
+    def train(self):
         '''
         Trains the network when the actor and critic share parameters
         '''
+        if util.in_eval_lab_modes():
+            return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
-            # update old net
-            torch.cuda.empty_cache()
-            net_util.copy(self.net, self.old_net)
+            net_util.copy(self.net, self.old_net)  # update old net
             batch = self.sample()
-            total_loss = torch.tensor(0.0, device=self.net.device)
+            _pdparams, v_preds = self.calc_pdparam_v(batch)
+            advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
+            batch['advs'] = advs
+            batch['v_targets'] = v_targets
+            total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
-                with torch.no_grad():
-                    advs, v_targets = self.calc_advs_v_targets(batch)
-                policy_loss = self.calc_policy_loss(batch, advs)  # from actor
-                val_loss = self.calc_val_loss(batch, v_targets)  # from critic
-                loss = policy_loss + val_loss
-                # retain for entropies etc.
-                self.net.training_step(loss=loss, lr_clock=clock, retain_graph=True)
+                minibatch = batch  # TODO sample minibatch from batch with size < length of batch
+                advs = batch['advs']
+                v_targets = batch['v_targets']
+                pdparams, v_preds = self.calc_pdparam_v(batch)
+                policy_loss = self.calc_policy_loss(batch, pdparams, advs)  # from actor
+                val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
+                if self.shared:  # shared network
+                    loss = policy_loss + val_loss
+                    self.net.training_step(loss=loss, lr_clock=clock)
+                else:
+                    self.net.training_step(loss=policy_loss, lr_clock=clock)
+                    self.critic.training_step(loss=val_loss, lr_clock=clock)
+                    loss = policy_loss + val_loss
                 total_loss += loss
             loss = total_loss / self.training_epoch
             # reset
             self.to_train = 0
-            self.body.flush()
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
-
-    def train_separate(self):
-        '''
-        Trains the network when the actor and critic share parameters
-        '''
-        clock = self.body.env.clock
-        if self.to_train == 1:
-            torch.cuda.empty_cache()
-            net_util.copy(self.net, self.old_net)
-            batch = self.sample()
-            policy_loss = self.train_actor(batch)
-            val_loss = self.train_critic(batch)
-            loss = val_loss + policy_loss
-            # reset
-            self.to_train = 0
-            self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
-            return loss.item()
-        else:
-            return np.nan
-
-    def train_actor(self, batch):
-        '''Trains the actor when the actor and critic are separate networks'''
-        total_policy_loss = torch.tensor(0.0, device=self.net.device)
-        for _ in range(self.training_epoch):
-            with torch.no_grad():
-                advs, _v_targets = self.calc_advs_v_targets(batch)
-            policy_loss = self.calc_policy_loss(batch, advs)
-            # retain for entropies etc.
-            self.net.training_step(loss=policy_loss, lr_clock=self.body.env.clock, retain_graph=True)
-        val_loss = total_policy_loss / self.training_epoch
-        return policy_loss
 
     @lab_api
     def update(self):
