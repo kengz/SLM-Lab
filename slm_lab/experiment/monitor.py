@@ -96,8 +96,8 @@ class Body:
 
         # debugging/logging variables, set in train or loss function
         self.loss = np.nan
-        self.log_probs = torch.tensor(np.nan)
-        self.entropies = torch.tensor(np.nan)
+        self.mean_entropy = np.nan
+        self.mean_grad_norm = np.nan
 
         # stores running mean and std dev of states
         self.state_mean = np.nan
@@ -115,7 +115,7 @@ class Body:
         # track training data per episode
         self.train_df = pd.DataFrame(columns=[
             'epi', 'total_t', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
-            'explore_var', 'entropy_coef', 'entropy', 'log_prob', 'grad_norm'])
+            'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
         # track eval data within run_eval. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
 
@@ -151,10 +151,9 @@ class Body:
         fps = 0 if wall_t == 0 else total_t / wall_t
 
         # update debugging variables
-        mean_entropy = self.entropies.mean().item()
-        mean_log_prob = self.log_probs.mean().item()
-        grad_norms = net_util.get_grad_norms(self.agent.algorithm)
-        mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
+        if net_util.to_check_training_step():
+            grad_norms = net_util.get_grad_norms(self.agent.algorithm)
+            self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
 
         row = pd.Series({
             # epi and total_t are always measured from training env
@@ -170,9 +169,8 @@ class Body:
             'lr': self.get_mean_lr(),
             'explore_var': self.explore_var,
             'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
-            'entropy': mean_entropy,
-            'log_prob': mean_log_prob,
-            'grad_norm': mean_grad_norm,
+            'entropy': self.mean_entropy,
+            'grad_norm': self.mean_grad_norm,
         }, dtype=np.float32)
         assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
         return row

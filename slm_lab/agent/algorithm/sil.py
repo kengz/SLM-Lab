@@ -113,66 +113,44 @@ class SIL(ActorCritic):
         assert not torch.isnan(batch['states']).any(), batch['states']
         return batch
 
-    def calc_sil_policy_val_loss(self, batch):
+    def calc_sil_policy_val_loss(self, batch, pdparams):
         '''
         Calculate the SIL policy losses for actor and critic
         sil_policy_loss = -log_prob * max(R - v_pred, 0)
         sil_val_loss = (max(R - v_pred, 0)^2) / 2
         This is called on a randomly-sample batch from experience replay
         '''
-        returns = batch['rets']
-        v_preds = self.calc_v(batch['states'])
-        clipped_advs = torch.clamp(returns - v_preds, min=0.0)
-        log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
+        rets = batch['rets']
+        v_preds = self.calc_v(batch['states'], use_cache=False)
+        clipped_advs = torch.clamp(rets - v_preds, min=0.0)
 
-        sil_policy_loss = self.sil_policy_loss_coef * torch.mean(- log_probs * clipped_advs)
-        sil_val_loss = self.sil_val_loss_coef * torch.pow(clipped_advs, 2) / 2
-        sil_val_loss = torch.mean(sil_val_loss)
+        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+        actions = batch['actions']
+        if self.body.env.is_venv:
+            actions = math_util.venv_unpack(actions)
+        log_probs = action_pd.log_prob(actions)
+
+        sil_policy_loss = - self.sil_policy_loss_coef * (log_probs * clipped_advs).mean()
+        sil_val_loss = self.sil_val_loss_coef * clipped_advs.pow(2).mean() / 2
         logger.debug(f'SIL actor policy loss: {sil_policy_loss:g}')
         logger.debug(f'SIL critic value loss: {sil_val_loss:g}')
         return sil_policy_loss, sil_val_loss
 
-    def train_shared(self):
-        '''
-        Trains the network when the actor and critic share parameters
-        '''
+    def train(self):
         clock = self.body.env.clock
         if self.to_train == 1:
             # onpolicy update
-            super_loss = super(SIL, self).train_shared()
+            super_loss = super(SIL, self).train()
             # offpolicy sil update with random minibatch
-            total_sil_loss = torch.tensor(0.0, device=self.net.device)
+            total_sil_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
                 batch = self.replay_sample()
                 for _ in range(self.training_batch_epoch):
-                    sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
+                    pdparams, _v_preds = self.calc_pdparam_v(batch)
+                    sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch, pdparams)
                     sil_loss = sil_policy_loss + sil_val_loss
                     self.net.training_step(loss=sil_loss, lr_clock=clock)
                     total_sil_loss += sil_loss
-            sil_loss = total_sil_loss / self.training_epoch
-            loss = super_loss + sil_loss
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
-            return loss.item()
-        else:
-            return np.nan
-
-    def train_separate(self):
-        '''
-        Trains the network when the actor and critic are separate networks
-        '''
-        clock = self.body.env.clock
-        if self.to_train == 1:
-            # onpolicy update
-            super_loss = super(SIL, self).train_separate()
-            # offpolicy sil update with random minibatch
-            total_sil_loss = torch.tensor(0.0, device=self.net.device)
-            for _ in range(self.training_epoch):
-                batch = self.replay_sample()
-                for _ in range(self.training_batch_epoch):
-                    sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
-                    self.net.training_step(loss=sil_policy_loss, lr_clock=clock, retain_graph=True)
-                    self.critic.training_step(loss=sil_val_loss, lr_clock=clock)
-                    total_sil_loss += sil_policy_loss + sil_val_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')

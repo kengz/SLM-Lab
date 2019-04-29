@@ -418,7 +418,7 @@
     "env": [{
       "name": "vizdoom-v0",
       "cfg_name": "basic",
-      "max_t": 10000,
+      "max_t": 400000,
       "max_tick": 100
     }],
     "body": {

@@ -4,6 +4,7 @@ from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.spec import spec_util
 import pandas as pd
+import pytest
 
 
 def test_session(test_spec, test_info_space):
@@ -46,6 +47,7 @@ def test_trial_demo(test_info_space):
     assert isinstance(trial_data, pd.DataFrame)
 
 
+@pytest.mark.skip(reason="Unstable")
 @flaky
 def test_demo_performance(test_info_space):
     spec = spec_util.get('demo.json', 'dqn_cartpole')

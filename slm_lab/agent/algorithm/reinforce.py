@@ -143,6 +143,7 @@ class Reinforce(Algorithm):
         policy_loss = - self.policy_loss_coef * (log_probs * advs).mean()
         if self.entropy_coef_spec:
             entropy = action_pd.entropy().mean()
+            self.body.mean_entropy = entropy  # update logging variable
             policy_loss += (-self.body.entropy_coef * entropy)
         logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
