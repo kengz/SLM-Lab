@@ -105,16 +105,6 @@ def sample_action(ActionPD, pdparam):
     return action
 
 
-def calc_action_pd(state, algorithm, body):
-    '''
-    Do calc_pdparam from state and get action_pd to calc log_prob, entropy, etc.
-    This is used for batched loss calculation for efficiency
-    '''
-    pdparam = calc_pdparam(state, algorithm, body)
-    action_pd = init_action_pd(body.ActionPD, pdparam)
-    return action_pd
-
-
 # action_policy used by agent
 
 
