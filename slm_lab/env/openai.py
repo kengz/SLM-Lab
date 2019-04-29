@@ -1,7 +1,7 @@
 from slm_lab.env.base import BaseEnv, ENV_DATA_NAMES
 from slm_lab.env.wrapper import make_gym_env
 from slm_lab.env.vec_env import make_gym_venv
-from slm_lab.env.registration import register_env
+from slm_lab.env.registration import try_register_env
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import gym
@@ -26,11 +26,7 @@ class OpenAIEnv(BaseEnv):
 
     def __init__(self, spec, e=None, env_space=None):
         super(OpenAIEnv, self).__init__(spec, e, env_space)
-        try:
-            # register any additional environments first. guard for re-registration
-            register_env(spec)
-        except Exception as e:
-            pass
+        try_register_env(spec)  # register if it's a custom gym env
         seed = ps.get(spec, 'meta.random_seed')
         stack_len = ps.get(spec, 'agent.0.memory.stack_len')
         if self.is_venv:  # make vector environment
