@@ -158,9 +158,6 @@ class PPO(ActorCritic):
         return policy_loss
 
     def train(self):
-        '''
-        Trains the network when the actor and critic share parameters
-        '''
         if util.in_eval_lab_modes():
             return np.nan
         clock = self.body.env.clock

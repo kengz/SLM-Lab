@@ -267,34 +267,6 @@ def guard_multi_pdparams(pdparams, body):
     return pdparams
 
 
-def calc_log_probs(algorithm, net, body, batch):
-    # TODO retire this
-    '''
-    Method to calculate log_probs fresh from batch data
-    Body already stores log_prob from self.net. This is used for PPO where log_probs needs to be recalculated.
-    '''
-    states, actions = batch['states'], batch['actions']
-    action_dim = body.action_dim
-    is_multi_action = ps.is_iterable(action_dim)
-    # construct log_probs for each state-action
-    pdparams = algorithm.calc_pdparam(states, net=net)
-    pdparams = guard_multi_pdparams(pdparams, body)
-    assert len(pdparams) == len(states), f'batch_size of pdparams: {len(pdparams)} vs states: {len(states)}'
-
-    pdtypes = ACTION_PDS[body.action_type]
-    ActionPD = getattr(distributions, body.action_pdtype)
-
-    log_probs = []
-    for idx, pdparam in enumerate(pdparams):
-        if not is_multi_action:  # already cloned  for multi_action above
-            pdparam = pdparam.clone()  # clone for grad safety
-        action_pd = init_action_pd(ActionPD, pdparam)
-        log_probs.append(action_pd.log_prob(actions[idx].float()).sum(dim=0))
-    log_probs = torch.stack(log_probs)
-    assert not torch.isnan(log_probs).any(), f'log_probs: {log_probs}, \npdparams: {pdparams} \nactions: {actions}'
-    return log_probs
-
-
 def update_online_stats(body, state):
     '''
     Method to calculate the running mean and standard deviation of the state space.
