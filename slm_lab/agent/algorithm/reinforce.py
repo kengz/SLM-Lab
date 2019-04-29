@@ -140,7 +140,6 @@ class Reinforce(Algorithm):
         if self.body.env.is_venv:
             actions = math_util.venv_unpack(actions)
         log_probs = action_pd.log_prob(actions)
-        assert log_probs.shape == advs.shape, f'{log_probs.shape} != advs: {advs.shape}'
         policy_loss = - self.policy_loss_coef * (log_probs * advs).mean()
         if self.entropy_coef_spec:
             entropy = action_pd.entropy().mean()
