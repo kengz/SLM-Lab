@@ -175,7 +175,7 @@ class ActorCritic(Reinforce):
                 pdparam = out[0]
             else:  # multiple-task policies, still assumes 1 value
                 pdparam = out[:-1]
-            self.v_pred = out[-1].squeeze(dim=-1)  # cache for loss calc to prevent double-pass
+            self.v_pred = out[-1].view(-1)  # cache for loss calc to prevent double-pass
         else:  # out is pdparam
             pdparam = out
         return pdparam
@@ -189,9 +189,9 @@ class ActorCritic(Reinforce):
             if use_cache:  # uses cache from calc_pdparam to prevent double-pass
                 v_pred = self.v_pred
             else:
-                v_pred = self.net(x)[-1].squeeze(dim=-1)
+                v_pred = self.net(x)[-1].view(-1)
         else:
-            v_pred = self.critic(x).squeeze(dim=-1)
+            v_pred = self.critic(x).view(-1)
         return v_pred
 
     def calc_pdparam_v(self, batch):
