@@ -146,7 +146,7 @@ class Body:
         self.last_done = done
 
     def __str__(self):
-        return 'body: ' + util.pformat(util.get_class_attr(self))
+        return 'body: ' + util.to_json(util.get_class_attr(self))
 
     def calc_df_row(self, env):
         '''Calculate a row for updating train_df or eval_df.'''
