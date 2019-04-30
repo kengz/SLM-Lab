@@ -183,7 +183,6 @@ class Body:
         # update current reward_ma
         self.total_reward_ma = self.train_df[-analysis.MA_WINDOW:]['reward'].mean()
         self.train_df.iloc[-1]['reward_ma'] = self.total_reward_ma
-        self.total_reward = np.nan  # reset
 
     def eval_ckpt(self, eval_env, total_reward):
         '''Checkpoint to update body.eval_df data'''

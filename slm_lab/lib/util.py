@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from datetime import datetime
 from importlib import reload
+from pprint import pformat
 from slm_lab import ROOT_DIR, EVAL_MODES
 import cv2
 import json
@@ -538,7 +539,7 @@ def self_desc(cls):
         if k == 'spec':
             desc_v = v['name']
         elif ps.is_dict(v) or ps.is_dict(ps.head(v)):
-            desc_v = to_json(v)
+            desc_v = pformat(v)
         else:
             desc_v = v
         desc_list.append(f'- {k} = {desc_v}')
