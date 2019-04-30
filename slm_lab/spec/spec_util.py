@@ -57,7 +57,7 @@ def check_comp_spec(comp_spec, comp_spec_format):
         else:
             v_type = spec_format_v
             assert isinstance(comp_spec_v, v_type), f'Component spec {ps.pick(comp_spec, spec_k)} needs to be of type: {v_type}'
-            if isinstance(v_type, tuple) and int in v_type and comp_spec_v is not None:
+            if isinstance(v_type, tuple) and int in v_type and isinstance(comp_spec_v, float):
                 # cast if it can be int
                 comp_spec[spec_k] = int(comp_spec_v)
 
