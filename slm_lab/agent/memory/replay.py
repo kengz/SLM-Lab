@@ -53,24 +53,15 @@ class Replay(Memory):
         self.head = -1  # index of most recent experience
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones']
-        self.scalar_shape = (self.max_size,)
-        self.states_shape = self.scalar_shape + tuple(np.reshape(self.body.state_dim, -1))
-        self.actions_shape = self.scalar_shape + self.body.action_space.shape
         self.reset()
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
-        # set data keys as self.{data_keys}
+        # set self.states, self.actions, ...
         for k in self.data_keys:
-            if k == 'states':
-                setattr(self, k, np.zeros(self.states_shape, dtype=np.float16))
-            elif k == 'next_states':
-                # don't store next_states, but create a place holder to track it for sampling
-                self.latest_next_state = None
-            elif k == 'actions':
-                setattr(self, k, np.zeros(self.actions_shape, dtype=self.body.action_space.dtype))
-            else:
-                setattr(self, k, np.zeros(self.scalar_shape, dtype=np.float16))
+            # list add/sample is over 10x faster than np, also simpler to handle
+            setattr(self, k, [None] * self.max_size)
+        self.latest_next_state = None
         self.size = 0
         self.head = -1
         self.state_buffer.clear()
@@ -94,12 +85,13 @@ class Replay(Memory):
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
+        # TODO downcast to dtype
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
-        self.states[self.head] = state
+        self.states[self.head] = state.astype(np.float16)
         self.actions[self.head] = action
         self.rewards[self.head] = reward
-        self.latest_next_state = next_state
+        self.latest_next_state = next_state.astype(np.float16)
         self.dones[self.head] = done
         # Actually occupied size of memory
         if self.size < self.max_size:
@@ -170,8 +162,6 @@ class SeqReplay(Replay):
         super(SeqReplay, self).__init__(memory_spec, body)
         self.seq_len = self.body.agent.agent_spec['net']['seq_len']
         self.state_buffer = deque(maxlen=self.seq_len)
-        # update states_shape and call reset again
-        self.states_shape = self.scalar_shape + tuple(np.reshape([self.seq_len, self.body.state_dim], -1))
         self.reset()
 
     def preprocess_state(self, state, append=True):
@@ -253,8 +243,6 @@ class AtariReplay(Replay):
             'use_cer',
         ])
         Replay.__init__(self, memory_spec, body)
-        self.states_shape = self.scalar_shape
-        self.states = [None] * self.max_size
 
     def add_experience(self, state, action, reward, next_state, done):
         # clip reward, done here to minimize change to only training data data
