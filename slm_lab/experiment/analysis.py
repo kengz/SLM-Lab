@@ -46,7 +46,8 @@ def calc_strength(aeb_df):
     - scales relative to std_reward: if an agent achieve x2 std_reward, the strength is x2, and so on.
     This allows for standard comparison between agents on the same problem using an intuitive measurement of strength. With proper scaling by a difficulty factor, we can compare across problems of different difficulties.
     '''
-    return aeb_df['strength_ma'].max()
+    strength = aeb_df['strength_ma'].max()
+    return max(0.0, strength)
 
 
 def calc_speed(aeb_df, std_timestep):
@@ -66,7 +67,7 @@ def calc_speed(aeb_df, std_timestep):
         speed = 0.
     else:
         speed = (max_row['strength_ma'] / max_row['total_t']) / (std_strength / std_timestep)
-    return speed
+    return max(0., speed)
 
 
 def calc_stability(aeb_df):
@@ -83,7 +84,7 @@ def calc_stability(aeb_df):
     else:
         mono_inc_sr = np.diff(aeb_df['strength_ma']) >= 0.
         stability = mono_inc_sr.sum() / mono_inc_sr.size
-    return stability
+    return max(0., stability)
 
 
 def calc_consistency(aeb_fitness_df):
@@ -144,7 +145,7 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
 
     # calculate the strength sr and the moving-average (to denoise) first before calculating fitness
     aeb_df['strength'] = calc_strength_sr(aeb_df, std['rand_epi_reward'], std['std_epi_reward'])
-    aeb_df['strength_ma'] = aeb_df['strength'].rolling(MA_WINDOW, min_periods=0, center=False).mean().clip_lower(0.0)
+    aeb_df['strength_ma'] = aeb_df['strength'].rolling(MA_WINDOW, min_periods=0, center=False).mean()
 
     strength = calc_strength(aeb_df)
     speed = calc_speed(aeb_df, std['std_timestep'])
