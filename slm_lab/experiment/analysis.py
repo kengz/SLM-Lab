@@ -144,7 +144,7 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
 
     # calculate the strength sr and the moving-average (to denoise) first before calculating fitness
     aeb_df['strength'] = calc_strength_sr(aeb_df, std['rand_epi_reward'], std['std_epi_reward'])
-    aeb_df['strength_ma'] = aeb_df['strength'].rolling(MA_WINDOW, min_periods=0, center=False).mean()
+    aeb_df['strength_ma'] = aeb_df['strength'].rolling(MA_WINDOW, min_periods=0, center=False).mean().clip_lower(0.0)
 
     strength = calc_strength(aeb_df)
     speed = calc_speed(aeb_df, std['std_timestep'])
