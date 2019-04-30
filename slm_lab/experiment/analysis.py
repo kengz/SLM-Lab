@@ -46,7 +46,8 @@ def calc_strength(aeb_df):
     - scales relative to std_reward: if an agent achieve x2 std_reward, the strength is x2, and so on.
     This allows for standard comparison between agents on the same problem using an intuitive measurement of strength. With proper scaling by a difficulty factor, we can compare across problems of different difficulties.
     '''
-    return aeb_df['strength_ma'].max()
+    strength = aeb_df['strength_ma'].max()
+    return max(0.0, strength)
 
 
 def calc_speed(aeb_df, std_timestep):
@@ -66,7 +67,7 @@ def calc_speed(aeb_df, std_timestep):
         speed = 0.
     else:
         speed = (max_row['strength_ma'] / max_row['total_t']) / (std_strength / std_timestep)
-    return speed
+    return max(0., speed)
 
 
 def calc_stability(aeb_df):
@@ -83,7 +84,7 @@ def calc_stability(aeb_df):
     else:
         mono_inc_sr = np.diff(aeb_df['strength_ma']) >= 0.
         stability = mono_inc_sr.sum() / mono_inc_sr.size
-    return stability
+    return max(0., stability)
 
 
 def calc_consistency(aeb_fitness_df):
@@ -249,7 +250,7 @@ def calc_session_fitness_df(session, session_data):
     session_fitness_df = pd.concat(session_fitness_data, axis=1)
     mean_fitness_df = calc_mean_fitness(session_fitness_df)
     session_fitness = calc_fitness(mean_fitness_df)
-    logger.info(f'Session mean fitness: {session_fitness}\n{mean_fitness_df}')
+    logger.info(f'Session mean fitness: {session_fitness:g} {mean_fitness_df.iloc[0].round(4).to_dict()}')
     return session_fitness_df
 
 
@@ -276,7 +277,7 @@ def calc_trial_fitness_df(trial):
     mean_fitness_df = calc_mean_fitness(trial_fitness_df)
     trial_fitness_df = mean_fitness_df
     trial_fitness = calc_fitness(mean_fitness_df)
-    logger.info(f'Trial mean fitness: {trial_fitness}\n{mean_fitness_df}')
+    logger.info(f'Trial mean fitness: {trial_fitness:g} {mean_fitness_df.iloc[0].round(4).to_dict()}')
     return trial_fitness_df
 
 
