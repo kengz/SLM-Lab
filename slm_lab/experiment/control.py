@@ -97,7 +97,7 @@ class Session:
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_tick'''
-        logger.info(f'Running RL loop for trial {self.info_space.get("trial")} session {self.index}')
+        logger.info(f'Running RL loop training for trial {self.info_space.get("trial")} session {self.index}')
         clock = self.env.clock
         state = self.env.reset()
         self.agent.reset(state)
@@ -109,9 +109,9 @@ class Session:
                     clock.tick('epi')
                     state = self.env.reset()
                     done = False
-                else:  # exit loop
-                    break
             self.try_ckpt(self.agent, self.env)
+            if clock.get() >= clock.max_tick:  # finish
+                break
             clock.tick('t')
             action = self.agent.act(state)
             next_state, reward, done, info = self.env.step(action)

@@ -119,36 +119,38 @@ def get_out_dim(body, add_critic=False):
     return out_dim
 
 
-def init_layers(net, init_fn):
-    if init_fn is None:
+def init_layers(net, init_fn_name):
+    '''Primary method to initialize the weights of the layers of a network'''
+    if init_fn_name is None:
         return
+
+    # get nonlinearity
     nonlinearity = get_nn_name(net.hid_layers_activation).lower()
     if nonlinearity == 'leakyrelu':
-        nonlinearity = 'leaky_relu'
-    if init_fn == 'xavier_uniform_':
-        try:
-            gain = nn.init.calculate_gain(nonlinearity)
-        except ValueError:
-            gain = 1
-        init_fn = partial(nn.init.xavier_uniform_, gain=gain)
-    elif 'kaiming' in init_fn:
+        nonlinearity = 'leaky_relu'  # guard name
+
+    # get init_fn and add arguments depending on nonlinearity
+    init_fn = getattr(nn.init, init_fn_name)
+    if 'kaiming' in init_fn_name:  # has 'nonlinearity' as arg
         assert nonlinearity in ['relu', 'leaky_relu'], f'Kaiming initialization not supported for {nonlinearity}'
-        init_fn = nn.init.__dict__[init_fn]
         init_fn = partial(init_fn, nonlinearity=nonlinearity)
+    elif 'orthogonal' in init_fn_name or 'xavier' in init_fn_name:  # has 'gain' as arg
+        gain = nn.init.calculate_gain(nonlinearity)
+        init_fn = partial(init_fn, gain=gain)
     else:
-        init_fn = nn.init.__dict__[init_fn]
-    net.apply(partial(init_parameters, init_fn=init_fn))
+        pass
+
+    # finally, apply init_params to each layer in its modules
+    net.apply(partial(init_params, init_fn=init_fn))
 
 
-def init_parameters(module, init_fn):
-    '''
-    Initializes module's weights using init_fn, which is the name of function from from nn.init
-    Initializes module's biases to either 0.01 or 0.0, depending on module
-    The only exception is BatchNorm layers, for which we use uniform initialization
-    '''
+def init_params(module, init_fn):
+    '''Initialize module's weights using init_fn, and biases to 0.0'''
     bias_init = 0.0
     classname = util.get_class_name(module)
-    if 'BatchNorm' in classname:
+    if 'Net' in classname:  # skip if it's a net, not pytorch layer
+        pass
+    elif any(k in classname for k in ('BatchNorm', 'Conv', 'Linear')):
         init_fn(module.weight)
         nn.init.constant_(module.bias, bias_init)
     elif 'GRU' in classname:
@@ -156,10 +158,9 @@ def init_parameters(module, init_fn):
             if 'weight' in name:
                 init_fn(param)
             elif 'bias' in name:
-                nn.init.constant_(param, 0.0)
-    elif 'Linear' in classname or ('Conv' in classname and 'Net' not in classname):
-        init_fn(module.weight)
-        nn.init.constant_(module.bias, bias_init)
+                nn.init.constant_(param, bias_init)
+    else:
+        pass
 
 
 # params methods

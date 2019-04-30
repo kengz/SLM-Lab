@@ -51,13 +51,11 @@ class EnvSpace:
 
     @lab_api
     def reset(self):
-        logger.debug('EnvSpace.reset')
         state_v, = self.aeb_space.init_data_v(['state'])
         for env in self.envs:
             state_e = env.space_reset()
             state_v[env.e, 0:len(state_e)] = state_e
         state_space = self.aeb_space.add('state', state_v)
-        logger.debug(f'\nstate_space: {state_space}')
         return state_space
 
     @lab_api
@@ -73,7 +71,6 @@ class EnvSpace:
             done_v[e, 0:len(done_e)] = done_e
             info_v.append(info_e)
         state_space, reward_space, done_space = self.aeb_space.add(ENV_DATA_NAMES, (state_v, reward_v, done_v))
-        logger.debug(f'\nstate_space: {state_space}\nreward_space: {reward_space}\ndone_space: {done_space}')
         return state_space, reward_space, done_space, info_v
 
     @lab_api

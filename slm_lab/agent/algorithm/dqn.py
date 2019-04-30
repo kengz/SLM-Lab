@@ -215,10 +215,8 @@ class DQNBase(VanillaDQN):
         total_t = self.body.env.clock.total_t
         if total_t % self.net.update_frequency == 0:
             if self.net.update_type == 'replace':
-                logger.debug('Updating target_net by replacing')
                 net_util.copy(self.net, self.target_net)
             elif self.net.update_type == 'polyak':
-                logger.debug('Updating net by averaging')
                 net_util.polyak_update(self.net, self.target_net, self.net.polyak_coef)
             else:
                 raise ValueError('Unknown net.update_type. Should be "replace" or "polyak". Exiting.')

@@ -27,8 +27,8 @@ SPEC_FORMAT = {
     }],
     "env": [{
         "name": str,
-        "max_t": (type(None), int),
-        "max_tick": int,
+        "max_t": (type(None), int, float),
+        "max_tick": (int, float),
     }],
     "body": {
         "product": ["outer", "inner", "custom"],
@@ -36,7 +36,7 @@ SPEC_FORMAT = {
     },
     "meta": {
         "distributed": bool,
-        "eval_frequency": int,
+        "eval_frequency": (int, float),
         "max_tick_unit": str,
         "max_session": int,
         "max_trial": (type(None), int),
@@ -57,6 +57,9 @@ def check_comp_spec(comp_spec, comp_spec_format):
         else:
             v_type = spec_format_v
             assert isinstance(comp_spec_v, v_type), f'Component spec {ps.pick(comp_spec, spec_k)} needs to be of type: {v_type}'
+            if isinstance(v_type, tuple) and int in v_type and isinstance(comp_spec_v, float):
+                # cast if it can be int
+                comp_spec[spec_k] = int(comp_spec_v)
 
 
 def check_body_spec(spec):

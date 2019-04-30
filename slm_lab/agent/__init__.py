@@ -58,7 +58,6 @@ class Agent:
     @lab_api
     def reset(self, state):
         '''Do agent reset per session, such as memory pointer'''
-        logger.debug(f'Agent {self.a} reset')
         self.body.memory.epi_reset(state)
 
     @lab_api
@@ -66,7 +65,6 @@ class Agent:
         '''Standard act method from algorithm.'''
         with torch.no_grad():  # for efficiency, only calc grad in algorithm.train
             action = self.algorithm.act(state)
-        logger.debug(f'Agent {self.a} act: {action}')
         return action
 
     @lab_api
@@ -78,7 +76,6 @@ class Agent:
         if not np.isnan(loss):  # set for log_summary()
             self.body.loss = loss
         explore_var = self.algorithm.update()
-        logger.debug(f'Agent {self.a} loss: {loss}, explore_var {explore_var}')
         return loss, explore_var
 
     @lab_api
@@ -120,7 +117,6 @@ class Agent:
     @lab_api
     def space_reset(self, state_a):
         '''Do agent reset per session, such as memory pointer'''
-        logger.debug(f'Agent {self.a} reset')
         for eb, body in util.ndenumerate_nonan(self.body_a):
             body.memory.epi_reset(state_a[eb])
 
@@ -129,7 +125,6 @@ class Agent:
         '''Standard act method from algorithm.'''
         with torch.no_grad():
             action_a = self.algorithm.space_act(state_a)
-        logger.debug(f'Agent {self.a} act: {action_a}')
         return action_a
 
     @lab_api
@@ -145,7 +140,6 @@ class Agent:
                 body.loss = loss_a[eb]
         explore_var_a = self.algorithm.space_update()
         explore_var_a = util.guard_data_a(self, explore_var_a, 'explore_var')
-        logger.debug(f'Agent {self.a} loss: {loss_a}, explore_var_a {explore_var_a}')
         # TODO below scheduled for update to be consistent with non-space mode
         for eb, body in util.ndenumerate_nonan(self.body_a):
             if body.env.done:
@@ -188,7 +182,6 @@ class AgentSpace:
             state_a = state_space.get(a=agent.a)
             agent.space_reset(state_a)
         _action_space, _loss_space, _explore_var_space = self.aeb_space.add(AGENT_DATA_NAMES, (_action_v, _loss_v, _explore_var_v))
-        logger.debug(f'action_space: {_action_space}')
         return _action_space
 
     @lab_api
@@ -201,7 +194,6 @@ class AgentSpace:
             action_a = agent.space_act(state_a)
             action_v[a, 0:len(action_a)] = action_a
         action_space, = self.aeb_space.add(data_names, (action_v,))
-        logger.debug(f'\naction_space: {action_space}')
         return action_space
 
     @lab_api
@@ -219,7 +211,6 @@ class AgentSpace:
             loss_v[a, 0:len(loss_a)] = loss_a
             explore_var_v[a, 0:len(explore_var_a)] = explore_var_a
         loss_space, explore_var_space = self.aeb_space.add(data_names, (loss_v, explore_var_v))
-        logger.debug(f'\nloss_space: {loss_space}\nexplore_var_space: {explore_var_space}')
         return loss_space, explore_var_space
 
     @lab_api
