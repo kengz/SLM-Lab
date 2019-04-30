@@ -139,7 +139,11 @@ class Body:
 
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
-        self.total_reward = math_util.nan_add(self.total_reward, reward)
+        if self.total_reward is np.nan:  # init
+            self.total_reward = reward
+        else:  # reset on last done, or keep adding. generalized for vector rewards
+            self.total_reward = self.total_reward * (1 - self.last_done) + reward
+        self.last_done = done
 
     def __str__(self):
         return 'body: ' + util.to_json(util.get_class_attr(self))
