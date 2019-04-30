@@ -169,7 +169,6 @@ def init_params(module, init_fn):
 def save(net, model_path):
     '''Save model weights to path'''
     torch.save(net.state_dict(), util.smart_path(model_path))
-    logger.info(f'Saved model to {model_path}')
 
 
 def save_algorithm(algorithm, ckpt=None):
@@ -179,7 +178,7 @@ def save_algorithm(algorithm, ckpt=None):
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
     if ckpt is not None:
         prepath = f'{prepath}_ckpt-{ckpt}'
-    logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names}')
+    logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_{net_name}_model.pth'
@@ -192,7 +191,6 @@ def load(net, model_path):
     '''Save model weights from a path into a net module'''
     device = None if torch.cuda.is_available() else 'cpu'
     net.load_state_dict(torch.load(util.smart_path(model_path), map_location=device))
-    logger.info(f'Loaded model from {model_path}')
 
 
 def load_algorithm(algorithm):
@@ -204,7 +202,7 @@ def load_algorithm(algorithm):
         prepath = agent.info_space.eval_model_prepath
     else:
         prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
-    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names}')
+    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {prepath}_*.pth')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_{net_name}_model.pth'
