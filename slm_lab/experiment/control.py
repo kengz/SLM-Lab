@@ -48,7 +48,7 @@ class Session:
         '''Check with clock and lab_mode whether to run log/eval ckpt: at the start, save_freq, and the end'''
         clock = env.clock
         tick = clock.get()
-        if util.in_eval_lab_modes() or tick > clock.max_tick:
+        if util.in_eval_lab_modes():
             return False
         frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
         if mode == 'log' and tick == 0:
