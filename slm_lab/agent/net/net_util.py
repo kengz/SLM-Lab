@@ -150,7 +150,7 @@ def init_params(module, init_fn):
     classname = util.get_class_name(module)
     if 'Net' in classname:  # skip if it's a net, not pytorch layer
         pass
-    elif any(k in classname for k in 'BatchNorm', 'Conv', 'Linear'):
+    elif any(k in classname for k in ('BatchNorm', 'Conv', 'Linear')):
         init_fn(module.weight)
         nn.init.constant_(module.bias, bias_init)
     elif 'GRU' in classname:
