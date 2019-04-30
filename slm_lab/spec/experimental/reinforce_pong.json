@@ -15,11 +15,11 @@
           "start_step": 0,
           "end_step": 0
         },
-        "training_frequency": 5,
+        "training_frequency": 1,
         "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyAtariBatchReplay",
+        "name": "OnPolicyAtariReplay",
         "stack_len": 4
       },
       "net": {
