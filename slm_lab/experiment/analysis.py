@@ -249,7 +249,7 @@ def calc_session_fitness_df(session, session_data):
     session_fitness_df = pd.concat(session_fitness_data, axis=1)
     mean_fitness_df = calc_mean_fitness(session_fitness_df)
     session_fitness = calc_fitness(mean_fitness_df)
-    logger.info(f'Session mean fitness: {session_fitness}\n{mean_fitness_df}')
+    logger.info(f'Session mean fitness: {session_fitness:g} {mean_fitness_df.iloc[0].to_dict()}')
     return session_fitness_df
 
 
@@ -276,7 +276,7 @@ def calc_trial_fitness_df(trial):
     mean_fitness_df = calc_mean_fitness(trial_fitness_df)
     trial_fitness_df = mean_fitness_df
     trial_fitness = calc_fitness(mean_fitness_df)
-    logger.info(f'Trial mean fitness: {trial_fitness}\n{mean_fitness_df}')
+    logger.info(f'Trial mean fitness: {trial_fitness:g} {mean_fitness_df.iloc[0].to_dict()}')
     return trial_fitness_df
 
 
