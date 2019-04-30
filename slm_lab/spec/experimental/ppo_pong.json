@@ -85,7 +85,7 @@
       "max_trial": 5,
       "search": "RandomSearch",
       "resources": {
-        "num_cpus": 4
+        "num_cpus": 8
       }
     }
   }

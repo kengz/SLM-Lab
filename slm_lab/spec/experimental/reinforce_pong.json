@@ -1,15 +1,13 @@
 {
-  "a2c_pong": {
+  "reinforce_pong": {
     "agent": [{
-      "name": "A2C",
+      "name": "Reinforce",
       "algorithm": {
-        "name": "ActorCritic",
+        "name": "Reinforce",
         "action_pdtype": "Categorical",
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": null,
-        "num_step_returns": 5,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -17,9 +15,7 @@
           "start_step": 0,
           "end_step": 0
         },
-        "val_loss_coef": 0.5,
         "training_frequency": 5,
-        "training_epoch": 1,
         "normalize_state": false
       },
       "memory": {
