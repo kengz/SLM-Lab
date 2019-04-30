@@ -19,7 +19,6 @@
         },
         "val_loss_coef": 0.5,
         "training_frequency": 32,
-        "training_epoch": 1,
         "normalize_state": false
       },
       "memory": {
