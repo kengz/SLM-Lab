@@ -95,7 +95,7 @@ def init_action_pd(ActionPD, pdparam):
             covars = []
             for i in range(scale.shape[0]):
                 ind = np.diag_indices(scale.shape[1])
-                covariancemat = torch.eye(scale.shape[1])
+                covariancemat = torch.eye(scale.shape[1], device=scale.device)
                 covariancemat[ind[0], ind[1]] = scale[i]
                 covars.append(covariancemat)
             covars = torch.stack(covars)
