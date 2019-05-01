@@ -1,0 +1,97 @@
+{
+  "ppo_pendulum": {
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.20,
+          "end_val": 0.0,
+          "start_step": 10000,
+          "end_step": 10000000
+        },
+        "entropy_coef_spec": {
+          "name": "no_decay",
+          "start_val": 0.01,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "val_loss_coef": 0.5,
+        "training_frequency": 32,
+        "training_epoch": 4,
+        "normalize_state": false
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay",
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": true,
+        "hid_layers": [200],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "normalize": true,
+        "batch_norm": false,
+        "clip_grad_val": 0.5,
+        "use_same_optim": true,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "actor_optim_spec": {
+          "name": "RMSprop",
+          "lr": 7e-4,
+          "alpha": 0.99,
+          "eps": 1e-5
+        },
+        "critic_optim_spec": {
+          "name": "RMSprop",
+          "lr": 7e-4,
+          "alpha": 0.99,
+          "eps": 1e-5
+        },
+        "lr_scheduler_spec": null,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "num_envs": 2,
+      "max_t": null,
+      "max_tick": 3e6
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 20000,
+      "eval_frequency": 20000,
+      "max_tick_unit": "total_t",
+      "max_session": 4,
+      "max_trial": 24,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 12
+      }
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "shared__choice": [true, false],
+          "hid_layers__choice": [[256], [256, 128]],
+          "actor_optim_spec": {
+            "lr__choice": [1e-5, 1e-4, 1e-3],
+          }
+        }
+      }]
+    }
+  }
+}
