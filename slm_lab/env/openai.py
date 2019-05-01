@@ -54,6 +54,10 @@ class OpenAIEnv(BaseEnv):
     def step(self, action):
         if not self.is_discrete:  # guard for continuous
             action = np.array([action])
+            if action.ndim == 3:
+                action = np.squeeze(action)
+            elif action.ndim == 2 and action.shape[0] == 1:
+                action = np.reshape(action, newshape=(action.size, 1))
         state, reward, done, info = self.u_env.step(action)
         if self.reward_scale is not None:
             reward *= self.reward_scale
