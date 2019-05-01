@@ -62,7 +62,7 @@
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "num_envs": 2,
+      "num_envs": 16,
       "max_t": null,
       "max_tick": 3e6
     }],
