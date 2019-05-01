@@ -174,7 +174,8 @@ class PrioritizedReplay(Replay):
         body_errors = self.get_body_errors(errors)
         priorities = self.get_priority(body_errors)
         assert len(priorities) == self.batch_idxs.size
-        self.priorities[self.batch_idxs] = priorities
+        for idx, p in zip(self.batch_idxs, priorities):
+            self.priorities[idx] = p
         for p, i in zip(priorities, self.tree_idxs):
             self.tree.update(i, p)
 

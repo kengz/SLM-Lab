@@ -17,11 +17,11 @@ class TestPERMemory:
     def test_prioritized_replay_memory_init(self, test_prioritized_replay_memory):
         memory = test_prioritized_replay_memory[0]
         assert memory.size == 0
-        assert memory.states.shape == (memory.max_size, memory.body.state_dim)
-        assert memory.actions.shape == (memory.max_size,)
-        assert memory.rewards.shape == (memory.max_size,)
-        assert memory.dones.shape == (memory.max_size,)
-        assert memory.priorities.shape == (memory.max_size,)
+        assert len(memory.states) == memory.max_size
+        assert len(memory.actions) == memory.max_size
+        assert len(memory.rewards) == memory.max_size
+        assert len(memory.dones) == memory.max_size
+        assert len(memory.priorities) == memory.max_size
         assert memory.tree.write == 0
         assert memory.tree.total() == 0
         assert memory.epsilon[0] == 0
@@ -40,6 +40,7 @@ class TestPERMemory:
         assert np.array_equal(memory.states[memory.head], exp[0])
         assert memory.actions[memory.head] == exp[1]
         assert memory.rewards[memory.head] == exp[2]
+        assert np.array_equal(memory.ns_buffer[0], exp[3])
         assert memory.dones[memory.head] == exp[4]
         assert memory.priorities[memory.head] == 1000
 
@@ -100,11 +101,12 @@ class TestPERMemory:
         memory.reset()
         assert memory.head == -1
         assert memory.size == 0
-        assert np.sum(memory.states) == 0
-        assert np.sum(memory.actions) == 0
-        assert np.sum(memory.rewards) == 0
-        assert np.sum(memory.dones) == 0
-        assert np.sum(memory.priorities) == 0
+        assert memory.states[0] is None
+        assert memory.actions[0] is None
+        assert memory.rewards[0] is None
+        assert memory.dones[0] is None
+        assert memory.priorities[0] is None
+        assert len(memory.ns_buffer) == 0
         assert memory.tree.write == 0
         assert memory.tree.total() == 0
 
