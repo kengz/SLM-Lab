@@ -20,6 +20,7 @@ class Random(Algorithm):
         '''Initialize other algorithm parameters'''
         self.to_train = 0
         self.training_frequency = 1
+        self.training_start_step = 0
 
     @lab_api
     def init_nets(self, global_nets=None):

@@ -105,6 +105,11 @@ class Replay(Memory):
         if self.size < self.max_size:
             self.size += 1
         self.seen_size += 1
+        # set to_train
+        tick = self.body.env.clock.get()
+        algorithm = self.body.agent.algorithm
+        # set to self to handle venv stepping multiple ticks; to_train will be set to 0 after training step
+        algorithm.to_train = algorithm.to_train or (tick > algorithm.training_start_step and tick % algorithm.training_frequency == 0)
 
     @lab_api
     def sample(self):
