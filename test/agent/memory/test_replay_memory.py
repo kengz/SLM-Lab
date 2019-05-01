@@ -86,6 +86,9 @@ class TestMemory:
 
     def test_sample_next_states(self, test_memory):
         memory = test_memory[0]
+        experiences = test_memory[2]
+        for e in experiences:
+            memory.add_experience(*e)
         idxs = np.arange(memory.size)  # for any self.head
         next_states = memory._sample_next_states(idxs)
         # check self.head actually samples from ns_buffer
