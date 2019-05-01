@@ -16,6 +16,7 @@ class TestMemory:
 
     def test_memory_init(self, test_memory):
         memory = test_memory[0]
+        memory.reset()
         assert memory.size == 0
         assert len(memory.states) == memory.max_size
         assert len(memory.actions) == memory.max_size
