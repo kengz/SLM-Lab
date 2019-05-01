@@ -51,6 +51,9 @@ class Replay(Memory):
         self.size = 0  # total experiences stored
         self.seen_size = 0  # total experiences seen cumulatively
         self.head = -1  # index of most recent experience
+        # generic next_state buffer to store last next_states (allow for multiple for venv)
+        self.ns_idx_offset = self.body.env.num_envs if body.env.is_venv else 1
+        self.ns_buffer = deque(maxlen=self.ns_idx_offset)
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones']
         self.reset()
@@ -59,12 +62,13 @@ class Replay(Memory):
         '''Initializes the memory arrays, size and head pointer'''
         # set self.states, self.actions, ...
         for k in self.data_keys:
-            # list add/sample is over 10x faster than np, also simpler to handle
-            setattr(self, k, [None] * self.max_size)
-        self.latest_next_state = None
+            if k != 'next_states':  # reuse self.states
+                # list add/sample is over 10x faster than np, also simpler to handle
+                setattr(self, k, [None] * self.max_size)
         self.size = 0
         self.head = -1
         self.state_buffer.clear()
+        self.ns_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.body.state_dim))
 
@@ -81,22 +85,26 @@ class Replay(Memory):
             # prevent conflict with preprocess in epi_reset
             state = self.preprocess_state(state, append=False)
             next_state = self.preprocess_state(next_state, append=False)
-            self.add_experience(state, action, reward, next_state, done)
+            if self.body.env.is_venv:
+                for sarsd in zip(state, action, reward, next_state, done):
+                    self.add_experience(*sarsd)
+            else:
+                self.add_experience(state, action, reward, next_state, done)
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
-        # TODO downcast to dtype
         # Move head pointer. Wrap around if necessary
         self.head = (self.head + 1) % self.max_size
         self.states[self.head] = state.astype(np.float16)
         self.actions[self.head] = action
         self.rewards[self.head] = reward
-        self.latest_next_state = next_state.astype(np.float16)
+        self.ns_buffer.append(next_state.astype(np.float16))
         self.dones[self.head] = done
         # Actually occupied size of memory
         if self.size < self.max_size:
             self.size += 1
         self.seen_size += 1
+        # TODO set to_train here
 
     @lab_api
     def sample(self):
@@ -121,19 +129,25 @@ class Replay(Memory):
         return batch
 
     def _sample_next_states(self, batch_idxs):
-        '''Method to sample next_states from states, with proper guard for last idx (out of bound)'''
-        # idxs for next state is state idxs + 1
-        ns_batch_idxs = batch_idxs + 1
-        # find the locations to be replaced with latest_next_state
-        latest_ns_locs = np.argwhere(ns_batch_idxs == self.size).flatten()
-        to_replace = latest_ns_locs.size != 0
-        # set to 0, a safe sentinel for ns_batch_idxs due to the +1 above
-        # then sample safely from self.states, and replace at locs with latest_next_state
+        '''Method to sample next_states from states, with proper guard for next_state idx being out of bound'''
+        # idxs for next state is state idxs with offset (account for venv)
+        ns_batch_idxs = batch_idxs + self.ns_idx_offset
+        # if self.head < ns_idx <= self.head + self.ns_idx_offset, ns is stored in self.ns_buffer
+        buffer_ns_locs = np.argwhere(
+            (self.head < ns_batch_idxs) & (ns_batch_idxs <= self.head + self.ns_idx_offset)).flatten()
+        # find out which loc of idxs needs to be retrieved from self.ns_buffer
+        to_replace = buffer_ns_locs.size != 0
+        # set these idxs to 0 first for safety, then replace later from buffer_ns_locs
         if to_replace:
-            ns_batch_idxs[latest_ns_locs] = 0
+            ns_batch_idxs[buffer_ns_locs] = 0
+        # guard against overrun idxs from offset
+        ns_batch_idxs = ns_batch_idxs % self.max_size
         next_states = util.cond_multiget(self.states, ns_batch_idxs)
         if to_replace:
-            next_states[latest_ns_locs] = self.latest_next_state
+            # replace at loc with ns from ns_buffer
+            for loc in buffer_ns_locs:
+                ns_idx = (ns_batch_idxs[loc] - self.head) % self.ns_idx_offset
+                next_states[loc] = self.ns_buffer[ns_idx]
         return next_states
 
     def sample_idxs(self, batch_size):

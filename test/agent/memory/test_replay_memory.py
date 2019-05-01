@@ -17,10 +17,10 @@ class TestMemory:
     def test_memory_init(self, test_memory):
         memory = test_memory[0]
         assert memory.size == 0
-        assert memory.states.shape == (memory.max_size, memory.body.state_dim)
-        assert memory.actions.shape == (memory.max_size,)
-        assert memory.rewards.shape == (memory.max_size,)
-        assert memory.dones.shape == (memory.max_size,)
+        assert len(memory.states) == memory.max_size
+        assert len(memory.actions) == memory.max_size
+        assert len(memory.rewards) == memory.max_size
+        assert len(memory.dones) == memory.max_size
 
     def test_add_experience(self, test_memory):
         '''Adds an experience to the memory. Checks that memory size = 1, and checks that the experience values are equal to the experience added'''
@@ -35,6 +35,7 @@ class TestMemory:
         assert np.array_equal(memory.states[memory.head], exp[0])
         assert memory.actions[memory.head] == exp[1]
         assert memory.rewards[memory.head] == exp[2]
+        assert np.array_equal(memory.ns_buffer[0], exp[3])
         assert memory.dones[memory.head] == exp[4]
 
     def test_wrap(self, test_memory):
@@ -85,9 +86,10 @@ class TestMemory:
 
     def test_sample_next_states(self, test_memory):
         memory = test_memory[0]
-        idxs = np.array(range(memory.size))
+        idxs = np.arange(memory.size)  # for any self.head
         next_states = memory._sample_next_states(idxs)
-        assert np.array_equal(next_states[len(next_states) - 1], memory.latest_next_state)
+        # check self.head actually samples from ns_buffer
+        assert np.array_equal(next_states[memory.head], memory.ns_buffer[0])
 
     def test_reset(self, test_memory):
         '''Tests memory reset. Adds 2 experiences, then resets the memory and checks if all appropriate values have been zeroed'''
@@ -100,10 +102,11 @@ class TestMemory:
         memory.reset()
         assert memory.head == -1
         assert memory.size == 0
-        assert np.sum(memory.states) == 0
-        assert np.sum(memory.actions) == 0
-        assert np.sum(memory.rewards) == 0
-        assert np.sum(memory.dones) == 0
+        assert memory.states[0] is None
+        assert memory.actions[0] is None
+        assert memory.rewards[0] is None
+        assert memory.dones[0] is None
+        assert len(memory.ns_buffer) == 0
 
     @pytest.mark.skip(reason="Not implemented yet")
     def test_sample_dist(self, test_memory):
