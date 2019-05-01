@@ -182,6 +182,10 @@ class LazyFrames(object):
     def __getitem__(self, i):
         return self._force()[i]
 
+    def astype(self, dtype):
+        '''To prevent state.astype(np.float16) breaking on LazyFrames'''
+        return self
+
 
 class FrameStack(gym.Wrapper):
     def __init__(self, env, k):
@@ -206,12 +210,12 @@ class FrameStack(gym.Wrapper):
     def reset(self):
         ob = self.env.reset()
         for _ in range(self.k):
-            self.frames.append(ob)
+            self.frames.append(ob.astype(np.float16))
         return self._get_ob()
 
     def step(self, action):
         ob, reward, done, info = self.env.step(action)
-        self.frames.append(ob)
+        self.frames.append(ob.astype(np.float16))
         return self._get_ob(), reward, done, info
 
     def _get_ob(self):
