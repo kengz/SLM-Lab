@@ -95,12 +95,12 @@ class VanillaDQN(SARSA):
         states = batch['states']
         next_states = batch['next_states']
         q_preds = self.net(states)
-        next_q_preds = self.net(next_states)
+        with torch.no_grad():
+            next_q_preds = self.net(next_states)
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
         max_next_q_preds, _ = next_q_preds.max(dim=-1, keepdim=True)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
-        max_q_targets = max_q_targets.detach()
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
         # TODO use the same loss_fn but do not reduce yet
@@ -197,15 +197,15 @@ class DQNBase(VanillaDQN):
         states = batch['states']
         next_states = batch['next_states']
         q_preds = self.net(states)
-        # Use online_net to select actions in next state
-        online_next_q_preds = self.online_net(next_states)
-        # Use eval_net to calculate next_q_preds for actions chosen by online_net
-        next_q_preds = self.eval_net(next_states)
+        with torch.no_grad():
+            # Use online_net to select actions in next state
+            online_next_q_preds = self.online_net(next_states)
+            # Use eval_net to calculate next_q_preds for actions chosen by online_net
+            next_q_preds = self.eval_net(next_states)
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
         online_actions = online_next_q_preds.argmax(dim=-1, keepdim=True)
         max_next_q_preds = next_q_preds.gather(-1, online_actions).squeeze(-1)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
-        max_q_targets = max_q_targets.detach()
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
         # TODO use the same loss_fn but do not reduce yet
