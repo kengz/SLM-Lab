@@ -122,7 +122,8 @@ class SARSA(Algorithm):
             states = math_util.venv_unpack(states)
             next_states = math_util.venv_unpack(next_states)
         q_preds = self.net(states)
-        next_q_preds = self.net(next_states)
+        with torch.no_grad():
+            next_q_preds = self.net(next_states)
         if self.body.env.is_venv:
             q_preds = math_util.venv_pack(q_preds, self.body.env.num_envs)
             next_q_preds = math_util.venv_pack(next_q_preds, self.body.env.num_envs)
