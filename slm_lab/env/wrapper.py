@@ -206,12 +206,12 @@ class FrameStack(gym.Wrapper):
     def reset(self):
         ob = self.env.reset()
         for _ in range(self.k):
-            self.frames.append(ob)
+            self.frames.append(ob.astype(np.float16))
         return self._get_ob()
 
     def step(self, action):
         ob, reward, done, info = self.env.step(action)
-        self.frames.append(ob)
+        self.frames.append(ob.astype(np.float16))
         return self._get_ob(), reward, done, info
 
     def _get_ob(self):
