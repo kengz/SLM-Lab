@@ -135,8 +135,6 @@ class VanillaDQN(SARSA):
         if util.in_eval_lab_modes():
             return np.nan
         clock = self.body.env.clock
-        tick = clock.get()
-        self.to_train = (tick > self.training_start_step and tick % self.training_frequency == 0)
         if self.to_train == 1:
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
