@@ -182,6 +182,10 @@ class LazyFrames(object):
     def __getitem__(self, i):
         return self._force()[i]
 
+    def astype(self, dtype):
+        '''To prevent state.astype(np.float16) breaking on LazyFrames'''
+        return self
+
 
 class FrameStack(gym.Wrapper):
     def __init__(self, env, k):
