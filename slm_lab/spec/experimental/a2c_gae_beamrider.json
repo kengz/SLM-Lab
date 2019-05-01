@@ -60,7 +60,7 @@
       }
     }],
     "env": [{
-      "name": "BeamriderNoFrameskip-v4",
+      "name": "BeamRiderNoFrameskip-v4",
       "num_envs": 16,
       "max_t": null,
       "max_tick": 1e7
