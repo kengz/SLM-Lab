@@ -182,9 +182,4 @@ class PrioritizedReplay(Replay):
 
 class AtariPrioritizedReplay(PrioritizedReplay, AtariReplay):
     '''Make a Atari PrioritizedReplay via nice multi-inheritance (python magic)'''
-
-    def __init__(self, memory_spec, body):
-        super(AtariPrioritizedReplay, self).__init__(memory_spec, body)
-        # the above initializes AtariReplay, then PrioritizedReplay which overrides states. Restore the custom AtariReplay init logic below
-        self.states_shape = self.scalar_shape
-        self.states = [None] * self.max_size
+    pass
