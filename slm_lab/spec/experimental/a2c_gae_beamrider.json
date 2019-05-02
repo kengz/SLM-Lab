@@ -1,5 +1,5 @@
 {
-  "a2c_gae_beamrider": {
+  "a2c_gae_beamrider_env8": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -61,7 +61,7 @@
     }],
     "env": [{
       "name": "BeamRiderNoFrameskip-v4",
-      "num_envs": 16,
+      "num_envs": 8,
       "max_t": null,
       "max_tick": 1e7
     }],

@@ -1,5 +1,5 @@
 {
-  "ppo_mspacman": {
+  "ppo_mspacman_env8": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
@@ -68,7 +68,7 @@
     }],
     "env": [{
       "name": "MsPacmanNoFrameskip-v4",
-      "num_envs": 16,
+      "num_envs": 8,
       "max_t": null,
       "max_tick": 1e7
     }],
