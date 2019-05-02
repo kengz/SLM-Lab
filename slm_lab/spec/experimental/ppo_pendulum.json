@@ -1,5 +1,5 @@
 {
-  "ppo_pendulum_env8": {
+  "ppo_pendulum_env1": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
@@ -62,7 +62,7 @@
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "num_envs": 8,
+      "num_envs": 1,
       "max_t": null,
       "max_tick": 5e6
     }],

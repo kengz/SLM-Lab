@@ -1,5 +1,5 @@
 {
-  "a2c_bipedalwalker_env8": {
+  "a2c_bipedalwalker_env1": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -55,7 +55,7 @@
     }],
     "env": [{
       "name": "BipedalWalker-v2",
-      "num_envs": 8,
+      "num_envs": 1,
       "max_t": null,
       "max_tick": 5e6
     }],
