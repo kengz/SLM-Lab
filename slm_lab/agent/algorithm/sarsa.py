@@ -122,13 +122,15 @@ class SARSA(Algorithm):
             states = math_util.venv_unpack(states)
             next_states = math_util.venv_unpack(next_states)
         q_preds = self.net(states)
-        next_q_preds = self.net(next_states)
+        with torch.no_grad():
+            next_q_preds = self.net(next_states)
         if self.body.env.is_venv:
             q_preds = math_util.venv_pack(q_preds, self.body.env.num_envs)
             next_q_preds = math_util.venv_pack(next_q_preds, self.body.env.num_envs)
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
-        act_next_q_preds = q_preds.gather(-1, batch['next_actions'].long().unsqueeze(-1)).squeeze(-1)
+        act_next_q_preds = next_q_preds.gather(-1, batch['next_actions'].long().unsqueeze(-1)).squeeze(-1)
         act_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * act_next_q_preds
+        logger.debug(f'act_q_preds: {act_q_preds}\nact_q_targets: {act_q_targets}')
         q_loss = self.net.loss_fn(act_q_preds, act_q_targets)
         return q_loss
 
