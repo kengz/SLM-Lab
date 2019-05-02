@@ -276,9 +276,9 @@ def dev_check_training_step(fn):
                 try:
                     grad_norm = param.grad.norm()
                     assert min_norm < grad_norm < max_norm, f'Gradient norm for {p_name} is {grad_norm:g}, fails the extreme value check {min_norm} < grad_norm < {max_norm}. Loss: {loss:g}. Check your network and loss computation.'
-                    logger.info(f'Gradient norm for {p_name} is {grad_norm:g}; passes value check.')
                 except Exception as e:
                     logger.warn(e)
+            logger.info(f'Gradient norms passed value check.')
         logger.debug('Passed network parameter update check.')
         # store grad norms for debugging
         net.store_grad_norms()

@@ -2,7 +2,7 @@ from slm_lab.agent import net
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
@@ -102,16 +102,6 @@ class SARSA(Algorithm):
         action = self.action_policy(state, self, body)
         return action.cpu().squeeze().numpy()  # squeeze to handle scalar
 
-    def calc_q_loss(self, batch):
-        '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
-        q_preds = self.net(batch['states'])
-        act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
-        next_q_preds = self.net(batch['next_states'])
-        act_next_q_preds = q_preds.gather(-1, batch['next_actions'].long().unsqueeze(-1)).squeeze(-1)
-        act_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * act_next_q_preds
-        q_loss = self.net.loss_fn(act_q_preds, act_q_targets)
-        return q_loss
-
     @lab_api
     def sample(self):
         '''Samples a batch from memory'''
@@ -123,6 +113,26 @@ class SARSA(Algorithm):
             batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
+
+    def calc_q_loss(self, batch):
+        '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
+        states = batch['states']
+        next_states = batch['next_states']
+        if self.body.env.is_venv:
+            states = math_util.venv_unpack(states)
+            next_states = math_util.venv_unpack(next_states)
+        q_preds = self.net(states)
+        with torch.no_grad():
+            next_q_preds = self.net(next_states)
+        if self.body.env.is_venv:
+            q_preds = math_util.venv_pack(q_preds, self.body.env.num_envs)
+            next_q_preds = math_util.venv_pack(next_q_preds, self.body.env.num_envs)
+        act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
+        act_next_q_preds = next_q_preds.gather(-1, batch['next_actions'].long().unsqueeze(-1)).squeeze(-1)
+        act_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * act_next_q_preds
+        logger.debug(f'act_q_preds: {act_q_preds}\nact_q_targets: {act_q_targets}')
+        q_loss = self.net.loss_fn(act_q_preds, act_q_targets)
+        return q_loss
 
     @lab_api
     def train(self):
