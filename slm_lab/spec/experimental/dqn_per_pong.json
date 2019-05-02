@@ -56,7 +56,7 @@
     }],
     "env": [{
       "name": "PongNoFrameskip-v4",
-      "num_envs": 16,
+      "num_envs": 4,
       "max_t": null,
       "max_tick": 1e7
     }],
