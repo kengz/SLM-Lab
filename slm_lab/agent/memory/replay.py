@@ -133,12 +133,9 @@ class Replay(Memory):
         if self.size < self.max_size:
             self.size += 1
         self.seen_size += 1
-        # set to_train
-        tick = self.body.env.clock.get()
+        # set to_train using memory counters head, seen_size instead of tick since clock will step by num_envs when on venv; to_train will be set to 0 after training step
         algorithm = self.body.agent.algorithm
-        # set to self to handle venv stepping multiple ticks; to_train will be set to 0 after training step
-        # TODO This is unsafe
-        algorithm.to_train = algorithm.to_train or (tick > algorithm.training_start_step and self.head % algorithm.training_frequency == 0)
+        algorithm.to_train = algorithm.to_train or (self.seen_size > algorithm.training_start_step and self.head % algorithm.training_frequency == 0)
 
     @lab_api
     def sample(self):
