@@ -1,7 +1,7 @@
 from collections import deque
 from copy import deepcopy
 from flaky import flaky
-from slm_lab.memory.replay import sample_next_states
+from slm_lab.agent.memory.replay import sample_next_states
 import numpy as np
 import pytest
 
@@ -105,7 +105,7 @@ class TestMemory:
         for e in experiences:
             memory.add_experience(*e)
         idxs = np.arange(memory.size)  # for any self.head
-        next_states = memory._sample_next_states(idxs)
+        next_states = sample_next_states(memory.head, memory.max_size, memory.ns_idx_offset, idxs, memory.states, memory.ns_buffer)
         # check self.head actually samples from ns_buffer
         assert np.array_equal(next_states[memory.head], memory.ns_buffer[0])
 
