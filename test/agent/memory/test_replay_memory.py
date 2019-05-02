@@ -1,8 +1,22 @@
-from collections import Counter
+from collections import deque
 from copy import deepcopy
 from flaky import flaky
+from slm_lab.memory.replay import sample_next_states
 import numpy as np
 import pytest
+
+
+def test_sample_next_states():
+    # for each state, its next state is itself + 10
+    head = 1
+    max_size = 9
+    ns_idx_offset = 3
+    batch_idxs = np.arange(max_size)
+    states = [31, 32, 10, 11, 12, 20, 21, 22, 30]
+    ns_buffer = deque([40, 41, 42], maxlen=ns_idx_offset)
+    ns = sample_next_states(head, max_size, ns_idx_offset, batch_idxs, states, ns_buffer)
+    res = np.array([41, 42, 20, 21, 22, 30, 31, 32, 40])
+    assert np.array_equal(ns, res)
 
 
 @flaky

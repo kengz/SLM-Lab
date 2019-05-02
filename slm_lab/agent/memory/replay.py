@@ -9,6 +9,35 @@ import pydash as ps
 logger = logger.get_logger(__name__)
 
 
+def sample_next_states(head, max_size, ns_idx_offset, batch_idxs, states, ns_buffer):
+    '''Method to sample next_states from states, with proper guard for next_state idx being out of bound'''
+    # idxs for next state is state idxs with offset, modded
+    ns_batch_idxs = (batch_idxs + ns_idx_offset) % max_size
+    # if head < ns_idx <= head + ns_idx_offset, ns is stored in ns_buffer
+    ns_batch_idxs = ns_batch_idxs % max_size
+    buffer_ns_locs = np.argwhere(
+        (head < ns_batch_idxs) & (ns_batch_idxs <= head + ns_idx_offset)).flatten()
+    # find if there is any idxs to get from buffer
+    to_replace = buffer_ns_locs.size != 0
+    if to_replace:
+        # extract the buffer_idxs first for replacement later
+        # given head < ns_idx <= head + offset, and valid buffer idx is [0, offset)
+        # get 0 < ns_idx - head <= offset, or equiv.
+        # get -1 < ns_idx - head - 1 <= offset - 1, i.e.
+        # get 0 <= ns_idx - head - 1 < offset, hence:
+        buffer_idxs = ns_batch_idxs[buffer_ns_locs] - head - 1
+        # set them to 0 first to allow sampling, then replace later with buffer
+        ns_batch_idxs[buffer_ns_locs] = 0
+    # guard all against overrun idxs from offset
+    ns_batch_idxs = ns_batch_idxs % max_size
+    next_states = util.cond_multiget(states, ns_batch_idxs)
+    if to_replace:
+        # now replace using buffer_idxs and ns_buffer
+        buffer_ns = util.cond_multiget(ns_buffer, buffer_idxs)
+        next_states[buffer_ns_locs] = buffer_ns
+    return next_states
+
+
 class Replay(Memory):
     '''
     Stores agent experiences and samples from them for agent training
@@ -128,37 +157,10 @@ class Replay(Memory):
         batch = {}
         for k in self.data_keys:
             if k == 'next_states':
-                batch[k] = self._sample_next_states(self.batch_idxs)
+                batch[k] = sample_next_states(self.head, self.max_size, self.ns_idx_offset, self.batch_idxs, self.states, self.ns_buffer)
             else:
                 batch[k] = util.cond_multiget(getattr(self, k), self.batch_idxs)
         return batch
-
-    def _sample_next_states(self, batch_idxs):
-        '''Method to sample next_states from states, with proper guard for next_state idx being out of bound'''
-        # idxs for next state is state idxs with offset
-        ns_batch_idxs = batch_idxs + self.ns_idx_offset
-        # if head < ns_idx <= head + ns_idx_offset, ns is stored in self.ns_buffer
-        buffer_ns_locs = np.argwhere(
-            (self.head < ns_batch_idxs) & (ns_batch_idxs <= self.head + self.ns_idx_offset)).flatten()
-        # find if there is any idxs to get from buffer
-        to_replace = buffer_ns_locs.size != 0
-        if to_replace:
-            # extract the buffer_idxs first for replacement later
-            # given head < ns_idx <= head + offset, and valid buffer idx is [0, offset)
-            # get 0 < ns_idx - head <= offset, or equiv.
-            # get -1 < ns_idx - head - 1 <= offset - 1, i.e.
-            # get 0 <= ns_idx - head - 1 < offset, hence:
-            buffer_idxs = ns_batch_idxs[buffer_ns_locs] - self.head - 1
-            # set them to 0 first to allow sampling, then replace later with buffer
-            ns_batch_idxs[buffer_ns_locs] = 0
-        # guard all against overrun idxs from offset
-        ns_batch_idxs = ns_batch_idxs % self.max_size
-        next_states = util.cond_multiget(self.states, ns_batch_idxs)
-        if to_replace:
-            # now replace using buffer_idxs and ns_buffer
-            buffer_ns = util.cond_multiget(self.ns_buffer, buffer_idxs)
-            next_states[buffer_ns_locs] = buffer_ns
-        return next_states
 
     def sample_idxs(self, batch_size):
         '''Batch indices a sampled random uniformly'''
