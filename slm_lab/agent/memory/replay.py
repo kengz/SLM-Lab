@@ -108,7 +108,8 @@ class Replay(Memory):
         tick = self.body.env.clock.get()
         algorithm = self.body.agent.algorithm
         # set to self to handle venv stepping multiple ticks; to_train will be set to 0 after training step
-        algorithm.to_train = algorithm.to_train or (tick > algorithm.training_start_step and tick % algorithm.training_frequency == 0)
+        # TODO This is unsafe
+        algorithm.to_train = algorithm.to_train or (tick > algorithm.training_start_step and self.head % algorithm.training_frequency == 0)
 
     @lab_api
     def sample(self):
