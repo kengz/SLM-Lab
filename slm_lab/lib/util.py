@@ -1,3 +1,4 @@
+from collections import deque
 from contextlib import contextmanager
 from datetime import datetime
 from importlib import reload
@@ -97,7 +98,7 @@ def concat_batches(batches):
 
 def cond_multiget(arr, idxs):
     '''Get multi-idxs from an array depending if it's a python list or np.array'''
-    if isinstance(arr, list):
+    if isinstance(arr, (list, deque)):
         return np.array(operator.itemgetter(*idxs)(arr))
     else:
         return arr[idxs]

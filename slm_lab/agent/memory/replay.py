@@ -134,24 +134,29 @@ class Replay(Memory):
 
     def _sample_next_states(self, batch_idxs):
         '''Method to sample next_states from states, with proper guard for next_state idx being out of bound'''
-        # idxs for next state is state idxs with offset (account for venv)
+        # idxs for next state is state idxs with offset
         ns_batch_idxs = batch_idxs + self.ns_idx_offset
-        # if self.head < ns_idx <= self.head + self.ns_idx_offset, ns is stored in self.ns_buffer
+        # if head < ns_idx <= head + ns_idx_offset, ns is stored in self.ns_buffer
         buffer_ns_locs = np.argwhere(
             (self.head < ns_batch_idxs) & (ns_batch_idxs <= self.head + self.ns_idx_offset)).flatten()
-        # find out which loc of idxs needs to be retrieved from self.ns_buffer
+        # find if there is any idxs to get from buffer
         to_replace = buffer_ns_locs.size != 0
-        # set these idxs to 0 first for safety, then replace later from buffer_ns_locs
         if to_replace:
+            # extract the buffer_idxs first for replacement later
+            # given head < ns_idx <= head + offset, and valid buffer idx is [0, offset)
+            # get 0 < ns_idx - head <= offset, or equiv.
+            # get -1 < ns_idx - head - 1 <= offset - 1, i.e.
+            # get 0 <= ns_idx - head - 1 < offset, hence:
+            buffer_idxs = ns_batch_idxs[buffer_ns_locs] - self.head - 1
+            # set them to 0 first to allow sampling, then replace later with buffer
             ns_batch_idxs[buffer_ns_locs] = 0
-        # guard against overrun idxs from offset
+        # guard all against overrun idxs from offset
         ns_batch_idxs = ns_batch_idxs % self.max_size
         next_states = util.cond_multiget(self.states, ns_batch_idxs)
         if to_replace:
-            # replace at loc with ns from ns_buffer
-            for loc in buffer_ns_locs:
-                ns_idx = (ns_batch_idxs[loc] - self.head) % self.ns_idx_offset
-                next_states[loc] = self.ns_buffer[ns_idx]
+            # now replace using buffer_idxs and ns_buffer
+            buffer_ns = util.cond_multiget(self.ns_buffer, buffer_idxs)
+            next_states[buffer_ns_locs] = buffer_ns
         return next_states
 
     def sample_idxs(self, batch_size):
