@@ -10,17 +10,8 @@ class Argmax(distributions.Categorical):
     NOTE although argmax is not a sampling distribution, this implementation is for API consistency.
     '''
 
-    def __init__(self, probs=None, logits=None, validate_args=None):
-        if probs is not None:
-            new_probs = torch.zeros_like(probs, dtype=torch.float)
-            new_probs[probs == probs.max(dim=-1, keepdim=True)[0]] = 1.0
-            probs = new_probs
-        elif logits is not None:
-            new_logits = torch.full_like(logits, -1e8, dtype=torch.float)
-            new_logits[logits == logits.max(dim=-1, keepdim=True)[0]] = 1.0
-            logits = new_logits
-
-        super(Argmax, self).__init__(probs=probs, logits=logits, validate_args=validate_args)
+    def sample(self, sample_shape=torch.Size()):
+        return self.logits.argmax(dim=-1)
 
 
 class GumbelCategorical(distributions.Categorical):
