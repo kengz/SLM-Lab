@@ -101,6 +101,7 @@ class VanillaDQN(SARSA):
         # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
         max_next_q_preds, _ = next_q_preds.max(dim=-1, keepdim=True)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
+        logger.debug(f'act_q_preds: {act_q_preds}\nmax_q_targets: {max_q_targets}')
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
         # TODO use the same loss_fn but do not reduce yet
@@ -206,6 +207,7 @@ class DQNBase(VanillaDQN):
         online_actions = online_next_q_preds.argmax(dim=-1, keepdim=True)
         max_next_q_preds = next_q_preds.gather(-1, online_actions).squeeze(-1)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
+        logger.debug(f'act_q_preds: {act_q_preds}\nmax_q_targets: {max_q_targets}')
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
         # TODO use the same loss_fn but do not reduce yet
