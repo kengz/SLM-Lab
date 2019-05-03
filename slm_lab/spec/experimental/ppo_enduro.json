@@ -10,11 +10,11 @@
         "gamma": 0.99,
         "lam": 0.95,
         "clip_eps_spec": {
-          "name": "linear_decay",
+          "name": "no_decay",
           "start_val": 0.20,
-          "end_val": 0.0,
-          "start_step": 10000,
-          "end_step": 10000000
+          "end_val": 0.20,
+          "start_step": 0,
+          "end_step": 0
         },
         "entropy_coef_spec": {
           "name": "no_decay",
