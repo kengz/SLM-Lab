@@ -1,5 +1,5 @@
 {
-  "a2c_spaceinvaders": {
+  "a2c_spaceinvaders_env8": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -61,7 +61,7 @@
     }],
     "env": [{
       "name": "SpaceInvadersNoFrameskip-v4",
-      "num_envs": 16,
+      "num_envs": 8,
       "max_t": null,
       "max_tick": 1e7
     }],
