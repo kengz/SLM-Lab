@@ -75,7 +75,7 @@ class RecurrentNet(Net, nn.Module):
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
         nn.Module.__init__(self)
-        super(RecurrentNet, self).__init__(net_spec, in_dim, out_dim)
+        super().__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -147,7 +147,7 @@ class RecurrentNet(Net, nn.Module):
         self.train()
 
     def __str__(self):
-        return super(RecurrentNet, self).__str__() + f'\noptim: {self.optim}'
+        return super().__str__() + f'\noptim: {self.optim}'
 
     def forward(self, x):
         '''The feedforward step. Input is batch_size x seq_len x state_dim'''

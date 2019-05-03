@@ -25,7 +25,7 @@ class OpenAIEnv(BaseEnv):
     '''
 
     def __init__(self, spec, e=None, env_space=None):
-        super(OpenAIEnv, self).__init__(spec, e, env_space)
+        super().__init__(spec, e, env_space)
         try_register_env(spec)  # register if it's a custom gym env
         seed = ps.get(spec, 'meta.random_seed')
         stack_len = ps.get(spec, 'agent.0.memory.stack_len')

@@ -99,8 +99,6 @@ class HydraDQN(DQN):
         if util.in_eval_lab_modes():
             return np.nan
         clock = self.body.env.clock  # main clock
-        tick = util.s_get(self, 'aeb_space.clock').get(clock.max_tick_unit)
-        self.to_train = (tick > self.training_start_step and tick % self.training_frequency == 0)
         if self.to_train == 1:
             total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_epoch):

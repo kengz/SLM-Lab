@@ -59,7 +59,7 @@ class UnityEnv(BaseEnv):
     '''
 
     def __init__(self, spec, e=None, env_space=None):
-        super(UnityEnv, self).__init__(spec, e, env_space)
+        super().__init__(spec, e, env_space)
         util.set_attr(self, self.env_spec, ['unity'])
         worker_id = int(f'{os.getpid()}{self.e+int(ps.unique_id())}'[-4:])
         seed = ps.get(spec, 'meta.random_seed')

@@ -105,7 +105,8 @@ class Body:
         self.state_std_dev = np.nan
         self.state_n = 0
 
-        self.total_reward = np.nan
+        self.ckpt_total_reward = np.nan
+        self.total_reward = 0  # init to 0, but dont ckpt before end of an epi
         self.total_reward_ma = np.nan
         # store current and best reward_ma for model checkpointing and early termination if all the environments are solved
         self.best_reward_ma = -np.inf
@@ -139,14 +140,15 @@ class Body:
 
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
-        if self.total_reward is np.nan:  # init
-            self.total_reward = reward
-        else:  # reset on last done, or keep adding. generalized for vector rewards
-            self.total_reward = self.total_reward * (1 - self.last_done) + reward
-        self.last_done = done
+        if self.ckpt_total_reward is np.nan:  # init
+            self.ckpt_total_reward = reward
+        else:  # reset on epi_start, else keep adding. generalized for vec env
+            self.ckpt_total_reward = self.ckpt_total_reward * (1 - self.epi_start) + reward
+        self.total_reward = done * self.ckpt_total_reward + (1 - done) * self.total_reward
+        self.epi_start = done
 
     def __str__(self):
-        return 'body: ' + util.to_json(util.get_class_attr(self))
+        return f'body: {util.to_json(util.get_class_attr(self))}'
 
     def calc_df_row(self, env):
         '''Calculate a row for updating train_df or eval_df.'''
@@ -167,7 +169,7 @@ class Body:
             't': env.clock.get('t'),
             'wall_t': wall_t,
             'fps': fps,
-            'reward': np.mean(self.total_reward),  # guard for vec env
+            'reward': np.nanmean(self.total_reward),  # guard for vec env
             'reward_ma': np.nan,  # update outside
             'loss': self.loss,
             'lr': self.get_mean_lr(),
