@@ -168,7 +168,7 @@ class ActorCritic(Reinforce):
         '''
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
-        out = super(ActorCritic, self).calc_pdparam(x, net=net)
+        out = super().calc_pdparam(x, net=net)
         if self.shared:
             assert ps.is_list(out), f'Shared output should be a list [pdparam, v]'
             if len(out) == 2:  # single policy
@@ -259,7 +259,7 @@ class ActorCritic(Reinforce):
 
     def calc_policy_loss(self, batch, pdparams, advs):
         '''Calculate the actor's policy loss'''
-        return super(ActorCritic, self).calc_policy_loss(batch, pdparams, advs)
+        return super().calc_policy_loss(batch, pdparams, advs)
 
     def calc_val_loss(self, v_preds, v_targets):
         '''Calculate the critic's value loss'''

@@ -79,7 +79,7 @@ class ConvNet(Net, nn.Module):
         '''
         assert len(in_dim) == 3  # image shape (c,w,h)
         nn.Module.__init__(self)
-        super(ConvNet, self).__init__(net_spec, in_dim, out_dim)
+        super().__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -146,7 +146,7 @@ class ConvNet(Net, nn.Module):
         self.train()
 
     def __str__(self):
-        return super(ConvNet, self).__str__() + f'\noptim: {self.optim}'
+        return super().__str__() + f'\noptim: {self.optim}'
 
     def get_conv_output_size(self):
         '''Helper function to calculate the size of the flattened features after the final convolutional layer'''
