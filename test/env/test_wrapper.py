@@ -5,8 +5,8 @@ import pytest
 
 @pytest.mark.parametrize('name,state_shape', [
     ('PongNoFrameskip-v4', (1, 84, 84)),
-    ('LunarLander-v2', (8,)),
-    ('CartPole-v0', (4,)),
+    ('LunarLander-v2', (1, 8,)),
+    ('CartPole-v0', (1, 4,)),
 ])
 def test_make_gym_env(name, state_shape):
     seed = 0
@@ -19,10 +19,7 @@ def test_make_gym_env(name, state_shape):
     assert isinstance(state, LazyFrames)
     state = state.__array__()  # realize data
     assert isinstance(state, np.ndarray)
-    if len(state_shape) == 1:
-        stack_shape = (stack_len * state_shape[0],)
-    else:
-        stack_shape = (stack_len,) + state_shape[1:]
+    stack_shape = (stack_len,) + state_shape[1:]
     assert state.shape == stack_shape
     assert state.shape == env.observation_space.shape
     assert isinstance(reward, float)
