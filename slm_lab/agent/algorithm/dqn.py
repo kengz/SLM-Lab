@@ -2,7 +2,7 @@ from slm_lab.agent import net
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.sarsa import SARSA
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
@@ -72,7 +72,7 @@ class VanillaDQN(SARSA):
             'training_start_step',  # how long before starting training
             'normalize_state',
         ])
-        super(VanillaDQN, self).init_algorithm_params()
+        super().init_algorithm_params()
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -92,13 +92,16 @@ class VanillaDQN(SARSA):
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
-        q_preds = self.net(batch['states'])
+        states = batch['states']
+        next_states = batch['next_states']
+        q_preds = self.net(states)
+        with torch.no_grad():
+            next_q_preds = self.net(next_states)
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
-        next_q_preds = self.net(batch['next_states'])
         # Bellman equation: compute max_q_targets using reward and max estimated Q values (0 if no next_state)
         max_next_q_preds, _ = next_q_preds.max(dim=-1, keepdim=True)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
-        max_q_targets = max_q_targets.detach()
+        logger.debug(f'act_q_preds: {act_q_preds}\nmax_q_targets: {max_q_targets}')
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
         # TODO use the same loss_fn but do not reduce yet
@@ -110,7 +113,7 @@ class VanillaDQN(SARSA):
     @lab_api
     def act(self, state):
         '''Selects and returns a discrete action for body using the action policy'''
-        return super(VanillaDQN, self).act(state)
+        return super().act(state)
 
     @lab_api
     def sample(self):
@@ -133,10 +136,8 @@ class VanillaDQN(SARSA):
         if util.in_eval_lab_modes():
             return np.nan
         clock = self.body.env.clock
-        tick = clock.get()
-        self.to_train = (tick > self.training_start_step and tick % self.training_frequency == 0)
         if self.to_train == 1:
-            total_loss = torch.tensor(0.0, device=self.net.device)
+            total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
                 batch = self.sample()
                 for _ in range(self.training_batch_epoch):
@@ -154,7 +155,7 @@ class VanillaDQN(SARSA):
     @lab_api
     def update(self):
         '''Update the agent after training'''
-        return super(VanillaDQN, self).update()
+        return super().update()
 
 
 class DQNBase(VanillaDQN):
@@ -194,15 +195,19 @@ class DQNBase(VanillaDQN):
 
     def calc_q_loss(self, batch):
         '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
-        q_preds = self.net(batch['states'])
+        states = batch['states']
+        next_states = batch['next_states']
+        q_preds = self.net(states)
+        with torch.no_grad():
+            # Use online_net to select actions in next state
+            online_next_q_preds = self.online_net(next_states)
+            # Use eval_net to calculate next_q_preds for actions chosen by online_net
+            next_q_preds = self.eval_net(next_states)
         act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
-        # Use online_net to select actions in next state
-        online_next_q_preds = self.online_net(batch['next_states'])
-        # Use eval_net to calculate next_q_preds for actions chosen by online_net
-        next_q_preds = self.eval_net(batch['next_states'])
-        max_next_q_preds = next_q_preds.gather(-1, online_next_q_preds.argmax(dim=-1, keepdim=True)).squeeze(-1)
+        online_actions = online_next_q_preds.argmax(dim=-1, keepdim=True)
+        max_next_q_preds = next_q_preds.gather(-1, online_actions).squeeze(-1)
         max_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * max_next_q_preds
-        max_q_targets = max_q_targets.detach()
+        logger.debug(f'act_q_preds: {act_q_preds}\nmax_q_targets: {max_q_targets}')
         q_loss = self.net.loss_fn(act_q_preds, max_q_targets)
 
         # TODO use the same loss_fn but do not reduce yet
@@ -225,7 +230,7 @@ class DQNBase(VanillaDQN):
     def update(self):
         '''Updates self.target_net and the explore variables'''
         self.update_nets()
-        return super(DQNBase, self).update()
+        return super().update()
 
 
 class DQN(DQNBase):
@@ -253,7 +258,7 @@ class DQN(DQNBase):
     '''
     @lab_api
     def init_nets(self, global_nets=None):
-        super(DQN, self).init_nets(global_nets)
+        super().init_nets(global_nets)
 
 
 class DoubleDQN(DQN):
@@ -281,6 +286,6 @@ class DoubleDQN(DQN):
     '''
     @lab_api
     def init_nets(self, global_nets=None):
-        super(DoubleDQN, self).init_nets(global_nets)
+        super().init_nets(global_nets)
         self.online_net = self.net
         self.eval_net = self.target_net

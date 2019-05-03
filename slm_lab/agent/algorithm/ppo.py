@@ -104,7 +104,7 @@ class PPO(ActorCritic):
     @lab_api
     def init_nets(self, global_nets=None):
         '''PPO uses old and new to calculate ratio for loss'''
-        super(PPO, self).init_nets(global_nets)
+        super().init_nets(global_nets)
         # create old net to calculate ratio
         self.old_net = deepcopy(self.net)
         assert id(self.old_net) != id(self.net)

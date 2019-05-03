@@ -114,6 +114,8 @@ class BaseEnv(ABC):
             self.max_tick = NUM_EVAL_EPI - 1
             self.max_tick_unit = 'epi'
         self.is_venv = self.num_envs is not None
+        if self.is_venv:
+            assert self.log_frequency is not None, f'Specify log_frequency when using num_envs'
         self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
         self.clock = Clock(self.max_tick, self.max_tick_unit, self.clock_speed)
         self.to_render = util.to_render()

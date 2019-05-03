@@ -163,7 +163,7 @@ class SpaceSession(Session):
         # for agent in agent_space.agents:
         #     for body in agent.nanflat_body_a:
         #         env = body.env
-        #         super(SpaceSession, self).try_ckpt(agent, env)
+        #         super().try_ckpt(agent, env)
 
     def run_all_episodes(self):
         '''

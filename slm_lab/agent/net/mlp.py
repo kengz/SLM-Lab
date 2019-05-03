@@ -59,7 +59,7 @@ class MLPNet(Net, nn.Module):
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
         nn.Module.__init__(self)
-        super(MLPNet, self).__init__(net_spec, in_dim, out_dim)
+        super().__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -112,7 +112,7 @@ class MLPNet(Net, nn.Module):
         self.to(self.device)
 
     def __str__(self):
-        return super(MLPNet, self).__str__() + f'\noptim: {self.optim}'
+        return super().__str__() + f'\noptim: {self.optim}'
 
     def forward(self, x):
         '''The feedforward step'''
@@ -207,7 +207,7 @@ class HydraMLPNet(Net, nn.Module):
            env 1 action      env 2 action
         '''
         nn.Module.__init__(self)
-        super(HydraMLPNet, self).__init__(net_spec, in_dim, out_dim)
+        super().__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -259,7 +259,7 @@ class HydraMLPNet(Net, nn.Module):
         self.to(self.device)
 
     def __str__(self):
-        return super(HydraMLPNet, self).__str__() + f'\noptim: {self.optim}'
+        return super().__str__() + f'\noptim: {self.optim}'
 
     def build_model_heads(self, in_dim):
         '''Build each model_head. These are stored as Sequential models in model_heads'''
