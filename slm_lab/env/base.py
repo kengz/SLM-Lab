@@ -113,6 +113,8 @@ class BaseEnv(ABC):
             logger.info(f'Override max_tick for eval mode to {NUM_EVAL_EPI} epi')
             self.max_tick = NUM_EVAL_EPI - 1
             self.max_tick_unit = 'epi'
+        if self.num_envs == 1:  # guard: if 1, dont used venvs at all
+            self.num_envs = None
         self.is_venv = self.num_envs is not None
         if self.is_venv:
             assert self.log_frequency is not None, f'Specify log_frequency when using num_envs'
