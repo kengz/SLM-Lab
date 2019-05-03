@@ -1,5 +1,5 @@
 {
-  "ppo_beamrider_env8": {
+  "ppo_beamrider_env1": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
@@ -68,7 +68,7 @@
     }],
     "env": [{
       "name": "BeamRiderNoFrameskip-v4",
-      "num_envs": 8,
+      "num_envs": 1,
       "max_t": null,
       "max_tick": 1e7
     }],
