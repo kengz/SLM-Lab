@@ -184,14 +184,15 @@ class ActorCritic(Reinforce):
         '''
         Forward-pass to calculate the predicted state-value from critic.
         '''
-        net = self.net if net is None else net
         if self.shared:  # output: policy, value
             if use_cache:  # uses cache from calc_pdparam to prevent double-pass
                 v_pred = self.v_pred
             else:
-                v_pred = self.net(x)[-1].view(-1)
+                net = self.net if net is None else net
+                v_pred = net(x)[-1].view(-1)
         else:
-            v_pred = self.critic(x).view(-1)
+            net = self.critic if net is None else net
+            v_pred = net(x).view(-1)
         return v_pred
 
     def calc_pdparam_v(self, batch):
