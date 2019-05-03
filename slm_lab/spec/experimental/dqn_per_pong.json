@@ -56,7 +56,7 @@
     }],
     "env": [{
       "name": "PongNoFrameskip-v4",
-      "num_envs": 4,
+      "num_envs": null,
       "max_t": null,
       "max_tick": 1e7
     }],
@@ -69,7 +69,7 @@
       "log_frequency": 10000,
       "eval_frequency": 10000,
       "max_tick_unit": "total_t",
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 16,
       "search": "RandomSearch",
       "resources": {
