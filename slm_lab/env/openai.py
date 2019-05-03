@@ -54,8 +54,8 @@ class OpenAIEnv(BaseEnv):
 
     @lab_api
     def step(self, action):
-        if not self.is_discrete:  # guard for continuous
-            action = np.array([action])
+        if not self.is_discrete and self.action_dim == 1:  # guard for continuous with action_dim 1, make array
+            action = np.expand_dims(action, axis=-1)
         state, reward, done, info = self.u_env.step(action)
         if self.reward_scale is not None:
             reward *= self.reward_scale
