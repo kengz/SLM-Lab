@@ -87,8 +87,8 @@ def init_action_pd(ActionPD, pdparam):
             loc, scale = pdparam.transpose(0, 1)
         # scale (stdev) must be > 0, use softplus with positive
         scale = F.softplus(scale) + 1e-8
-        # construct covars from a batched scale tensor
         if isinstance(pdparam, list):  # split output
+            # construct covars from a batched scale tensor
             covars = torch.diag_embed(scale)
             action_pd = ActionPD(loc=loc, covariance_matrix=covars)
         else:
