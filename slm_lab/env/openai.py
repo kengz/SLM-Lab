@@ -7,6 +7,8 @@ from slm_lab.lib.decorator import lab_api
 import gym
 import numpy as np
 import pydash as ps
+import roboschool
+
 
 logger = logger.get_logger(__name__)
 
