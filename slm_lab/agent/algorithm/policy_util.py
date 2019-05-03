@@ -81,24 +81,15 @@ def init_action_pd(ActionPD, pdparam):
     if 'logits' in ActionPD.arg_constraints:  # discrete
         action_pd = ActionPD(logits=pdparam)
     else:  # continuous, args = loc and scale
-        # TODO do as multitail list pdparams in the future to control activation
-        if isinstance(pdparam, list):
-            loc = pdparam[0]
-            scale = pdparam[1]
+        if isinstance(pdparam, list):  # split output
+            loc, scale = pdparam
         else:
-            # TODO - why do we have this, it doesn't seem to do anything?
             loc, scale = pdparam.transpose(0, 1)
         # scale (stdev) must be > 0, use softplus with positive
         scale = F.softplus(scale) + 1e-8
-        if isinstance(pdparam, list):
-            # Create a set of covariance matrices from the scale
-            covars = []
-            for i in range(scale.shape[0]):
-                ind = np.diag_indices(scale.shape[1])
-                covariancemat = torch.eye(scale.shape[1], device=scale.device)
-                covariancemat[ind[0], ind[1]] = scale[i]
-                covars.append(covariancemat)
-            covars = torch.stack(covars)
+        # construct covars from a batched scale tensor
+        if isinstance(pdparam, list):  # split output
+            covars = torch.diag_embed(scale)
             action_pd = ActionPD(loc=loc, covariance_matrix=covars)
         else:
             action_pd = ActionPD(loc=loc, scale=scale)
