@@ -113,7 +113,7 @@ class PrioritizedReplay(Replay):
             'max_size',
             'use_cer',
         ])
-        super(PrioritizedReplay, self).__init__(memory_spec, body)
+        super().__init__(memory_spec, body)
 
         self.epsilon = torch.full((1,), self.epsilon)
         self.alpha = torch.full((1,), self.alpha)
@@ -122,7 +122,7 @@ class PrioritizedReplay(Replay):
         self.reset()
 
     def reset(self):
-        super(PrioritizedReplay, self).reset()
+        super().reset()
         self.tree = SumTree(self.max_size)
 
     def add_experience(self, state, action, reward, next_state, done, error=100000):
@@ -130,7 +130,7 @@ class PrioritizedReplay(Replay):
         Implementation for update() to add experience to memory, expanding the memory size if necessary.
         All experiences are added with a high priority to increase the likelihood that they are sampled at least once.
         '''
-        super(PrioritizedReplay, self).add_experience(state, action, reward, next_state, done)
+        super().add_experience(state, action, reward, next_state, done)
         error = torch.zeros(1).fill_(error)
         priority = self.get_priority(error)
         self.priorities[self.head] = priority

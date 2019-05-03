@@ -53,7 +53,7 @@ class SIL(ActorCritic):
     '''
 
     def __init__(self, agent, global_nets=None):
-        super(SIL, self).__init__(agent, global_nets)
+        super().__init__(agent, global_nets)
         # create the extra replay memory for SIL
         MemoryClass = getattr(memory, self.memory_spec['sil_replay_name'])
         self.body.replay_memory = MemoryClass(self.memory_spec, self.body)
@@ -88,7 +88,7 @@ class SIL(ActorCritic):
             'training_epoch',
             'normalize_state'
         ])
-        super(SIL, self).init_algorithm_params()
+        super().init_algorithm_params()
 
     def sample(self):
         '''Modify the onpolicy sample to also append to replay'''
@@ -138,7 +138,7 @@ class SIL(ActorCritic):
         clock = self.body.env.clock
         if self.to_train == 1:
             # onpolicy update
-            super_loss = super(SIL, self).train()
+            super_loss = super().train()
             # offpolicy sil update with random minibatch
             total_sil_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):

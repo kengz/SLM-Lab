@@ -72,7 +72,7 @@ class VanillaDQN(SARSA):
             'training_start_step',  # how long before starting training
             'normalize_state',
         ])
-        super(VanillaDQN, self).init_algorithm_params()
+        super().init_algorithm_params()
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -113,7 +113,7 @@ class VanillaDQN(SARSA):
     @lab_api
     def act(self, state):
         '''Selects and returns a discrete action for body using the action policy'''
-        return super(VanillaDQN, self).act(state)
+        return super().act(state)
 
     @lab_api
     def sample(self):
@@ -155,7 +155,7 @@ class VanillaDQN(SARSA):
     @lab_api
     def update(self):
         '''Update the agent after training'''
-        return super(VanillaDQN, self).update()
+        return super().update()
 
 
 class DQNBase(VanillaDQN):
@@ -230,7 +230,7 @@ class DQNBase(VanillaDQN):
     def update(self):
         '''Updates self.target_net and the explore variables'''
         self.update_nets()
-        return super(DQNBase, self).update()
+        return super().update()
 
 
 class DQN(DQNBase):
@@ -258,7 +258,7 @@ class DQN(DQNBase):
     '''
     @lab_api
     def init_nets(self, global_nets=None):
-        super(DQN, self).init_nets(global_nets)
+        super().init_nets(global_nets)
 
 
 class DoubleDQN(DQN):
@@ -286,6 +286,6 @@ class DoubleDQN(DQN):
     '''
     @lab_api
     def init_nets(self, global_nets=None):
-        super(DoubleDQN, self).init_nets(global_nets)
+        super().init_nets(global_nets)
         self.online_net = self.net
         self.eval_net = self.target_net

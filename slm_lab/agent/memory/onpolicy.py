@@ -36,7 +36,7 @@ class OnPolicyReplay(Memory):
     '''
 
     def __init__(self, memory_spec, body):
-        super(OnPolicyReplay, self).__init__(memory_spec, body)
+        super().__init__(memory_spec, body)
         # NOTE for OnPolicy replay, frequency = episode; for other classes below frequency = frames
         util.set_attr(self, self.body.agent.agent_spec['algorithm'], ['training_frequency'])
         self.state_buffer = deque(maxlen=0)  # for API consistency
@@ -120,7 +120,7 @@ class OnPolicySeqReplay(OnPolicyReplay):
     '''
 
     def __init__(self, memory_spec, body):
-        super(OnPolicySeqReplay, self).__init__(memory_spec, body)
+        super().__init__(memory_spec, body)
         self.seq_len = self.body.agent.agent_spec['net']['seq_len']
         self.state_buffer = deque(maxlen=self.seq_len)
         self.reset()
@@ -195,7 +195,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
     '''
 
     def __init__(self, memory_spec, body):
-        super(OnPolicyBatchReplay, self).__init__(memory_spec, body)
+        super().__init__(memory_spec, body)
         self.is_episodic = False
 
     def add_experience(self, state, action, reward, next_state, done):
@@ -222,7 +222,7 @@ class OnPolicyBatchReplay(OnPolicyReplay):
             'next_states': next_states,
             'dones'      : dones}
         '''
-        return super(OnPolicyBatchReplay, self).sample()
+        return super().sample()
 
 
 class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
@@ -239,7 +239,7 @@ class OnPolicySeqBatchReplay(OnPolicyBatchReplay):
     '''
 
     def __init__(self, memory_spec, body):
-        super(OnPolicySeqBatchReplay, self).__init__(memory_spec, body)
+        super().__init__(memory_spec, body)
         self.is_episodic = False
         self.seq_len = self.body.agent.agent_spec['net']['seq_len']
         self.state_buffer = deque(maxlen=self.seq_len)
@@ -295,13 +295,13 @@ class OnPolicyConcatReplay(OnPolicyReplay):
         ])
         self.raw_state_dim = deepcopy(body.state_dim)  # used for state_buffer
         body.state_dim = body.state_dim * self.concat_len  # modify to use for net init for concat input
-        super(OnPolicyConcatReplay, self).__init__(memory_spec, body)
+        super().__init__(memory_spec, body)
         self.state_buffer = deque(maxlen=self.concat_len)
         self.reset()
 
     def reset(self):
         '''Initializes the memory arrays, size and head pointer'''
-        super(OnPolicyConcatReplay, self).reset()
+        super().reset()
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
             self.state_buffer.append(np.zeros(self.raw_state_dim))
@@ -309,7 +309,7 @@ class OnPolicyConcatReplay(OnPolicyReplay):
     def epi_reset(self, state):
         '''Method to reset at new episode'''
         state = self.preprocess_state(state, append=False)  # prevent conflict with preprocess in epi_reset
-        super(OnPolicyConcatReplay, self).epi_reset(state)
+        super().epi_reset(state)
         # reappend buffer with custom shape
         self.state_buffer.clear()
         for _ in range(self.state_buffer.maxlen):
@@ -348,7 +348,7 @@ class OnPolicyAtariReplay(OnPolicyReplay):
 
     def add_experience(self, state, action, reward, next_state, done):
         # clip reward, done here to minimize change to only training data data
-        super(OnPolicyAtariReplay, self).add_experience(state, action, np.sign(reward), next_state, done)
+        super().add_experience(state, action, np.sign(reward), next_state, done)
 
 
 class OnPolicyAtariBatchReplay(OnPolicyBatchReplay, OnPolicyAtariReplay):
@@ -365,7 +365,7 @@ class OnPolicyImageReplay(OnPolicyReplay):
     '''
 
     def __init__(self, memory_spec, body):
-        super(OnPolicyImageReplay, self).__init__(memory_spec, body)
+        super().__init__(memory_spec, body)
 
     def preprocess_state(self, state, append=True):
         state = util.normalize_image(state) - 0.5

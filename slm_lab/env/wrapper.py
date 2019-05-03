@@ -155,7 +155,7 @@ class PreprocessImage(gym.ObservationWrapper):
 
 
 class LazyFrames(object):
-    def __init__(self, frames):
+    def __init__(self, frames, is_vector=False):
         '''
         This object ensures that common frames between the observations are only stored once.
         It exists purely to optimize memory usage which can be huge for DQN's 1M frames replay buffers.
@@ -163,10 +163,14 @@ class LazyFrames(object):
         '''
         self._frames = frames
         self._out = None
+        self.is_vector = is_vector
 
     def _force(self):
         if self._out is None:
-            self._out = np.concatenate(self._frames, axis=0)
+            if self.is_vector:
+                self._out = np.stack(self._frames, axis=0)
+            else:
+                self._out = np.concatenate(self._frames, axis=0)
             self._frames = None
         return self._out
 
@@ -189,17 +193,17 @@ class LazyFrames(object):
 
 class FrameStack(gym.Wrapper):
     def __init__(self, env, k):
-        '''Stack last k frames; or concat them if frames are vectors. Returns lazy array, which is much more memory efficient.'''
+        '''Stack last k frames. Returns lazy array, which is much more memory efficient.'''
         gym.Wrapper.__init__(self, env)
         self.k = k
         self.frames = deque([], maxlen=k)
         old_shape = env.observation_space.shape
+        self.is_vector = len(old_shape) == 1  # state is a vector
         if len(old_shape) > 1 and old_shape[0] == 1:
             # grayscale image c,w,h or a tensor stackable on axis=0
-            shape = (k, ) + old_shape[1:]
-        elif len(old_shape) == 1:
-            # vector, to concat instead of stack
-            shape = (k * old_shape[0],)
+            shape = (k,) + old_shape[1:]
+        elif self.is_vector:  # vector
+            shape = (k,) + old_shape
         else:
             raise NotImplementedError(f'State shape {old_shape} cannot be stacked. Grayscale images or make state stackable on axis=0, e.g. (1, 84, 84)')
         self.observation_space = spaces.Box(
@@ -220,7 +224,7 @@ class FrameStack(gym.Wrapper):
 
     def _get_ob(self):
         assert len(self.frames) == self.k
-        return LazyFrames(list(self.frames))
+        return LazyFrames(list(self.frames), self.is_vector)
 
 
 def wrap_atari(env):
