@@ -93,16 +93,11 @@ def get_policy_out_dim(body):
             assert ps.is_integer(action_dim), action_dim
             policy_out_dim = action_dim
     else:
-        if body.action_type == 'multi_continuous':
-            assert ps.is_list(action_dim), action_dim
-            raise NotImplementedError('multi_continuous not supported yet')
-        else:
-            assert ps.is_integer(action_dim), action_dim
-            if action_dim == 1:
-                policy_out_dim = 2  # singleton stay as int
-            else:
-                # TODO change this to one slicable layer for efficiency
-                policy_out_dim = action_dim * [2]
+        assert ps.is_integer(action_dim), action_dim
+        if action_dim == 1:  # single action, use [loc, scale]
+            policy_out_dim = 2
+        else:  # multi-action, use [locs], [scales]
+            policy_out_dim = [action_dim, action_dim]
     return policy_out_dim
 
 

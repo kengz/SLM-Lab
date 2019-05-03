@@ -81,11 +81,18 @@ def init_action_pd(ActionPD, pdparam):
     if 'logits' in ActionPD.arg_constraints:  # discrete
         action_pd = ActionPD(logits=pdparam)
     else:  # continuous, args = loc and scale
-        # TODO do as multitail list pdparams in the future to control activation
-        loc, scale = pdparam.transpose(0, 1)
+        if isinstance(pdparam, list):  # split output
+            loc, scale = pdparam
+        else:
+            loc, scale = pdparam.transpose(0, 1)
         # scale (stdev) must be > 0, use softplus with positive
         scale = F.softplus(scale) + 1e-8
-        action_pd = ActionPD(loc=loc, scale=scale)
+        if isinstance(pdparam, list):  # split output
+            # construct covars from a batched scale tensor
+            covars = torch.diag_embed(scale)
+            action_pd = ActionPD(loc=loc, covariance_matrix=covars)
+        else:
+            action_pd = ActionPD(loc=loc, scale=scale)
     return action_pd
 
 
