@@ -11,10 +11,10 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
-          "start_val": 0.10,
-          "end_val": 0.10,
-          "start_step": 0,
-          "end_step": 1e7
+          "start_val": 0.2,
+          "end_val": 0.0,
+          "start_step": 10000,
+          "end_step": 10000000
         },
         "entropy_coef_spec": {
           "name": "no_decay",
@@ -24,7 +24,7 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 128,
+        "training_frequency": 32,
         "minibatch_size": 32,
         "training_epoch": 4,
         "normalize_state": false
@@ -53,20 +53,17 @@
         },
         "actor_optim_spec": {
           "name": "RMSprop",
-          "lr": 2.5e-4,
+          "lr": 0.0007,
           "alpha": 0.99,
           "eps": 1e-5
         },
         "critic_optim_spec": {
           "name": "RMSprop",
-          "lr": 2.5e-4,
+          "lr": 0.0007,
           "alpha": 0.99,
           "eps": 1e-5
         },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "total_t": 1e7
-        },
+        "lr_scheduler_spec": null,
         "gpu": true
       }
     }],
