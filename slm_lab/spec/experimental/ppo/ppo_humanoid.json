@@ -1,5 +1,5 @@
 {
-  "ppo_invertedpendulum": {
+  "ppo_humanoid": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
@@ -11,22 +11,22 @@
         "lam": 0.95,
         "clip_eps_spec": {
           "name": "no_decay",
-          "start_val": 0.20,
-          "end_val": 0.20,
+          "start_val": 0.10,
+          "end_val": 0.10,
           "start_step": 0,
           "end_step": 0
         },
         "entropy_coef_spec": {
-          "name": "no_decay",
-          "start_val": 0.0,
+          "name": "linear_decay",
+          "start_val": 0.01,
           "end_val": 0.0,
           "start_step": 0,
-          "end_step": 0
+          "end_step": 1e7
         },
         "val_loss_coef": 1.0,
-        "training_frequency": 2048,
-        "minibatch_size": 64,
-        "training_epoch": 10,
+        "training_frequency": 512,
+        "minibatch_size": 4096,
+        "training_epoch": 15,
         "normalize_state": false
       },
       "memory": {
@@ -47,21 +47,24 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 2.5e-4,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 2.5e-4,
         },
-        "lr_scheduler_spec": null,
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "total_t": 7.5e7
+        },
         "gpu": true
       }
     }],
     "env": [{
-      "name": "RoboschoolInvertedPendulum-v1",
-      "num_envs": 8,
+      "name": "RoboschoolHumanoid-v1",
+      "num_envs": 32,
       "max_t": null,
-      "max_tick": 1e6
+      "max_tick": 5e7
     }],
     "body": {
       "product": "outer",

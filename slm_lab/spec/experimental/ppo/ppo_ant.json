@@ -1,5 +1,5 @@
 {
-  "ppo_invertedpendulum": {
+  "ppo_ant": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
@@ -58,7 +58,7 @@
       }
     }],
     "env": [{
-      "name": "RoboschoolInvertedPendulum-v1",
+      "name": "RoboschoolAnt-v1",
       "num_envs": 8,
       "max_t": null,
       "max_tick": 1e6

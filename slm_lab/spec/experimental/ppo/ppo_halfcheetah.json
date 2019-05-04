@@ -25,6 +25,7 @@
         },
         "val_loss_coef": 1.0,
         "training_frequency": 2048,
+        "minibatch_size": 64,
         "training_epoch": 10,
         "normalize_state": false
       },
@@ -58,7 +59,7 @@
     }],
     "env": [{
       "name": "RoboschoolHalfCheetah-v1",
-      "num_envs": 16,
+      "num_envs": 8,
       "max_t": null,
       "max_tick": 1e6
     }],
