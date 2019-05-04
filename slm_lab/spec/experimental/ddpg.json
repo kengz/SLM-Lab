@@ -13,7 +13,7 @@
           "start_step": 0,
           "end_step": 50000,
         },
-        "gamma": 0.97,
+        "gamma": 0.99,
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 8,
@@ -22,18 +22,18 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 32,
+        "batch_size": 128,
         "max_size": 100000,
         "use_cer": false
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [200, 100],
+        "hid_layers": [256, 128, 64],
         "hid_layers_activation": "relu",
         "out_layer_activation": "tanh",
         "clip_grad_val": 0.5,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -45,8 +45,8 @@
           "lr": 1e-2
         },
         "update_type": "polyak",
-        "update_frequency": 1000,
-        "polyak_coef": 0.1,
+        "update_frequency": 8,
+        "polyak_coef": 0.001,
         "gpu": false
       }
     }],
