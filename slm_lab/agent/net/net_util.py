@@ -173,13 +173,13 @@ def save_algorithm(algorithm, ckpt=None):
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
     if ckpt is not None:
         prepath = f'{prepath}_ckpt-{ckpt}'
-    logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_{net_name}_model.pth'
         save(net, model_path)
         optim_path = f'{prepath}_{net_name}_optim.pth'
         save(net.optim, optim_path)
+    logger.info(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
 
 
 def load(net, model_path):

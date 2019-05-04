@@ -468,21 +468,21 @@ def save_session_data(spec, info_space, session_data, session_fitness_df, sessio
     session_data = util.session_df_to_data(session_df)
     '''
     prepath = util.get_prepath(spec, info_space, unit='session')
-    logger.info(f'Saving {body_df_kind} session data and graphs to {prepath}*')
     prefix = 'train' if body_df_kind == 'train' else ''
     if 'retro_analyze' not in os.environ['PREPATH']:
         save_session_df(session_data, f'{prepath}_{prefix}session_df.csv', info_space)
     util.write(session_fitness_df, f'{prepath}_{prefix}session_fitness_df.csv')
     viz.save_image(session_fig, f'{prepath}_{prefix}session_graph.png')
+    logger.info(f'Saved {body_df_kind} session data and graphs to {prepath}*')
 
 
 def save_trial_data(spec, info_space, trial_df, trial_fitness_df, trial_fig, zip=True):
     '''Save the trial data: spec, trial_fitness_df.'''
     prepath = util.get_prepath(spec, info_space, unit='trial')
-    logger.info(f'Saving trial data and graphs to {prepath}*')
     util.write(trial_df, f'{prepath}_trial_df.csv')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
+    logger.info(f'Saved trial data and graphs to {prepath}*')
     if util.get_lab_mode() == 'train' and zip:
         predir, _, _, _, _, _ = util.prepath_split(prepath)
         shutil.make_archive(predir, 'zip', predir)
@@ -492,9 +492,9 @@ def save_trial_data(spec, info_space, trial_df, trial_fitness_df, trial_fig, zip
 def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
     '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
     prepath = util.get_prepath(spec, info_space, unit='experiment')
-    logger.info(f'Saving experiment data to {prepath}')
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
+    logger.info(f'Saved experiment data to {prepath}')
     # zip for ease of upload
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     shutil.make_archive(predir, 'zip', predir)
