@@ -1,0 +1,87 @@
+{
+  "ddpg_pendulum": {
+    "agent": [{
+      "name": "DDPG",
+      "algorithm": {
+        "name": "DDPG",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 50000,
+        },
+        "gamma": 0.97,
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "training_frequency": 8,
+        "training_start_step": 32,
+        "normalize_state": false
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [200, 100],
+        "hid_layers_activation": "relu",
+        "out_layer_activation": "tanh",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 1e-3
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 1e-2
+        },
+        "update_type": "polyak",
+        "update_frequency": 1000,
+        "polyak_coef": 0.1,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "max_t": null,
+      "max_tick": 1000000,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_tick_unit": "total_t",
+      "max_session": 1,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
+        },
+        "net": {
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
+          }
+        }
+      }]
+    }
+  }
+}
