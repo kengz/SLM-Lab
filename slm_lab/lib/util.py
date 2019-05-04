@@ -533,6 +533,15 @@ def s_get(cls, attr_path):
     return res
 
 
+def sample_minibatch(batch, mb_size):
+    '''Sample a minibatch within a batch that is produced by to_torch_batch()'''
+    size = len(batch['rewards'])
+    assert mb_size < size, f'Minibatch size {mb_size} must be < batch size {size}'
+    minibatch_idxs = np.random.randint(size, size=mb_size)
+    minibatch = {k: v[minibatch_idxs] for k, v in batch.items()}
+    return minibatch
+
+
 def self_desc(cls):
     '''Method to get self description, used at init.'''
     desc_list = [f'{get_class_name(cls)}:']
