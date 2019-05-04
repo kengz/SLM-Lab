@@ -1,4 +1,5 @@
 from copy import deepcopy
+from slm_lab.env.base import Clock
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.mlp import MLPNet
 import torch
@@ -50,7 +51,8 @@ def test_forward():
 
 def test_training_step():
     y = torch.rand((batch_size, out_dim))
-    loss = net.training_step(x=x, y=y)
+    clock = Clock(100, 'total_t', 1)
+    loss = net.training_step(x=x, y=y, lr_clock=clock)
     assert loss != 0.0
 
 
