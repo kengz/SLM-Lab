@@ -120,10 +120,10 @@ class DDPG(ActorCritic):
             self.net_names = ['net', 'target_net']
 
             # critic(s, a) = q
-            critic_in_dim = state_dim + action_dim
+            critic_in_dim = [state_dim, action_dim]
             # fuck architecture
             critic_out_dim = 1
-            CriticNetClass = getattr(net, critic_net_spec['type'])
+            CriticNetClass = net.DDPGCritic
             self.critic = CriticNetClass(critic_net_spec, critic_in_dim, critic_out_dim)
             self.target_critic = CriticNetClass(critic_net_spec, critic_in_dim, critic_out_dim)
             self.net_names += ['critic', 'target_critic']
@@ -145,13 +145,14 @@ class DDPG(ActorCritic):
         state = policy_util.try_preprocess(state, self, body)
         noise = self.body.explore_var * self.noise_pd.sample()[0]
         action = self.net(state)
-        return action.cpu().squeeze().numpy() + noise  # squeeze to handle scalar
+        action = action.cpu().squeeze().numpy() + noise  # squeeze to handle scalar
+        return action
 
     def calc_policy_loss(self, batch):
         '''Calculate the actor's policy loss'''
         states = batch['states']
         actions = self.net(states)
-        q_preds = self.critic(torch.cat([states, actions], dim=-1))
+        q_preds = self.critic(states, actions)
         policy_loss = -q_preds.mean()
         logger.debug(f'Actor policy loss: {policy_loss:g}')
         return policy_loss
@@ -163,10 +164,10 @@ class DDPG(ActorCritic):
         actions = batch['actions'].unsqueeze(-1)
         next_states = batch['next_states']
         # TODO venv unpack
-        q_preds = self.critic(torch.cat([states, actions], dim=-1))
+        q_preds = self.critic(states, actions)
         with torch.no_grad():
             next_actions = self.target_net(next_states)
-            next_q_preds = self.target_critic(torch.cat([next_states, next_actions], dim=-1))
+            next_q_preds = self.target_critic(next_states, next_actions)
         q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * next_q_preds
         logger.debug(f'q_targets: {q_targets}')
         val_loss = self.net.loss_fn(q_preds, q_targets)

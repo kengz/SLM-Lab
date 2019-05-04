@@ -146,6 +146,60 @@ class MLPNet(Net, nn.Module):
         return loss
 
 
+class DDPGCritic(MLPNet, nn.Module):
+
+    def __init__(self, net_spec, in_dim, out_dim):
+        nn.Module.__init__(self)
+        Net.__init__(self, net_spec, in_dim, out_dim)
+        util.set_attr(self, dict(
+            out_layer_activation=None,
+            init_fn=None,
+            clip_grad_val=None,
+            loss_spec={'name': 'MSELoss'},
+            optim_spec={'name': 'Adam'},
+            lr_scheduler_spec=None,
+            update_type='replace',
+            update_frequency=1,
+            polyak_coef=0.0,
+            gpu=False,
+        ))
+        util.set_attr(self, self.net_spec, [
+            'shared',
+            'hid_layers',
+            'hid_layers_activation',
+            'out_layer_activation',
+            'init_fn',
+            'clip_grad_val',
+            'loss_spec',
+            'optim_spec',
+            'lr_scheduler_spec',
+            'update_type',
+            'update_frequency',
+            'polyak_coef',
+            'gpu',
+        ])
+
+        hid0 = 400
+        hid1 = 300
+        self.fc0 = nn.Linear(in_dim[0], hid0)
+        self.fc1 = nn.Linear(hid0 + in_dim[1], hid1)
+        self.fc2 = nn.Linear(hid1, 1)
+        self.activ = net_util.get_activation_fn(self.hid_layers_activation)
+
+        net_util.init_layers(self, self.init_fn)
+        self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
+        self.optim = net_util.get_optim(self, self.optim_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
+        self.to(self.device)
+
+    def forward(self, state, action):
+        '''The feedforward step'''
+        x = self.activ(self.fc0(state))
+        x = torch.cat((x, action), dim=-1)
+        x = self.activ(self.fc1(x))
+        return self.fc2(x)
+
+
 class HydraMLPNet(Net, nn.Module):
     '''
     Class for generating arbitrary sized feedforward neural network with multiple state and action heads, and a single shared body.
