@@ -41,9 +41,10 @@ class Clock:
 
     def reset(self):
         self.t = 0
-        self.total_t = 0
+        self.total_t = 0  # aka frames
         self.epi = 0
         self.start_wall_t = time.time()
+        self.grad_step = 0  # count the number of gradient updates
 
     def get(self, unit=None):
         unit = unit or self.max_tick_unit
@@ -60,6 +61,8 @@ class Clock:
         elif unit == 'epi':  # episode, reset timestep
             self.epi += 1
             self.t = 0
+        elif unit == 'grad_step':
+            self.grad_step += 1
         else:
             raise KeyError
 
