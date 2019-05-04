@@ -533,6 +533,15 @@ def s_get(cls, attr_path):
     return res
 
 
+def sample_minibatch(batch, mb_size):
+    '''Sample a minibatch within a batch that is produced by to_torch_batch()'''
+    size = len(batch['rewards'])
+    assert mb_size < size, f'Minibatch size {mb_size} must be < batch size {size}'
+    minibatch_idxs = np.random.randint(size, size=mb_size)
+    minibatch = {k: v[minibatch_idxs] for k, v in batch.items()}
+    return minibatch
+
+
 def self_desc(cls):
     '''Method to get self description, used at init.'''
     desc_list = [f'{get_class_name(cls)}:']
@@ -573,6 +582,27 @@ def set_attr(obj, attr_dict, keys=None):
     for attr, val in attr_dict.items():
         setattr(obj, attr, val)
     return obj
+
+
+def set_cuda_id(spec, info_space):
+    '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
+    # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
+    # see issues https://github.com/pytorch/pytorch/issues/334 https://github.com/pytorch/pytorch/issues/3491 https://github.com/pytorch/pytorch/issues/9996
+    for agent_spec in spec['agent']:
+        if not agent_spec['net'].get('gpu'):
+            return
+    trial_idx = info_space.get('trial') or 0
+    session_idx = info_space.get('session') or 0
+    job_idx = trial_idx * spec['meta']['max_session'] + session_idx
+    job_idx += int(os.environ.get('CUDA_ID_OFFSET', 0))
+    device_count = torch.cuda.device_count()
+    if device_count == 0:
+        cuda_id = None
+    else:
+        cuda_id = job_idx % device_count
+
+    for agent_spec in spec['agent']:
+        agent_spec['net']['cuda_id'] = cuda_id
 
 
 def set_logger(spec, info_space, logger, unit=None):
@@ -660,27 +690,6 @@ def to_torch_batch(batch, device, is_episodic):
             batch[k] = np.array(batch[k])
         batch[k] = torch.from_numpy(batch[k].astype(np.float32)).to(device)
     return batch
-
-
-def set_cuda_id(spec, info_space):
-    '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
-    # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
-    # see issues https://github.com/pytorch/pytorch/issues/334 https://github.com/pytorch/pytorch/issues/3491 https://github.com/pytorch/pytorch/issues/9996
-    for agent_spec in spec['agent']:
-        if not agent_spec['net'].get('gpu'):
-            return
-    trial_idx = info_space.get('trial') or 0
-    session_idx = info_space.get('session') or 0
-    job_idx = trial_idx * spec['meta']['max_session'] + session_idx
-    job_idx += int(os.environ.get('CUDA_ID_OFFSET', 0))
-    device_count = torch.cuda.device_count()
-    if device_count == 0:
-        cuda_id = None
-    else:
-        cuda_id = job_idx % device_count
-
-    for agent_spec in spec['agent']:
-        agent_spec['net']['cuda_id'] = cuda_id
 
 
 def write(data, data_path):
