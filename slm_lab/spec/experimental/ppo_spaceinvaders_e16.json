@@ -1,5 +1,5 @@
 {
-  "ppo_spaceinvaders": {
+  "ppo_spaceinvaders_e16": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
@@ -24,7 +24,7 @@
           "end_step": 0
         },
         "val_loss_coef": 1.0,
-        "training_frequency": 128,
+        "training_frequency": 64,
         "minibatch_size": 32,
         "training_epoch": 3,
         "normalize_state": false
@@ -68,7 +68,7 @@
     }],
     "env": [{
       "name": "SpaceInvadersNoFrameskip-v4",
-      "num_envs": 8,
+      "num_envs": 16,
       "max_t": null,
       "max_tick": 1e7
     }],
