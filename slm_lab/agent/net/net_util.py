@@ -93,16 +93,11 @@ def get_policy_out_dim(body):
             assert ps.is_integer(action_dim), action_dim
             policy_out_dim = action_dim
     else:
-        if body.action_type == 'multi_continuous':
-            assert ps.is_list(action_dim), action_dim
-            raise NotImplementedError('multi_continuous not supported yet')
-        else:
-            assert ps.is_integer(action_dim), action_dim
-            if action_dim == 1:
-                policy_out_dim = 2  # singleton stay as int
-            else:
-                # TODO change this to one slicable layer for efficiency
-                policy_out_dim = action_dim * [2]
+        assert ps.is_integer(action_dim), action_dim
+        if action_dim == 1:  # single action, use [loc, scale]
+            policy_out_dim = 2
+        else:  # multi-action, use [locs], [scales]
+            policy_out_dim = [action_dim, action_dim]
     return policy_out_dim
 
 
@@ -178,13 +173,13 @@ def save_algorithm(algorithm, ckpt=None):
     prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
     if ckpt is not None:
         prepath = f'{prepath}_ckpt-{ckpt}'
-    logger.info(f'Saving algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_{net_name}_model.pth'
         save(net, model_path)
         optim_path = f'{prepath}_{net_name}_optim.pth'
         save(net.optim, optim_path)
+    logger.info(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
 
 
 def load(net, model_path):

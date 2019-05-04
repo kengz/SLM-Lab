@@ -7,6 +7,8 @@ from slm_lab.lib.decorator import lab_api
 import gym
 import numpy as np
 import pydash as ps
+import roboschool
+
 
 logger = logger.get_logger(__name__)
 
@@ -52,8 +54,8 @@ class OpenAIEnv(BaseEnv):
 
     @lab_api
     def step(self, action):
-        if not self.is_discrete:  # guard for continuous
-            action = np.array([action])
+        if not self.is_discrete and self.action_dim == 1:  # guard for continuous with action_dim 1, make array
+            action = np.expand_dims(action, axis=-1)
         state, reward, done, info = self.u_env.step(action)
         if self.reward_scale is not None:
             reward *= self.reward_scale
@@ -96,8 +98,8 @@ class OpenAIEnv(BaseEnv):
             state_e = self.space_reset()
             _reward_e, done_e = self.env_space.aeb_space.init_data_s(['reward', 'done'], e=self.e)
             return state_e, _reward_e, done_e, None
-        if not self.is_discrete:
-            action = np.array([action])
+        if not self.is_discrete and self.action_dim == 1:  # guard for continuous with action_dim 1, make array
+            action = np.expand_dims(action, axis=-1)
         state, reward, done, info = self.u_env.step(action)
         if self.reward_scale is not None:
             reward *= self.reward_scale
