@@ -43,7 +43,7 @@ def try_preprocess(state, algorithm, body, append=True):
         state = state.__array__()  # from global env preprocessor
     if hasattr(body.memory, 'preprocess_state'):
         state = body.memory.preprocess_state(state, append=append)
-    state = torch.from_numpy(state).float()
+    state = torch.from_numpy(state.astype(np.float32))
     if not body.env.is_venv or util.in_eval_lab_modes():
         # singleton state, unsqueeze as minibatch for net input
         state = state.unsqueeze(dim=0)

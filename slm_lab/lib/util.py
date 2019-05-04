@@ -658,7 +658,7 @@ def to_torch_batch(batch, device, is_episodic):
             batch[k] = np.concatenate(batch[k])
         elif ps.is_list(batch[k]):
             batch[k] = np.array(batch[k])
-        batch[k] = torch.from_numpy(batch[k].astype('float32')).to(device)
+        batch[k] = torch.from_numpy(batch[k].astype(np.float32)).to(device)
     return batch
 
 
