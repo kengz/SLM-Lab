@@ -51,6 +51,7 @@ class PPO(ActorCritic):
           "start_step": 100,
           "end_step": 5000,
         },
+        "minibatch_size": 256,
         "training_frequency": 1,
         "training_epoch": 8,
         "normalize_state": true
@@ -84,6 +85,7 @@ class PPO(ActorCritic):
             'clip_eps_spec',
             'entropy_coef_spec',
             'val_loss_coef',
+            'minibatch_size',
             'training_frequency',  # horizon
             'training_epoch',
             'normalize_state',
@@ -166,15 +168,22 @@ class PPO(ActorCritic):
             batch = self.sample()
             _pdparams, v_preds = self.calc_pdparam_v(batch)
             advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
-            batch['advs'] = advs
-            batch['v_targets'] = v_targets
+            # piggy back on batch, but remember to not pack or unpack
+            batch['advs'], batch['v_targets'] = advs, v_targets
+            if self.body.env.is_venv:  # unpack if venv for minibatch sampling
+                for k, v in batch.items():
+                    if k not in ('advs', 'v_targets'):
+                        batch[k] = math_util.venv_unpack(v)
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
-                minibatch = batch  # TODO sample minibatch from batch with size < length of batch
-                advs = batch['advs']
-                v_targets = batch['v_targets']
-                pdparams, v_preds = self.calc_pdparam_v(batch)
-                policy_loss = self.calc_policy_loss(batch, pdparams, advs)  # from actor
+                minibatch = util.sample_minibatch(batch, self.minibatch_size)
+                if self.body.env.is_venv:  # re-pack to restore proper shape
+                    for k, v in minibatch.items():
+                        if k not in ('advs', 'v_targets'):
+                            minibatch[k] = math_util.venv_pack(v, self.body.env.num_envs)
+                advs, v_targets = minibatch['advs'], minibatch['v_targets']
+                pdparams, v_preds = self.calc_pdparam_v(minibatch)
+                policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
                 val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
                 if self.shared:  # shared network
                     loss = policy_loss + val_loss
