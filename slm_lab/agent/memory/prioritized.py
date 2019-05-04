@@ -136,7 +136,7 @@ class PrioritizedReplay(Replay):
 
     def get_priority(self, error):
         '''Takes in the error of one or more examples and returns the proportional priority'''
-        return np.power(error + self.epsilon, self.alpha)
+        return np.power(error + self.epsilon, self.alpha).squeeze()
 
     def sample_idxs(self, batch_size):
         '''Samples batch_size indices from memory in proportional to their priority.'''
