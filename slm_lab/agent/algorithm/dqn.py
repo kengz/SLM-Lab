@@ -106,7 +106,7 @@ class VanillaDQN(SARSA):
 
         # TODO use the same loss_fn but do not reduce yet
         if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
-            errors = torch.abs(max_q_targets - act_q_preds.detach())
+            errors = (max_q_targets - act_q_preds.detach()).abs().cpu().numpy()
             self.body.memory.update_priorities(errors)
         return q_loss
 
@@ -212,7 +212,7 @@ class DQNBase(VanillaDQN):
 
         # TODO use the same loss_fn but do not reduce yet
         if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
-            errors = torch.abs(max_q_targets - act_q_preds.detach())
+            errors = (max_q_targets - act_q_preds.detach()).abs().cpu().numpy()
             self.body.memory.update_priorities(errors)
         return q_loss
 

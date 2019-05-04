@@ -3,7 +3,6 @@ from slm_lab.lib import util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import random
-import torch
 
 
 class SumTree:
@@ -115,8 +114,8 @@ class PrioritizedReplay(Replay):
         ])
         super().__init__(memory_spec, body)
 
-        self.epsilon = torch.full((1,), self.epsilon)
-        self.alpha = torch.full((1,), self.alpha)
+        self.epsilon = np.full((1,), self.epsilon)
+        self.alpha = np.full((1,), self.alpha)
         # adds a 'priorities' scalar to the data_keys and call reset again
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
         self.reset()
@@ -131,15 +130,13 @@ class PrioritizedReplay(Replay):
         All experiences are added with a high priority to increase the likelihood that they are sampled at least once.
         '''
         super().add_experience(state, action, reward, next_state, done)
-        error = torch.zeros(1).fill_(error)
         priority = self.get_priority(error)
         self.priorities[self.head] = priority
         self.tree.add(priority, self.head)
 
     def get_priority(self, error):
         '''Takes in the error of one or more examples and returns the proportional priority'''
-        p = torch.pow(error.cpu().detach() + self.epsilon, self.alpha)
-        return p.squeeze().detach().numpy()
+        return np.power(error + self.epsilon, self.alpha).squeeze()
 
     def sample_idxs(self, batch_size):
         '''Samples batch_size indices from memory in proportional to their priority.'''
