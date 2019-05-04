@@ -1,5 +1,5 @@
 {
-  "ppo_breakout_env1": {
+  "ppo_breakout": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
@@ -68,7 +68,7 @@
     }],
     "env": [{
       "name": "BreakoutNoFrameskip-v4",
-      "num_envs": 1,
+      "num_envs": 16,
       "max_t": null,
       "max_tick": 1e7
     }],

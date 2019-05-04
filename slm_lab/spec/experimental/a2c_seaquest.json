@@ -1,5 +1,5 @@
 {
-  "a2c_seaquest_env1": {
+  "a2c_seaquest": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -61,7 +61,7 @@
     }],
     "env": [{
       "name": "SeaquestNoFrameskip-v4",
-      "num_envs": 1,
+      "num_envs": 16,
       "max_t": null,
       "max_tick": 1e7
     }],
