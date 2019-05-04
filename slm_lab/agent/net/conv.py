@@ -208,6 +208,7 @@ class ConvNet(Net, nn.Module):
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()
+        lr_clock.tick('grad_step')
         return loss
 
 
