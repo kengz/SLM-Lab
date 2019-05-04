@@ -43,7 +43,7 @@ def try_preprocess(state, algorithm, body, append=True):
         state = state.__array__()  # from global env preprocessor
     if hasattr(body.memory, 'preprocess_state'):
         state = body.memory.preprocess_state(state, append=append)
-    state = torch.from_numpy(state).float()
+    state = torch.from_numpy(state.astype(np.float32))
     if not body.env.is_venv or util.in_eval_lab_modes():
         # singleton state, unsqueeze as minibatch for net input
         state = state.unsqueeze(dim=0)
@@ -81,11 +81,18 @@ def init_action_pd(ActionPD, pdparam):
     if 'logits' in ActionPD.arg_constraints:  # discrete
         action_pd = ActionPD(logits=pdparam)
     else:  # continuous, args = loc and scale
-        # TODO do as multitail list pdparams in the future to control activation
-        loc, scale = pdparam.transpose(0, 1)
+        if isinstance(pdparam, list):  # split output
+            loc, scale = pdparam
+        else:
+            loc, scale = pdparam.transpose(0, 1)
         # scale (stdev) must be > 0, use softplus with positive
         scale = F.softplus(scale) + 1e-8
-        action_pd = ActionPD(loc=loc, scale=scale)
+        if isinstance(pdparam, list):  # split output
+            # construct covars from a batched scale tensor
+            covars = torch.diag_embed(scale)
+            action_pd = ActionPD(loc=loc, covariance_matrix=covars)
+        else:
+            action_pd = ActionPD(loc=loc, scale=scale)
     return action_pd
 
 

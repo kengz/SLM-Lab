@@ -77,6 +77,8 @@ def test_ppo(spec_file, spec_name):
     ('experimental/ppo.json', 'ppo_mlp_separate_pendulum'),
     ('experimental/ppo.json', 'ppo_rnn_shared_pendulum'),
     ('experimental/ppo.json', 'ppo_rnn_separate_pendulum'),
+    # ('experimental/ppo_halfcheetah.json', 'ppo_halfcheetah'),
+    # ('experimental/ppo_invertedpendulum.json', 'ppo_invertedpendulum'),
 ])
 def test_ppo_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)

@@ -126,7 +126,7 @@ class TestPERMemory:
         memory.batch_idxs = np.asarray([0, 1, 2, 3]).astype(int)
         memory.tree_idxs = [3, 4, 5, 6]
         print(f'batch_size: {batch_size}, batch_idxs: {memory.batch_idxs}, tree_idxs: {memory.tree_idxs}')
-        new_errors = torch.from_numpy(np.asarray([0, 10, 10, 20])).float().unsqueeze(dim=1)
+        new_errors = torch.from_numpy(np.array([0, 10, 10, 20]).astype(np.float32)).unsqueeze(dim=1)
         print(f'new_errors: {new_errors}')
         memory.update_priorities(new_errors)
         memory.tree.print_tree()
@@ -136,7 +136,7 @@ class TestPERMemory:
         assert memory.priorities[2] == 10
         assert memory.priorities[3] == 20
         # Second update
-        new_errors = torch.from_numpy(np.asarray([90, 0, 30, 0])).float().unsqueeze(dim=1)
+        new_errors = torch.from_numpy(np.array([90, 0, 30, 0]).astype(np.float32)).unsqueeze(dim=1)
         # Manually change tree idxs and batch idxs
         memory.batch_idxs = np.asarray([0, 1, 2, 3]).astype(int)
         memory.tree_idxs = [3, 4, 5, 6]
