@@ -73,7 +73,7 @@ class PPO(ActorCritic):
             action_policy='default',
             explore_var_spec=None,
             entropy_coef_spec=None,
-            minibatch_size=8,
+            minibatch_size=4,
             val_loss_coef=1.0,
         ))
         util.set_attr(self, self.algorithm_spec, [
