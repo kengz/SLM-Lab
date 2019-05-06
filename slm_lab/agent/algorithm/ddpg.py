@@ -181,10 +181,10 @@ class DDPG(ActorCritic):
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
-            policy_loss = self.calc_policy_loss(batch)  # from actor
             val_loss = self.calc_val_loss(batch)  # from critic
-            self.net.training_step(loss=policy_loss, lr_clock=clock)
             self.critic.training_step(loss=val_loss, lr_clock=clock)
+            policy_loss = self.calc_policy_loss(batch)  # from actor
+            self.net.training_step(loss=policy_loss, lr_clock=clock)
             loss = policy_loss + val_loss
             # reset
             self.to_train = 0
