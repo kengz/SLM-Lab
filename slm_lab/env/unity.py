@@ -141,8 +141,8 @@ class UnityEnv(BaseEnv):
         a, b = 0, 0  # default singleton aeb
         env_info_a = self._get_env_info(env_info_dict, a)
         state = env_info_a.states[b]
-        rewards = env_info_a.rewards[b]
-        rewards = try_scale_reward(self, rewards)
+        reward = env_info_a.rewards[b]
+        reward = try_scale_reward(self, reward)
         done = env_info_a.local_done[b]
         if not self.is_venv and self.clock.t > self.max_t:
             done = True
