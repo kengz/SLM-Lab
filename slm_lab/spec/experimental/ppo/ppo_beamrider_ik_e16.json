@@ -30,7 +30,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyAtariBatchReplay",
+        "name": "OnPolicyBatchReplay",
       },
       "net": {
         "type": "ConvNet",
@@ -70,6 +70,7 @@
       "name": "BeamRiderNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
+      "reward_scale": "sign",
       "num_envs": 16,
       "max_t": null,
       "max_tick": 1e7
