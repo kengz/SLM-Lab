@@ -10,11 +10,11 @@
         "gamma": 0.99,
         "lam": 0.95,
         "clip_eps_spec": {
-          "name": "linear_decay",
-          "start_val": 0.20,
-          "end_val": 0.20,
-          "start_step": 10000,
-          "end_step": 10000000
+          "name": "no_decay",
+          "start_val": 0.10,
+          "end_val": 0.10,
+          "start_step": 0,
+          "end_step": 0
         },
         "entropy_coef_spec": {
           "name": "no_decay",
@@ -24,7 +24,7 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 32,
+        "training_frequency": 128,
         "minibatch_size": 32,
         "training_epoch": 4,
         "normalize_state": false
