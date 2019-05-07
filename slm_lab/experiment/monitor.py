@@ -140,6 +140,8 @@ class Body:
 
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
+        if self.env.reward_scale is not None:
+            reward = self.env.u_env.raw_reward
         if self.ckpt_total_reward is np.nan:  # init
             self.ckpt_total_reward = reward
         else:  # reset on epi_start, else keep adding. generalized for vec env

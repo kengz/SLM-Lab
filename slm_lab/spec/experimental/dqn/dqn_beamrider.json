@@ -21,7 +21,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "AtariReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 200000,
         "use_cer": false
@@ -55,6 +55,7 @@
       "name": "BeamRiderNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
+      "reward_scale": "sign",
       "max_t": null,
       "max_tick": 10000000
     }],
