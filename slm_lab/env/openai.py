@@ -95,13 +95,11 @@ class OpenAIEnv(BaseEnv):
     @lab_api
     def space_step(self, action_e):
         action = action_e[(0, 0)]  # single body
-        if self.done:  # space envs run continually without a central reset signal
-            state_e = self.space_reset()
-            _reward_e, done_e = self.env_space.aeb_space.init_data_s(['reward', 'done'], e=self.e)
-            return state_e, _reward_e, done_e, None
         if not self.is_discrete and self.action_dim == 1:  # guard for continuous with action_dim 1, make array
             action = np.expand_dims(action, axis=-1)
         state, reward, done, info = self.u_env.step(action)
+        if done:
+            state = self.u_env.reset()
         if self.reward_scale is not None:
             reward *= self.reward_scale
         if self.to_render:
