@@ -151,14 +151,3 @@ class Replay(Memory):
         if self.use_cer:  # add the latest sample
             batch_idxs[-1] = self.head
         return batch_idxs
-
-
-class AtariReplay(Replay):
-    '''
-    Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-10, 10] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
-    Note: Playing Atari with Deep RL clips the rewards to + / - 1
-    '''
-
-    def add_experience(self, state, action, reward, next_state, done):
-        # clip reward, done here to minimize change to only training data data
-        super().add_experience(state, action, np.sign(reward), next_state, done)

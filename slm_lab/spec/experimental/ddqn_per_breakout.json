@@ -21,7 +21,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "AtariPrioritizedReplay",
+        "name": "PrioritizedReplay",
         "alpha": 0.6,
         "epsilon": 0.0001,
         "batch_size": 32,
@@ -57,6 +57,7 @@
       "name": "BreakoutNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
+      "reward_scale": "sign",
       "max_t": null,
       "max_tick": 10000000
     }],

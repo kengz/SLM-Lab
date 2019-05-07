@@ -29,7 +29,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyAtariReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -60,6 +60,7 @@
       "name": "SeaquestNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
+      "reward_scale": "sign",
       "max_t": null,
       "max_tick": 10000000
     }],
