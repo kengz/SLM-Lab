@@ -54,7 +54,7 @@ class PPO(ActorCritic):
         "minibatch_size": 256,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
     }
 
     e.g. special net_spec param "shared" to share/separate Actor/Critic

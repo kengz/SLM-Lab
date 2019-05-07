@@ -32,12 +32,13 @@ net_spec = {
     },
     "gpu": True
 }
-in_dim = 10
+state_dim = 10
 out_dim = 3
 batch_size = 16
 seq_len = net_spec['seq_len']
+in_dim = (seq_len, state_dim)
 net = RecurrentNet(net_spec, in_dim, out_dim)
-x = torch.rand((batch_size, seq_len, in_dim))
+x = torch.rand((batch_size, seq_len, state_dim))
 
 
 def test_init():

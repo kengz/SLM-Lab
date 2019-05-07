@@ -15,7 +15,7 @@
         "val_loss_coef": 1.0,
         "training_frequency": 1,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -100,10 +100,10 @@
         "val_loss_coef": 1.0,
         "training_frequency": 1,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -189,7 +189,7 @@
         "val_loss_coef": 1.0,
         "training_frequency": 1,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -274,10 +274,10 @@
         "val_loss_coef": 1.0,
         "training_frequency": 1,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -366,14 +366,13 @@
         "training_epoch": 4,
         "training_frequency": 4,
         "training_start_step": 32,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -400,6 +399,8 @@
     }],
     "env": [{
       "name": "gridworld",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
       "max_tick": 1000,
     }],
@@ -458,14 +459,13 @@
         "training_epoch": 4,
         "training_frequency": 4,
         "training_start_step": 32,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "RecurrentNet",
@@ -496,6 +496,8 @@
     }],
     "env": [{
       "name": "gridworld",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
       "max_tick": 1000,
     }],
@@ -556,14 +558,13 @@
         "training_epoch": 4,
         "training_frequency": 4,
         "training_start_step": 32,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -590,6 +591,8 @@
     }],
     "env": [{
       "name": "gridworld",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
       "max_tick": 1000,
     }],
@@ -648,14 +651,13 @@
         "training_epoch": 4,
         "training_frequency": 4,
         "training_start_step": 32,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "RecurrentNet",
@@ -686,6 +688,8 @@
     }],
     "env": [{
       "name": "gridworld",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
       "max_tick": 1000,
     }],

@@ -16,7 +16,7 @@
           "end_step": 2000,
         },
         "training_frequency": 1,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -95,10 +95,10 @@
           "end_step": 2000,
         },
         "training_frequency": 1,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -270,7 +270,7 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -360,7 +360,7 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -450,10 +450,10 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -544,7 +544,7 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -632,7 +632,7 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -723,7 +723,7 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -810,10 +810,10 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -910,7 +910,7 @@
         "val_loss_coef": 0.1,
         "training_frequency": 8,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -1008,7 +1008,7 @@
         "training_frequency": 8,
         "training_batch_epoch": 8,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -1105,7 +1105,7 @@
         "training_frequency": 1,
         "training_batch_epoch": 10,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -1195,7 +1195,7 @@
         },
         "gamma": 0.99,
         "training_frequency": 20,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -1272,10 +1272,10 @@
         },
         "gamma": 0.99,
         "training_frequency": 20,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqBatchReplay"
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -1357,14 +1357,13 @@
         "training_epoch": 4,
         "training_frequency": 4,
         "training_start_step": 128,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
-        "use_cer": false,
-        "concat_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -1390,6 +1389,8 @@
     }],
     "env": [{
       "name": "CartPole-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
       "max_tick": 40000,
     }],
@@ -1417,7 +1418,6 @@
           },
         },
         "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
           "batch_size__choice": [32, 64, 128],
           "use_cer__choice": [false, true],
         },
@@ -1449,7 +1449,7 @@
         "training_epoch": 4,
         "training_frequency": 8,
         "training_start_step": 32,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
@@ -1536,14 +1536,13 @@
         "training_epoch": 4,
         "training_frequency": 4,
         "training_start_step": 128,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
-        "use_cer": false,
-        "concat_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -1569,6 +1568,8 @@
     }],
     "env": [{
       "name": "CartPole-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
       "max_tick": 40000,
     }],
@@ -1596,7 +1597,6 @@
           },
         },
         "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
           "batch_size__choice": [32, 64, 128],
           "use_cer__choice": [false, true],
         },
@@ -1628,10 +1628,10 @@
         "training_epoch": 4,
         "training_frequency": 4,
         "training_start_step": 128,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": false,
@@ -1722,10 +1722,10 @@
         "training_epoch": 4,
         "training_frequency": 4,
         "training_start_step": 128,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": false,
@@ -1816,14 +1816,13 @@
         "training_epoch": 4,
         "training_frequency": 4,
         "training_start_step": 128,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
-        "use_cer": false,
-        "concat_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -1849,6 +1848,8 @@
     }],
     "env": [{
       "name": "CartPole-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
       "max_tick": 40000,
     }],
@@ -1876,7 +1877,6 @@
           },
         },
         "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
           "batch_size__choice": [32, 64, 128],
           "use_cer__choice": [false, true],
         },
@@ -1908,14 +1908,13 @@
         "training_epoch": 4,
         "training_frequency": 4,
         "training_start_step": 128,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
-        "use_cer": false,
-        "concat_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -1941,6 +1940,8 @@
     }],
     "env": [{
       "name": "CartPole-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
       "max_tick": 40000,
     }],
@@ -1968,7 +1969,6 @@
           },
         },
         "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
           "batch_size__choice": [32, 64, 128],
           "use_cer__choice": [false, true],
         },
@@ -2000,10 +2000,10 @@
         "training_epoch": 4,
         "training_frequency": 4,
         "training_start_step": 128,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": false,
@@ -2094,10 +2094,10 @@
         "training_epoch": 4,
         "training_frequency": 4,
         "training_start_step": 128,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": false,
@@ -2188,7 +2188,7 @@
         "training_epoch": 4,
         "training_frequency": 8,
         "training_start_step": 32,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",

@@ -58,7 +58,7 @@ class Agent:
     @lab_api
     def reset(self, state):
         '''Do agent reset per session, such as memory pointer'''
-        self.body.memory.epi_reset(state)
+        pass
 
     @lab_api
     def act(self, state):
@@ -117,8 +117,7 @@ class Agent:
     @lab_api
     def space_reset(self, state_a):
         '''Do agent reset per session, such as memory pointer'''
-        for eb, body in util.ndenumerate_nonan(self.body_a):
-            body.memory.epi_reset(state_a[eb])
+        pass
 
     @lab_api
     def space_act(self, state_a):

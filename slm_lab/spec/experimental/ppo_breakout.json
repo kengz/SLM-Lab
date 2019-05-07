@@ -58,6 +58,8 @@
     }],
     "env": [{
       "name": "BreakoutNoFrameskip-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
       "max_tick": 10000000
     }],

@@ -18,7 +18,7 @@
         "training_epoch": 4,
         "training_frequency": 32,
         "training_start_step": 10,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
@@ -115,7 +115,7 @@
         "training_epoch": 4,
         "training_frequency": 32,
         "training_start_step": 10,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
@@ -215,7 +215,7 @@
         "training_epoch": 4,
         "training_frequency": 32,
         "training_start_step": 32,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
@@ -311,7 +311,7 @@
         "training_epoch": 4,
         "training_frequency": 32,
         "training_start_step": 32,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",

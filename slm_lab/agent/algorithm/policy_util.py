@@ -37,22 +37,18 @@ def get_action_pd_cls(action_pdtype, action_type):
     return ActionPD
 
 
-def try_preprocess(state, algorithm, body, append=True):
-    '''Try calling preprocess as implemented in body's memory to use for net input'''
+def guard_tensor(state, body):
+    '''Guard-cast tensor before being input to network'''
     if isinstance(state, LazyFrames):
-        state = state.__array__()  # from global env preprocessor
-    if hasattr(body.memory, 'preprocess_state'):
-        state = body.memory.preprocess_state(state, append=append)
+        state = state.__array__()  # realize data
     state = torch.from_numpy(state.astype(np.float32))
     if not body.env.is_venv or util.in_eval_lab_modes():
         # singleton state, unsqueeze as minibatch for net input
         state = state.unsqueeze(dim=0)
-    else:  # venv state at train is already batched = num_envs
-        pass
     return state
 
 
-def calc_pdparam(state, algorithm, body, append=True):
+def calc_pdparam(state, algorithm, body):
     '''
     Prepare the state and run algorithm.calc_pdparam to get pdparam for action_pd
     @param tensor:state For pdparam = net(state)
@@ -66,7 +62,7 @@ def calc_pdparam(state, algorithm, body, append=True):
     action = action_pd.sample()
     '''
     if not torch.is_tensor(state):  # dont need to cast from numpy
-        state = try_preprocess(state, algorithm, body, append=append)
+        state = guard_tensor(state, body)
         state = state.to(algorithm.net.device)
     pdparam = algorithm.calc_pdparam(state)
     return pdparam
@@ -170,7 +166,7 @@ def multi_default(states, algorithm, body_list, pdparam):
     action_list = []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
-        try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with singleton inner logic
+        guard_tensor(states[idx], body)  # for consistency with singleton inner logic
         action = sample_action(body.ActionPD, sub_pdparam)
         action_list.append(action)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
@@ -197,7 +193,7 @@ def multi_epsilon_greedy(states, algorithm, body_list, pdparam):
         if epsilon > np.random.rand():
             action = random(states[idx], algorithm, body)
         else:
-            try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with singleton inner logic
+            guard_tensor(states[idx], body)  # for consistency with singleton inner logic
             action = sample_action(body.ActionPD, sub_pdparam)
         action_list.append(action)
     action_a = torch.tensor(action_list, device=algorithm.net.device).unsqueeze(dim=1)
@@ -210,7 +206,7 @@ def multi_boltzmann(states, algorithm, body_list, pdparam):
     action_list = []
     for idx, sub_pdparam in enumerate(pdparam):
         body = body_list[idx]
-        try_preprocess(states[idx], algorithm, body, append=True)  # for consistency with singleton inner logic
+        guard_tensor(states[idx], body)  # for consistency with singleton inner logic
         tau = body.explore_var
         sub_pdparam /= tau
         action = sample_action(body.ActionPD, sub_pdparam)
@@ -316,12 +312,8 @@ def normalize_state(body, state):
     https://www.youtube.com/watch?v=8EcdaCk9KaQ&feature=youtu.be
     '''
     same_shape = False if type(state) == list else state.shape == body.state_mean.shape
-    has_preprocess = getattr(body.memory, 'preprocess_state', False)
     if ('Atari' in util.get_class_name(body.memory)):
         # never normalize atari, it has its own normalization step
-        return state
-    elif ('Replay' in util.get_class_name(body.memory)) and has_preprocess:
-        # normalization handled by preprocess_state function in the memory
         return state
     elif same_shape:
         # if not atari, always normalize the state the first time we see it during act

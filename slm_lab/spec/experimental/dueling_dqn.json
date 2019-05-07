@@ -18,7 +18,7 @@
         "training_epoch": 4,
         "training_frequency": 8,
         "training_start_step": 32,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
@@ -107,7 +107,7 @@
         "training_epoch": 4,
         "training_frequency": 8,
         "training_start_step": 32,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "Replay",
@@ -196,13 +196,12 @@
         "training_epoch": 5,
         "training_frequency": 50,
         "training_start_step": 100,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "ConcatReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "concat_len": 4,
         "use_cer": true
       },
       "net": {
@@ -230,6 +229,8 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
       "max_tick": 600,
     }],
@@ -271,7 +272,6 @@
         "name": "AtariReplay",
         "batch_size": 32,
         "max_size": 250000,
-        "stack_len": 4,
         "use_cer": true
       },
       "net": {
@@ -309,6 +309,8 @@
     }],
     "env": [{
       "name": "BreakoutDeterministic-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
       "max_tick": 50000,
     }],
