@@ -62,7 +62,7 @@ class ActorCritic(Reinforce):
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
     }
 
     e.g. special net_spec param "shared" to share/separate Actor/Critic
@@ -128,7 +128,7 @@ class ActorCritic(Reinforce):
             - Discrete action spaces: The return list contains 2 element. The first element is a tensor containing the logits for a categorical probability distribution over the actions. The second element contains the state-value estimated by the network.
         3. If the network type is feedforward, convolutional, or recurrent
             - Feedforward and convolutional networks take a single state as input and require an OnPolicyReplay or OnPolicyBatchReplay memory
-            - Recurrent networks take n states as input and require an OnPolicySeqReplay or OnPolicySeqBatchReplay memory
+            - Recurrent networks take n states as input and require env spec "frame_op": "concat", "frame_op_len": seq_len
         '''
         assert 'shared' in self.net_spec, 'Specify "shared" for ActorCritic network in net_spec'
         self.shared = self.net_spec['shared']
@@ -223,8 +223,11 @@ class ActorCritic(Reinforce):
         Calculate N-step returns, and advs = nstep_rets - v_preds, v_targets = nstep_rets
         See n-step advantage under http://rail.eecs.berkeley.edu/deeprlcourse-fa17/f17docs/lecture_5_actor_critic_pdf.pdf
         '''
+        next_states = batch['next_states'][-1]
+        if not self.body.env.is_venv:
+            next_states = next_states.unsqueeze(dim=0)
         with torch.no_grad():
-            next_v_pred = self.calc_v(batch['next_states'][-1], use_cache=False)
+            next_v_pred = self.calc_v(next_states, use_cache=False)
         v_preds = v_preds.detach()  # adv does not accumulate grad
         if self.body.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)
@@ -242,8 +245,11 @@ class ActorCritic(Reinforce):
         Calculate GAE, and advs = GAE, v_targets = advs + v_preds
         See GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
         '''
+        next_states = batch['next_states'][-1]
+        if not self.body.env.is_venv:
+            next_states = next_states.unsqueeze(dim=0)
         with torch.no_grad():
-            next_v_pred = self.calc_v(batch['next_states'][-1], use_cache=False)
+            next_v_pred = self.calc_v(next_states, use_cache=False)
         v_preds = v_preds.detach()  # adv does not accumulate grad
         if self.body.env.is_venv:
             v_preds = math_util.venv_pack(v_preds, self.body.env.num_envs)

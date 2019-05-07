@@ -74,7 +74,6 @@ class Replay(Memory):
             'max_size',
             'use_cer',
         ])
-        self.state_buffer = deque(maxlen=0)  # for API consistency
         self.is_episodic = False
         self.batch_idxs = None
         self.size = 0  # total experiences stored
@@ -96,29 +95,16 @@ class Replay(Memory):
                 setattr(self, k, [None] * self.max_size)
         self.size = 0
         self.head = -1
-        self.state_buffer.clear()
         self.ns_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim))
-
-    def epi_reset(self, state):
-        '''Method to reset at new episode'''
-        super().epi_reset(self.preprocess_state(state, append=False))
 
     @lab_api
     def update(self, state, action, reward, next_state, done):
         '''Interface method to update memory'''
-        if not self.body.env.is_venv and np.isnan(reward):  # start of episode (venv is not episodic)
-            self.epi_reset(next_state)
+        if self.body.env.is_venv:
+            for sarsd in zip(state, action, reward, next_state, done):
+                self.add_experience(*sarsd)
         else:
-            # prevent conflict with preprocess in epi_reset
-            state = self.preprocess_state(state, append=False)
-            next_state = self.preprocess_state(next_state, append=False)
-            if self.body.env.is_venv:
-                for sarsd in zip(state, action, reward, next_state, done):
-                    self.add_experience(*sarsd)
-            else:
-                self.add_experience(state, action, reward, next_state, done)
+            self.add_experience(state, action, reward, next_state, done)
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Implementation for update() to add experience to memory, expanding the memory size if necessary'''
@@ -167,120 +153,12 @@ class Replay(Memory):
         return batch_idxs
 
 
-class SeqReplay(Replay):
-    '''
-    Preprocesses a state to be the stacked sequence of the last n states. Otherwise the same as Replay memory
-
-    e.g. memory_spec
-    "memory": {
-        "name": "SeqReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "use_cer": true
-    }
-    * seq_len provided by net_spec
-    '''
-
-    def __init__(self, memory_spec, body):
-        super().__init__(memory_spec, body)
-        self.seq_len = self.body.agent.agent_spec['net']['seq_len']
-        self.state_buffer = deque(maxlen=self.seq_len)
-        self.reset()
-
-    def preprocess_state(self, state, append=True):
-        '''Transforms the raw state into format that is fed into the network'''
-        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
-        self.preprocess_append(state, append)
-        return np.stack(self.state_buffer)
-
-
-class ConcatReplay(Replay):
-    '''
-    Preprocesses a state to be the concatenation of the last n states. Otherwise the same as Replay memory
-
-    e.g. memory_spec
-    "memory": {
-        "name": "ConcatReplay",
-        "batch_size": 32,
-        "max_size": 10000,
-        "concat_len": 4,
-        "use_cer": true
-    }
-    '''
-
-    def __init__(self, memory_spec, body):
-        util.set_attr(self, memory_spec, [
-            'batch_size',
-            'max_size',
-            'concat_len',  # number of stack states
-            'use_cer',
-        ])
-        self.raw_state_dim = deepcopy(body.state_dim)  # used for state_buffer
-        body.state_dim = body.state_dim * self.concat_len  # modify to use for net init for concat input
-        super().__init__(memory_spec, body)
-        self.state_buffer = deque(maxlen=self.concat_len)
-        self.reset()
-
-    def reset(self):
-        '''Initializes the memory arrays, size and head pointer'''
-        super().reset()
-        self.state_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.raw_state_dim))
-
-    def epi_reset(self, state):
-        '''Method to reset at new episode'''
-        super().epi_reset(state)
-        # reappend buffer with custom shape
-        self.state_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.raw_state_dim))
-
-    def preprocess_state(self, state, append=True):
-        '''Transforms the raw state into format that is fed into the network'''
-        # append when state is first seen when acting in policy_util, don't append elsewhere in memory
-        self.preprocess_append(state, append)
-        return np.concatenate(self.state_buffer)
-
-
 class AtariReplay(Replay):
     '''
     Preprocesses an state to be the concatenation of the last four states, after converting the 210 x 160 x 3 image to 84 x 84 x 1 grayscale image, and clips all rewards to [-10, 10] as per "Playing Atari with Deep Reinforcement Learning", Mnih et al, 2013
     Note: Playing Atari with Deep RL clips the rewards to + / - 1
-
-    e.g. memory_spec
-    "memory": {
-        "name": "AtariReplay",
-        "batch_size": 32,
-        "max_size": 250000,
-        "stack_len": 4,
-        "use_cer": true
-    }
     '''
-
-    def __init__(self, memory_spec, body):
-        util.set_attr(self, memory_spec, [
-            'batch_size',
-            'max_size',
-            'stack_len',  # number of stack states
-            'use_cer',
-        ])
-        Replay.__init__(self, memory_spec, body)
 
     def add_experience(self, state, action, reward, next_state, done):
         # clip reward, done here to minimize change to only training data data
         super().add_experience(state, action, np.sign(reward), next_state, done)
-
-
-class ImageReplay(Replay):
-    '''
-    An off policy replay buffer that normalizes (preprocesses) images through
-    division by 255 and subtraction of 0.5.
-    '''
-
-    def __init__(self, memory_spec, body):
-        super().__init__(memory_spec, body)
-
-    def preprocess_state(self, state, append=True):
-        state = util.normalize_image(state) - 0.5
-        return state

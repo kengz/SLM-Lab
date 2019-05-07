@@ -179,13 +179,11 @@ class UnityEnv(BaseEnv):
     @lab_api
     def space_step(self, action_e):
         # TODO implement clock_speed: step only if self.clock.to_step()
-        if self.done:
-            state_e = self.space_reset()
-            _reward_e, done_e = self.env_space.aeb_space.init_data_s(['reward', 'done'], e=self.e)
-            return state_e, _reward_e, done_e, None
         action_e = util.nanflatten(action_e)
         env_info_dict = self.u_env.step(action_e)
         state_e, reward_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        if util.nonan_all(done_e):
+            state_e = self.space_reset()
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self._get_env_info(env_info_dict, a)
             state_e[(a, b)] = env_info_a.states[b]

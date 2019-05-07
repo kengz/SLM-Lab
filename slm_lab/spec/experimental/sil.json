@@ -120,7 +120,7 @@
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -216,11 +216,11 @@
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SeqReplay",
+        "name": "OnPolicyReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -316,11 +316,11 @@
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SeqReplay",
+        "name": "OnPolicyReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -416,7 +416,7 @@
         "training_frequency": 1,
         "training_batch_epoch": 4,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -512,7 +512,7 @@
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -608,11 +608,11 @@
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SeqReplay",
+        "name": "OnPolicyReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -708,11 +708,11 @@
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 4,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SeqReplay",
+        "name": "OnPolicyReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true

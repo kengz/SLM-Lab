@@ -24,19 +24,11 @@ class Memory(ABC):
 
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
-        # for API consistency, reset to some max_len in your specific memory class
-        self.state_buffer = deque(maxlen=0)
 
     @abstractmethod
     def reset(self):
         '''Method to fully reset the memory storage and related variables'''
         raise NotImplementedError
-
-    def epi_reset(self, state):
-        '''Method to reset at new episode'''
-        self.state_buffer.clear()
-        for _ in range(self.state_buffer.maxlen):
-            self.state_buffer.append(np.zeros(self.body.state_dim))
 
     @abstractmethod
     def update(self, state, action, reward, next_state, done):
@@ -47,16 +39,6 @@ class Memory(ABC):
     def sample(self):
         '''Implement memory sampling mechanism'''
         raise NotImplementedError
-
-    def preprocess_append(self, state, append=True):
-        '''Method to conditionally append to state buffer'''
-        if append:
-            assert id(state) != id(self.state_buffer[-1]), 'Do not append to buffer other than during action'
-            self.state_buffer.append(state)
-
-    def preprocess_state(self, state, append=True):
-        '''Transforms the raw state into format that is fed into the network'''
-        return state
 
     def print_memory_info(self):
         '''Prints size of all of the memory arrays'''

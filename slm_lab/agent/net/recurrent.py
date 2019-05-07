@@ -111,6 +111,8 @@ class RecurrentNet(Net, nn.Module):
             'polyak_coef',
             'gpu',
         ])
+        # restore proper in_dim from env stacked state_dim (stack_len, *raw_state_dim)
+        self.in_dim = in_dim[1:] if len(in_dim) > 2 else in_dim[1]
         # fc body: state processing model
         if ps.is_empty(self.fc_hid_layers):
             self.rnn_input_dim = self.in_dim
