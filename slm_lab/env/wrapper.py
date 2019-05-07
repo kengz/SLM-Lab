@@ -155,22 +155,25 @@ class PreprocessImage(gym.ObservationWrapper):
 
 
 class LazyFrames(object):
-    def __init__(self, frames, is_vector=False):
+    def __init__(self, frames, frame_op='stack'):
         '''
-        This object ensures that common frames between the observations are only stored once.
+        Wrapper to stack or concat frames by keeping unique soft reference insted of copies of data.
+        So this should only be converted to numpy array before being passed to the model.
         It exists purely to optimize memory usage which can be huge for DQN's 1M frames replay buffers.
-        This object should only be converted to numpy array before being passed to the model.
+        @param str:frame_op 'stack' or 'concat'
         '''
         self._frames = frames
         self._out = None
-        self.is_vector = is_vector
+        if frame_op == 'stack':
+            self._frame_op = np.stack
+        elif frame_op == 'concat':
+            self._frame_op = np.concatenate
+        else:
+            raise ValueError('frame_op not recognized for LazyFrames. Choose from "stack", "concat"')
 
     def _force(self):
         if self._out is None:
-            if self.is_vector:
-                self._out = np.stack(self._frames, axis=0)
-            else:
-                self._out = np.concatenate(self._frames, axis=0)
+            self._out = self._frame_op(self._frames, axis=0)
             self._frames = None
         return self._out
 
@@ -192,20 +195,23 @@ class LazyFrames(object):
 
 
 class FrameStack(gym.Wrapper):
-    def __init__(self, env, k):
-        '''Stack last k frames. Returns lazy array, which is much more memory efficient.'''
+    def __init__(self, env, frame_op, frame_op_len):
+        '''
+        Stack/concat last k frames. Returns lazy array, which is much more memory efficient.
+        @param str:frame_op 'concat' or 'stack'. Note: use concat for image since the shape is (1, 84, 84) concat-able.
+        @param int:frame_op_len The number of frames to keep for frame_op
+        '''
         gym.Wrapper.__init__(self, env)
-        self.k = k
-        self.frames = deque([], maxlen=k)
+        self.frame_op = frame_op
+        self.frame_op_len = frame_op_len
+        self.frames = deque([], maxlen=self.frame_op_len)
         old_shape = env.observation_space.shape
-        self.is_vector = len(old_shape) == 1  # state is a vector
-        if len(old_shape) > 1 and old_shape[0] == 1:
-            # grayscale image c,w,h or a tensor stackable on axis=0
-            shape = (k,) + old_shape[1:]
-        elif self.is_vector:  # vector
-            shape = (k,) + old_shape
+        if self.frame_op == 'concat':  # concat multiplies first dim
+            shape = (self.frame_op_len * old_shape[0],) + old_shape[1:]
+        elif self.frame_op == 'stack':  # stack creates new dim
+            shape = (self.frame_op_len,) + old_shape
         else:
-            raise NotImplementedError(f'State shape {old_shape} cannot be stacked. Grayscale images or make state stackable on axis=0, e.g. (1, 84, 84)')
+            raise ValueError('frame_op not recognized for FrameStack. Choose from "stack", "concat".')
         self.observation_space = spaces.Box(
             low=np.min(env.observation_space.low),
             high=np.max(env.observation_space.high),
@@ -213,7 +219,7 @@ class FrameStack(gym.Wrapper):
 
     def reset(self):
         ob = self.env.reset()
-        for _ in range(self.k):
+        for _ in range(self.frame_op_len):
             self.frames.append(ob.astype(np.float16))
         return self._get_ob()
 
@@ -223,8 +229,8 @@ class FrameStack(gym.Wrapper):
         return self._get_ob(), reward, done, info
 
     def _get_ob(self):
-        assert len(self.frames) == self.k
-        return LazyFrames(list(self.frames), self.is_vector)
+        assert len(self.frames) == self.frame_op_len
+        return LazyFrames(list(self.frames), self.frame_op)
 
 
 def wrap_atari(env):
@@ -244,20 +250,20 @@ def wrap_deepmind(env, episode_life=True, clip_rewards=True, stack_len=None):
     if clip_rewards:
         env = ClipRewardEnv(env)
     env = PreprocessImage(env)
-    if stack_len is not None:
-        env = FrameStack(env, stack_len)
+    if stack_len is not None:  # use concat for image (1, 84, 84)
+        env = FrameStack(env, 'concat', stack_len)
     return env
 
 
 def wrap_image_env(env, stack_len=None):
     '''Wrap image-based environment'''
     env = PreprocessImage(env)
-    if stack_len is not None:
-        env = FrameStack(env, stack_len)
+    if stack_len is not None:  # use concat for image (1, 84, 84)
+        env = FrameStack(env, 'concat', stack_len)
     return env
 
 
-def make_gym_env(name, seed=None, stack_len=None):
+def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None):
     '''General method to create any Gym env; auto wraps Atari'''
     env = gym.make(name)
     if seed is not None:
@@ -267,10 +273,10 @@ def make_gym_env(name, seed=None, stack_len=None):
         # no reward clipping to allow monitoring; Atari memory clips it
         clip_rewards = False
         episode_life = util.get_lab_mode() != 'eval'
-        env = wrap_deepmind(env, clip_rewards, episode_life, stack_len)
+        env = wrap_deepmind(env, clip_rewards, episode_life, frame_op_len)
     elif len(env.observation_space.shape) == 3:  # image-state env
-        env = wrap_image_env(env, stack_len)
+        env = wrap_image_env(env, frame_op_len)
     else:  # vector-state env
-        if stack_len is not None:
-            env = FrameStack(env, stack_len)
+        if frame_op is not None:
+            env = FrameStack(env, frame_op, frame_op_len)
     return env

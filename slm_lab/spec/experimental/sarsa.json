@@ -15,7 +15,7 @@
         },
         "gamma": 0.99,
         "training_frequency": 20,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -95,7 +95,7 @@
         },
         "gamma": 0.99,
         "training_frequency": 20,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -175,10 +175,10 @@
         },
         "gamma": 0.99,
         "training_frequency": 20,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqBatchReplay"
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -259,10 +259,10 @@
         },
         "gamma": 0.99,
         "training_frequency": 20,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqBatchReplay"
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "RecurrentNet",

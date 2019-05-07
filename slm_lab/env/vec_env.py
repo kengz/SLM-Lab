@@ -450,14 +450,16 @@ class ShmemVecEnv(VecEnv):
 class VecFrameStack(VecEnvWrapper):
     '''Frame stack wrapper for vector environment'''
 
-    def __init__(self, venv, k):
+    def __init__(self, venv, frame_op, frame_op_len):
         self.venv = venv
-        self.k = k
+        assert frame_op == 'concat', 'VecFrameStack only supports concat frame_op for now'
+        self.frame_op = frame_op
+        self.frame_op_len = frame_op_len
         self.spec = venv.spec
         wos = venv.observation_space  # wrapped ob space
         self.shape_dim0 = wos.shape[0]
-        low = np.repeat(wos.low, self.k, axis=0)
-        high = np.repeat(wos.high, self.k, axis=0)
+        low = np.repeat(wos.low, self.frame_op_len, axis=0)
+        high = np.repeat(wos.high, self.frame_op_len, axis=0)
         self.stackedobs = np.zeros((venv.num_envs,) + low.shape, low.dtype)
         observation_space = spaces.Box(low=low, high=high, dtype=venv.observation_space.dtype)
         VecEnvWrapper.__init__(self, venv, observation_space=observation_space)
@@ -478,17 +480,17 @@ class VecFrameStack(VecEnvWrapper):
         return self.stackedobs.copy()
 
 
-def make_gym_venv(name, seed=0, stack_len=None, num_envs=4):
+def make_gym_venv(name, seed=0, frame_op=None, frame_op_len=None, num_envs=4):
     '''General method to create any parallel vectorized Gym env; auto wraps Atari'''
     venv = [
         # don't stack on individual env, but stack as vector
-        partial(make_gym_env, name, seed + i, stack_len=None)
+        partial(make_gym_env, name, seed + i, frame_op=None, frame_op_len=None)
         for i in range(num_envs)
     ]
     if len(venv) > 1:
         venv = ShmemVecEnv(venv, context='fork')
     else:
         venv = DummyVecEnv(venv)
-    if stack_len is not None:
-        venv = VecFrameStack(venv, stack_len)
+    if frame_op is not None:
+        venv = VecFrameStack(venv, frame_op, frame_op_len)
     return venv

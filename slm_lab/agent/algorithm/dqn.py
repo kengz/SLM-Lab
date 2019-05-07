@@ -47,7 +47,7 @@ class VanillaDQN(SARSA):
         "training_epoch": 4,
         "training_frequency": 10,
         "training_start_step": 10,
-        "normalize_state": true
+        "normalize_state": false
     }
     '''
 
