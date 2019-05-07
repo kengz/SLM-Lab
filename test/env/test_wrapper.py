@@ -3,16 +3,16 @@ import numpy as np
 import pytest
 
 
-@pytest.mark.parametrize('name,state_shape', [
-    ('PongNoFrameskip-v4', (1, 84, 84)),
-    ('LunarLander-v2', (8,)),
-    ('CartPole-v0', (4,)),
+@pytest.mark.parametrize('name,state_shape,reward_scale', [
+    ('PongNoFrameskip-v4', (1, 84, 84), 'sign'),
+    ('LunarLander-v2', (8,), None),
+    ('CartPole-v0', (4,), None),
 ])
-def test_make_gym_env_nostack(name, state_shape):
+def test_make_gym_env_nostack(name, state_shape, reward_scale):
     seed = 0
     frame_op = None
     frame_op_len = None
-    env = make_gym_env(name, seed, frame_op, frame_op_len)
+    env = make_gym_env(name, seed, frame_op, frame_op_len, reward_scale)
     env.reset()
     for i in range(5):
         state, reward, done, info = env.step(env.action_space.sample())
@@ -26,16 +26,16 @@ def test_make_gym_env_nostack(name, state_shape):
     env.close()
 
 
-@pytest.mark.parametrize('name,state_shape', [
-    ('PongNoFrameskip-v4', (1, 84, 84)),
-    ('LunarLander-v2', (8,)),
-    ('CartPole-v0', (4,)),
+@pytest.mark.parametrize('name,state_shape,reward_scale', [
+    ('PongNoFrameskip-v4', (1, 84, 84), 'sign'),
+    ('LunarLander-v2', (8,), None),
+    ('CartPole-v0', (4,), None),
 ])
-def test_make_gym_env_concat(name, state_shape):
+def test_make_gym_env_concat(name, state_shape, reward_scale):
     seed = 0
     frame_op = 'concat'  # used for image, or for concat vector
     frame_op_len = 4
-    env = make_gym_env(name, seed, frame_op, frame_op_len)
+    env = make_gym_env(name, seed, frame_op, frame_op_len, reward_scale)
     env.reset()
     for i in range(5):
         state, reward, done, info = env.step(env.action_space.sample())
@@ -53,15 +53,15 @@ def test_make_gym_env_concat(name, state_shape):
     env.close()
 
 
-@pytest.mark.parametrize('name,state_shape', [
-    ('LunarLander-v2', (8,)),
-    ('CartPole-v0', (4,)),
+@pytest.mark.parametrize('name,state_shape, reward_scale', [
+    ('LunarLander-v2', (8,), None),
+    ('CartPole-v0', (4,), None),
 ])
-def test_make_gym_env_stack(name, state_shape):
+def test_make_gym_env_stack(name, state_shape, reward_scale):
     seed = 0
     frame_op = 'stack'  # used for rnn
     frame_op_len = 4
-    env = make_gym_env(name, seed, frame_op, frame_op_len)
+    env = make_gym_env(name, seed, frame_op, frame_op_len, reward_scale)
     env.reset()
     for i in range(5):
         state, reward, done, info = env.step(env.action_space.sample())
