@@ -31,7 +31,6 @@
       },
       "memory": {
         "name": "OnPolicyAtariBatchReplay",
-        "stack_len": 4
       },
       "net": {
         "type": "ConvNet",
@@ -69,6 +68,8 @@
     }],
     "env": [{
       "name": "QbertNoFrameskip-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "num_envs": 16,
       "max_t": null,
       "max_tick": 1e7

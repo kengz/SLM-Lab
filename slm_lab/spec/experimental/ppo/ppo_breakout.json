@@ -31,7 +31,6 @@
       },
       "memory": {
         "name": "OnPolicyAtariBatchReplay",
-        "stack_len": 4
       },
       "net": {
         "type": "ConvNet",
@@ -68,6 +67,8 @@
     }],
     "env": [{
       "name": "BreakoutNoFrameskip-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "num_envs": 8,
       "max_t": null,
       "max_tick": 1e7
