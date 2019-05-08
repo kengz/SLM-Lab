@@ -379,7 +379,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "AtariReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 250000,
         "use_cer": true
@@ -421,6 +421,7 @@
       "name": "BreakoutDeterministic-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
+      "reward_scale": "sign",
       "max_t": null,
       "max_tick": 50000,
     }],
@@ -459,7 +460,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "AtariReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 250000,
         "use_cer": true
@@ -501,6 +502,7 @@
       "name": "BreakoutDeterministic-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
+      "reward_scale": "sign",
       "max_t": null,
       "max_tick": 50000,
     }],

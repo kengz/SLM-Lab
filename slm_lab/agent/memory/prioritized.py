@@ -1,4 +1,4 @@
-from slm_lab.agent.memory.replay import Replay, AtariReplay
+from slm_lab.agent.memory.replay import Replay
 from slm_lab.lib import util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -175,8 +175,3 @@ class PrioritizedReplay(Replay):
             self.priorities[idx] = p
         for p, i in zip(priorities, self.tree_idxs):
             self.tree.update(i, p)
-
-
-class AtariPrioritizedReplay(PrioritizedReplay, AtariReplay):
-    '''Make a Atari PrioritizedReplay via nice multi-inheritance (python magic)'''
-    pass

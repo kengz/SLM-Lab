@@ -33,9 +33,9 @@ class OpenAIEnv(BaseEnv):
         try_register_env(spec)  # register if it's a custom gym env
         seed = ps.get(spec, 'meta.random_seed')
         if self.is_venv:  # make vector environment
-            self.u_env = make_gym_venv(self.name, seed, self.frame_op, self.frame_op_len, self.num_envs)
+            self.u_env = make_gym_venv(self.name, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.num_envs)
         else:
-            self.u_env = make_gym_env(self.name, seed, self.frame_op, self.frame_op_len)
+            self.u_env = make_gym_env(self.name, seed, self.frame_op, self.frame_op_len, self.reward_scale)
         self._set_attr_from_u_env(self.u_env)
         self.max_t = self.max_t or self.u_env.spec.max_episode_steps
         assert self.max_t is not None
@@ -58,8 +58,6 @@ class OpenAIEnv(BaseEnv):
         if not self.is_discrete and self.action_dim == 1:  # guard for continuous with action_dim 1, make array
             action = np.expand_dims(action, axis=-1)
         state, reward, done, info = self.u_env.step(action)
-        if self.reward_scale is not None:
-            reward *= self.reward_scale
         if self.to_render:
             self.u_env.render()
         if not self.is_venv and self.clock.t > self.max_t:
@@ -100,8 +98,6 @@ class OpenAIEnv(BaseEnv):
         state, reward, done, info = self.u_env.step(action)
         if done:
             state = self.u_env.reset()
-        if self.reward_scale is not None:
-            reward *= self.reward_scale
         if self.to_render:
             self.u_env.render()
         if not self.is_venv and self.clock.t > self.max_t:
