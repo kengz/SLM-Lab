@@ -23,8 +23,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyAtariBatchReplay",
-        "stack_len": 4
+        "name": "OnPolicyBatchReplay",
       },
       "net": {
         "type": "ConvNet",
@@ -62,6 +61,9 @@
     }],
     "env": [{
       "name": "PongNoFrameskip-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
       "num_envs": 16,
       "max_t": null,
       "max_tick": 1e7

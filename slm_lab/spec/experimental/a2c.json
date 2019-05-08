@@ -21,7 +21,7 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -105,7 +105,7 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -189,11 +189,10 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyConcatReplay",
-        "concat_len": 4
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -220,6 +219,8 @@
     }],
     "env": [{
       "name": "CartPole-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
       "max_tick": 500,
     }],
@@ -274,10 +275,10 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -362,10 +363,10 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -450,7 +451,7 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -534,7 +535,7 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -618,10 +619,10 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -706,10 +707,10 @@
         "val_loss_coef": 0.01,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -797,8 +798,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyAtariReplay",
-        "stack_len": 4
+        "name": "OnPolicyReplay",
       },
       "net": {
         "type": "ConvNet",
@@ -831,6 +831,9 @@
     }],
     "env": [{
       "name": "PongNoFrameskip-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
       "max_t": null,
       "max_tick": 10000000,
     }],

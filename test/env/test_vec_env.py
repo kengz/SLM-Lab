@@ -3,25 +3,48 @@ import numpy as np
 import pytest
 
 
-@pytest.mark.parametrize('name,state_shape', [
-    ('PongNoFrameskip-v4', (1, 84, 84)),
-    ('LunarLander-v2', (8,)),
-    ('CartPole-v0', (4,)),
+@pytest.mark.parametrize('name,state_shape,reward_scale', [
+    ('PongNoFrameskip-v4', (1, 84, 84), 'sign'),
+    ('LunarLander-v2', (8,), None),
+    ('CartPole-v0', (4,), None),
 ])
 @pytest.mark.parametrize('num_envs', (1, 4))
-def test_make_gym_venv(name, state_shape, num_envs):
+def test_make_gym_venv_nostack(name, state_shape, reward_scale, num_envs):
     seed = 0
-    stack_len = 4
-    venv = make_gym_venv(name, seed, stack_len, num_envs)
+    frame_op = None
+    frame_op_len = None
+    venv = make_gym_venv(name, seed, frame_op, frame_op_len, reward_scale, num_envs)
     venv.reset()
     for i in range(5):
         state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
 
     assert isinstance(state, np.ndarray)
-    if len(state_shape) == 1:
-        stack_shape = (num_envs, stack_len * state_shape[0],)
-    else:
-        stack_shape = (num_envs, stack_len,) + state_shape[1:]
+    assert state.shape == (num_envs,) + state_shape
+    assert isinstance(reward, np.ndarray)
+    assert reward.shape == (num_envs,)
+    assert isinstance(done, np.ndarray)
+    assert done.shape == (num_envs,)
+    assert len(info) == num_envs
+    venv.close()
+
+
+@pytest.mark.parametrize('name,state_shape, reward_scale', [
+    ('PongNoFrameskip-v4', (1, 84, 84), 'sign'),
+    ('LunarLander-v2', (8,), None),
+    ('CartPole-v0', (4,), None),
+])
+@pytest.mark.parametrize('num_envs', (1, 4))
+def test_make_gym_concat(name, state_shape, reward_scale, num_envs):
+    seed = 0
+    frame_op = 'concat'  # used for image, or for concat vector
+    frame_op_len = 4
+    venv = make_gym_venv(name, seed, frame_op, frame_op_len, reward_scale, num_envs)
+    venv.reset()
+    for i in range(5):
+        state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
+
+    assert isinstance(state, np.ndarray)
+    stack_shape = (num_envs, frame_op_len * state_shape[0],) + state_shape[1:]
     assert state.shape == stack_shape
     assert isinstance(reward, np.ndarray)
     assert reward.shape == (num_envs,)
@@ -31,22 +54,24 @@ def test_make_gym_venv(name, state_shape, num_envs):
     venv.close()
 
 
-@pytest.mark.parametrize('name,state_shape', [
-    ('PongNoFrameskip-v4', (1, 84, 84)),
-    ('LunarLander-v2', (8,)),
-    ('CartPole-v0', (4,)),
+@pytest.mark.skip(reason='Not implemented yet')
+@pytest.mark.parametrize('name,state_shape,reward_scale', [
+    ('LunarLander-v2', (8,), None),
+    ('CartPole-v0', (4,), None),
 ])
 @pytest.mark.parametrize('num_envs', (1, 4))
-def test_make_gym_venv_nostack(name, state_shape, num_envs):
+def test_make_gym_stack(name, state_shape, reward_scale, num_envs):
     seed = 0
-    stack_len = None
-    venv = make_gym_venv(name, seed, stack_len, num_envs)
+    frame_op = 'stack'  # used for rnn
+    frame_op_len = 4
+    venv = make_gym_venv(name, seed, frame_op, frame_op_len, reward_scale, num_envs)
     venv.reset()
     for i in range(5):
         state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
 
     assert isinstance(state, np.ndarray)
-    assert state.shape == (num_envs,) + state_shape
+    stack_shape = (num_envs, frame_op_len,) + state_shape
+    assert state.shape == stack_shape
     assert isinstance(reward, np.ndarray)
     assert reward.shape == (num_envs,)
     assert isinstance(done, np.ndarray)

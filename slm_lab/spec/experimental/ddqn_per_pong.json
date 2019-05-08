@@ -21,12 +21,11 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "AtariPrioritizedReplay",
+        "name": "PrioritizedReplay",
         "alpha": 0.6,
         "epsilon": 0.0001,
         "batch_size": 32,
         "max_size": 200000,
-        "stack_len": 4,
         "use_cer": false
       },
       "net": {
@@ -56,6 +55,9 @@
     }],
     "env": [{
       "name": "PongNoFrameskip-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
       "max_t": null,
       "max_tick": 10000000
     }],

@@ -1,4 +1,5 @@
 from copy import deepcopy
+from slm_lab.env.base import Clock
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.recurrent import RecurrentNet
 import pytest
@@ -31,12 +32,13 @@ net_spec = {
     },
     "gpu": True
 }
-in_dim = 10
+state_dim = 10
 out_dim = 3
 batch_size = 16
 seq_len = net_spec['seq_len']
+in_dim = (seq_len, state_dim)
 net = RecurrentNet(net_spec, in_dim, out_dim)
-x = torch.rand((batch_size, seq_len, in_dim))
+x = torch.rand((batch_size, seq_len, state_dim))
 
 
 def test_init():
@@ -56,7 +58,8 @@ def test_forward():
 
 def test_training_step():
     y = torch.rand((batch_size, out_dim))
-    loss = net.training_step(x=x, y=y)
+    clock = Clock(100, 'total_t', 1)
+    loss = net.training_step(x=x, y=y, lr_clock=clock)
     assert loss != 0.0
 
 

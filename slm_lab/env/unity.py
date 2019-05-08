@@ -1,6 +1,7 @@
 from gym import spaces
 from slm_lab.env.base import BaseEnv, ENV_DATA_NAMES, set_gym_space_attr
 from slm_lab.env.registration import get_env_path
+from slm_lab.env.wrapper import try_scale_reward
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from unityagents import brain, UnityEnvironment
@@ -141,8 +142,7 @@ class UnityEnv(BaseEnv):
         env_info_a = self._get_env_info(env_info_dict, a)
         state = env_info_a.states[b]
         reward = env_info_a.rewards[b]
-        if self.reward_scale is not None:
-            reward *= self.reward_scale
+        reward = try_scale_reward(self, reward)
         done = env_info_a.local_done[b]
         if not self.is_venv and self.clock.t > self.max_t:
             done = True
@@ -179,20 +179,17 @@ class UnityEnv(BaseEnv):
     @lab_api
     def space_step(self, action_e):
         # TODO implement clock_speed: step only if self.clock.to_step()
-        if self.done:
-            state_e = self.space_reset()
-            _reward_e, done_e = self.env_space.aeb_space.init_data_s(['reward', 'done'], e=self.e)
-            return state_e, _reward_e, done_e, None
         action_e = util.nanflatten(action_e)
         env_info_dict = self.u_env.step(action_e)
         state_e, reward_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
+        if util.nonan_all(done_e):
+            state_e = self.space_reset()
         for (a, b), body in util.ndenumerate_nonan(self.body_e):
             env_info_a = self._get_env_info(env_info_dict, a)
             state_e[(a, b)] = env_info_a.states[b]
-            reward = env_info_a.rewards[b]
-            if self.reward_scale is not None:
-                reward *= self.reward_scale
-            reward_e[(a, b)] = reward
+            rewards = env_info_a.rewards[b]
+            rewards = try_scale_reward(self, rewards)
+            reward_e[(a, b)] = rewards
             done_e[(a, b)] = env_info_a.local_done[b]
         info_e = env_info_dict
         self.done = (util.nonan_all(done_e) or self.clock.t > self.max_t)

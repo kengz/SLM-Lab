@@ -39,7 +39,7 @@ class SIL(ActorCritic):
         "training_batch_epoch": 8,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
     }
 
     e.g. special memory_spec
@@ -188,7 +188,7 @@ class PPOSIL(SIL, PPO):
         "training_frequency": 1,
         "training_batch_epoch": 8,
         "training_epoch": 8,
-        "normalize_state": true
+        "normalize_state": false
     }
 
     e.g. special memory_spec

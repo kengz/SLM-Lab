@@ -37,7 +37,7 @@ class Reinforce(Algorithm):
           "end_step": 5000,
         },
         "training_frequency": 1,
-        "normalize_state": true
+        "normalize_state": false
     }
     '''
 

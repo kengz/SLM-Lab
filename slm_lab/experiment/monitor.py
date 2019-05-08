@@ -115,7 +115,7 @@ class Body:
         # dataframes to track data for analysis.analyze_session
         # track training data per episode
         self.train_df = pd.DataFrame(columns=[
-            'epi', 'total_t', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
+            'epi', 'grad_step', 'total_t', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
         # track eval data within run_eval. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
@@ -140,6 +140,8 @@ class Body:
 
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
+        if self.env.reward_scale is not None:
+            reward = self.env.u_env.raw_reward
         if self.ckpt_total_reward is np.nan:  # init
             self.ckpt_total_reward = reward
         else:  # reset on epi_start, else keep adding. generalized for vec env
@@ -164,6 +166,7 @@ class Body:
         row = pd.Series({
             # epi and total_t are always measured from training env
             'epi': self.env.clock.get('epi'),
+            'grad_step': self.env.clock.get('grad_step'),
             'total_t': total_t,
             # t and reward are measured from a given env or eval_env
             't': env.clock.get('t'),

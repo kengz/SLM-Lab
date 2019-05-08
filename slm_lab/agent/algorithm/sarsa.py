@@ -39,7 +39,7 @@ class SARSA(Algorithm):
         },
         "gamma": 0.99,
         "training_frequency": 10,
-        "normalize_state": true
+        "normalize_state": false
     }
     '''
 

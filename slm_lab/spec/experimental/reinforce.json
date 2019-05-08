@@ -16,7 +16,7 @@
           "end_step": 5000,
         },
         "training_frequency": 1,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -89,10 +89,10 @@
           "end_step": 5000,
         },
         "training_frequency": 1,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -166,7 +166,7 @@
           "end_step": 5000,
         },
         "training_frequency": 1,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -239,10 +239,10 @@
           "end_step": 5000,
         },
         "training_frequency": 1,
-        "normalize_state": true
+        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -385,8 +385,7 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyAtariReplay",
-        "stack_len": 4
+        "name": "OnPolicyReplay",
       },
       "net": {
         "type": "ConvNet",
@@ -417,6 +416,9 @@
     }],
     "env": [{
       "name": "vizdoom-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
       "cfg_name": "basic",
       "max_t": 400000,
       "max_tick": 100

@@ -3,6 +3,7 @@ from gym import spaces
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+import pydash as ps
 import time
 
 ENV_DATA_NAMES = ['state', 'reward', 'done']
@@ -41,9 +42,10 @@ class Clock:
 
     def reset(self):
         self.t = 0
-        self.total_t = 0
+        self.total_t = 0  # aka frames
         self.epi = 0
         self.start_wall_t = time.time()
+        self.grad_step = 0  # count the number of gradient updates
 
     def get(self, unit=None):
         unit = unit or self.max_tick_unit
@@ -60,6 +62,8 @@ class Clock:
         elif unit == 'epi':  # episode, reset timestep
             self.epi += 1
             self.t = 0
+        elif unit == 'grad_step':
+            self.grad_step += 1
         else:
             raise KeyError
 
@@ -92,6 +96,8 @@ class BaseEnv(ABC):
         # set default
         util.set_attr(self, dict(
             log_frequency=None,  # default to log at epi done
+            frame_op=None,
+            frame_op_len=None,
             num_envs=None,
             reward_scale=None,
         ))
@@ -102,11 +108,18 @@ class BaseEnv(ABC):
         ])
         util.set_attr(self, self.env_spec, [
             'name',
+            'frame_op',
+            'frame_op_len',
             'num_envs',
             'max_t',
             'max_tick',
             'reward_scale',
         ])
+        # infer if using RNN
+        seq_len = ps.get(spec, 'agent.0.net.seq_len')
+        if seq_len is not None:
+            self.frame_op = 'stack'
+            self.frame_op_len = seq_len
         if util.get_lab_mode() == 'eval':
             self.num_envs = None  # use singleton for eval
             # override for eval, offset so epi is 0 - (num_eval_epi - 1)
