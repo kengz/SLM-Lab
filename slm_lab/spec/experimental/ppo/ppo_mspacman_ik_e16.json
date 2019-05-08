@@ -24,7 +24,7 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 32,
+        "training_frequency": 128,
         "minibatch_size": 32,
         "training_epoch": 4,
         "normalize_state": false
@@ -53,17 +53,20 @@
         },
         "actor_optim_spec": {
           "name": "RMSprop",
-          "lr": 0.0007,
+          "lr": 2.5e-4,
           "alpha": 0.99,
           "eps": 1e-5
         },
         "critic_optim_spec": {
           "name": "RMSprop",
-          "lr": 0.0007,
+          "lr": 2.5e-4,
           "alpha": 0.99,
           "eps": 1e-5
         },
-        "lr_scheduler_spec": null,
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "total_t": 1e7,
+        },
         "gpu": true
       }
     }],
