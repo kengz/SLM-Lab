@@ -1,0 +1,26 @@
+{
+  "experimental/dqn/ddqn_per_beamrider.json": {
+    "ddqn_per_beamrider": "train"
+  },
+  "experimental/dqn/ddqn_per_breakout.json": {
+    "ddqn_per_breakout": "train"
+  },
+  "experimental/dqn/ddqn_per_enduro.json": {
+    "ddqn_per_enduro": "train"
+  },
+  "experimental/dqn/ddqn_per_mspacman.json": {
+    "ddqn_per_mspacman": "train"
+  },
+  "experimental/dqn/ddqn_per_pong.json": {
+    "ddqn_per_pong": "train"
+  },
+  "experimental/dqn/ddqn_per_qbert.json": {
+    "ddqn_per_qbert": "train"
+  },
+  "experimental/dqn/ddqn_per_seaquest.json": {
+    "ddqn_per_seaquest": "train"
+  },
+  "experimental/dqn/ddqn_per_spaceinvaders.json": {
+    "ddqn_per_spaceinvaders": "train"
+  },
+}

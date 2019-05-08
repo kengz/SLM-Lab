@@ -1,0 +1,47 @@
+{
+  "experimental/ppo/ppo_beamrider.json": {
+    "ppo_beamrider": "train"
+  },
+  "experimental/ppo/ppo_breakout.json": {
+    "ppo_breakout": "train"
+  },
+  "experimental/ppo/ppo_enduro.json": {
+    "ppo_enduro": "train"
+  },
+  "experimental/ppo/ppo_mspacman.json": {
+    "ppo_mspacman": "train"
+  },
+  "experimental/ppo/ppo_pong.json": {
+    "ppo_pong": "train"
+  },
+  "experimental/ppo/ppo_qbert.json": {
+    "ppo_qbert": "train"
+  },
+  "experimental/ppo/ppo_seaquest.json": {
+    "ppo_seaquest": "train"
+  },
+  "experimental/ppo/ppo_spaceinvaders.json": {
+    "ppo_spaceinvaders": "train"
+  },
+  "experimental/ppo/ppo_ant.json": {
+    "ppo_ant": "train"
+  },
+  "experimental/ppo/ppo_bipedalwalker.json": {
+    "ppo_bipedalwalker": "train"
+  },
+  "experimental/ppo/ppo_halfcheetah.json": {
+    "ppo_halfcheetah": "train"
+  },
+  "experimental/ppo/ppo_hopper.json": {
+    "ppo_hopper": "train"
+  },
+  "experimental/ppo/ppo_humanoid.json": {
+    "ppo_humanoid": "train"
+  },
+  "experimental/ppo/ppo_invertedpendulum.json": {
+    "ppo_invertedpendulum": "train"
+  },
+  "experimental/ppo/ppo_pendulum.json": {
+    "ppo_pendulum": "train"
+  },
+}
