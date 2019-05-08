@@ -4,7 +4,7 @@
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
-        "action_pdtype": "MultivariateNormal",
+        "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
