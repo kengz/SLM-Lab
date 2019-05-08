@@ -13,7 +13,7 @@ logger = logger.get_logger(__name__)
 
 class OUNoise:
 
-    def __init__(self, action_dim, scale=0.1, mu=0, theta=0.15, sigma=0.2):
+    def __init__(self, action_dim, scale=0.1, mu=0, theta=0.15, sigma=0.5):
         self.action_dim = action_dim
         self.scale = scale
         self.mu = mu
@@ -142,16 +142,16 @@ class DDPG(ActorCritic):
         if self.normalize_state:
             state = policy_util.update_online_stats_and_normalize_state(body, state)
         # TODO also clamp actor output
-        state = policy_util.try_preprocess(state, self, body)
+        state = policy_util.guard_tensor(state, body)
         noise = self.body.explore_var * self.noise_pd.sample()[0]
-        action = self.net(state)
+        action = self.net(state) * 2.0
         action = action.cpu().squeeze().numpy() + noise  # squeeze to handle scalar
         return action
 
     def calc_policy_loss(self, batch):
         '''Calculate the actor's policy loss'''
         states = batch['states']
-        actions = self.net(states)
+        actions = self.net(states) * 2.0
         q_preds = self.critic(states, actions)
         policy_loss = -q_preds.mean()
         logger.debug(f'Actor policy loss: {policy_loss:g}')
@@ -166,7 +166,7 @@ class DDPG(ActorCritic):
         # TODO venv unpack
         q_preds = self.critic(states, actions)
         with torch.no_grad():
-            next_actions = self.target_net(next_states)
+            next_actions = self.target_net(next_states) * 2.0
             next_q_preds = self.target_critic(next_states, next_actions)
         q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * next_q_preds
         logger.debug(f'q_targets: {q_targets}')
