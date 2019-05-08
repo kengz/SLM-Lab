@@ -8,6 +8,17 @@ import gym
 import numpy as np
 
 
+def try_scale_reward(cls, reward):
+    '''Env class to scale reward and set raw_reward'''
+    if cls.reward_scale is not None:
+        cls.raw_reward = reward
+        if cls.sign_reward:
+            reward = np.sign(reward)
+        else:
+            reward *= cls.reward_scale
+    return reward
+
+
 class NoopResetEnv(gym.Wrapper):
     def __init__(self, env, noop_max=30):
         '''
@@ -130,10 +141,19 @@ class MaxAndSkipEnv(gym.Wrapper):
         return self.env.reset(**kwargs)
 
 
-class ClipRewardEnv(gym.RewardWrapper):
+class ScaleRewardEnv(gym.RewardWrapper):
+    def __init__(self, env, reward_scale):
+        '''
+        Rescale reward
+        @param (str,float):reward_scale If 'sign', use np.sign, else multiply with the specified float scale
+        '''
+        gym.Wrapper.__init__(self, env)
+        self.reward_scale = reward_scale
+        self.sign_reward = self.reward_scale == 'sign'
+
     def reward(self, reward):
-        '''Atari reward, to -1, 0 or +1. Not usually used as SLM Lab memory class does the clipping'''
-        return np.sign(reward)
+        '''Set self.raw_reward for retrieving the original reward'''
+        return try_scale_reward(self, reward)
 
 
 class PreprocessImage(gym.ObservationWrapper):
@@ -241,14 +261,12 @@ def wrap_atari(env):
     return env
 
 
-def wrap_deepmind(env, episode_life=True, clip_rewards=True, stack_len=None):
+def wrap_deepmind(env, episode_life=True, stack_len=None):
     '''Wrap Atari environment DeepMind-style'''
     if episode_life:
         env = EpisodicLifeEnv(env)
     if 'FIRE' in env.unwrapped.get_action_meanings():
         env = FireResetEnv(env)
-    if clip_rewards:
-        env = ClipRewardEnv(env)
     env = PreprocessImage(env)
     if stack_len is not None:  # use concat for image (1, 84, 84)
         env = FrameStack(env, 'concat', stack_len)
@@ -263,7 +281,7 @@ def wrap_image_env(env, stack_len=None):
     return env
 
 
-def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None):
+def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale=None):
     '''General method to create any Gym env; auto wraps Atari'''
     env = gym.make(name)
     if seed is not None:
@@ -271,12 +289,13 @@ def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None):
     if 'NoFrameskip' in env.spec.id:  # Atari
         env = wrap_atari(env)
         # no reward clipping to allow monitoring; Atari memory clips it
-        clip_rewards = False
         episode_life = util.get_lab_mode() != 'eval'
-        env = wrap_deepmind(env, clip_rewards, episode_life, frame_op_len)
+        env = wrap_deepmind(env, episode_life, frame_op_len)
     elif len(env.observation_space.shape) == 3:  # image-state env
         env = wrap_image_env(env, frame_op_len)
     else:  # vector-state env
         if frame_op is not None:
             env = FrameStack(env, frame_op, frame_op_len)
+    if reward_scale is not None:
+        env = ScaleRewardEnv(env, reward_scale)
     return env
