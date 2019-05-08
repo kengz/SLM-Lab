@@ -533,15 +533,6 @@ def s_get(cls, attr_path):
     return res
 
 
-def sample_minibatch(batch, mb_size):
-    '''Sample a minibatch within a batch that is produced by to_torch_batch()'''
-    size = len(batch['rewards'])
-    assert mb_size < size, f'Minibatch size {mb_size} must be < batch size {size}'
-    minibatch_idxs = np.random.randint(size, size=mb_size)
-    minibatch = {k: v[minibatch_idxs] for k, v in batch.items()}
-    return minibatch
-
-
 def self_desc(cls):
     '''Method to get self description, used at init.'''
     desc_list = [f'{get_class_name(cls)}:']
@@ -670,6 +661,21 @@ def smart_path(data_path, as_dir=False):
     if as_dir:
         data_path = os.path.dirname(data_path)
     return os.path.normpath(data_path)
+
+
+def split_minibatch(batch, mb_size):
+    '''Split a batch into minibatches of mb_size or smaller, without replacement'''
+    size = len(batch['rewards'])
+    assert mb_size < size, f'Minibatch size {mb_size} must be < batch size {size}'
+    idxs = np.arange(size)
+    np.random.shuffle(idxs)
+    chunks = int(size / mb_size)
+    nested_idxs = np.array_split(idxs, chunks)
+    mini_batches = []
+    for minibatch_idxs in nested_idxs:
+        minibatch = {k: v[minibatch_idxs] for k, v in batch.items()}
+        mini_batches.append(minibatch)
+    return mini_batches
 
 
 def to_json(d, indent=2):

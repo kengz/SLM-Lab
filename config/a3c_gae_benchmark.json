@@ -1,0 +1,26 @@
+{
+  "experimental/a3c/a3c_gae_beamrider.json": {
+    "a3c_gae_beamrider": "train"
+  },
+  "experimental/a3c/a3c_gae_breakout.json": {
+    "a3c_gae_breakout": "train"
+  },
+  "experimental/a3c/a3c_gae_enduro.json": {
+    "a3c_gae_enduro": "train"
+  },
+  "experimental/a3c/a3c_gae_mspacman.json": {
+    "a3c_gae_mspacman": "train"
+  },
+  "experimental/a3c/a3c_gae_pong.json": {
+    "a3c_gae_pong": "train"
+  },
+  "experimental/a3c/a3c_gae_qbert.json": {
+    "a3c_gae_qbert": "train"
+  },
+  "experimental/a3c/a3c_gae_seaquest.json": {
+    "a3c_gae_seaquest": "train"
+  },
+  "experimental/a3c/a3c_gae_spaceinvaders.json": {
+    "a3c_gae_spaceinvaders": "train"
+  },
+}

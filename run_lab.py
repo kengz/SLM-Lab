@@ -72,7 +72,7 @@ def run_old_mode(spec_file, spec_name, lab_mode):
 
 def run_by_mode(spec_file, spec_name, lab_mode):
     '''The main run lab function for all lab_modes'''
-    logger.info(f'Running lab in mode: {lab_mode}')
+    logger.info(f'Running lab: spec_file {spec_file} spec_name {spec_name} in mode: {lab_mode}')
     # '@' is reserved for EVAL_MODES
     os.environ['lab_mode'] = lab_mode.split('@')[0]
     if lab_mode in TRAIN_MODES:

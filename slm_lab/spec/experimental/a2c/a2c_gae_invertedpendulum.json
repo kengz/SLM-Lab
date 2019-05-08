@@ -1,5 +1,5 @@
 {
-  "a2c_pong": {
+  "a2c_gae_invertedpendulum": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -8,8 +8,8 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": null,
-        "num_step_returns": 5,
+        "lam": 0.95,
+        "num_step_returns": null,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -18,8 +18,7 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 5,
-        "training_epoch": 1,
+        "training_frequency": 32,
         "normalize_state": false
       },
       "memory": {
@@ -60,13 +59,10 @@
       }
     }],
     "env": [{
-      "name": "PongNoFrameskip-v4",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "reward_scale": "sign",
-      "num_envs": 16,
+      "name": "RoboschoolInvertedPendulum-v1",
+      "num_envs": 8,
       "max_t": null,
-      "max_tick": 1e7
+      "max_tick": 1e6
     }],
     "body": {
       "product": "outer",
@@ -74,22 +70,15 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 50000,
-      "eval_frequency": 50000,
+      "log_frequency": 20000,
+      "eval_frequency": 20000,
       "max_tick_unit": "total_t",
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 5,
       "search": "RandomSearch",
       "resources": {
         "num_cpus": 4
       }
-    },
-    "search": {
-      "agent": [{
-        "algorithm": {
-          "training_frequency__grid_search": [64, 128, 256, 512, 768]
-        }
-      }]
     }
   }
 }

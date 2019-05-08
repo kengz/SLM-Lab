@@ -1,0 +1,95 @@
+{
+  "a2c_gae_bipedalwalker": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "Categorical",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "num_step_returns": null,
+        "entropy_coef_spec": {
+          "name": "no_decay",
+          "start_val": 0.01,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "val_loss_coef": 0.5,
+        "training_frequency": 32,
+        "normalize_state": false
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay",
+      },
+      "net": {
+        "type": "ConvNet",
+        "shared": true,
+        "conv_hid_layers": [
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
+          [32, 3, 1, 0, 1]
+        ],
+        "fc_hid_layers": [512],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "normalize": true,
+        "batch_norm": false,
+        "clip_grad_val": 0.5,
+        "use_same_optim": false,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "actor_optim_spec": {
+          "name": "RMSprop",
+          "lr": 7e-4,
+          "alpha": 0.99,
+          "eps": 1e-5
+        },
+        "critic_optim_spec": {
+          "name": "RMSprop",
+          "lr": 7e-4,
+          "alpha": 0.99,
+          "eps": 1e-5
+        },
+        "lr_scheduler_spec": null,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "BipedalWalker-v2",
+      "num_envs": 16,
+      "max_t": null,
+      "max_tick": 5e6
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 20000,
+      "eval_frequency": 20000,
+      "max_tick_unit": "total_t",
+      "max_session": 4,
+      "max_trial": 24,
+      "search": "RandomSearch",
+      "resources": {
+        "num_cpus": 12
+      }
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "shared__choice": [true, false],
+          "hid_layers__choice": [[256], [256, 128], [400, 200]],
+          "actor_optim_spec": {
+            "lr__choice": [1e-5, 1e-4, 1e-3],
+          }
+        }
+      }]
+    }
+  }
+}

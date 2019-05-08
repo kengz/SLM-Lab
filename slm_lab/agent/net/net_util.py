@@ -19,7 +19,10 @@ class NoOpLRScheduler:
         pass
 
     def get_lr(self):
-        return self.optim.defaults['lr']
+        if hasattr(self.optim, 'defaults'):
+            return self.optim.defaults['lr']
+        else:  # TODO retrieve lr more generally
+            return self.optim.param_groups[0]['lr']
 
 
 def build_fc_model(dims, activation=None):
