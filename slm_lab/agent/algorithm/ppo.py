@@ -177,24 +177,25 @@ class PPO(ActorCritic):
                         batch[k] = math_util.venv_unpack(v)
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
-                minibatch = util.sample_minibatch(batch, self.minibatch_size)
-                if self.body.env.is_venv:  # re-pack to restore proper shape
-                    for k, v in minibatch.items():
-                        if k not in ('advs', 'v_targets'):
-                            minibatch[k] = math_util.venv_pack(v, self.body.env.num_envs)
-                advs, v_targets = minibatch['advs'], minibatch['v_targets']
-                pdparams, v_preds = self.calc_pdparam_v(minibatch)
-                policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
-                val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
-                if self.shared:  # shared network
-                    loss = policy_loss + val_loss
-                    self.net.training_step(loss=loss, lr_clock=clock)
-                else:
-                    self.net.training_step(loss=policy_loss, lr_clock=clock)
-                    self.critic.training_step(loss=val_loss, lr_clock=clock)
-                    loss = policy_loss + val_loss
-                total_loss += loss
-            loss = total_loss / self.training_epoch
+                minibatches = util.split_minibatch(batch, self.minibatch_size)
+                for minibatch in minibatches:
+                    if self.body.env.is_venv:  # re-pack to restore proper shape
+                        for k, v in minibatch.items():
+                            if k not in ('advs', 'v_targets'):
+                                minibatch[k] = math_util.venv_pack(v, self.body.env.num_envs)
+                    advs, v_targets = minibatch['advs'], minibatch['v_targets']
+                    pdparams, v_preds = self.calc_pdparam_v(minibatch)
+                    policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
+                    val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
+                    if self.shared:  # shared network
+                        loss = policy_loss + val_loss
+                        self.net.training_step(loss=loss, lr_clock=clock)
+                    else:
+                        self.net.training_step(loss=policy_loss, lr_clock=clock)
+                        self.critic.training_step(loss=val_loss, lr_clock=clock)
+                        loss = policy_loss + val_loss
+                    total_loss += loss
+            loss = total_loss / self.training_epoch / len(minibatches)
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
