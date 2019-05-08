@@ -1,7 +1,9 @@
 '''
 The entry point of SLM Lab
-Specify what to run in `config/experiments.json`
-Then run `python run_lab.py` or `yarn start`
+# to run scheduled set of specs
+python run_lab.py config/experiments.json
+# to run a single spec
+python run_lab.py slm_lab/spec/experimental/a2c_pong.json a2c_pong train
 '''
 from slm_lab import EVAL_MODES, TRAIN_MODES
 from slm_lab.experiment import analysis, retro_analysis
@@ -80,16 +82,16 @@ def run_by_mode(spec_file, spec_name, lab_mode):
 
 
 def main():
-    if len(sys.argv) > 1:
-        args = sys.argv[1:]
+    args = sys.argv[1:]
+    if len(args) <= 1:  # run scheduled specs
+        job_file = args[0] if len(args) == 1 else 'config/experiments.json'
+        jobs = util.read(job_file)
+        for spec_file, spec_map in jobs.items():
+            for spec_name, lab_mode in spec_map.items():
+                run_by_mode(spec_file, spec_name, lab_mode)
+    else:  # run single spec
         assert len(args) == 3, f'To use sys args, specify spec_file, spec_name, lab_mode'
         run_by_mode(*args)
-        return
-
-    experiments = util.read('config/experiments.json')
-    for spec_file in experiments:
-        for spec_name, lab_mode in experiments[spec_file].items():
-            run_by_mode(spec_file, spec_name, lab_mode)
 
 
 if __name__ == '__main__':
