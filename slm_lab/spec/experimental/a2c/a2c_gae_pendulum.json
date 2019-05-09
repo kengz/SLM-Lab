@@ -1,5 +1,5 @@
 {
-  "a2c_gae_invertedpendulum": {
+  "a2c_gae_pendulum": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -53,7 +53,7 @@
       }
     }],
     "env": [{
-      "name": "RoboschoolInvertedPendulum-v1",
+      "name": "Pendulum-v0",
       "num_envs": 8,
       "max_t": null,
       "max_tick": 1e6
