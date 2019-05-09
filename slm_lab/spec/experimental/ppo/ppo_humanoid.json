@@ -24,9 +24,9 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 2048,
-        "minibatch_size": 32,
-        "training_epoch": 10,
+        "training_frequency": 512,
+        "minibatch_size": 4096,
+        "training_epoch": 15,
         "normalize_state": false
       },
       "memory": {
@@ -55,7 +55,7 @@
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "total_t": 1e6
+          "total_t": 5e7
         },
         "gpu": true
       }
@@ -76,11 +76,7 @@
       "eval_frequency": 20000,
       "max_tick_unit": "total_t",
       "max_session": 4,
-      "max_trial": 5,
-      "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 4
-      }
+      "max_trial": 1,
     }
   }
 }

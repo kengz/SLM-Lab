@@ -25,7 +25,7 @@
         },
         "val_loss_coef": 0.5,
         "training_frequency": 2048,
-        "minibatch_size": 32,
+        "minibatch_size": 64,
         "training_epoch": 10,
         "normalize_state": false
       },
@@ -62,9 +62,9 @@
     }],
     "env": [{
       "name": "Pendulum-v0",
-      "num_envs": 16,
+      "num_envs": 8,
       "max_t": null,
-      "max_tick": 5e6
+      "max_tick": 1e6
     }],
     "body": {
       "product": "outer",
@@ -76,22 +76,7 @@
       "eval_frequency": 20000,
       "max_tick_unit": "total_t",
       "max_session": 4,
-      "max_trial": 24,
-      "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 12
-      }
-    },
-    "search": {
-      "agent": [{
-        "net": {
-          "shared__choice": [true, false],
-          "hid_layers__choice": [[256], [256, 128]],
-          "actor_optim_spec": {
-            "lr__choice": [1e-5, 1e-4, 1e-3],
-          }
-        }
-      }]
+      "max_trial": 1,
     }
   }
 }
