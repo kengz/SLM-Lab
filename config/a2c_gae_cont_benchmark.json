@@ -1,0 +1,23 @@
+{
+  "experimental/a2c/a2c_gae_ant.json": {
+    "a2c_gae_ant": "train"
+  },
+  "experimental/a2c/a2c_gae_bipedalwalker.json": {
+    "a2c_gae_bipedalwalker": "train"
+  },
+  "experimental/a2c/a2c_gae_halfcheetah.json": {
+    "a2c_gae_halfcheetah": "train"
+  },
+  "experimental/a2c/a2c_gae_hopper.json": {
+    "a2c_gae_hopper": "train"
+  },
+  "experimental/a2c/a2c_gae_invertedpendulum.json": {
+    "a2c_gae_invertedpendulum": "train"
+  },
+  "experimental/a2c/a2c_gae_pendulum.json": {
+    "a2c_gae_pendulum": "train"
+  },
+  "experimental/a2c/a2c_gae_humanoid.json": {
+    "a2c_gae_humanoid": "train"
+  },
+}
