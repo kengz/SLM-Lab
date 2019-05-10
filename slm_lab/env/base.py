@@ -123,7 +123,6 @@ class BaseEnv(ABC):
         if util.get_lab_mode() == 'eval':
             self.num_envs = None  # use singleton for eval
             # override for eval, offset so epi is 0 - (num_eval_epi - 1)
-            logger.info(f'Override max_tick for eval mode to {NUM_EVAL_EPI} epi')
             self.max_tick = NUM_EVAL_EPI - 1
             self.max_tick_unit = 'epi'
         if self.num_envs == 1:  # guard: if 1, dont used venvs at all

@@ -239,7 +239,7 @@ class Body:
             df = self.train_df
             reward_ma = self.total_reward_ma
         last_row = df.iloc[-1]
-        row_str = ', '.join([f'{k}: {v:g}' for k, v in last_row.items()])
+        row_str = '  '.join([f'{k}: {v:g}' for k, v in last_row.items()])
         msg = f'{prefix} [{body_df_kind}_df] {row_str}'
         logger.info(msg)
 

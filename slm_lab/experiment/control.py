@@ -78,7 +78,6 @@ class Session:
                 analysis.analyze_session(self, eager_analyze_trial=True)
 
     def run_eval(self):
-        logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
         with util.ctx_lab_mode('eval'):  # enter eval context
             self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
             self.eval_env.clock.tick('epi')
