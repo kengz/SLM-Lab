@@ -1,26 +1,8 @@
 {
-  "experimental/a2c/a2c_beamrider.json": {
-    "a2c_beamrider": "train"
+  "experimental/a2c/a2c_atari.json": {
+    "a2c_atari": "train"
   },
-  "experimental/a2c/a2c_breakout.json": {
-    "a2c_breakout": "train"
-  },
-  "experimental/a2c/a2c_enduro.json": {
-    "a2c_enduro": "train"
-  },
-  "experimental/a2c/a2c_mspacman.json": {
-    "a2c_mspacman": "train"
-  },
-  "experimental/a2c/a2c_pong.json": {
-    "a2c_pong": "train"
-  },
-  "experimental/a2c/a2c_qbert.json": {
-    "a2c_qbert": "train"
-  },
-  "experimental/a2c/a2c_seaquest.json": {
-    "a2c_seaquest": "train"
-  },
-  "experimental/a2c/a2c_spaceinvaders.json": {
-    "a2c_spaceinvaders": "train"
+  "experimental/a2c/a2c_cont.json": {
+    "a2c_cont": "train"
   },
 }
