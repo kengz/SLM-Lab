@@ -110,6 +110,24 @@ def check_all():
     return True
 
 
+def extend_meta_spec(spec):
+    '''Extend meta spec with information for lab functions'''
+    extended_meta_spec = {
+        # lab indices: -1 so that it ticks to 0
+        'experiment': -1,
+        'trial': -1,
+        'session': -1,
+        'cuda_offset': int(os.environ.get('CUDA_OFFSET', 0)),
+        'ckpt': None,
+        'experiment_ts': util.get_ts(),
+        'eval_model_prepath': None,
+        'git_sha': util.get_git_sha(),
+        'random_seed': None,
+    }
+    spec['meta'].update(extended_meta_spec)
+    return spec
+
+
 def get(spec_file, spec_name):
     '''
     Get an experiment spec from spec_file, spec_name.
@@ -129,8 +147,7 @@ def get(spec_file, spec_name):
         spec = spec_dict[spec_name]
         # fill-in info at runtime
         spec['name'] = spec_name
-        spec['meta']['git_sha'] = util.get_git_sha()
-        spec['meta']['cuda_offset'] = int(os.environ.get('CUDA_OFFSET', 0))
+        spec = extend_meta_spec(spec)
     check(spec)
     return spec
 
