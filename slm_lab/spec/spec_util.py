@@ -101,6 +101,9 @@ def check_all():
     for spec_file in spec_files:
         spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
         for spec_name, spec in spec_dict.items():
+            # fill-in info at runtime
+            spec['name'] = spec_name
+            spec = extend_meta_spec(spec)
             try:
                 check(spec)
             except Exception as e:
