@@ -403,19 +403,19 @@ def prepath_to_spec(prepath):
     return spec
 
 
-def prepath_to_info_space(prepath):
+def recover_meta_spec(spec, prepath):
     '''Create info_space from prepath such that it returns the same prepath with spec'''
     from slm_lab.experiment.monitor import InfoSpace
     _, _, _, _, experiment_ts, ckpt = prepath_split(prepath)
     trial_index, session_index = prepath_to_idxs(prepath)
     # create info_space for prepath
-    info_space = InfoSpace()
-    info_space.experiment_ts = experiment_ts
-    info_space.ckpt = ckpt
-    info_space.set('experiment', 0)
-    info_space.set('trial', trial_index)
-    info_space.set('session', session_index)
-    return info_space
+    meta_spec = spec['meta']
+    meta_spec['experiment_ts'] = experiment_ts
+    meta_spec['ckpt'] = ckpt
+    meta_spec['experiment'] = 0
+    meta_spec['trial'] = trial_index
+    meta_spec['session'] = session_index
+    return meta_spec
 
 
 def prepath_to_spec_info_space(prepath):
@@ -425,7 +425,7 @@ def prepath_to_spec_info_space(prepath):
     example: data/a2c_cartpole_2018_06_13_220436/a2c_cartpole_t0_s0
     '''
     spec = prepath_to_spec(prepath)
-    info_space = prepath_to_info_space(prepath)
+    recover_meta_spec(prepath)
     check_prepath = get_prepath(spec, info_space, unit='session')
     assert check_prepath in prepath, f'{check_prepath}, {prepath}'
     return spec, info_space

@@ -437,10 +437,3 @@ class InfoSpace:
         self.ckpt = None
         # e.g. 'data/dqn_cartpole_2018_12_19_085843/dqn_cartpole_t0_s0_ckpt-epi24-totalt1000'
         self.eval_model_prepath = None
-
-    def get(self, axis):
-        return self.coor[axis]
-
-    def set(self, axis, val):
-        self.coor[axis] = val
-        return self.coor[axis]

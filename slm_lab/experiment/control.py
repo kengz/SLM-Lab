@@ -222,8 +222,6 @@ class Trial:
         self.spec = spec
         self.info_space = info_space
         self.index = self.spec['meta']['trial']
-        # TODO check if below is really needed?
-        self.spec['meta']['session'] = -1  # Session starts anew for new trial
         util.set_logger(self.spec, self.info_space, logger, 'trial')
         analysis.save_spec(spec, info_space, unit='trial')
         self.session_data_dict = {}
