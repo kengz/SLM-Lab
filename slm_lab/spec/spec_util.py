@@ -153,6 +153,16 @@ def get(spec_file, spec_name):
     return spec
 
 
+def get_eval_spec(spec_file, prename):
+    '''Get spec for eval mode'''
+    predir, _, _, _, _, _ = util.prepath_split(spec_file)
+    prepath = f'{predir}/{prename}'
+    spec = util.prepath_to_spec(prepath)
+    spec['meta']['ckpt'] = 'eval'
+    spec['meta']['eval_model_prepath'] = prepath
+    return spec
+
+
 def get_param_specs(spec):
     '''Return a list of specs with substituted spec_params'''
     assert 'spec_params' in spec, 'Parametrized spec needs a spec_params key'

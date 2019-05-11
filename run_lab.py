@@ -25,66 +25,45 @@ debug_level = 'DEBUG'
 logger.toggle_debug(debug_modules, debug_level)
 
 
-def run_train_mode(spec, lab_mode):
-    '''Run to generate new data with `search, train, dev`'''
-    analysis.save_spec(spec)  # first save the new spec
-    if lab_mode == 'search':
-        spec_util.tick(spec, 'experiment')
-        Experiment(spec).run()
-    elif lab_mode in TRAIN_MODES:
+def run_spec(spec, lab_mode):
+    '''Run a spec in lab_mode'''
+    os.environ['lab_mode'] = lab_mode
+    if lab_mode in TRAIN_MODES:
+        analysis.save_spec(spec)  # first save the new spec
         if lab_mode == 'dev':
             spec = spec_util.override_dev_spec(spec)
-        spec_util.tick(spec, 'trial')
-        Trial(spec).run()
-    else:
-        raise ValueError(f'Unrecognizable lab_mode not of {TRAIN_MODES}')
-
-
-def run_eval_mode(spec, lab_mode):
-    '''Run using existing data with `enjoy, eval`. The eval mode is also what train mode's online eval runs in a subprocess via bash command'''
-    # reconstruct spec from existing data
-    lab_mode, prename = lab_mode.split('@')
-    predir, _, _, _, _, _ = util.prepath_split(spec_file)
-    prepath = f'{predir}/{prename}'
-    spec = util.prepath_to_spec(prepath)
-    spec['meta']['ckpt'] = 'eval'
-    spec['meta']['eval_model_prepath'] = prepath
-
-    if lab_mode in EVAL_MODES:
+        if lab_mode == 'search':
+            spec_util.tick(spec, 'experiment')
+            Experiment(spec).run()
+        else:
+            spec_util.tick(spec, 'trial')
+            Trial(spec).run()
+    elif lab_mode in EVAL_MODES:
         spec = spec_util.override_enjoy_spec(spec)
         Session(spec).run()
         if lab_mode == 'eval':
             util.clear_periodic_ckpt(prepath)  # cleanup after itself
             retro_analysis.analyze_eval_trial(spec, predir)
     else:
-        raise ValueError(f'Unrecognizable lab_mode not of {EVAL_MODES}')
+        raise ValueError(f'Unrecognizable lab_mode not of {TRAIN_MODES} or {EVAL_MODES}')
 
 
-# TODO unify these later
-# def run_by_mode(spec_file, spec_name, lab_mode):
-#     '''The main run lab function for all lab_modes'''
-#     logger.info(f'Running lab: spec_file {spec_file} spec_name {spec_name} in mode: {lab_mode}')
-#     # '@' is reserved for EVAL_MODES
-#     os.environ['lab_mode'] = lab_mode.split('@')[0]
-#     if lab_mode in TRAIN_MODES:
-#         run_train_mode(spec_file, spec_name, lab_mode)
-#     else:
-#         run_eval_mode(spec_file, spec_name, lab_mode)
-
-
-def run_by_mode(spec_file, spec_name, lab_mode):
+def read_spec_and_run(spec_file, spec_name, lab_mode):
     '''Read a spec and run it in lab mode'''
     logger.info(f'Running lab: spec_file {spec_file} spec_name {spec_name} in mode: {lab_mode}')
-    # '@' is reserved for EVAL_MODES
-    os.environ['lab_mode'] = lab_mode.split('@')[0]
-    spec = spec_util.get(spec_file, spec_name)
+    if lab_mode in TRAIN_MODES:
+        spec = spec_util.get(spec_file, spec_name)
+    else:  # eval mode
+        lab_mode, prename = lab_mode.split('@')
+        spec = spec_util.get_eval_spec(spec_file, prename)
+
     if 'spec_params' not in spec:
-        run_train_mode(spec, lab_mode)
+        run_spec(spec, lab_mode)
     else:  # spec is parametrized; run them in parallel
         param_specs = spec_util.get_param_specs(spec)
         num_pro = spec['meta']['param_spec_process']
         # can't use Pool since it cannot spawn nested Process, which is needed for VecEnv and parallel sessions. So these will run and wait by chunks
-        workers = [mp.Process(target=run_train_mode, args=(spec, lab_mode)) for spec in param_specs]
+        workers = [mp.Process(target=run_spec, args=(spec, lab_mode)) for spec in param_specs]
         for chunk_w in ps.chunk(workers, num_pro):
             for w in chunk_w:
                 w.start()
@@ -99,10 +78,10 @@ def main():
         job_file = args[0] if len(args) == 1 else 'config/experiments.json'
         for spec_file, spec_and_mode in util.read(job_file).items():
             for spec_name, lab_mode in spec_and_mode.items():
-                run_by_mode(spec_file, spec_name, lab_mode)
+                read_spec_and_run(spec_file, spec_name, lab_mode)
     else:  # run single spec
         assert len(args) == 3, f'To use sys args, specify spec_file, spec_name, lab_mode'
-        run_by_mode(*args)
+        read_spec_and_run(*args)
 
 
 if __name__ == '__main__':
