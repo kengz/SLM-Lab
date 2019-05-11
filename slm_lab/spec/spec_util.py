@@ -4,6 +4,7 @@ Handles the Lab experiment spec: reading, writing(evolution), validation and def
 Expands the spec and params into consumable inputs in info space for lab units.
 '''
 from slm_lab.lib import logger, util
+from string import Template
 import itertools
 import json
 import numpy as np
@@ -131,6 +132,21 @@ def get(spec_file, spec_name):
         spec['git_SHA'] = util.get_git_sha()
     check(spec)
     return spec
+
+
+def get_param_specs(spec):
+    '''Return a list of specs with substituted spec_params'''
+    assert 'spec_params' in spec, 'Parametrized spec needs a spec_params key'
+    spec_params = spec.pop('spec_params')
+    spec_template = Template(json.dumps(spec))
+    keys = spec_params.keys()
+    specs = []
+    for vals in itertools.product(*spec_params.values()):
+        spec_str = spec_template.substitute(dict(zip(keys, vals)))
+        spec = json.loads(spec_str)
+        spec['name'] += f'_{"_".join(vals)}'
+        specs.append(spec)
+    return specs
 
 
 def is_aeb_compact(aeb_list):
