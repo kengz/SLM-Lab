@@ -33,7 +33,6 @@ class EnvSpace:
         self.spec = spec
         self.aeb_space = aeb_space
         aeb_space.env_space = self
-        self.info_space = aeb_space.info_space
         self.envs = []
         for e in range(len(self.spec['env'])):
             env = make_env(self.spec, e, env_space=self)

@@ -8,7 +8,6 @@ python run_lab.py slm_lab/spec/experimental/a2c_pong.json a2c_pong train
 from slm_lab import EVAL_MODES, TRAIN_MODES
 from slm_lab.experiment import analysis, retro_analysis
 from slm_lab.experiment.control import Session, Trial, Experiment
-from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 from xvfbwrapper import Xvfb
@@ -28,37 +27,35 @@ logger.toggle_debug(debug_modules, debug_level)
 
 def run_train_mode(spec, lab_mode):
     '''Run to generate new data with `search, train, dev`'''
-    info_space = InfoSpace()
-    analysis.save_spec(spec, info_space)  # first save the new spec
+    analysis.save_spec(spec)  # first save the new spec
     if lab_mode == 'search':
         spec_util.tick(spec, 'experiment')
-        Experiment(spec, info_space).run()
+        Experiment(spec).run()
     elif lab_mode in TRAIN_MODES:
         if lab_mode == 'dev':
             spec = spec_util.override_dev_spec(spec)
         spec_util.tick(spec, 'trial')
-        Trial(spec, info_space).run()
+        Trial(spec).run()
     else:
         raise ValueError(f'Unrecognizable lab_mode not of {TRAIN_MODES}')
 
 
 def run_eval_mode(spec, lab_mode):
     '''Run using existing data with `enjoy, eval`. The eval mode is also what train mode's online eval runs in a subprocess via bash command'''
-    # reconstruct spec and info_space from existing data
+    # reconstruct spec from existing data
     lab_mode, prename = lab_mode.split('@')
     predir, _, _, _, _, _ = util.prepath_split(spec_file)
     prepath = f'{predir}/{prename}'
-    spec, info_space = util.prepath_to_eval_spec(prepath)
-    # see InfoSpace def for more on these
+    spec = util.prepath_to_spec(prepath)
     spec['meta']['ckpt'] = 'eval'
     spec['meta']['eval_model_prepath'] = prepath
 
     if lab_mode in EVAL_MODES:
         spec = spec_util.override_enjoy_spec(spec)
-        Session(spec, info_space).run()
+        Session(spec).run()
         if lab_mode == 'eval':
             util.clear_periodic_ckpt(prepath)  # cleanup after itself
-            retro_analysis.analyze_eval_trial(spec, info_space, predir)
+            retro_analysis.analyze_eval_trial(spec, predir)
     else:
         raise ValueError(f'Unrecognizable lab_mode not of {EVAL_MODES}')
 

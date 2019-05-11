@@ -49,7 +49,7 @@ def session_data_dict_from_file(predir, trial_index, ckpt=None):
     return session_data_dict
 
 
-def session_data_dict_for_dist(spec, info_space):
+def session_data_dict_for_dist(spec):
     '''Method to retrieve session_datas (fitness df, so the same as session_data_dict above) when a trial with distributed sessions is done, to avoid messy multiprocessing data communication'''
     prepath = util.get_prepath(spec)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
@@ -75,16 +75,16 @@ Interface retro methods
 '''
 
 
-def analyze_eval_trial(spec, info_space, predir):
+def analyze_eval_trial(spec, predir):
     '''Create a trial and run analysis to get the trial graph and other trial data'''
     from slm_lab.experiment.control import Trial
-    trial = Trial(spec, info_space)
+    trial = Trial(spec)
     trial.session_data_dict = session_data_dict_from_file(predir, trial.index, spec['meta']['ckpt'])
     # don't zip for eval analysis, slow otherwise
     analysis.analyze_trial(trial, zip=False)
 
 
-def parallel_eval(spec, info_space, ckpt):
+def parallel_eval(spec, ckpt):
     '''
     Calls a subprocess to run lab in eval mode with the constructed ckpt prepath, same as how one would manually run the bash cmd
     @example
@@ -105,7 +105,7 @@ def run_parallel_eval(session, agent, env):
         ckpt = f'epi{env.clock.epi}-totalt{env.clock.total_t}'
         agent.save(ckpt=ckpt)
         # set reference to eval process for handling
-        session.eval_proc = parallel_eval(session.spec, session.info_space, ckpt)
+        session.eval_proc = parallel_eval(session.spec, ckpt)
 
 
 def try_wait_parallel_eval(session):
@@ -117,9 +117,9 @@ def try_wait_parallel_eval(session):
 
 def run_parallel_eval_from_prepath(prepath):
     '''Used by retro_eval'''
-    spec, info_space = util.prepath_to_eval_spec(prepath)
+    spec = util.prepath_to_spec(prepath)
     ckpt = util.find_ckpt(prepath)
-    return parallel_eval(spec, info_space, ckpt)
+    return parallel_eval(spec, ckpt)
 
 
 def run_wait_eval(prepath):
@@ -147,10 +147,10 @@ def retro_analyze_sessions(predir):
 
         if is_session_df:
             prepath = f'{predir}/{filename}'.replace(f'_{prefix}session_df.csv', '')
-            spec, info_space = util.prepath_to_eval_spec(prepath)
+            spec = util.prepath_to_spec(prepath)
             trial_index, session_index = util.prepath_to_idxs(prepath)
             SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
-            session = SessionClass(spec, info_space)
+            session = SessionClass(spec)
             session_data = session_data_from_file(predir, trial_index, session_index, spec['meta']['ckpt'], prefix)
             analysis._analyze_session(session, session_data, body_df_kind)
 
@@ -163,9 +163,9 @@ def retro_analyze_trials(predir):
     for idx, filename in enumerate(filenames):
         filepath = f'{predir}/{filename}'
         prepath = filepath.replace('_trial_df.csv', '')
-        spec, info_space = util.prepath_to_eval_spec(prepath)
+        spec = util.prepath_to_spec(prepath)
         trial_index, _ = util.prepath_to_idxs(prepath)
-        trial = Trial(spec, info_space)
+        trial = Trial(spec)
         trial.session_data_dict = session_data_dict_from_file(predir, trial_index, spec['meta']['ckpt'])
         # zip only at the last
         zip = (idx == len(filenames) - 1)
@@ -189,10 +189,10 @@ def retro_analyze_experiment(predir):
     from slm_lab.experiment.control import Experiment
     _, _, _, spec_name, _, _ = util.prepath_split(predir)
     prepath = f'{predir}/{spec_name}'
-    spec, info_space = util.prepath_to_eval_spec(prepath)
+    spec = util.prepath_to_spec(prepath)
     if 'search' not in spec:
         return
-    experiment = Experiment(spec, info_space)
+    experiment = Experiment(spec)
     experiment.trial_data_dict = trial_data_dict_from_file(predir)
     if not ps.is_empty(experiment.trial_data_dict):
         return analysis.analyze_experiment(experiment)

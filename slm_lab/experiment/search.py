@@ -21,10 +21,8 @@ logger = logger.get_logger(__name__)
 def register_ray_serializer():
     '''Helper to register so objects can be serialized in Ray'''
     from slm_lab.experiment.control import Experiment
-    from slm_lab.experiment.monitor import InfoSpace
     import pandas as pd
     ray.register_custom_serializer(Experiment, use_pickle=True)
-    ray.register_custom_serializer(InfoSpace, use_pickle=True)
     ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
     ray.register_custom_serializer(pd.Series, use_pickle=True)
 
@@ -93,10 +91,9 @@ def create_remote_fn(experiment):
     def run_trial(experiment, config):
         trial_index = config.pop('trial_index')
         spec = spec_from_config(experiment, config)
-        info_space = deepcopy(experiment.info_space)
         spec['meta']['trial'] = trial_index
         spec['meta']['session'] = -1
-        trial_fitness_df = experiment.init_trial_and_run(spec, info_space)
+        trial_fitness_df = experiment.init_trial_and_run(spec)
         fitness_vec = trial_fitness_df.iloc[0].to_dict()
         fitness = analysis.calc_fitness(trial_fitness_df)
         trial_data = {**config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index}

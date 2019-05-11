@@ -1,4 +1,3 @@
-from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
@@ -9,8 +8,9 @@ import shutil
 
 
 def generic_algorithm_test(spec, algorithm_name):
-    '''Need new InfoSpace() per trial otherwise session id doesn't tick correctly'''
-    trial = Trial(spec, info_space=InfoSpace())
+    '''Need to reset session_index per trial otherwise session id doesn't tick correctly'''
+    spec_util.extend_meta_spec(spec)
+    trial = Trial(spec)
     trial_data = trial.run()
     folders = [x for x in os.listdir('data/') if x.startswith(algorithm_name)]
     assert len(folders) == 1

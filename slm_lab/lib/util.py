@@ -393,25 +393,18 @@ def prepath_to_idxs(prepath):
 
 
 def prepath_to_spec(prepath):
-    '''Create spec from prepath such that it returns the same prepath with info_space'''
-    predir, _, prename, _, _, _ = prepath_split(prepath)
+    '''
+    Given a prepath, read the correct spec recover the meta_spec that will return the same prepath for eval lab modes
+    example: data/a2c_cartpole_2018_06_13_220436/a2c_cartpole_t0_s0
+    '''
+    predir, _, prename, _, experiment_ts, ckpt = prepath_split(prepath)
     sidx_res = re.search('_s\d+', prename)
     if sidx_res:  # replace the _s0 if any
         prename = prename.replace(sidx_res[0], '')
     spec_path = f'{predir}/{prename}_spec.json'
     # read the spec of prepath
     spec = read(spec_path)
-    return spec
-
-
-def prepath_to_eval_spec(prepath):
-    '''
-    Given a prepath, read the correct spec recover the meta_spec that will return the same prepath for eval lab modes
-    example: data/a2c_cartpole_2018_06_13_220436/a2c_cartpole_t0_s0
-    '''
-    spec = prepath_to_spec(prepath)
     # recover meta_spec
-    _, _, _, _, experiment_ts, ckpt = prepath_split(prepath)
     trial_index, session_index = prepath_to_idxs(prepath)
     meta_spec = spec['meta']
     meta_spec['experiment_ts'] = experiment_ts
@@ -421,7 +414,7 @@ def prepath_to_eval_spec(prepath):
     meta_spec['session'] = session_index
     check_prepath = get_prepath(spec, unit='session')
     assert check_prepath in prepath, f'{check_prepath}, {prepath}'
-    return spec, info_space
+    return spec
 
 
 def read(data_path, **kwargs):
@@ -568,7 +561,7 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
-def set_cuda_id(spec, info_space):
+def set_cuda_id(spec):
     '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
     # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
     # see issues https://github.com/pytorch/pytorch/issues/334 https://github.com/pytorch/pytorch/issues/3491 https://github.com/pytorch/pytorch/issues/9996
@@ -586,8 +579,8 @@ def set_cuda_id(spec, info_space):
         agent_spec['net']['cuda_id'] = cuda_id
 
 
-def set_logger(spec, info_space, logger, unit=None):
-    '''Set the logger for a lab unit give its spec and info_space'''
+def set_logger(spec, logger, unit=None):
+    '''Set the logger for a lab unit give its spec'''
     os.environ['PREPATH'] = get_prepath(spec, unit=unit)
     reload(logger)  # to set session-specific logger
 

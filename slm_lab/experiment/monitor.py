@@ -1,7 +1,6 @@
 '''
 The monitor module with data_space
 Monitors agents, environments, sessions, trials, experiments, evolutions, and handles all the data produced by the Lab components.
-InfoSpace handles the unified hyperdimensional data for SLM Lab, used for analysis and experiment planning. Sources data from monitor.
 Each dataframe resolves from the coarsest dimension to the finest, with data coordinates coor in the form: (experiment,trial,session,agent,env,body)
 The resolution after session is the AEB space, hence it is a subspace.
 AEB space is not necessarily tabular, and hence the data is NoSQL.
@@ -10,8 +9,7 @@ The data_space is congruent to the coor, with proper resolution.
 E.g. (experiment,trial,session) specifies the session_data of a session, ran over multiple episodes on the AEB space.
 
 Space ordering:
-InfoSpace: the general space for complete information
-AEBSpace: subspace of InfoSpace for a specific session
+AEBSpace: space to track AEB
 AgentSpace: space agent instances, subspace of AEBSpace
 EnvSpace: space of env instances, subspace of AEBSpace
 DataSpace: a data space storing an AEB data projected to a-axis, and its dual projected to e-axis. This is so that a-proj data like action_space from agent_space can be used by env_space, which requires e-proj data, and vice versa.
@@ -33,22 +31,13 @@ import pydash as ps
 import time
 import torch
 
-# These correspond to the control unit classes, lower cased
-COOR_AXES = [
-    'experiment',
-    'trial',
-    'session',
-]
-COOR_AXES_ORDER = {
-    axis: idx for idx, axis in enumerate(COOR_AXES)
-}
-COOR_DIM = len(COOR_AXES)
+
 logger = logger.get_logger(__name__)
 
 
 def enable_aeb_space(session):
     '''Enable aeb_space to session use Lab's data-monitor and analysis modules'''
-    session.aeb_space = AEBSpace(session.spec, session.info_space)
+    session.aeb_space = AEBSpace(session.spec)
     # make compatible with the generic multiagent setup
     session.aeb_space.body_space = DataSpace('body', session.aeb_space)
     body_v = np.full(session.aeb_space.aeb_shape, np.nan, dtype=object)
@@ -338,8 +327,7 @@ class DataSpace:
 
 class AEBSpace:
 
-    def __init__(self, spec, info_space):
-        self.info_space = info_space
+    def __init__(self, spec):
         self.spec = spec
         self.clock = None  # the finest common refinement as space clock
         self.agent_space = None
@@ -419,16 +407,3 @@ class AEBSpace:
             end_session = not (env.clock.get() < env.clock.max_tick)
             end_sessions.append(end_session)
         return all(end_sessions)
-
-
-class InfoSpace:
-    def __init__(self, last_coor=None):
-        '''
-        Initialize the coor, the global point in info space that will advance according to experiment progress.
-        The coor starts with null first since the coor may not start at the origin.
-        '''
-        # used to id experiment sharing the same spec name
-        # ckpt gets appened to extend prepath using util.get_prepath for saving models, e.g. ckpt_str = ckpt-epi10-totalt1000
-        # ckpt = 'eval' is special for eval mode, so data files will save with `ckpt-eval`; no models will be saved, but to load models with normal ckpt it will find them using eval_model_prepath
-        # e.g. 'epi24-totalt1000', 'eval', 'best'
-        # e.g. 'data/dqn_cartpole_2018_12_19_085843/dqn_cartpole_t0_s0_ckpt-epi24-totalt1000'
