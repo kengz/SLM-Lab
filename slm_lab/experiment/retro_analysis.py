@@ -117,7 +117,7 @@ def try_wait_parallel_eval(session):
 
 def run_parallel_eval_from_prepath(prepath):
     '''Used by retro_eval'''
-    spec, info_space = util.prepath_to_spec_info_space(prepath)
+    spec, info_space = util.prepath_to_eval_spec(prepath)
     ckpt = util.find_ckpt(prepath)
     return parallel_eval(spec, info_space, ckpt)
 
@@ -147,7 +147,7 @@ def retro_analyze_sessions(predir):
 
         if is_session_df:
             prepath = f'{predir}/{filename}'.replace(f'_{prefix}session_df.csv', '')
-            spec, info_space = util.prepath_to_spec_info_space(prepath)
+            spec, info_space = util.prepath_to_eval_spec(prepath)
             trial_index, session_index = util.prepath_to_idxs(prepath)
             SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
             session = SessionClass(spec, info_space)
@@ -163,7 +163,7 @@ def retro_analyze_trials(predir):
     for idx, filename in enumerate(filenames):
         filepath = f'{predir}/{filename}'
         prepath = filepath.replace('_trial_df.csv', '')
-        spec, info_space = util.prepath_to_spec_info_space(prepath)
+        spec, info_space = util.prepath_to_eval_spec(prepath)
         trial_index, _ = util.prepath_to_idxs(prepath)
         trial = Trial(spec, info_space)
         trial.session_data_dict = session_data_dict_from_file(predir, trial_index, spec['meta']['ckpt'])
@@ -189,7 +189,7 @@ def retro_analyze_experiment(predir):
     from slm_lab.experiment.control import Experiment
     _, _, _, spec_name, _, _ = util.prepath_split(predir)
     prepath = f'{predir}/{spec_name}'
-    spec, info_space = util.prepath_to_spec_info_space(prepath)
+    spec, info_space = util.prepath_to_eval_spec(prepath)
     if 'search' not in spec:
         return
     experiment = Experiment(spec, info_space)

@@ -48,12 +48,11 @@ def run_eval_mode(spec, lab_mode):
     lab_mode, prename = lab_mode.split('@')
     predir, _, _, _, _, _ = util.prepath_split(spec_file)
     prepath = f'{predir}/{prename}'
-    spec, info_space = util.prepath_to_spec_info_space(prepath)
+    spec, info_space = util.prepath_to_eval_spec(prepath)
     # see InfoSpace def for more on these
     spec['meta']['ckpt'] = 'eval'
     spec['meta']['eval_model_prepath'] = prepath
 
-    # no info_space.tick() as they are reconstructed
     if lab_mode in EVAL_MODES:
         spec = spec_util.override_enjoy_spec(spec)
         Session(spec, info_space).run()

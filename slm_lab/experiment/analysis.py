@@ -524,7 +524,7 @@ def analyze_session(session, eager_analyze_trial=False, tmp_space_session_sub=Fa
         from slm_lab.experiment import retro_analysis
         prepath = util.get_prepath(session.spec, unit='session')
         # use new ones to prevent side effects
-        spec, info_space = util.prepath_to_spec_info_space(prepath)
+        spec, info_space = util.prepath_to_eval_spec(prepath)
         predir, _, _, _, _, _ = util.prepath_split(prepath)
         retro_analysis.analyze_eval_trial(spec, info_space, predir)
     return session_fitness_df
