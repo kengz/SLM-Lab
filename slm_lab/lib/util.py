@@ -239,19 +239,20 @@ def get_lab_mode():
     return os.environ.get('lab_mode')
 
 
-def get_prepath(spec, info_space, unit='experiment'):
+def get_prepath(spec, unit='experiment'):
     spec_name = spec['name']
-    predir = f'data/{spec_name}_{spec["meta"]["experiment_ts"]}'
+    meta_spec = spec['meta']
+    predir = f'data/{spec_name}_{meta_spec["experiment_ts"]}'
     prename = f'{spec_name}'
-    trial_index = spec['meta']['trial']
-    session_index = spec['meta']['session']
+    trial_index = meta_spec['trial']
+    session_index = meta_spec['session']
     t_str = '' if trial_index is None else f'_t{trial_index}'
     s_str = '' if session_index is None else f'_s{session_index}'
     if unit == 'trial':
         prename += t_str
     elif unit == 'session':
         prename += f'{t_str}{s_str}'
-    ckpt = spec['meta']['ckpt']
+    ckpt = meta_spec['ckpt']
     if ckpt is not None:
         prename += f'_ckpt-{ckpt}'
     prepath = f'{predir}/{prename}'
@@ -426,7 +427,7 @@ def prepath_to_spec_info_space(prepath):
     '''
     spec = prepath_to_spec(prepath)
     recover_meta_spec(prepath)
-    check_prepath = get_prepath(spec, info_space, unit='session')
+    check_prepath = get_prepath(spec, unit='session')
     assert check_prepath in prepath, f'{check_prepath}, {prepath}'
     return spec, info_space
 
@@ -595,7 +596,7 @@ def set_cuda_id(spec, info_space):
 
 def set_logger(spec, info_space, logger, unit=None):
     '''Set the logger for a lab unit give its spec and info_space'''
-    os.environ['PREPATH'] = get_prepath(spec, info_space, unit=unit)
+    os.environ['PREPATH'] = get_prepath(spec, unit=unit)
     reload(logger)  # to set session-specific logger
 
 

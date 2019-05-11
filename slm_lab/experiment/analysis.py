@@ -210,7 +210,7 @@ Analysis interface methods
 
 def save_spec(spec, info_space, unit='experiment'):
     '''Save spec to proper path. Called at Experiment or Trial init.'''
-    prepath = util.get_prepath(spec, info_space, unit)
+    prepath = util.get_prepath(spec, unit)
     util.write(spec, f'{prepath}_spec.json')
 
 
@@ -358,7 +358,7 @@ def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, max_tick_unit):
 def calc_trial_df(trial_spec, info_space):
     '''Calculate trial_df as mean of all session_df'''
     from slm_lab.experiment import retro_analysis
-    prepath = util.get_prepath(trial_spec, info_space)
+    prepath = util.get_prepath(trial_spec)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, trial_spec['meta']['trial'], trial_spec['meta']['ckpt'])
     aeb_transpose = {aeb: [] for aeb in session_datas[list(session_datas.keys())[0]]}
@@ -378,7 +378,7 @@ def calc_trial_df(trial_spec, info_space):
 def plot_trial(trial_spec, info_space):
     '''Plot the trial graph, 1 pane: mean and error envelope of reward graphs from all sessions. Each aeb_df gets its own color'''
     from slm_lab.experiment import retro_analysis
-    prepath = util.get_prepath(trial_spec, info_space)
+    prepath = util.get_prepath(trial_spec)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, trial_spec['meta']['trial'], trial_spec['meta']['ckpt'])
     rand_session_data = session_datas[list(session_datas.keys())[0]]
@@ -467,7 +467,7 @@ def save_session_data(spec, info_space, session_data, session_fitness_df, sessio
     session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
     session_data = util.session_df_to_data(session_df)
     '''
-    prepath = util.get_prepath(spec, info_space, unit='session')
+    prepath = util.get_prepath(spec, unit='session')
     prefix = 'train' if body_df_kind == 'train' else ''
     if 'retro_analyze' not in os.environ['PREPATH']:
         save_session_df(session_data, f'{prepath}_{prefix}session_df.csv', spec)
@@ -478,7 +478,7 @@ def save_session_data(spec, info_space, session_data, session_fitness_df, sessio
 
 def save_trial_data(spec, info_space, trial_df, trial_fitness_df, trial_fig, zip=True):
     '''Save the trial data: spec, trial_fitness_df.'''
-    prepath = util.get_prepath(spec, info_space, unit='trial')
+    prepath = util.get_prepath(spec, unit='trial')
     util.write(trial_df, f'{prepath}_trial_df.csv')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
@@ -491,7 +491,7 @@ def save_trial_data(spec, info_space, trial_df, trial_fitness_df, trial_fig, zip
 
 def save_experiment_data(spec, info_space, experiment_df, experiment_fig):
     '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
-    prepath = util.get_prepath(spec, info_space, unit='experiment')
+    prepath = util.get_prepath(spec, unit='experiment')
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
     logger.info(f'Saved experiment data to {prepath}')
@@ -522,7 +522,7 @@ def analyze_session(session, eager_analyze_trial=False, tmp_space_session_sub=Fa
     if eager_analyze_trial:
         # for live trial graph, analyze trial after analyzing session, this only takes a second
         from slm_lab.experiment import retro_analysis
-        prepath = util.get_prepath(session.spec, session.info_space, unit='session')
+        prepath = util.get_prepath(session.spec, unit='session')
         # use new ones to prevent side effects
         spec, info_space = util.prepath_to_spec_info_space(prepath)
         predir, _, _, _, _, _ = util.prepath_split(prepath)

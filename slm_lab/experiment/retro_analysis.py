@@ -51,7 +51,7 @@ def session_data_dict_from_file(predir, trial_index, ckpt=None):
 
 def session_data_dict_for_dist(spec, info_space):
     '''Method to retrieve session_datas (fitness df, so the same as session_data_dict above) when a trial with distributed sessions is done, to avoid messy multiprocessing data communication'''
-    prepath = util.get_prepath(spec, info_space)
+    prepath = util.get_prepath(spec)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     session_datas = session_data_dict_from_file(predir, spec['meta']['trial'], spec['meta']['ckpt'])
     session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
@@ -91,8 +91,8 @@ def parallel_eval(spec, info_space, ckpt):
 
     python run_lab.py data/dqn_cartpole_2018_12_19_224811/dqn_cartpole_t0_spec.json dqn_cartpole eval@dqn_cartpole_t0_s1_ckpt-epi10-totalt1000
     '''
-    prepath_t = util.get_prepath(spec, info_space, unit='trial')
-    prepath_s = util.get_prepath(spec, info_space, unit='session')
+    prepath_t = util.get_prepath(spec, unit='trial')
+    prepath_s = util.get_prepath(spec, unit='session')
     predir, _, prename, spec_name, _, _ = util.prepath_split(prepath_s)
     cmd = f'python run_lab.py {prepath_t}_spec.json {spec_name} eval@{prename}_ckpt-{ckpt}'
     logger.info(f'Running parallel eval for ckpt-{ckpt}')
@@ -244,6 +244,6 @@ def retro_eval(predir, session_index=None):
 
 def session_retro_eval(session):
     '''retro_eval but for session at the end to rerun failed evals'''
-    prepath = util.get_prepath(session.spec, session.info_space, unit='session')
+    prepath = util.get_prepath(session.spec, unit='session')
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     retro_eval(predir, session.index)

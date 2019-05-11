@@ -100,7 +100,7 @@ def create_remote_fn(experiment):
         fitness_vec = trial_fitness_df.iloc[0].to_dict()
         fitness = analysis.calc_fitness(trial_fitness_df)
         trial_data = {**config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index}
-        prepath = util.get_prepath(spec, info_space, unit='trial')
+        prepath = util.get_prepath(spec, unit='trial')
         util.write(trial_data, f'{prepath}_trial_data.json')
         return trial_data
     return run_trial
