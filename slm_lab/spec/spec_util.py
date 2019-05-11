@@ -113,7 +113,7 @@ def check_all():
 def extend_meta_spec(spec):
     '''Extend meta spec with information for lab functions'''
     extended_meta_spec = {
-        # lab indices: -1 so that it ticks to 0
+        # reset lab indices to -1 so that they tick to 0
         'experiment': -1,
         'trial': -1,
         'session': -1,
@@ -272,6 +272,7 @@ def resolve_aeb(spec):
 def tick(spec, unit):
     '''
     Method to tick lab unit (experiment, trial, session) in meta spec to advance their indices
+    Reset lower lab indices to -1 so that they tick to 0
     spec_util.tick(spec, 'session')
     session = Session(spec)
     '''
@@ -279,11 +280,11 @@ def tick(spec, unit):
     if unit == 'experiment':
         meta_spec['experiment_ts'] = util.get_ts()
         meta_spec['experiment'] += 1
-        meta_spec['trial'] = 0
-        meta_spec['session'] = 0
+        meta_spec['trial'] = -1
+        meta_spec['session'] = -1
     elif unit == 'trial':
         meta_spec['trial'] += 1
-        meta_spec['session'] = 0
+        meta_spec['session'] = -1
     elif unit == 'session':
         meta_spec['session'] += 1
     else:
