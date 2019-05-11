@@ -31,12 +31,12 @@ def run_train_mode(spec, lab_mode):
     info_space = InfoSpace()
     analysis.save_spec(spec, info_space)  # first save the new spec
     if lab_mode == 'search':
-        info_space.tick('experiment')
+        spec_util.tick(spec, 'experiment')
         Experiment(spec, info_space).run()
     elif lab_mode in TRAIN_MODES:
         if lab_mode == 'dev':
             spec = spec_util.override_dev_spec(spec)
-        info_space.tick('trial')
+        spec_util.tick(spec, 'trial')
         Trial(spec, info_space).run()
     else:
         raise ValueError(f'Unrecognizable lab_mode not of {TRAIN_MODES}')

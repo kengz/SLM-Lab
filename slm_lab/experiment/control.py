@@ -236,7 +236,7 @@ class Trial:
     def parallelize_sessions(self, global_nets=None):
         workers = []
         for _s in range(self.spec['meta']['max_session']):
-            self.info_space.tick('session')
+            spec_util.tick(self.spec, 'session')
             w = mp.Process(target=self.mp_runner, args=(deepcopy(self.spec), deepcopy(self.info_space), global_nets))
             w.start()
             workers.append(w)
@@ -253,7 +253,7 @@ class Trial:
         else:
             session_datas = []
             for _s in range(self.spec['meta']['max_session']):
-                self.info_space.tick('session')
+                spec_util.tick(self.spec, 'session')
                 session = self.SessionClass(deepcopy(self.spec), deepcopy(self.info_space))
                 session_data = session.run()
                 session_datas.append(session_data)

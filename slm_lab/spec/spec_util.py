@@ -256,3 +256,25 @@ def resolve_aeb(spec):
     aeb_list.sort()
     assert is_aeb_compact(aeb_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
     return aeb_list
+
+
+def tick(spec, unit):
+    '''
+    Method to tick lab unit (experiment, trial, session) in meta spec to advance their indices
+    spec_util.tick(spec, 'session')
+    session = Session(spec)
+    '''
+    meta_spec = spec['meta']
+    if unit == 'experiment':
+        meta_spec['experiment_ts'] = util.get_ts()
+        meta_spec['experiment'] += 1
+        meta_spec['trial'] = 0
+        meta_spec['session'] = 0
+    elif unit == 'trial':
+        meta_spec['trial'] += 1
+        meta_spec['session'] = 0
+    elif unit == 'session':
+        meta_spec['session'] += 1
+    else:
+        raise ValueError(f'Unrecognized lab unit to tick: {unit}')
+    return meta_spec

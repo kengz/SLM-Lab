@@ -8,8 +8,8 @@ import pytest
 
 
 def test_session(test_spec, test_info_space):
-    test_info_space.tick('trial')
-    test_info_space.tick('session')
+    spec_util.tick(test_spec, 'trial')
+    spec_util.tick(test_spec, 'session')
     analysis.save_spec(test_spec, test_info_space, unit='trial')
     session = Session(test_spec, test_info_space)
     session_data = session.run()
@@ -17,8 +17,8 @@ def test_session(test_spec, test_info_space):
 
 
 def test_session_total_t(test_spec, test_info_space):
-    test_info_space.tick('trial')
-    test_info_space.tick('session')
+    spec_util.tick(test_spec, 'trial')
+    spec_util.tick(test_spec, 'session')
     analysis.save_spec(test_spec, test_info_space, unit='trial')
     spec = deepcopy(test_spec)
     env_spec = spec['env'][0]
@@ -31,7 +31,7 @@ def test_session_total_t(test_spec, test_info_space):
 
 
 def test_trial(test_spec, test_info_space):
-    test_info_space.tick('trial')
+    spec_util.tick(test_spec, 'trial')
     analysis.save_spec(test_spec, test_info_space, unit='trial')
     trial = Trial(test_spec, test_info_space)
     trial_data = trial.run()
@@ -42,7 +42,7 @@ def test_trial_demo(test_info_space):
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     analysis.save_spec(spec, test_info_space, unit='experiment')
     spec = spec_util.override_test_spec(spec)
-    test_info_space.tick('trial')
+    spec_util.tick(spec, 'trial')
     trial_data = Trial(spec, test_info_space).run()
     assert isinstance(trial_data, pd.DataFrame)
 
@@ -54,9 +54,9 @@ def test_demo_performance(test_info_space):
     analysis.save_spec(spec, test_info_space, unit='experiment')
     for env_spec in spec['env']:
         env_spec['max_tick'] = 2000
-    test_info_space.tick('trial')
+    spec_util.tick(spec, 'trial')
     trial = Trial(spec, test_info_space)
-    test_info_space.tick('session')
+    spec_util.tick(spec, 'session')
     session = Session(spec, test_info_space)
     session.run()
     last_reward = session.agent.body.train_df.iloc[-1]['reward']
@@ -67,6 +67,6 @@ def test_experiment(test_info_space):
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     analysis.save_spec(spec, test_info_space, unit='experiment')
     spec = spec_util.override_test_spec(spec)
-    test_info_space.tick('experiment')
+    spec_util.tick(spec, 'experiment')
     experiment_data = Experiment(spec, test_info_space).run()
     assert isinstance(experiment_data, pd.DataFrame)

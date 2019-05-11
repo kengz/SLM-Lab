@@ -438,37 +438,6 @@ class InfoSpace:
         # e.g. 'data/dqn_cartpole_2018_12_19_085843/dqn_cartpole_t0_s0_ckpt-epi24-totalt1000'
         self.eval_model_prepath = None
 
-    def reset_lower_axes(cls, coor, axis):
-        '''Reset the axes lower than the given axis in coor'''
-        axis_idx = COOR_AXES_ORDER[axis]
-        for post_idx in range(axis_idx + 1, COOR_DIM):
-            post_axis = COOR_AXES[post_idx]
-            coor[post_axis] = None
-        return coor
-
-    def tick(self, axis):
-        '''
-        Advance the coor to the next point in axis (control unit class).
-        If the axis value has been reset, update to 0, else increment. For all axes lower than the specified axis, reset to None.
-        Note this will not skip coor in space, even though the covered space may not be rectangular.
-        @example
-
-        info_space.tick('session')
-        session = Session(spec, info_space)
-        '''
-        assert axis in self.coor
-        if axis == 'experiment':
-            self.experiment_ts = util.get_ts()
-        new_coor = self.coor.copy()
-        if new_coor[axis] is None:
-            new_coor[axis] = 0
-        else:
-            new_coor[axis] += 1
-        new_coor = self.reset_lower_axes(new_coor, axis)
-        self.covered_space.append(self.coor)
-        self.coor = new_coor
-        return self.coor
-
     def get(self, axis):
         return self.coor[axis]
 

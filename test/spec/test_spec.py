@@ -14,7 +14,7 @@ def run_trial_test(spec_file, spec_name=False):
     spec = spec_util.get(spec_file, spec_name)
     spec = spec_util.override_test_spec(spec)
     info_space = InfoSpace()
-    info_space.tick('trial')
+    spec_util.tick(spec, 'trial')
     trial = Trial(spec, info_space)
     trial_data = trial.run()
     assert isinstance(trial_data, pd.DataFrame)
