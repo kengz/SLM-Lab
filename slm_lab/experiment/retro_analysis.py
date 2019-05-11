@@ -53,7 +53,7 @@ def session_data_dict_for_dist(spec, info_space):
     '''Method to retrieve session_datas (fitness df, so the same as session_data_dict above) when a trial with distributed sessions is done, to avoid messy multiprocessing data communication'''
     prepath = util.get_prepath(spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = session_data_dict_from_file(predir, spec['meta']['trial'], ps.get(info_space, 'ckpt'))
+    session_datas = session_data_dict_from_file(predir, spec['meta']['trial'], spec['meta']['ckpt'])
     session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
     return session_datas
 
@@ -79,7 +79,7 @@ def analyze_eval_trial(spec, info_space, predir):
     '''Create a trial and run analysis to get the trial graph and other trial data'''
     from slm_lab.experiment.control import Trial
     trial = Trial(spec, info_space)
-    trial.session_data_dict = session_data_dict_from_file(predir, trial.index, ps.get(info_space, 'ckpt'))
+    trial.session_data_dict = session_data_dict_from_file(predir, trial.index, spec['meta']['ckpt'])
     # don't zip for eval analysis, slow otherwise
     analysis.analyze_trial(trial, zip=False)
 
@@ -151,7 +151,7 @@ def retro_analyze_sessions(predir):
             trial_index, session_index = util.prepath_to_idxs(prepath)
             SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
             session = SessionClass(spec, info_space)
-            session_data = session_data_from_file(predir, trial_index, session_index, ps.get(info_space, 'ckpt'), prefix)
+            session_data = session_data_from_file(predir, trial_index, session_index, spec['meta']['ckpt'], prefix)
             analysis._analyze_session(session, session_data, body_df_kind)
 
 
@@ -166,7 +166,7 @@ def retro_analyze_trials(predir):
         spec, info_space = util.prepath_to_spec_info_space(prepath)
         trial_index, _ = util.prepath_to_idxs(prepath)
         trial = Trial(spec, info_space)
-        trial.session_data_dict = session_data_dict_from_file(predir, trial_index, ps.get(info_space, 'ckpt'))
+        trial.session_data_dict = session_data_dict_from_file(predir, trial_index, spec['meta']['ckpt'])
         # zip only at the last
         zip = (idx == len(filenames) - 1)
         trial_fitness_df = analysis.analyze_trial(trial, zip)

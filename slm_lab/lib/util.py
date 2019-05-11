@@ -251,7 +251,7 @@ def get_prepath(spec, info_space, unit='experiment'):
         prename += t_str
     elif unit == 'session':
         prename += f'{t_str}{s_str}'
-    ckpt = ps.get(info_space, 'ckpt')
+    ckpt = spec['meta']['ckpt']
     if ckpt is not None:
         prename += f'_ckpt-{ckpt}'
     prepath = f'{predir}/{prename}'

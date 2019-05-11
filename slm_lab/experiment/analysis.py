@@ -360,7 +360,7 @@ def calc_trial_df(trial_spec, info_space):
     from slm_lab.experiment import retro_analysis
     prepath = util.get_prepath(trial_spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, trial_spec['meta']['trial'], ps.get(info_space, 'ckpt'))
+    session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, trial_spec['meta']['trial'], trial_spec['meta']['ckpt'])
     aeb_transpose = {aeb: [] for aeb in session_datas[list(session_datas.keys())[0]]}
     max_tick_unit = ps.get(trial_spec, 'meta.max_tick_unit')
     for s, session_data in session_datas.items():
@@ -380,7 +380,7 @@ def plot_trial(trial_spec, info_space):
     from slm_lab.experiment import retro_analysis
     prepath = util.get_prepath(trial_spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, trial_spec['meta']['trial'], ps.get(info_space, 'ckpt'))
+    session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, trial_spec['meta']['trial'], trial_spec['meta']['ckpt'])
     rand_session_data = session_datas[list(session_datas.keys())[0]]
     max_tick_unit = ps.get(trial_spec, 'meta.max_tick_unit')
     aeb_count = len(rand_session_data)
