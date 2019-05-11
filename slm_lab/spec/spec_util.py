@@ -118,6 +118,7 @@ def extend_meta_spec(spec):
         'trial': -1,
         'session': -1,
         'cuda_offset': int(os.environ.get('CUDA_OFFSET', 0)),
+        # ckpt extends prepath, e.g. ckpt_str = ckpt-epi10-totalt1000
         'ckpt': None,
         'experiment_ts': util.get_ts(),
         'eval_model_prepath': None,

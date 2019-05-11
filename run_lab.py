@@ -50,8 +50,8 @@ def run_eval_mode(spec, lab_mode):
     prepath = f'{predir}/{prename}'
     spec, info_space = util.prepath_to_spec_info_space(prepath)
     # see InfoSpace def for more on these
-    info_space.ckpt = 'eval'
-    info_space.eval_model_prepath = prepath
+    spec['meta']['ckpt'] = 'eval'
+    spec['meta']['eval_model_prepath'] = prepath
 
     # no info_space.tick() as they are reconstructed
     if lab_mode in EVAL_MODES:

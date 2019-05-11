@@ -241,7 +241,7 @@ def get_lab_mode():
 
 def get_prepath(spec, info_space, unit='experiment'):
     spec_name = spec['name']
-    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    predir = f'data/{spec_name}_{spec["meta"]["experiment_ts"]}'
     prename = f'{spec_name}'
     trial_index = spec['meta']['trial']
     session_index = spec['meta']['session']

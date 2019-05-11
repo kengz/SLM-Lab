@@ -436,10 +436,10 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
-def save_session_df(session_data, filepath, info_space):
+def save_session_df(session_data, filepath, spec):
     '''Save session_df, and if is in eval mode, modify it and save with append'''
     if util.in_eval_lab_modes():
-        ckpt = util.find_ckpt(info_space.eval_model_prepath)
+        ckpt = util.find_ckpt(spec['meta']['eval_model_prepath'])
         epi = int(re.search('epi(\d+)', ckpt)[1])
         totalt = int(re.search('totalt(\d+)', ckpt)[1])
         session_df = pd.concat(session_data, axis=1)
@@ -470,7 +470,7 @@ def save_session_data(spec, info_space, session_data, session_fitness_df, sessio
     prepath = util.get_prepath(spec, info_space, unit='session')
     prefix = 'train' if body_df_kind == 'train' else ''
     if 'retro_analyze' not in os.environ['PREPATH']:
-        save_session_df(session_data, f'{prepath}_{prefix}session_df.csv', info_space)
+        save_session_df(session_data, f'{prepath}_{prefix}session_df.csv', spec)
     util.write(session_fitness_df, f'{prepath}_{prefix}session_fitness_df.csv')
     viz.save_image(session_fig, f'{prepath}_{prefix}session_graph.png')
     logger.info(f'Saved {body_df_kind} session data and graphs to {prepath}*')

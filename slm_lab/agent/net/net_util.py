@@ -197,7 +197,7 @@ def load_algorithm(algorithm):
     net_names = algorithm.net_names
     if util.in_eval_lab_modes():
         # load specific model in eval mode
-        prepath = agent.info_space.eval_model_prepath
+        prepath = agent.spec['meta']['eval_model_prepath']
     else:
         prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
     logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {prepath}_*.pth')

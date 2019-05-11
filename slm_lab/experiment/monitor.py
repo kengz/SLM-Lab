@@ -427,13 +427,8 @@ class InfoSpace:
         Initialize the coor, the global point in info space that will advance according to experiment progress.
         The coor starts with null first since the coor may not start at the origin.
         '''
-        self.coor = last_coor or {k: None for k in COOR_AXES}
-        self.covered_space = []
         # used to id experiment sharing the same spec name
-        self.experiment_ts = util.get_ts()
         # ckpt gets appened to extend prepath using util.get_prepath for saving models, e.g. ckpt_str = ckpt-epi10-totalt1000
         # ckpt = 'eval' is special for eval mode, so data files will save with `ckpt-eval`; no models will be saved, but to load models with normal ckpt it will find them using eval_model_prepath
         # e.g. 'epi24-totalt1000', 'eval', 'best'
-        self.ckpt = None
         # e.g. 'data/dqn_cartpole_2018_12_19_085843/dqn_cartpole_t0_s0_ckpt-epi24-totalt1000'
-        self.eval_model_prepath = None
