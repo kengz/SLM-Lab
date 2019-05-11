@@ -1,5 +1,5 @@
 {
-  "a2c_gae_humanoid": {
+  "a2c_gae_cont": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -18,7 +18,7 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 512,
+        "training_frequency": 2048,
         "normalize_state": false
       },
       "memory": {
@@ -47,16 +47,16 @@
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "total_t": 5e7
+          "total_t": 1e6
         },
         "gpu": true
       }
     }],
     "env": [{
-      "name": "RoboschoolHumanoid-v1",
-      "num_envs": 32,
+      "name": "${env}",
+      "num_envs": 8,
       "max_t": null,
-      "max_tick": 5e7
+      "max_tick": 1e6
     }],
     "body": {
       "product": "outer",
@@ -69,6 +69,12 @@
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 1,
+      "param_spec_process": 4
+    },
+    "spec_params": {
+      "env": [
+        "RoboschoolAnt-v1", "BipedalWalker-v2", "RoboschoolHalfCheetah-v1", "RoboschoolHopper-v1", "RoboschoolInvertedPendulum-v1", "Pendulum-v0"
+      ]
     }
   }
 }

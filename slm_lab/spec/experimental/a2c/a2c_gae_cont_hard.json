@@ -1,21 +1,15 @@
 {
-  "ppo_pendulum": {
+  "a2c_gae_cont_hard": {
     "agent": [{
-      "name": "PPO",
+      "name": "A2C",
       "algorithm": {
-        "name": "PPO",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": 0.95,
-        "clip_eps_spec": {
-          "name": "no_decay",
-          "start_val": 0.20,
-          "end_val": 0.20,
-          "start_step": 0,
-          "end_step": 0
-        },
+        "num_step_returns": null,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.0,
@@ -25,8 +19,6 @@
         },
         "val_loss_coef": 0.5,
         "training_frequency": 2048,
-        "minibatch_size": 64,
-        "training_epoch": 10,
         "normalize_state": false
       },
       "memory": {
@@ -61,10 +53,10 @@
       }
     }],
     "env": [{
-      "name": "Pendulum-v0",
-      "num_envs": 8,
+      "name": "${env}",
+      "num_envs": 32,
       "max_t": null,
-      "max_tick": 1e6
+      "max_tick": 5e7
     }],
     "body": {
       "product": "outer",
@@ -77,6 +69,12 @@
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 1,
+      "param_spec_process": 4
+    },
+    "spec_params": {
+      "env": [
+        "RoboschoolHumanoid-v1"
+      ]
     }
   }
 }
