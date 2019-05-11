@@ -26,7 +26,7 @@ class Session:
     def __init__(self, spec, global_nets=None):
         self.spec = spec
         self.index = self.spec['meta']['session']
-        util.set_random_seed(self.spec['meta']['trial'], self.index, self.spec)
+        util.set_random_seed(self.spec)
         util.set_cuda_id(self.spec)
         util.set_logger(self.spec, logger, 'session')
         analysis.save_spec(spec, unit='session')
@@ -139,7 +139,7 @@ class SpaceSession(Session):
     def __init__(self, spec, global_nets=None):
         self.spec = spec
         self.index = self.spec['meta']['session']
-        util.set_random_seed(self.spec['meta']['trial'], self.index, self.spec)
+        util.set_random_seed(self.spec)
         util.set_cuda_id(self.spec)
         util.set_logger(self.spec, logger, 'session')
         analysis.save_spec(spec, unit='session')
