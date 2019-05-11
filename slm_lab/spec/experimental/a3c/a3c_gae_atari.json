@@ -1,10 +1,10 @@
 {
-  "a3c_gae_qbert": {
+  "a3c_gae_atari": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
         "name": "ActorCritic",
-        "action_pdtype": "Categorical",
+        "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
@@ -59,7 +59,7 @@
       }
     }],
     "env": [{
-      "name": "QbertNoFrameskip-v4",
+      "name": "${env}",
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
@@ -78,6 +78,12 @@
       "max_tick_unit": "total_t",
       "max_session": 16,
       "max_trial": 1,
+      "param_spec_process": 3
     },
+    "spec_params": {
+      "env": [
+        "BeamRiderNoFrameskip-v4", "BreakoutNoFrameskip-v4", "EnduroNoFrameskip-v4", "MsPacmanNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SeaquestNoFrameskip-v4", "SpaceInvadersNoFrameskip-v4"
+      ]
+    }
   }
 }
