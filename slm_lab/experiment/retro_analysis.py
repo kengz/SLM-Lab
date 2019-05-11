@@ -25,8 +25,10 @@ def session_data_from_file(predir, trial_index, session_index, ckpt=None, prefix
             return session_data
 
 
-def session_datas_from_file(predir, trial_spec, trial_index, ckpt=None):
+def session_datas_from_file(predir, trial_spec):
     '''Return a dict of {session_index: session_data} for a trial'''
+    trial_index = trial_spec['meta']['trial']
+    ckpt = trial_spec['meta']['ckpt']
     session_datas = {}
     for s in range(trial_spec['meta']['max_session']):
         session_data = session_data_from_file(predir, trial_index, s, ckpt)
