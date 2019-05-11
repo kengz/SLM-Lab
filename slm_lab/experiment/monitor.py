@@ -218,10 +218,10 @@ class Body:
 
     def get_log_prefix(self):
         '''Get the prefix for logging'''
-        spec_name = self.agent.spec['name']
-        info_space = self.agent.info_space
-        trial_index = info_space.get('trial')
-        session_index = info_space.get('session')
+        spec = self.agent.spec
+        spec_name = spec['name']
+        trial_index = spec['meta']['trial']
+        session_index = spec['meta']['session']
         aeb_str = str(self.aeb).replace(' ', '')
         prefix = f'Trial {trial_index} session {session_index} {spec_name}_t{trial_index}_s{session_index}, aeb{aeb_str}'
         return prefix

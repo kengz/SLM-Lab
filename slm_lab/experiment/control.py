@@ -26,8 +26,8 @@ class Session:
     def __init__(self, spec, info_space, global_nets=None):
         self.spec = spec
         self.info_space = info_space
-        self.index = self.info_space.get('session')
-        util.set_random_seed(self.info_space.get('trial'), self.index, self.spec)
+        self.index = self.spec['meta']['session']
+        util.set_random_seed(self.spec['meta']['trial'], self.index, self.spec)
         util.set_cuda_id(self.spec, self.info_space)
         util.set_logger(self.spec, self.info_space, logger, 'session')
         analysis.save_spec(spec, info_space, unit='session')
@@ -96,7 +96,7 @@ class Session:
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_tick'''
-        logger.info(f'Running RL loop training for trial {self.info_space.get("trial")} session {self.index}')
+        logger.info(f'Running RL loop training for trial {self.spec["meta"]["trial"]} session {self.index}')
         clock = self.env.clock
         state = self.env.reset()
         self.agent.reset(state)
@@ -140,8 +140,8 @@ class SpaceSession(Session):
     def __init__(self, spec, info_space, global_nets=None):
         self.spec = spec
         self.info_space = info_space
-        self.index = self.info_space.get('session')
-        util.set_random_seed(self.info_space.get('trial'), self.index, self.spec)
+        self.index = self.spec['meta']['session']
+        util.set_random_seed(self.spec['meta']['trial'], self.index, self.spec)
         util.set_cuda_id(self.spec, self.info_space)
         util.set_logger(self.spec, self.info_space, logger, 'session')
         analysis.save_spec(spec, info_space, unit='session')
@@ -221,8 +221,9 @@ class Trial:
     def __init__(self, spec, info_space):
         self.spec = spec
         self.info_space = info_space
-        self.index = self.info_space.get('trial')
-        info_space.set('session', None)  # Session starts anew for new trial
+        self.index = self.spec['meta']['trial']
+        # TODO check if below is really needed?
+        self.spec['meta']['session'] = -1  # Session starts anew for new trial
         util.set_logger(self.spec, self.info_space, logger, 'trial')
         analysis.save_spec(spec, info_space, unit='trial')
         self.session_data_dict = {}
@@ -317,7 +318,7 @@ class Experiment:
     def __init__(self, spec, info_space):
         self.spec = spec
         self.info_space = info_space
-        self.index = self.info_space.get('experiment')
+        self.index = self.spec['meta']['experiment']
         util.set_logger(self.spec, self.info_space, logger, 'trial')
         analysis.save_spec(spec, info_space, unit='experiment')
         self.trial_data_dict = {}

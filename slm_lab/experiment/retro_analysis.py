@@ -53,7 +53,7 @@ def session_data_dict_for_dist(spec, info_space):
     '''Method to retrieve session_datas (fitness df, so the same as session_data_dict above) when a trial with distributed sessions is done, to avoid messy multiprocessing data communication'''
     prepath = util.get_prepath(spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = session_data_dict_from_file(predir, info_space.get('trial'), ps.get(info_space, 'ckpt'))
+    session_datas = session_data_dict_from_file(predir, spec['meta']['trial'], ps.get(info_space, 'ckpt'))
     session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
     return session_datas
 

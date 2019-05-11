@@ -306,7 +306,7 @@ def plot_session(session_spec, info_space, session_data):
     fig.layout['yaxis3'].update(fig_2.layout['yaxis2'])
     fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
     fig.layout.update(ps.pick(fig_1.layout, ['legend']))
-    fig.layout.update(title=f'session graph: {session_spec["name"]} t{info_space.get("trial")} s{info_space.get("session")}', width=500, height=600)
+    fig.layout.update(title=f'session graph: {session_spec["name"]} t{session_spec["meta"]["trial"]} s{session_spec["meta"]["session"]}', width=500, height=600)
     viz.plot(fig)
     return fig
 
@@ -360,7 +360,7 @@ def calc_trial_df(trial_spec, info_space):
     from slm_lab.experiment import retro_analysis
     prepath = util.get_prepath(trial_spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, info_space.get('trial'), ps.get(info_space, 'ckpt'))
+    session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, trial_spec['meta']['trial'], ps.get(info_space, 'ckpt'))
     aeb_transpose = {aeb: [] for aeb in session_datas[list(session_datas.keys())[0]]}
     max_tick_unit = ps.get(trial_spec, 'meta.max_tick_unit')
     for s, session_data in session_datas.items():
@@ -380,7 +380,7 @@ def plot_trial(trial_spec, info_space):
     from slm_lab.experiment import retro_analysis
     prepath = util.get_prepath(trial_spec, info_space)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, info_space.get('trial'), ps.get(info_space, 'ckpt'))
+    session_datas = retro_analysis.session_datas_from_file(predir, trial_spec, trial_spec['meta']['trial'], ps.get(info_space, 'ckpt'))
     rand_session_data = session_datas[list(session_datas.keys())[0]]
     max_tick_unit = ps.get(trial_spec, 'meta.max_tick_unit')
     aeb_count = len(rand_session_data)
@@ -396,7 +396,7 @@ def plot_trial(trial_spec, info_space):
             fig = aeb_fig
         else:
             fig.add_traces(aeb_fig.data)
-    fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{info_space.get("trial")}, {len(session_datas)} sessions', width=500, height=600)
+    fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{trial_spec["meta"]["trial"]}, {len(session_datas)} sessions', width=500, height=600)
     viz.plot(fig)
     return fig
 

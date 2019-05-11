@@ -94,7 +94,7 @@ def create_remote_fn(experiment):
         trial_index = config.pop('trial_index')
         spec = spec_from_config(experiment, config)
         info_space = deepcopy(experiment.info_space)
-        info_space.set('trial', trial_index)
+        spec['meta']['trial'] = trial_index
         trial_fitness_df = experiment.init_trial_and_run(spec, info_space)
         fitness_vec = trial_fitness_df.iloc[0].to_dict()
         fitness = analysis.calc_fitness(trial_fitness_df)

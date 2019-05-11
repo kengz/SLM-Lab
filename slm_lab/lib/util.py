@@ -243,8 +243,8 @@ def get_prepath(spec, info_space, unit='experiment'):
     spec_name = spec['name']
     predir = f'data/{spec_name}_{info_space.experiment_ts}'
     prename = f'{spec_name}'
-    trial_index = info_space.get('trial')
-    session_index = info_space.get('session')
+    trial_index = spec['meta']['trial']
+    session_index = spec['meta']['session']
     t_str = '' if trial_index is None else f'_t{trial_index}'
     s_str = '' if session_index is None else f'_s{session_index}'
     if unit == 'trial':
@@ -582,8 +582,8 @@ def set_cuda_id(spec, info_space):
     for agent_spec in spec['agent']:
         if not agent_spec['net'].get('gpu'):
             return
-    trial_idx = info_space.get('trial') or 0
-    session_idx = info_space.get('session') or 0
+    trial_idx = spec['meta']['trial'] or 0
+    session_idx = spec['meta']['session'] or 0
     job_idx = trial_idx * spec['meta']['max_session'] + session_idx
     job_idx += spec['meta']['cuda_offset']
     device_count = torch.cuda.device_count()
