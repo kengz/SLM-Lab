@@ -11,6 +11,7 @@ import numpy as np
 import os
 import pydash as ps
 
+
 SPEC_DIR = 'slm_lab/spec'
 '''
 All spec values are already param, inferred automatically.
@@ -126,8 +127,10 @@ def get(spec_file, spec_name):
         spec_dict = util.read(spec_file)
         assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
         spec = spec_dict[spec_name]
+        # fill-in info at runtime
         spec['name'] = spec_name
         spec['meta']['git_sha'] = util.get_git_sha()
+        spec['meta']['cuda_offset'] = int(os.environ.get('CUDA_OFFSET', 0))
     check(spec)
     return spec
 
@@ -139,10 +142,12 @@ def get_param_specs(spec):
     spec_template = Template(json.dumps(spec))
     keys = spec_params.keys()
     specs = []
-    for vals in itertools.product(*spec_params.values()):
+    for idx, vals in enumerate(itertools.product(*spec_params.values())):
         spec_str = spec_template.substitute(dict(zip(keys, vals)))
         spec = json.loads(spec_str)
         spec['name'] += f'_{"_".join(vals)}'
+        # offset to prevent parallel-run GPU competition, to mod in util.set_cuda_id
+        spec['meta']['cuda_offset'] = (spec['meta']['cuda_offset'] + idx * spec['meta']['max_session'])
         specs.append(spec)
     return specs
 

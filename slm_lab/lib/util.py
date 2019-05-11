@@ -585,7 +585,7 @@ def set_cuda_id(spec, info_space):
     trial_idx = info_space.get('trial') or 0
     session_idx = info_space.get('session') or 0
     job_idx = trial_idx * spec['meta']['max_session'] + session_idx
-    job_idx += int(os.environ.get('CUDA_OFFSET', 0))  # cuda_id offset from env
+    job_idx += spec['meta']['cuda_offset']
     device_count = torch.cuda.device_count()
     cuda_id = None if not device_count else job_idx % device_count
 
