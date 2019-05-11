@@ -1,5 +1,5 @@
 {
-  "a2c_bipedalwalker": {
+  "a2c_cont": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -53,7 +53,7 @@
       }
     }],
     "env": [{
-      "name": "BipedalWalker-v2",
+      "name": "${env}",
       "num_envs": 8,
       "max_t": null,
       "max_tick": 1e6
@@ -69,6 +69,12 @@
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 1,
+      "param_spec_process": 4
+    },
+    "spec_params": {
+      "env": [
+        "RoboschoolAnt-v1", "BipedalWalker-v2", "RoboschoolHalfCheetah-v1", "RoboschoolHopper-v1", "RoboschoolInvertedPendulum-v1", "Pendulum-v0"
+      ]
     }
   }
 }
