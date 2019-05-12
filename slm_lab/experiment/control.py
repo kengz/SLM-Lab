@@ -41,7 +41,6 @@ class Session:
 
         enable_aeb_space(self)  # to use lab's data analysis framework
         logger.info(util.self_desc(self))
-        logger.info(f'Initialized session {self.index}')
 
     def to_ckpt(self, env, mode='eval'):
         '''Check with clock and lab_mode whether to run log/eval ckpt: at the start, save_freq, and the end'''
@@ -151,7 +150,6 @@ class SpaceSession(Session):
         self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
 
         logger.info(util.self_desc(self))
-        logger.info(f'Initialized session {self.index}')
 
     def try_ckpt(self, agent_space, env_space):
         '''Try to checkpoint agent at the start, save_freq, and the end'''
@@ -227,7 +225,6 @@ class Trial:
         self.is_singleton = spec_util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
         self.SessionClass = Session if self.is_singleton else SpaceSession
         self.mp_runner = init_run_session if self.is_singleton else init_run_space_session
-        logger.info(f'Initialized trial {self.index}')
 
     def parallelize_sessions(self, global_nets=None):
         workers = []
@@ -319,7 +316,6 @@ class Experiment:
         self.data = None
         SearchClass = getattr(search, spec['meta'].get('search'))
         self.search = SearchClass(self)
-        logger.info(f'Initialized experiment {self.index}')
 
     def init_trial_and_run(self, spec):
         '''

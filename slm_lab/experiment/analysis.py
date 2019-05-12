@@ -250,7 +250,6 @@ def calc_session_fitness_df(session, session_data):
     session_fitness_df = pd.concat(session_fitness_data, axis=1)
     mean_fitness_df = calc_mean_fitness(session_fitness_df)
     session_fitness = calc_fitness(mean_fitness_df)
-    logger.info(f'Session mean fitness: {session_fitness:g} {mean_fitness_df.iloc[0].round(4).to_dict()}')
     return session_fitness_df
 
 
@@ -277,7 +276,6 @@ def calc_trial_fitness_df(trial):
     mean_fitness_df = calc_mean_fitness(trial_fitness_df)
     trial_fitness_df = mean_fitness_df
     trial_fitness = calc_fitness(mean_fitness_df)
-    logger.info(f'Trial mean fitness: {trial_fitness:g} {mean_fitness_df.iloc[0].round(4).to_dict()}')
     return trial_fitness_df
 
 
@@ -514,7 +512,6 @@ def analyze_session(session, eager_analyze_trial=False, tmp_space_session_sub=Fa
     Gather session data, plot, and return fitness df for high level agg.
     @returns {DataFrame} session_fitness_df Single-row df of session fitness vector (avg over aeb), indexed with session index.
     '''
-    logger.info('Analyzing session')
     session_data = get_session_data(session, body_df_kind='train')
     session_fitness_df = _analyze_session(session, session_data, body_df_kind='train')
     session_data = get_session_data(session, body_df_kind='eval', tmp_space_session_sub=tmp_space_session_sub)
@@ -535,7 +532,6 @@ def analyze_trial(trial, zip=True):
     Gather trial data, plot, and return trial df for high level agg.
     @returns {DataFrame} trial_fitness_df Single-row df of trial fitness vector (avg over aeb, sessions), indexed with trial index.
     '''
-    logger.info('Analyzing trial')
     trial_df = calc_trial_df(trial.spec)
     trial_fitness_df = calc_trial_fitness_df(trial)
     trial_fig = plot_trial(trial.spec)
@@ -551,7 +547,6 @@ def analyze_experiment(experiment):
     This is then made into experiment_df.
     @returns {DataFrame} experiment_df Of var_specs, fitness_vec, fitness for all trials.
     '''
-    logger.info('Analyzing experiment')
     experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
     cols = FITNESS_COLS + ['fitness']
     config_cols = sorted(ps.difference(experiment_df.columns.tolist(), cols))

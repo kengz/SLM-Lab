@@ -178,7 +178,8 @@ def get_param_specs(spec):
         spec = json.loads(spec_str)
         spec['name'] += f'_{"_".join(vals)}'
         # offset to prevent parallel-run GPU competition, to mod in util.set_cuda_id
-        spec['meta']['cuda_offset'] = (spec['meta']['cuda_offset'] + idx * spec['meta']['max_session'])
+        cuda_id_gap = int(spec['meta']['max_session'] / spec['meta']['param_spec_process'])
+        spec['meta']['cuda_offset'] += idx * cuda_id_gap
         specs.append(spec)
     return specs
 
