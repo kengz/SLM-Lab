@@ -471,7 +471,7 @@ def save_session_data(spec, session_data, session_fitness_df, session_fig, body_
         save_session_df(session_data, f'{prepath}_{prefix}session_df.csv', spec)
     util.write(session_fitness_df, f'{prepath}_{prefix}session_fitness_df.csv')
     viz.save_image(session_fig, f'{prepath}_{prefix}session_graph.png')
-    logger.info(f'Saved {body_df_kind} session data and graphs to {prepath}*')
+    logger.debug(f'Saved {body_df_kind} session data and graphs to {prepath}*')
 
 
 def save_trial_data(spec, trial_df, trial_fitness_df, trial_fig, zip=True):
@@ -480,7 +480,7 @@ def save_trial_data(spec, trial_df, trial_fitness_df, trial_fig, zip=True):
     util.write(trial_df, f'{prepath}_trial_df.csv')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
-    logger.info(f'Saved trial data and graphs to {prepath}*')
+    logger.debug(f'Saved trial data and graphs to {prepath}*')
     if util.get_lab_mode() == 'train' and zip:
         predir, _, _, _, _, _ = util.prepath_split(prepath)
         shutil.make_archive(predir, 'zip', predir)
@@ -492,7 +492,7 @@ def save_experiment_data(spec, experiment_df, experiment_fig):
     prepath = util.get_prepath(spec, unit='experiment')
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
-    logger.info(f'Saved experiment data to {prepath}')
+    logger.debug(f'Saved experiment data to {prepath}')
     # zip for ease of upload
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     shutil.make_archive(predir, 'zip', predir)

@@ -182,7 +182,7 @@ def save_algorithm(algorithm, ckpt=None):
         save(net, model_path)
         optim_path = f'{prepath}_{net_name}_optim.pth'
         save(net.optim, optim_path)
-    logger.info(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
+    logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
 
 
 def load(net, model_path):
