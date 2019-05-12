@@ -6,6 +6,7 @@ from ray.tune.suggest import variant_generator
 from slm_lab.experiment import analysis
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
+from slm_lab.spec import spec_util
 import json
 import numpy as np
 import os
@@ -20,10 +21,8 @@ logger = logger.get_logger(__name__)
 def register_ray_serializer():
     '''Helper to register so objects can be serialized in Ray'''
     from slm_lab.experiment.control import Experiment
-    from slm_lab.experiment.monitor import InfoSpace
     import pandas as pd
     ray.register_custom_serializer(Experiment, use_pickle=True)
-    ray.register_custom_serializer(InfoSpace, use_pickle=True)
     ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
     ray.register_custom_serializer(pd.Series, use_pickle=True)
 
@@ -92,13 +91,13 @@ def create_remote_fn(experiment):
     def run_trial(experiment, config):
         trial_index = config.pop('trial_index')
         spec = spec_from_config(experiment, config)
-        info_space = deepcopy(experiment.info_space)
-        info_space.set('trial', trial_index)
-        trial_fitness_df = experiment.init_trial_and_run(spec, info_space)
+        spec['meta']['trial'] = trial_index
+        spec['meta']['session'] = -1
+        trial_fitness_df = experiment.init_trial_and_run(spec)
         fitness_vec = trial_fitness_df.iloc[0].to_dict()
         fitness = analysis.calc_fitness(trial_fitness_df)
         trial_data = {**config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index}
-        prepath = util.get_prepath(spec, info_space, unit='trial')
+        prepath = util.get_prepath(spec, unit='trial')
         util.write(trial_data, f'{prepath}_trial_data.json')
         return trial_data
     return run_trial
@@ -139,7 +138,7 @@ class RaySearch(ABC):
         Remember to update trial_index in config here, since run_trial() on ray.remote is not thread-safe.
         '''
         # use self.config_space to build config
-        config['trial_index'] = self.experiment.info_space.tick('trial')['trial']
+        config['trial_index'] = spec_util.tick(self.experiment.spec, 'trial')['trial']
         raise NotImplementedError
         return config
 
@@ -163,7 +162,7 @@ class RandomSearch(RaySearch):
     def generate_config(self):
         configs = []  # to accommodate for grid_search
         for resolved_vars, config in variant_generator._generate_variants(self.config_space):
-            config['trial_index'] = self.experiment.info_space.tick('trial')['trial']
+            config['trial_index'] = spec_util.tick(self.experiment.spec, 'trial')['trial']
             configs.append(config)
         return configs
 
@@ -266,7 +265,7 @@ class EvolutionarySearch(RaySearch):
                 config = dict(individual.items())
                 hash_str = util.to_json(config, indent=0)
                 if hash_str not in config_hash:
-                    trial_index = self.experiment.info_space.tick('trial')['trial']
+                    trial_index = spec_util.tick(self.experiment.spec, 'trial')['trial']
                     config_hash[hash_str] = config['trial_index'] = trial_index
                     ray_id = run_trial.remote(self.experiment, config)
                     ray_id_to_config[ray_id] = config

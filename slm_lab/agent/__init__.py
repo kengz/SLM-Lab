@@ -36,9 +36,8 @@ class Agent:
     Access Envs properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
     '''
 
-    def __init__(self, spec, info_space, body, a=None, agent_space=None, global_nets=None):
+    def __init__(self, spec, body, a=None, agent_space=None, global_nets=None):
         self.spec = spec
-        self.info_space = info_space
         self.a = a or 0  # for compatibility with agent_space
         self.agent_spec = spec['agent'][self.a]
         self.name = self.agent_spec['name']
@@ -156,7 +155,6 @@ class AgentSpace:
         self.spec = spec
         self.aeb_space = aeb_space
         aeb_space.agent_space = self
-        self.info_space = aeb_space.info_space
         self.aeb_shape = aeb_space.aeb_shape
         assert not ps.is_dict(global_nets), f'multi agent global_nets must be a list of dicts, got {global_nets}'
         assert ps.is_list(self.spec['agent'])
@@ -167,7 +165,7 @@ class AgentSpace:
                 agent_global_nets = global_nets[a]
             else:
                 agent_global_nets = None
-            agent = Agent(self.spec, self.info_space, body=body_a, a=a, agent_space=self, global_nets=agent_global_nets)
+            agent = Agent(self.spec, body=body_a, a=a, agent_space=self, global_nets=agent_global_nets)
             self.agents.append(agent)
         logger.info(util.self_desc(self))
 

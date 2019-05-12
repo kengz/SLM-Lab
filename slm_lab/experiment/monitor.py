@@ -1,7 +1,6 @@
 '''
 The monitor module with data_space
 Monitors agents, environments, sessions, trials, experiments, evolutions, and handles all the data produced by the Lab components.
-InfoSpace handles the unified hyperdimensional data for SLM Lab, used for analysis and experiment planning. Sources data from monitor.
 Each dataframe resolves from the coarsest dimension to the finest, with data coordinates coor in the form: (experiment,trial,session,agent,env,body)
 The resolution after session is the AEB space, hence it is a subspace.
 AEB space is not necessarily tabular, and hence the data is NoSQL.
@@ -10,8 +9,7 @@ The data_space is congruent to the coor, with proper resolution.
 E.g. (experiment,trial,session) specifies the session_data of a session, ran over multiple episodes on the AEB space.
 
 Space ordering:
-InfoSpace: the general space for complete information
-AEBSpace: subspace of InfoSpace for a specific session
+AEBSpace: space to track AEB
 AgentSpace: space agent instances, subspace of AEBSpace
 EnvSpace: space of env instances, subspace of AEBSpace
 DataSpace: a data space storing an AEB data projected to a-axis, and its dual projected to e-axis. This is so that a-proj data like action_space from agent_space can be used by env_space, which requires e-proj data, and vice versa.
@@ -33,22 +31,13 @@ import pydash as ps
 import time
 import torch
 
-# These correspond to the control unit classes, lower cased
-COOR_AXES = [
-    'experiment',
-    'trial',
-    'session',
-]
-COOR_AXES_ORDER = {
-    axis: idx for idx, axis in enumerate(COOR_AXES)
-}
-COOR_DIM = len(COOR_AXES)
+
 logger = logger.get_logger(__name__)
 
 
 def enable_aeb_space(session):
     '''Enable aeb_space to session use Lab's data-monitor and analysis modules'''
-    session.aeb_space = AEBSpace(session.spec, session.info_space)
+    session.aeb_space = AEBSpace(session.spec)
     # make compatible with the generic multiagent setup
     session.aeb_space.body_space = DataSpace('body', session.aeb_space)
     body_v = np.full(session.aeb_space.aeb_shape, np.nan, dtype=object)
@@ -218,10 +207,10 @@ class Body:
 
     def get_log_prefix(self):
         '''Get the prefix for logging'''
-        spec_name = self.agent.spec['name']
-        info_space = self.agent.info_space
-        trial_index = info_space.get('trial')
-        session_index = info_space.get('session')
+        spec = self.agent.spec
+        spec_name = spec['name']
+        trial_index = spec['meta']['trial']
+        session_index = spec['meta']['session']
         aeb_str = str(self.aeb).replace(' ', '')
         prefix = f'Trial {trial_index} session {session_index} {spec_name}_t{trial_index}_s{session_index}, aeb{aeb_str}'
         return prefix
@@ -239,7 +228,7 @@ class Body:
             df = self.train_df
             reward_ma = self.total_reward_ma
         last_row = df.iloc[-1]
-        row_str = ', '.join([f'{k}: {v:g}' for k, v in last_row.items()])
+        row_str = '  '.join([f'{k}: {v:g}' for k, v in last_row.items()])
         msg = f'{prefix} [{body_df_kind}_df] {row_str}'
         logger.info(msg)
 
@@ -338,8 +327,7 @@ class DataSpace:
 
 class AEBSpace:
 
-    def __init__(self, spec, info_space):
-        self.info_space = info_space
+    def __init__(self, spec):
         self.spec = spec
         self.clock = None  # the finest common refinement as space clock
         self.agent_space = None
@@ -419,59 +407,3 @@ class AEBSpace:
             end_session = not (env.clock.get() < env.clock.max_tick)
             end_sessions.append(end_session)
         return all(end_sessions)
-
-
-class InfoSpace:
-    def __init__(self, last_coor=None):
-        '''
-        Initialize the coor, the global point in info space that will advance according to experiment progress.
-        The coor starts with null first since the coor may not start at the origin.
-        '''
-        self.coor = last_coor or {k: None for k in COOR_AXES}
-        self.covered_space = []
-        # used to id experiment sharing the same spec name
-        self.experiment_ts = util.get_ts()
-        # ckpt gets appened to extend prepath using util.get_prepath for saving models, e.g. ckpt_str = ckpt-epi10-totalt1000
-        # ckpt = 'eval' is special for eval mode, so data files will save with `ckpt-eval`; no models will be saved, but to load models with normal ckpt it will find them using eval_model_prepath
-        # e.g. 'epi24-totalt1000', 'eval', 'best'
-        self.ckpt = None
-        # e.g. 'data/dqn_cartpole_2018_12_19_085843/dqn_cartpole_t0_s0_ckpt-epi24-totalt1000'
-        self.eval_model_prepath = None
-
-    def reset_lower_axes(cls, coor, axis):
-        '''Reset the axes lower than the given axis in coor'''
-        axis_idx = COOR_AXES_ORDER[axis]
-        for post_idx in range(axis_idx + 1, COOR_DIM):
-            post_axis = COOR_AXES[post_idx]
-            coor[post_axis] = None
-        return coor
-
-    def tick(self, axis):
-        '''
-        Advance the coor to the next point in axis (control unit class).
-        If the axis value has been reset, update to 0, else increment. For all axes lower than the specified axis, reset to None.
-        Note this will not skip coor in space, even though the covered space may not be rectangular.
-        @example
-
-        info_space.tick('session')
-        session = Session(spec, info_space)
-        '''
-        assert axis in self.coor
-        if axis == 'experiment':
-            self.experiment_ts = util.get_ts()
-        new_coor = self.coor.copy()
-        if new_coor[axis] is None:
-            new_coor[axis] = 0
-        else:
-            new_coor[axis] += 1
-        new_coor = self.reset_lower_axes(new_coor, axis)
-        self.covered_space.append(self.coor)
-        self.coor = new_coor
-        return self.coor
-
-    def get(self, axis):
-        return self.coor[axis]
-
-    def set(self, axis, val):
-        self.coor[axis] = val
-        return self.coor[axis]

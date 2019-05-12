@@ -239,19 +239,20 @@ def get_lab_mode():
     return os.environ.get('lab_mode')
 
 
-def get_prepath(spec, info_space, unit='experiment'):
+def get_prepath(spec, unit='experiment'):
     spec_name = spec['name']
-    predir = f'data/{spec_name}_{info_space.experiment_ts}'
+    meta_spec = spec['meta']
+    predir = f'data/{spec_name}_{meta_spec["experiment_ts"]}'
     prename = f'{spec_name}'
-    trial_index = info_space.get('trial')
-    session_index = info_space.get('session')
+    trial_index = meta_spec['trial']
+    session_index = meta_spec['session']
     t_str = '' if trial_index is None else f'_t{trial_index}'
     s_str = '' if session_index is None else f'_s{session_index}'
     if unit == 'trial':
         prename += t_str
     elif unit == 'session':
         prename += f'{t_str}{s_str}'
-    ckpt = ps.get(info_space, 'ckpt')
+    ckpt = meta_spec['ckpt']
     if ckpt is not None:
         prename += f'_ckpt-{ckpt}'
     prepath = f'{predir}/{prename}'
@@ -392,43 +393,28 @@ def prepath_to_idxs(prepath):
 
 
 def prepath_to_spec(prepath):
-    '''Create spec from prepath such that it returns the same prepath with info_space'''
-    predir, _, prename, _, _, _ = prepath_split(prepath)
+    '''
+    Given a prepath, read the correct spec recover the meta_spec that will return the same prepath for eval lab modes
+    example: data/a2c_cartpole_2018_06_13_220436/a2c_cartpole_t0_s0
+    '''
+    predir, _, prename, _, experiment_ts, ckpt = prepath_split(prepath)
     sidx_res = re.search('_s\d+', prename)
     if sidx_res:  # replace the _s0 if any
         prename = prename.replace(sidx_res[0], '')
     spec_path = f'{predir}/{prename}_spec.json'
     # read the spec of prepath
     spec = read(spec_path)
-    return spec
-
-
-def prepath_to_info_space(prepath):
-    '''Create info_space from prepath such that it returns the same prepath with spec'''
-    from slm_lab.experiment.monitor import InfoSpace
-    _, _, _, _, experiment_ts, ckpt = prepath_split(prepath)
+    # recover meta_spec
     trial_index, session_index = prepath_to_idxs(prepath)
-    # create info_space for prepath
-    info_space = InfoSpace()
-    info_space.experiment_ts = experiment_ts
-    info_space.ckpt = ckpt
-    info_space.set('experiment', 0)
-    info_space.set('trial', trial_index)
-    info_space.set('session', session_index)
-    return info_space
-
-
-def prepath_to_spec_info_space(prepath):
-    '''
-    Given a prepath, read the correct spec and craete the info_space that will return the same prepath
-    This is used for lab_mode: enjoy
-    example: data/a2c_cartpole_2018_06_13_220436/a2c_cartpole_t0_s0
-    '''
-    spec = prepath_to_spec(prepath)
-    info_space = prepath_to_info_space(prepath)
-    check_prepath = get_prepath(spec, info_space, unit='session')
+    meta_spec = spec['meta']
+    meta_spec['experiment_ts'] = experiment_ts
+    meta_spec['ckpt'] = ckpt
+    meta_spec['experiment'] = 0
+    meta_spec['trial'] = trial_index
+    meta_spec['session'] = session_index
+    check_prepath = get_prepath(spec, unit='session')
     assert check_prepath in prepath, f'{check_prepath}, {prepath}'
-    return spec, info_space
+    return spec
 
 
 def read(data_path, **kwargs):
@@ -575,35 +561,35 @@ def set_attr(obj, attr_dict, keys=None):
     return obj
 
 
-def set_cuda_id(spec, info_space):
+def set_cuda_id(spec):
     '''Use trial and session id to hash and modulo cuda device count for a cuda_id to maximize device usage. Sets the net_spec for the base Net class to pick up.'''
     # Don't trigger any cuda call if not using GPU. Otherwise will break multiprocessing on machines with CUDA.
     # see issues https://github.com/pytorch/pytorch/issues/334 https://github.com/pytorch/pytorch/issues/3491 https://github.com/pytorch/pytorch/issues/9996
     for agent_spec in spec['agent']:
         if not agent_spec['net'].get('gpu'):
             return
-    trial_idx = info_space.get('trial') or 0
-    session_idx = info_space.get('session') or 0
+    trial_idx = spec['meta']['trial'] or 0
+    session_idx = spec['meta']['session'] or 0
     job_idx = trial_idx * spec['meta']['max_session'] + session_idx
-    job_idx += int(os.environ.get('CUDA_ID_OFFSET', 0))
+    job_idx += spec['meta']['cuda_offset']
     device_count = torch.cuda.device_count()
-    if device_count == 0:
-        cuda_id = None
-    else:
-        cuda_id = job_idx % device_count
+    cuda_id = None if not device_count else job_idx % device_count
 
     for agent_spec in spec['agent']:
         agent_spec['net']['cuda_id'] = cuda_id
 
 
-def set_logger(spec, info_space, logger, unit=None):
-    '''Set the logger for a lab unit give its spec and info_space'''
-    os.environ['PREPATH'] = get_prepath(spec, info_space, unit=unit)
+def set_logger(spec, logger, unit=None):
+    '''Set the logger for a lab unit give its spec'''
+    os.environ['PREPATH'] = get_prepath(spec, unit=unit)
     reload(logger)  # to set session-specific logger
 
 
-def set_random_seed(trial, session, spec):
+def set_random_seed(spec):
     '''Generate and set random seed for relevant modules, and record it in spec.meta.random_seed'''
+    torch.set_num_threads(1)  # prevent multithread slowdown, set again for hogwild
+    trial = spec['meta']['trial']
+    session = spec['meta']['session']
     random_seed = int(1e5 * (trial or 0) + 1e3 * (session or 0) + time.time())
     torch.cuda.manual_seed_all(random_seed)
     torch.manual_seed(random_seed)

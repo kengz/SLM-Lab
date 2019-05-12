@@ -1,6 +1,6 @@
 from slm_lab.agent import AgentSpace
 from slm_lab.env import EnvSpace
-from slm_lab.experiment.monitor import AEBSpace, InfoSpace
+from slm_lab.experiment.monitor import AEBSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 from xvfbwrapper import Xvfb
@@ -36,15 +36,10 @@ def test_spec():
 
 
 @pytest.fixture(scope='session')
-def test_info_space():
-    return InfoSpace()
-
-
-@pytest.fixture(scope='session')
 def test_aeb_space(test_spec):
     global aeb_space
     if aeb_space is None:
-        aeb_space = AEBSpace(test_spec, InfoSpace())
+        aeb_space = AEBSpace(test_spec)
         env_space = EnvSpace(test_spec, aeb_space)
         aeb_space.init_body_space()
         agent_space = AgentSpace(test_spec, aeb_space)
@@ -124,7 +119,7 @@ def test_str():
 def test_memory(request):
     memspec = spec_util.get('base.json', 'base_memory')
     memspec = spec_util.override_test_spec(memspec)
-    aeb_mem_space = AEBSpace(memspec, InfoSpace())
+    aeb_mem_space = AEBSpace(memspec)
     env_space = EnvSpace(memspec, aeb_mem_space)
     aeb_mem_space.init_body_space()
     agent_space = AgentSpace(memspec, aeb_mem_space)
@@ -152,7 +147,7 @@ def test_memory(request):
 def test_on_policy_episodic_memory(request):
     memspec = spec_util.get('base.json', 'base_on_policy_memory')
     memspec = spec_util.override_test_spec(memspec)
-    aeb_mem_space = AEBSpace(memspec, InfoSpace())
+    aeb_mem_space = AEBSpace(memspec)
     env_space = EnvSpace(memspec, aeb_mem_space)
     aeb_mem_space.init_body_space()
     agent_space = AgentSpace(memspec, aeb_mem_space)
@@ -180,7 +175,7 @@ def test_on_policy_episodic_memory(request):
 def test_on_policy_batch_memory(request):
     memspec = spec_util.get('base.json', 'base_on_policy_batch_memory')
     memspec = spec_util.override_test_spec(memspec)
-    aeb_mem_space = AEBSpace(memspec, InfoSpace())
+    aeb_mem_space = AEBSpace(memspec)
     env_space = EnvSpace(memspec, aeb_mem_space)
     aeb_mem_space.init_body_space()
     agent_space = AgentSpace(memspec, aeb_mem_space)
@@ -208,7 +203,7 @@ def test_on_policy_batch_memory(request):
 def test_prioritized_replay_memory(request):
     memspec = spec_util.get('base.json', 'base_prioritized_replay_memory')
     memspec = spec_util.override_test_spec(memspec)
-    aeb_mem_space = AEBSpace(memspec, InfoSpace())
+    aeb_mem_space = AEBSpace(memspec)
     env_space = EnvSpace(memspec, aeb_mem_space)
     aeb_mem_space.init_body_space()
     agent_space = AgentSpace(memspec, aeb_mem_space)

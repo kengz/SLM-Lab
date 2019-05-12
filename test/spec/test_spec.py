@@ -1,6 +1,5 @@
 from flaky import flaky
 from slm_lab.experiment.control import Trial
-from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 import os
@@ -13,9 +12,8 @@ import sys
 def run_trial_test(spec_file, spec_name=False):
     spec = spec_util.get(spec_file, spec_name)
     spec = spec_util.override_test_spec(spec)
-    info_space = InfoSpace()
-    info_space.tick('trial')
-    trial = Trial(spec, info_space)
+    spec_util.tick(spec, 'trial')
+    trial = Trial(spec)
     trial_data = trial.run()
     assert isinstance(trial_data, pd.DataFrame)
 

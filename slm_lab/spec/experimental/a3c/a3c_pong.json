@@ -1,5 +1,5 @@
 {
-  "a2c_gae_pong": {
+  "a3c_gae_pong": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -63,7 +63,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 16,
+      "num_envs": 1,
       "max_t": null,
       "max_tick": 1e7
     }],
@@ -72,11 +72,11 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": true,
       "log_frequency": 50000,
       "eval_frequency": 50000,
       "max_tick_unit": "total_t",
-      "max_session": 4,
+      "max_session": 16,
       "max_trial": 1,
     }
   }

@@ -4,11 +4,13 @@ Handles the Lab experiment spec: reading, writing(evolution), validation and def
 Expands the spec and params into consumable inputs in info space for lab units.
 '''
 from slm_lab.lib import logger, util
+from string import Template
 import itertools
 import json
 import numpy as np
 import os
 import pydash as ps
+
 
 SPEC_DIR = 'slm_lab/spec'
 '''
@@ -99,15 +101,35 @@ def check_all():
     for spec_file in spec_files:
         spec_dict = util.read(f'{SPEC_DIR}/{spec_file}')
         for spec_name, spec in spec_dict.items():
+            # fill-in info at runtime
+            spec['name'] = spec_name
+            spec = extend_meta_spec(spec)
             try:
-                spec['name'] = spec_name
-                spec['git_SHA'] = util.get_git_sha()
                 check(spec)
             except Exception as e:
                 logger.exception(f'spec_file {spec_file} fails spec check')
                 raise e
     logger.info(f'Checked all specs from: {ps.join(spec_files, ",")}')
     return True
+
+
+def extend_meta_spec(spec):
+    '''Extend meta spec with information for lab functions'''
+    extended_meta_spec = {
+        # reset lab indices to -1 so that they tick to 0
+        'experiment': -1,
+        'trial': -1,
+        'session': -1,
+        'cuda_offset': int(os.environ.get('CUDA_OFFSET', 0)),
+        # ckpt extends prepath, e.g. ckpt_str = ckpt-epi10-totalt1000
+        'ckpt': None,
+        'experiment_ts': util.get_ts(),
+        'eval_model_prepath': None,
+        'git_sha': util.get_git_sha(),
+        'random_seed': None,
+    }
+    spec['meta'].update(extended_meta_spec)
+    return spec
 
 
 def get(spec_file, spec_name):
@@ -127,10 +149,39 @@ def get(spec_file, spec_name):
         spec_dict = util.read(spec_file)
         assert spec_name in spec_dict, f'spec_name {spec_name} is not in spec_file {spec_file}. Choose from:\n {ps.join(spec_dict.keys(), ",")}'
         spec = spec_dict[spec_name]
+        # fill-in info at runtime
         spec['name'] = spec_name
-        spec['git_SHA'] = util.get_git_sha()
+        spec = extend_meta_spec(spec)
     check(spec)
     return spec
+
+
+def get_eval_spec(spec_file, prename):
+    '''Get spec for eval mode'''
+    predir, _, _, _, _, _ = util.prepath_split(spec_file)
+    prepath = f'{predir}/{prename}'
+    spec = util.prepath_to_spec(prepath)
+    spec['meta']['ckpt'] = 'eval'
+    spec['meta']['eval_model_prepath'] = prepath
+    return spec
+
+
+def get_param_specs(spec):
+    '''Return a list of specs with substituted spec_params'''
+    assert 'spec_params' in spec, 'Parametrized spec needs a spec_params key'
+    spec_params = spec.pop('spec_params')
+    spec_template = Template(json.dumps(spec))
+    keys = spec_params.keys()
+    specs = []
+    for idx, vals in enumerate(itertools.product(*spec_params.values())):
+        spec_str = spec_template.substitute(dict(zip(keys, vals)))
+        spec = json.loads(spec_str)
+        spec['name'] += f'_{"_".join(vals)}'
+        # offset to prevent parallel-run GPU competition, to mod in util.set_cuda_id
+        cuda_id_gap = int(spec['meta']['max_session'] / spec['meta']['param_spec_process'])
+        spec['meta']['cuda_offset'] += idx * cuda_id_gap
+        specs.append(spec)
+    return specs
 
 
 def is_aeb_compact(aeb_list):
@@ -220,3 +271,26 @@ def resolve_aeb(spec):
     aeb_list.sort()
     assert is_aeb_compact(aeb_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
     return aeb_list
+
+
+def tick(spec, unit):
+    '''
+    Method to tick lab unit (experiment, trial, session) in meta spec to advance their indices
+    Reset lower lab indices to -1 so that they tick to 0
+    spec_util.tick(spec, 'session')
+    session = Session(spec)
+    '''
+    meta_spec = spec['meta']
+    if unit == 'experiment':
+        meta_spec['experiment_ts'] = util.get_ts()
+        meta_spec['experiment'] += 1
+        meta_spec['trial'] = -1
+        meta_spec['session'] = -1
+    elif unit == 'trial':
+        meta_spec['trial'] += 1
+        meta_spec['session'] = -1
+    elif unit == 'session':
+        meta_spec['session'] += 1
+    else:
+        raise ValueError(f'Unrecognized lab unit to tick: {unit}')
+    return meta_spec

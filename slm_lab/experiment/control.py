@@ -23,14 +23,13 @@ class Session:
     then return the session data.
     '''
 
-    def __init__(self, spec, info_space, global_nets=None):
+    def __init__(self, spec, global_nets=None):
         self.spec = spec
-        self.info_space = info_space
-        self.index = self.info_space.get('session')
-        util.set_random_seed(self.info_space.get('trial'), self.index, self.spec)
-        util.set_cuda_id(self.spec, self.info_space)
-        util.set_logger(self.spec, self.info_space, logger, 'session')
-        analysis.save_spec(spec, info_space, unit='session')
+        self.index = self.spec['meta']['session']
+        util.set_random_seed(self.spec)
+        util.set_cuda_id(self.spec)
+        util.set_logger(self.spec, logger, 'session')
+        analysis.save_spec(spec, unit='session')
         self.data = None
 
         # init singleton agent and env
@@ -38,11 +37,10 @@ class Session:
         with util.ctx_lab_mode('eval'):  # env for eval
             self.eval_env = make_env(self.spec)
         body = Body(self.env, self.spec['agent'])
-        self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
+        self.agent = Agent(self.spec, body=body, global_nets=global_nets)
 
         enable_aeb_space(self)  # to use lab's data analysis framework
         logger.info(util.self_desc(self))
-        logger.info(f'Initialized session {self.index}')
 
     def to_ckpt(self, env, mode='eval'):
         '''Check with clock and lab_mode whether to run log/eval ckpt: at the start, save_freq, and the end'''
@@ -78,7 +76,6 @@ class Session:
                 analysis.analyze_session(self, eager_analyze_trial=True)
 
     def run_eval(self):
-        logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
         with util.ctx_lab_mode('eval'):  # enter eval context
             self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
             self.eval_env.clock.tick('epi')
@@ -97,7 +94,7 @@ class Session:
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_tick'''
-        logger.info(f'Running RL loop training for trial {self.info_space.get("trial")} session {self.index}')
+        logger.info(f'Running RL loop training for trial {self.spec["meta"]["trial"]} session {self.index}')
         clock = self.env.clock
         state = self.env.reset()
         self.agent.reset(state)
@@ -138,23 +135,21 @@ class Session:
 class SpaceSession(Session):
     '''Session for multi-agent/env setting'''
 
-    def __init__(self, spec, info_space, global_nets=None):
+    def __init__(self, spec, global_nets=None):
         self.spec = spec
-        self.info_space = info_space
-        self.index = self.info_space.get('session')
-        util.set_random_seed(self.info_space.get('trial'), self.index, self.spec)
-        util.set_cuda_id(self.spec, self.info_space)
-        util.set_logger(self.spec, self.info_space, logger, 'session')
-        analysis.save_spec(spec, info_space, unit='session')
+        self.index = self.spec['meta']['session']
+        util.set_random_seed(self.spec)
+        util.set_cuda_id(self.spec)
+        util.set_logger(self.spec, logger, 'session')
+        analysis.save_spec(spec, unit='session')
         self.data = None
 
-        self.aeb_space = AEBSpace(self.spec, self.info_space)
+        self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
         self.aeb_space.init_body_space()
         self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
 
         logger.info(util.self_desc(self))
-        logger.info(f'Initialized session {self.index}')
 
     def try_ckpt(self, agent_space, env_space):
         '''Try to checkpoint agent at the start, save_freq, and the end'''
@@ -219,31 +214,28 @@ class Trial:
     then return the trial data.
     '''
 
-    def __init__(self, spec, info_space):
+    def __init__(self, spec):
         self.spec = spec
-        self.info_space = info_space
-        self.index = self.info_space.get('trial')
-        info_space.set('session', None)  # Session starts anew for new trial
-        util.set_logger(self.spec, self.info_space, logger, 'trial')
-        analysis.save_spec(spec, info_space, unit='trial')
+        self.index = self.spec['meta']['trial']
+        util.set_logger(self.spec, logger, 'trial')
+        analysis.save_spec(spec, unit='trial')
         self.session_data_dict = {}
         self.data = None
 
         self.is_singleton = spec_util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
         self.SessionClass = Session if self.is_singleton else SpaceSession
         self.mp_runner = init_run_session if self.is_singleton else init_run_space_session
-        logger.info(f'Initialized trial {self.index}')
 
     def parallelize_sessions(self, global_nets=None):
         workers = []
         for _s in range(self.spec['meta']['max_session']):
-            self.info_space.tick('session')
-            w = mp.Process(target=self.mp_runner, args=(deepcopy(self.spec), deepcopy(self.info_space), global_nets))
+            spec_util.tick(self.spec, 'session')
+            w = mp.Process(target=self.mp_runner, args=(deepcopy(self.spec), global_nets))
             w.start()
             workers.append(w)
         for w in workers:
             w.join()
-        session_datas = retro_analysis.session_data_dict_for_dist(self.spec, self.info_space)
+        session_datas = retro_analysis.session_data_dict_for_dist(self.spec)
         return session_datas
 
     def run_sessions(self):
@@ -254,8 +246,8 @@ class Trial:
         else:
             session_datas = []
             for _s in range(self.spec['meta']['max_session']):
-                self.info_space.tick('session')
-                session = self.SessionClass(deepcopy(self.spec), deepcopy(self.info_space))
+                spec_util.tick(self.spec, 'session')
+                session = self.SessionClass(deepcopy(self.spec))
                 session_data = session.run()
                 session_datas.append(session_data)
                 if analysis.is_unfit(session_data, session):
@@ -272,7 +264,7 @@ class Trial:
         return global_nets
 
     def init_global_nets(self):
-        session = self.SessionClass(deepcopy(self.spec), deepcopy(self.info_space))
+        session = self.SessionClass(deepcopy(self.spec))
         if self.is_singleton:
             session.env.close()  # safety
             global_nets = self.make_global_nets(session.agent)
@@ -315,23 +307,21 @@ class Experiment:
     On the evolution graph level, an experiment and its neighbors could be seen as test/development of traits.
     '''
 
-    def __init__(self, spec, info_space):
+    def __init__(self, spec):
         self.spec = spec
-        self.info_space = info_space
-        self.index = self.info_space.get('experiment')
-        util.set_logger(self.spec, self.info_space, logger, 'trial')
-        analysis.save_spec(spec, info_space, unit='experiment')
+        self.index = self.spec['meta']['experiment']
+        util.set_logger(self.spec, logger, 'trial')
+        analysis.save_spec(spec, unit='experiment')
         self.trial_data_dict = {}
         self.data = None
         SearchClass = getattr(search, spec['meta'].get('search'))
         self.search = SearchClass(self)
-        logger.info(f'Initialized experiment {self.index}')
 
-    def init_trial_and_run(self, spec, info_space):
+    def init_trial_and_run(self, spec):
         '''
-        Method to run trial with the properly updated info_space (trial_index) from experiment.search.lab_trial.
+        Method to run trial with the properly updated spec (trial_index) from experiment.search.lab_trial.
         '''
-        trial = Trial(spec, info_space)
+        trial = Trial(spec)
         trial_data = trial.run()
         return trial_data
 

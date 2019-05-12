@@ -1,9 +1,9 @@
 {
-  "dqn_pong": {
+  "ddqn_per_atari": {
     "agent": [{
-      "name": "DQN",
+      "name": "DoubleDQN",
       "algorithm": {
-        "name": "DQN",
+        "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
@@ -21,10 +21,12 @@
         "normalize_state": false
       },
       "memory": {
-        "name": "Replay",
+        "name": "PrioritizedReplay",
+        "alpha": 0.6,
+        "epsilon": 0.0001,
         "batch_size": 32,
         "max_size": 200000,
-        "use_cer": false
+        "use_cer": false,
       },
       "net": {
         "type": "ConvNet",
@@ -43,7 +45,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 1e-4,
+          "lr": 2.5e-5,
         },
         "lr_scheduler_spec": null,
         "update_type": "replace",
@@ -52,7 +54,7 @@
       }
     }],
     "env": [{
-      "name": "PongNoFrameskip-v4",
+      "name": "${env}",
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
@@ -69,6 +71,12 @@
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 1,
+      "param_spec_process": 4
+    },
+    "spec_params": {
+      "env": [
+        "BeamRiderNoFrameskip-v4", "BreakoutNoFrameskip-v4", "EnduroNoFrameskip-v4", "MsPacmanNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SeaquestNoFrameskip-v4", "SpaceInvadersNoFrameskip-v4"
+      ]
     }
   }
 }

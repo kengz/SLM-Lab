@@ -25,8 +25,10 @@ def session_data_from_file(predir, trial_index, session_index, ckpt=None, prefix
             return session_data
 
 
-def session_datas_from_file(predir, trial_spec, trial_index, ckpt=None):
+def session_datas_from_file(predir, trial_spec):
     '''Return a dict of {session_index: session_data} for a trial'''
+    trial_index = trial_spec['meta']['trial']
+    ckpt = trial_spec['meta']['ckpt']
     session_datas = {}
     for s in range(trial_spec['meta']['max_session']):
         session_data = session_data_from_file(predir, trial_index, s, ckpt)
@@ -49,11 +51,11 @@ def session_data_dict_from_file(predir, trial_index, ckpt=None):
     return session_data_dict
 
 
-def session_data_dict_for_dist(spec, info_space):
+def session_data_dict_for_dist(spec):
     '''Method to retrieve session_datas (fitness df, so the same as session_data_dict above) when a trial with distributed sessions is done, to avoid messy multiprocessing data communication'''
-    prepath = util.get_prepath(spec, info_space)
+    prepath = util.get_prepath(spec)
     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = session_data_dict_from_file(predir, info_space.get('trial'), ps.get(info_space, 'ckpt'))
+    session_datas = session_data_dict_from_file(predir, spec['meta']['trial'], spec['meta']['ckpt'])
     session_datas = [session_datas[k] for k in sorted(session_datas.keys())]
     return session_datas
 
@@ -75,24 +77,24 @@ Interface retro methods
 '''
 
 
-def analyze_eval_trial(spec, info_space, predir):
+def analyze_eval_trial(spec, predir):
     '''Create a trial and run analysis to get the trial graph and other trial data'''
     from slm_lab.experiment.control import Trial
-    trial = Trial(spec, info_space)
-    trial.session_data_dict = session_data_dict_from_file(predir, trial.index, ps.get(info_space, 'ckpt'))
+    trial = Trial(spec)
+    trial.session_data_dict = session_data_dict_from_file(predir, trial.index, spec['meta']['ckpt'])
     # don't zip for eval analysis, slow otherwise
     analysis.analyze_trial(trial, zip=False)
 
 
-def parallel_eval(spec, info_space, ckpt):
+def parallel_eval(spec, ckpt):
     '''
     Calls a subprocess to run lab in eval mode with the constructed ckpt prepath, same as how one would manually run the bash cmd
     @example
 
     python run_lab.py data/dqn_cartpole_2018_12_19_224811/dqn_cartpole_t0_spec.json dqn_cartpole eval@dqn_cartpole_t0_s1_ckpt-epi10-totalt1000
     '''
-    prepath_t = util.get_prepath(spec, info_space, unit='trial')
-    prepath_s = util.get_prepath(spec, info_space, unit='session')
+    prepath_t = util.get_prepath(spec, unit='trial')
+    prepath_s = util.get_prepath(spec, unit='session')
     predir, _, prename, spec_name, _, _ = util.prepath_split(prepath_s)
     cmd = f'python run_lab.py {prepath_t}_spec.json {spec_name} eval@{prename}_ckpt-{ckpt}'
     logger.info(f'Running parallel eval for ckpt-{ckpt}')
@@ -105,7 +107,7 @@ def run_parallel_eval(session, agent, env):
         ckpt = f'epi{env.clock.epi}-totalt{env.clock.total_t}'
         agent.save(ckpt=ckpt)
         # set reference to eval process for handling
-        session.eval_proc = parallel_eval(session.spec, session.info_space, ckpt)
+        session.eval_proc = parallel_eval(session.spec, ckpt)
 
 
 def try_wait_parallel_eval(session):
@@ -117,9 +119,9 @@ def try_wait_parallel_eval(session):
 
 def run_parallel_eval_from_prepath(prepath):
     '''Used by retro_eval'''
-    spec, info_space = util.prepath_to_spec_info_space(prepath)
+    spec = util.prepath_to_spec(prepath)
     ckpt = util.find_ckpt(prepath)
-    return parallel_eval(spec, info_space, ckpt)
+    return parallel_eval(spec, ckpt)
 
 
 def run_wait_eval(prepath):
@@ -147,11 +149,11 @@ def retro_analyze_sessions(predir):
 
         if is_session_df:
             prepath = f'{predir}/{filename}'.replace(f'_{prefix}session_df.csv', '')
-            spec, info_space = util.prepath_to_spec_info_space(prepath)
+            spec = util.prepath_to_spec(prepath)
             trial_index, session_index = util.prepath_to_idxs(prepath)
             SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
-            session = SessionClass(spec, info_space)
-            session_data = session_data_from_file(predir, trial_index, session_index, ps.get(info_space, 'ckpt'), prefix)
+            session = SessionClass(spec)
+            session_data = session_data_from_file(predir, trial_index, session_index, spec['meta']['ckpt'], prefix)
             analysis._analyze_session(session, session_data, body_df_kind)
 
 
@@ -163,10 +165,10 @@ def retro_analyze_trials(predir):
     for idx, filename in enumerate(filenames):
         filepath = f'{predir}/{filename}'
         prepath = filepath.replace('_trial_df.csv', '')
-        spec, info_space = util.prepath_to_spec_info_space(prepath)
+        spec = util.prepath_to_spec(prepath)
         trial_index, _ = util.prepath_to_idxs(prepath)
-        trial = Trial(spec, info_space)
-        trial.session_data_dict = session_data_dict_from_file(predir, trial_index, ps.get(info_space, 'ckpt'))
+        trial = Trial(spec)
+        trial.session_data_dict = session_data_dict_from_file(predir, trial_index, spec['meta']['ckpt'])
         # zip only at the last
         zip = (idx == len(filenames) - 1)
         trial_fitness_df = analysis.analyze_trial(trial, zip)
@@ -189,10 +191,10 @@ def retro_analyze_experiment(predir):
     from slm_lab.experiment.control import Experiment
     _, _, _, spec_name, _, _ = util.prepath_split(predir)
     prepath = f'{predir}/{spec_name}'
-    spec, info_space = util.prepath_to_spec_info_space(prepath)
+    spec = util.prepath_to_spec(prepath)
     if 'search' not in spec:
         return
-    experiment = Experiment(spec, info_space)
+    experiment = Experiment(spec)
     experiment.trial_data_dict = trial_data_dict_from_file(predir)
     if not ps.is_empty(experiment.trial_data_dict):
         return analysis.analyze_experiment(experiment)
@@ -244,6 +246,6 @@ def retro_eval(predir, session_index=None):
 
 def session_retro_eval(session):
     '''retro_eval but for session at the end to rerun failed evals'''
-    prepath = util.get_prepath(session.spec, session.info_space, unit='session')
+    prepath = util.get_prepath(session.spec, unit='session')
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     retro_eval(predir, session.index)

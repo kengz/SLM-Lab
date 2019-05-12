@@ -1,5 +1,5 @@
 {
-  "a2c_gae_pong": {
+  "a2c_atari": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -8,8 +8,8 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 0.95,
-        "num_step_returns": null,
+        "lam": null,
+        "num_step_returns": 5,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -18,11 +18,11 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 32,
+        "training_frequency": 5,
         "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -59,7 +59,7 @@
       }
     }],
     "env": [{
-      "name": "PongNoFrameskip-v4",
+      "name": "${env}",
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
@@ -69,7 +69,7 @@
     }],
     "body": {
       "product": "outer",
-      "num": 1
+      "num": 1,
     },
     "meta": {
       "distributed": false,
@@ -78,6 +78,12 @@
       "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 1,
+      "param_spec_process": 4
+    },
+    "spec_params": {
+      "env": [
+        "BeamRiderNoFrameskip-v4", "BreakoutNoFrameskip-v4", "EnduroNoFrameskip-v4", "MsPacmanNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SeaquestNoFrameskip-v4", "SpaceInvadersNoFrameskip-v4"
+      ]
     }
   }
 }

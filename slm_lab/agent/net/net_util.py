@@ -173,7 +173,7 @@ def save_algorithm(algorithm, ckpt=None):
     '''Save all the nets for an algorithm'''
     agent = algorithm.agent
     net_names = algorithm.net_names
-    prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+    prepath = util.get_prepath(agent.spec, unit='session')
     if ckpt is not None:
         prepath = f'{prepath}_ckpt-{ckpt}'
     for net_name in net_names:
@@ -182,7 +182,7 @@ def save_algorithm(algorithm, ckpt=None):
         save(net, model_path)
         optim_path = f'{prepath}_{net_name}_optim.pth'
         save(net.optim, optim_path)
-    logger.info(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
+    logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
 
 
 def load(net, model_path):
@@ -197,9 +197,9 @@ def load_algorithm(algorithm):
     net_names = algorithm.net_names
     if util.in_eval_lab_modes():
         # load specific model in eval mode
-        prepath = agent.info_space.eval_model_prepath
+        prepath = agent.spec['meta']['eval_model_prepath']
     else:
-        prepath = util.get_prepath(agent.spec, agent.info_space, unit='session')
+        prepath = util.get_prepath(agent.spec, unit='session')
     logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {prepath}_*.pth')
     for net_name in net_names:
         net = getattr(algorithm, net_name)

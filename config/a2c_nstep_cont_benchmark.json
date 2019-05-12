@@ -1,8 +1,0 @@
-{
-  "experimental/a2c/a2c_bipedalwalker.json": {
-    "a2c_bipedalwalker": "train"
-  },
-  "experimental/a2c/a2c_pendulum.json": {
-    "a2c_pendulum": "train"
-  },
-}

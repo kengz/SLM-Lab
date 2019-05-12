@@ -40,15 +40,6 @@ else:
     lab_logger.setLevel('INFO')
 
 
-def to_init(spec, info_space):
-    '''
-    Whether the lab's logger had been initialized:
-    - prepath present in env
-    - importlib.reload(logger) had been called
-    '''
-    return os.environ.get('PREPATH') is None
-
-
 def set_level(lvl):
     lab_logger.setLevel(lvl)
     os.environ['LOG_LEVEL'] = lvl
