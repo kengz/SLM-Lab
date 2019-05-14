@@ -20,6 +20,8 @@ os.makedirs(PLOT_FILEDIR, exist_ok=True)
 if util.is_jupyter():
     py.init_notebook_mode(connected=True)
 logger = logger.get_logger(__name__)
+# warn orca failure only once
+orca_warn_once = ps.once(lambda e: logger.warn(f'Failed to generate graph. Run retro-analysis to generate graphs later.'))
 
 
 def create_label(
@@ -218,8 +220,7 @@ def save_image(figure, filepath=None):
     try:
         pio.write_image(figure, filepath)
     except Exception as e:
-        logger.warn(
-            f'Failed to generate graph. Run retro-analysis to generate graphs later.')
+        orca_warn_once(e)
 
 
 def stack_cumsum(df, y_col):

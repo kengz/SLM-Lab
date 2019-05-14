@@ -77,6 +77,13 @@ def check_body_spec(spec):
         assert ps.is_list(body_num)
 
 
+def check_compatibility(spec):
+    '''Check compatibility among spec setups'''
+    # TODO expand to be more comprehensive
+    if spec['meta'].get('distributed'):
+        assert ps.get(spec, 'agent.0.net.gpu') != True, f'Hogwild lock-free does not work with GPU locked CUDA tensors. Set gpu: false.'
+
+
 def check(spec):
     '''Check a single spec for validity'''
     try:
@@ -89,6 +96,7 @@ def check(spec):
         check_comp_spec(spec['body'], SPEC_FORMAT['body'])
         check_comp_spec(spec['meta'], SPEC_FORMAT['meta'])
         check_body_spec(spec)
+        check_compatibility(spec)
     except Exception as e:
         logger.exception(f'spec {spec_name} fails spec check')
         raise e
