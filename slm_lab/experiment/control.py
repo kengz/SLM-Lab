@@ -275,6 +275,7 @@ class Trial:
 
     def run_distributed_sessions(self):
         logger.info('Running distributed sessions')
+        assert ps.get(self.spec, 'agent.0.net.gpu') != True, f'Hogwild lock-free does not work with GPU locked CUDA tensors. Set gpu: false.'
         global_nets = self.init_global_nets()
         session_datas = self.parallelize_sessions(global_nets)
         return session_datas
