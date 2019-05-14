@@ -55,7 +55,7 @@
           "eps": 1e-5
         },
         "lr_scheduler_spec": null,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
