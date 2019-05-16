@@ -42,19 +42,18 @@ dependencies:
   - xlrd=1.1.0=py_2
   - pytorch=1.0.1
   - pip:
-    - atari-py==0.1.1
     - box2d-py==2.3.8
     - cloudpickle==0.5.2
     - colorlover==0.3.0
     - deap==1.2.2
-    - gym==0.10.9
-    - gym[atari]
-    - gym[box2d]
-    - gym[classic_control]
-    - roboschool==1.0.46
     - opencv-python==3.4.0.12
     - pyopengl==3.1.0
     - ray==0.5.3
     - redis==2.10.6
     - xvfbwrapper==0.2.9
+    - gym==0.10.9
+    - gym[atari]
+    - gym[box2d]
+    - gym[classic_control]
+    - roboschool==1.0.46
     - vizdoom==1.1.6
