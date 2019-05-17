@@ -259,10 +259,10 @@ class Trial:
         session = self.SessionClass(deepcopy(self.spec))
         if self.is_singleton:
             session.env.close()  # safety
-            global_nets = net_util.make_global_nets(session.agent)
+            global_nets = net_util.init_global_nets(session.agent.algorithm)
         else:
             session.env_space.close()  # safety
-            global_nets = [net_util.make_global_nets(agent) for agent in session.agent_space.agents]
+            global_nets = [net_util.init_global_nets(agent.algorithm) for agent in session.agent_space.agents]
         return global_nets
 
     def run_distributed_sessions(self):

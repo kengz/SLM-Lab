@@ -302,11 +302,28 @@ def get_grad_norms(algorithm):
     return grad_norms
 
 
-def make_global_nets(agent):
+def init_global_nets(algorithm):
+    '''Initialize global_nets for Hogwild using an identical instance of an algorithm from an isolated Session'''
     global_nets = {}
-    for net_name in agent.algorithm.net_names:
-        g_net = getattr(agent.algorithm, net_name)
+    for net_name in algorithm.net_names:
+        g_net = getattr(algorithm, net_name)
         g_net.share_memory()  # make net global
         global_nets[net_name] = g_net
-        # TODO also create shared optimizer here
+        # careful with net_names
+        optim_name = net_name.replace('net', 'optim')
+        optim = getattr(algorithm, optim_name, None)
+        lr_scheduler_name = net_name.replace('net', 'lr_scheduler')
+        lr_scheduler = getattr(algorithm, lr_scheduler_name, None)
+        if optim is not None and 'Global' in util.get_class_name(optim):
+            optim.share_memory()  # make global optimizer global
+            global_nets[optim_name] = optim  # carry to be set later
+            global_nets[lr_scheduler_name] = lr_scheduler
+    logger.info(f'Initialized global_nets attr {list(global_nets.keys())} for Hogwild')
     return global_nets
+
+
+def set_global_nets(algorithm, global_nets):
+    '''Set global_nets and optimizer, lr_scheduler (if available) for Hogwild'''
+    util.set_attr(algorithm, global_nets)  # override all existing local net, optim, lr_scheduler
+    algorithm.net_names = [name for name in global_nets.keys() if name.endswith('net')]
+    logger.info(f'Set global_nets attr {list(global_nets.keys())} for Hogwild')
