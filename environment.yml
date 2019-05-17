@@ -57,4 +57,3 @@ dependencies:
     - gym[classic_control]
     - roboschool==1.0.46
     - atari-py
-    - vizdoom==1.1.6
