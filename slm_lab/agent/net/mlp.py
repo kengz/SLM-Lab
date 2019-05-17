@@ -126,18 +126,12 @@ class MLPNet(Net, nn.Module):
             return self.model_tail(x)
 
     @net_util.dev_check_training_step
-    def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_clock=None):
+    def training_step(self, loss, retain_graph=False, lr_clock=None):
         '''
-        Takes a single training step: one forward and one backwards pass
-        More most RL usage, we have custom, often complicated, loss functions. Compute its value and put it in a pytorch tensor then pass it in as loss
+        Train a network given a computed loss
         '''
-        if hasattr(self, 'model_tails') and x is not None:
-            raise ValueError('Loss computation from x,y not supported for multitails')
         self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
         self.optim.zero_grad()
-        if loss is None:
-            out = self(x)
-            loss = self.loss_fn(out, y)
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
@@ -303,19 +297,9 @@ class HydraMLPNet(Net, nn.Module):
         return outs
 
     @net_util.dev_check_training_step
-    def training_step(self, xs=None, ys=None, loss=None, retain_graph=False, lr_clock=None):
-        '''
-        Takes a single training step: one forward and one backwards pass. Both x and y are lists of the same length, one x and y per environment
-        '''
+    def training_step(self, loss, retain_graph=False, lr_clock=None):
         self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
         self.optim.zero_grad()
-        if loss is None:
-            outs = self(xs)
-            total_loss = torch.tensor(0.0, device=self.device)
-            for out, y in zip(outs, ys):
-                loss = self.loss_fn(out, y)
-                total_loss += loss
-            loss = total_loss
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)

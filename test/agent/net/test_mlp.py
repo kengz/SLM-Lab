@@ -52,7 +52,8 @@ def test_forward():
 def test_training_step():
     y = torch.rand((batch_size, out_dim))
     clock = Clock(100, 'total_t', 1)
-    loss = net.training_step(x=x, y=y, lr_clock=clock)
+    loss = net.loss_fn(net.forward(x), y)
+    net.training_step(loss, lr_clock=clock)
     assert loss != 0.0
 
 
