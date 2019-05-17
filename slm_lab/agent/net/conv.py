@@ -165,7 +165,8 @@ class ConvNet(Net, nn.Module):
             hid_layer = [tuple(e) if ps.is_list(e) else e for e in hid_layer]  # guard list-to-tuple
             # hid_layer = out_d, kernel, stride, padding, dilation
             conv_layers.append(nn.Conv2d(in_d, *hid_layer))
-            conv_layers.append(net_util.get_activation_fn(self.hid_layers_activation))
+            if self.hid_layers_activation is not None:
+                conv_layers.append(net_util.get_activation_fn(self.hid_layers_activation))
             # Don't include batch norm in the first layer
             if self.batch_norm and i != 0:
                 conv_layers.append(nn.BatchNorm2d(in_d))
