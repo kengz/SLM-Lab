@@ -146,27 +146,25 @@ class ActorCritic(Reinforce):
         if critic_net_spec['use_same_optim']:
             critic_net_spec = actor_net_spec
 
-        if global_nets is None:
-            in_dim = self.body.state_dim
-            out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
-            # main actor network, may contain out_dim self.shared == True
-            NetClass = getattr(net, actor_net_spec['type'])
-            self.net = NetClass(actor_net_spec, in_dim, out_dim)
-            self.net_names = ['net']
-            if not self.shared:  # add separate network for critic
-                critic_out_dim = 1
-                CriticNetClass = getattr(net, critic_net_spec['type'])
-                self.critic_net = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
-                self.net_names.append('critic_net')
-        else:
-            util.set_attr(self, global_nets)
-            self.net_names = list(global_nets.keys())
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
+        # main actor network, may contain out_dim self.shared == True
+        NetClass = getattr(net, actor_net_spec['type'])
+        self.net = NetClass(actor_net_spec, in_dim, out_dim)
+        self.net_names = ['net']
+        if not self.shared:  # add separate network for critic
+            critic_out_dim = 1
+            CriticNetClass = getattr(net, critic_net_spec['type'])
+            self.critic_net = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
+            self.net_names.append('critic_net')
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         if not self.shared:
             self.critic_optim = net_util.get_optim(self.critic_net, self.critic_net.optim_spec)
             self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic_net.lr_scheduler_spec)
+        if global_nets is not None:
+            net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
     @lab_api

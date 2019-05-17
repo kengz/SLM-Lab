@@ -19,17 +19,15 @@ class HydraDQN(DQN):
         # NOTE: Separate init from MultitaskDQN despite similarities so that this implementation can support arbitrary sized state and action heads (e.g. multiple layers)
         self.state_dims = in_dims = [body.state_dim for body in self.agent.nanflat_body_a]
         self.action_dims = out_dims = [body.action_dim for body in self.agent.nanflat_body_a]
-        if global_nets is None:
-            NetClass = getattr(net, self.net_spec['type'])
-            self.net = NetClass(self.net_spec, in_dims, out_dims)
-            self.target_net = NetClass(self.net_spec, in_dims, out_dims)
-            self.net_names = ['net', 'target_net']
-        else:
-            util.set_attr(self, global_nets)
-            self.net_names = list(global_nets.keys())
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self.net_spec, in_dims, out_dims)
+        self.target_net = NetClass(self.net_spec, in_dims, out_dims)
+        self.net_names = ['net', 'target_net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        if global_nets is not None:
+            net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
