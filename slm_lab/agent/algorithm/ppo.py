@@ -192,7 +192,7 @@ class PPO(ActorCritic):
                         self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock)
                     else:
                         self.net.training_step(policy_loss, self.optim, self.lr_scheduler, lr_clock=clock)
-                        self.critic.training_step(val_loss, self.critic_optim, self.critic_lr_scheduler, lr_clock=clock)
+                        self.critic_net.training_step(val_loss, self.critic_optim, self.critic_lr_scheduler, lr_clock=clock)
                         loss = policy_loss + val_loss
                     total_loss += loss
             loss = total_loss / self.training_epoch / len(minibatches)
