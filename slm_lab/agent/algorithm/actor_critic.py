@@ -164,9 +164,9 @@ class ActorCritic(Reinforce):
             self.critic_optim = net_util.get_optim(self.critic_net, self.critic_net.optim_spec)
             self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic_net.lr_scheduler_spec)
         if global_nets is not None:
-            self.global_net = global_nets['net']
-            self.optim = global_nets['optim']
-            # net_util.set_global_nets(self, global_nets)
+            # self.global_net = global_nets['net']
+            # self.optim = global_nets['optim']
+            net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
     @lab_api
@@ -287,8 +287,6 @@ class ActorCritic(Reinforce):
             return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
-            if self.shared:
-                self.net.load_state_dict(self.global_net.state_dict())
             batch = self.sample()
             pdparams, v_preds = self.calc_pdparam_v(batch)
             advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
@@ -297,9 +295,13 @@ class ActorCritic(Reinforce):
             if self.shared:  # shared network
                 loss = policy_loss + val_loss
                 self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock)
+                self.net.load_state_dict(self.global_net.state_dict())
             else:
                 self.net.training_step(policy_loss, self.optim, self.lr_scheduler, lr_clock=clock)
                 self.critic_net.training_step(val_loss, self.critic_optim, self.critic_lr_scheduler, lr_clock=clock)
+                # TODO add method in net_util
+                self.net.load_state_dict(self.global_net.state_dict())
+                self.critic_net.load_state_dict(self.critic_net.state_dict())
                 loss = policy_loss + val_loss
             # reset
             self.to_train = 0

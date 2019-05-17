@@ -308,8 +308,8 @@ def init_global_nets(algorithm):
     for net_name in algorithm.net_names:
         g_net = getattr(algorithm, net_name)
         g_net.share_memory()  # make net global
-        global_nets[net_name] = g_net
-        # careful with net_names
+        global_nets[f'global_{net_name}'] = g_net  # naming convention
+        # share optim if it is global
         optim_name = net_name.replace('net', 'optim')
         optim = getattr(algorithm, optim_name, None)
         lr_scheduler_name = net_name.replace('net', 'lr_scheduler')
@@ -324,6 +324,5 @@ def init_global_nets(algorithm):
 
 def set_global_nets(algorithm, global_nets):
     '''Set global_nets and optimizer, lr_scheduler (if available) for Hogwild'''
-    util.set_attr(algorithm, global_nets)  # override all existing local net, optim, lr_scheduler
-    algorithm.net_names = [name for name in global_nets.keys() if name.endswith('net')]
+    util.set_attr(algorithm, global_nets)  # set global_{net}, override if global optim, lr_scheduler
     logger.info(f'Set global_nets attr {list(global_nets.keys())} for Hogwild')
