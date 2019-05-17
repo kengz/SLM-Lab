@@ -1,7 +1,7 @@
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import policy_util
-from slm_lab.agent.algorithm.sarsa import SARSA
 from slm_lab.agent.algorithm.dqn import DQN
+from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
@@ -27,17 +27,12 @@ class HydraDQN(DQN):
         else:
             util.set_attr(self, global_nets)
             self.net_names = list(global_nets.keys())
+        # init net optimizer and its lr scheduler
+        self.optim = net_util.get_optim(self.net, self.net.optim_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
-
-    @lab_api
-    def calc_pdparam(self, xs, net=None):
-        '''
-        Calculate pdparams for multi-action by chunking the network logits output
-        '''
-        pdparam = SARSA.calc_pdparam(self, xs, net=net)
-        return pdparam
 
     @lab_api
     def space_act(self, state_a):

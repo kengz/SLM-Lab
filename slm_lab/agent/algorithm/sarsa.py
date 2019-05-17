@@ -81,6 +81,9 @@ class SARSA(Algorithm):
         else:
             util.set_attr(self, global_nets)
             self.net_names = list(global_nets.keys())
+        # init net optimizer and its lr scheduler
+        self.optim = net_util.get_optim(self.net, self.net.optim_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         self.post_init_nets()
 
     @lab_api
