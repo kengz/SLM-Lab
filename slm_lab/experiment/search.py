@@ -1,18 +1,18 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from deap import creator, base, tools, algorithms
-from ray.tune import grid_search
-from ray.tune.suggest import variant_generator
 from slm_lab.experiment import analysis
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from slm_lab.spec import spec_util
 import json
+import logging
 import numpy as np
 import os
 import pydash as ps
 import random
 import ray
+import ray.tune
 import torch
 
 logger = logger.get_logger(__name__)
@@ -50,7 +50,7 @@ def build_config_space(experiment):
         key, space_type = k.split('__')
         assert space_type in space_types, f'Please specify your search variable as {key}__<space_type> in one of {space_types}'
         if space_type == 'grid_search':
-            config_space[key] = grid_search(v)
+            config_space[key] = ray.rune.grid_search(v)
         elif space_type == 'choice':
             config_space[key] = lambda spec, v=v: random.choice(v)
         else:
@@ -149,6 +149,7 @@ class RaySearch(ABC):
         Implement the main run_trial loop.
         Remember to call ray init and cleanup before and after loop.
         '''
+        logging.getLogger('ray').propagate = True
         ray.init()
         register_ray_serializer()
         # loop for max_trial: generate_config(); run_trial.remote(config)
@@ -161,7 +162,7 @@ class RandomSearch(RaySearch):
 
     def generate_config(self):
         configs = []  # to accommodate for grid_search
-        for resolved_vars, config in variant_generator._generate_variants(self.config_space):
+        for resolved_vars, config in ray.tune.suggest.variant_generator._generate_variants(self.config_space):
             config['trial_index'] = spec_util.tick(self.experiment.spec, 'trial')['trial']
             configs.append(config)
         return configs
@@ -170,6 +171,7 @@ class RandomSearch(RaySearch):
     def run(self):
         run_trial = create_remote_fn(self.experiment)
         meta_spec = self.experiment.spec['meta']
+        logging.getLogger('ray').propagate = True
         ray.init(**meta_spec.get('resources', {}))
         register_ray_serializer()
         max_trial = meta_spec['max_trial']
@@ -192,7 +194,7 @@ class RandomSearch(RaySearch):
 class EvolutionarySearch(RaySearch):
 
     def generate_config(self):
-        for resolved_vars, config in variant_generator._generate_variants(self.config_space):
+        for resolved_vars, config in ray.tune.suggest.variant_generator._generate_variants(self.config_space):
             # trial_index is set at population level
             return config
 
@@ -247,6 +249,7 @@ class EvolutionarySearch(RaySearch):
     def run(self):
         run_trial = create_remote_fn(self.experiment)
         meta_spec = self.experiment.spec['meta']
+        logging.getLogger('ray').propagate = True
         ray.init(**meta_spec.get('resources', {}))
         register_ray_serializer()
         max_generation = meta_spec['max_generation']

@@ -20,11 +20,11 @@ sh = logging.StreamHandler(sys.stdout)
 sh.setFormatter(color_formatter)
 lab_logger = logging.getLogger()
 lab_logger.handlers = FixedList([sh])
+logging.getLogger('ray').propagate = False  # hack to mute poorly designed ray TF warning log
 
 # this will trigger from Experiment init on reload(logger)
 if os.environ.get('PREPATH') is not None:
     warnings.filterwarnings('ignore', category=pd.io.pytables.PerformanceWarning)
-    logging.getLogger('ray.tune').setLevel('INFO')
 
     log_filepath = os.environ['PREPATH'] + '.log'
     os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
