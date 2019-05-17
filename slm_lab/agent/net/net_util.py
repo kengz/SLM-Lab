@@ -1,12 +1,14 @@
 from functools import partial, wraps
-from slm_lab import ROOT_DIR
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, optimizer, util
 import os
 import pydash as ps
 import torch
 import torch.nn as nn
 
 logger = logger.get_logger(__name__)
+
+# register custom torch.optim
+setattr(torch.optim, 'GlobalAdam', optimizer.GlobalAdam)
 
 
 class NoOpLRScheduler:
