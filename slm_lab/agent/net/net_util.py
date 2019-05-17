@@ -49,7 +49,6 @@ def get_nn_name(uncased_name):
 
 def get_activation_fn(activation):
     '''Helper to generate activation function layers for net'''
-    activation = activation or 'relu'
     ActivationClass = getattr(nn, get_nn_name(activation))
     return ActivationClass()
 
