@@ -141,7 +141,7 @@ class ConvNet(Net, nn.Module):
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.lr_scheduler_spec)
         self.to(self.device)
         self.train()
 
@@ -316,7 +316,7 @@ class DuelingConvNet(ConvNet):
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.lr_scheduler_spec)
         self.to(self.device)
         self.train()
 

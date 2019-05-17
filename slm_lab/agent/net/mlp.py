@@ -108,7 +108,7 @@ class MLPNet(Net, nn.Module):
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.lr_scheduler_spec)
         self.to(self.device)
 
     def __str__(self):
@@ -255,7 +255,7 @@ class HydraMLPNet(Net, nn.Module):
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.lr_scheduler_spec)
         self.to(self.device)
 
     def __str__(self):
@@ -396,7 +396,7 @@ class DuelingMLPNet(MLPNet):
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.lr_scheduler_spec)
         self.to(self.device)
 
     def forward(self, x):
