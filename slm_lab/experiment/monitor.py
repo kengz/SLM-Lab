@@ -197,9 +197,9 @@ class Body:
         if not hasattr(self.agent.algorithm, 'net_names'):
             return np.nan
         lrs = []
-        for k, attr in self.agent.algorithm.__dict__.items():
-            if k.endswith('lr_scheduler'):
-                lrs.append(attr.get_lr())
+        for attr, obj in self.agent.algorithm.__dict__.items():
+            if attr.endswith('lr_scheduler'):
+                lrs.append(obj.get_lr())
         return np.mean(lrs)
 
     def get_log_prefix(self):
