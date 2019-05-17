@@ -298,3 +298,13 @@ def get_grad_norms(algorithm):
         if net.grad_norms is not None:
             grad_norms.extend(net.grad_norms)
     return grad_norms
+
+
+def make_global_nets(agent):
+    global_nets = {}
+    for net_name in agent.algorithm.net_names:
+        g_net = getattr(agent.algorithm, net_name)
+        g_net.share_memory()  # make net global
+        global_nets[net_name] = g_net
+        # TODO also create shared optimizer here
+    return global_nets

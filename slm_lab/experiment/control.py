@@ -5,6 +5,7 @@ Creates and controls the units of SLM lab: Experiment, Trial, Session
 from copy import deepcopy
 from importlib import reload
 from slm_lab.agent import AgentSpace, Agent
+from slm_lab.agent.net import net_util
 from slm_lab.env import EnvSpace, make_env
 from slm_lab.experiment import analysis, retro_analysis, search
 from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
@@ -254,23 +255,14 @@ class Trial:
                     break
         return session_datas
 
-    def make_global_nets(self, agent):
-        global_nets = {}
-        for net_name in agent.algorithm.net_names:
-            g_net = getattr(agent.algorithm, net_name)
-            g_net.share_memory()  # make net global
-            # TODO also create shared optimizer here
-            global_nets[net_name] = g_net
-        return global_nets
-
     def init_global_nets(self):
         session = self.SessionClass(deepcopy(self.spec))
         if self.is_singleton:
             session.env.close()  # safety
-            global_nets = self.make_global_nets(session.agent)
+            global_nets = net_util.make_global_nets(session.agent)
         else:
             session.env_space.close()  # safety
-            global_nets = [self.make_global_nets(agent) for agent in session.agent_space.agents]
+            global_nets = [net_util.make_global_nets(agent) for agent in session.agent_space.agents]
         return global_nets
 
     def run_distributed_sessions(self):
