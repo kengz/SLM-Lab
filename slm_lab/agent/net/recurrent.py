@@ -175,10 +175,10 @@ class RecurrentNet(Net, nn.Module):
             return self.model_tail(hid_x)
 
     @net_util.dev_check_training_step
-    def training_step(self, loss, retain_graph=False, lr_clock=None):
+    def training_step(self, loss, lr_clock=None):
         self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
         self.optim.zero_grad()
-        loss.backward(retain_graph=retain_graph)
+        loss.backward()
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
         self.optim.step()

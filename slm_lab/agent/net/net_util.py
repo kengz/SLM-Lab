@@ -76,11 +76,11 @@ def get_lr_scheduler(optim, lr_scheduler_spec):
     return lr_scheduler
 
 
-def get_optim(cls, optim_spec):
+def get_optim(net, optim_spec):
     '''Helper to parse optim param and construct optim for net'''
     OptimClass = getattr(torch.optim, optim_spec['name'])
     optim_spec = ps.omit(optim_spec, 'name')
-    optim = OptimClass(cls.parameters(), **optim_spec)
+    optim = OptimClass(net.parameters(), **optim_spec)
     return optim
 
 
