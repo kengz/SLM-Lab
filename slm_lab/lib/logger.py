@@ -24,6 +24,7 @@ lab_logger.handlers = FixedList([sh])
 # this will trigger from Experiment init on reload(logger)
 if os.environ.get('PREPATH') is not None:
     warnings.filterwarnings('ignore', category=pd.io.pytables.PerformanceWarning)
+    warnings.filterwarnings('ignore', category=ImportError)
 
     log_filepath = os.environ['PREPATH'] + '.log'
     os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
