@@ -164,7 +164,9 @@ class ActorCritic(Reinforce):
             self.critic_optim = net_util.get_optim(self.critic_net, self.critic_net.optim_spec)
             self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic_net.lr_scheduler_spec)
         if global_nets is not None:
-            net_util.set_global_nets(self, global_nets)
+            self.global_net = global_nets['net']
+            self.optim = global_nets['optim']
+            # net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
     @lab_api
@@ -285,6 +287,8 @@ class ActorCritic(Reinforce):
             return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
+            if self.shared:
+                self.net.load_state_dict(self.global_net.state_dict())
             batch = self.sample()
             pdparams, v_preds = self.calc_pdparam_v(batch)
             advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
