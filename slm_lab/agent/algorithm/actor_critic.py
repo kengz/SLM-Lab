@@ -156,8 +156,8 @@ class ActorCritic(Reinforce):
             if not self.shared:  # add separate network for critic
                 critic_out_dim = 1
                 CriticNetClass = getattr(net, critic_net_spec['type'])
-                self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
-                self.net_names.append('critic')
+                self.critic_net = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
+                self.net_names.append('critic_net')
         else:
             util.set_attr(self, global_nets)
             self.net_names = list(global_nets.keys())
@@ -165,8 +165,8 @@ class ActorCritic(Reinforce):
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         if not self.shared:
-            self.critic_optim = net_util.get_optim(self.critic, self.critic.optim_spec)
-            self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic.lr_scheduler_spec)
+            self.critic_optim = net_util.get_optim(self.critic_net, self.critic_net.optim_spec)
+            self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic_net.lr_scheduler_spec)
         self.post_init_nets()
 
     @lab_api
@@ -188,7 +188,7 @@ class ActorCritic(Reinforce):
 
     def calc_v(self, x, net=None, use_cache=True):
         '''
-        Forward-pass to calculate the predicted state-value from critic.
+        Forward-pass to calculate the predicted state-value from critic_net.
         '''
         if self.shared:  # output: policy, value
             if use_cache:  # uses cache from calc_pdparam to prevent double-pass
@@ -197,7 +197,7 @@ class ActorCritic(Reinforce):
                 net = self.net if net is None else net
                 v_pred = net(x)[-1].view(-1)
         else:
-            net = self.critic if net is None else net
+            net = self.critic_net if net is None else net
             v_pred = net(x).view(-1)
         return v_pred
 
@@ -297,7 +297,7 @@ class ActorCritic(Reinforce):
                 self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock)
             else:
                 self.net.training_step(policy_loss, self.optim, self.lr_scheduler, lr_clock=clock)
-                self.critic.training_step(val_loss, self.critic_optim, self.critic_lr_scheduler, lr_clock=clock)
+                self.critic_net.training_step(val_loss, self.critic_optim, self.critic_lr_scheduler, lr_clock=clock)
                 loss = policy_loss + val_loss
             # reset
             self.to_train = 0

@@ -181,7 +181,8 @@ def save_algorithm(algorithm, ckpt=None):
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_{net_name}_model.pth'
         save(net, model_path)
-        optim = getattr(algorithm, net_name.replace('net', 'optim'), None)
+        optim_name = net_name.replace('net', 'optim')
+        optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim
             optim_path = f'{prepath}_{net_name}_optim.pth'
             save(optim, optim_path)
@@ -208,7 +209,8 @@ def load_algorithm(algorithm):
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_{net_name}_model.pth'
         load(net, model_path)
-        optim = getattr(algorithm, net_name.replace('net', 'optim'), None)
+        optim_name = net_name.replace('net', 'optim')
+        optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim
             optim_path = f'{prepath}_{net_name}_optim.pth'
             load(optim, optim_path)
