@@ -140,13 +140,8 @@ class ConvNet(Net, nn.Module):
 
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
-        self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.lr_scheduler_spec)
         self.to(self.device)
         self.train()
-
-    def __str__(self):
-        return super().__str__() + f'\noptim: {self.optim}'
 
     def get_conv_output_size(self):
         '''Helper function to calculate the size of the flattened features after the final convolutional layer'''
@@ -195,14 +190,14 @@ class ConvNet(Net, nn.Module):
             return self.model_tail(x)
 
     @net_util.dev_check_training_step
-    def training_step(self, loss, lr_clock=None):
+    def training_step(self, loss, optim, lr_scheduler, lr_clock=None):
         '''Takes a single training step: one forward and one backwards pass'''
-        self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
-        self.optim.zero_grad()
+        lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
+        optim.zero_grad()
         loss.backward()
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
-        self.optim.step()
+        optim.step()
         lr_clock.tick('grad_step')
         return loss
 
@@ -310,8 +305,6 @@ class DuelingConvNet(ConvNet):
 
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
-        self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.lr_scheduler_spec)
         self.to(self.device)
         self.train()
 

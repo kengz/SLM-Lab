@@ -179,8 +179,10 @@ def save_algorithm(algorithm, ckpt=None):
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_{net_name}_model.pth'
         save(net, model_path)
-        optim_path = f'{prepath}_{net_name}_optim.pth'
-        save(net.optim, optim_path)
+        optim = getattr(algorithm, net_name.replace('net', 'optim'), None)
+        if optim is not None:  # only trainable net has optim
+            optim_path = f'{prepath}_{net_name}_optim.pth'
+            save(optim, optim_path)
     logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
 
 
@@ -204,8 +206,10 @@ def load_algorithm(algorithm):
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_{net_name}_model.pth'
         load(net, model_path)
-        optim_path = f'{prepath}_{net_name}_optim.pth'
-        load(net.optim, optim_path)
+        optim = getattr(algorithm, net_name.replace('net', 'optim'), None)
+        if optim is not None:  # only trainable net has optim
+            optim_path = f'{prepath}_{net_name}_optim.pth'
+            load(optim, optim_path)
 
 
 def copy(src_net, tar_net):

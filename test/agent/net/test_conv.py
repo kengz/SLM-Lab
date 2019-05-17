@@ -36,6 +36,9 @@ in_dim = (4, 84, 84)
 out_dim = 3
 batch_size = 16
 net = ConvNet(net_spec, in_dim, out_dim)
+# init net optimizer and its lr scheduler
+optim = net_util.get_optim(net, net.optim_spec)
+lr_scheduler = net_util.get_lr_scheduler(optim, net.lr_scheduler_spec)
 x = torch.rand((batch_size,) + in_dim)
 
 
@@ -57,7 +60,7 @@ def test_training_step():
     y = torch.rand((batch_size, out_dim))
     clock = Clock(100, 'total_t', 1)
     loss = net.loss_fn(net.forward(x), y)
-    net.training_step(loss, lr_clock=clock)
+    net.training_step(loss, optim, lr_scheduler, lr_clock=clock)
     assert loss != 0.0
 
 

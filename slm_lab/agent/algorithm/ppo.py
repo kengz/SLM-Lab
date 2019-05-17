@@ -189,10 +189,10 @@ class PPO(ActorCritic):
                     val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
                     if self.shared:  # shared network
                         loss = policy_loss + val_loss
-                        self.net.training_step(loss=loss, lr_clock=clock)
+                        self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock)
                     else:
-                        self.net.training_step(loss=policy_loss, lr_clock=clock)
-                        self.critic.training_step(loss=val_loss, lr_clock=clock)
+                        self.net.training_step(policy_loss, self.optim, self.lr_scheduler, lr_clock=clock)
+                        self.critic.training_step(val_loss, self.critic_optim, self.critic_lr_scheduler, lr_clock=clock)
                         loss = policy_loss + val_loss
                     total_loss += loss
             loss = total_loss / self.training_epoch / len(minibatches)
