@@ -138,7 +138,6 @@ class MLPNet(Net, nn.Module):
         if loss is None:
             out = self(x)
             loss = self.loss_fn(out, y)
-        assert not torch.isnan(loss).any(), loss
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
@@ -317,7 +316,6 @@ class HydraMLPNet(Net, nn.Module):
                 loss = self.loss_fn(out, y)
                 total_loss += loss
             loss = total_loss
-        assert not torch.isnan(loss).any(), loss
         loss.backward(retain_graph=retain_graph)
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)

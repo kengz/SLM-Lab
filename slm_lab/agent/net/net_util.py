@@ -249,6 +249,7 @@ def dev_check_training_step(fn):
 
         # run training_step, get loss
         loss = fn(*args, **kwargs)
+        assert not torch.isnan(loss).any(), loss
 
         # get post-update parameters to compare
         post_params = [param.clone() for param in net.parameters()]
