@@ -197,12 +197,9 @@ class Body:
         if not hasattr(self.agent.algorithm, 'net_names'):
             return np.nan
         lrs = []
-        for net_name in self.agent.algorithm.net_names:
-            # we are only interested in directly trainable network, so exclude target net
-            if net_name is 'target_net':
-                continue
-            net = getattr(self.agent.algorithm, net_name)
-            lrs.append(net.lr_scheduler.get_lr())
+        for k, attr in self.agent.algorithm.__dict__.items():
+            if k.endswith('lr_scheduler'):
+                lrs.append(attr.get_lr())
         return np.mean(lrs)
 
     def get_log_prefix(self):

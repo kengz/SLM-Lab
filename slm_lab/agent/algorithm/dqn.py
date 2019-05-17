@@ -88,6 +88,9 @@ class VanillaDQN(SARSA):
         else:
             util.set_attr(self, global_nets)
             self.net_names = list(global_nets.keys())
+        # init net optimizer and its lr scheduler
+        self.optim = net_util.get_optim(self.net, self.net.optim_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         self.post_init_nets()
 
     def calc_q_loss(self, batch):
@@ -142,7 +145,7 @@ class VanillaDQN(SARSA):
                 batch = self.sample()
                 for _ in range(self.training_batch_epoch):
                     loss = self.calc_q_loss(batch)
-                    self.net.training_step(loss=loss, lr_clock=clock)
+                    self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock)
                     total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
@@ -189,6 +192,9 @@ class DQNBase(VanillaDQN):
         else:
             util.set_attr(self, global_nets)
             self.net_names = list(global_nets.keys())
+        # init net optimizer and its lr scheduler
+        self.optim = net_util.get_optim(self.net, self.net.optim_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net

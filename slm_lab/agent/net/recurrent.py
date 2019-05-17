@@ -143,13 +143,8 @@ class RecurrentNet(Net, nn.Module):
 
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
-        self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
         self.to(self.device)
         self.train()
-
-    def __str__(self):
-        return super().__str__() + f'\noptim: {self.optim}'
 
     def forward(self, x):
         '''The feedforward step. Input is batch_size x seq_len x state_dim'''
@@ -175,19 +170,12 @@ class RecurrentNet(Net, nn.Module):
             return self.model_tail(hid_x)
 
     @net_util.dev_check_training_step
-    def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_clock=None):
-        '''Takes a single training step: one forward and one backwards pass'''
-        if hasattr(self, 'model_tails') and x is not None:
-            raise ValueError('Loss computation from x,y not supported for multitails')
-        self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
-        self.optim.zero_grad()
-        if loss is None:
-            out = self(x)
-            loss = self.loss_fn(out, y)
-        assert not torch.isnan(loss).any(), loss
-        loss.backward(retain_graph=retain_graph)
+    def training_step(self, loss, optim, lr_scheduler, lr_clock=None):
+        lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
+        optim.zero_grad()
+        loss.backward()
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
-        self.optim.step()
+        optim.step()
         lr_clock.tick('grad_step')
         return loss

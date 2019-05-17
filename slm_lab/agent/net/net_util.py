@@ -49,7 +49,6 @@ def get_nn_name(uncased_name):
 
 def get_activation_fn(activation):
     '''Helper to generate activation function layers for net'''
-    activation = activation or 'relu'
     ActivationClass = getattr(nn, get_nn_name(activation))
     return ActivationClass()
 
@@ -62,26 +61,26 @@ def get_loss_fn(cls, loss_spec):
     return loss_fn
 
 
-def get_lr_scheduler(cls, lr_scheduler_spec):
+def get_lr_scheduler(optim, lr_scheduler_spec):
     '''Helper to parse lr_scheduler param and construct Pytorch optim.lr_scheduler'''
     if ps.is_empty(lr_scheduler_spec):
-        lr_scheduler = NoOpLRScheduler(cls.optim)
+        lr_scheduler = NoOpLRScheduler(optim)
     elif lr_scheduler_spec['name'] == 'LinearToZero':
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, 'LambdaLR')
         total_t = float(lr_scheduler_spec['total_t'])
-        lr_scheduler = LRSchedulerClass(cls.optim, lr_lambda=lambda x: 1 - x / total_t)
+        lr_scheduler = LRSchedulerClass(optim, lr_lambda=lambda x: 1 - x / total_t)
     else:
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, lr_scheduler_spec['name'])
         lr_scheduler_spec = ps.omit(lr_scheduler_spec, 'name')
-        lr_scheduler = LRSchedulerClass(cls.optim, **lr_scheduler_spec)
+        lr_scheduler = LRSchedulerClass(optim, **lr_scheduler_spec)
     return lr_scheduler
 
 
-def get_optim(cls, optim_spec):
+def get_optim(net, optim_spec):
     '''Helper to parse optim param and construct optim for net'''
     OptimClass = getattr(torch.optim, optim_spec['name'])
     optim_spec = ps.omit(optim_spec, 'name')
-    optim = OptimClass(cls.parameters(), **optim_spec)
+    optim = OptimClass(net.parameters(), **optim_spec)
     return optim
 
 
@@ -180,8 +179,10 @@ def save_algorithm(algorithm, ckpt=None):
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_{net_name}_model.pth'
         save(net, model_path)
-        optim_path = f'{prepath}_{net_name}_optim.pth'
-        save(net.optim, optim_path)
+        optim = getattr(algorithm, net_name.replace('net', 'optim'), None)
+        if optim is not None:  # only trainable net has optim
+            optim_path = f'{prepath}_{net_name}_optim.pth'
+            save(optim, optim_path)
     logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
 
 
@@ -205,8 +206,10 @@ def load_algorithm(algorithm):
         net = getattr(algorithm, net_name)
         model_path = f'{prepath}_{net_name}_model.pth'
         load(net, model_path)
-        optim_path = f'{prepath}_{net_name}_optim.pth'
-        load(net.optim, optim_path)
+        optim = getattr(algorithm, net_name.replace('net', 'optim'), None)
+        if optim is not None:  # only trainable net has optim
+            optim_path = f'{prepath}_{net_name}_optim.pth'
+            load(optim, optim_path)
 
 
 def copy(src_net, tar_net):
@@ -249,6 +252,7 @@ def dev_check_training_step(fn):
 
         # run training_step, get loss
         loss = fn(*args, **kwargs)
+        assert not torch.isnan(loss).any(), loss
 
         # get post-update parameters to compare
         post_params = [param.clone() for param in net.parameters()]
