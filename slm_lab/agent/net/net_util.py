@@ -308,7 +308,7 @@ def init_global_nets(algorithm):
     for net_name in algorithm.net_names:
         g_net = getattr(algorithm, net_name)
         g_net.share_memory()  # make net global
-        global_nets[net_name] = g_net
+        global_nets[f'global_{net_name}'] = g_net  # naming convention
         # share optim if it is global, to replace local optim
         optim_name = net_name.replace('net', 'optim')
         lr_scheduler_name = net_name.replace('net', 'lr_scheduler')
@@ -323,14 +323,13 @@ def init_global_nets(algorithm):
 
 
 def set_global_nets(algorithm, global_nets):
-    '''Set global_nets and optimizer, lr_scheduler (if available) for Hogwild'''
-    for attr, obj in global_nets.items():
-        if attr.endswith('net'):  # if global net, set ref in local net
-            net = getattr(algorithm, attr)
-            setattr(net, 'global_net', obj)
-        else:  # if global optimizer/lr_scheduler, set to override algorithm attr
-            setattr(algorithm, attr, obj)
-    logger.info(f'Set global_nets attr {list(global_nets.keys())} for Hogwild')
+    '''For Hogwild, set attr built in init_global_nets above. Use in algorithm init.'''
+    if global_nets is None:
+        for net_name in algorithm.net_names:
+            set_attr(algorithm, f'global_{net_name}', None)  # guard to have attr to pass global_net into training_step
+    else:
+        util.set_attr(algorithm, global_nets)
+        logger.info(f'Set global_nets attr {list(global_nets.keys())} for Hogwild')
 
 
 def push_global_grads(net, global_net):

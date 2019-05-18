@@ -163,8 +163,7 @@ class ActorCritic(Reinforce):
         if not self.shared:
             self.critic_optim = net_util.get_optim(self.critic_net, self.critic_net.optim_spec)
             self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic_net.lr_scheduler_spec)
-        if global_nets is not None:
-            net_util.set_global_nets(self, global_nets)
+        net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
     @lab_api
@@ -292,10 +291,10 @@ class ActorCritic(Reinforce):
             val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
             if self.shared:  # shared network
                 loss = policy_loss + val_loss
-                self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock)
+                self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
             else:
-                self.net.training_step(policy_loss, self.optim, self.lr_scheduler, lr_clock=clock)
-                self.critic_net.training_step(val_loss, self.critic_optim, self.critic_lr_scheduler, lr_clock=clock)
+                self.net.training_step(policy_loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
+                self.critic_net.training_step(val_loss, self.critic_optim, self.critic_lr_scheduler, lr_clock=clock, global_net=self.global_critic_net)
                 loss = policy_loss + val_loss
             # reset
             self.to_train = 0
