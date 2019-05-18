@@ -326,7 +326,7 @@ def set_global_nets(algorithm, global_nets):
     '''For Hogwild, set attr built in init_global_nets above. Use in algorithm init.'''
     if global_nets is None:
         for net_name in algorithm.net_names:
-            set_attr(algorithm, f'global_{net_name}', None)  # guard to have attr to pass global_net into training_step
+            setattr(algorithm, f'global_{net_name}', None)  # guard to have attr to pass global_net into training_step
     else:
         util.set_attr(algorithm, global_nets)
         logger.info(f'Set global_nets attr {list(global_nets.keys())} for Hogwild')
