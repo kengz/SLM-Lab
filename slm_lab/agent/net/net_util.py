@@ -337,4 +337,4 @@ def push_global_grads(net, global_net):
     for param, global_param in zip(net.parameters(), global_net.parameters()):
         if global_param.grad is not None:
             return  # quick skip
-        global_param._grad = param.grad.cpu()
+        global_param._grad = param.grad

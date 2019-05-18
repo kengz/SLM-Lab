@@ -570,8 +570,6 @@ def set_cuda_id(spec):
             return
     trial_idx = spec['meta']['trial'] or 0
     session_idx = spec['meta']['session'] or 0
-    if session_idx == -1:  # Hogwild global net session, don't place on GPU
-        return
     job_idx = trial_idx * spec['meta']['max_session'] + session_idx
     job_idx += spec['meta']['cuda_offset']
     device_count = torch.cuda.device_count()
