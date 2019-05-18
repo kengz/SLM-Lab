@@ -88,10 +88,7 @@ class Reinforce(Algorithm):
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         if global_nets is not None:
-            self.hogwild = True
             net_util.set_global_nets(self, global_nets)
-        else:
-            self.hogwild = False
         self.post_init_nets()
 
     @lab_api
@@ -164,8 +161,6 @@ class Reinforce(Algorithm):
             loss = self.calc_policy_loss(batch, pdparams, advs)
             self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock)
             # reset
-            if self.hogwild:
-                net_util.sync_global_nets(self)
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()

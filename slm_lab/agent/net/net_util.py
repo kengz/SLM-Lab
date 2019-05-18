@@ -328,10 +328,3 @@ def set_global_nets(algorithm, global_nets):
     logger.info(f'Set global_nets attr {list(global_nets.keys())} for Hogwild')
 
 
-def sync_global_nets(algorithm):
-    '''Sync parameters from global net, call after training step (also helps to ensure being on-policy)'''
-    for attr, obj in algorithm.__dict__.items():
-        if attr.startswith('global') and attr.endswith('net'):  # global net, sync
-            net_name = attr.replace('global_', '')  # local net name by naming convention
-            net = getattr(algorithm, net_name)
-            net.load_state_dict(obj.state_dict())  # load param from global_net
