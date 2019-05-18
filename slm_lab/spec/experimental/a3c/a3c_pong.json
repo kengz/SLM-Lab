@@ -1,7 +1,7 @@
 {
   "a3c_pong": {
     "agent": [{
-      "name": "A2C",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
