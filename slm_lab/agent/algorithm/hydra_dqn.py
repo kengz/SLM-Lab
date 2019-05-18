@@ -97,7 +97,7 @@ class HydraDQN(DQN):
                 batch = self.space_sample()
                 for _ in range(self.training_batch_epoch):
                     loss = self.calc_q_loss(batch)
-                    self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
+                    self.net.train_step(loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
                     total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset

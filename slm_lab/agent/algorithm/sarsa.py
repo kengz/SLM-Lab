@@ -146,7 +146,7 @@ class SARSA(Algorithm):
         if self.to_train == 1:
             batch = self.sample()
             loss = self.calc_q_loss(batch)
-            self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
+            self.net.train_step(loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')

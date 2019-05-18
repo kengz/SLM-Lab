@@ -230,31 +230,31 @@ def polyak_update(src_net, tar_net, old_ratio=0.5):
         tar_param.data.copy_(old_ratio * src_param.data + (1.0 - old_ratio) * tar_param.data)
 
 
-def to_check_training_step():
+def to_check_train_step():
     '''Condition for running assert_trained'''
     return os.environ.get('PY_ENV') == 'test' or util.get_lab_mode() == 'dev'
 
 
-def dev_check_training_step(fn):
+def dev_check_train_step(fn):
     '''
-    Decorator to check if net.training_step actually updates the network weights properly
-    Triggers only if to_check_training_step is True (dev/test mode)
+    Decorator to check if net.train_step actually updates the network weights properly
+    Triggers only if to_check_train_step is True (dev/test mode)
     @example
 
-    @net_util.dev_check_training_step
-    def training_step(self, ...):
+    @net_util.dev_check_train_step
+    def train_step(self, ...):
         ...
     '''
     @wraps(fn)
     def check_fn(*args, **kwargs):
-        if not to_check_training_step():
+        if not to_check_train_step():
             return fn(*args, **kwargs)
 
         net = args[0]  # first arg self
         # get pre-update parameters to compare
         pre_params = [param.clone() for param in net.parameters()]
 
-        # run training_step, get loss
+        # run train_step, get loss
         loss = fn(*args, **kwargs)
         assert not torch.isnan(loss).any(), loss
 
@@ -268,8 +268,8 @@ def dev_check_training_step(fn):
         else:
             # check parameter updates
             try:
-                assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_params, post_params)), f'Model parameter is not updated in training_step(), check if your tensor is detached from graph. Loss: {loss:g}'
-                logger.info(f'Model parameter is updated in training_step(). Loss: {loss: g}')
+                assert not all(torch.equal(w1, w2) for w1, w2 in zip(pre_params, post_params)), f'Model parameter is not updated in train_step(), check if your tensor is detached from graph. Loss: {loss:g}'
+                logger.info(f'Model parameter is updated in train_step(). Loss: {loss: g}')
             except Exception as e:
                 logger.error(e)
                 if os.environ.get('PY_ENV') == 'test':
@@ -326,14 +326,14 @@ def set_global_nets(algorithm, global_nets):
     '''For Hogwild, set attr built in init_global_nets above. Use in algorithm init.'''
     if global_nets is None:
         for net_name in algorithm.net_names:
-            setattr(algorithm, f'global_{net_name}', None)  # guard to have attr to pass global_net into training_step
+            setattr(algorithm, f'global_{net_name}', None)  # guard to have attr to pass global_net into train_step
     else:
         util.set_attr(algorithm, global_nets)
         logger.info(f'Set global_nets attr {list(global_nets.keys())} for Hogwild')
 
 
 def push_global_grads(net, global_net):
-    '''Push gradients to global_net, call inside training_step between loss.backward() and optim.step()'''
+    '''Push gradients to global_net, call inside train_step between loss.backward() and optim.step()'''
     for param, global_param in zip(net.parameters(), global_net.parameters()):
         if global_param.grad is not None:
             return  # quick skip

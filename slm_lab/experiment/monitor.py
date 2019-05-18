@@ -148,7 +148,7 @@ class Body:
         fps = 0 if wall_t == 0 else total_t / wall_t
 
         # update debugging variables
-        if net_util.to_check_training_step():
+        if net_util.to_check_train_step():
             grad_norms = net_util.get_grad_norms(self.agent.algorithm)
             self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
 
