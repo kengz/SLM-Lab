@@ -51,7 +51,7 @@
           "lr": 1e-4
         },
         "lr_scheduler_spec": null,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
