@@ -121,13 +121,11 @@ class BaseEnv(ABC):
             self.frame_op = 'stack'
             self.frame_op_len = seq_len
         if util.get_lab_mode() == 'eval':
-            self.num_envs = None  # use singleton for eval
+            self.num_envs = 1  # use singleton for eval
             # override for eval, offset so epi is 0 - (num_eval_epi - 1)
             self.max_tick = NUM_EVAL_EPI - 1
             self.max_tick_unit = 'epi'
-        if self.num_envs == 1:  # guard: if 1, dont used venvs at all
-            self.num_envs = None
-        self.is_venv = self.num_envs is not None
+        self.is_venv = (self.num_envs is not None and self.num_envs > 1)
         if self.is_venv:
             assert self.log_frequency is not None, f'Specify log_frequency when using num_envs'
         self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
