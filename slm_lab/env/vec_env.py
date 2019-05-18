@@ -483,7 +483,7 @@ class VecFrameStack(VecEnvWrapper):
         return self.stackedobs.copy()
 
 
-def make_gym_venv(name, seed=0, frame_op=None, frame_op_len=None, reward_scale=None, normalize_state=False, num_envs=4):
+def make_gym_venv(name, num_envs=4, seed=0, frame_op=None, frame_op_len=None, reward_scale=None, normalize_state=False):
     '''General method to create any parallel vectorized Gym env; auto wraps Atari'''
     venv = [
         # don't concat frame or clip reward on individual env; do that at vector level

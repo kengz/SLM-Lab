@@ -35,7 +35,7 @@ class OpenAIEnv(BaseEnv):
         try_register_env(spec)  # register if it's a custom gym env
         seed = ps.get(spec, 'meta.random_seed')
         if self.is_venv:  # make vector environment
-            self.u_env = make_gym_venv(self.name, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state, self.num_envs)
+            self.u_env = make_gym_venv(self.name, self.num_envs, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state)
         else:
             self.u_env = make_gym_env(self.name, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state)
         self._set_attr_from_u_env(self.u_env)
