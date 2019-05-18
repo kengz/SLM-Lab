@@ -58,7 +58,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 1,
+      "num_envs": 8,
       "max_t": null,
       "max_tick": 1e7
     }],
@@ -134,7 +134,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 1,
+      "num_envs": 8,
       "max_t": null,
       "max_tick": 1e7
     }],
