@@ -19,12 +19,14 @@ class OpenAIEnv(BaseEnv):
 
     e.g. env_spec
     "env": [{
-      "name": "CartPole-v0",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "num_envs": null,
-      "max_t": null,
-      "max_tick": 10000,
+        "name": "PongNoFrameskip-v4",
+        "frame_op": "concat",
+        "frame_op_len": 4,
+        "normalize_state": false,
+        "reward_scale": "sign",
+        "num_envs": 8,
+        "max_t": null,
+        "max_tick": 1e7
     }],
     '''
 
@@ -33,9 +35,9 @@ class OpenAIEnv(BaseEnv):
         try_register_env(spec)  # register if it's a custom gym env
         seed = ps.get(spec, 'meta.random_seed')
         if self.is_venv:  # make vector environment
-            self.u_env = make_gym_venv(self.name, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.num_envs)
+            self.u_env = make_gym_venv(self.name, self.num_envs, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state)
         else:
-            self.u_env = make_gym_env(self.name, seed, self.frame_op, self.frame_op_len, self.reward_scale)
+            self.u_env = make_gym_env(self.name, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state)
         self._set_attr_from_u_env(self.u_env)
         self.max_t = self.max_t or self.u_env.spec.max_episode_steps
         assert self.max_t is not None

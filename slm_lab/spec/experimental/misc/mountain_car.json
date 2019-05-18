@@ -20,8 +20,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
-        "training_epoch": 4,
-        "normalize_state": false
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -72,7 +71,6 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "normalize_state__choice": [true, false],
           "training_frequency__choice": [2, 4, 8],
           "training_epoch__choice": [2, 4, 8],
           "lam__uniform": [0.9, 0.99]
@@ -112,8 +110,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
-        "training_epoch": 4,
-        "normalize_state": false
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -173,7 +170,6 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "normalize_state__choice": [true, false],
           "training_frequency__choice": [2, 4, 8],
           "training_epoch__choice": [2, 4, 8],
           "lam__uniform": [0.9, 0.99],
@@ -216,8 +212,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
-        "training_epoch": 4,
-        "normalize_state": false
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -268,7 +263,6 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "normalize_state__choice": [true, false],
           "training_frequency__choice": [2, 4, 8],
           "training_epoch__choice": [2, 4, 8],
           "num_step_returns__choice": [2, 4, 8]
@@ -309,8 +303,7 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
-        "training_epoch": 4,
-        "normalize_state": false
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -365,7 +358,6 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "normalize_state__choice": [true, false],
           "training_frequency__choice": [2, 4, 8],
           "training_epoch__choice": [2, 4, 8],
           "lam__uniform": [0.9, 0.99],
@@ -405,8 +397,7 @@
         "training_batch_epoch": 3,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_start_step": 32,
-        "normalize_state": false
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -461,7 +452,6 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "normalize_state__choice": [true, false],
           "explore_var_spec": {
             "end_step__choice": [20000, 40000, 80000]
           }
@@ -497,8 +487,7 @@
         "training_batch_epoch": 3,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_start_step": 32,
-        "normalize_state": false
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -556,7 +545,6 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "normalize_state__choice": [true, false],
           "explore_var_spec": {
             "end_step__choice": [20000, 40000, 80000]
           }
@@ -594,8 +582,7 @@
         "training_batch_epoch": 4,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_start_step": 32,
-        "normalize_state": false
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -650,7 +637,6 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "normalize_state__choice": [true, false],
           "explore_var_spec": {
             "end_step__choice": [20000, 40000, 80000]
           }
@@ -686,8 +672,7 @@
         "training_batch_epoch": 4,
         "training_epoch": 4,
         "training_frequency": 4,
-        "training_start_step": 32,
-        "normalize_state": false
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -745,7 +730,6 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "normalize_state__choice": [true, false],
           "explore_var_spec": {
             "end_step__choice": [20000, 40000, 80000]
           }

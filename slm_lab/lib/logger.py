@@ -66,7 +66,7 @@ def info(msg, *args, **kwargs):
     return lab_logger.info(msg, *args, **kwargs)
 
 
-def warn(msg, *args, **kwargs):
+def warning(msg, *args, **kwargs):
     return lab_logger.warning(msg, *args, **kwargs)
 
 

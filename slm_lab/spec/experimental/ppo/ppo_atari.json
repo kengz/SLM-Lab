@@ -26,8 +26,7 @@
         "val_loss_coef": 0.5,
         "training_frequency": 128,
         "minibatch_size": 32,
-        "training_epoch": 4,
-        "normalize_state": false
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyBatchReplay",

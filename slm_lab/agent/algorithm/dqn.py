@@ -47,7 +47,6 @@ class VanillaDQN(SARSA):
         "training_epoch": 4,
         "training_frequency": 10,
         "training_start_step": 10,
-        "normalize_state": false
     }
     '''
 
@@ -70,7 +69,6 @@ class VanillaDQN(SARSA):
             'training_epoch',  # how many batches to train each time
             'training_frequency',  # how often to train (once a few timesteps)
             'training_start_step',  # how long before starting training
-            'normalize_state',
         ])
         super().init_algorithm_params()
 
@@ -119,8 +117,6 @@ class VanillaDQN(SARSA):
     def sample(self):
         '''Samples a batch from memory of size self.memory_spec['batch_size']'''
         batch = self.body.memory.sample()
-        if self.normalize_state:
-            batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 

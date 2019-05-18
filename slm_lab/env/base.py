@@ -73,18 +73,14 @@ class BaseEnv(ABC):
 
     e.g. env_spec
     "env": [{
-      "name": "CartPole-v0",
-      "num_envs": null,
-      "max_t": null,
-      "max_tick": 150,
-    }],
-
-    # or using total_t
-    "env": [{
-      "name": "CartPole-v0",
-      "num_envs": null,
-      "max_t": null,
-      "max_tick": 10000,
+        "name": "PongNoFrameskip-v4",
+        "frame_op": "concat",
+        "frame_op_len": 4,
+        "normalize_state": false,
+        "reward_scale": "sign",
+        "num_envs": 8,
+        "max_t": null,
+        "max_tick": 1e7
     }],
     '''
 
@@ -97,8 +93,9 @@ class BaseEnv(ABC):
             log_frequency=None,  # default to log at epi done
             frame_op=None,
             frame_op_len=None,
-            num_envs=None,
+            normalize_state=False,
             reward_scale=None,
+            num_envs=None,
         ))
         util.set_attr(self, spec['meta'], [
             'log_frequency',
@@ -109,10 +106,11 @@ class BaseEnv(ABC):
             'name',
             'frame_op',
             'frame_op_len',
+            'normalize_state',
+            'reward_scale',
             'num_envs',
             'max_t',
             'max_tick',
-            'reward_scale',
         ])
         seq_len = ps.get(spec, 'agent.0.net.seq_len')
         if seq_len is not None:  # infer if using RNN

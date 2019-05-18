@@ -38,8 +38,6 @@ class HydraDQN(DQN):
         states = []
         for eb, body in util.ndenumerate_nonan(self.agent.body_a):
             state = state_a[eb]
-            if self.normalize_state:
-                state = policy_util.update_online_stats_and_normalize_state(body, state)
             states.append(state)
         xs = [torch.from_numpy(state.astype(np.float32)) for state in states]
         pdparam = self.calc_pdparam(xs)
@@ -53,8 +51,6 @@ class HydraDQN(DQN):
         batch = {k: [] for k in self.body.memory.data_keys}
         for body in self.agent.nanflat_body_a:
             body_batch = body.memory.sample()
-            if self.normalize_state:
-                body_batch = policy_util.normalize_states_and_next_states(body, body_batch)
             body_batch = util.to_torch_batch(body_batch, self.net.device, body.memory.is_episodic)
             for k, arr in batch.items():
                 arr.append(body_batch[k])

@@ -54,7 +54,6 @@ class PPO(ActorCritic):
         "minibatch_size": 256,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": false
     }
 
     e.g. special net_spec param "shared" to share/separate Actor/Critic
@@ -89,7 +88,6 @@ class PPO(ActorCritic):
             'minibatch_size',
             'training_frequency',  # horizon
             'training_epoch',
-            'normalize_state',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)

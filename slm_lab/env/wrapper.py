@@ -158,6 +158,31 @@ class ScaleRewardEnv(gym.RewardWrapper):
         return try_scale_reward(self, reward)
 
 
+class NormalizeStateEnv(gym.ObservationWrapper):
+    def __init__(self, env=None):
+        '''
+        Normalize observations on-line
+        Adapted from https://github.com/ikostrikov/pytorch-a3c/blob/e898f7514a03de73a2bf01e7b0f17a6f93963389/envs.py (MIT)
+        '''
+        super().__init__(env)
+        self.state_mean = 0
+        self.state_std = 0
+        self.alpha = 0.9999
+        self.num_steps = 0
+
+    def _observation(self, observation):
+        self.num_steps += 1
+        self.state_mean = self.state_mean * self.alpha + \
+            observation.mean() * (1 - self.alpha)
+        self.state_std = self.state_std * self.alpha + \
+            observation.std() * (1 - self.alpha)
+
+        unbiased_mean = self.state_mean / (1 - pow(self.alpha, self.num_steps))
+        unbiased_std = self.state_std / (1 - pow(self.alpha, self.num_steps))
+
+        return (observation - unbiased_mean) / (unbiased_std + 1e-8)
+
+
 class PreprocessImage(gym.ObservationWrapper):
     def __init__(self, env):
         '''
@@ -275,15 +300,7 @@ def wrap_deepmind(env, episode_life=True, stack_len=None):
     return env
 
 
-def wrap_image_env(env, stack_len=None):
-    '''Wrap image-based environment'''
-    env = PreprocessImage(env)
-    if stack_len is not None:  # use concat for image (1, 84, 84)
-        env = FrameStack(env, 'concat', stack_len)
-    return env
-
-
-def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale=None):
+def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale=None, normalize_state=False):
     '''General method to create any Gym env; auto wraps Atari'''
     env = gym.make(name)
     if seed is not None:
@@ -294,8 +311,14 @@ def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale
         episode_life = util.get_lab_mode() != 'eval'
         env = wrap_deepmind(env, episode_life, frame_op_len)
     elif len(env.observation_space.shape) == 3:  # image-state env
-        env = wrap_image_env(env, frame_op_len)
+        env = PreprocessImage(env)
+        if normalize_state:
+            env = NormalizeStateEnv(env)
+        if frame_op_len is not None:  # use concat for image (1, 84, 84)
+            env = FrameStack(env, 'concat', frame_op_len)
     else:  # vector-state env
+        if normalize_state:
+            env = NormalizeStateEnv(env)
         if frame_op is not None:
             env = FrameStack(env, frame_op, frame_op_len)
     if reward_scale is not None:

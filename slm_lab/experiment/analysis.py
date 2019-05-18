@@ -141,7 +141,7 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
     std = FITNESS_STD.get(env_name)
     if std is None:
         std = FITNESS_STD.get('template')
-        logger.warn(f'The fitness standard for env {env_name} is not built yet. Contact author. Using a template standard for now.')
+        logger.warning(f'The fitness standard for env {env_name} is not built yet. Contact author. Using a template standard for now.')
 
     # calculate the strength sr and the moving-average (to denoise) first before calculating fitness
     aeb_df['strength'] = calc_strength_sr(aeb_df, std['rand_epi_reward'], std['std_epi_reward'])
