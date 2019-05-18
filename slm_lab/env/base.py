@@ -7,7 +7,6 @@ import pydash as ps
 import time
 
 ENV_DATA_NAMES = ['state', 'reward', 'done']
-NUM_EVAL_EPI = 100  # set the number of episodes to eval a model ckpt
 logger = logger.get_logger(__name__)
 
 
@@ -122,8 +121,6 @@ class BaseEnv(ABC):
             self.frame_op_len = seq_len
         if util.get_lab_mode() == 'eval':
             self.num_envs = 1  # use singleton for eval
-            # override for eval, offset so epi is 0 - (num_eval_epi - 1)
-            self.max_tick = NUM_EVAL_EPI - 1
             self.max_tick_unit = 'epi'
         self.is_venv = (self.num_envs is not None and self.num_envs > 1)
         if self.is_venv:
