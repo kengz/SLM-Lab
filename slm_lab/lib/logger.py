@@ -67,7 +67,7 @@ def info(msg, *args, **kwargs):
 
 
 def warn(msg, *args, **kwargs):
-    return lab_logger.warn(msg, *args, **kwargs)
+    return lab_logger.warning(msg, *args, **kwargs)
 
 
 def get_logger(__name__):
