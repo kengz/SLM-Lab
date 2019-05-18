@@ -406,7 +406,7 @@ class ShmemVecEnv(VecEnv):
 
     def reset(self):
         if self.waiting_step:
-            logger.warn('Called reset() while waiting for the step to complete')
+            logger.warning('Called reset() while waiting for the step to complete')
             self.step_wait()
         for pipe in self.parent_pipes:
             pipe.send(('reset', None))

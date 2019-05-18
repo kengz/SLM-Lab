@@ -21,7 +21,7 @@ if util.is_jupyter():
     py.init_notebook_mode(connected=True)
 logger = logger.get_logger(__name__)
 # warn orca failure only once
-orca_warn_once = ps.once(lambda e: logger.warn(f'Failed to generate graph. Run retro-analysis to generate graphs later.'))
+orca_warn_once = ps.once(lambda e: logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later.'))
 
 
 def create_label(
