@@ -1,7 +1,7 @@
 {
   "a3c_gae_pong": {
     "agent": [{
-      "name": "A2C",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
@@ -72,7 +72,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "log_frequency": 50000,
       "eval_frequency": 50000,
       "max_tick_unit": "total_t",

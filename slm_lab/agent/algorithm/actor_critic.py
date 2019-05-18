@@ -146,27 +146,24 @@ class ActorCritic(Reinforce):
         if critic_net_spec['use_same_optim']:
             critic_net_spec = actor_net_spec
 
-        if global_nets is None:
-            in_dim = self.body.state_dim
-            out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
-            # main actor network, may contain out_dim self.shared == True
-            NetClass = getattr(net, actor_net_spec['type'])
-            self.net = NetClass(actor_net_spec, in_dim, out_dim)
-            self.net_names = ['net']
-            if not self.shared:  # add separate network for critic
-                critic_out_dim = 1
-                CriticNetClass = getattr(net, critic_net_spec['type'])
-                self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
-                self.net_names.append('critic')
-        else:
-            util.set_attr(self, global_nets)
-            self.net_names = list(global_nets.keys())
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
+        # main actor network, may contain out_dim self.shared == True
+        NetClass = getattr(net, actor_net_spec['type'])
+        self.net = NetClass(actor_net_spec, in_dim, out_dim)
+        self.net_names = ['net']
+        if not self.shared:  # add separate network for critic
+            critic_out_dim = 1
+            CriticNetClass = getattr(net, critic_net_spec['type'])
+            self.critic_net = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
+            self.net_names.append('critic_net')
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
         if not self.shared:
-            self.critic_optim = net_util.get_optim(self.critic, self.critic.optim_spec)
-            self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic.lr_scheduler_spec)
+            self.critic_optim = net_util.get_optim(self.critic_net, self.critic_net.optim_spec)
+            self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic_net.lr_scheduler_spec)
+        net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
     @lab_api
@@ -188,7 +185,7 @@ class ActorCritic(Reinforce):
 
     def calc_v(self, x, net=None, use_cache=True):
         '''
-        Forward-pass to calculate the predicted state-value from critic.
+        Forward-pass to calculate the predicted state-value from critic_net.
         '''
         if self.shared:  # output: policy, value
             if use_cache:  # uses cache from calc_pdparam to prevent double-pass
@@ -197,7 +194,7 @@ class ActorCritic(Reinforce):
                 net = self.net if net is None else net
                 v_pred = net(x)[-1].view(-1)
         else:
-            net = self.critic if net is None else net
+            net = self.critic_net if net is None else net
             v_pred = net(x).view(-1)
         return v_pred
 
@@ -294,10 +291,10 @@ class ActorCritic(Reinforce):
             val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
             if self.shared:  # shared network
                 loss = policy_loss + val_loss
-                self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock)
+                self.net.train_step(loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
             else:
-                self.net.training_step(policy_loss, self.optim, self.lr_scheduler, lr_clock=clock)
-                self.critic.training_step(val_loss, self.critic_optim, self.critic_lr_scheduler, lr_clock=clock)
+                self.net.train_step(policy_loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
+                self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, lr_clock=clock, global_net=self.global_critic_net)
                 loss = policy_loss + val_loss
             # reset
             self.to_train = 0

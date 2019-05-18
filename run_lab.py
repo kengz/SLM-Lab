@@ -50,7 +50,7 @@ def run_spec(spec, lab_mode):
 
 def read_spec_and_run(spec_file, spec_name, lab_mode):
     '''Read a spec and run it in lab mode'''
-    logger.info(f'Running lab: spec_file {spec_file} spec_name {spec_name} in mode: {lab_mode}')
+    logger.info(f'Running lab spec_file:{spec_file} spec_name:{spec_name} in mode:{lab_mode}')
     if lab_mode in TRAIN_MODES:
         spec = spec_util.get(spec_file, spec_name)
     else:  # eval mode

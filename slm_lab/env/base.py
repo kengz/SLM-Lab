@@ -7,7 +7,6 @@ import pydash as ps
 import time
 
 ENV_DATA_NAMES = ['state', 'reward', 'done']
-NUM_EVAL_EPI = 100  # set the number of episodes to eval a model ckpt
 logger = logger.get_logger(__name__)
 
 
@@ -115,21 +114,18 @@ class BaseEnv(ABC):
             'max_tick',
             'reward_scale',
         ])
-        # infer if using RNN
         seq_len = ps.get(spec, 'agent.0.net.seq_len')
-        if seq_len is not None:
+        if seq_len is not None:  # infer if using RNN
             self.frame_op = 'stack'
             self.frame_op_len = seq_len
-        if util.get_lab_mode() == 'eval':
-            self.num_envs = None  # use singleton for eval
-            # override for eval, offset so epi is 0 - (num_eval_epi - 1)
-            self.max_tick = NUM_EVAL_EPI - 1
+        if util.get_lab_mode() == 'eval':  # use singleton for eval
+            self.num_envs = 1
             self.max_tick_unit = 'epi'
-        if self.num_envs == 1:  # guard: if 1, dont used venvs at all
-            self.num_envs = None
-        self.is_venv = self.num_envs is not None
+        if spec['meta']['distributed'] != False:  # divide max_tick for distributed
+            self.max_tick = int(self.max_tick / spec['meta']['max_session'])
+        self.is_venv = (self.num_envs is not None and self.num_envs > 1)
         if self.is_venv:
-            assert self.log_frequency is not None, f'Specify log_frequency when using num_envs'
+            assert self.log_frequency is not None, f'Specify log_frequency when using venv'
         self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
         self.clock = Clock(self.max_tick, self.max_tick_unit, self.clock_speed)
         self.to_render = util.to_render()

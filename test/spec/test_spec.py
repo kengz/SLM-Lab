@@ -194,6 +194,7 @@ def test_atari(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
+@flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('experimental/reinforce.json', 'reinforce_conv_vizdoom'),
 ])

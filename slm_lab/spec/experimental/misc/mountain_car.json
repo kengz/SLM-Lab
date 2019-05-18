@@ -65,7 +65,7 @@
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -166,7 +166,7 @@
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -261,7 +261,7 @@
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -358,7 +358,7 @@
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -454,7 +454,7 @@
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -549,7 +549,7 @@
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -643,7 +643,7 @@
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -738,7 +738,7 @@
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },

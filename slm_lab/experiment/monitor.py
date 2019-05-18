@@ -148,7 +148,7 @@ class Body:
         fps = 0 if wall_t == 0 else total_t / wall_t
 
         # update debugging variables
-        if net_util.to_check_training_step():
+        if net_util.to_check_train_step():
             grad_norms = net_util.get_grad_norms(self.agent.algorithm)
             self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
 
@@ -197,9 +197,9 @@ class Body:
         if not hasattr(self.agent.algorithm, 'net_names'):
             return np.nan
         lrs = []
-        for k, attr in self.agent.algorithm.__dict__.items():
-            if k.endswith('lr_scheduler'):
-                lrs.append(attr.get_lr())
+        for attr, obj in self.agent.algorithm.__dict__.items():
+            if attr.endswith('lr_scheduler'):
+                lrs.append(obj.get_lr())
         return np.mean(lrs)
 
     def get_log_prefix(self):

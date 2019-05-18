@@ -65,7 +65,7 @@
       "max_trial": 4,
       "max_session": 1,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 4,
         "num_gpus": 0
       }

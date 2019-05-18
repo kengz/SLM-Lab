@@ -71,7 +71,7 @@
       "max_session": 4,
       "max_trial": 62,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 62
       }
     },

@@ -37,7 +37,6 @@ SPEC_FORMAT = {
         "num": (int, list),
     },
     "meta": {
-        "distributed": bool,
         "eval_frequency": (int, float),
         "max_tick_unit": str,
         "max_session": int,
@@ -80,8 +79,8 @@ def check_body_spec(spec):
 def check_compatibility(spec):
     '''Check compatibility among spec setups'''
     # TODO expand to be more comprehensive
-    if spec['meta'].get('distributed'):
-        assert ps.get(spec, 'agent.0.net.gpu') != True, f'Hogwild lock-free does not work with GPU locked CUDA tensors. Set gpu: false.'
+    if spec['meta'].get('distributed') == 'synced':
+        assert ps.get(spec, 'agent.0.net.gpu') == False, f'Distributed mode "synced" works with CPU only. Set gpu: false.'
 
 
 def check(spec):

@@ -25,7 +25,7 @@ def test_session_total_t(test_spec):
     env_spec['max_tick'] = 30
     spec['meta']['max_tick_unit'] = 'total_t'
     session = Session(spec)
-    assert session.env.max_tick_unit == 'total_t'
+    assert session.env.clock.max_tick_unit == 'total_t'
     session_data = session.run()
     assert isinstance(session_data, pd.DataFrame)
 

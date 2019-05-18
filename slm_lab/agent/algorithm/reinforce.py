@@ -79,18 +79,15 @@ class Reinforce(Algorithm):
         Networks for continuous action spaces have two heads and return two values, the first is a tensor containing the mean of the action policy, the second is a tensor containing the std deviation of the action policy. The distribution is assumed to be a Gaussian (Normal) distribution.
         Networks for discrete action spaces have a single head and return the logits for a categorical probability distribution over the discrete actions
         '''
-        if global_nets is None:
-            in_dim = self.body.state_dim
-            out_dim = net_util.get_out_dim(self.body)
-            NetClass = getattr(net, self.net_spec['type'])
-            self.net = NetClass(self.net_spec, in_dim, out_dim)
-            self.net_names = ['net']
-        else:
-            util.set_attr(self, global_nets)
-            self.net_names = list(global_nets.keys())
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body)
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
     @lab_api
@@ -161,7 +158,7 @@ class Reinforce(Algorithm):
             pdparams = self.calc_pdparam_batch(batch)
             advs = self.calc_ret_advs(batch)
             loss = self.calc_policy_loss(batch, pdparams, advs)
-            self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock)
+            self.net.train_step(loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')

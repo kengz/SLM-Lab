@@ -79,18 +79,15 @@ class VanillaDQN(SARSA):
         '''Initialize the neural network used to learn the Q function from the spec'''
         if self.algorithm_spec['name'] == 'VanillaDQN':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for VanillaDQN; use DQN.'
-        if global_nets is None:
-            in_dim = self.body.state_dim
-            out_dim = net_util.get_out_dim(self.body)
-            NetClass = getattr(net, self.net_spec['type'])
-            self.net = NetClass(self.net_spec, in_dim, out_dim)
-            self.net_names = ['net']
-        else:
-            util.set_attr(self, global_nets)
-            self.net_names = list(global_nets.keys())
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body)
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net_names = ['net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
     def calc_q_loss(self, batch):
@@ -145,7 +142,7 @@ class VanillaDQN(SARSA):
                 batch = self.sample()
                 for _ in range(self.training_batch_epoch):
                     loss = self.calc_q_loss(batch)
-                    self.net.training_step(loss, self.optim, self.lr_scheduler, lr_clock=clock)
+                    self.net.train_step(loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
                     total_loss += loss
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
@@ -182,19 +179,16 @@ class DQNBase(VanillaDQN):
         '''Initialize networks'''
         if self.algorithm_spec['name'] == 'DQNBase':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for DQNBase; use DQN.'
-        if global_nets is None:
-            in_dim = self.body.state_dim
-            out_dim = net_util.get_out_dim(self.body)
-            NetClass = getattr(net, self.net_spec['type'])
-            self.net = NetClass(self.net_spec, in_dim, out_dim)
-            self.target_net = NetClass(self.net_spec, in_dim, out_dim)
-            self.net_names = ['net', 'target_net']
-        else:
-            util.set_attr(self, global_nets)
-            self.net_names = list(global_nets.keys())
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body)
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.target_net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net_names = ['net', 'target_net']
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net

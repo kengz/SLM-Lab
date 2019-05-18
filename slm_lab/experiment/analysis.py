@@ -290,11 +290,11 @@ def plot_session(session_spec, session_data):
         aeb_df = session_data[(a, e, b)]
         aeb_df.fillna(0, inplace=True)  # for saving plot, cant have nan
         fig_1 = viz.plot_line(aeb_df, 'reward_ma', max_tick_unit, legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
-        fig.append_trace(fig_1.data[0], 1, 1)
+        fig.add_trace(fig_1.data[0], 1, 1)
 
         fig_2 = viz.plot_line(aeb_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
-        fig.append_trace(fig_2.data[0], 2, 1)
-        fig.append_trace(fig_2.data[1], 3, 1)
+        fig.add_trace(fig_2.data[0], 2, 1)
+        fig.add_trace(fig_2.data[1], 3, 1)
 
     fig.layout['xaxis1'].update(title=max_tick_unit, zerolinewidth=1)
     fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
@@ -426,7 +426,7 @@ def plot_experiment(experiment_spec, experiment_df):
                     'colorscale': 'YlGnBu', 'reversescale': True
                 },
             )
-            fig.append_trace(trace, row_idx + 1, col_idx + 1)
+            fig.add_trace(trace, row_idx + 1, col_idx + 1)
             fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
         fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
     fig.layout.update(title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 300), height=700)

@@ -147,7 +147,7 @@ class SIL(ActorCritic):
                     pdparams, _v_preds = self.calc_pdparam_v(batch)
                     sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch, pdparams)
                     sil_loss = sil_policy_loss + sil_val_loss
-                    self.net.training_step(sil_loss, self.optim, self.lr_scheduler, lr_clock=clock)
+                    self.net.train_step(sil_loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
                     total_sil_loss += sil_loss
             sil_loss = total_sil_loss / self.training_epoch
             loss = super_loss + sil_loss
