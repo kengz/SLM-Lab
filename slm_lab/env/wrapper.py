@@ -275,14 +275,6 @@ def wrap_deepmind(env, episode_life=True, stack_len=None):
     return env
 
 
-def wrap_image_env(env, stack_len=None):
-    '''Wrap image-based environment'''
-    env = PreprocessImage(env)
-    if stack_len is not None:  # use concat for image (1, 84, 84)
-        env = FrameStack(env, 'concat', stack_len)
-    return env
-
-
 def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale=None):
     '''General method to create any Gym env; auto wraps Atari'''
     env = gym.make(name)
@@ -294,7 +286,9 @@ def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale
         episode_life = util.get_lab_mode() != 'eval'
         env = wrap_deepmind(env, episode_life, frame_op_len)
     elif len(env.observation_space.shape) == 3:  # image-state env
-        env = wrap_image_env(env, frame_op_len)
+        env = PreprocessImage(env)
+        if frame_op_len is not None:  # use concat for image (1, 84, 84)
+            env = FrameStack(env, 'concat', frame_op_len)
     else:  # vector-state env
         if frame_op is not None:
             env = FrameStack(env, frame_op, frame_op_len)
