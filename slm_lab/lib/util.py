@@ -568,10 +568,13 @@ def set_cuda_id(spec):
     for agent_spec in spec['agent']:
         if not agent_spec['net'].get('gpu'):
             return
-    trial_idx = spec['meta']['trial'] or 0
-    session_idx = spec['meta']['session'] or 0
-    job_idx = trial_idx * spec['meta']['max_session'] + session_idx
-    job_idx += spec['meta']['cuda_offset']
+    meta_spec = spec['meta']
+    trial_idx = meta_spec['trial'] or 0
+    session_idx = meta_spec['session'] or 0
+    if meta_spec['distributed'] == 'shared':  # shared hogwild uses only global networks, offset them to idx 0
+        session_idx = 0
+    job_idx = trial_idx * meta_spec['max_session'] + session_idx
+    job_idx += meta_spec['cuda_offset']
     device_count = torch.cuda.device_count()
     cuda_id = None if not device_count else job_idx % device_count
 
