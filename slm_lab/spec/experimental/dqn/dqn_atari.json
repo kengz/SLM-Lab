@@ -17,8 +17,7 @@
         "training_batch_epoch": 1,
         "training_epoch": 1,
         "training_frequency": 4,
-        "training_start_step": 10000,
-        "normalize_state": false
+        "training_start_step": 10000
       },
       "memory": {
         "name": "Replay",

@@ -15,8 +15,7 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "training_frequency": 1,
-        "normalize_state": false
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -88,8 +87,7 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "training_frequency": 1,
-        "normalize_state": false
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -165,8 +163,7 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "training_frequency": 1,
-        "normalize_state": false
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -238,8 +235,7 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "training_frequency": 1,
-        "normalize_state": false
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -315,8 +311,7 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "training_frequency": 1,
-        "normalize_state": false
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -381,8 +376,7 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "training_frequency": 1,
-        "normalize_state": false
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay",

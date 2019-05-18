@@ -37,7 +37,6 @@ class Reinforce(Algorithm):
           "end_step": 5000,
         },
         "training_frequency": 1,
-        "normalize_state": false
     }
     '''
 
@@ -61,7 +60,6 @@ class Reinforce(Algorithm):
             'entropy_coef_spec',
             'policy_loss_coef',
             'training_frequency',
-            'normalize_state',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -102,8 +100,6 @@ class Reinforce(Algorithm):
     @lab_api
     def act(self, state):
         body = self.body
-        if self.normalize_state:
-            state = policy_util.update_online_stats_and_normalize_state(body, state)
         action = self.action_policy(state, self, body)
         return action.cpu().squeeze().numpy()  # squeeze to handle scalar
 
@@ -111,8 +107,6 @@ class Reinforce(Algorithm):
     def sample(self):
         '''Samples a batch from memory'''
         batch = self.body.memory.sample()
-        if self.normalize_state:
-            batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 

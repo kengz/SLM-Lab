@@ -14,8 +14,7 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_frequency": 20,
-        "normalize_state": false
+        "training_frequency": 20
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -94,8 +93,7 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_frequency": 20,
-        "normalize_state": false
+        "training_frequency": 20
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -174,8 +172,7 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_frequency": 20,
-        "normalize_state": false
+        "training_frequency": 20
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -258,8 +255,7 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_frequency": 20,
-        "normalize_state": false
+        "training_frequency": 20
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -342,8 +338,7 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_frequency": 100,
-        "normalize_state": false
+        "training_frequency": 100
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -407,8 +402,7 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_frequency": 100,
-        "normalize_state": false
+        "training_frequency": 100
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
