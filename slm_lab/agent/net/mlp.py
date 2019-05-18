@@ -122,15 +122,17 @@ class MLPNet(Net, nn.Module):
 
     @net_util.dev_check_training_step
     def training_step(self, loss, optim, lr_scheduler, lr_clock=None):
-        '''
-        Train a network given a computed loss
-        '''
+        '''Train a network given a computed loss'''
         lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
         optim.zero_grad()
         loss.backward()
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
+        if hasattr(self, 'global_net'):
+            net_util.push_global_grads(self, self.global_net)
         optim.step()
+        if hasattr(self, 'global_net'):
+            net_util.copy(self.global_net, self)
         lr_clock.tick('grad_step')
         return loss
 
@@ -293,7 +295,11 @@ class HydraMLPNet(Net, nn.Module):
         loss.backward()
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
+        if hasattr(self, 'global_net'):
+            net_util.push_global_grads(self, self.global_net)
         optim.step()
+        if hasattr(self, 'global_net'):
+            net_util.copy(self.global_net, self)
         lr_clock.tick('grad_step')
         return loss
 

@@ -308,11 +308,11 @@ def init_global_nets(algorithm):
     for net_name in algorithm.net_names:
         g_net = getattr(algorithm, net_name)
         g_net.share_memory()  # make net global
-        global_nets[f'global_{net_name}'] = g_net  # naming convention
-        # share optim if it is global
+        global_nets[net_name] = g_net
+        # share optim if it is global, to replace local optim
         optim_name = net_name.replace('net', 'optim')
-        optim = getattr(algorithm, optim_name, None)
         lr_scheduler_name = net_name.replace('net', 'lr_scheduler')
+        optim = getattr(algorithm, optim_name, None)
         lr_scheduler = getattr(algorithm, lr_scheduler_name, None)
         if optim is not None and 'Global' in util.get_class_name(optim):
             optim.share_memory()  # make global optimizer global
@@ -324,7 +324,18 @@ def init_global_nets(algorithm):
 
 def set_global_nets(algorithm, global_nets):
     '''Set global_nets and optimizer, lr_scheduler (if available) for Hogwild'''
-    util.set_attr(algorithm, global_nets)  # set global_{net}, override if global optim, lr_scheduler
+    for attr, obj in global_nets.items():
+        if attr.endswith('net'):  # if global net, set ref in local net
+            net = getattr(algorithm, attr)
+            setattr(net, 'global_net', obj)
+        else:  # if global optimizer/lr_scheduler, set to override algorithm attr
+            setattr(algorithm, attr, obj)
     logger.info(f'Set global_nets attr {list(global_nets.keys())} for Hogwild')
 
 
+def push_global_grads(net, global_net):
+    '''Push gradients to global_net, call inside training_step between loss.backward() and optim.step()'''
+    for param, global_param in zip(net.parameters(), global_net.parameters()):
+        if global_param.grad is not None:
+            return  # quick skip
+        global_param._grad = param.grad

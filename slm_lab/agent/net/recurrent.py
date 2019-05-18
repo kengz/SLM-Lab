@@ -176,6 +176,10 @@ class RecurrentNet(Net, nn.Module):
         loss.backward()
         if self.clip_grad_val is not None:
             nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
+        if hasattr(self, 'global_net'):
+            net_util.push_global_grads(self, self.global_net)
         optim.step()
+        if hasattr(self, 'global_net'):
+            net_util.copy(self.global_net, self)
         lr_clock.tick('grad_step')
         return loss
