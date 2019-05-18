@@ -172,7 +172,7 @@ class RandomSearch(RaySearch):
         run_trial = create_remote_fn(self.experiment)
         meta_spec = self.experiment.spec['meta']
         logging.getLogger('ray').propagate = True
-        ray.init(**meta_spec.get('resources', {}))
+        ray.init(**meta_spec.get('search_resources', {}))
         register_ray_serializer()
         max_trial = meta_spec['max_trial']
         trial_data_dict = {}
@@ -250,7 +250,7 @@ class EvolutionarySearch(RaySearch):
         run_trial = create_remote_fn(self.experiment)
         meta_spec = self.experiment.spec['meta']
         logging.getLogger('ray').propagate = True
-        ray.init(**meta_spec.get('resources', {}))
+        ray.init(**meta_spec.get('search_resources', {}))
         register_ray_serializer()
         max_generation = meta_spec['max_generation']
         pop_size = meta_spec['max_trial'] or calc_population_size(self.experiment)

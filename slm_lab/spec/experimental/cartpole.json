@@ -57,7 +57,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -140,7 +140,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -227,7 +227,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -314,7 +314,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -404,7 +404,7 @@
       "max_session": 4,
       "max_trial": 23,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -498,7 +498,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -588,7 +588,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -676,7 +676,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -767,7 +767,7 @@
       "max_session": 4,
       "max_trial": 23,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -858,7 +858,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -954,7 +954,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -1056,7 +1056,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -1153,7 +1153,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -1236,7 +1236,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -1317,7 +1317,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -1405,7 +1405,7 @@
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 16
       }
     },
@@ -1496,7 +1496,7 @@
       "max_session": 4,
       "max_trial": 23,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },
@@ -1584,7 +1584,7 @@
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 16
       }
     },
@@ -1678,7 +1678,7 @@
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 16
       }
     },
@@ -1772,7 +1772,7 @@
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 16
       }
     },
@@ -1864,7 +1864,7 @@
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 16
       }
     },
@@ -1956,7 +1956,7 @@
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 16
       }
     },
@@ -2050,7 +2050,7 @@
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 16
       }
     },
@@ -2144,7 +2144,7 @@
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 16
       }
     },
@@ -2235,7 +2235,7 @@
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 95
       }
     },

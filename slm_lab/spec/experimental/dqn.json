@@ -583,7 +583,7 @@
       "max_session": 1,
       "max_trial": 16,
       "search": "RandomSearch",
-      "resources": {
+      "search_resources": {
         "num_cpus": 16,
       }
     },
