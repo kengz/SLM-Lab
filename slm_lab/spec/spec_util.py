@@ -37,7 +37,6 @@ SPEC_FORMAT = {
         "num": (int, list),
     },
     "meta": {
-        "distributed": bool,
         "eval_frequency": (int, float),
         "max_tick_unit": str,
         "max_session": int,

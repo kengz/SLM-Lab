@@ -303,20 +303,32 @@ def get_grad_norms(algorithm):
 
 
 def init_global_nets(algorithm):
-    '''Initialize global_nets for Hogwild using an identical instance of an algorithm from an isolated Session'''
+    '''
+    Initialize global_nets for Hogwild using an identical instance of an algorithm from an isolated Session
+    in spec.meta.distributed, specify either:
+    - 'shared': global network parameter is shared all the time. In this mode, algorithm local network will be replaced directly by global_net via overriding by identify attribute name
+    - 'synced': global network parameter is periodically synced to local network after each gradient push. In this mode, algorithm will keep a separate reference to `global_{net}` for each of its network
+    '''
+    dist_mode = algorithm.agent.spec['meta']['distributed']
+    assert dist_mode in ('shared', 'synced'), f'Unrecognized distributed mode'
     global_nets = {}
     for net_name in algorithm.net_names:
+        optim_name = net_name.replace('net', 'optim')
+        if not hasattr(algorithm, optim_name):  # only for trainable network, i.e. has an optim
+            continue
         g_net = getattr(algorithm, net_name)
         g_net.share_memory()  # make net global
-        global_nets[f'global_{net_name}'] = g_net  # naming convention
-        # share optim if it is global, to replace local optim
-        optim_name = net_name.replace('net', 'optim')
-        lr_scheduler_name = net_name.replace('net', 'lr_scheduler')
-        optim = getattr(algorithm, optim_name, None)
-        lr_scheduler = getattr(algorithm, lr_scheduler_name, None)
-        if optim is not None and 'Global' in util.get_class_name(optim):
-            optim.share_memory()  # make global optimizer global
-            global_nets[optim_name] = optim  # carry to be set later
+        if dist_mode == 'shared':  # use the same name to override the local net
+            global_nets[net_name] = g_net
+        else:  # keep a separate reference for syncing
+            global_nets[f'global_{net_name}'] = g_net
+        # if optim is Global, set to override the local optim and its scheduler
+        optim = getattr(algorithm, optim_name)
+        if 'Global' in util.get_class_name(optim):
+            optim.share_memory()  # make optim global
+            global_nets[optim_name] = optim
+            lr_scheduler_name = net_name.replace('net', 'lr_scheduler')
+            lr_scheduler = getattr(algorithm, lr_scheduler_name)
             global_nets[lr_scheduler_name] = lr_scheduler
     logger.info(f'Initialized global_nets attr {list(global_nets.keys())} for Hogwild')
     return global_nets
@@ -324,10 +336,11 @@ def init_global_nets(algorithm):
 
 def set_global_nets(algorithm, global_nets):
     '''For Hogwild, set attr built in init_global_nets above. Use in algorithm init.'''
-    if global_nets is None:
-        for net_name in algorithm.net_names:
-            setattr(algorithm, f'global_{net_name}', None)  # guard to have attr to pass global_net into train_step
-    else:
+    # set attr first so algorithm always has self.global_{net} to pass into train_step
+    for net_name in algorithm.net_names:
+        setattr(algorithm, f'global_{net_name}', None)
+    # set attr created in init_global_nets
+    if global_nets is not None:
         util.set_attr(algorithm, global_nets)
         logger.info(f'Set global_nets attr {list(global_nets.keys())} for Hogwild')
 

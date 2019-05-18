@@ -275,10 +275,10 @@ class Trial:
         logger.info('Trial done and closed.')
 
     def run(self):
-        if self.spec['meta'].get('distributed'):
-            session_datas = self.run_distributed_sessions()
-        else:
+        if self.spec['meta'].get('distributed') == False:
             session_datas = self.run_sessions()
+        else:
+            session_datas = self.run_distributed_sessions()
         self.session_data_dict = {data.index[0]: data for data in session_datas}
         self.data = analysis.analyze_trial(self)
         self.close()

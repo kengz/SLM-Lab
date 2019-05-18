@@ -59,7 +59,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
@@ -143,7 +143,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
@@ -227,7 +227,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
@@ -315,7 +315,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
@@ -403,7 +403,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
@@ -487,7 +487,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
@@ -571,7 +571,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
@@ -659,7 +659,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
@@ -747,7 +747,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 4,
@@ -836,7 +836,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 1,
@@ -909,7 +909,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "epi",
       "max_session": 1,

@@ -761,7 +761,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,
@@ -1490,7 +1490,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
       "max_tick_unit": "total_t",
       "max_session": 4,

@@ -15,7 +15,7 @@ def run_trial_test_dist(spec_file, spec_name=False):
     spec = spec_util.get(spec_file, spec_name)
     spec = spec_util.override_test_spec(spec)
     spec_util.tick(spec, 'trial')
-    spec['meta']['distributed'] = True
+    spec['meta']['distributed'] = 'synced'
     spec['meta']['max_session'] = 2
 
     trial = Trial(spec)
