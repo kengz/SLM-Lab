@@ -129,7 +129,7 @@ class Body:
 
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
-        if self.env.reward_scale is not None:
+        if hasattr(self.env.u_env, 'raw_reward'):  # use raw_reward if reward is preprocessed
             reward = self.env.u_env.raw_reward
         if self.ckpt_total_reward is np.nan:  # init
             self.ckpt_total_reward = reward
