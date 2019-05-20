@@ -117,7 +117,7 @@ class Algorithm(ABC):
             net_util.load_algorithm(self)
         # set decayable variables to final values
         for k, v in vars(self).items():
-            if k.endswith('_scheduler'):
+            if k.endswith('_scheduler') and hasattr(v, 'end_val'):
                 var_name = k.replace('_scheduler', '')
                 setattr(self.body, var_name, v.end_val)
 
