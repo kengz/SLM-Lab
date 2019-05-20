@@ -17,11 +17,9 @@ import torch.multiprocessing as mp
 
 class Session:
     '''
-    The base unit of instantiated RL system.
-    Given a spec,
-    session creates agent(s) and environment(s),
-    run the RL system and collect data, e.g. fitness metrics, till it ends,
-    then return the session data.
+    The base lab unit to run a RL session for a spec.
+    Given a spec, it creates the agent and env, runs the RL loop,
+    then gather data and analyze it to produce session data.
     '''
 
     def __init__(self, spec, global_nets=None):
@@ -33,7 +31,7 @@ class Session:
         analysis.save_spec(spec, unit='session')
         self.data = None
 
-        # init singleton agent and env
+        # init agent and env
         self.env = make_env(self.spec)
         with util.ctx_lab_mode('eval'):  # env for eval
             self.eval_env = make_env(self.spec)
@@ -44,7 +42,7 @@ class Session:
         logger.info(util.self_desc(self))
 
     def to_ckpt(self, env, mode='eval'):
-        '''Check with clock and lab_mode whether to run log/eval ckpt: at the start, save_freq, and the end'''
+        '''Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end'''
         clock = env.clock
         tick = clock.get()
         if mode == 'eval' and util.in_eval_lab_modes():  # avoid double-eval: eval-ckpt in eval mode
@@ -98,7 +96,6 @@ class Session:
         logger.info(f'Running RL loop for trial {self.spec["meta"]["trial"]} session {self.index}')
         clock = self.env.clock
         state = self.env.reset()
-        self.agent.reset(state)
         done = False
         while True:
             if util.epi_done(done):  # before starting another episode
@@ -117,10 +114,7 @@ class Session:
             state = next_state
 
     def close(self):
-        '''
-        Close session and clean up.
-        Save agent, close env.
-        '''
+        '''Close session and clean up. Save agent, close env.'''
         self.agent.close()
         self.env.close()
         self.eval_env.close()
@@ -168,7 +162,6 @@ class SpaceSession(Session):
         '''
         all_done = self.aeb_space.tick('epi')
         state_space = self.env_space.reset()
-        self.agent_space.reset(state_space)
         while not all_done:
             self.try_ckpt(self.agent_space, self.env_space)
             all_done = self.aeb_space.tick()
@@ -179,10 +172,7 @@ class SpaceSession(Session):
         self.try_ckpt(self.agent_space, self.env_space)
 
     def close(self):
-        '''
-        Close session and clean up.
-        Save agent, close env.
-        '''
+        '''Close session and clean up. Save agent, close env.'''
         self.agent_space.close()
         self.env_space.close()
         logger.info('Session done and closed.')
@@ -208,11 +198,9 @@ def init_run_space_session(*args):
 
 class Trial:
     '''
-    The base unit of an experiment.
-    Given a spec and number s,
-    trial creates and runs s sessions,
-    gather and aggregate data from sessions as trial data,
-    then return the trial data.
+    The lab unit which runs repeated sessions for a same spec, i.e. a trial
+    Given a spec and number s, trial creates and runs s sessions,
+    then gathers session data and analyze it to produce trial data.
     '''
 
     def __init__(self, spec):
@@ -287,16 +275,9 @@ class Trial:
 
 class Experiment:
     '''
-    The core high level unit of Lab.
-    Given a spec-space/generator of cardinality t,
-    a number s,
-    a hyper-optimization algorithm hopt(spec, fitness-metric) -> spec_next/null
-    experiment creates and runs up to t trials of s sessions each to optimize (maximize) the fitness metric,
-    gather the trial data,
-    then return the experiment data for analysis and use in evolution graph.
-    Experiment data will include the trial data, notes on design, hypothesis, conclusion, analysis data, e.g. fitness metric, evolution link of ancestors to potential descendants.
-    An experiment then forms a node containing its data in the evolution graph with the evolution link and suggestion at the adjacent possible new experiments
-    On the evolution graph level, an experiment and its neighbors could be seen as test/development of traits.
+    The lab unit to run experiments.
+    It generates a list of specs to search over, then run each as a trial with s repeated session,
+    then gathers trial data and analyze it to produce experiment data.
     '''
 
     def __init__(self, spec):
@@ -310,9 +291,7 @@ class Experiment:
         self.search = SearchClass(self)
 
     def init_trial_and_run(self, spec):
-        '''
-        Method to run trial with the properly updated spec (trial_index) from experiment.search.lab_trial.
-        '''
+        '''Method to run trial with the properly updated spec (trial_index) from experiment.search.lab_trial.'''
         trial = Trial(spec)
         trial_data = trial.run()
         return trial_data

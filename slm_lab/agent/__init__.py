@@ -55,11 +55,6 @@ class Agent:
         logger.info(util.self_desc(self))
 
     @lab_api
-    def reset(self, state):
-        '''Do agent reset per session, such as memory pointer'''
-        pass
-
-    @lab_api
     def act(self, state):
         '''Standard act method from algorithm.'''
         with torch.no_grad():  # for efficiency, only calc grad in algorithm.train
@@ -114,11 +109,6 @@ class Agent:
                     setattr(body, k, v)
 
     @lab_api
-    def space_reset(self, state_a):
-        '''Do agent reset per session, such as memory pointer'''
-        pass
-
-    @lab_api
     def space_act(self, state_a):
         '''Standard act method from algorithm.'''
         with torch.no_grad():
@@ -171,15 +161,6 @@ class AgentSpace:
 
     def get(self, a):
         return self.agents[a]
-
-    @lab_api
-    def reset(self, state_space):
-        _action_v, _loss_v, _explore_var_v = self.aeb_space.init_data_v(AGENT_DATA_NAMES)
-        for agent in self.agents:
-            state_a = state_space.get(a=agent.a)
-            agent.space_reset(state_a)
-        _action_space, _loss_space, _explore_var_space = self.aeb_space.add(AGENT_DATA_NAMES, (_action_v, _loss_v, _explore_var_v))
-        return _action_space
 
     @lab_api
     def act(self, state_space):
