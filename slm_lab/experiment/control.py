@@ -47,16 +47,16 @@ class Session:
         '''Check with clock and lab_mode whether to run log/eval ckpt: at the start, save_freq, and the end'''
         clock = env.clock
         tick = clock.get()
-        if util.in_eval_lab_modes():
+        if mode == 'eval' and util.in_eval_lab_modes():  # avoid double-eval: eval-ckpt in eval mode
             return False
         frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
-        if mode == 'log' and tick == 0:
+        if mode == 'log' and tick == 0:  # avoid log ckpt at init
             to_ckpt = False
         elif frequency is None:  # default episodic
             to_ckpt = env.done
-        elif clock.max_tick_unit == 'epi' and not env.done:
+        elif clock.max_tick_unit == 'epi' and not env.done:  # epi ckpt needs env done
             to_ckpt = False
-        else:
+        else:  # normal ckpt condition by mod remainder (general for venv)
             rem = env.num_envs or 1
             to_ckpt = (tick % frequency < rem) or tick == clock.max_tick
         return to_ckpt
@@ -95,7 +95,7 @@ class Session:
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_tick'''
-        logger.info(f'Running RL loop training for trial {self.spec["meta"]["trial"]} session {self.index}')
+        logger.info(f'Running RL loop for trial {self.spec["meta"]["trial"]} session {self.index}')
         clock = self.env.clock
         state = self.env.reset()
         self.agent.reset(state)

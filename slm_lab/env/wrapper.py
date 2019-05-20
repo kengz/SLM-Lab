@@ -308,7 +308,7 @@ def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale
     if 'NoFrameskip' in env.spec.id:  # Atari
         env = wrap_atari(env)
         # no reward clipping to allow monitoring; Atari memory clips it
-        episode_life = util.get_lab_mode() != 'eval'
+        episode_life = not util.in_eval_lab_modes()
         env = wrap_deepmind(env, episode_life, frame_op_len)
     elif len(env.observation_space.shape) == 3:  # image-state env
         env = PreprocessImage(env)

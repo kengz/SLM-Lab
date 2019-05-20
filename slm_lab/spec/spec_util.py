@@ -223,9 +223,7 @@ def override_enjoy_spec(spec):
 
 
 def override_eval_spec(spec):
-    for agent_spec in spec['agent']:
-        if 'max_size' in agent_spec['memory']:
-            agent_spec['memory']['max_size'] = 100
+    spec['meta']['max_session'] = 1
     # evaluate by episode is set in env clock init in env/base.py
     return spec
 
