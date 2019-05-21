@@ -340,7 +340,7 @@ def parallelize(fn, args, num_cpus=NUM_CPUS):
     args should be a list of tuples.
     @returns {list} results Order preserved output from fn.
     '''
-    pool = mp.Pool(num_cpus)
+    pool = mp.Pool(num_cpus, maxtasksperchild=1)
     results = pool.starmap(fn, args)
     pool.close()
     pool.join()
