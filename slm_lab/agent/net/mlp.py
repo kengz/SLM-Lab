@@ -108,6 +108,7 @@ class MLPNet(Net, nn.Module):
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.to(self.device)
+        self.train()
 
     def forward(self, x):
         '''The feedforward step'''
@@ -246,6 +247,7 @@ class HydraMLPNet(Net, nn.Module):
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.to(self.device)
+        self.train()
 
     def build_model_heads(self, in_dim):
         '''Build each model_head. These are stored as Sequential models in model_heads'''
