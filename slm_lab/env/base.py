@@ -44,7 +44,7 @@ class Clock:
         self.total_t = 0  # aka frames
         self.epi = 0
         self.start_wall_t = time.time()
-        self.grad_step = 0  # count the number of gradient updates
+        self.opt_step = 0  # count the number of optimizer updates
 
     def get(self, unit=None):
         unit = unit or self.max_tick_unit
@@ -61,8 +61,8 @@ class Clock:
         elif unit == 'epi':  # episode, reset timestep
             self.epi += 1
             self.t = 0
-        elif unit == 'grad_step':
-            self.grad_step += 1
+        elif unit == 'opt_step':
+            self.opt_step += 1
         else:
             raise KeyError
 
@@ -116,9 +116,10 @@ class BaseEnv(ABC):
         if seq_len is not None:  # infer if using RNN
             self.frame_op = 'stack'
             self.frame_op_len = seq_len
-        if util.get_lab_mode() == 'eval':  # use singleton for eval
+        if util.in_eval_lab_modes():  # use singleton for eval
             self.num_envs = 1
             self.max_tick_unit = 'epi'
+            self.log_frequency = None
         if spec['meta']['distributed'] != False:  # divide max_tick for distributed
             self.max_tick = int(self.max_tick / spec['meta']['max_session'])
         self.is_venv = (self.num_envs is not None and self.num_envs > 1)

@@ -201,7 +201,7 @@ class ConvNet(Net, nn.Module):
         optim.step()
         if global_net is not None:
             net_util.copy(global_net, self)
-        lr_clock.tick('grad_step')
+        lr_clock.tick('opt_step')
         return loss
 
 

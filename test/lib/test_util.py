@@ -114,7 +114,6 @@ def test_gen_isnan(v, isnan):
 
 def test_get_fn_list():
     fn_list = util.get_fn_list(Agent)
-    assert 'reset' in fn_list
     assert 'act' in fn_list
     assert 'update' in fn_list
 

@@ -88,12 +88,6 @@ class Body:
         self.mean_entropy = np.nan
         self.mean_grad_norm = np.nan
 
-        # stores running mean and std dev of states
-        self.state_mean = np.nan
-        self.state_std_dev_int = np.nan
-        self.state_std_dev = np.nan
-        self.state_n = 0
-
         self.ckpt_total_reward = np.nan
         self.total_reward = 0  # init to 0, but dont ckpt before end of an epi
         self.total_reward_ma = np.nan
@@ -104,7 +98,7 @@ class Body:
         # dataframes to track data for analysis.analyze_session
         # track training data per episode
         self.train_df = pd.DataFrame(columns=[
-            'epi', 'grad_step', 'total_t', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
+            'epi', 'opt_step', 'total_t', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
         # track eval data within run_eval. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
@@ -129,7 +123,7 @@ class Body:
 
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
-        if self.env.reward_scale is not None:
+        if hasattr(self.env.u_env, 'raw_reward'):  # use raw_reward if reward is preprocessed
             reward = self.env.u_env.raw_reward
         if self.ckpt_total_reward is np.nan:  # init
             self.ckpt_total_reward = reward
@@ -155,7 +149,7 @@ class Body:
         row = pd.Series({
             # epi and total_t are always measured from training env
             'epi': self.env.clock.get('epi'),
-            'grad_step': self.env.clock.get('grad_step'),
+            'opt_step': self.env.clock.get('opt_step'),
             'total_t': total_t,
             # t and reward are measured from a given env or eval_env
             't': env.clock.get('t'),

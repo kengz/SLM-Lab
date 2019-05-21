@@ -230,7 +230,8 @@ def get_session_data(session, body_df_kind='eval', tmp_space_session_sub=False):
         # TODO tmp substitution since SpaceSession does not have run_eval yet
         if tmp_space_session_sub:
             aeb_df = body.train_df
-        session_data[aeb] = aeb_df.copy()
+        if len(aeb_df) > 0:
+            session_data[aeb] = aeb_df.copy()
     return session_data
 
 
@@ -513,8 +514,12 @@ def analyze_session(session, eager_analyze_trial=False, tmp_space_session_sub=Fa
     @returns {DataFrame} session_fitness_df Single-row df of session fitness vector (avg over aeb), indexed with session index.
     '''
     session_data = get_session_data(session, body_df_kind='train')
+    if ps.is_empty(session_data):  # nothing to analyze,  early exit
+        return None
     session_fitness_df = _analyze_session(session, session_data, body_df_kind='train')
     session_data = get_session_data(session, body_df_kind='eval', tmp_space_session_sub=tmp_space_session_sub)
+    if ps.is_empty(session_data):  # nothing to analyze,  early exit
+        return None
     session_fitness_df = _analyze_session(session, session_data, body_df_kind='eval')
     if eager_analyze_trial:
         # for live trial graph, analyze trial after analyzing session, this only takes a second
