@@ -1,11 +1,9 @@
 # module to generate random baselines
 # Run as: python slm_lab/spec/random_baseline.py
 from slm_lab.lib import logger, util
-from xvfbwrapper import Xvfb
 import gym
 import numpy as np
 import pydash as ps
-import sys
 
 
 # extra envs to include
@@ -78,9 +76,4 @@ def main():
 
 
 if __name__ == '__main__':
-    if sys.platform == 'darwin':
-        # avoid xvfb on MacOS: https://github.com/nipy/nipype/issues/1400
-        main()
-    else:
-        with Xvfb() as xvfb:  # safety context for headless machines
-            main()
+    main()
