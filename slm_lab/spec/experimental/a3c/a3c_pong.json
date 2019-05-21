@@ -75,7 +75,7 @@
       "max_trial": 1,
     }
   },
-  "a3c_pong": {
+  "gpu_a3c_pong": {
     "agent": [{
       "name": "A3C",
       "algorithm": {
