@@ -88,12 +88,6 @@ class Body:
         self.mean_entropy = np.nan
         self.mean_grad_norm = np.nan
 
-        # stores running mean and std dev of states
-        self.state_mean = np.nan
-        self.state_std_dev_int = np.nan
-        self.state_std_dev = np.nan
-        self.state_n = 0
-
         self.ckpt_total_reward = np.nan
         self.total_reward = 0  # init to 0, but dont ckpt before end of an epi
         self.total_reward_ma = np.nan
