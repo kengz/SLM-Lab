@@ -50,7 +50,7 @@ def build_config_space(experiment):
         key, space_type = k.split('__')
         assert space_type in space_types, f'Please specify your search variable as {key}__<space_type> in one of {space_types}'
         if space_type == 'grid_search':
-            config_space[key] = ray.rune.grid_search(v)
+            config_space[key] = ray.tune.grid_search(v)
         elif space_type == 'choice':
             config_space[key] = lambda spec, v=v: random.choice(v)
         else:
