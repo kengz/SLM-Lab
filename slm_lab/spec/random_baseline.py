@@ -70,6 +70,7 @@ def main():
                 random_baseline[env_name] = gen_random_baseline(env_name, NUM_EVAL)
             except Exception as e:
                 logger.warning(f'Cannot start env: {env_name}, skipping random baseline generation')
+                continue
         util.write(random_baseline, filepath)
     logger.info(f'Done, random baseline written to {filepath}')
     return random_baseline
