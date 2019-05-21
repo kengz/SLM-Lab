@@ -38,6 +38,14 @@ class LabJsonEncoder(json.JSONEncoder):
             return str(obj)
 
 
+def batch_get(arr, idxs):
+    '''Get multi-idxs from an array depending if it's a python list or np.array'''
+    if isinstance(arr, (list, deque)):
+        return np.array(operator.itemgetter(*idxs)(arr))
+    else:
+        return arr[idxs]
+
+
 def calc_ts_diff(ts2, ts1):
     '''
     Calculate the time from tss ts1 to ts2
@@ -94,14 +102,6 @@ def concat_batches(batches):
             datas.append(data)
         concat_batch[k] = np.concatenate(datas)
     return concat_batch
-
-
-def cond_multiget(arr, idxs):
-    '''Get multi-idxs from an array depending if it's a python list or np.array'''
-    if isinstance(arr, (list, deque)):
-        return np.array(operator.itemgetter(*idxs)(arr))
-    else:
-        return arr[idxs]
 
 
 def count_nonan(arr):
