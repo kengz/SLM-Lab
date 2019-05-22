@@ -46,6 +46,64 @@ def gen_avg_return(agent, env, num_eval=NUM_EVAL):
     return np.mean(returns)
 
 
+def calc_strength(mean_rets, mean_rand_ret):
+    '''
+    Calculate strength for metric
+    str &= \frac{1}{N} \sum_{i=0}^N \overline{R}_i - \overline{R}_{rand}
+    @param Series:mean_rets A series of mean returns from each checkpoint
+    @param float:mean_rand_rets The random baseline
+    @returns float:str, Series:local_strs
+    '''
+    local_strs = mean_rets - mean_rand_ret
+    str_ = local_strs.mean()
+    return str_, local_strs
+
+
+def calc_efficiency(local_strs, ts):
+    '''
+    Calculate efficiency for metric
+    e &= \frac{\sum_{i=0}^N \frac{1}{t_i} str_i}{\sum_{i=0}^N \frac{1}{t_i}}
+    @param Series:local_strs A series of local strengths
+    @param Series:ts A series of times units (total_t or opt_steps)
+    @returns float:eff, Series:local_effs
+    '''
+    eff = (local_strs / ts).sum() / local_strs.sum()
+    local_effs = (local_strs / ts).cumsum() / local_strs.cumsum()
+    return eff, local_effs
+
+
+def calc_stability(local_strs):
+    '''
+    Calculate stability for metric
+    sta &= 1 - \left| \frac{\sum_{i=0}^{N-1} \min(str_{i+1} - str_i, 0)}{\sum_{i=0}^{N-1} str_i} \right|
+    @param Series:local_strs A series of local strengths
+    @returns float:sta, Series:local_stas
+    '''
+    # shift to keep indices for division
+    drops = local_strs.diff().shift(-1).iloc[:-1].clip(upper=0.0)
+    denoms = local_strs.iloc[:-1]
+    local_stas = 1 - (drops / denoms).abs()
+    sum_drops = drops.sum()
+    sum_denom = denoms.sum()
+    sta = 1 - np.abs(sum_drops / sum_denom)
+    return sta, local_stas
+
+
+def calc_consistency(local_strs_list):
+    '''
+    Calculate consistency for metric
+    con &= 1 - \frac{\sum_{i=0}^N 2 stdev_j(str_{i,j})}{\sum_{i=0}^N avg_j(str_{i,j})}
+    @param Series:local_strs_list A list of multiple series of local strengths from different sessions
+    @returns float:con, Series:local_cons, Series:mean_local_strs, Series:std_local_strs
+    '''
+    local_strs_df = pd.DataFrame(dict(enumerate(local_strs_list)))
+    mean_local_strs = local_strs_df.mean(axis=1)
+    std_local_strs = local_strs_df.std(axis=1)
+    local_cons = 1 - 2 * std_local_strs / mean_local_strs
+    con = 1 - 2 * std_local_strs.sum() / mean_local_strs.sum()
+    return con, local_cons, mean_local_strs, std_local_strs
+
+
 '''
 Fitness analysis
 '''
