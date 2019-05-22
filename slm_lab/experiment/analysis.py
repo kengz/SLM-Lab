@@ -5,7 +5,7 @@ Handles the analyses of the info and data space for experiment evaluation and de
 from slm_lab.agent import AGENT_DATA_NAMES
 from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.lib import logger, math_util, util, viz
-from slm_lab.spec import spec_util
+from slm_lab.spec import random_baseline, spec_util
 import numpy as np
 import os
 import pandas as pd
@@ -102,6 +102,45 @@ def calc_consistency(local_strs_list):
     local_cons = 1 - 2 * std_local_strs / mean_local_strs
     con = 1 - 2 * std_local_strs.sum() / mean_local_strs.sum()
     return con, local_cons, mean_local_strs, std_local_strs
+
+
+def calc_session_metrics(eval_df, env_name):
+    '''
+    Calculate the session metrics: strength, efficiency, stability
+    @param DataFrame:eval_df Dataframe containing reward, total_t, opt_step
+    @param str:env_name Name of the environment to get its random baseline
+    @returns dict:session_metrics, dict:session_auxs
+    '''
+    rand_bl = random_baseline.get_random_baseline(env_name)
+    mean_rand_ret = rand_bl['mean']
+    mean_rets = eval_df['reward']
+    frames = eval_df['total_t']
+    opt_steps = eval_df['opt_step']
+
+    str_, local_strs = calc_strength(mean_rets, mean_rand_ret)
+    min_str = local_strs.min()
+    max_str = local_strs.max()
+
+    sample_eff, local_sample_effs = calc_efficiency(local_strs, frames)
+    train_eff, local_train_effs = calc_efficiency(local_strs, opt_steps)
+
+    sta, local_stas = calc_stability(local_strs)
+    session_metrics = {
+        'strength': str_,
+        'sample_efficiency': sample_eff,
+        'training_efficiency': train_eff,
+        'stability': sta,
+    }
+    # extra auxiliary session metrics
+    session_auxs = {
+        'min_strength': min_str,
+        'max_strength': max_str,
+        'local_strengths': local_strs,
+        'local_sample_efficiency': local_sample_effs,
+        'local_training_efficiency': local_train_effs,
+        'local_stabilities': local_stas,
+    }
+    return session_metrics, session_auxs
 
 
 '''
