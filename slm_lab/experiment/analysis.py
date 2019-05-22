@@ -19,7 +19,32 @@ FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
 NOISE_WINDOW = 0.05
 NORM_ORDER = 1  # use L1 norm in fitness vector norm
 MA_WINDOW = 100
+NUM_EVAL = 4
+
 logger = logger.get_logger(__name__)
+
+
+def gen_return(agent, env):
+    '''Generate return for an agent and an env in eval mode'''
+    state = env.reset()
+    done = False
+    total_reward = 0
+    while not done:
+        action = agent.act(state)
+        state, reward, done, info = env.step(action)
+        total_reward += reward
+    return total_reward
+
+
+def gen_avg_return(agent, env, num_eval=NUM_EVAL):
+    '''Generate average return for agent and an env'''
+    with util.ctx_lab_mode('eval'):  # enter eval context
+        agent.algorithm.update()  # set explore_var etc. to end_val under ctx
+        returns = [gen_return(agent, env) for i in range(num_eval)]
+    # exit eval context, restore variables simply by updating
+    agent.algorithm.update()
+    return np.mean(returns)
+
 
 '''
 Fitness analysis

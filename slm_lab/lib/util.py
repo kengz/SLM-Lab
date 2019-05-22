@@ -306,7 +306,11 @@ def ctx_lab_mode(lab_mode):
     Creates context to run method with a specific lab_mode
     @example
     with util.ctx_lab_mode('eval'):
-        run_eval()
+        foo()
+
+    @util.ctx_lab_mode('eval')
+    def foo():
+        ...
     '''
     prev_lab_mode = os.environ.get('lab_mode')
     os.environ['lab_mode'] = lab_mode

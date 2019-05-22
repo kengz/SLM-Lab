@@ -66,30 +66,13 @@ class Session:
             agent.body.log_summary('train')
 
         if self.to_ckpt(env, 'eval'):
-            total_reward = self.run_eval()
-            agent.body.eval_ckpt(self.eval_env, total_reward)
+            avg_return = analysis.gen_avg_return(self.agent, self.eval_env)
+            agent.body.eval_ckpt(self.eval_env, avg_return)
             agent.body.log_summary('eval')
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             if env.clock.get() > 0:  # nothing to analyze at start
                 analysis.analyze_session(self, eager_analyze_trial=True)
-
-    def run_eval(self):
-        with util.ctx_lab_mode('eval'):  # enter eval context
-            self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
-            self.eval_env.clock.tick('epi')
-            state = self.eval_env.reset()
-            done = False
-            total_reward = 0
-            while not done:
-                self.eval_env.clock.tick('t')
-                action = self.agent.act(state)
-                next_state, reward, done, info = self.eval_env.step(action)
-                state = next_state
-                total_reward += reward
-        # exit eval context, restore variables simply by updating
-        self.agent.algorithm.update()
-        return total_reward
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_tick'''
