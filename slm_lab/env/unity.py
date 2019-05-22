@@ -126,6 +126,9 @@ class UnityEnv(BaseEnv):
         env_info_a = env_info_dict[name_a]
         return env_info_a
 
+    def seed(self, seed):
+        self.u_env.seed(seed)
+
     @lab_api
     def reset(self):
         self.done = False

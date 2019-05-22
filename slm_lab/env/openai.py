@@ -47,6 +47,9 @@ class OpenAIEnv(BaseEnv):
             self.space_init(env_space)
         logger.info(util.self_desc(self))
 
+    def seed(self, seed):
+        self.u_env.seed(seed)
+
     @lab_api
     def reset(self):
         self.done = False

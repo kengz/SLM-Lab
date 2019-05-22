@@ -241,7 +241,7 @@ def retro_eval(predir, session_index=None):
     np.random.shuffle(prepaths)  # so that CUDA_ID by trial/session index is spread out
     rand_spec = util.prepath_to_spec(prepaths[0])  # get any prepath, read its max session
     max_session = rand_spec['meta']['max_session']
-    util.parallelize_fn(run_wait_eval, prepaths, num_cpus=max_session)
+    util.parallelize(run_wait_eval, [(p,) for p in prepaths], num_cpus=max_session)
 
 
 def session_retro_eval(session):

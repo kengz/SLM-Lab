@@ -334,14 +334,14 @@ def nonan_all(v):
     return bool(np.all(v) and ~np.all(np.isnan(v)))
 
 
-def parallelize_fn(fn, args, num_cpus=NUM_CPUS):
+def parallelize(fn, args, num_cpus=NUM_CPUS):
     '''
     Parallelize a method fn, args and return results with order preserved per args.
-    fn should take only a single arg.
+    args should be a list of tuples.
     @returns {list} results Order preserved output from fn.
     '''
     pool = mp.Pool(num_cpus, maxtasksperchild=1)
-    results = pool.map(fn, args)
+    results = pool.starmap(fn, args)
     pool.close()
     pool.join()
     return results
