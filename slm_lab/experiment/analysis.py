@@ -54,15 +54,15 @@ def calc_srs_mean_std(sr_list):
     return mean_sr, std_sr
 
 
-def calc_strength(mean_rets, mean_rand_ret):
+def calc_strength(mean_returns, mean_rand_returns):
     '''
     Calculate strength for metric
     str &= \frac{1}{N} \sum_{i=0}^N \overline{R}_i - \overline{R}_{rand}
-    @param Series:mean_rets A series of mean returns from each checkpoint
+    @param Series:mean_returns A series of mean returns from each checkpoint
     @param float:mean_rand_rets The random baseline
     @returns float:str, Series:local_strs
     '''
-    local_strs = mean_rets - mean_rand_ret
+    local_strs = mean_returns - mean_rand_returns
     str_ = local_strs.mean()
     return str_, local_strs
 
@@ -110,20 +110,20 @@ def calc_consistency(local_strs_list):
     return con, local_cons
 
 
-def calc_session_metrics(eval_df, env_name):
+def calc_session_metrics(session_df, env_name):
     '''
     Calculate the session metrics: strength, efficiency, stability
-    @param DataFrame:eval_df Dataframe containing reward, total_t, opt_step
+    @param DataFrame:session_df Dataframe containing reward, total_t, opt_step
     @param str:env_name Name of the environment to get its random baseline
     @returns dict:metrics Consists of scalar metrics and series local metrics
     '''
     rand_bl = random_baseline.get_random_baseline(env_name)
-    mean_rand_ret = rand_bl['mean']
-    mean_rets = eval_df['reward']
-    frames = eval_df['total_t']
-    opt_steps = eval_df['opt_step']
+    mean_rand_returns = rand_bl['mean']
+    mean_returns = session_df['reward']
+    frames = session_df['total_t']
+    opt_steps = session_df['opt_step']
 
-    str_, local_strs = calc_strength(mean_rets, mean_rand_ret)
+    str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
     min_str, max_str = local_strs.min(), local_strs.max()
     sample_eff, local_sample_effs = calc_efficiency(local_strs, frames)
     train_eff, local_train_effs = calc_efficiency(local_strs, opt_steps)
@@ -141,9 +141,12 @@ def calc_session_metrics(eval_df, env_name):
     # all the session local metrics
     local = {
         'local_strengths': local_strs,
-        'local_sample_efficiency': local_sample_effs,
-        'local_training_efficiency': local_train_effs,
+        'local_sample_efficiencies': local_sample_effs,
+        'local_training_efficiencies': local_train_effs,
         'local_stabilities': local_stas,
+        'mean_returns': mean_returns,
+        'frames': frames,
+        'opt_steps': opt_steps,
     }
     metrics = {
         'scalar': scalar,
@@ -163,9 +166,10 @@ def calc_trial_metrics(session_metrics_list):
     mean_scalar = pd.DataFrame(scalar_list).mean().to_dict()
 
     local_strs_list = [sm['local']['local_strengths'] for sm in session_metrics_list]
-    local_se_list = [sm['local']['local_sample_efficiency'] for sm in session_metrics_list]
-    local_te_list = [sm['local']['local_training_efficiency'] for sm in session_metrics_list]
+    local_se_list = [sm['local']['local_sample_efficiencies'] for sm in session_metrics_list]
+    local_te_list = [sm['local']['local_training_efficiencies'] for sm in session_metrics_list]
     local_sta_list = [sm['local']['local_stabilities'] for sm in session_metrics_list]
+    mean_returns_list = [sm['local']['mean_returns'] for sm in session_metrics_list]
     # calculate consistency
     con, local_cons = calc_consistency(local_strs_list)
 
@@ -182,10 +186,13 @@ def calc_trial_metrics(session_metrics_list):
     # for plotting: mean and std of sessions' local metrics
     local = {
         'local_strengths': calc_srs_mean_std(local_strs_list),
-        'local_sample_efficiency': calc_srs_mean_std(local_se_list),
-        'local_training_efficiency': calc_srs_mean_std(local_te_list),
+        'local_sample_efficiencies': calc_srs_mean_std(local_se_list),
+        'local_training_efficiencies': calc_srs_mean_std(local_te_list),
         'local_stabilities': calc_srs_mean_std(local_sta_list),
         'local_consistencies': local_cons,  # this is not (mean, std)
+        'mean_returns': calc_srs_mean_std(mean_returns_list),
+        'frames': session_metrics_list[0]['local']['frames'],
+        'opt_steps': session_metrics_list[0]['local']['opt_steps'],
     }
     metrics = {
         'scalar': scalar,
@@ -265,17 +272,17 @@ def calc_trial_fitness_df(trial):
     return trial_fitness_df
 
 
-def plot_session(session_spec, body_df):
+def plot_session(session_spec, session_df):
     '''Plot the session graph, 2 panes: reward, loss & explore_var.'''
     max_tick_unit = ps.get(session_spec, 'meta.max_tick_unit')
     # TODO iterate for vector rewards later
     color = viz.get_palette(1)[0]
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True, print_grid=False)
-    body_df = body_df.fillna(0)  # for saving plot, cant have nan
-    fig_1 = viz.plot_line(body_df, 'reward', max_tick_unit, draw=False, trace_kwargs={'line': {'color': color}})
+    session_df = session_df.fillna(0)  # for saving plot, cant have nan
+    fig_1 = viz.plot_line(session_df, 'reward', max_tick_unit, draw=False, trace_kwargs={'line': {'color': color}})
     fig.add_trace(fig_1.data[0], 1, 1)
 
-    fig_2 = viz.plot_line(body_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'showlegend': False, 'line': {'color': color}}, draw=False)
+    fig_2 = viz.plot_line(session_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'showlegend': False, 'line': {'color': color}}, draw=False)
     fig.add_trace(fig_2.data[0], 2, 1)
     fig.add_trace(fig_2.data[1], 3, 1)
 
@@ -417,12 +424,12 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
-def save_session_data(spec, body_df, session_metrics, session_fig, df_mode='eval'):
-    '''Save the session data: body_df, session_metrics, session_graph.'''
+def save_session_data(spec, session_df, session_metrics, session_fig, df_mode='eval'):
+    '''Save the session data: session_df, session_metrics, session_graph.'''
     prepath = util.get_prepath(spec, unit='session')
     prefix = 'train' if df_mode == 'train' else ''
     if 'retro_analyze' not in os.environ['PREPATH']:
-        util.write(body_df, f'{prepath}_{prefix}session_df.csv')
+        util.write(session_df, f'{prepath}_{prefix}session_df.csv')
     if df_mode == 'eval':
         # add session scalar metrics to session
         spec['metrics'] = session_metrics['scalar']
@@ -459,10 +466,10 @@ def save_experiment_data(spec, experiment_df, experiment_fig):
 def _analyze_session(session, df_mode='eval'):
     '''Helper method for analyze_session to run using eval_df and train_df'''
     body = session.agent.body
-    body_df = getattr(body, f'{df_mode}_df').copy()
-    session_metrics = calc_session_metrics(body_df, body.env.name)
-    session_fig = plot_session(session.spec, body_df)
-    save_session_data(session.spec, body_df, session_metrics, session_fig, df_mode)
+    session_df = getattr(body, f'{df_mode}_df').copy()
+    session_metrics = calc_session_metrics(session_df, body.env.name)
+    session_fig = plot_session(session.spec, session_df)
+    save_session_data(session.spec, session_df, session_metrics, session_fig, df_mode)
     return session_metrics
 
 
