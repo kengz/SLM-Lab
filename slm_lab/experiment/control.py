@@ -29,7 +29,6 @@ class Session:
         util.set_cuda_id(self.spec)
         util.set_logger(self.spec, logger, 'session')
         spec_util.save(spec, unit='session')
-        self.data = None
 
         # init agent and env
         self.env = make_env(self.spec)
@@ -105,9 +104,9 @@ class Session:
 
     def run(self):
         self.run_rl()
-        self.data = analysis.analyze_session(self)  # session fitness
+        metrics_dict = analysis.analyze_session(self)  # session fitness
         self.close()
-        return self.data
+        return metrics_dict
 
 
 class SpaceSession(Session):
@@ -120,7 +119,6 @@ class SpaceSession(Session):
         util.set_cuda_id(self.spec)
         util.set_logger(self.spec, logger, 'session')
         spec_util.save(spec, unit='session')
-        self.data = None
 
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
@@ -162,9 +160,9 @@ class SpaceSession(Session):
 
     def run(self):
         self.run_all_episodes()
-        self.data = analysis.analyze_session(self, tmp_space_session_sub=True)  # session fitness
+        space_metrics_dict = analysis.analyze_session(self, tmp_space_session_sub=True)  # session fitness
         self.close()
-        return self.data
+        return space_metrics_dict
 
 
 def init_run_session(*args):
@@ -192,7 +190,6 @@ class Trial:
         util.set_logger(self.spec, logger, 'trial')
         spec_util.save(spec, unit='trial')
         self.session_data_dict = {}
-        self.data = None
 
         self.is_singleton = spec_util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
         self.SessionClass = Session if self.is_singleton else SpaceSession
@@ -249,9 +246,9 @@ class Trial:
         else:
             session_datas = self.run_distributed_sessions()
         self.session_data_dict = {data.index[0]: data for data in session_datas}
-        self.data = analysis.analyze_trial(self)
+        metrics_dict = analysis.analyze_trial(self)
         self.close()
-        return self.data
+        return metrics_dict
 
 
 class Experiment:
@@ -267,7 +264,6 @@ class Experiment:
         util.set_logger(self.spec, logger, 'trial')
         spec_util.save(spec, unit='experiment')
         self.trial_data_dict = {}
-        self.data = None
         SearchClass = getattr(search, spec['meta'].get('search'))
         self.search = SearchClass(self)
 
@@ -283,6 +279,5 @@ class Experiment:
 
     def run(self):
         self.trial_data_dict = self.search.run()
-        self.data = analysis.analyze_experiment(self)
+        analysis.analyze_experiment(self)
         self.close()
-        return self.data
