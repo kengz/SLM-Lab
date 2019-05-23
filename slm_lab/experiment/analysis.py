@@ -373,12 +373,6 @@ Analysis interface methods
 '''
 
 
-def save_spec(spec, unit='experiment'):
-    '''Save spec to proper path. Called at Experiment or Trial init.'''
-    prepath = util.get_prepath(spec, unit)
-    util.write(spec, f'{prepath}_spec.json')
-
-
 def calc_mean_fitness(fitness_df):
     '''Method to calculated mean over all bodies for a fitness_df'''
     return fitness_df.mean(axis=1, level=3)

@@ -28,7 +28,7 @@ class Session:
         util.set_random_seed(self.spec)
         util.set_cuda_id(self.spec)
         util.set_logger(self.spec, logger, 'session')
-        analysis.save_spec(spec, unit='session')
+        spec_util.save(spec, unit='session')
         self.data = None
 
         # init agent and env
@@ -119,7 +119,7 @@ class SpaceSession(Session):
         util.set_random_seed(self.spec)
         util.set_cuda_id(self.spec)
         util.set_logger(self.spec, logger, 'session')
-        analysis.save_spec(spec, unit='session')
+        spec_util.save(spec, unit='session')
         self.data = None
 
         self.aeb_space = AEBSpace(self.spec)
@@ -190,7 +190,7 @@ class Trial:
         self.spec = spec
         self.index = self.spec['meta']['trial']
         util.set_logger(self.spec, logger, 'trial')
-        analysis.save_spec(spec, unit='trial')
+        spec_util.save(spec, unit='trial')
         self.session_data_dict = {}
         self.data = None
 
@@ -265,7 +265,7 @@ class Experiment:
         self.spec = spec
         self.index = self.spec['meta']['experiment']
         util.set_logger(self.spec, logger, 'trial')
-        analysis.save_spec(spec, unit='experiment')
+        spec_util.save(spec, unit='experiment')
         self.trial_data_dict = {}
         self.data = None
         SearchClass = getattr(search, spec['meta'].get('search'))

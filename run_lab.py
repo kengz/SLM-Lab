@@ -6,7 +6,7 @@ python run_lab.py config/experiments.json
 python run_lab.py slm_lab/spec/experimental/a2c_pong.json a2c_pong train
 '''
 from slm_lab import EVAL_MODES, TRAIN_MODES
-from slm_lab.experiment import analysis, retro_analysis
+from slm_lab.experiment import retro_analysis
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
@@ -29,7 +29,7 @@ def run_spec(spec, lab_mode):
     '''Run a spec in lab_mode'''
     os.environ['lab_mode'] = lab_mode
     if lab_mode in TRAIN_MODES:
-        analysis.save_spec(spec)  # first save the new spec
+        spec_util.save(spec)  # first save the new spec
         if lab_mode == 'dev':
             spec = spec_util.override_dev_spec(spec)
         if lab_mode == 'search':

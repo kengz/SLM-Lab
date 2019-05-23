@@ -278,6 +278,12 @@ def resolve_aeb(spec):
     return aeb_list
 
 
+def save(spec, unit='experiment'):
+    '''Save spec to proper path. Called at Experiment or Trial init.'''
+    prepath = util.get_prepath(spec, unit)
+    util.write(spec, f'{prepath}_spec.json')
+
+
 def tick(spec, unit):
     '''
     Method to tick lab unit (experiment, trial, session) in meta spec to advance their indices

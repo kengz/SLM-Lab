@@ -10,7 +10,7 @@ import pytest
 def test_session(test_spec):
     spec_util.tick(test_spec, 'trial')
     spec_util.tick(test_spec, 'session')
-    analysis.save_spec(test_spec, unit='trial')
+    spec_util.save(test_spec, unit='trial')
     session = Session(test_spec)
     session_data = session.run()
     assert isinstance(session_data, pd.DataFrame)
@@ -19,7 +19,7 @@ def test_session(test_spec):
 def test_session_total_t(test_spec):
     spec_util.tick(test_spec, 'trial')
     spec_util.tick(test_spec, 'session')
-    analysis.save_spec(test_spec, unit='trial')
+    spec_util.save(test_spec, unit='trial')
     spec = deepcopy(test_spec)
     env_spec = spec['env'][0]
     env_spec['max_tick'] = 30
@@ -32,7 +32,7 @@ def test_session_total_t(test_spec):
 
 def test_trial(test_spec):
     spec_util.tick(test_spec, 'trial')
-    analysis.save_spec(test_spec, unit='trial')
+    spec_util.save(test_spec, unit='trial')
     trial = Trial(test_spec)
     trial_data = trial.run()
     assert isinstance(trial_data, pd.DataFrame)
@@ -40,7 +40,7 @@ def test_trial(test_spec):
 
 def test_trial_demo():
     spec = spec_util.get('demo.json', 'dqn_cartpole')
-    analysis.save_spec(spec, unit='experiment')
+    spec_util.save(spec, unit='experiment')
     spec = spec_util.override_test_spec(spec)
     spec_util.tick(spec, 'trial')
     trial_data = Trial(spec).run()
@@ -51,7 +51,7 @@ def test_trial_demo():
 @flaky
 def test_demo_performance():
     spec = spec_util.get('demo.json', 'dqn_cartpole')
-    analysis.save_spec(spec, unit='experiment')
+    spec_util.save(spec, unit='experiment')
     for env_spec in spec['env']:
         env_spec['max_tick'] = 2000
     spec_util.tick(spec, 'trial')
@@ -65,7 +65,7 @@ def test_demo_performance():
 
 def test_experiment():
     spec = spec_util.get('demo.json', 'dqn_cartpole')
-    analysis.save_spec(spec, unit='experiment')
+    spec_util.save(spec, unit='experiment')
     spec = spec_util.override_test_spec(spec)
     spec_util.tick(spec, 'experiment')
     experiment_data = Experiment(spec).run()
