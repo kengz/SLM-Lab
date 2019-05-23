@@ -137,11 +137,11 @@ def retro_analyze_sessions(predir):
     for filename in os.listdir(predir):
         # to account for both types of session_df
         if filename.endswith('_session_df.csv'):
-            body_df_kind = 'eval'  # from body.eval_df
+            df_mode = 'eval'  # from body.eval_df
             prefix = ''
             is_session_df = True
         elif filename.endswith('_trainsession_df.csv'):
-            body_df_kind = 'train'  # from body.train_df
+            df_mode = 'train'  # from body.train_df
             prefix = 'train'
             is_session_df = True
         else:
@@ -154,7 +154,7 @@ def retro_analyze_sessions(predir):
             SessionClass = Session if spec_util.is_singleton(spec) else SpaceSession
             session = SessionClass(spec)
             session_data = session_data_from_file(predir, trial_index, session_index, spec['meta']['ckpt'], prefix)
-            analysis._analyze_session(session, session_data, body_df_kind)
+            analysis._analyze_session(session, session_data, df_mode)
 
 
 def retro_analyze_trials(predir):

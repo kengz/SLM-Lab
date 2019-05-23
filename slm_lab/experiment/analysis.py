@@ -191,140 +191,6 @@ def calc_trial_metrics(session_metrics_dicts):
         'scalar': scalar,
         'local': local,
     }
-
-
-'''
-Fitness analysis
-'''
-
-
-def calc_strength_sr(aeb_df, rand_reward, std_reward):
-    '''
-    Calculate strength for each reward as
-    strength = (reward - rand_reward) / (std_reward - rand_reward)
-    '''
-    return (aeb_df['reward'] - rand_reward) / (std_reward - rand_reward)
-
-
-def calc_strength(aeb_df):
-    '''
-    Strength of an agent in fitness is its maximum strength_ma. Moving average is used to denoise signal.
-    For an agent total reward at a time, calculate strength by normalizing it with a given baseline rand_reward and solution std_reward, i.e.
-    strength = (reward - rand_reward) / (std_reward - rand_reward)
-
-    **Properties:**
-    - random agent has strength 0, standard agent has strength 1.
-    - strength is standardized to be independent of the actual sign and scale of raw reward
-    - scales relative to std_reward: if an agent achieve x2 std_reward, the strength is x2, and so on.
-    This allows for standard comparison between agents on the same problem using an intuitive measurement of strength. With proper scaling by a difficulty factor, we can compare across problems of different difficulties.
-    '''
-    strength = aeb_df['strength_ma'].max()
-    return max(0.0, strength)
-
-
-def calc_speed(aeb_df, std_timestep):
-    '''
-    Find the maximum strength_ma, and the time to first reach it. Then the strength/time divided by the standard std_strength/std_timestep is speed, i.e.
-    speed = (max_strength_ma / timestep_to_first_reach) / (std_strength / std_timestep)
-    **Properties:**
-    - random agent has speed 0, standard agent has speed 1.
-    - if both agents reach the same max strength_ma, and one reaches it in half the timesteps, it is twice as fast.
-    - speed is standardized regardless of the scaling of absolute timesteps, or even the max strength attained
-    This allows an intuitive measurement of learning speed and the standard comparison between agents on the same problem.
-    '''
-    first_max_idx = aeb_df['strength_ma'].idxmax()  # this returns the first max
-    max_row = aeb_df.loc[first_max_idx]
-    std_strength = 1.
-    if max_row['total_t'] == 0:  # especially for random agent
-        speed = 0.
-    else:
-        speed = (max_row['strength_ma'] / max_row['total_t']) / (std_strength / std_timestep)
-    return max(0., speed)
-
-
-def calc_stability(aeb_df):
-    '''
-    Stability = fraction of monotonically increasing elements in the denoised series of strength_ma, or 0 if strength_ma is all <= 0.
-    **Properties:**
-    - stable agent has value 1, unstable agent < 1, and non-solution = 0.
-    - uses strength_ma to be more robust to noise
-    - sharp gain in strength is considered stable
-    - monotonically increasing implies strength can keep growing and as long as it does not fall much, it is considered stable
-    '''
-    if (aeb_df['strength_ma'].values <= 0.).all():
-        stability = 0.
-    else:
-        mono_inc_sr = np.diff(aeb_df['strength_ma']) >= 0.
-        stability = mono_inc_sr.sum() / mono_inc_sr.size
-    return max(0., stability)
-
-
-def calc_consistency(aeb_fitness_df):
-    '''
-    Calculate the consistency of trial by the fitness_vectors of its sessions:
-    consistency = ratio of non-outlier vectors
-    **Properties:**
-    - outliers are calculated using MAD modified z-score
-    - if all the fitness vectors are zero or all strength are zero, consistency = 0
-    - works for all sorts of session fitness vectors, with the standard scale
-    When an agent fails to achieve standard strength, it is meaningless to measure consistency or give false interpolation, so consistency is 0.
-    '''
-    fitness_vecs = aeb_fitness_df.values
-    if ~np.any(fitness_vecs) or ~np.any(aeb_fitness_df['strength']):
-        # no consistency if vectors all 0
-        consistency = 0.
-    elif len(fitness_vecs) == 2:
-        # if only has 2 vectors, check norm_diff
-        diff_norm = np.linalg.norm(np.diff(fitness_vecs, axis=0), NORM_ORDER) / np.linalg.norm(np.ones(len(fitness_vecs[0])), NORM_ORDER)
-        consistency = diff_norm <= NOISE_WINDOW
-    else:
-        is_outlier_arr = math_util.is_outlier(fitness_vecs)
-        consistency = (~is_outlier_arr).sum() / len(is_outlier_arr)
-    return consistency
-
-
-def calc_epi_reward_ma(aeb_df, ckpt=None):
-    '''Calculates the episode reward moving average with the MA_WINDOW'''
-    rewards = aeb_df['reward']
-    if ckpt == 'eval':
-        # online eval mode reward is reward_ma from avg
-        aeb_df['reward_ma'] = rewards
-    else:
-        aeb_df['reward_ma'] = rewards.rolling(window=MA_WINDOW, min_periods=0, center=False).mean()
-    return aeb_df
-
-
-def calc_fitness(fitness_vec):
-    '''
-    Takes a vector of qualifying standardized dimensions of fitness and compute the normalized length as fitness
-    use L1 norm for simplicity and intuititveness of linearity
-    '''
-    if isinstance(fitness_vec, pd.Series):
-        fitness_vec = fitness_vec.values
-    elif isinstance(fitness_vec, pd.DataFrame):
-        fitness_vec = fitness_vec.iloc[0].values
-    std_fitness_vector = np.ones(len(fitness_vec))
-    fitness = np.linalg.norm(fitness_vec, NORM_ORDER) / np.linalg.norm(std_fitness_vector, NORM_ORDER)
-    return fitness
-
-
-def calc_aeb_fitness_sr(aeb_df, env_name):
-    '''Top level method to calculate fitness vector for AEB level data (strength, speed, stability)'''
-    std = FITNESS_STD.get(env_name)
-    if std is None:
-        std = FITNESS_STD.get('template')
-        logger.warning(f'The fitness standard for env {env_name} is not built yet. Contact author. Using a template standard for now.')
-
-    # calculate the strength sr and the moving-average (to denoise) first before calculating fitness
-    aeb_df['strength'] = calc_strength_sr(aeb_df, std['rand_epi_reward'], std['std_epi_reward'])
-    aeb_df['strength_ma'] = aeb_df['strength'].rolling(MA_WINDOW, min_periods=0, center=False).mean()
-
-    strength = calc_strength(aeb_df)
-    speed = calc_speed(aeb_df, std['std_timestep'])
-    stability = calc_stability(aeb_df)
-    aeb_fitness_sr = pd.Series({
-        'strength': strength, 'speed': speed, 'stability': stability})
-    return aeb_fitness_sr
     return metrics
 
 
@@ -373,46 +239,6 @@ Analysis interface methods
 '''
 
 
-def calc_mean_fitness(fitness_df):
-    '''Method to calculated mean over all bodies for a fitness_df'''
-    return fitness_df.mean(axis=1, level=3)
-
-
-def get_session_data(session, body_df_kind='eval', tmp_space_session_sub=False):
-    '''
-    Gather data from session from all the bodies
-    Depending on body_df_kind, will use eval_df or train_df
-    '''
-    session_data = {}
-    for aeb, body in util.ndenumerate_nonan(session.aeb_space.body_space.data):
-        aeb_df = body.eval_df if body_df_kind == 'eval' else body.train_df
-        # TODO tmp substitution since SpaceSession does not have run_eval yet
-        if tmp_space_session_sub:
-            aeb_df = body.train_df
-        if len(aeb_df) > 0:
-            session_data[aeb] = aeb_df.copy()
-    return session_data
-
-
-def calc_session_fitness_df(session, session_data):
-    '''Calculate the session fitness df'''
-    session_fitness_data = {}
-    for aeb in session_data:
-        aeb_df = session_data[aeb]
-        aeb_df = calc_epi_reward_ma(aeb_df, session.spec['meta']['ckpt'])
-        util.downcast_float32(aeb_df)
-        body = session.aeb_space.body_space.data[aeb]
-        aeb_fitness_sr = calc_aeb_fitness_sr(aeb_df, body.env.name)
-        aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[session.index])
-        aeb_fitness_df = aeb_fitness_df.reindex(FITNESS_COLS[:3], axis=1)
-        session_fitness_data[aeb] = aeb_fitness_df
-    # form multi_index df, then take mean across all bodies
-    session_fitness_df = pd.concat(session_fitness_data, axis=1)
-    mean_fitness_df = calc_mean_fitness(session_fitness_df)
-    session_fitness = calc_fitness(mean_fitness_df)
-    return session_fitness_df
-
-
 def calc_trial_fitness_df(trial):
     '''
     Calculate the trial fitness df by aggregating from the collected session_data_dict (session_fitness_df's).
@@ -439,22 +265,19 @@ def calc_trial_fitness_df(trial):
     return trial_fitness_df
 
 
-def plot_session(session_spec, session_data):
-    '''Plot the session graph, 2 panes: reward, loss & explore_var. Each aeb_df gets its own color'''
+def plot_session(session_spec, body_df):
+    '''Plot the session graph, 2 panes: reward, loss & explore_var.'''
     max_tick_unit = ps.get(session_spec, 'meta.max_tick_unit')
-    aeb_count = len(session_data)
-    palette = viz.get_palette(aeb_count)
+    # TODO iterate for vector rewards later
+    palette = viz.get_palette(1)
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True, print_grid=False)
-    for idx, (a, e, b) in enumerate(session_data):
-        aeb_str = f'{a}{e}{b}'
-        aeb_df = session_data[(a, e, b)]
-        aeb_df.fillna(0, inplace=True)  # for saving plot, cant have nan
-        fig_1 = viz.plot_line(aeb_df, 'reward_ma', max_tick_unit, legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': palette[idx]}})
-        fig.add_trace(fig_1.data[0], 1, 1)
+    body_df = body_df.fillna(0)  # for saving plot, cant have nan
+    fig_1 = viz.plot_line(body_df, 'reward', max_tick_unit, draw=False, trace_kwargs={'line': {'color': palette[idx]}})
+    fig.add_trace(fig_1.data[0], 1, 1)
 
-        fig_2 = viz.plot_line(aeb_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'legendgroup': aeb_str, 'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
-        fig.add_trace(fig_2.data[0], 2, 1)
-        fig.add_trace(fig_2.data[1], 3, 1)
+    fig_2 = viz.plot_line(body_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
+    fig.add_trace(fig_2.data[0], 2, 1)
+    fig.add_trace(fig_2.data[1], 3, 1)
 
     fig.layout['xaxis1'].update(title=max_tick_unit, zerolinewidth=1)
     fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
@@ -594,44 +417,18 @@ def plot_experiment(experiment_spec, experiment_df):
     return fig
 
 
-def save_session_df(session_data, filepath, spec):
-    '''Save session_df, and if is in eval mode, modify it and save with append'''
-    if util.in_eval_lab_modes():
-        ckpt = util.find_ckpt(spec['meta']['eval_model_prepath'])
-        epi = int(re.search('epi(\d+)', ckpt)[1])
-        totalt = int(re.search('totalt(\d+)', ckpt)[1])
-        session_df = pd.concat(session_data, axis=1)
-        mean_sr = session_df.mean()
-        mean_sr.name = totalt  # set index to prevent all being the same
-        eval_session_df = pd.DataFrame(data=[mean_sr])
-        # set sr name too, to total_t
-        for aeb in util.get_df_aeb_list(eval_session_df):
-            eval_session_df.loc[:, aeb + ('epi',)] = epi
-            eval_session_df.loc[:, aeb + ('total_t',)] = totalt
-        # if eval, save with append mode
-        header = not os.path.exists(filepath)
-        with open(filepath, 'a') as f:
-            eval_session_df.to_csv(f, header=header)
-    else:
-        session_df = pd.concat(session_data, axis=1)
-        util.write(session_df, filepath)
-
-
-def save_session_data(spec, session_data, session_fitness_df, session_fig, body_df_kind='eval'):
-    '''
-    Save the session data: session_df, session_fitness_df, session_graph.
-    session_data is saved as session_df; multi-indexed with (a,e,b), 3 extra levels
-    to read, use:
-    session_df = util.read(filepath, header=[0, 1, 2, 3], index_col=0)
-    session_data = util.session_df_to_data(session_df)
-    '''
+def save_session_data(spec, body_df, session_metrics, session_fig, df_mode='eval'):
+    '''Save the session data: body_df, session_metrics, session_graph.'''
     prepath = util.get_prepath(spec, unit='session')
-    prefix = 'train' if body_df_kind == 'train' else ''
+    prefix = 'train' if df_mode == 'train' else ''
     if 'retro_analyze' not in os.environ['PREPATH']:
-        save_session_df(session_data, f'{prepath}_{prefix}session_df.csv', spec)
-    util.write(session_fitness_df, f'{prepath}_{prefix}session_fitness_df.csv')
+        util.write(body_df, f'{prepath}_{prefix}session_df.csv')
+    if df_mode == 'eval':
+        # add session scalar metrics to session
+        spec['metrics'] = session_metrics['scalar']
+        spec_util.save(spec, unit='session')
     viz.save_image(session_fig, f'{prepath}_{prefix}session_graph.png')
-    logger.debug(f'Saved {body_df_kind} session data and graphs to {prepath}*')
+    logger.debug(f'Saved {df_mode} session data and graphs to {prepath}*')
 
 
 def save_trial_data(spec, trial_df, trial_fitness_df, trial_fig, zip=True):
@@ -659,27 +456,20 @@ def save_experiment_data(spec, experiment_df, experiment_fig):
     logger.info(f'All experiment data zipped to {predir}.zip')
 
 
-def _analyze_session(session, session_data, body_df_kind='eval'):
+def _analyze_session(session, df_mode='eval'):
     '''Helper method for analyze_session to run using eval_df and train_df'''
-    session_fitness_df = calc_session_fitness_df(session, session_data)
-    session_fig = plot_session(session.spec, session_data)
-    save_session_data(session.spec, session_data, session_fitness_df, session_fig, body_df_kind)
-    return session_fitness_df
+    body = session.agent.body
+    body_df = getattr(body, f'{df_mode}_df').copy()
+    session_metrics = calc_session_metrics(body_df, body.env.name)
+    session_fig = plot_session(session.spec, body_df)
+    save_session_data(session.spec, body_df, session_metrics, session_fig, df_mode)
+    return session_metrics
 
 
 def analyze_session(session, eager_analyze_trial=False, tmp_space_session_sub=False):
-    '''
-    Gather session data, plot, and return fitness df for high level agg.
-    @returns {DataFrame} session_fitness_df Single-row df of session fitness vector (avg over aeb), indexed with session index.
-    '''
-    session_data = get_session_data(session, body_df_kind='train')
-    if ps.is_empty(session_data):  # nothing to analyze,  early exit
-        return None
-    session_fitness_df = _analyze_session(session, session_data, body_df_kind='train')
-    session_data = get_session_data(session, body_df_kind='eval', tmp_space_session_sub=tmp_space_session_sub)
-    if ps.is_empty(session_data):  # nothing to analyze,  early exit
-        return None
-    session_fitness_df = _analyze_session(session, session_data, body_df_kind='eval')
+    '''Analyze session and save data, then return metrics'''
+    _analyze_session(session, df_mode='train')
+    session_metrics = _analyze_session(session, df_mode='eval')
     if eager_analyze_trial:
         # for live trial graph, analyze trial after analyzing session, this only takes a second
         from slm_lab.experiment import retro_analysis
@@ -688,7 +478,7 @@ def analyze_session(session, eager_analyze_trial=False, tmp_space_session_sub=Fa
         spec = util.prepath_to_spec(prepath)
         predir, _, _, _, _, _ = util.prepath_split(prepath)
         retro_analysis.analyze_eval_trial(spec, predir)
-    return session_fitness_df
+    return session_metrics
 
 
 def analyze_trial(trial, zip=True):

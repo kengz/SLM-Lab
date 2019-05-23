@@ -206,13 +206,13 @@ class Body:
         prefix = f'Trial {trial_index} session {session_index} {spec_name}_t{trial_index}_s{session_index}, aeb{aeb_str}'
         return prefix
 
-    def log_summary(self, body_df_kind='train'):
+    def log_summary(self, df_mode='train'):
         '''
         Log the summary for this body when its environment is done
-        @param str:body_df_kind 'train' or 'eval'
+        @param str:df_mode 'train' or 'eval'
         '''
         prefix = self.get_log_prefix()
-        if body_df_kind == 'eval':
+        if df_mode == 'eval':
             df = self.eval_df
             reward_ma = self.eval_reward_ma
         else:
@@ -220,7 +220,7 @@ class Body:
             reward_ma = self.total_reward_ma
         last_row = df.iloc[-1]
         row_str = '  '.join([f'{k}: {v:g}' for k, v in last_row.items()])
-        msg = f'{prefix} [{body_df_kind}_df] {row_str}'
+        msg = f'{prefix} [{df_mode}_df] {row_str}'
         logger.info(msg)
 
     def space_init(self, aeb_space):
