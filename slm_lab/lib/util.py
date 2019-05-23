@@ -727,7 +727,7 @@ def write_as_df(data, data_path):
     '''Submethod to write data as DataFrame'''
     df = cast_df(data)
     ext = get_file_ext(data_path)
-    df.to_csv(data_path)
+    df.to_csv(data_path, index=False)
     return data_path
 
 
