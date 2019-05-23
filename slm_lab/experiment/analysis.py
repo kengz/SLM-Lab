@@ -269,13 +269,13 @@ def plot_session(session_spec, body_df):
     '''Plot the session graph, 2 panes: reward, loss & explore_var.'''
     max_tick_unit = ps.get(session_spec, 'meta.max_tick_unit')
     # TODO iterate for vector rewards later
-    palette = viz.get_palette(1)
+    color = viz.get_palette(1)[0]
     fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True, print_grid=False)
     body_df = body_df.fillna(0)  # for saving plot, cant have nan
-    fig_1 = viz.plot_line(body_df, 'reward', max_tick_unit, draw=False, trace_kwargs={'line': {'color': palette[idx]}})
+    fig_1 = viz.plot_line(body_df, 'reward', max_tick_unit, draw=False, trace_kwargs={'line': {'color': color}})
     fig.add_trace(fig_1.data[0], 1, 1)
 
-    fig_2 = viz.plot_line(body_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'showlegend': False, 'line': {'color': palette[idx]}}, draw=False)
+    fig_2 = viz.plot_line(body_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'showlegend': False, 'line': {'color': color}}, draw=False)
     fig.add_trace(fig_2.data[0], 2, 1)
     fig.add_trace(fig_2.data[1], 3, 1)
 
