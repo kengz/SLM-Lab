@@ -115,7 +115,7 @@ def calc_session_metrics(eval_df, env_name):
     Calculate the session metrics: strength, efficiency, stability
     @param DataFrame:eval_df Dataframe containing reward, total_t, opt_step
     @param str:env_name Name of the environment to get its random baseline
-    @returns dict:metrics_dict Consists of scalar metrics and series local metrics
+    @returns dict:metrics Consists of scalar metrics and series local metrics
     '''
     rand_bl = random_baseline.get_random_baseline(env_name)
     mean_rand_ret = rand_bl['mean']
@@ -130,7 +130,7 @@ def calc_session_metrics(eval_df, env_name):
     sta, local_stas = calc_stability(local_strs)
 
     # all the scalar session metrics
-    metrics = {
+    scalar = {
         'strength': str_,
         'min_strength': min_str,
         'max_strength': max_str,
@@ -138,60 +138,59 @@ def calc_session_metrics(eval_df, env_name):
         'training_efficiency': train_eff,
         'stability': sta,
     }
-    # all the session local metrics metrics
-    local_metrics = {
+    # all the session local metrics
+    local = {
         'local_strengths': local_strs,
         'local_sample_efficiency': local_sample_effs,
         'local_training_efficiency': local_train_effs,
         'local_stabilities': local_stas,
     }
-    metrics_dict = {
-        'metrics': metrics,
-        'local_metrics': local_metrics,
+    metrics = {
+        'scalar': scalar,
+        'local': local,
     }
-    return metrics_dict
+    return metrics
 
 
-def calc_trial_metrics(session_metric_dicts):
+def calc_trial_metrics(session_metrics_dicts):
     '''
     Calculate the trial metrics: mean(strength), mean(efficiency), mean(stability), consistency
-    @param dict:session_metric_dicts The metric_dicts collected from each session; format: {session_index: {'metrics': {...}, 'local_metrics': {...}}}
-    @returns dict:metrics_dict Consists of scalar metrics and series local metrics
+    @param dict:session_metrics_dicts The metrics_dicts collected from each session; format: {session_index: {'scalar': {...}, 'local': {...}}}
+    @returns dict:metrics Consists of scalar metrics and series local metrics
     '''
     # calculate mean of session metrics
-    sm_list = [md['metrics'] for md in session_metric_dicts.values()]
-    mean_sm = pd.DataFrame(sm_list).mean().to_dict()
+    scalar_list = [sm['scalar'] for sm in session_metrics_dicts.values()]
+    mean_scalar = pd.DataFrame(scalar_list).mean().to_dict()
 
-    local_strs_list = [md['local_metrics']['local_strengths'] for md in session_metric_dicts.values()]
-    local_se_list = [md['local_metrics']['local_sample_efficiency'] for md in session_metric_dicts.values()]
-    local_te_list = [md['local_metrics']['local_training_efficiency'] for md in session_metric_dicts.values()]
-    local_sta_list = [md['local_metrics']['local_stabilities'] for md in session_metric_dicts.values()]
+    local_strs_list = [sm['local']['local_strengths'] for sm in session_metrics_dicts.values()]
+    local_se_list = [sm['local']['local_sample_efficiency'] for sm in session_metrics_dicts.values()]
+    local_te_list = [sm['local']['local_training_efficiency'] for sm in session_metrics_dicts.values()]
+    local_sta_list = [sm['local']['local_stabilities'] for sm in session_metrics_dicts.values()]
     # calculate consistency
     con, local_cons = calc_consistency(local_strs_list)
 
     # all the scalar trial metrics
-    metrics = {
-        'strength': mean_sm['strength'],
-        'min_strength': mean_sm['min_strength'],
-        'max_strength': mean_sm['max_strength'],
-        'sample_efficiency': mean_sm['sample_efficiency'],
-        'training_efficiency': mean_sm['training_efficiency'],
-        'stability': mean_sm['stability'],
+    scalar = {
+        'strength': mean_scalar['strength'],
+        'min_strength': mean_scalar['min_strength'],
+        'max_strength': mean_scalar['max_strength'],
+        'sample_efficiency': mean_scalar['sample_efficiency'],
+        'training_efficiency': mean_scalar['training_efficiency'],
+        'stability': mean_scalar['stability'],
         'consistency': con,
     }
     # for plotting: mean and std of sessions' local metrics
-    local_metrics = {
+    local = {
         'local_strengths': calc_srs_mean_std(local_strs_list),
         'local_sample_efficiency': calc_srs_mean_std(local_se_list),
         'local_training_efficiency': calc_srs_mean_std(local_te_list),
         'local_stabilities': calc_srs_mean_std(local_sta_list),
         'local_consistencies': local_cons,  # this is not (mean, std)
     }
-    metrics_dict = {
-        'metrics': metrics,
-        'local_metrics': local_metrics,
+    metrics = {
+        'scalar': scalar,
+        'local': local,
     }
-    return metrics_dict
 
 
 '''
@@ -326,6 +325,7 @@ def calc_aeb_fitness_sr(aeb_df, env_name):
     aeb_fitness_sr = pd.Series({
         'strength': strength, 'speed': speed, 'stability': stability})
     return aeb_fitness_sr
+    return metrics
 
 
 '''

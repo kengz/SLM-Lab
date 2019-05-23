@@ -104,9 +104,9 @@ class Session:
 
     def run(self):
         self.run_rl()
-        metrics_dict = analysis.analyze_session(self)  # session fitness
+        metrics = analysis.analyze_session(self)  # session fitness
         self.close()
-        return metrics_dict
+        return metrics
 
 
 class SpaceSession(Session):
@@ -246,9 +246,9 @@ class Trial:
         else:
             session_datas = self.run_distributed_sessions()
         self.session_data_dict = {data.index[0]: data for data in session_datas}
-        metrics_dict = analysis.analyze_trial(self)
+        metrics = analysis.analyze_trial(self)
         self.close()
-        return metrics_dict
+        return metrics
 
 
 class Experiment:
