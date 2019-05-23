@@ -189,7 +189,6 @@ class Trial:
         self.index = self.spec['meta']['trial']
         util.set_logger(self.spec, logger, 'trial')
         spec_util.save(spec, unit='trial')
-        self.session_data_dict = {}
 
         self.is_singleton = spec_util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
         self.SessionClass = Session if self.is_singleton else SpaceSession
@@ -204,22 +203,22 @@ class Trial:
             workers.append(w)
         for w in workers:
             w.join()
-        session_datas = retro_analysis.session_data_dict_for_dist(self.spec)
-        return session_datas
+        session_metrics_list = retro_analysis.session_data_dict_for_dist(self.spec)
+        return session_metrics_list
 
     def run_sessions(self):
         logger.info('Running sessions')
         if util.get_lab_mode() in ('train', 'eval') and self.spec['meta']['max_session'] > 1:
             # when training a single spec over multiple sessions
-            session_datas = self.parallelize_sessions()
+            session_metrics_list = self.parallelize_sessions()
         else:
-            session_datas = []
+            session_metrics_list = []
             for _s in range(self.spec['meta']['max_session']):
                 spec_util.tick(self.spec, 'session')
                 session = self.SessionClass(deepcopy(self.spec))
                 session_data = session.run()
-                session_datas.append(session_data)
-        return session_datas
+                session_metrics_list.append(session_data)
+        return session_metrics_list
 
     def init_global_nets(self):
         session = self.SessionClass(deepcopy(self.spec))
@@ -234,18 +233,18 @@ class Trial:
     def run_distributed_sessions(self):
         logger.info('Running distributed sessions')
         global_nets = self.init_global_nets()
-        session_datas = self.parallelize_sessions(global_nets)
-        return session_datas
+        session_metrics_list = self.parallelize_sessions(global_nets)
+        return session_metrics_list
 
     def close(self):
         logger.info('Trial done and closed.')
 
     def run(self):
         if self.spec['meta'].get('distributed') == False:
-            session_datas = self.run_sessions()
+            session_metrics_list = self.run_sessions()
         else:
-            session_datas = self.run_distributed_sessions()
-        self.session_data_dict = {data.index[0]: data for data in session_datas}
+            session_metrics_list = self.run_distributed_sessions()
+        self.session_metrics_list = session_metrics_list
         metrics = analysis.analyze_trial(self)
         self.close()
         return metrics

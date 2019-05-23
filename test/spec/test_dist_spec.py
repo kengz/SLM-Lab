@@ -26,8 +26,8 @@ def run_trial_test_dist(spec_file, spec_name=False):
         net = list(global_nets[0].values())[0]
     else:
         net = list(global_nets.values())[0]
-    session_datas = trial.parallelize_sessions(global_nets)
-    trial.session_data_dict = {data.index[0]: data for data in session_datas}
+    session_metrics_list = trial.parallelize_sessions(global_nets)
+    trial.session_metrics_list = session_metrics_list
     trial_data = analysis.analyze_trial(trial)
     trial.close()
     assert isinstance(trial_data, pd.DataFrame)

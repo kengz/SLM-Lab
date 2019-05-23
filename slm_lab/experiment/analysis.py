@@ -152,20 +152,20 @@ def calc_session_metrics(eval_df, env_name):
     return metrics
 
 
-def calc_trial_metrics(session_metrics_dicts):
+def calc_trial_metrics(session_metrics_list):
     '''
     Calculate the trial metrics: mean(strength), mean(efficiency), mean(stability), consistency
-    @param dict:session_metrics_dicts The metrics_dicts collected from each session; format: {session_index: {'scalar': {...}, 'local': {...}}}
+    @param list:session_metrics_list The metrics_dicts collected from each session; format: {session_index: {'scalar': {...}, 'local': {...}}}
     @returns dict:metrics Consists of scalar metrics and series local metrics
     '''
     # calculate mean of session metrics
-    scalar_list = [sm['scalar'] for sm in session_metrics_dicts.values()]
+    scalar_list = [sm['scalar'] for sm in session_metrics_list]
     mean_scalar = pd.DataFrame(scalar_list).mean().to_dict()
 
-    local_strs_list = [sm['local']['local_strengths'] for sm in session_metrics_dicts.values()]
-    local_se_list = [sm['local']['local_sample_efficiency'] for sm in session_metrics_dicts.values()]
-    local_te_list = [sm['local']['local_training_efficiency'] for sm in session_metrics_dicts.values()]
-    local_sta_list = [sm['local']['local_stabilities'] for sm in session_metrics_dicts.values()]
+    local_strs_list = [sm['local']['local_strengths'] for sm in session_metrics_list]
+    local_se_list = [sm['local']['local_sample_efficiency'] for sm in session_metrics_list]
+    local_te_list = [sm['local']['local_training_efficiency'] for sm in session_metrics_list]
+    local_sta_list = [sm['local']['local_stabilities'] for sm in session_metrics_list]
     # calculate consistency
     con, local_cons = calc_consistency(local_strs_list)
 
