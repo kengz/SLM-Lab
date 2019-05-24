@@ -225,34 +225,41 @@ def calc_trial_metrics(session_metrics_list, prepath=None):
 
 # plotting methods
 
-def plot_session(session_spec, session_df, df_mode='eval'):
-    '''Plot the session graph, 2 panes: reward, loss & explore_var.'''
+def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
+    '''
+    Plot the session graphs:
+    - mean_returns, strengths, sample_efficiencies, training_efficiencies, stabilities (with error bar)
+    - additional plots from session_df: losses, exploration variable, entropy
+    '''
     meta_spec = session_spec['meta']
     prepath = meta_spec['prepath']
-    max_tick_unit = ps.get(session_spec, 'meta.max_tick_unit')
-    # TODO iterate for vector rewards later
-    color = viz.get_palette(1)[0]
-    fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True, print_grid=False)
-    session_df = session_df.fillna(0)  # for saving plot, cant have nan
-    fig_1 = viz.plot_line(session_df, 'reward', max_tick_unit, draw=False, trace_kwargs={'line': {'color': color}})
-    fig.add_trace(fig_1.data[0], 1, 1)
+    title = f'session graph: {session_spec["name"]} t{meta_spec["trial"]} s{meta_spec["session"]}'
 
-    fig_2 = viz.plot_line(session_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'showlegend': False, 'line': {'color': color}}, draw=False)
-    fig.add_trace(fig_2.data[0], 2, 1)
-    fig.add_trace(fig_2.data[1], 3, 1)
+    local_metrics = session_metrics['local']
+    name_time_pairs = [
+        ('mean_returns', 'frames'),
+        ('strengths', 'frames'),
+        ('sample_efficiencies', 'frames'),
+        ('training_efficiencies', 'opt_steps'),
+        ('stabilities', 'frames')
+    ]
+    for name, time in name_time_pairs:
+        fig = viz.plot_sr(
+            local_metrics[name], local_metrics[time], title, name, time)
+        viz.save_image(fig, f'{prepath}_{df_mode}_session_graph_{name}_vs_{time}.png')
 
-    fig.layout['xaxis1'].update(title=max_tick_unit, zerolinewidth=1)
-    fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
-    fig.layout['yaxis1'].update(domain=[0.55, 1])
-    fig.layout['yaxis2'].update(fig_2.layout['yaxis'])
-    fig.layout['yaxis2'].update(showgrid=False, domain=[0, 0.45])
-    fig.layout['yaxis3'].update(fig_2.layout['yaxis2'])
-    fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
-    fig.layout.update(ps.pick(fig_1.layout, ['legend']))
-    fig.layout.update(title=f'session graph: {session_spec["name"]} t{meta_spec["trial"]} s{meta_spec["session"]}', width=500, height=600)
-    viz.plot(fig)
-    viz.save_image(fig, f'{prepath}_{df_mode}_session_graph.png')
-    return fig
+    if df_mode == 'eval':
+        return
+    # training plots from session_df
+    name_time_pairs = [
+        ('loss', 'total_t'),
+        ('explore_var', 'total_t'),
+        ('entropy', 'total_t'),
+    ]
+    for name, time in name_time_pairs:
+        fig = viz.plot_sr(
+            session_df[name], session_df[time], title, name, time)
+        viz.save_image(fig, f'{prepath}_{df_mode}_session_graph_{name}_vs_{time}.png')
 
 
 def plot_trial(trial_spec, trial_metrics):
@@ -260,29 +267,27 @@ def plot_trial(trial_spec, trial_metrics):
     Plot the trial graphs:
     - mean_returns, strengths, sample_efficiencies, training_efficiencies, stabilities (with error bar)
     - consistencies (no error bar)
-    uses dual time axes: {frames, opt_steps}
     '''
     meta_spec = trial_spec['meta']
     prepath = meta_spec['prepath']
-    title = f'{trial_spec["name"]} trial {meta_spec["trial"]}, {meta_spec["max_session"]} sessions'
+    title = f'trial graph: {trial_spec["name"]} t{meta_spec["trial"]} {meta_spec["max_session"]} sessions'
 
-    local_trial_metrics = trial_metrics['local']
-    name_time_pairs = list(product(('mean_returns', 'strengths', 'stabilities', 'consistencies'), ('frames', 'opt_steps')))
-    name_time_pairs += [
+    local_metrics = trial_metrics['local']
+    name_time_pairs = [
+        ('mean_returns', 'frames'),
+        ('strengths', 'frames'),
         ('sample_efficiencies', 'frames'),
         ('training_efficiencies', 'opt_steps'),
+        ('stabilities', 'frames'),
+        ('consistencies', 'frames'),
     ]
     for name, time in name_time_pairs:
         if name == 'consistencies':
             fig = viz.plot_sr(
-                local_trial_metrics[name],
-                local_trial_metrics[time],
-                title, name, time)
+                local_metrics[name], local_metrics[time], title, name, time)
         else:
             fig = viz.plot_mean_sr(
-                local_trial_metrics[name],
-                local_trial_metrics[time],
-                title, name, time)
+                local_metrics[name], local_metrics[time], title, name, time)
         viz.save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
 
 
@@ -342,16 +347,10 @@ def _analyze_session(session, df_mode='eval'):
     session_df = getattr(body, f'{df_mode}_df').copy()
     if 'retro_analyze' not in os.environ['PREPATH']:
         util.write(session_df, f'{prepath}_{df_mode}_session_df.csv')
-
     # calculate metrics
     session_metrics = calc_session_metrics(session_df, body.env.name, prepath)
-    if df_mode == 'eval':
-        # add session scalar metrics to session
-        session.spec['metrics'] = session_metrics['scalar']
-        spec_util.save(session.spec, unit='session')
-
     # plot graph
-    session_fig = plot_session(session.spec, session_df, df_mode)
+    plot_session(session.spec, session_metrics, session_df, df_mode)
     logger.debug(f'Saved {df_mode} session data and graphs to {prepath}*')
     return session_metrics
 
@@ -369,7 +368,7 @@ def analyze_trial(trial, zip=True):
     # calculate metrics
     trial_metrics = calc_trial_metrics(trial.session_metrics_list, prepath)
     # plot graphs
-    trial_fig = plot_trial(trial.spec, trial_metrics)
+    plot_trial(trial.spec, trial_metrics)
     logger.debug(f'Saved trial data and graphs to {prepath}*')
     # zip files
     if util.get_lab_mode() == 'train' and zip:
