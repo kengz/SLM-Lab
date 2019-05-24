@@ -246,7 +246,7 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
     for name, time in name_time_pairs:
         fig = viz.plot_sr(
             local_metrics[name], local_metrics[time], title, name, time)
-        viz.save_image(fig, f'{prepath}_{df_mode}_session_graph_{name}_vs_{time}.png')
+        viz.save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
     if df_mode == 'eval':
         return
@@ -259,7 +259,7 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
     for name, time in name_time_pairs:
         fig = viz.plot_sr(
             session_df[name], session_df[time], title, name, time)
-        viz.save_image(fig, f'{prepath}_{df_mode}_session_graph_{name}_vs_{time}.png')
+        viz.save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
 
 def plot_trial(trial_spec, trial_metrics):
@@ -346,7 +346,7 @@ def _analyze_session(session, df_mode='eval'):
     body = session.agent.body
     session_df = getattr(body, f'{df_mode}_df').copy()
     if 'retro_analyze' not in os.environ['PREPATH']:
-        util.write(session_df, f'{prepath}_{df_mode}_session_df.csv')
+        util.write(session_df, f'{prepath}_session_df_{df_mode}.csv')
     # calculate metrics
     session_metrics = calc_session_metrics(session_df, body.env.name, prepath)
     # plot graph
