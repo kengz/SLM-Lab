@@ -10,6 +10,7 @@ import numpy as np
 import operator
 import os
 import pandas as pd
+import pickle
 import pydash as ps
 import regex as re
 import subprocess
@@ -461,6 +462,8 @@ def read(data_path, **kwargs):
     ext = get_file_ext(data_path)
     if ext == '.csv':
         data = read_as_df(data_path, **kwargs)
+    elif ext == '.pkl':
+        data = read_as_pickle(data_path, **kwargs)
     else:
         data = read_as_plain(data_path, **kwargs)
     return data
@@ -470,6 +473,13 @@ def read_as_df(data_path, **kwargs):
     '''Submethod to read data as DataFrame'''
     ext = get_file_ext(data_path)
     data = pd.read_csv(data_path, **kwargs)
+    return data
+
+
+def read_as_pickle(data, **kwargs):
+    '''Submethod to read data as pickle'''
+    with open(data_path, 'rb') as f:
+        data = pickle.load(f)
     return data
 
 
@@ -726,6 +736,8 @@ def write(data, data_path):
     ext = get_file_ext(data_path)
     if ext == '.csv':
         write_as_df(data, data_path)
+    elif ext == '.pkl':
+        write_as_pickle(data, data_path)
     else:
         write_as_plain(data, data_path)
     return data_path
@@ -736,6 +748,13 @@ def write_as_df(data, data_path):
     df = cast_df(data)
     ext = get_file_ext(data_path)
     df.to_csv(data_path, index=False)
+    return data_path
+
+
+def write_as_pickle(data, data_path):
+    '''Submethod to write data as pickle'''
+    with open(data_path, 'wb') as f:
+        pickle.dump(data, f)
     return data_path
 
 
