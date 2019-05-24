@@ -71,7 +71,7 @@ class Session:
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
             if env.clock.get() > 0:  # nothing to analyze at start
-                analysis.analyze_session(self, eager_analyze_trial=True)
+                analysis.analyze_session(self)
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_tick'''
@@ -160,7 +160,7 @@ class SpaceSession(Session):
 
     def run(self):
         self.run_all_episodes()
-        space_metrics_dict = analysis.analyze_session(self, tmp_space_session_sub=True)  # session fitness
+        space_metrics_dict = analysis.analyze_session(self)  # session fitness
         self.close()
         return space_metrics_dict
 
@@ -171,10 +171,11 @@ def init_run_session(*args):
     return session.run()
 
 
-def init_run_space_session(*args):
-    '''Runner for multiprocessing'''
-    session = SpaceSession(*args)
-    return session.run()
+def mp_run_session(spec, global_nets, mp_dict):
+    '''Wrap for multiprocessing with shared variable'''
+    session = Session(spec, global_nets)
+    metrics = session.run()
+    mp_dict[session.index] = metrics
 
 
 class Trial:
@@ -190,20 +191,17 @@ class Trial:
         util.set_logger(self.spec, logger, 'trial')
         spec_util.save(spec, unit='trial')
 
-        self.is_singleton = spec_util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
-        self.SessionClass = Session if self.is_singleton else SpaceSession
-        self.mp_runner = init_run_session if self.is_singleton else init_run_space_session
-
     def parallelize_sessions(self, global_nets=None):
+        mp_dict = mp.Manager().dict()
         workers = []
         for _s in range(self.spec['meta']['max_session']):
             spec_util.tick(self.spec, 'session')
-            w = mp.Process(target=self.mp_runner, args=(deepcopy(self.spec), global_nets))
+            w = mp.Process(target=mp_run_session, args=(deepcopy(self.spec), global_nets, mp_dict))
             w.start()
             workers.append(w)
         for w in workers:
             w.join()
-        session_metrics_list = retro_analysis.session_data_dict_for_dist(self.spec)
+        session_metrics_list = [mp_dict[idx] for idx in sorted(mp_dict.keys())]
         return session_metrics_list
 
     def run_sessions(self):
@@ -215,13 +213,13 @@ class Trial:
             session_metrics_list = []
             for _s in range(self.spec['meta']['max_session']):
                 spec_util.tick(self.spec, 'session')
-                session = self.SessionClass(deepcopy(self.spec))
+                session = Session(deepcopy(self.spec))
                 session_data = session.run()
                 session_metrics_list.append(session_data)
         return session_metrics_list
 
     def init_global_nets(self):
-        session = self.SessionClass(deepcopy(self.spec))
+        session = Session(deepcopy(self.spec))
         if self.is_singleton:
             session.env.close()  # safety
             global_nets = net_util.init_global_nets(session.agent.algorithm)

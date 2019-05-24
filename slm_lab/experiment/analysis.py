@@ -25,6 +25,8 @@ NUM_EVAL = 4
 logger = logger.get_logger(__name__)
 
 
+# methods to generate returns (total rewards)
+
 def gen_return(agent, env):
     '''Generate return for an agent and an env in eval mode'''
     state = env.reset()
@@ -46,6 +48,8 @@ def gen_avg_return(agent, env, num_eval=NUM_EVAL):
     agent.algorithm.update()
     return np.mean(returns)
 
+
+# metrics calculation methods
 
 def calc_strength(mean_returns, mean_rand_returns):
     '''
@@ -103,11 +107,12 @@ def calc_consistency(local_strs_list):
     return con, local_cons
 
 
-def calc_session_metrics(session_df, env_name):
+def calc_session_metrics(session_df, env_name, prepath=None):
     '''
     Calculate the session metrics: strength, efficiency, stability
     @param DataFrame:session_df Dataframe containing reward, total_t, opt_step
     @param str:env_name Name of the environment to get its random baseline
+    @param str:prepath Optional prepath to auto-save the output to
     @returns dict:metrics Consists of scalar metrics and series local metrics
     '''
     rand_bl = random_baseline.get_random_baseline(env_name)
@@ -145,13 +150,19 @@ def calc_session_metrics(session_df, env_name):
         'scalar': scalar,
         'local': local,
     }
+
+    # auto-save if prepath is given
+    if prepath is not None:
+        util.write(metrics, f'{prepath}_session_metrics.pkl')
+        util.write(scalar, f'{prepath}_session_metrics_scalar.json')
     return metrics
 
 
-def calc_trial_metrics(session_metrics_list):
+def calc_trial_metrics(session_metrics_list, prepath=None):
     '''
     Calculate the trial metrics: mean(strength), mean(efficiency), mean(stability), consistency
-    @param list:session_metrics_list The metrics_dicts collected from each session; format: {session_index: {'scalar': {...}, 'local': {...}}}
+    @param list:session_metrics_list The metrics collected from each session; format: {session_index: {'scalar': {...}, 'local': {...}}}
+    @param str:prepath Optional prepath to auto-save the output to
     @returns dict:metrics Consists of scalar metrics and series local metrics
     '''
     # calculate mean of session metrics
@@ -193,7 +204,188 @@ def calc_trial_metrics(session_metrics_list):
         'scalar': scalar,
         'local': local,
     }
+
+    # auto-save if prepath is given
+    if prepath is not None:
+        util.write(metrics, f'{prepath}_trial_metrics.pkl')
+        util.write(scalar, f'{prepath}_trial_metrics_scalar.json')
     return metrics
+
+
+# plotting methods
+
+def plot_session(session_spec, session_df, df_mode='eval'):
+    '''Plot the session graph, 2 panes: reward, loss & explore_var.'''
+    meta_spec = session_spec['meta']
+    prepath = meta_spec['prepath']
+    max_tick_unit = ps.get(session_spec, 'meta.max_tick_unit')
+    # TODO iterate for vector rewards later
+    color = viz.get_palette(1)[0]
+    fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True, print_grid=False)
+    session_df = session_df.fillna(0)  # for saving plot, cant have nan
+    fig_1 = viz.plot_line(session_df, 'reward', max_tick_unit, draw=False, trace_kwargs={'line': {'color': color}})
+    fig.add_trace(fig_1.data[0], 1, 1)
+
+    fig_2 = viz.plot_line(session_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'showlegend': False, 'line': {'color': color}}, draw=False)
+    fig.add_trace(fig_2.data[0], 2, 1)
+    fig.add_trace(fig_2.data[1], 3, 1)
+
+    fig.layout['xaxis1'].update(title=max_tick_unit, zerolinewidth=1)
+    fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
+    fig.layout['yaxis1'].update(domain=[0.55, 1])
+    fig.layout['yaxis2'].update(fig_2.layout['yaxis'])
+    fig.layout['yaxis2'].update(showgrid=False, domain=[0, 0.45])
+    fig.layout['yaxis3'].update(fig_2.layout['yaxis2'])
+    fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
+    fig.layout.update(ps.pick(fig_1.layout, ['legend']))
+    fig.layout.update(title=f'session graph: {session_spec["name"]} t{meta_spec["trial"]} s{meta_spec["session"]}', width=500, height=600)
+    viz.plot(fig)
+    viz.save_image(fig, f'{prepath}_{df_mode}_session_graph.png')
+    return fig
+
+
+def plot_trial(trial_spec, trial_metrics):
+    '''
+    Plot the trial graphs:
+    - mean_returns, strengths, sample_efficiencies, training_efficiencies, stabilities (with error bar)
+    - consistencies (no error bar)
+    uses dual time axes: {frames, opt_steps}
+    '''
+    meta_spec = trial_spec['meta']
+    prepath = meta_spec['prepath']
+    title = f'{trial_spec["name"]} trial {meta_spec["trial"]}, {meta_spec["max_session"]} sessions'
+
+    local_trial_metrics = trial_metrics['local']
+    name_time_pairs = list(product(('mean_returns', 'strengths', 'stabilities', 'consistencies'), ('frames', 'opt_steps')))
+    name_time_pairs += [
+        ('sample_efficiencies', 'frames'),
+        ('training_efficiencies', 'opt_steps'),
+    ]
+    for name, time in name_time_pairs:
+        if name == 'consistencies':
+            fig = viz.plot_sr(
+                local_trial_metrics[name],
+                local_trial_metrics[time],
+                title, name, time)
+        else:
+            fig = viz.plot_mean_sr(
+                local_trial_metrics[name],
+                local_trial_metrics[time],
+                title, name, time)
+        viz.save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
+
+
+def plot_experiment(experiment_spec, experiment_df):
+    '''
+    Plot the variable specs vs fitness vector of an experiment, where each point is a trial.
+    ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
+    '''
+    y_cols = ['fitness'] + FITNESS_COLS
+    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
+
+    fig = viz.tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
+    fitness_sr = experiment_df['fitness']
+    min_fitness = fitness_sr.values.min()
+    max_fitness = fitness_sr.values.max()
+    for row_idx, y in enumerate(y_cols):
+        for col_idx, x in enumerate(x_cols):
+            x_sr = experiment_df[x]
+            guard_cat_x = x_sr.astype(str) if x_sr.dtype == 'object' else x_sr
+            trace = viz.go.Scatter(
+                y=experiment_df[y], yaxis=f'y{row_idx+1}',
+                x=guard_cat_x, xaxis=f'x{col_idx+1}',
+                showlegend=False, mode='markers',
+                marker={
+                    'symbol': 'circle-open-dot', 'color': experiment_df['fitness'], 'opacity': 0.5,
+                    # dump first quarter of colorscale that is too bright
+                    'cmin': min_fitness - 0.50 * (max_fitness - min_fitness), 'cmax': max_fitness,
+                    'colorscale': 'YlGnBu', 'reversescale': True
+                },
+            )
+            fig.add_trace(trace, row_idx + 1, col_idx + 1)
+            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
+        fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
+    fig.layout.update(title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 300), height=700)
+    viz.plot(fig)
+    return fig
+
+
+def save_experiment_data(spec, experiment_df, experiment_fig):
+    '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
+    prepath = spec['meta']['prepath']
+    util.write(experiment_df, f'{prepath}_experiment_df.csv')
+    viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
+    logger.debug(f'Saved experiment data to {prepath}')
+    # zip for ease of upload
+    predir, _, _, _, _, _ = util.prepath_split(prepath)
+    shutil.make_archive(predir, 'zip', predir)
+    logger.info(f'All experiment data zipped to {predir}.zip')
+
+
+# interface analyze methods
+
+def _analyze_session(session, df_mode='eval'):
+    '''Helper method for analyze_session to run using eval_df and train_df'''
+    prepath = session.spec['meta']['prepath']
+    body = session.agent.body
+    session_df = getattr(body, f'{df_mode}_df').copy()
+    if 'retro_analyze' not in os.environ['PREPATH']:
+        util.write(session_df, f'{prepath}_{df_mode}_session_df.csv')
+
+    # calculate metrics
+    session_metrics = calc_session_metrics(session_df, body.env.name, prepath)
+    if df_mode == 'eval':
+        # add session scalar metrics to session
+        session.spec['metrics'] = session_metrics['scalar']
+        spec_util.save(session.spec, unit='session')
+
+    # plot graph
+    session_fig = plot_session(session.spec, session_df, df_mode)
+    logger.debug(f'Saved {df_mode} session data and graphs to {prepath}*')
+    return session_metrics
+
+
+def analyze_session(session):
+    '''Analyze session and save data, then return metrics'''
+    _analyze_session(session, df_mode='train')
+    session_metrics = _analyze_session(session, df_mode='eval')
+    return session_metrics
+
+
+def analyze_trial(trial, zip=True):
+    '''Analyze trial and save data, then return metrics'''
+    prepath = trial.spec['meta']['prepath']
+    # calculate metrics
+    trial_metrics = calc_trial_metrics(trial.session_metrics_list, prepath)
+    # plot graphs
+    trial_fig = plot_trial(trial.spec, trial_metrics)
+    logger.debug(f'Saved trial data and graphs to {prepath}*')
+    # zip files
+    if util.get_lab_mode() == 'train' and zip:
+        predir, _, _, _, _, _ = util.prepath_split(prepath)
+        shutil.make_archive(predir, 'zip', predir)
+        logger.info(f'All trial data zipped to {predir}.zip')
+    return trial_metrics
+
+
+def analyze_experiment(experiment):
+    '''
+    Gather experiment trial_data_dict as experiment_df, plot.
+    Search module must return best_spec and experiment_data with format {trial_index: exp_trial_data},
+    where trial_data = {**var_spec, **fitness_vec, fitness}.
+    This is then made into experiment_df.
+    @returns {DataFrame} experiment_df Of var_specs, fitness_vec, fitness for all trials.
+    '''
+    experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
+    cols = FITNESS_COLS + ['fitness']
+    config_cols = sorted(ps.difference(experiment_df.columns.tolist(), cols))
+    sorted_cols = config_cols + cols
+    experiment_df = experiment_df.reindex(sorted_cols, axis=1)
+    experiment_df.sort_values(by=['fitness'], ascending=False, inplace=True)
+    logger.info(f'Experiment data:\n{experiment_df}')
+    experiment_fig = plot_experiment(experiment.spec, experiment_df)
+    save_experiment_data(experiment.spec, experiment_df, experiment_fig)
+    return experiment_df
 
 
 '''
@@ -234,220 +426,3 @@ def all_solved(agent):
         (eval_reward_mas >= std_epi_rewards).all()
     )
     return solved
-
-
-'''
-Analysis interface methods
-'''
-
-
-def plot_session(session_spec, session_df):
-    '''Plot the session graph, 2 panes: reward, loss & explore_var.'''
-    max_tick_unit = ps.get(session_spec, 'meta.max_tick_unit')
-    # TODO iterate for vector rewards later
-    color = viz.get_palette(1)[0]
-    fig = viz.tools.make_subplots(rows=3, cols=1, shared_xaxes=True, print_grid=False)
-    session_df = session_df.fillna(0)  # for saving plot, cant have nan
-    fig_1 = viz.plot_line(session_df, 'reward', max_tick_unit, draw=False, trace_kwargs={'line': {'color': color}})
-    fig.add_trace(fig_1.data[0], 1, 1)
-
-    fig_2 = viz.plot_line(session_df, ['loss'], max_tick_unit, y2_col=['explore_var'], trace_kwargs={'showlegend': False, 'line': {'color': color}}, draw=False)
-    fig.add_trace(fig_2.data[0], 2, 1)
-    fig.add_trace(fig_2.data[1], 3, 1)
-
-    fig.layout['xaxis1'].update(title=max_tick_unit, zerolinewidth=1)
-    fig.layout['yaxis1'].update(fig_1.layout['yaxis'])
-    fig.layout['yaxis1'].update(domain=[0.55, 1])
-    fig.layout['yaxis2'].update(fig_2.layout['yaxis'])
-    fig.layout['yaxis2'].update(showgrid=False, domain=[0, 0.45])
-    fig.layout['yaxis3'].update(fig_2.layout['yaxis2'])
-    fig.layout['yaxis3'].update(overlaying='y2', anchor='x2')
-    fig.layout.update(ps.pick(fig_1.layout, ['legend']))
-    fig.layout.update(title=f'session graph: {session_spec["name"]} t{session_spec["meta"]["trial"]} s{session_spec["meta"]["session"]}', width=500, height=600)
-    viz.plot(fig)
-    return fig
-
-
-session_df0 = util.read('data/dqn_cartpole_2019_05_23_091653/dqn_cartpole_t0_s0_trainsession_df.csv')
-session_df1 = util.read('data/dqn_cartpole_2019_05_23_091653/dqn_cartpole_t0_s1_trainsession_df.csv')
-trial_spec = util.read('data/dqn_cartpole_2019_05_23_091653/dqn_cartpole_t0_spec.json')
-session_df1
-
-session_metrics0 = calc_session_metrics(session_df0, 'CartPole-v0')
-session_metrics1 = calc_session_metrics(session_df1, 'CartPole-v0')
-session_metrics_list = [session_metrics0, session_metrics1]
-
-trial_metrics = calc_trial_metrics(session_metrics_list)
-trial_metrics
-# need to carry frames sr
-mean_returns_list = trial_metrics['local']['mean_returns']
-time_sr = trial_metrics['local']['frames']
-max_tick_unit = 'frames'
-color = viz.get_palette(1)[0]
-
-
-
-def plot_trial(trial_spec, trial_metrics):
-    '''
-    Plot the trial graphs:
-    - {mean_returns, strengths, stabilities} x {frames, opt_steps} (with error bar)
-    - {sample_efficiencies, training_efficiencies} (with error bar)
-    - {consistencies} x {frames, opt_steps} (no error bar)
-    '''
-    local_trial_metrics = trial_metrics['local']
-    meta_spec = trial_spec['meta']
-    prepath = meta_spec['prepath']
-    title = f'{trial_spec["name"]} trial {meta_spec["trial"]}, {meta_spec["max_session"]} sessions'
-
-    name_time_pairs = list(product(('mean_returns', 'strengths', 'stabilities', 'consistencies'), ('frames', 'opt_steps')))
-    name_time_pairs += [
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
-    ]
-    for name, time in name_time_pairs:
-        if name == 'consistencies':
-            fig = viz.plot_sr(
-                local_trial_metrics[name],
-                local_trial_metrics[time],
-                title, name, time)
-        else:
-            fig = viz.plot_mean_sr(
-                local_trial_metrics[name],
-                local_trial_metrics[time],
-                title, name, time)
-        viz.save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
-
-
-plot_trial(trial_spec, trial_metrics)
-
-def plot_experiment(experiment_spec, experiment_df):
-    '''
-    Plot the variable specs vs fitness vector of an experiment, where each point is a trial.
-    ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
-    '''
-    y_cols = ['fitness'] + FITNESS_COLS
-    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
-
-    fig = viz.tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
-    fitness_sr = experiment_df['fitness']
-    min_fitness = fitness_sr.values.min()
-    max_fitness = fitness_sr.values.max()
-    for row_idx, y in enumerate(y_cols):
-        for col_idx, x in enumerate(x_cols):
-            x_sr = experiment_df[x]
-            guard_cat_x = x_sr.astype(str) if x_sr.dtype == 'object' else x_sr
-            trace = viz.go.Scatter(
-                y=experiment_df[y], yaxis=f'y{row_idx+1}',
-                x=guard_cat_x, xaxis=f'x{col_idx+1}',
-                showlegend=False, mode='markers',
-                marker={
-                    'symbol': 'circle-open-dot', 'color': experiment_df['fitness'], 'opacity': 0.5,
-                    # dump first quarter of colorscale that is too bright
-                    'cmin': min_fitness - 0.50 * (max_fitness - min_fitness), 'cmax': max_fitness,
-                    'colorscale': 'YlGnBu', 'reversescale': True
-                },
-            )
-            fig.add_trace(trace, row_idx + 1, col_idx + 1)
-            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
-        fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
-    fig.layout.update(title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 300), height=700)
-    viz.plot(fig)
-    return fig
-
-
-def save_session_data(spec, session_df, session_metrics, session_fig, df_mode='eval'):
-    '''Save the session data: session_df, session_metrics, session_graph.'''
-    prepath = spec['meta']['prepath']
-    prefix = 'train' if df_mode == 'train' else ''
-    if 'retro_analyze' not in os.environ['PREPATH']:
-        util.write(session_df, f'{prepath}_{prefix}session_df.csv')
-    if df_mode == 'eval':
-        # add session scalar metrics to session
-        spec['metrics'] = session_metrics['scalar']
-        spec_util.save(spec, unit='session')
-    viz.save_image(session_fig, f'{prepath}_{prefix}session_graph.png')
-    logger.debug(f'Saved {df_mode} session data and graphs to {prepath}*')
-
-
-def save_trial_data(spec, trial_df, trial_fitness_df, trial_fig, zip=True):
-    '''Save the trial data: spec, trial_fitness_df.'''
-    prepath = spec['meta']['prepath']
-    util.write(trial_df, f'{prepath}_trial_df.csv')
-    util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
-    viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
-    logger.debug(f'Saved trial data and graphs to {prepath}*')
-    if util.get_lab_mode() == 'train' and zip:
-        predir, _, _, _, _, _ = util.prepath_split(prepath)
-        shutil.make_archive(predir, 'zip', predir)
-        logger.info(f'All trial data zipped to {predir}.zip')
-
-
-def save_experiment_data(spec, experiment_df, experiment_fig):
-    '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
-    prepath = spec['meta']['prepath']
-    util.write(experiment_df, f'{prepath}_experiment_df.csv')
-    viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
-    logger.debug(f'Saved experiment data to {prepath}')
-    # zip for ease of upload
-    predir, _, _, _, _, _ = util.prepath_split(prepath)
-    shutil.make_archive(predir, 'zip', predir)
-    logger.info(f'All experiment data zipped to {predir}.zip')
-
-
-def _analyze_session(session, df_mode='eval'):
-    '''Helper method for analyze_session to run using eval_df and train_df'''
-    body = session.agent.body
-    session_df = getattr(body, f'{df_mode}_df').copy()
-    session_metrics = calc_session_metrics(session_df, body.env.name)
-    session_fig = plot_session(session.spec, session_df)
-    save_session_data(session.spec, session_df, session_metrics, session_fig, df_mode)
-    return session_metrics
-
-
-def analyze_session(session, eager_analyze_trial=False, tmp_space_session_sub=False):
-    '''Analyze session and save data, then return metrics'''
-    _analyze_session(session, df_mode='train')
-    session_metrics = _analyze_session(session, df_mode='eval')
-    # if eager_analyze_trial:
-    #     # for live trial graph, analyze trial after analyzing session, this only takes a second
-    #     from slm_lab.experiment import retro_analysis
-    #     prepath = util.get_prepath(session.spec, unit='session')
-    #     # use new ones to prevent side effects
-    #     spec = util.prepath_to_spec(prepath)
-    #     predir, _, _, _, _, _ = util.prepath_split(prepath)
-    #     retro_analysis.analyze_eval_trial(spec, predir)
-    return session_metrics
-
-
-def analyze_trial(trial, zip=True):
-    '''
-    Gather trial data, plot, and return trial df for high level agg.
-    @returns {DataFrame} trial_fitness_df Single-row df of trial fitness vector (avg over aeb, sessions), indexed with trial index.
-    '''
-    # WIP
-    trial_metrics = calc_trial_metrics(trial.session_metrics_list)
-    # trial_df = calc_trial_df(trial.spec)
-    # trial_fitness_df = calc_trial_fitness_df(trial)
-    trial_fig = plot_trial(trial.spec, trial_metrics['local'])
-    save_trial_data(trial.spec, trial_df, trial_fitness_df, trial_fig, zip)
-    return trial_fitness_df
-
-
-def analyze_experiment(experiment):
-    '''
-    Gather experiment trial_data_dict as experiment_df, plot.
-    Search module must return best_spec and experiment_data with format {trial_index: exp_trial_data},
-    where trial_data = {**var_spec, **fitness_vec, fitness}.
-    This is then made into experiment_df.
-    @returns {DataFrame} experiment_df Of var_specs, fitness_vec, fitness for all trials.
-    '''
-    experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
-    cols = FITNESS_COLS + ['fitness']
-    config_cols = sorted(ps.difference(experiment_df.columns.tolist(), cols))
-    sorted_cols = config_cols + cols
-    experiment_df = experiment_df.reindex(sorted_cols, axis=1)
-    experiment_df.sort_values(by=['fitness'], ascending=False, inplace=True)
-    logger.info(f'Experiment data:\n{experiment_df}')
-    experiment_fig = plot_experiment(experiment.spec, experiment_df)
-    save_experiment_data(experiment.spec, experiment_df, experiment_fig)
-    return experiment_df
