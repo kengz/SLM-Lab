@@ -46,14 +46,6 @@ def gen_avg_return(agent, env, num_eval=NUM_EVAL):
     return np.mean(returns)
 
 
-def calc_srs_mean_std(sr_list):
-    '''Given a list of series, calculate their mean and std'''
-    cat_df = pd.DataFrame(dict(enumerate(sr_list)))
-    mean_sr = cat_df.mean(axis=1)
-    std_sr = cat_df.std(axis=1)
-    return mean_sr, std_sr
-
-
 def calc_strength(mean_returns, mean_rand_returns):
     '''
     Calculate strength for metric
@@ -104,7 +96,7 @@ def calc_consistency(local_strs_list):
     @param Series:local_strs_list A list of multiple series of local strengths from different sessions
     @returns float:con, Series:local_cons
     '''
-    mean_local_strs, std_local_strs = calc_srs_mean_std(local_strs_list)
+    mean_local_strs, std_local_strs = util.calc_srs_mean_std(local_strs_list)
     local_cons = 1 - 2 * std_local_strs / mean_local_strs
     con = 1 - 2 * std_local_strs.sum() / mean_local_strs.sum()
     return con, local_cons
@@ -183,14 +175,14 @@ def calc_trial_metrics(session_metrics_list):
         'stability': mean_scalar['stability'],
         'consistency': con,
     }
-    # for plotting: mean and std of sessions' local metrics
+    # for plotting: gather all local series of sessions
     local = {
-        'local_strengths': calc_srs_mean_std(local_strs_list),
-        'local_sample_efficiencies': calc_srs_mean_std(local_se_list),
-        'local_training_efficiencies': calc_srs_mean_std(local_te_list),
-        'local_stabilities': calc_srs_mean_std(local_sta_list),
-        'local_consistencies': local_cons,  # this is not (mean, std)
-        'mean_returns': calc_srs_mean_std(mean_returns_list),
+        'local_strengths': local_strs_list,
+        'local_sample_efficiencies': local_se_list,
+        'local_training_efficiencies': local_te_list,
+        'local_stabilities': local_sta_list,
+        'local_consistencies': local_cons,  # this is a list
+        'mean_returns': mean_returns_list,
         'frames': session_metrics_list[0]['local']['frames'],
         'opt_steps': session_metrics_list[0]['local']['opt_steps'],
     }

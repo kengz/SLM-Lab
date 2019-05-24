@@ -46,6 +46,14 @@ def batch_get(arr, idxs):
         return arr[idxs]
 
 
+def calc_srs_mean_std(sr_list):
+    '''Given a list of series, calculate their mean and std'''
+    cat_df = pd.DataFrame(dict(enumerate(sr_list)))
+    mean_sr = cat_df.mean(axis=1)
+    std_sr = cat_df.std(axis=1)
+    return mean_sr, std_sr
+
+
 def calc_ts_diff(ts2, ts1):
     '''
     Calculate the time from tss ts1 to ts2
