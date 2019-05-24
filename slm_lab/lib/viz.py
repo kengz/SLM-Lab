@@ -48,7 +48,7 @@ def create_label(
 
 def create_layout(
         title, y_title, x_title, x_type=None,
-        width=500, height=350, layout_kwargs=None):
+        width=500, height=600, layout_kwargs=None):
     '''simplified method to generate Layout'''
     layout = go.Layout(
         title=title,
@@ -75,9 +75,23 @@ def lower_opacity(rgb, opacity):
     return rgb.replace('rgb(', 'rgba(').replace(')', f',{opacity})')
 
 
+def plot_sr(sr, time_sr, title, y_title, x_title):
+    '''Plot a series'''
+    x = time_sr.tolist()
+    color = get_palette(1)[0]
+    main_trace = go.Scatter(
+        x=x, y=sr, mode='lines', showlegend=False,
+        line={'color': color, 'width': 1},
+    )
+    data = [main_trace]
+    layout = create_layout(title=title, y_title=y_title, x_title=x_title)
+    fig = go.Figure(data, layout)
+    plot(fig)
+    return fig
 
-def create_mean_fig(sr_list, time_sr, y_title, x_title):
-    '''Create figure for a list of series by plotting the mean with an error bar'''
+
+def plot_mean_sr(sr_list, time_sr, title, y_title, x_title):
+    '''Plot a list of series using its mean, with error bar using std'''
     mean_sr, std_sr = util.calc_srs_mean_std(sr_list)
     max_sr = mean_sr + std_sr
     min_sr = mean_sr - std_sr
@@ -86,18 +100,16 @@ def create_mean_fig(sr_list, time_sr, y_title, x_title):
     x = time_sr.tolist()
     color = get_palette(1)[0]
     main_trace = go.Scatter(
-        x=x, y=mean_sr, mode='lines',
+        x=x, y=mean_sr, mode='lines', showlegend=False,
         line={'color': color, 'width': 1},
-        showlegend=False,
     )
     envelope_trace = go.Scatter(
-        x=x + x[::-1], y=max_y + min_y[::-1],
+        x=x + x[::-1], y=max_y + min_y[::-1], showlegend=False,
         line={'color': 'rgba(0, 0, 0, 0)'},
         fill='tozerox', fillcolor=lower_opacity(color, 0.2),
-        showlegend=False,
     )
     data = [main_trace, envelope_trace]
-    layout = create_layout(title=f'{y_title} vs. {x_title}', y_title=y_title, x_title=x_title)
+    layout = create_layout(title=title, y_title=y_title, x_title=x_title)
     fig = go.Figure(data, layout)
     return fig
 

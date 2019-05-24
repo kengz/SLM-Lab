@@ -2,6 +2,7 @@
 The analysis module
 Handles the analyses of the info and data space for experiment evaluation and design.
 '''
+from itertools import product
 from slm_lab.agent import AGENT_DATA_NAMES
 from slm_lab.env import ENV_DATA_NAMES
 from slm_lab.lib import logger, math_util, util, viz
@@ -132,10 +133,10 @@ def calc_session_metrics(session_df, env_name):
     }
     # all the session local metrics
     local = {
-        'local_strengths': local_strs,
-        'local_sample_efficiencies': local_sample_effs,
-        'local_training_efficiencies': local_train_effs,
-        'local_stabilities': local_stas,
+        'strengths': local_strs,
+        'sample_efficiencies': local_sample_effs,
+        'training_efficiencies': local_train_effs,
+        'stabilities': local_stas,
         'mean_returns': mean_returns,
         'frames': frames,
         'opt_steps': opt_steps,
@@ -157,11 +158,13 @@ def calc_trial_metrics(session_metrics_list):
     scalar_list = [sm['scalar'] for sm in session_metrics_list]
     mean_scalar = pd.DataFrame(scalar_list).mean().to_dict()
 
-    local_strs_list = [sm['local']['local_strengths'] for sm in session_metrics_list]
-    local_se_list = [sm['local']['local_sample_efficiencies'] for sm in session_metrics_list]
-    local_te_list = [sm['local']['local_training_efficiencies'] for sm in session_metrics_list]
-    local_sta_list = [sm['local']['local_stabilities'] for sm in session_metrics_list]
+    local_strs_list = [sm['local']['strengths'] for sm in session_metrics_list]
+    local_se_list = [sm['local']['sample_efficiencies'] for sm in session_metrics_list]
+    local_te_list = [sm['local']['training_efficiencies'] for sm in session_metrics_list]
+    local_sta_list = [sm['local']['stabilities'] for sm in session_metrics_list]
     mean_returns_list = [sm['local']['mean_returns'] for sm in session_metrics_list]
+    frames = session_metrics_list[0]['local']['frames']
+    opt_steps = session_metrics_list[0]['local']['opt_steps']
     # calculate consistency
     con, local_cons = calc_consistency(local_strs_list)
 
@@ -177,14 +180,14 @@ def calc_trial_metrics(session_metrics_list):
     }
     # for plotting: gather all local series of sessions
     local = {
-        'local_strengths': local_strs_list,
-        'local_sample_efficiencies': local_se_list,
-        'local_training_efficiencies': local_te_list,
-        'local_stabilities': local_sta_list,
-        'local_consistencies': local_cons,  # this is a list
+        'strengths': local_strs_list,
+        'sample_efficiencies': local_se_list,
+        'training_efficiencies': local_te_list,
+        'stabilities': local_sta_list,
+        'consistencies': local_cons,  # this is a list
         'mean_returns': mean_returns_list,
-        'frames': session_metrics_list[0]['local']['frames'],
-        'opt_steps': session_metrics_list[0]['local']['opt_steps'],
+        'frames': frames,
+        'opt_steps': opt_steps,
     }
     metrics = {
         'scalar': scalar,
@@ -238,32 +241,6 @@ Analysis interface methods
 '''
 
 
-def calc_trial_fitness_df(trial):
-    '''
-    Calculate the trial fitness df by aggregating from the collected session_data_dict (session_fitness_df's).
-    Adds a consistency dimension to fitness vector.
-    '''
-    trial_fitness_data = {}
-    try:
-        all_session_fitness_df = pd.concat(list(trial.session_data_dict.values()))
-    except ValueError as e:
-        logger.exception('Sessions failed, no data to analyze. Check stack trace above')
-    for aeb in util.get_df_aeb_list(all_session_fitness_df):
-        aeb_fitness_df = all_session_fitness_df.loc[:, aeb]
-        aeb_fitness_sr = aeb_fitness_df.mean()
-        consistency = calc_consistency(aeb_fitness_df)
-        aeb_fitness_sr = aeb_fitness_sr.append(pd.Series({'consistency': consistency}))
-        aeb_fitness_df = pd.DataFrame([aeb_fitness_sr], index=[trial.index])
-        aeb_fitness_df = aeb_fitness_df.reindex(FITNESS_COLS, axis=1)
-        trial_fitness_data[aeb] = aeb_fitness_df
-    # form multi_index df, then take mean across all bodies
-    trial_fitness_df = pd.concat(trial_fitness_data, axis=1)
-    mean_fitness_df = calc_mean_fitness(trial_fitness_df)
-    trial_fitness_df = mean_fitness_df
-    trial_fitness = calc_fitness(mean_fitness_df)
-    return trial_fitness_df
-
-
 def plot_session(session_spec, session_df):
     '''Plot the session graph, 2 panes: reward, loss & explore_var.'''
     max_tick_unit = ps.get(session_spec, 'meta.max_tick_unit')
@@ -291,95 +268,57 @@ def plot_session(session_spec, session_df):
     return fig
 
 
-def gather_aeb_rewards_df(aeb, session_datas, max_tick_unit):
-    '''Gather rewards from each session for a body into a df'''
-    aeb_session_rewards = {}
-    for s, session_data in session_datas.items():
-        aeb_df = session_data[aeb]
-        aeb_reward_sr = aeb_df['reward_ma']
-        aeb_reward_sr.index = aeb_df[max_tick_unit]
-        # guard for duplicate eval result
-        aeb_reward_sr = aeb_reward_sr[~aeb_reward_sr.index.duplicated()]
-        if util.in_eval_lab_modes():
-            # guard for eval appending possibly not ordered
-            aeb_reward_sr.sort_index(inplace=True)
-        aeb_session_rewards[s] = aeb_reward_sr
-    aeb_rewards_df = pd.DataFrame(aeb_session_rewards)
-    return aeb_rewards_df
+session_df0 = util.read('data/dqn_cartpole_2019_05_23_091653/dqn_cartpole_t0_s0_trainsession_df.csv')
+session_df1 = util.read('data/dqn_cartpole_2019_05_23_091653/dqn_cartpole_t0_s1_trainsession_df.csv')
+trial_spec = util.read('data/dqn_cartpole_2019_05_23_091653/dqn_cartpole_t0_spec.json')
+session_df1
+
+session_metrics0 = calc_session_metrics(session_df0, 'CartPole-v0')
+session_metrics1 = calc_session_metrics(session_df1, 'CartPole-v0')
+session_metrics_list = [session_metrics0, session_metrics1]
+
+trial_metrics = calc_trial_metrics(session_metrics_list)
+trial_metrics
+# need to carry frames sr
+mean_returns_list = trial_metrics['local']['mean_returns']
+time_sr = trial_metrics['local']['frames']
+max_tick_unit = 'frames'
+color = viz.get_palette(1)[0]
 
 
-def build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, max_tick_unit):
-    '''Build the aeb_reward envelope figure'''
-    mean_sr = aeb_rewards_df.mean(axis=1)
-    std_sr = aeb_rewards_df.std(axis=1).fillna(0)
-    max_sr = mean_sr + std_sr
-    min_sr = mean_sr - std_sr
-    x = aeb_rewards_df.index.tolist()
-    max_y = max_sr.tolist()
-    min_y = min_sr.tolist()
 
-    envelope_trace = viz.go.Scatter(
-        x=x + x[::-1],
-        y=max_y + min_y[::-1],
-        fill='tozerox',
-        fillcolor=viz.lower_opacity(color, 0.2),
-        line=dict(color='rgba(0, 0, 0, 0)'),
-        showlegend=False,
-        legendgroup=aeb_str,
-    )
-    df = pd.DataFrame({max_tick_unit: x, 'mean_reward': mean_sr})
-    fig = viz.plot_line(
-        df, ['mean_reward'], [max_tick_unit], legend_name=aeb_str, draw=False, trace_kwargs={'legendgroup': aeb_str, 'line': {'color': color}}
-    )
-    fig.add_traces([envelope_trace])
-    return fig
+def plot_trial(trial_spec, trial_metrics):
+    '''
+    Plot the trial graphs:
+    - {mean_returns, strengths, stabilities} x {frames, opt_steps} (with error bar)
+    - {sample_efficiencies, training_efficiencies} (with error bar)
+    - {consistencies} x {frames, opt_steps} (no error bar)
+    '''
+    local_trial_metrics = trial_metrics['local']
+    meta_spec = trial_spec['meta']
+    prepath = meta_spec['prepath']
+    title = f'{trial_spec["name"]} trial {meta_spec["trial"]}, {meta_spec["max_session"]} sessions'
 
-
-def calc_trial_df(trial_spec):
-    '''Calculate trial_df as mean of all session_df'''
-    from slm_lab.experiment import retro_analysis
-    prepath = util.get_prepath(trial_spec)
-    predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = retro_analysis.session_datas_from_file(predir, trial_spec)
-    aeb_transpose = {aeb: [] for aeb in session_datas[list(session_datas.keys())[0]]}
-    max_tick_unit = ps.get(trial_spec, 'meta.max_tick_unit')
-    for s, session_data in session_datas.items():
-        for aeb, aeb_df in session_data.items():
-            aeb_transpose[aeb].append(aeb_df.sort_values(by=[max_tick_unit]).set_index(max_tick_unit, drop=False))
-
-    trial_data = {}
-    for aeb, df_list in aeb_transpose.items():
-        trial_data[aeb] = pd.concat(df_list).groupby(level=0).mean().reset_index(drop=True)
-
-    trial_df = pd.concat(trial_data, axis=1)
-    return trial_df
-
-
-def plot_trial(trial_spec):
-    '''Plot the trial graph, 1 pane: mean and error envelope of reward graphs from all sessions. Each aeb_df gets its own color'''
-    from slm_lab.experiment import retro_analysis
-    prepath = util.get_prepath(trial_spec)
-    predir, _, _, _, _, _ = util.prepath_split(prepath)
-    session_datas = retro_analysis.session_datas_from_file(predir, trial_spec)
-    rand_session_data = session_datas[list(session_datas.keys())[0]]
-    max_tick_unit = ps.get(trial_spec, 'meta.max_tick_unit')
-    aeb_count = len(rand_session_data)
-    palette = viz.get_palette(aeb_count)
-    fig = None
-    for idx, (a, e, b) in enumerate(rand_session_data):
-        aeb = (a, e, b)
-        aeb_str = f'{a}{e}{b}'
-        color = palette[idx]
-        aeb_rewards_df = gather_aeb_rewards_df(aeb, session_datas, max_tick_unit)
-        aeb_fig = build_aeb_reward_fig(aeb_rewards_df, aeb_str, color, max_tick_unit)
-        if fig is None:
-            fig = aeb_fig
+    name_time_pairs = list(product(('mean_returns', 'strengths', 'stabilities', 'consistencies'), ('frames', 'opt_steps')))
+    name_time_pairs += [
+        ('sample_efficiencies', 'frames'),
+        ('training_efficiencies', 'opt_steps'),
+    ]
+    for name, time in name_time_pairs:
+        if name == 'consistencies':
+            fig = viz.plot_sr(
+                local_trial_metrics[name],
+                local_trial_metrics[time],
+                title, name, time)
         else:
-            fig.add_traces(aeb_fig.data)
-    fig.layout.update(title=f'trial graph: {trial_spec["name"]} t{trial_spec["meta"]["trial"]}, {len(session_datas)} sessions', width=500, height=600)
-    viz.plot(fig)
-    return fig
+            fig = viz.plot_mean_sr(
+                local_trial_metrics[name],
+                local_trial_metrics[time],
+                title, name, time)
+        viz.save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
 
+
+plot_trial(trial_spec, trial_metrics)
 
 def plot_experiment(experiment_spec, experiment_df):
     '''
@@ -469,14 +408,14 @@ def analyze_session(session, eager_analyze_trial=False, tmp_space_session_sub=Fa
     '''Analyze session and save data, then return metrics'''
     _analyze_session(session, df_mode='train')
     session_metrics = _analyze_session(session, df_mode='eval')
-    if eager_analyze_trial:
-        # for live trial graph, analyze trial after analyzing session, this only takes a second
-        from slm_lab.experiment import retro_analysis
-        prepath = util.get_prepath(session.spec, unit='session')
-        # use new ones to prevent side effects
-        spec = util.prepath_to_spec(prepath)
-        predir, _, _, _, _, _ = util.prepath_split(prepath)
-        retro_analysis.analyze_eval_trial(spec, predir)
+    # if eager_analyze_trial:
+    #     # for live trial graph, analyze trial after analyzing session, this only takes a second
+    #     from slm_lab.experiment import retro_analysis
+    #     prepath = util.get_prepath(session.spec, unit='session')
+    #     # use new ones to prevent side effects
+    #     spec = util.prepath_to_spec(prepath)
+    #     predir, _, _, _, _, _ = util.prepath_split(prepath)
+    #     retro_analysis.analyze_eval_trial(spec, predir)
     return session_metrics
 
 
@@ -485,9 +424,11 @@ def analyze_trial(trial, zip=True):
     Gather trial data, plot, and return trial df for high level agg.
     @returns {DataFrame} trial_fitness_df Single-row df of trial fitness vector (avg over aeb, sessions), indexed with trial index.
     '''
-    trial_df = calc_trial_df(trial.spec)
-    trial_fitness_df = calc_trial_fitness_df(trial)
-    trial_fig = plot_trial(trial.spec)
+    # WIP
+    trial_metrics = calc_trial_metrics(trial.session_metrics_list)
+    # trial_df = calc_trial_df(trial.spec)
+    # trial_fitness_df = calc_trial_fitness_df(trial)
+    trial_fig = plot_trial(trial.spec, trial_metrics['local'])
     save_trial_data(trial.spec, trial_df, trial_fitness_df, trial_fig, zip)
     return trial_fitness_df
 
