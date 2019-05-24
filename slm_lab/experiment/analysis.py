@@ -3,9 +3,7 @@ The analysis module
 Handles the analyses of the info and data space for experiment evaluation and design.
 '''
 from itertools import product
-from slm_lab.agent import AGENT_DATA_NAMES
-from slm_lab.env import ENV_DATA_NAMES
-from slm_lab.lib import logger, math_util, util, viz
+from slm_lab.lib import logger, util, viz
 from slm_lab.spec import random_baseline, spec_util
 import numpy as np
 import os
@@ -14,11 +12,6 @@ import pydash as ps
 import regex as re
 import shutil
 
-FITNESS_COLS = ['strength', 'speed', 'stability', 'consistency']
-# TODO improve to make it work with any reward mean
-FITNESS_STD = util.read('slm_lab/spec/_fitness_std.json')
-NOISE_WINDOW = 0.05
-NORM_ORDER = 1  # use L1 norm in fitness vector norm
 MA_WINDOW = 100
 NUM_EVAL = 4
 
@@ -47,6 +40,24 @@ def gen_avg_return(agent, env, num_eval=NUM_EVAL):
     # exit eval context, restore variables simply by updating
     agent.algorithm.update()
     return np.mean(returns)
+
+
+def get_reward_mas(agent, name='eval_reward_ma'):
+    '''Return array of the named reward_ma for all of an agent's bodies.'''
+    bodies = getattr(agent, 'nanflat_body_a', [agent.body])
+    return np.array([getattr(body, name) for body in bodies], dtype=np.float16)
+
+
+def new_best(agent):
+    '''Check if algorithm is now the new best result, then update the new best'''
+    best_reward_mas = get_reward_mas(agent, 'best_reward_ma')
+    eval_reward_mas = get_reward_mas(agent, 'eval_reward_ma')
+    best = (eval_reward_mas >= best_reward_mas).all()
+    if best:
+        bodies = getattr(agent, 'nanflat_body_a', [agent.body])
+        for body in bodies:
+            body.best_reward_ma = body.eval_reward_ma
+    return best
 
 
 # metrics calculation methods
@@ -386,43 +397,3 @@ def analyze_experiment(experiment):
     experiment_fig = plot_experiment(experiment.spec, experiment_df)
     save_experiment_data(experiment.spec, experiment_df, experiment_fig)
     return experiment_df
-
-
-'''
-Checkpoint and early termination analysis
-'''
-
-
-def get_reward_mas(agent, name='eval_reward_ma'):
-    '''Return array of the named reward_ma for all of an agent's bodies.'''
-    bodies = getattr(agent, 'nanflat_body_a', [agent.body])
-    return np.array([getattr(body, name) for body in bodies], dtype=np.float16)
-
-
-def get_std_epi_rewards(agent):
-    '''Return array of std_epi_reward for each of the environments.'''
-    bodies = getattr(agent, 'nanflat_body_a', [agent.body])
-    return np.array([ps.get(FITNESS_STD, f'{body.env.name}.std_epi_reward') for body in bodies], dtype=np.float16)
-
-
-def new_best(agent):
-    '''Check if algorithm is now the new best result, then update the new best'''
-    best_reward_mas = get_reward_mas(agent, 'best_reward_ma')
-    eval_reward_mas = get_reward_mas(agent, 'eval_reward_ma')
-    best = (eval_reward_mas >= best_reward_mas).all()
-    if best:
-        bodies = getattr(agent, 'nanflat_body_a', [agent.body])
-        for body in bodies:
-            body.best_reward_ma = body.eval_reward_ma
-    return best
-
-
-def all_solved(agent):
-    '''Check if envs have all been solved using std from slm_lab/spec/_fitness_std.json'''
-    eval_reward_mas = get_reward_mas(agent, 'eval_reward_ma')
-    std_epi_rewards = get_std_epi_rewards(agent)
-    solved = (
-        not np.isnan(std_epi_rewards).any() and
-        (eval_reward_mas >= std_epi_rewards).all()
-    )
-    return solved
