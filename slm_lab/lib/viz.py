@@ -126,3 +126,71 @@ def save_image(figure, filepath):
         pio.write_image(figure, filepath)
     except Exception as e:
         orca_warn_once(e)
+
+
+# analysis plot methods
+
+def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
+    '''
+    Plot the session graphs:
+    - mean_returns, strengths, sample_efficiencies, training_efficiencies, stabilities (with error bar)
+    - additional plots from session_df: losses, exploration variable, entropy
+    '''
+    meta_spec = session_spec['meta']
+    prepath = meta_spec['prepath']
+    title = f'session graph: {session_spec["name"]} t{meta_spec["trial"]} s{meta_spec["session"]}'
+
+    local_metrics = session_metrics['local']
+    name_time_pairs = [
+        ('mean_returns', 'frames'),
+        ('strengths', 'frames'),
+        ('sample_efficiencies', 'frames'),
+        ('training_efficiencies', 'opt_steps'),
+        ('stabilities', 'frames')
+    ]
+    for name, time in name_time_pairs:
+        fig = plot_sr(
+            local_metrics[name], local_metrics[time], title, name, time)
+        save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
+
+    if df_mode == 'eval':
+        return
+    # training plots from session_df
+    name_time_pairs = [
+        ('loss', 'total_t'),
+        ('explore_var', 'total_t'),
+        ('entropy', 'total_t'),
+    ]
+    for name, time in name_time_pairs:
+        fig = plot_sr(
+            session_df[name], session_df[time], title, name, time)
+        save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
+
+
+def plot_trial(trial_spec, trial_metrics):
+    '''
+    Plot the trial graphs:
+    - mean_returns, strengths, sample_efficiencies, training_efficiencies, stabilities (with error bar)
+    - consistencies (no error bar)
+    '''
+    meta_spec = trial_spec['meta']
+    prepath = meta_spec['prepath']
+    title = f'trial graph: {trial_spec["name"]} t{meta_spec["trial"]} {meta_spec["max_session"]} sessions'
+
+    local_metrics = trial_metrics['local']
+    name_time_pairs = [
+        ('mean_returns', 'frames'),
+        ('strengths', 'frames'),
+        ('sample_efficiencies', 'frames'),
+        ('training_efficiencies', 'opt_steps'),
+        ('stabilities', 'frames'),
+        ('consistencies', 'frames'),
+    ]
+    for name, time in name_time_pairs:
+        if name == 'consistencies':
+            fig = plot_sr(
+                local_metrics[name], local_metrics[time], title, name, time)
+        else:
+            fig = plot_mean_sr(
+                local_metrics[name], local_metrics[time], title, name, time)
+        save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')

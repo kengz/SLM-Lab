@@ -2,14 +2,12 @@
 The analysis module
 Handles the analyses of the info and data space for experiment evaluation and design.
 '''
-from itertools import product
 from slm_lab.lib import logger, util, viz
-from slm_lab.spec import random_baseline, spec_util
+from slm_lab.spec import random_baseline
 import numpy as np
 import os
 import pandas as pd
 import pydash as ps
-import regex as re
 import shutil
 
 MA_WINDOW = 100
@@ -225,72 +223,6 @@ def calc_trial_metrics(session_metrics_list, prepath=None):
 
 # plotting methods
 
-def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
-    '''
-    Plot the session graphs:
-    - mean_returns, strengths, sample_efficiencies, training_efficiencies, stabilities (with error bar)
-    - additional plots from session_df: losses, exploration variable, entropy
-    '''
-    meta_spec = session_spec['meta']
-    prepath = meta_spec['prepath']
-    title = f'session graph: {session_spec["name"]} t{meta_spec["trial"]} s{meta_spec["session"]}'
-
-    local_metrics = session_metrics['local']
-    name_time_pairs = [
-        ('mean_returns', 'frames'),
-        ('strengths', 'frames'),
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
-        ('stabilities', 'frames')
-    ]
-    for name, time in name_time_pairs:
-        fig = viz.plot_sr(
-            local_metrics[name], local_metrics[time], title, name, time)
-        viz.save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
-
-    if df_mode == 'eval':
-        return
-    # training plots from session_df
-    name_time_pairs = [
-        ('loss', 'total_t'),
-        ('explore_var', 'total_t'),
-        ('entropy', 'total_t'),
-    ]
-    for name, time in name_time_pairs:
-        fig = viz.plot_sr(
-            session_df[name], session_df[time], title, name, time)
-        viz.save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
-
-
-def plot_trial(trial_spec, trial_metrics):
-    '''
-    Plot the trial graphs:
-    - mean_returns, strengths, sample_efficiencies, training_efficiencies, stabilities (with error bar)
-    - consistencies (no error bar)
-    '''
-    meta_spec = trial_spec['meta']
-    prepath = meta_spec['prepath']
-    title = f'trial graph: {trial_spec["name"]} t{meta_spec["trial"]} {meta_spec["max_session"]} sessions'
-
-    local_metrics = trial_metrics['local']
-    name_time_pairs = [
-        ('mean_returns', 'frames'),
-        ('strengths', 'frames'),
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
-        ('stabilities', 'frames'),
-        ('consistencies', 'frames'),
-    ]
-    for name, time in name_time_pairs:
-        if name == 'consistencies':
-            fig = viz.plot_sr(
-                local_metrics[name], local_metrics[time], title, name, time)
-        else:
-            fig = viz.plot_mean_sr(
-                local_metrics[name], local_metrics[time], title, name, time)
-        viz.save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
-
-
 def plot_experiment(experiment_spec, experiment_df):
     '''
     Plot the variable specs vs fitness vector of an experiment, where each point is a trial.
@@ -350,7 +282,7 @@ def _analyze_session(session, df_mode='eval'):
     # calculate metrics
     session_metrics = calc_session_metrics(session_df, body.env.name, prepath)
     # plot graph
-    plot_session(session.spec, session_metrics, session_df, df_mode)
+    viz.plot_session(session.spec, session_metrics, session_df, df_mode)
     logger.debug(f'Saved {df_mode} session data and graphs to {prepath}*')
     return session_metrics
 
@@ -368,7 +300,7 @@ def analyze_trial(trial, zip=True):
     # calculate metrics
     trial_metrics = calc_trial_metrics(trial.session_metrics_list, prepath)
     # plot graphs
-    plot_trial(trial.spec, trial_metrics)
+    viz.plot_trial(trial.spec, trial_metrics)
     logger.debug(f'Saved trial data and graphs to {prepath}*')
     # zip files
     if util.get_lab_mode() == 'train' and zip:
