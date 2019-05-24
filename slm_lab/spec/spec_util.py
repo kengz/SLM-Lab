@@ -128,12 +128,13 @@ def extend_meta_spec(spec):
         'trial': -1,
         'session': -1,
         'cuda_offset': int(os.environ.get('CUDA_OFFSET', 0)),
+        'experiment_ts': util.get_ts(),
+        'prepath': None,
         # ckpt extends prepath, e.g. ckpt_str = ckpt-epi10-totalt1000
         'ckpt': None,
-        'experiment_ts': util.get_ts(),
-        'eval_model_prepath': None,
         'git_sha': util.get_git_sha(),
         'random_seed': None,
+        'eval_model_prepath': None,
     }
     spec['meta'].update(extended_meta_spec)
     return spec
@@ -298,10 +299,18 @@ def tick(spec, unit):
         meta_spec['trial'] = -1
         meta_spec['session'] = -1
     elif unit == 'trial':
+        if meta_spec['experiment'] == -1:
+            meta_spec['experiment'] += 1
         meta_spec['trial'] += 1
         meta_spec['session'] = -1
     elif unit == 'session':
+        if meta_spec['experiment'] == -1:
+            meta_spec['experiment'] += 1
+        if meta_spec['trial'] == -1:
+            meta_spec['trial'] += 1
         meta_spec['session'] += 1
     else:
         raise ValueError(f'Unrecognized lab unit to tick: {unit}')
-    return meta_spec
+    # set prepath since it is determined at this point
+    meta_spec['prepath'] = util.get_prepath(spec, unit)
+    return spec

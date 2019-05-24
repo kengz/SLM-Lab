@@ -418,7 +418,7 @@ def plot_experiment(experiment_spec, experiment_df):
 
 def save_session_data(spec, session_df, session_metrics, session_fig, df_mode='eval'):
     '''Save the session data: session_df, session_metrics, session_graph.'''
-    prepath = util.get_prepath(spec, unit='session')
+    prepath = spec['meta']['prepath']
     prefix = 'train' if df_mode == 'train' else ''
     if 'retro_analyze' not in os.environ['PREPATH']:
         util.write(session_df, f'{prepath}_{prefix}session_df.csv')
@@ -432,7 +432,7 @@ def save_session_data(spec, session_df, session_metrics, session_fig, df_mode='e
 
 def save_trial_data(spec, trial_df, trial_fitness_df, trial_fig, zip=True):
     '''Save the trial data: spec, trial_fitness_df.'''
-    prepath = util.get_prepath(spec, unit='trial')
+    prepath = spec['meta']['prepath']
     util.write(trial_df, f'{prepath}_trial_df.csv')
     util.write(trial_fitness_df, f'{prepath}_trial_fitness_df.csv')
     viz.save_image(trial_fig, f'{prepath}_trial_graph.png')
@@ -445,7 +445,7 @@ def save_trial_data(spec, trial_df, trial_fitness_df, trial_fig, zip=True):
 
 def save_experiment_data(spec, experiment_df, experiment_fig):
     '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
-    prepath = util.get_prepath(spec, unit='experiment')
+    prepath = spec['meta']['prepath']
     util.write(experiment_df, f'{prepath}_experiment_df.csv')
     viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
     logger.debug(f'Saved experiment data to {prepath}')

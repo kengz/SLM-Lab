@@ -138,7 +138,7 @@ class RaySearch(ABC):
         Remember to update trial_index in config here, since run_trial() on ray.remote is not thread-safe.
         '''
         # use self.config_space to build config
-        config['trial_index'] = spec_util.tick(self.experiment.spec, 'trial')['trial']
+        config['trial_index'] = spec_util.tick(self.experiment.spec, 'trial')['meta']['trial']
         raise NotImplementedError
         return config
 
@@ -163,7 +163,7 @@ class RandomSearch(RaySearch):
     def generate_config(self):
         configs = []  # to accommodate for grid_search
         for resolved_vars, config in ray.tune.suggest.variant_generator._generate_variants(self.config_space):
-            config['trial_index'] = spec_util.tick(self.experiment.spec, 'trial')['trial']
+            config['trial_index'] = spec_util.tick(self.experiment.spec, 'trial')['meta']['trial']
             configs.append(config)
         return configs
 
@@ -268,7 +268,7 @@ class EvolutionarySearch(RaySearch):
                 config = dict(individual.items())
                 hash_str = util.to_json(config, indent=0)
                 if hash_str not in config_hash:
-                    trial_index = spec_util.tick(self.experiment.spec, 'trial')['trial']
+                    trial_index = spec_util.tick(self.experiment.spec, 'trial')['meta']['trial']
                     config_hash[hash_str] = config['trial_index'] = trial_index
                     ray_id = run_trial.remote(self.experiment, config)
                     ray_id_to_config[ray_id] = config

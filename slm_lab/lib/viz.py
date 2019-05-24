@@ -76,7 +76,7 @@ def lower_opacity(rgb, opacity):
 
 
 
-def create_mean_fig(sr_list, time_sr, y_title, x_title, color):
+def create_mean_fig(sr_list, time_sr, y_title, x_title):
     '''Create figure for a list of series by plotting the mean with an error bar'''
     mean_sr, std_sr = util.calc_srs_mean_std(sr_list)
     max_sr = mean_sr + std_sr
@@ -84,6 +84,7 @@ def create_mean_fig(sr_list, time_sr, y_title, x_title, color):
     max_y = max_sr.tolist()
     min_y = min_sr.tolist()
     x = time_sr.tolist()
+    color = get_palette(1)[0]
     main_trace = go.Scatter(
         x=x, y=mean_sr, mode='lines',
         line={'color': color, 'width': 1},
