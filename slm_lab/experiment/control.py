@@ -47,7 +47,7 @@ class Session:
         if mode == 'eval' and util.in_eval_lab_modes():  # avoid double-eval: eval-ckpt in eval mode
             return False
         frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
-        if mode == 'log' and tick == 0:  # avoid log ckpt at init
+        if tick == 0:  # avoid ckpt at init
             to_ckpt = False
         elif frequency is None:  # default episodic
             to_ckpt = env.done
@@ -70,8 +70,7 @@ class Session:
             agent.body.log_summary('eval')
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            if env.clock.get() > 0:  # nothing to analyze at start
-                analysis.analyze_session(self)
+            analysis.analyze_session(self)
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_tick'''
@@ -163,12 +162,6 @@ class SpaceSession(Session):
         space_metrics_dict = analysis.analyze_session(self)  # session fitness
         self.close()
         return space_metrics_dict
-
-
-def init_run_session(*args):
-    '''Runner for multiprocessing'''
-    session = Session(*args)
-    return session.run()
 
 
 def mp_run_session(spec, global_nets, mp_dict):
