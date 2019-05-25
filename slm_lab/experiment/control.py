@@ -44,7 +44,7 @@ class Session:
         if mode == 'eval' and util.in_eval_lab_modes():  # avoid double-eval: eval-ckpt in eval mode
             return False
         frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
-        if clock.get('frame') == 0 or clock.get('opt_step'):  # avoid ckpt at init
+        if clock.get('frame') == 0 or clock.get('opt_step') == 0:  # avoid ckpt at init
             to_ckpt = False
         elif frequency is None:  # default episodic
             to_ckpt = env.done

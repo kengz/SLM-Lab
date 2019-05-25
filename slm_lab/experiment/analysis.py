@@ -245,7 +245,7 @@ def _analyze_session(session, df_mode='eval'):
         util.write(session_df, f'{prepath}_session_df_{df_mode}.csv')
     # calculate metrics
     session_metrics = calc_session_metrics(session_df, body.env.name, prepath, df_mode)
-    body.log_metrics(session_metrics['scalar'])
+    body.log_metrics(session_metrics['scalar'], df_mode)
     # plot graph
     viz.plot_session(session.spec, session_metrics, session_df, df_mode)
     logger.debug(f'Saved {df_mode} session data and graphs to {prepath}*')
