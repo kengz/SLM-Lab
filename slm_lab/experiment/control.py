@@ -206,8 +206,8 @@ class Trial:
             for _s in range(self.spec['meta']['max_session']):
                 spec_util.tick(self.spec, 'session')
                 session = Session(deepcopy(self.spec))
-                session_data = session.run()
-                session_metrics_list.append(session_data)
+                session_metrics = session.run()
+                session_metrics_list.append(session_metrics)
         return session_metrics_list
 
     def init_global_nets(self):
@@ -267,5 +267,6 @@ class Experiment:
 
     def run(self):
         self.trial_data_dict = self.search.run()
-        analysis.analyze_experiment(self)
+        experiment_df = analysis.analyze_experiment(self)
         self.close()
+        return experiment_df

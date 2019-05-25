@@ -12,8 +12,8 @@ def test_session(test_spec):
     spec_util.tick(test_spec, 'session')
     spec_util.save(test_spec, unit='trial')
     session = Session(test_spec)
-    session_data = session.run()
-    assert isinstance(session_data, pd.DataFrame)
+    session_metrics = session.run()
+    assert isinstance(session_metrics, dict)
 
 
 def test_session_total_t(test_spec):
@@ -26,16 +26,16 @@ def test_session_total_t(test_spec):
     spec['meta']['max_tick_unit'] = 'total_t'
     session = Session(spec)
     assert session.env.clock.max_tick_unit == 'total_t'
-    session_data = session.run()
-    assert isinstance(session_data, pd.DataFrame)
+    session_metrics = session.run()
+    assert isinstance(session_metrics, dict)
 
 
 def test_trial(test_spec):
     spec_util.tick(test_spec, 'trial')
     spec_util.save(test_spec, unit='trial')
     trial = Trial(test_spec)
-    trial_data = trial.run()
-    assert isinstance(trial_data, pd.DataFrame)
+    trial_metrics = trial.run()
+    assert isinstance(trial_metrics, dict)
 
 
 def test_trial_demo():
@@ -43,8 +43,8 @@ def test_trial_demo():
     spec_util.save(spec, unit='experiment')
     spec = spec_util.override_test_spec(spec)
     spec_util.tick(spec, 'trial')
-    trial_data = Trial(spec).run()
-    assert isinstance(trial_data, pd.DataFrame)
+    trial_metrics = Trial(spec).run()
+    assert isinstance(trial_metrics, dict)
 
 
 @pytest.mark.skip(reason="Unstable")
@@ -68,5 +68,5 @@ def test_experiment():
     spec_util.save(spec, unit='experiment')
     spec = spec_util.override_test_spec(spec)
     spec_util.tick(spec, 'experiment')
-    experiment_data = Experiment(spec).run()
-    assert isinstance(experiment_data, pd.DataFrame)
+    experiment_df = Experiment(spec).run()
+    assert isinstance(experiment_df, pd.DataFrame)
