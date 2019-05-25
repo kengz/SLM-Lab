@@ -46,6 +46,7 @@ class Random(Algorithm):
     @lab_api
     def train(self):
         self.sample()
+        self.body.env.clock.tick('opt_step')  # to simulate metrics calc
         loss = np.nan
         return loss
 

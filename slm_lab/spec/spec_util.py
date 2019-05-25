@@ -230,13 +230,15 @@ def override_eval_spec(spec):
 
 def override_test_spec(spec):
     for agent_spec in spec['agent']:
-        agent_spec['algorithm']['training_frequency'] = 8
-        agent_spec['algorithm']['training_start_step'] = 8
+        # onpolicy freq is episodic
+        freq = 1 if agent_spec['memory']['name'] == 'OnPolicyReplay' else 8
+        agent_spec['algorithm']['training_frequency'] = freq
+        agent_spec['algorithm']['training_start_step'] = 1
         agent_spec['algorithm']['training_epoch'] = 1
         agent_spec['algorithm']['training_batch_epoch'] = 1
     for env_spec in spec['env']:
-        env_spec['max_frame'] = 60
-        env_spec['max_t'] = 16
+        env_spec['max_frame'] = 40
+        env_spec['max_t'] = 12
     spec['meta']['log_frequency'] = 10
     spec['meta']['eval_frequency'] = 10
     spec['meta']['max_session'] = 1
