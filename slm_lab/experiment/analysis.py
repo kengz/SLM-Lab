@@ -243,6 +243,7 @@ def _analyze_session(session, df_mode='eval'):
     prepath = session.spec['meta']['prepath']
     body = session.agent.body
     session_df = getattr(body, f'{df_mode}_df').copy()
+    assert len(session_df) > 1, f'Need more than 2 datapoints to calculate metrics'
     if 'retro_analyze' not in os.environ['PREPATH']:
         util.write(session_df, f'{prepath}_session_df_{df_mode}.csv')
     # calculate metrics

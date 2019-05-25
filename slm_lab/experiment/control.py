@@ -68,7 +68,7 @@ class Session:
             agent.body.log_summary('eval')
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            if len(agent.body.eval_df) > 2:  # need > 2 rows to calculate stability
+            if len(agent.body.eval_df) > 1 and len(agent.body.train_df) > 1:  # need > 1 row to calculate stability
                 analysis.analyze_session(self)
 
     def run_rl(self):

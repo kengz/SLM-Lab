@@ -16,20 +16,6 @@ def test_session(test_spec):
     assert isinstance(session_metrics, dict)
 
 
-def test_session_total_t(test_spec):
-    spec_util.tick(test_spec, 'trial')
-    spec_util.tick(test_spec, 'session')
-    spec_util.save(test_spec, unit='trial')
-    spec = deepcopy(test_spec)
-    env_spec = spec['env'][0]
-    env_spec['max_tick'] = 30
-    spec['meta']['max_tick_unit'] = 'total_t'
-    session = Session(spec)
-    assert session.env.clock.max_tick_unit == 'total_t'
-    session_metrics = session.run()
-    assert isinstance(session_metrics, dict)
-
-
 def test_trial(test_spec):
     spec_util.tick(test_spec, 'trial')
     spec_util.save(test_spec, unit='trial')
