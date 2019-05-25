@@ -204,7 +204,7 @@ def test_reinforce_vizdoom(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('base.json', 'base_case_unity'),
+    # ('base.json', 'base_case_unity'),
     ('base.json', 'base_case_openai'),
     ('random.json', 'random_cartpole'),
     ('random.json', 'random_pendulum'),
