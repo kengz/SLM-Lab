@@ -41,9 +41,6 @@ def run_spec(spec, lab_mode):
     elif lab_mode in EVAL_MODES:
         spec = spec_util.override_enjoy_spec(spec)
         Session(spec).run()
-        if lab_mode == 'eval':
-            util.clear_periodic_ckpt(prepath)  # cleanup after itself
-            retro_analysis.analyze_eval_trial(spec, predir)
     else:
         raise ValueError(f'Unrecognizable lab_mode not of {TRAIN_MODES} or {EVAL_MODES}')
 
