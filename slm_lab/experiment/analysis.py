@@ -117,12 +117,13 @@ def calc_consistency(local_strs_list):
     return con, local_cons
 
 
-def calc_session_metrics(session_df, env_name, prepath=None):
+def calc_session_metrics(session_df, env_name, prepath=None, df_mode=None):
     '''
     Calculate the session metrics: strength, efficiency, stability
     @param DataFrame:session_df Dataframe containing reward, frame, opt_step
     @param str:env_name Name of the environment to get its random baseline
     @param str:prepath Optional prepath to auto-save the output to
+    @param str:df_mode Optional df_mode to save with prepath
     @returns dict:metrics Consists of scalar metrics and series local metrics
     '''
     rand_bl = random_baseline.get_random_baseline(env_name)
@@ -161,8 +162,8 @@ def calc_session_metrics(session_df, env_name, prepath=None):
         'local': local,
     }
     if prepath is not None:  # auto-save if prepath is given
-        util.write(metrics, f'{prepath}_session_metrics.pkl')
-        util.write(scalar, f'{prepath}_session_metrics_scalar.json')
+        util.write(metrics, f'{prepath}_session_metrics_{df_mode}.pkl')
+        util.write(scalar, f'{prepath}_session_metrics_scalar_{df_mode}.json')
     return metrics
 
 
@@ -243,7 +244,7 @@ def _analyze_session(session, df_mode='eval'):
     if 'retro_analyze' not in os.environ['PREPATH']:
         util.write(session_df, f'{prepath}_session_df_{df_mode}.csv')
     # calculate metrics
-    session_metrics = calc_session_metrics(session_df, body.env.name, prepath)
+    session_metrics = calc_session_metrics(session_df, body.env.name, prepath, df_mode)
     body.log_metrics(session_metrics['scalar'])
     # plot graph
     viz.plot_session(session.spec, session_metrics, session_df, df_mode)

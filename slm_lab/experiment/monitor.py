@@ -186,14 +186,14 @@ class Body:
         prefix = f'Trial {trial_index} session {session_index} {spec_name}_t{trial_index}_s{session_index}'
         return prefix
 
-    def log_metrics(self, metrics):
+    def log_metrics(self, metrics, df_mode):
         '''Log session metrics'''
         prefix = self.get_log_prefix()
         row_str = '  '.join([f'{k}: {v:g}' for k, v in metrics.items()])
-        msg = f'{prefix} [metrics] {row_str}'
+        msg = f'{prefix} [{df_mode}_df metrics] {row_str}'
         logger.info(msg)
 
-    def log_summary(self, df_mode='train'):
+    def log_summary(self, df_mode):
         '''
         Log the summary for this body when its environment is done
         @param str:df_mode 'train' or 'eval'
