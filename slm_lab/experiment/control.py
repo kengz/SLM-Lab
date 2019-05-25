@@ -103,7 +103,7 @@ class Session:
 
     def run(self):
         self.run_rl()
-        metrics = analysis.analyze_session(self)  # session fitness
+        metrics = analysis.analyze_session(self)
         self.close()
         return metrics
 
@@ -159,7 +159,7 @@ class SpaceSession(Session):
 
     def run(self):
         self.run_all_episodes()
-        space_metrics_dict = analysis.analyze_session(self)  # session fitness
+        space_metrics_dict = analysis.analyze_session(self)
         self.close()
         return space_metrics_dict
 
@@ -253,7 +253,6 @@ class Experiment:
         self.index = self.spec['meta']['experiment']
         util.set_logger(self.spec, logger, 'trial')
         spec_util.save(spec, unit='experiment')
-        self.trial_data_dict = {}
         SearchClass = getattr(search, spec['meta'].get('search'))
         self.search = SearchClass(self)
 

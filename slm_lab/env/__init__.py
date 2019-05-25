@@ -1,9 +1,4 @@
-'''
-The environment module
-Contains graduated components from experiments for building/using environment.
-Provides the rich experience for agent embodiment, reflects the curriculum and allows teaching (possibly allows teacher to enter).
-To be designed by human and evolution module, based on the curriculum and fitness metrics.
-'''
+# the environment module
 from slm_lab.env.base import Clock, ENV_DATA_NAMES
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api

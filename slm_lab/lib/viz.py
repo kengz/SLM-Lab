@@ -1,7 +1,7 @@
 '''
 The data visualization module
 '''
-from plotly import graph_objs as go, io as pio
+from plotly import graph_objs as go, io as pio, tools
 from plotly.offline import init_notebook_mode, iplot
 from slm_lab.lib import logger, util
 import colorlover as cl
@@ -183,3 +183,41 @@ def plot_trial(trial_spec, trial_metrics):
             fig = plot_mean_sr(
                 local_metrics[name], local_metrics[time], title, name, time)
         save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
+
+
+def plot_experiment(experiment_spec, experiment_df, metrics_cols):
+    '''
+    Plot the metrics vs. specs parameters of an experiment, where each point is a trial.
+    ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
+    '''
+    y_cols = metrics_cols
+    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
+    fig = tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
+    strength_sr = experiment_df['strength']
+    min_strength = strength_sr.values.min()
+    max_strength = strength_sr.values.max()
+    for row_idx, y in enumerate(y_cols):
+        for col_idx, x in enumerate(x_cols):
+            x_sr = experiment_df[x]
+            guard_cat_x = x_sr.astype(str) if x_sr.dtype == 'object' else x_sr
+            trace = go.Scatter(
+                y=experiment_df[y], yaxis=f'y{row_idx+1}',
+                x=guard_cat_x, xaxis=f'x{col_idx+1}',
+                showlegend=False, mode='markers',
+                marker={
+                    'symbol': 'circle-open-dot', 'color': experiment_df['strength'], 'opacity': 0.5,
+                    # dump first quarter of colorscale that is too bright
+                    'cmin': min_strength - 0.50 * (max_strength - min_strength), 'cmax': max_strength,
+                    'colorscale': 'YlGnBu', 'reversescale': True
+                },
+            )
+            fig.add_trace(trace, row_idx + 1, col_idx + 1)
+            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
+        fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
+    fig.layout.update(
+        title=f'experiment graph: {experiment_spec["name"]}',
+        width=100 + 300 * len(x_cols), height=200 + 300 * len(y_cols))
+    plot(fig)
+    prepath = experiment_spec['meta']['prepath']
+    save_image(fig, f'{prepath}_experiment_graph.png')
+    return fig

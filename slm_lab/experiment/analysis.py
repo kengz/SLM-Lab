@@ -221,41 +221,17 @@ def calc_trial_metrics(session_metrics_list, prepath=None):
     return metrics
 
 
-# plotting methods
-
-def plot_experiment(experiment_spec, experiment_df):
-    '''
-    Plot the variable specs vs fitness vector of an experiment, where each point is a trial.
-    ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
-    '''
-    y_cols = METRICS_COLS
-    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
-
-    fig = viz.tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
-    strength_sr = experiment_df['strength']
-    min_strength = strength_sr.values.min()
-    max_strength = strength_sr.values.max()
-    for row_idx, y in enumerate(y_cols):
-        for col_idx, x in enumerate(x_cols):
-            x_sr = experiment_df[x]
-            guard_cat_x = x_sr.astype(str) if x_sr.dtype == 'object' else x_sr
-            trace = viz.go.Scatter(
-                y=experiment_df[y], yaxis=f'y{row_idx+1}',
-                x=guard_cat_x, xaxis=f'x{col_idx+1}',
-                showlegend=False, mode='markers',
-                marker={
-                    'symbol': 'circle-open-dot', 'color': experiment_df['strength'], 'opacity': 0.5,
-                    # dump first quarter of colorscale that is too bright
-                    'cmin': min_strength - 0.50 * (max_strength - min_strength), 'cmax': max_strength,
-                    'colorscale': 'YlGnBu', 'reversescale': True
-                },
-            )
-            fig.add_trace(trace, row_idx + 1, col_idx + 1)
-            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
-        fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
-    fig.layout.update(title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 300), height=700)
-    viz.plot(fig)
-    return fig
+def calc_experiment_df(trial_data_dict, prepath=None):
+    '''Collect all trial data (metrics and config) from trials into a dataframe'''
+    experiment_df = pd.DataFrame(trial_data_dict).transpose()
+    cols = METRICS_COLS
+    config_cols = sorted(ps.difference(experiment_df.columns.tolist(), cols))
+    sorted_cols = config_cols + cols
+    experiment_df = experiment_df.reindex(sorted_cols, axis=1)
+    experiment_df.sort_values(by=['strength'], ascending=False, inplace=True)
+    if prepath is not None:
+        util.write(experiment_df, f'{prepath}_experiment_df.csv')
+    return experiment_df
 
 
 # interface analyze methods
@@ -299,32 +275,15 @@ def analyze_trial(trial, zip=True):
 
 
 def analyze_experiment(experiment):
-    '''
-    Gather experiment trial_data_dict as experiment_df, plot.
-    Search module must return best_spec and experiment_data with format {trial_index: exp_trial_data},
-    where trial_data = {**var_spec, **metrics(scalar)}.
-    This is then made into experiment_df.
-    @returns {DataFrame} experiment_df Of var_specs, metrics for all trials.
-    '''
-    experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
-    cols = METRICS_COLS
-    config_cols = sorted(ps.difference(experiment_df.columns.tolist(), cols))
-    sorted_cols = config_cols + cols
-    experiment_df = experiment_df.reindex(sorted_cols, axis=1)
-    experiment_df.sort_values(by=['strength'], ascending=False, inplace=True)
-    logger.info(f'Experiment data:\n{experiment_df}')
-    experiment_fig = plot_experiment(experiment.spec, experiment_df)
-    save_experiment_data(experiment.spec, experiment_df, experiment_fig)
-    return experiment_df
-
-
-def save_experiment_data(spec, experiment_df, experiment_fig):
-    '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
-    prepath = spec['meta']['prepath']
-    util.write(experiment_df, f'{prepath}_experiment_df.csv')
-    viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
+    '''Analyze experiment and save data'''
+    prepath = experiment.spec['meta']['prepath']
+    # calculate experiment df
+    experiment_df = calc_experiment_df(experiment.trial_data_dict, prepath)
+    # plot graph
+    viz.plot_experiment(experiment.spec, experiment_df, METRICS_COLS)
     logger.debug(f'Saved experiment data to {prepath}')
-    # zip for ease of upload
+    # zip files
     predir, _, _, _, _, _ = util.prepath_split(prepath)
     shutil.make_archive(predir, 'zip', predir)
     logger.info(f'All experiment data zipped to {predir}.zip')
+    return experiment_df

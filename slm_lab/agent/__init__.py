@@ -1,23 +1,4 @@
-'''
-The agent module
-Contains graduated components from experiments for building agents and be taught, tested, evaluated on curriculum.
-To be designed by human and evolution module, based on the experiment aim (trait) and fitness metrics.
-Main SLM components (refer to SLM doc for more):
-- primary survival objective
-- control policies
-- sensors (input) for embodiment
-- motors (output) for embodiment
-- neural architecture
-- memory (with time)
-- prioritization mechanism and "emotions"
-- strange loop must be created
-- social aspect
-- high level properties of thinking, e.g. creativity, planning.
-
-Agent components:
-- algorithm (with net, policy)
-- memory (per body)
-'''
+# the agent module
 from slm_lab.agent import algorithm, memory
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
