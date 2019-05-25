@@ -187,6 +187,7 @@ def test_dueling_dqn_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)
 
 
+@pytest.mark.skip(reason='Outdated')
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('experimental/hydra_dqn.json', 'hydra_dqn_boltzmann_cartpole'),
     ('experimental/hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole'),

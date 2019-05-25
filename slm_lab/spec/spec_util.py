@@ -231,16 +231,16 @@ def override_eval_spec(spec):
 
 def override_test_spec(spec):
     for agent_spec in spec['agent']:
-        # covers episodic and timestep
-        agent_spec['algorithm']['training_frequency'] = 1
-        agent_spec['algorithm']['training_start_step'] = 1
+        agent_spec['algorithm']['training_frequency'] = 8
+        agent_spec['algorithm']['training_start_step'] = 8
         agent_spec['algorithm']['training_epoch'] = 1
         agent_spec['algorithm']['training_batch_epoch'] = 1
     for env_spec in spec['env']:
-        env_spec['max_t'] = 20
-        env_spec['max_tick'] = 3
-    spec['meta']['eval_frequency'] = 1000
-    spec['meta']['max_tick_unit'] = 'epi'
+        env_spec['max_tick'] = 40
+        env_spec['max_t'] = 16
+    spec['meta']['log_frequency'] = 10
+    spec['meta']['eval_frequency'] = 10
+    spec['meta']['max_tick_unit'] = 'total_t'
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
     return spec
