@@ -53,7 +53,7 @@ class OnPolicyReplay(Memory):
         for k in self.data_keys:
             setattr(self, k, [])
         self.cur_epi_data = {k: [] for k in self.data_keys}
-        self.most_recent = [None] * len(self.data_keys)
+        self.most_recent = (None,) * len(self.data_keys)
         self.size = 0
 
     @lab_api
@@ -63,7 +63,7 @@ class OnPolicyReplay(Memory):
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Interface helper method for update() to add experience to memory'''
-        self.most_recent = [state, action, reward, next_state, done]
+        self.most_recent = (state, action, reward, next_state, done)
         for idx, k in enumerate(self.data_keys):
             self.cur_epi_data[k].append(self.most_recent[idx])
         # If episode ended, add to memory and clear cur_epi_data
