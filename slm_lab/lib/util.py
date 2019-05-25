@@ -476,7 +476,7 @@ def read_as_df(data_path, **kwargs):
     return data
 
 
-def read_as_pickle(data, **kwargs):
+def read_as_pickle(data_path, **kwargs):
     '''Submethod to read data as pickle'''
     with open(data_path, 'rb') as f:
         data = pickle.load(f)
