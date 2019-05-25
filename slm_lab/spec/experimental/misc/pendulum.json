@@ -51,7 +51,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500000,
+      "max_frame": 500000,
     }],
     "body": {
       "product": "outer",
@@ -60,7 +60,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 190,
       "search": "RandomSearch",
@@ -146,7 +145,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500000,
+      "max_frame": 500000,
     }],
     "body": {
       "product": "outer",
@@ -155,7 +154,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 190,
       "search": "RandomSearch",
@@ -238,7 +236,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500000,
+      "max_frame": 500000,
     }],
     "body": {
       "product": "outer",
@@ -247,7 +245,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 190,
       "search": "RandomSearch",
@@ -333,7 +330,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500000,
+      "max_frame": 500000,
     }],
     "body": {
       "product": "outer",
@@ -342,7 +339,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 190,
       "search": "RandomSearch",
@@ -432,7 +428,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500000,
+      "max_frame": 500000,
     }],
     "body": {
       "product": "outer",
@@ -441,7 +437,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 190,
       "search": "RandomSearch",

@@ -49,11 +49,9 @@ class Session:
             to_ckpt = False
         elif frequency is None:  # default episodic
             to_ckpt = env.done
-        elif clock.max_tick_unit == 'epi' and not env.done:  # epi ckpt needs env done
-            to_ckpt = False
         else:  # normal ckpt condition by mod remainder (general for venv)
             rem = env.num_envs or 1
-            to_ckpt = (tick % frequency < rem) or tick == clock.max_tick
+            to_ckpt = (tick % frequency < rem) or tick == clock.max_frame
         return to_ckpt
 
     def try_ckpt(self, agent, env):
@@ -72,7 +70,7 @@ class Session:
                 analysis.analyze_session(self)
 
     def run_rl(self):
-        '''Run the main RL loop until clock.max_tick'''
+        '''Run the main RL loop until clock.max_frame'''
         logger.info(f'Running RL loop for trial {self.spec["meta"]["trial"]} session {self.index}')
         clock = self.env.clock
         state = self.env.reset()
@@ -80,12 +78,12 @@ class Session:
         while True:
             if util.epi_done(done):  # before starting another episode
                 self.try_ckpt(self.agent, self.env)
-                if clock.get() < clock.max_tick:  # reset and continue
+                if clock.get() < clock.max_frame:  # reset and continue
                     clock.tick('epi')
                     state = self.env.reset()
                     done = False
             self.try_ckpt(self.agent, self.env)
-            if clock.get() >= clock.max_tick:  # finish
+            if clock.get() >= clock.max_frame:  # finish
                 break
             clock.tick('t')
             action = self.agent.act(state)

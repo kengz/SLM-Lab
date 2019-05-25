@@ -39,7 +39,7 @@ def test_demo_performance():
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     spec_util.save(spec, unit='experiment')
     for env_spec in spec['env']:
-        env_spec['max_tick'] = 2000
+        env_spec['max_frame'] = 2000
     spec_util.tick(spec, 'trial')
     trial = Trial(spec)
     spec_util.tick(spec, 'session')

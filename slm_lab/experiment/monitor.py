@@ -378,6 +378,6 @@ class AEBSpace:
                 for body in env.nanflat_body_e:
                     body.log_summary('train')
             env.clock.tick(unit or ('epi' if env.done else 't'))
-            end_session = not (env.clock.get() < env.clock.max_tick)
+            end_session = not (env.clock.get() < env.clock.max_frame)
             end_sessions.append(end_session)
         return all(end_sessions)

@@ -30,7 +30,7 @@ SPEC_FORMAT = {
     "env": [{
         "name": str,
         "max_t": (type(None), int, float),
-        "max_tick": (int, float),
+        "max_frame": (int, float),
     }],
     "body": {
         "product": ["outer", "inner", "custom"],
@@ -38,7 +38,6 @@ SPEC_FORMAT = {
     },
     "meta": {
         "eval_frequency": (int, float),
-        "max_tick_unit": str,
         "max_session": int,
         "max_trial": (type(None), int),
     },
@@ -236,11 +235,10 @@ def override_test_spec(spec):
         agent_spec['algorithm']['training_epoch'] = 1
         agent_spec['algorithm']['training_batch_epoch'] = 1
     for env_spec in spec['env']:
-        env_spec['max_tick'] = 40
+        env_spec['max_frame'] = 40
         env_spec['max_t'] = 16
     spec['meta']['log_frequency'] = 10
     spec['meta']['eval_frequency'] = 10
-    spec['meta']['max_tick_unit'] = 'frame'
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
     return spec

@@ -51,7 +51,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 30000
+      "max_frame": 30000
     }],
     "body": {
       "product": "outer",
@@ -60,7 +60,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 5000,
-      "max_tick_unit": "total_t",
       "max_trial": 4,
       "max_session": 1,
       "search": "RandomSearch",

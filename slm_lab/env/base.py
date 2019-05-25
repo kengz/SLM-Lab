@@ -33,9 +33,8 @@ def set_gym_space_attr(gym_space):
 class Clock:
     '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0 and epi=0'''
 
-    def __init__(self, max_tick=int(1e7), max_tick_unit='frame', clock_speed=1):
-        self.max_tick = max_tick
-        self.max_tick_unit = max_tick_unit
+    def __init__(self, max_frame=int(1e7), clock_speed=1):
+        self.max_frame = max_frame
         self.clock_speed = int(clock_speed)
         self.reset()
 
@@ -47,8 +46,7 @@ class Clock:
         self.batch_size = 1  # multiplier to accurately count opt steps
         self.opt_step = 0  # count the number of optimizer updates
 
-    def get(self, unit=None):
-        unit = unit or self.max_tick_unit
+    def get(self, unit='frame'):
         return getattr(self, unit)
 
     def get_elapsed_wall_t(self):
@@ -84,7 +82,7 @@ class BaseEnv(ABC):
         "reward_scale": "sign",
         "num_envs": 8,
         "max_t": null,
-        "max_tick": 1e7
+        "max_frame": 1e7
     }],
     '''
 
@@ -104,7 +102,6 @@ class BaseEnv(ABC):
         util.set_attr(self, spec['meta'], [
             'log_frequency',
             'eval_frequency',
-            'max_tick_unit',
         ])
         util.set_attr(self, self.env_spec, [
             'name',
@@ -114,7 +111,7 @@ class BaseEnv(ABC):
             'reward_scale',
             'num_envs',
             'max_t',
-            'max_tick',
+            'max_frame',
         ])
         seq_len = ps.get(spec, 'agent.0.net.seq_len')
         if seq_len is not None:  # infer if using RNN
@@ -122,15 +119,14 @@ class BaseEnv(ABC):
             self.frame_op_len = seq_len
         if util.in_eval_lab_modes():  # use singleton for eval
             self.num_envs = 1
-            self.max_tick_unit = 'epi'
             self.log_frequency = None
-        if spec['meta']['distributed'] != False:  # divide max_tick for distributed
-            self.max_tick = int(self.max_tick / spec['meta']['max_session'])
+        if spec['meta']['distributed'] != False:  # divide max_frame for distributed
+            self.max_frame = int(self.max_frame / spec['meta']['max_session'])
         self.is_venv = (self.num_envs is not None and self.num_envs > 1)
         if self.is_venv:
             assert self.log_frequency is not None, f'Specify log_frequency when using venv'
         self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
-        self.clock = Clock(self.max_tick, self.max_tick_unit, self.clock_speed)
+        self.clock = Clock(self.max_frame, self.clock_speed)
         self.to_render = util.to_render()
 
     def _set_attr_from_u_env(self, u_env):

@@ -55,11 +55,11 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 1000,
+      "max_frame": 1000,
     }, {
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 1000
+      "max_frame": 1000
     }],
     "body": {
       "product": "outer",
@@ -68,7 +68,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -154,11 +153,11 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 1000,
+      "max_frame": 1000,
     }, {
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 1000
+      "max_frame": 1000
     }],
     "body": {
       "product": "outer",
@@ -167,7 +166,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -253,12 +251,12 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 300,
+      "max_frame": 300,
       "reward_scale": 1,
     }, {
       "name": "2DBall",
       "max_t": 1000,
-      "max_tick": 300,
+      "max_frame": 300,
       "reward_scale": 10,
     }],
     "body": {
@@ -268,7 +266,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 40,
       "search": "RandomSearch"
@@ -348,12 +345,12 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 300,
+      "max_frame": 300,
       "reward_scale": 1,
     }, {
       "name": "2DBall",
       "max_t": 1000,
-      "max_tick": 300,
+      "max_frame": 300,
       "reward_scale": 10,
     }],
     "body": {
@@ -363,7 +360,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 40,
       "search": "RandomSearch"

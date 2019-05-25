@@ -56,7 +56,7 @@
       "frame_op_len": 4,
       "reward_scale": "sign",
       "max_t": null,
-      "max_tick": 10000000
+      "max_frame": 10000000
     }],
     "body": {
       "product": "outer",
@@ -65,7 +65,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 10000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 1,
       "param_spec_process": 4
@@ -133,7 +132,7 @@
       "frame_op_len": 4,
       "reward_scale": "sign",
       "max_t": null,
-      "max_tick": 10000000
+      "max_frame": 10000000
     }],
     "body": {
       "product": "outer",
@@ -142,7 +141,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 10000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 1,
       "param_spec_process": 4
