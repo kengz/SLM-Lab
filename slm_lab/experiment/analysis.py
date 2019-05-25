@@ -79,7 +79,7 @@ def calc_efficiency(local_strs, ts):
     Calculate efficiency for metric
     e &= \frac{\sum_{i=0}^N \frac{1}{t_i} str_i}{\sum_{i=0}^N \frac{1}{t_i}}
     @param Series:local_strs A series of local strengths
-    @param Series:ts A series of times units (total_t or opt_steps)
+    @param Series:ts A series of times units (frame or opt_steps)
     @returns float:eff, Series:local_effs
     '''
     eff = (local_strs / ts).sum() / local_strs.sum()
@@ -120,7 +120,7 @@ def calc_consistency(local_strs_list):
 def calc_session_metrics(session_df, env_name, prepath=None):
     '''
     Calculate the session metrics: strength, efficiency, stability
-    @param DataFrame:session_df Dataframe containing reward, total_t, opt_step
+    @param DataFrame:session_df Dataframe containing reward, frame, opt_step
     @param str:env_name Name of the environment to get its random baseline
     @param str:prepath Optional prepath to auto-save the output to
     @returns dict:metrics Consists of scalar metrics and series local metrics
@@ -128,7 +128,7 @@ def calc_session_metrics(session_df, env_name, prepath=None):
     rand_bl = random_baseline.get_random_baseline(env_name)
     mean_rand_returns = rand_bl['mean']
     mean_returns = session_df['reward']
-    frames = session_df['total_t']
+    frames = session_df['frame']
     opt_steps = session_df['opt_step']
 
     str_, local_strs = calc_strength(mean_returns, mean_rand_returns)

@@ -144,7 +144,7 @@ class VanillaDQN(SARSA):
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -214,8 +214,8 @@ class DQNBase(VanillaDQN):
         return q_loss
 
     def update_nets(self):
-        total_t = self.body.env.clock.total_t
-        if total_t % self.net.update_frequency == 0:
+        frame = self.body.env.clock.frame
+        if frame % self.net.update_frequency == 0:
             if self.net.update_type == 'replace':
                 net_util.copy(self.net, self.target_net)
             elif self.net.update_type == 'polyak':

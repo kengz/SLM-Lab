@@ -69,8 +69,8 @@ def get_lr_scheduler(optim, lr_scheduler_spec):
         lr_scheduler = NoOpLRScheduler(optim)
     elif lr_scheduler_spec['name'] == 'LinearToZero':
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, 'LambdaLR')
-        total_t = float(lr_scheduler_spec['total_t'])
-        lr_scheduler = LRSchedulerClass(optim, lr_lambda=lambda x: 1 - x / total_t)
+        frame = float(lr_scheduler_spec['frame'])
+        lr_scheduler = LRSchedulerClass(optim, lr_lambda=lambda x: 1 - x / frame)
     else:
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, lr_scheduler_spec['name'])
         lr_scheduler_spec = ps.omit(lr_scheduler_spec, 'name')

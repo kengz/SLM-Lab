@@ -146,9 +146,9 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
         return
     # training plots from session_df
     name_time_pairs = [
-        ('loss', 'total_t'),
-        ('explore_var', 'total_t'),
-        ('entropy', 'total_t'),
+        ('loss', 'frame'),
+        ('explore_var', 'frame'),
+        ('entropy', 'frame'),
     ]
     for name, time in name_time_pairs:
         fig = plot_sr(

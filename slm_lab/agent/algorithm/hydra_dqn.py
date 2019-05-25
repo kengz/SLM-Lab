@@ -98,7 +98,7 @@ class HydraDQN(DQN):
             loss = total_loss / (self.training_epoch * self.training_batch_epoch)
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan

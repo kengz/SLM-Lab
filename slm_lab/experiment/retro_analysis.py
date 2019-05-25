@@ -104,7 +104,7 @@ def parallel_eval(spec, ckpt):
 def run_parallel_eval(session, agent, env):
     '''Plugin to session to run parallel eval for train mode'''
     if util.get_lab_mode() == 'train':
-        ckpt = f'epi{env.clock.epi}-totalt{env.clock.total_t}'
+        ckpt = f'epi{env.clock.epi}-totalt{env.clock.frame}'
         agent.save(ckpt=ckpt)
         # set reference to eval process for handling
         session.eval_proc = parallel_eval(session.spec, ckpt)

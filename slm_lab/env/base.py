@@ -33,7 +33,7 @@ def set_gym_space_attr(gym_space):
 class Clock:
     '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0 and epi=0'''
 
-    def __init__(self, max_tick=int(1e7), max_tick_unit='total_t', clock_speed=1):
+    def __init__(self, max_tick=int(1e7), max_tick_unit='frame', clock_speed=1):
         self.max_tick = max_tick
         self.max_tick_unit = max_tick_unit
         self.clock_speed = int(clock_speed)
@@ -41,7 +41,7 @@ class Clock:
 
     def reset(self):
         self.t = 0
-        self.total_t = 0  # aka frames
+        self.frame = 0  # i.e. total_t
         self.epi = 0
         self.start_wall_t = time.time()
         self.batch_size = 1  # multiplier to accurately count opt steps
@@ -61,7 +61,7 @@ class Clock:
     def tick(self, unit='t'):
         if unit == 't':  # timestep
             self.t += self.clock_speed
-            self.total_t += self.clock_speed
+            self.frame += self.clock_speed
         elif unit == 'epi':  # episode, reset timestep
             self.epi += 1
             self.t = 0

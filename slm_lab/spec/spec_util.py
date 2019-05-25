@@ -240,7 +240,7 @@ def override_test_spec(spec):
         env_spec['max_t'] = 16
     spec['meta']['log_frequency'] = 10
     spec['meta']['eval_frequency'] = 10
-    spec['meta']['max_tick_unit'] = 'total_t'
+    spec['meta']['max_tick_unit'] = 'frame'
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
     return spec
