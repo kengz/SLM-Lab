@@ -139,6 +139,7 @@ class SARSA(Algorithm):
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
+            clock.set_batch_size(len(batch))
             loss = self.calc_q_loss(batch)
             self.net.train_step(loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
             # reset

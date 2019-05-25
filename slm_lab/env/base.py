@@ -44,6 +44,7 @@ class Clock:
         self.total_t = 0  # aka frames
         self.epi = 0
         self.start_wall_t = time.time()
+        self.batch_size = 1  # multiplier to accurately count opt steps
         self.opt_step = 0  # count the number of optimizer updates
 
     def get(self, unit=None):
@@ -54,6 +55,9 @@ class Clock:
         '''Calculate the elapsed wall time (int seconds) since self.start_wall_t'''
         return int(time.time() - self.start_wall_t)
 
+    def set_batch_size(self, batch_size):
+        self.batch_size = batch_size
+
     def tick(self, unit='t'):
         if unit == 't':  # timestep
             self.t += self.clock_speed
@@ -62,7 +66,7 @@ class Clock:
             self.epi += 1
             self.t = 0
         elif unit == 'opt_step':
-            self.opt_step += 1
+            self.opt_step += self.batch_size
         else:
             raise KeyError
 
