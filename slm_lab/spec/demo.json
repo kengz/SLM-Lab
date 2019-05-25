@@ -11,12 +11,12 @@
           "start_val": 1.0,
           "end_val": 0.1,
           "start_step": 0,
-          "end_step": 800,
+          "end_step": 1000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 10,
+        "training_batch_epoch": 8,
         "training_epoch": 4,
-        "training_frequency": 8,
+        "training_frequency": 4,
         "training_start_step": 32
       },
       "memory": {
@@ -35,7 +35,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.002
+          "lr": 0.02
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
@@ -51,7 +51,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 30000
+      "max_frame": 10000
     }],
     "body": {
       "product": "outer",
@@ -59,7 +59,7 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 5000,
+      "eval_frequency": 2000,
       "max_trial": 4,
       "max_session": 1,
       "search": "RandomSearch",
