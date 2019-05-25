@@ -12,6 +12,7 @@ import shutil
 
 MA_WINDOW = 100
 NUM_EVAL = 4
+METRICS_COLS = ['strength', 'max_strength', 'sample_efficiency', 'training_efficiency', 'stability', 'consistency']
 
 logger = logger.get_logger(__name__)
 
@@ -131,7 +132,7 @@ def calc_session_metrics(session_df, env_name, prepath=None):
     opt_steps = session_df['opt_step']
 
     str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
-    min_str, max_str = local_strs.min(), local_strs.max()
+    max_str = local_strs.max()
     sample_eff, local_sample_effs = calc_efficiency(local_strs, frames)
     train_eff, local_train_effs = calc_efficiency(local_strs, opt_steps)
     sta, local_stas = calc_stability(local_strs)
@@ -139,7 +140,6 @@ def calc_session_metrics(session_df, env_name, prepath=None):
     # all the scalar session metrics
     scalar = {
         'strength': str_,
-        'min_strength': min_str,
         'max_strength': max_str,
         'sample_efficiency': sample_eff,
         'training_efficiency': train_eff,
@@ -191,13 +191,13 @@ def calc_trial_metrics(session_metrics_list, prepath=None):
     # all the scalar trial metrics
     scalar = {
         'strength': mean_scalar['strength'],
-        'min_strength': mean_scalar['min_strength'],
         'max_strength': mean_scalar['max_strength'],
         'sample_efficiency': mean_scalar['sample_efficiency'],
         'training_efficiency': mean_scalar['training_efficiency'],
         'stability': mean_scalar['stability'],
         'consistency': con,
     }
+    assert set(scalar.keys()) == set(METRICS_COLS)
     # for plotting: gather all local series of sessions
     local = {
         'strengths': local_strs_list,
@@ -228,13 +228,13 @@ def plot_experiment(experiment_spec, experiment_df):
     Plot the variable specs vs fitness vector of an experiment, where each point is a trial.
     ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
     '''
-    y_cols = ['fitness'] + FITNESS_COLS
+    y_cols = METRICS_COLS
     x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
 
     fig = viz.tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
-    fitness_sr = experiment_df['fitness']
-    min_fitness = fitness_sr.values.min()
-    max_fitness = fitness_sr.values.max()
+    strength_sr = experiment_df['strength']
+    min_strength = strength_sr.values.min()
+    max_strength = strength_sr.values.max()
     for row_idx, y in enumerate(y_cols):
         for col_idx, x in enumerate(x_cols):
             x_sr = experiment_df[x]
@@ -244,9 +244,9 @@ def plot_experiment(experiment_spec, experiment_df):
                 x=guard_cat_x, xaxis=f'x{col_idx+1}',
                 showlegend=False, mode='markers',
                 marker={
-                    'symbol': 'circle-open-dot', 'color': experiment_df['fitness'], 'opacity': 0.5,
+                    'symbol': 'circle-open-dot', 'color': experiment_df['strength'], 'opacity': 0.5,
                     # dump first quarter of colorscale that is too bright
-                    'cmin': min_fitness - 0.50 * (max_fitness - min_fitness), 'cmax': max_fitness,
+                    'cmin': min_strength - 0.50 * (max_strength - min_strength), 'cmax': max_strength,
                     'colorscale': 'YlGnBu', 'reversescale': True
                 },
             )
@@ -256,18 +256,6 @@ def plot_experiment(experiment_spec, experiment_df):
     fig.layout.update(title=f'experiment graph: {experiment_spec["name"]}', width=max(600, len(x_cols) * 300), height=700)
     viz.plot(fig)
     return fig
-
-
-def save_experiment_data(spec, experiment_df, experiment_fig):
-    '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
-    prepath = spec['meta']['prepath']
-    util.write(experiment_df, f'{prepath}_experiment_df.csv')
-    viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
-    logger.debug(f'Saved experiment data to {prepath}')
-    # zip for ease of upload
-    predir, _, _, _, _, _ = util.prepath_split(prepath)
-    shutil.make_archive(predir, 'zip', predir)
-    logger.info(f'All experiment data zipped to {predir}.zip')
 
 
 # interface analyze methods
@@ -314,17 +302,29 @@ def analyze_experiment(experiment):
     '''
     Gather experiment trial_data_dict as experiment_df, plot.
     Search module must return best_spec and experiment_data with format {trial_index: exp_trial_data},
-    where trial_data = {**var_spec, **fitness_vec, fitness}.
+    where trial_data = {**var_spec, **metrics(scalar)}.
     This is then made into experiment_df.
-    @returns {DataFrame} experiment_df Of var_specs, fitness_vec, fitness for all trials.
+    @returns {DataFrame} experiment_df Of var_specs, metrics for all trials.
     '''
     experiment_df = pd.DataFrame(experiment.trial_data_dict).transpose()
-    cols = FITNESS_COLS + ['fitness']
+    cols = METRICS_COLS
     config_cols = sorted(ps.difference(experiment_df.columns.tolist(), cols))
     sorted_cols = config_cols + cols
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
-    experiment_df.sort_values(by=['fitness'], ascending=False, inplace=True)
+    experiment_df.sort_values(by=['strength'], ascending=False, inplace=True)
     logger.info(f'Experiment data:\n{experiment_df}')
     experiment_fig = plot_experiment(experiment.spec, experiment_df)
     save_experiment_data(experiment.spec, experiment_df, experiment_fig)
     return experiment_df
+
+
+def save_experiment_data(spec, experiment_df, experiment_fig):
+    '''Save the experiment data: best_spec, experiment_df, experiment_graph.'''
+    prepath = spec['meta']['prepath']
+    util.write(experiment_df, f'{prepath}_experiment_df.csv')
+    viz.save_image(experiment_fig, f'{prepath}_experiment_graph.png')
+    logger.debug(f'Saved experiment data to {prepath}')
+    # zip for ease of upload
+    predir, _, _, _, _, _ = util.prepath_split(prepath)
+    shutil.make_archive(predir, 'zip', predir)
+    logger.info(f'All experiment data zipped to {predir}.zip')

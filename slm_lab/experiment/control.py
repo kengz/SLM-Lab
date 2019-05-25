@@ -238,7 +238,7 @@ class Trial:
         self.session_metrics_list = session_metrics_list
         metrics = analysis.analyze_trial(self)
         self.close()
-        return metrics
+        return metrics['scalar']
 
 
 class Experiment:

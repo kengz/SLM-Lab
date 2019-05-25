@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from deap import creator, base, tools, algorithms
-from slm_lab.experiment import analysis
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from slm_lab.spec import spec_util
@@ -93,12 +92,8 @@ def create_remote_fn(experiment):
         spec = spec_from_config(experiment, config)
         spec['meta']['trial'] = trial_index
         spec['meta']['session'] = -1
-        trial_fitness_df = experiment.init_trial_and_run(spec)
-        fitness_vec = trial_fitness_df.iloc[0].to_dict()
-        fitness = analysis.calc_fitness(trial_fitness_df)
-        trial_data = {**config, **fitness_vec, 'fitness': fitness, 'trial_index': trial_index}
-        prepath = util.get_prepath(spec, unit='trial')
-        util.write(trial_data, f'{prepath}_trial_data.json')
+        metrics = experiment.init_trial_and_run(spec)
+        trial_data = {**config, **metrics, 'trial_index': trial_index}
         return trial_data
     return run_trial
 
@@ -137,7 +132,7 @@ class RaySearch(ABC):
         Generate the next config given config_space, may update belief first.
         Remember to update trial_index in config here, since run_trial() on ray.remote is not thread-safe.
         '''
-        # use self.config_space to build config
+        # inject trial_index for tracking in Ray
         config['trial_index'] = spec_util.tick(self.experiment.spec, 'trial')['meta']['trial']
         raise NotImplementedError
         return config
@@ -163,6 +158,7 @@ class RandomSearch(RaySearch):
     def generate_config(self):
         configs = []  # to accommodate for grid_search
         for resolved_vars, config in ray.tune.suggest.variant_generator._generate_variants(self.config_space):
+            # inject trial_index for tracking in Ray
             config['trial_index'] = spec_util.tick(self.experiment.spec, 'trial')['meta']['trial']
             configs.append(config)
         return configs
@@ -279,8 +275,8 @@ class EvolutionarySearch(RaySearch):
 
             for individual in population:
                 trial_index = individual.pop('trial_index')
-                trial_data = trial_data_dict.get(trial_index, {'fitness': 0})  # if trial errored
-                individual.fitness.values = trial_data['fitness'],
+                trial_data = trial_data_dict.get(trial_index, {'strength': 0})  # if trial errored
+                individual.fitness.values = trial_data['strength'],
 
             preview = 'Fittest of population preview:'
             for individual in tools.selBest(population, k=min(10, pop_size)):
