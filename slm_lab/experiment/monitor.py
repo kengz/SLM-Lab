@@ -79,7 +79,7 @@ class Body:
         # dataframes to track data for analysis.analyze_session
         # track training data per episode
         self.train_df = pd.DataFrame(columns=[
-            'epi', 'opt_step', 'frame', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
+            'epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
         # track eval data within run_eval. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
@@ -130,11 +130,11 @@ class Body:
         row = pd.Series({
             # epi and frame are always measured from training env
             'epi': self.env.clock.get('epi'),
-            'opt_step': self.env.clock.get('opt_step'),
-            'frame': frame,
             # t and reward are measured from a given env or eval_env
             't': env.clock.get('t'),
             'wall_t': wall_t,
+            'opt_step': self.env.clock.get('opt_step'),
+            'frame': frame,
             'fps': fps,
             'reward': np.nanmean(self.total_reward),  # guard for vec env
             'reward_ma': np.nan,  # update outside
@@ -183,8 +183,7 @@ class Body:
         spec_name = spec['name']
         trial_index = spec['meta']['trial']
         session_index = spec['meta']['session']
-        aeb_str = str(self.aeb).replace(' ', '')
-        prefix = f'Trial {trial_index} session {session_index} {spec_name}_t{trial_index}_s{session_index}, aeb{aeb_str}'
+        prefix = f'Trial {trial_index} session {session_index} {spec_name}_t{trial_index}_s{session_index}'
         return prefix
 
     def log_metrics(self, metrics):
