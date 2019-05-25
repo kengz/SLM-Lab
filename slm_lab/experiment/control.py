@@ -1,7 +1,5 @@
-'''
-The control module
-Creates and controls the units of SLM lab: Experiment, Trial, Session
-'''
+# the control module
+# creates and runs control loops at levels: Experiment, Trial, Session
 from copy import deepcopy
 from importlib import reload
 from slm_lab.agent import AgentSpace, Agent
@@ -70,7 +68,8 @@ class Session:
             agent.body.log_summary('eval')
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            analysis.analyze_session(self)
+            if len(agent.body.eval_df) > 2:  # need > 2 rows to calculate stability
+                analysis.analyze_session(self)
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_tick'''

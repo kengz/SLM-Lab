@@ -1,7 +1,3 @@
-'''
-The analysis module
-Handles the analyses of the info and data space for experiment evaluation and design.
-'''
 from slm_lab.lib import logger, util, viz
 from slm_lab.spec import random_baseline
 import numpy as np
@@ -12,7 +8,11 @@ import shutil
 
 MA_WINDOW = 100
 NUM_EVAL = 4
-METRICS_COLS = ['strength', 'max_strength', 'sample_efficiency', 'training_efficiency', 'stability', 'consistency']
+METRICS_COLS = [
+    'strength', 'max_strength', 'final_strength',
+    'sample_efficiency', 'training_efficiency',
+    'stability', 'consistency',
+]
 
 logger = logger.get_logger(__name__)
 
@@ -132,7 +132,7 @@ def calc_session_metrics(session_df, env_name, prepath=None):
     opt_steps = session_df['opt_step']
 
     str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
-    max_str = local_strs.max()
+    max_str, final_str = local_strs.max(), local_strs.iloc[-1]
     sample_eff, local_sample_effs = calc_efficiency(local_strs, frames)
     train_eff, local_train_effs = calc_efficiency(local_strs, opt_steps)
     sta, local_stas = calc_stability(local_strs)
@@ -141,6 +141,7 @@ def calc_session_metrics(session_df, env_name, prepath=None):
     scalar = {
         'strength': str_,
         'max_strength': max_str,
+        'final_strength': final_str,
         'sample_efficiency': sample_eff,
         'training_efficiency': train_eff,
         'stability': sta,
@@ -192,6 +193,7 @@ def calc_trial_metrics(session_metrics_list, prepath=None):
     scalar = {
         'strength': mean_scalar['strength'],
         'max_strength': mean_scalar['max_strength'],
+        'final_strength': mean_scalar['final_strength'],
         'sample_efficiency': mean_scalar['sample_efficiency'],
         'training_efficiency': mean_scalar['training_efficiency'],
         'stability': mean_scalar['stability'],
