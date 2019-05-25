@@ -99,7 +99,7 @@ class Session:
         self.agent.close()
         self.env.close()
         self.eval_env.close()
-        logger.info('Session done and closed.')
+        logger.info(f'Session {self.index} done and closed.')
 
     def run(self):
         self.run_rl()
@@ -228,7 +228,7 @@ class Trial:
         return session_metrics_list
 
     def close(self):
-        logger.info('Trial done and closed.')
+        logger.info(f'Trial {self.index} done and closed.')
 
     def run(self):
         if self.spec['meta'].get('distributed') == False:

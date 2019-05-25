@@ -36,7 +36,7 @@ def create_label(y_col, x_col, title=None, y_title=None, x_title=None, legend_na
     return label
 
 
-def create_layout(title, y_title, x_title, x_type=None, width=500, height=600, layout_kwargs=None):
+def create_layout(title, y_title, x_title, x_type=None, width=500, height=500, layout_kwargs=None):
     '''simplified method to generate Layout'''
     layout = go.Layout(
         title=title,
