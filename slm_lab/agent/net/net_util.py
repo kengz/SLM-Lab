@@ -179,14 +179,14 @@ def save_algorithm(algorithm, ckpt=None):
         prepath = f'{prepath}_ckpt-{ckpt}'
     for net_name in net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{prepath}_{net_name}_model.pth'
+        model_path = f'{prepath}_{net_name}_model.pt'
         save(net, model_path)
         optim_name = net_name.replace('net', 'optim')
         optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim
-            optim_path = f'{prepath}_{net_name}_optim.pth'
+            optim_path = f'{prepath}_{net_name}_optim.pt'
             save(optim, optim_path)
-    logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
+    logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pt')
 
 
 def load(net, model_path):
@@ -204,15 +204,15 @@ def load_algorithm(algorithm):
         prepath = agent.spec['meta']['eval_model_prepath']
     else:
         prepath = agent.spec['meta']['prepath']
-    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {prepath}_*.pth')
+    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {prepath}_*.pt')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{prepath}_{net_name}_model.pth'
+        model_path = f'{prepath}_{net_name}_model.pt'
         load(net, model_path)
         optim_name = net_name.replace('net', 'optim')
         optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim
-            optim_path = f'{prepath}_{net_name}_optim.pth'
+            optim_path = f'{prepath}_{net_name}_optim.pt'
             load(optim, optim_path)
 
 

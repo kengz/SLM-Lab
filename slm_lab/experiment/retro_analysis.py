@@ -228,7 +228,7 @@ def retro_eval(predir, session_index=None):
     prepaths = []
     s_filter = '' if session_index is None else f'_s{session_index}_'
     for filename in os.listdir(predir):
-        if filename.endswith('model.pth') and s_filter in filename:
+        if filename.endswith('model.pt') and s_filter in filename:
             res = re.search('.+epi(\d+)-totalt(\d+)', filename)
             if res is not None:
                 prepath = f'{predir}/{res[0]}'
