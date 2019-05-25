@@ -1,15 +1,11 @@
 '''
 The data visualization module
 '''
-from plotly import (
-    graph_objs as go,
-    offline as py,
-    tools,
-)
+from plotly import graph_objs as go, io as pio
+from plotly.offline import init_notebook_mode, iplot
 from slm_lab.lib import logger, util
 import colorlover as cl
 import os
-import plotly.io as pio
 import pydash as ps
 
 
@@ -17,12 +13,10 @@ logger = logger.get_logger(__name__)
 # warn orca failure only once
 orca_warn_once = ps.once(lambda e: logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later.'))
 if util.is_jupyter():
-    py.init_notebook_mode(connected=True)
+    init_notebook_mode(connected=True)
 
 
-def create_label(
-        y_col, x_col,
-        title=None, y_title=None, x_title=None, legend_name=None):
+def create_label(y_col, x_col, title=None, y_title=None, x_title=None, legend_name=None):
     '''Create label dict for go.Layout with smart resolution'''
     legend_name = legend_name or y_col
     y_col_list, x_col_list, legend_name_list = ps.map_(
@@ -42,9 +36,7 @@ def create_label(
     return label
 
 
-def create_layout(
-        title, y_title, x_title, x_type=None,
-        width=500, height=600, layout_kwargs=None):
+def create_layout(title, y_title, x_title, x_type=None, width=500, height=600, layout_kwargs=None):
     '''simplified method to generate Layout'''
     layout = go.Layout(
         title=title,
@@ -73,10 +65,7 @@ def lower_opacity(rgb, opacity):
 
 def plot(*args, **kwargs):
     if util.is_jupyter():
-        return py.iplot(*args, **kwargs)
-    else:
-        kwargs.update({'auto_open': ps.get(kwargs, 'auto_open', False)})
-        return py.plot(*args, **kwargs)
+        return iplot(*args, **kwargs)
 
 
 def plot_sr(sr, time_sr, title, y_title, x_title):
