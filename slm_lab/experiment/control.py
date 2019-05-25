@@ -41,16 +41,16 @@ class Session:
     def to_ckpt(self, env, mode='eval'):
         '''Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end'''
         clock = env.clock
-        tick = clock.get()
         if mode == 'eval' and util.in_eval_lab_modes():  # avoid double-eval: eval-ckpt in eval mode
             return False
         frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
-        if tick == 0:  # avoid ckpt at init
+        if clock.get('frame') == 0 or clock.get('opt_step'):  # avoid ckpt at init
             to_ckpt = False
         elif frequency is None:  # default episodic
             to_ckpt = env.done
         else:  # normal ckpt condition by mod remainder (general for venv)
             rem = env.num_envs or 1
+            tick = clock.get()
             to_ckpt = (tick % frequency < rem) or tick == clock.max_frame
         return to_ckpt
 
