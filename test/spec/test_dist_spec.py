@@ -26,8 +26,7 @@ def run_trial_test_dist(spec_file, spec_name=False):
     else:
         net = list(global_nets.values())[0]
     session_metrics_list = trial.parallelize_sessions(global_nets)
-    trial.session_metrics_list = session_metrics_list
-    trial_metrics = analysis.analyze_trial(trial)
+    trial_metrics = analysis.analyze_trial(spec, session_metrics_list)
     trial.close()
     assert isinstance(trial_metrics, dict)
 

@@ -56,18 +56,21 @@ class Session:
 
     def try_ckpt(self, agent, env):
         '''Check then run checkpoint log/eval'''
+        body = agent.body
         if self.to_ckpt(env, 'log'):
-            agent.body.train_ckpt()
-            agent.body.log_summary('train')
+            body.train_ckpt()
+            body.log_summary('train')
 
         if self.to_ckpt(env, 'eval'):
-            avg_return = analysis.gen_avg_return(self.agent, self.eval_env)
-            agent.body.eval_ckpt(self.eval_env, avg_return)
-            agent.body.log_summary('eval')
+            avg_return = analysis.gen_avg_return(agent, self.eval_env)
+            body.eval_ckpt(self.eval_env, avg_return)
+            body.log_summary('eval')
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            if len(agent.body.eval_df) > 1 and len(agent.body.train_df) > 1:  # need > 1 row to calculate stability
-                analysis.analyze_session(self)
+            if len(body.eval_df) > 1:  # need > 1 row to calculate stability
+                analysis.analyze_session(self.spec, body.eval_df, 'eval')
+            if len(body.train_df) > 1:  # need > 1 row to calculate stability
+                analysis.analyze_session(self.spec, body.train_df, 'train')
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_frame'''
@@ -100,7 +103,7 @@ class Session:
 
     def run(self):
         self.run_rl()
-        metrics = analysis.analyze_session(self)
+        metrics = analysis.analyze_session(self.spec, self.agent.body.eval_df, 'eval')
         self.close()
         return metrics
 
@@ -232,8 +235,7 @@ class Trial:
             session_metrics_list = self.run_sessions()
         else:
             session_metrics_list = self.run_distributed_sessions()
-        self.session_metrics_list = session_metrics_list
-        metrics = analysis.analyze_trial(self)
+        metrics = analysis.analyze_trial(self.spec, session_metrics_list)
         self.close()
         return metrics['scalar']
 
@@ -264,7 +266,7 @@ class Experiment:
         logger.info('Experiment done and closed.')
 
     def run(self):
-        self.trial_data_dict = self.search.run()
-        experiment_df = analysis.analyze_experiment(self)
+        trial_data_dict = self.search.run()
+        experiment_df = analysis.analyze_experiment(self.spec, trial_data_dict)
         self.close()
         return experiment_df

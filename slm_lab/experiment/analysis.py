@@ -235,37 +235,28 @@ def calc_experiment_df(trial_data_dict, prepath=None):
 
 # interface analyze methods
 
-def _analyze_session(session, df_mode='eval'):
-    '''Helper method for analyze_session to run using eval_df and train_df'''
-    prepath = session.spec['meta']['prepath']
-    body = session.agent.body
-    session_df = getattr(body, f'{df_mode}_df').copy()
+def analyze_session(session_spec, session_df, df_mode):
+    '''Analyze session and save data, then return metrics. Note there are 2 types of session_df: body.eval_df and body.train_df'''
+    prepath = session_spec['meta']['prepath']
+    session_df = session_df.copy()
     assert len(session_df) > 1, f'Need more than 1 datapoint to calculate metrics'
     if 'retro_analyze' not in os.environ['PREPATH']:
         util.write(session_df, f'{prepath}_session_df_{df_mode}.csv')
     # calculate metrics
-    session_metrics = calc_session_metrics(session_df, body.env.name, prepath, df_mode)
-    body.log_metrics(session_metrics['scalar'], df_mode)
+    session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.0.name'), prepath, df_mode)
     # plot graph
-    viz.plot_session(session.spec, session_metrics, session_df, df_mode)
+    viz.plot_session(session_spec, session_metrics, session_df, df_mode)
     logger.debug(f'Saved {df_mode} session data and graphs to {prepath}*')
     return session_metrics
 
 
-def analyze_session(session):
-    '''Analyze session and save data, then return metrics'''
-    _analyze_session(session, df_mode='train')
-    session_metrics = _analyze_session(session, df_mode='eval')
-    return session_metrics
-
-
-def analyze_trial(trial, zip=True):
+def analyze_trial(trial_spec, session_metrics_list, zip=True):
     '''Analyze trial and save data, then return metrics'''
-    prepath = trial.spec['meta']['prepath']
+    prepath = trial_spec['meta']['prepath']
     # calculate metrics
-    trial_metrics = calc_trial_metrics(trial.session_metrics_list, prepath)
+    trial_metrics = calc_trial_metrics(session_metrics_list, prepath)
     # plot graphs
-    viz.plot_trial(trial.spec, trial_metrics)
+    viz.plot_trial(trial_spec, trial_metrics)
     logger.debug(f'Saved trial data and graphs to {prepath}*')
     # zip files
     if util.get_lab_mode() == 'train' and zip:
@@ -275,13 +266,13 @@ def analyze_trial(trial, zip=True):
     return trial_metrics
 
 
-def analyze_experiment(experiment):
+def analyze_experiment(spec, trial_data_dict):
     '''Analyze experiment and save data'''
-    prepath = experiment.spec['meta']['prepath']
+    prepath = spec['meta']['prepath']
     # calculate experiment df
-    experiment_df = calc_experiment_df(experiment.trial_data_dict, prepath)
+    experiment_df = calc_experiment_df(trial_data_dict, prepath)
     # plot graph
-    viz.plot_experiment(experiment.spec, experiment_df, METRICS_COLS)
+    viz.plot_experiment(spec, experiment_df, METRICS_COLS)
     logger.debug(f'Saved experiment data to {prepath}')
     # zip files
     predir, _, _, _, _, _ = util.prepath_split(prepath)
