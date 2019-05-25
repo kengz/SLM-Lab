@@ -1,22 +1,3 @@
-'''
-The monitor module with data_space
-Monitors agents, environments, sessions, trials, experiments, evolutions, and handles all the data produced by the Lab components.
-Each dataframe resolves from the coarsest dimension to the finest, with data coordinates coor in the form: (experiment,trial,session,agent,env,body)
-The resolution after session is the AEB space, hence it is a subspace.
-AEB space is not necessarily tabular, and hence the data is NoSQL.
-
-The data_space is congruent to the coor, with proper resolution.
-E.g. (experiment,trial,session) specifies the session_data of a session, ran over multiple episodes on the AEB space.
-
-Space ordering:
-AEBSpace: space to track AEB
-AgentSpace: space agent instances, subspace of AEBSpace
-EnvSpace: space of env instances, subspace of AEBSpace
-DataSpace: a data space storing an AEB data projected to a-axis, and its dual projected to e-axis. This is so that a-proj data like action_space from agent_space can be used by env_space, which requires e-proj data, and vice versa.
-
-Object reference (for agent to access env properties, vice versa):
-Agents - AgentSpace - AEBSpace - EnvSpace - Envs
-'''
 from gym import spaces
 from slm_lab.agent import AGENT_DATA_NAMES
 from slm_lab.agent.algorithm import policy_util

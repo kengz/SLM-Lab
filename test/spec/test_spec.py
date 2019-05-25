@@ -3,7 +3,6 @@ from slm_lab.experiment.control import Trial
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 import os
-import pandas as pd
 import pytest
 import sys
 
@@ -14,8 +13,8 @@ def run_trial_test(spec_file, spec_name=False):
     spec = spec_util.override_test_spec(spec)
     spec_util.tick(spec, 'trial')
     trial = Trial(spec)
-    trial_data = trial.run()
-    assert isinstance(trial_data, pd.DataFrame)
+    trial_metrics = trial.run()
+    assert isinstance(trial_metrics, dict)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [

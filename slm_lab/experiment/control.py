@@ -258,8 +258,8 @@ class Experiment:
     def init_trial_and_run(self, spec):
         '''Method to run trial with the properly updated spec (trial_index) from experiment.search.lab_trial.'''
         trial = Trial(spec)
-        trial_data = trial.run()
-        return trial_data
+        trial_metrics = trial.run()
+        return trial_metrics
 
     def close(self):
         reload(search)  # fixes ray consecutive run crashing due to bad cleanup

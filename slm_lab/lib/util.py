@@ -556,24 +556,6 @@ def self_desc(cls):
     return desc
 
 
-def session_df_to_data(session_df):
-    '''
-    Convert a multi_index session_df (df) with column levels (a,e,b,col) to session_data[aeb] = aeb_df
-    @example
-
-    session_df = util.read(filepath, header=[0, 1, 2, 3])
-    session_data = util.session_df_to_data(session_df)
-    '''
-    session_data = {}
-    fix_multi_index_dtype(session_df)
-    aeb_list = get_df_aeb_list(session_df)
-    for aeb in aeb_list:
-        aeb_df = session_df.loc[:, aeb]
-        aeb_df.reset_index(inplace=True, drop=True)  # guard for eval append-row
-        session_data[aeb] = aeb_df
-    return session_data
-
-
 def set_attr(obj, attr_dict, keys=None):
     '''Set attribute of an object from a dict'''
     if keys is not None:

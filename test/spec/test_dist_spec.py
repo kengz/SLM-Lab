@@ -5,7 +5,6 @@ from slm_lab.experiment.control import Trial
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 import os
-import pandas as pd
 import pydash as ps
 import pytest
 
@@ -28,9 +27,9 @@ def run_trial_test_dist(spec_file, spec_name=False):
         net = list(global_nets.values())[0]
     session_metrics_list = trial.parallelize_sessions(global_nets)
     trial.session_metrics_list = session_metrics_list
-    trial_data = analysis.analyze_trial(trial)
+    trial_metrics = analysis.analyze_trial(trial)
     trial.close()
-    assert isinstance(trial_data, pd.DataFrame)
+    assert isinstance(trial_metrics, dict)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [

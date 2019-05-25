@@ -11,7 +11,7 @@ def generic_algorithm_test(spec, algorithm_name):
     '''Need to reset session_index per trial otherwise session id doesn't tick correctly'''
     spec_util.extend_meta_spec(spec)
     trial = Trial(spec)
-    trial_data = trial.run()
+    trial_metrics = trial.run()
     folders = [x for x in os.listdir('data/') if x.startswith(algorithm_name)]
     assert len(folders) == 1
     path = 'data/' + folders[0]

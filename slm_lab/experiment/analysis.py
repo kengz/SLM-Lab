@@ -66,7 +66,7 @@ def calc_strength(mean_returns, mean_rand_returns):
     Calculate strength for metric
     str &= \frac{1}{N} \sum_{i=0}^N \overline{R}_i - \overline{R}_{rand}
     @param Series:mean_returns A series of mean returns from each checkpoint
-    @param float:mean_rand_rets The random baseline
+    @param float:mean_rand_returns The random baseline
     @returns float:str, Series:local_strs
     '''
     local_strs = mean_returns - mean_rand_returns
