@@ -160,9 +160,7 @@ def calc_session_metrics(session_df, env_name, prepath=None):
         'scalar': scalar,
         'local': local,
     }
-
-    # auto-save if prepath is given
-    if prepath is not None:
+    if prepath is not None:  # auto-save if prepath is given
         util.write(metrics, f'{prepath}_session_metrics.pkl')
         util.write(scalar, f'{prepath}_session_metrics_scalar.json')
     return metrics
@@ -215,9 +213,7 @@ def calc_trial_metrics(session_metrics_list, prepath=None):
         'scalar': scalar,
         'local': local,
     }
-
-    # auto-save if prepath is given
-    if prepath is not None:
+    if prepath is not None:  # auto-save if prepath is given
         util.write(metrics, f'{prepath}_trial_metrics.pkl')
         util.write(scalar, f'{prepath}_trial_metrics_scalar.json')
     return metrics
@@ -248,6 +244,7 @@ def _analyze_session(session, df_mode='eval'):
         util.write(session_df, f'{prepath}_session_df_{df_mode}.csv')
     # calculate metrics
     session_metrics = calc_session_metrics(session_df, body.env.name, prepath)
+    body.log_metrics(session_metrics['scalar'])
     # plot graph
     viz.plot_session(session.spec, session_metrics, session_df, df_mode)
     logger.debug(f'Saved {df_mode} session data and graphs to {prepath}*')

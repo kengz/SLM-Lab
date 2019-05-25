@@ -187,18 +187,20 @@ class Body:
         prefix = f'Trial {trial_index} session {session_index} {spec_name}_t{trial_index}_s{session_index}, aeb{aeb_str}'
         return prefix
 
+    def log_metrics(self, metrics):
+        '''Log session metrics'''
+        prefix = self.get_log_prefix()
+        row_str = '  '.join([f'{k}: {v:g}' for k, v in metrics.items()])
+        msg = f'{prefix} [metrics] {row_str}'
+        logger.info(msg)
+
     def log_summary(self, df_mode='train'):
         '''
         Log the summary for this body when its environment is done
         @param str:df_mode 'train' or 'eval'
         '''
         prefix = self.get_log_prefix()
-        if df_mode == 'eval':
-            df = self.eval_df
-            reward_ma = self.eval_reward_ma
-        else:
-            df = self.train_df
-            reward_ma = self.total_reward_ma
+        df = getattr(self, f'{df_mode}_df')
         last_row = df.iloc[-1]
         row_str = '  '.join([f'{k}: {v:g}' for k, v in last_row.items()])
         msg = f'{prefix} [{df_mode}_df] {row_str}'
