@@ -5,6 +5,8 @@ import os
 import pandas as pd
 import pydash as ps
 import shutil
+import torch
+
 
 MA_WINDOW = 100
 NUM_EVAL = 4
@@ -35,7 +37,8 @@ def gen_avg_return(agent, env, num_eval=NUM_EVAL):
     '''Generate average return for agent and an env'''
     with util.ctx_lab_mode('eval'):  # enter eval context
         agent.algorithm.update()  # set explore_var etc. to end_val under ctx
-        returns = [gen_return(agent, env) for i in range(num_eval)]
+        with torch.no_grad():
+            returns = [gen_return(agent, env) for i in range(num_eval)]
     # exit eval context, restore variables simply by updating
     agent.algorithm.update()
     return np.mean(returns)

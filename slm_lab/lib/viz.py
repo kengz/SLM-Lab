@@ -142,7 +142,7 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
         fig = plot_sr(
             local_metrics[name], local_metrics[time], title, name, time)
         save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
-        if name in ('mean_returns', 'strengths'):  # save important graphs in prepath directly
+        if name in ('mean_returns',):  # save important graphs in prepath directly
             save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
     if df_mode == 'eval':
@@ -187,7 +187,7 @@ def plot_trial(trial_spec, trial_metrics):
             fig = plot_mean_sr(
                 local_metrics[name], local_metrics[time], title, name, time)
         save_image(fig, f'{graph_prepath}_trial_graph_{name}_vs_{time}.png')
-        if name in ('mean_returns', 'strengths'):  # save important graphs in prepath directly
+        if name in ('mean_returns',):  # save important graphs in prepath directly
             save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
 
 
