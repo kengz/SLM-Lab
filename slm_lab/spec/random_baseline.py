@@ -70,12 +70,7 @@ EXCLUDE_ENVS = [
 
 def enum_envs():
     '''Enumerate all the env names of the latest version'''
-    all_envs = [es.id for es in gym.envs.registration.registry.all()]
-    env_dict = {}  # filter latest version: later occurence will replace
-    for k in all_envs:
-        name, version = k.rsplit('-', 1)
-        env_dict[name] = version
-    envs = [f'{k}-{v}' for k, v in env_dict.items()]
+    envs = [es.id for es in gym.envs.registration.registry.all()]
     envs += INCLUDE_ENVS
     envs = ps.difference(envs, EXCLUDE_ENVS)
     return envs
