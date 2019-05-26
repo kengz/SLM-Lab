@@ -175,16 +175,6 @@ def test_dueling_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.skip(reason='Outdated')
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('experimental/hydra_dqn.json', 'hydra_dqn_boltzmann_cartpole'),
-    ('experimental/hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole'),
-    # ('experimental/hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole_2dball'),
-])
-def test_hydra_dqn(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('experimental/dqn.json', 'dqn_pong'),
