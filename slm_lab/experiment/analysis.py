@@ -237,12 +237,12 @@ def calc_experiment_df(trial_data_dict, prepath=None):
 
 def analyze_session(session_spec, session_df, df_mode):
     '''Analyze session and save data, then return metrics. Note there are 2 types of session_df: body.eval_df and body.train_df'''
-    data_prepath = session_spec['meta']['data_prepath']
+    info_prepath = session_spec['meta']['info_prepath']
     session_df = session_df.copy()
     assert len(session_df) > 1, f'Need more than 1 datapoint to calculate metrics'
-    util.write(session_df, f'{data_prepath}_session_df_{df_mode}.csv')
+    util.write(session_df, f'{info_prepath}_session_df_{df_mode}.csv')
     # calculate metrics
-    session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.0.name'), data_prepath, df_mode)
+    session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.0.name'), info_prepath, df_mode)
     # plot graph
     viz.plot_session(session_spec, session_metrics, session_df, df_mode)
     return session_metrics
@@ -250,14 +250,14 @@ def analyze_session(session_spec, session_df, df_mode):
 
 def analyze_trial(trial_spec, session_metrics_list):
     '''Analyze trial and save data, then return metrics'''
-    data_prepath = trial_spec['meta']['data_prepath']
+    info_prepath = trial_spec['meta']['info_prepath']
     # calculate metrics
-    trial_metrics = calc_trial_metrics(session_metrics_list, data_prepath)
+    trial_metrics = calc_trial_metrics(session_metrics_list, info_prepath)
     # plot graphs
     viz.plot_trial(trial_spec, trial_metrics)
     # zip files
     if util.get_lab_mode() == 'train':
-        predir, _, _, _, _, _ = util.prepath_split(data_prepath)
+        predir, _, _, _, _, _ = util.prepath_split(info_prepath)
         shutil.make_archive(predir, 'zip', predir)
         logger.info(f'All trial data zipped to {predir}.zip')
     return trial_metrics
@@ -265,14 +265,14 @@ def analyze_trial(trial_spec, session_metrics_list):
 
 def analyze_experiment(spec, trial_data_dict):
     '''Analyze experiment and save data'''
-    data_prepath = spec['meta']['data_prepath']
-    util.write(trial_data_dict, f'{data_prepath}_trial_data_dict.json')
+    info_prepath = spec['meta']['info_prepath']
+    util.write(trial_data_dict, f'{info_prepath}_trial_data_dict.json')
     # calculate experiment df
-    experiment_df = calc_experiment_df(trial_data_dict, data_prepath)
+    experiment_df = calc_experiment_df(trial_data_dict, info_prepath)
     # plot graph
     viz.plot_experiment(spec, experiment_df, METRICS_COLS)
     # zip files
-    predir, _, _, _, _, _ = util.prepath_split(data_prepath)
+    predir, _, _, _, _, _ = util.prepath_split(info_prepath)
     shutil.make_archive(predir, 'zip', predir)
     logger.info(f'All experiment data zipped to {predir}.zip')
     return experiment_df

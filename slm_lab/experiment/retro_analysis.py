@@ -20,9 +20,9 @@ def retro_analyze_sessions(predir):
 def _retro_analyze_session(session_spec_path):
     '''Method to retro analyze a single session given only a path to its spec'''
     session_spec = util.read(session_spec_path)
-    data_prepath = session_spec['meta']['data_prepath']
+    info_prepath = session_spec['meta']['info_prepath']
     for df_mode in ('eval', 'train'):
-        session_df = util.read(f'{data_prepath}_session_df_{df_mode}.csv')
+        session_df = util.read(f'{info_prepath}_session_df_{df_mode}.csv')
         analysis.analyze_session(session_spec, session_df, df_mode)
 
 
@@ -39,8 +39,8 @@ def _retro_analyze_trial(trial_spec_path):
     '''Method to retro analyze a single trial given only a path to its spec'''
     trial_spec = util.read(trial_spec_path)
     meta_spec = trial_spec['meta']
-    data_prepath = meta_spec['data_prepath']
-    session_metrics_list = [util.read(f'{data_prepath}_s{s}_session_metrics_eval.pkl') for s in range(meta_spec['max_session'])]
+    info_prepath = meta_spec['info_prepath']
+    session_metrics_list = [util.read(f'{info_prepath}_s{s}_session_metrics_eval.pkl') for s in range(meta_spec['max_session'])]
     analysis.analyze_trial(trial_spec, session_metrics_list)
 
 
@@ -52,8 +52,10 @@ def retro_analyze_experiment(predir):
     experiment_spec_paths = ps.difference(glob(f'{predir}/*_spec.json'), trial_spec_paths)
     experiment_spec_path = experiment_spec_paths[0]
     spec = util.read(experiment_spec_path)
-    data_prepath = spec['meta']['data_prepath']
-    trial_data_dict = util.read(f'{data_prepath}_trial_data_dict.json')
+    info_prepath = spec['meta']['info_prepath']
+    if os.path.exists(f'{info_prepath}_trial_data_dict.json'):
+        return  # only run analysis if experiment had been ran
+    trial_data_dict = util.read(f'{info_prepath}_trial_data_dict.json')
     analysis.analyze_experiment(spec, trial_data_dict)
 
 
@@ -69,8 +71,5 @@ def retro_analyze(predir):
     logger.info(f'Running retro-analysis on {predir}')
     retro_analyze_sessions(predir)
     retro_analyze_trials(predir)
-    try:  # try only if experiment had ran
-        retro_analyze_experiment(predir)
-    except Exception as e:
-        pass
+    retro_analyze_experiment(predir)
     logger.info('Finished retro-analysis')
