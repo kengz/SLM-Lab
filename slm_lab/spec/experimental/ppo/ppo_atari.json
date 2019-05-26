@@ -71,7 +71,7 @@
       "reward_scale": "sign",
       "num_envs": 8,
       "max_t": null,
-      "max_tick": 1e7
+      "max_frame": 1e7
     }],
     "body": {
       "product": "outer",
@@ -81,7 +81,6 @@
       "distributed": false,
       "log_frequency": 50000,
       "eval_frequency": 50000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 1,
       "param_spec_process": 4
@@ -164,7 +163,7 @@
       "reward_scale": "sign",
       "num_envs": 8,
       "max_t": null,
-      "max_tick": 1e7
+      "max_frame": 1e7
     }],
     "body": {
       "product": "outer",
@@ -174,7 +173,6 @@
       "distributed": false,
       "log_frequency": 50000,
       "eval_frequency": 50000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 1,
       "param_spec_process": 4

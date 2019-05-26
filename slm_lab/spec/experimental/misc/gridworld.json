@@ -14,7 +14,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
-        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -45,7 +44,7 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_tick": 1000,
+      "max_frame": 1000,
     }],
     "body": {
       "product": "outer",
@@ -54,7 +53,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -66,7 +64,6 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [1, 2, 3],
-          "training_epoch__choice": [1, 2, 3, 4],
           "lam__uniform": [0.9, 0.99]
         },
         "net": {
@@ -97,7 +94,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
-        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -132,7 +128,7 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_tick": 1000,
+      "max_frame": 1000,
     }],
     "body": {
       "product": "outer",
@@ -141,7 +137,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -153,7 +148,6 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [1, 2, 3],
-          "training_epoch__choice": [1, 2, 3, 4],
           "lam__uniform": [0.9, 0.99]
         },
         "net": {
@@ -184,7 +178,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
-        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -215,7 +208,7 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_tick": 1000,
+      "max_frame": 1000,
     }],
     "body": {
       "product": "outer",
@@ -224,7 +217,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -236,7 +228,6 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [1, 2, 3],
-          "training_epoch__choice": [1, 2, 3, 4],
           "num_step_returns__choice": [1, 2, 3, 5, 10]
         },
         "net": {
@@ -267,7 +258,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
-        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -302,7 +292,7 @@
     "env": [{
       "name": "gridworld",
       "max_t": null,
-      "max_tick": 1000,
+      "max_frame": 1000,
     }],
     "body": {
       "product": "outer",
@@ -311,7 +301,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -323,7 +312,6 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [1, 2, 3],
-          "training_epoch__choice": [1, 2, 3, 4],
           "num_step_returns__choice": [1, 2, 3, 5, 10]
         },
         "net": {
@@ -354,8 +342,8 @@
           "end_step": 2000,
         },
         "gamma": 0.999,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -393,7 +381,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 1000,
+      "max_frame": 1000,
     }],
     "body": {
       "product": "outer",
@@ -402,7 +390,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -421,7 +408,7 @@
           "max_size__choice": [10000, 50000, 100000],
         },
         "net": {
-          "training_epoch__choice": [1, 2, 3, 4],
+          "training_iter__choice": [1, 2, 3, 4],
           "lr_decay_frequency__choice": [30000, 40000, 50000, 60000, 70000],
           "polyak_coef__choice": [0, 0.9, 0.99, 0.999],
           "lr__uniform": [0.001, 0.01],
@@ -445,8 +432,8 @@
           "end_step": 2000,
         },
         "gamma": 0.999,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -488,7 +475,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 1000,
+      "max_frame": 1000,
     }],
     "body": {
       "product": "outer",
@@ -497,7 +484,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -518,7 +504,7 @@
         "net": {
           "rnn_hidden_size__choice": [32, 64],
           "seq_len__choice": [2, 3, 4, 5, 6],
-          "training_epoch__choice": [1, 2, 3, 4],
+          "training_iter__choice": [1, 2, 3, 4],
           "lr_decay_frequency__choice": [30000, 40000, 50000, 60000, 70000],
           "lr__uniform": [0.001, 0.01],
           "polyak_coef__choice": [0, 0.9, 0.99, 0.999],
@@ -542,8 +528,8 @@
           "end_step": 2000,
         },
         "gamma": 0.999,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -581,7 +567,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 1000,
+      "max_frame": 1000,
     }],
     "body": {
       "product": "outer",
@@ -590,7 +576,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -609,7 +594,7 @@
           "max_size__choice": [10000, 50000, 100000],
         },
         "net": {
-          "training_epoch__choice": [1, 2, 3, 4],
+          "training_iter__choice": [1, 2, 3, 4],
           "lr_decay_frequency__choice": [30000, 40000, 50000, 60000, 70000],
           "lr__uniform": [0.001, 0.01],
           "polyak_coef__choice": [0, 0.9, 0.99, 0.999],
@@ -633,8 +618,8 @@
           "end_step": 2000,
         },
         "gamma": 0.999,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -676,7 +661,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 1000,
+      "max_frame": 1000,
     }],
     "body": {
       "product": "outer",
@@ -685,7 +670,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -706,7 +690,7 @@
         "net": {
           "rnn_hidden_size__choice": [32, 64],
           "seq_len__choice": [2, 3, 4, 5, 6],
-          "training_epoch__choice": [1, 2, 3, 4],
+          "training_iter__choice": [1, 2, 3, 4],
           "lr_decay_frequency__choice": [30000, 40000, 50000, 60000, 70000],
           "lr__uniform": [0.001, 0.01],
           "polyak_coef__choice": [0, 0.9, 0.99, 0.999],

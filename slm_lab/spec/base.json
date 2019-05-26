@@ -13,7 +13,7 @@
     "env": [{
       "name": "gridworld",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
       "unity": {
         "gridSize": 6,
         "numObstacles": 2,
@@ -27,7 +27,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch",
@@ -63,7 +62,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }],
     "body": {
       "product": "outer",
@@ -72,7 +71,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -96,7 +94,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": 10,
-      "max_tick": 1,
+      "max_frame": 1,
     }],
     "body": {
       "product": "outer",
@@ -105,7 +103,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -126,7 +123,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": 10,
-      "max_tick": 1,
+      "max_frame": 1,
     }],
     "body": {
       "product": "outer",
@@ -135,7 +132,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -156,7 +152,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": 10,
-      "max_tick": 1,
+      "max_frame": 1,
     }],
     "body": {
       "product": "outer",
@@ -165,7 +161,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -190,7 +185,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": 10,
-      "max_tick": 1,
+      "max_frame": 1,
     }],
     "body": {
       "product": "outer",
@@ -199,7 +194,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch",
@@ -220,7 +214,7 @@
     "env": [{
       "name": "3dball",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }],
     "body": {
       "product": "outer",
@@ -229,7 +223,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -258,7 +251,7 @@
     "env": [{
       "name": "tennis",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }],
     "body": {
       "product": "outer",
@@ -267,7 +260,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -287,11 +279,11 @@
     "env": [{
       "name": "gridworld",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }, {
       "name": "3dball",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }],
     "body": {
       "product": "outer",
@@ -300,7 +292,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -329,11 +320,11 @@
     "env": [{
       "name": "tennis",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }, {
       "name": "tennis",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }],
     "body": {
       "product": "outer",
@@ -342,7 +333,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -371,11 +361,11 @@
     "env": [{
       "name": "gridworld",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }, {
       "name": "3dball",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }],
     "body": {
       "product": "outer",
@@ -384,7 +374,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -413,11 +402,11 @@
     "env": [{
       "name": "gridworld",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }, {
       "name": "3dball",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }],
     "body": {
       "product": "inner",
@@ -426,7 +415,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -446,11 +434,11 @@
     "env": [{
       "name": "gridworld",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }, {
       "name": "3dball",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
     }],
     "body": {
       "product": "custom",
@@ -473,7 +461,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"

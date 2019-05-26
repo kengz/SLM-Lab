@@ -30,7 +30,7 @@ SPEC_FORMAT = {
     "env": [{
         "name": str,
         "max_t": (type(None), int, float),
-        "max_tick": (int, float),
+        "max_frame": (int, float),
     }],
     "body": {
         "product": ["outer", "inner", "custom"],
@@ -38,7 +38,6 @@ SPEC_FORMAT = {
     },
     "meta": {
         "eval_frequency": (int, float),
-        "max_tick_unit": str,
         "max_session": int,
         "max_trial": (type(None), int),
     },
@@ -128,12 +127,13 @@ def extend_meta_spec(spec):
         'trial': -1,
         'session': -1,
         'cuda_offset': int(os.environ.get('CUDA_OFFSET', 0)),
+        'experiment_ts': util.get_ts(),
+        'prepath': None,
         # ckpt extends prepath, e.g. ckpt_str = ckpt-epi10-totalt1000
         'ckpt': None,
-        'experiment_ts': util.get_ts(),
-        'eval_model_prepath': None,
         'git_sha': util.get_git_sha(),
         'random_seed': None,
+        'eval_model_prepath': None,
     }
     spec['meta'].update(extended_meta_spec)
     return spec
@@ -169,7 +169,7 @@ def get_eval_spec(spec_file, prename):
     prepath = f'{predir}/{prename}'
     spec = util.prepath_to_spec(prepath)
     spec['meta']['ckpt'] = 'eval'
-    spec['meta']['eval_model_prepath'] = prepath
+    spec['meta']['eval_model_prepath'] = util.insert_folder(prepath, 'model')
     return spec
 
 
@@ -230,16 +230,17 @@ def override_eval_spec(spec):
 
 def override_test_spec(spec):
     for agent_spec in spec['agent']:
-        # covers episodic and timestep
-        agent_spec['algorithm']['training_frequency'] = 1
+        # onpolicy freq is episodic
+        freq = 1 if agent_spec['memory']['name'] == 'OnPolicyReplay' else 8
+        agent_spec['algorithm']['training_frequency'] = freq
         agent_spec['algorithm']['training_start_step'] = 1
-        agent_spec['algorithm']['training_epoch'] = 1
-        agent_spec['algorithm']['training_batch_epoch'] = 1
+        agent_spec['algorithm']['training_iter'] = 1
+        agent_spec['algorithm']['training_batch_iter'] = 1
     for env_spec in spec['env']:
-        env_spec['max_t'] = 20
-        env_spec['max_tick'] = 3
-    spec['meta']['eval_frequency'] = 1000
-    spec['meta']['max_tick_unit'] = 'epi'
+        env_spec['max_frame'] = 40
+        env_spec['max_t'] = 12
+    spec['meta']['log_frequency'] = 10
+    spec['meta']['eval_frequency'] = 10
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
     return spec
@@ -278,6 +279,12 @@ def resolve_aeb(spec):
     return aeb_list
 
 
+def save(spec, unit='experiment'):
+    '''Save spec to proper path. Called at Experiment or Trial init.'''
+    prepath = util.get_prepath(spec, unit)
+    util.write(spec, f'{prepath}_spec.json')
+
+
 def tick(spec, unit):
     '''
     Method to tick lab unit (experiment, trial, session) in meta spec to advance their indices
@@ -292,10 +299,22 @@ def tick(spec, unit):
         meta_spec['trial'] = -1
         meta_spec['session'] = -1
     elif unit == 'trial':
+        if meta_spec['experiment'] == -1:
+            meta_spec['experiment'] += 1
         meta_spec['trial'] += 1
         meta_spec['session'] = -1
     elif unit == 'session':
+        if meta_spec['experiment'] == -1:
+            meta_spec['experiment'] += 1
+        if meta_spec['trial'] == -1:
+            meta_spec['trial'] += 1
         meta_spec['session'] += 1
     else:
         raise ValueError(f'Unrecognized lab unit to tick: {unit}')
-    return meta_spec
+    # set prepath since it is determined at this point
+    meta_spec['prepath'] = prepath = util.get_prepath(spec, unit)
+    for folder in ('graph', 'info', 'log', 'model'):
+        folder_prepath = util.insert_folder(prepath, folder)
+        os.makedirs(os.path.dirname(folder_prepath), exist_ok=True)
+        meta_spec[f'{folder}_prepath'] = folder_prepath
+    return spec

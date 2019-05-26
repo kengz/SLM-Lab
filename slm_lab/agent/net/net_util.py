@@ -69,8 +69,8 @@ def get_lr_scheduler(optim, lr_scheduler_spec):
         lr_scheduler = NoOpLRScheduler(optim)
     elif lr_scheduler_spec['name'] == 'LinearToZero':
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, 'LambdaLR')
-        total_t = float(lr_scheduler_spec['total_t'])
-        lr_scheduler = LRSchedulerClass(optim, lr_lambda=lambda x: 1 - x / total_t)
+        frame = float(lr_scheduler_spec['frame'])
+        lr_scheduler = LRSchedulerClass(optim, lr_lambda=lambda x: 1 - x / frame)
     else:
         LRSchedulerClass = getattr(torch.optim.lr_scheduler, lr_scheduler_spec['name'])
         lr_scheduler_spec = ps.omit(lr_scheduler_spec, 'name')
@@ -174,19 +174,19 @@ def save_algorithm(algorithm, ckpt=None):
     '''Save all the nets for an algorithm'''
     agent = algorithm.agent
     net_names = algorithm.net_names
-    prepath = util.get_prepath(agent.spec, unit='session')
+    model_prepath = agent.spec['meta']['model_prepath']
     if ckpt is not None:
-        prepath = f'{prepath}_ckpt-{ckpt}'
+        model_prepath = f'{model_prepath}_ckpt-{ckpt}'
     for net_name in net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{prepath}_{net_name}_model.pth'
+        model_path = f'{model_prepath}_{net_name}_model.pt'
         save(net, model_path)
         optim_name = net_name.replace('net', 'optim')
         optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim
-            optim_path = f'{prepath}_{net_name}_optim.pth'
+            optim_path = f'{model_prepath}_{net_name}_optim.pt'
             save(optim, optim_path)
-    logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pth')
+    logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {model_prepath}_*.pt')
 
 
 def load(net, model_path):
@@ -201,18 +201,18 @@ def load_algorithm(algorithm):
     net_names = algorithm.net_names
     if util.in_eval_lab_modes():
         # load specific model in eval mode
-        prepath = agent.spec['meta']['eval_model_prepath']
+        model_prepath = agent.spec['meta']['eval_model_prepath']
     else:
-        prepath = util.get_prepath(agent.spec, unit='session')
-    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {prepath}_*.pth')
+        model_prepath = agent.spec['meta']['model_prepath']
+    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {model_prepath}_*.pt')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{prepath}_{net_name}_model.pth'
+        model_path = f'{model_prepath}_{net_name}_model.pt'
         load(net, model_path)
         optim_name = net_name.replace('net', 'optim')
         optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim
-            optim_path = f'{prepath}_{net_name}_optim.pth'
+            optim_path = f'{model_prepath}_{net_name}_optim.pt'
             load(optim, optim_path)
 
 

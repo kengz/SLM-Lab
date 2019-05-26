@@ -122,9 +122,9 @@ class MLPNet(Net, nn.Module):
             return self.model_tail(x)
 
     @net_util.dev_check_train_step
-    def train_step(self, loss, optim, lr_scheduler, lr_clock=None, global_net=None):
+    def train_step(self, loss, optim, lr_scheduler, clock=None, global_net=None):
         '''Train a network given a computed loss'''
-        lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
+        lr_scheduler.step(epoch=ps.get(clock, 'frame'))
         optim.zero_grad()
         loss.backward()
         if self.clip_grad_val is not None:
@@ -134,7 +134,7 @@ class MLPNet(Net, nn.Module):
         optim.step()
         if global_net is not None:
             net_util.copy(global_net, self)
-        lr_clock.tick('opt_step')
+        clock.tick('opt_step')
         return loss
 
 
@@ -291,8 +291,8 @@ class HydraMLPNet(Net, nn.Module):
         return outs
 
     @net_util.dev_check_train_step
-    def train_step(self, loss, optim, lr_scheduler, lr_clock=None, global_net=None):
-        lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
+    def train_step(self, loss, optim, lr_scheduler, clock=None, global_net=None):
+        lr_scheduler.step(epoch=ps.get(clock, 'frame'))
         optim.zero_grad()
         loss.backward()
         if self.clip_grad_val is not None:
@@ -302,7 +302,7 @@ class HydraMLPNet(Net, nn.Module):
         optim.step()
         if global_net is not None:
             net_util.copy(global_net, self)
-        lr_clock.tick('opt_step')
+        clock.tick('opt_step')
         return loss
 
 

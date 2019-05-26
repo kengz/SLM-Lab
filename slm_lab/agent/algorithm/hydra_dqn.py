@@ -89,16 +89,16 @@ class HydraDQN(DQN):
         clock = self.body.env.clock  # main clock
         if self.to_train == 1:
             total_loss = torch.tensor(0.0, device=self.net.device)
-            for _ in range(self.training_epoch):
+            for _ in range(self.training_iter):
                 batch = self.space_sample()
-                for _ in range(self.training_batch_epoch):
+                for _ in range(self.training_batch_iter):
                     loss = self.calc_q_loss(batch)
-                    self.net.train_step(loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
+                    self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
                     total_loss += loss
-            loss = total_loss / (self.training_epoch * self.training_batch_epoch)
+            loss = total_loss / (self.training_iter * self.training_batch_iter)
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan

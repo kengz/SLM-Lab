@@ -36,9 +36,9 @@ class SIL(ActorCritic):
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.01,
-        "training_batch_epoch": 8,
+        "training_batch_iter": 8,
         "training_frequency": 1,
-        "training_epoch": 8,
+        "training_iter": 8,
     }
 
     e.g. special memory_spec
@@ -83,8 +83,8 @@ class SIL(ActorCritic):
             'sil_policy_loss_coef',
             'sil_val_loss_coef',
             'training_frequency',
-            'training_batch_epoch',
-            'training_epoch',
+            'training_batch_iter',
+            'training_iter',
         ])
         super().init_algorithm_params()
 
@@ -134,17 +134,17 @@ class SIL(ActorCritic):
             super_loss = super().train()
             # offpolicy sil update with random minibatch
             total_sil_loss = torch.tensor(0.0)
-            for _ in range(self.training_epoch):
+            for _ in range(self.training_iter):
                 batch = self.replay_sample()
-                for _ in range(self.training_batch_epoch):
+                for _ in range(self.training_batch_iter):
                     pdparams, _v_preds = self.calc_pdparam_v(batch)
                     sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch, pdparams)
                     sil_loss = sil_policy_loss + sil_val_loss
-                    self.net.train_step(sil_loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
+                    self.net.train_step(sil_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
                     total_sil_loss += sil_loss
-            sil_loss = total_sil_loss / self.training_epoch
+            sil_loss = total_sil_loss / self.training_iter
             loss = super_loss + sil_loss
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -179,7 +179,8 @@ class PPOSIL(SIL, PPO):
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
+        "training_batch_iter": 8,
+        "training_iter": 8,
         "training_epoch": 8,
     }
 

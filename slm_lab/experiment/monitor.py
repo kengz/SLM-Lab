@@ -1,22 +1,3 @@
-'''
-The monitor module with data_space
-Monitors agents, environments, sessions, trials, experiments, evolutions, and handles all the data produced by the Lab components.
-Each dataframe resolves from the coarsest dimension to the finest, with data coordinates coor in the form: (experiment,trial,session,agent,env,body)
-The resolution after session is the AEB space, hence it is a subspace.
-AEB space is not necessarily tabular, and hence the data is NoSQL.
-
-The data_space is congruent to the coor, with proper resolution.
-E.g. (experiment,trial,session) specifies the session_data of a session, ran over multiple episodes on the AEB space.
-
-Space ordering:
-AEBSpace: space to track AEB
-AgentSpace: space agent instances, subspace of AEBSpace
-EnvSpace: space of env instances, subspace of AEBSpace
-DataSpace: a data space storing an AEB data projected to a-axis, and its dual projected to e-axis. This is so that a-proj data like action_space from agent_space can be used by env_space, which requires e-proj data, and vice versa.
-
-Object reference (for agent to access env properties, vice versa):
-Agents - AgentSpace - AEBSpace - EnvSpace - Envs
-'''
 from gym import spaces
 from slm_lab.agent import AGENT_DATA_NAMES
 from slm_lab.agent.algorithm import policy_util
@@ -28,8 +9,6 @@ from slm_lab.spec import spec_util
 import numpy as np
 import pandas as pd
 import pydash as ps
-import time
-import torch
 
 
 logger = logger.get_logger(__name__)
@@ -68,7 +47,10 @@ def get_action_type(action_space):
 
 class Body:
     '''
-    Body of an agent inside an environment. This acts as the main variable storage and bridge between agent and environment to pair them up properly in the generalized multi-agent-env setting.
+    Body of an agent inside an environment, it:
+    - enables the automatic dimension inference for constructing network input/output
+    - acts as reference bridge between agent and environment (useful for multi-agent, multi-env)
+    - acts as non-gradient variable storage for monitoring and analysis
     '''
 
     def __init__(self, env, agent_spec, aeb=(0, 0, 0), aeb_space=None):
@@ -98,7 +80,7 @@ class Body:
         # dataframes to track data for analysis.analyze_session
         # track training data per episode
         self.train_df = pd.DataFrame(columns=[
-            'epi', 'opt_step', 'total_t', 't', 'wall_t', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
+            'epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
         # track eval data within run_eval. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
@@ -137,9 +119,9 @@ class Body:
 
     def calc_df_row(self, env):
         '''Calculate a row for updating train_df or eval_df.'''
-        total_t = self.env.clock.get('total_t')
+        frame = self.env.clock.get('frame')
         wall_t = env.clock.get_elapsed_wall_t()
-        fps = 0 if wall_t == 0 else total_t / wall_t
+        fps = 0 if wall_t == 0 else frame / wall_t
 
         # update debugging variables
         if net_util.to_check_train_step():
@@ -147,13 +129,13 @@ class Body:
             self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
 
         row = pd.Series({
-            # epi and total_t are always measured from training env
+            # epi and frame are always measured from training env
             'epi': self.env.clock.get('epi'),
-            'opt_step': self.env.clock.get('opt_step'),
-            'total_t': total_t,
             # t and reward are measured from a given env or eval_env
             't': env.clock.get('t'),
             'wall_t': wall_t,
+            'opt_step': self.env.clock.get('opt_step'),
+            'frame': frame,
             'fps': fps,
             'reward': np.nanmean(self.total_reward),  # guard for vec env
             'reward_ma': np.nan,  # update outside
@@ -202,25 +184,26 @@ class Body:
         spec_name = spec['name']
         trial_index = spec['meta']['trial']
         session_index = spec['meta']['session']
-        aeb_str = str(self.aeb).replace(' ', '')
-        prefix = f'Trial {trial_index} session {session_index} {spec_name}_t{trial_index}_s{session_index}, aeb{aeb_str}'
+        prefix = f'Trial {trial_index} session {session_index} {spec_name}_t{trial_index}_s{session_index}'
         return prefix
 
-    def log_summary(self, body_df_kind='train'):
+    def log_metrics(self, metrics, df_mode):
+        '''Log session metrics'''
+        prefix = self.get_log_prefix()
+        row_str = '  '.join([f'{k}: {v:g}' for k, v in metrics.items()])
+        msg = f'{prefix} [{df_mode}_df metrics] {row_str}'
+        logger.info(msg)
+
+    def log_summary(self, df_mode):
         '''
         Log the summary for this body when its environment is done
-        @param str:body_df_kind 'train' or 'eval'
+        @param str:df_mode 'train' or 'eval'
         '''
         prefix = self.get_log_prefix()
-        if body_df_kind == 'eval':
-            df = self.eval_df
-            reward_ma = self.eval_reward_ma
-        else:
-            df = self.train_df
-            reward_ma = self.total_reward_ma
+        df = getattr(self, f'{df_mode}_df')
         last_row = df.iloc[-1]
         row_str = '  '.join([f'{k}: {v:g}' for k, v in last_row.items()])
-        msg = f'{prefix} [{body_df_kind}_df] {row_str}'
+        msg = f'{prefix} [{df_mode}_df] {row_str}'
         logger.info(msg)
 
     def space_init(self, aeb_space):
@@ -395,6 +378,6 @@ class AEBSpace:
                 for body in env.nanflat_body_e:
                     body.log_summary('train')
             env.clock.tick(unit or ('epi' if env.done else 't'))
-            end_session = not (env.clock.get() < env.clock.max_tick)
+            end_session = not (env.clock.get() < env.clock.max_frame)
             end_sessions.append(end_session)
         return all(end_sessions)

@@ -26,7 +26,7 @@ class OpenAIEnv(BaseEnv):
         "reward_scale": "sign",
         "num_envs": 8,
         "max_t": null,
-        "max_tick": 1e7
+        "max_frame": 1e7
     }],
     '''
 

@@ -55,7 +55,7 @@
       "name": "${env}",
       "num_envs": 32,
       "max_t": null,
-      "max_tick": 5e7
+      "max_frame": 5e7
     }],
     "body": {
       "product": "outer",
@@ -65,7 +65,6 @@
       "distributed": false,
       "log_frequency": 20000,
       "eval_frequency": 20000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 1,
       "param_spec_process": 4

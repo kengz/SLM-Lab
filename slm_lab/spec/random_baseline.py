@@ -6,6 +6,8 @@ import numpy as np
 import pydash as ps
 
 
+FILEPATH = 'slm_lab/spec/_random_baseline.json'
+NUM_EVAL = 100
 # extra envs to include
 INCLUDE_ENVS = [
     'vizdoom-v0',
@@ -64,7 +66,6 @@ EXCLUDE_ENVS = [
     'HandManipulatePenDense-v0',
     'HandManipulatePenTouchSensorsDense-v0',
 ]
-NUM_EVAL = 100
 
 
 def enum_envs():
@@ -102,29 +103,35 @@ def gen_random_baseline(env_name, num_eval=NUM_EVAL):
     return {'mean': mean_rand_ret, 'std': std_rand_ret}
 
 
+def get_random_baseline(env_name):
+    '''Get a single random baseline for env; if does not exist in file, generate live and update the file'''
+    random_baseline = util.read(FILEPATH)
+    if env_name in random_baseline:
+        baseline = random_baseline[env_name]
+    else:
+        try:
+            logger.info(f'Generating random baseline for {env_name}')
+            baseline = gen_random_baseline(env_name, NUM_EVAL)
+        except Exception as e:
+            logger.warning(f'Cannot start env: {env_name}, skipping random baseline generation')
+            baseline = None
+        # update immediately
+        logger.info(f'Updating new random baseline in {FILEPATH}')
+        random_baseline[env_name] = baseline
+        util.write(random_baseline, FILEPATH)
+    return baseline
+
+
 def main():
     '''
     Main method to generate all random baselines and write to file.
     Run as: python slm_lab/spec/random_baseline.py
     '''
-    filepath = 'slm_lab/spec/_random_baseline.json'
-    old_random_baseline = util.read(filepath)
-    random_baseline = {}
     envs = enum_envs()
     for idx, env_name in enumerate(envs):
-        if env_name in old_random_baseline:
-            logger.info(f'Using existing random baseline for {env_name}: {idx + 1}/{len(envs)}')
-            random_baseline[env_name] = old_random_baseline[env_name]
-        else:
-            try:
-                logger.info(f'Generating random baseline for {env_name}: {idx + 1}/{len(envs)}')
-                random_baseline[env_name] = gen_random_baseline(env_name, NUM_EVAL)
-            except Exception as e:
-                logger.warning(f'Cannot start env: {env_name}, skipping random baseline generation')
-                continue
-        util.write(random_baseline, filepath)
-    logger.info(f'Done, random baseline written to {filepath}')
-    return random_baseline
+        logger.info(f'Generating random baseline for {env_name}: {idx + 1}/{len(envs)}')
+        get_random_baseline(env_name)
+    logger.info(f'Done, random baseline updated in {FILEPATH}')
 
 
 if __name__ == '__main__':

@@ -10,6 +10,7 @@ import numpy as np
 import operator
 import os
 import pandas as pd
+import pickle
 import pydash as ps
 import regex as re
 import subprocess
@@ -44,6 +45,14 @@ def batch_get(arr, idxs):
         return np.array(operator.itemgetter(*idxs)(arr))
     else:
         return arr[idxs]
+
+
+def calc_srs_mean_std(sr_list):
+    '''Given a list of series, calculate their mean and std'''
+    cat_df = pd.DataFrame(dict(enumerate(sr_list)))
+    mean_sr = cat_df.mean(axis=1)
+    std_sr = cat_df.std(axis=1)
+    return mean_sr, std_sr
 
 
 def calc_ts_diff(ts2, ts1):
@@ -285,6 +294,14 @@ def guard_data_a(cls, data_a, data_name):
     return data_a
 
 
+def insert_folder(prepath, folder):
+    '''Insert a folder into prepath'''
+    split_path = prepath.split('/')
+    prename = split_path.pop()
+    split_path += [folder, prename]
+    return '/'.join(split_path)
+
+
 def in_eval_lab_modes():
     '''Check if lab_mode is one of EVAL_MODES'''
     return get_lab_mode() in EVAL_MODES
@@ -306,7 +323,11 @@ def ctx_lab_mode(lab_mode):
     Creates context to run method with a specific lab_mode
     @example
     with util.ctx_lab_mode('eval'):
-        run_eval()
+        foo()
+
+    @util.ctx_lab_mode('eval')
+    def foo():
+        ...
     '''
     prev_lab_mode = os.environ.get('lab_mode')
     os.environ['lab_mode'] = lab_mode
@@ -364,7 +385,7 @@ def prepath_split(prepath):
     if ckpt is not None:  # separate ckpt
         tail = tail.replace(f'_ckpt-{ckpt}', '')
     if '/' in tail:  # tail = prefolder/prename
-        prefolder, prename = tail.split('/')
+        prefolder, prename = tail.split('/', 1)
     else:
         prefolder, prename = tail, None
     predir = f'data/{prefolder}'
@@ -449,6 +470,8 @@ def read(data_path, **kwargs):
     ext = get_file_ext(data_path)
     if ext == '.csv':
         data = read_as_df(data_path, **kwargs)
+    elif ext == '.pkl':
+        data = read_as_pickle(data_path, **kwargs)
     else:
         data = read_as_plain(data_path, **kwargs)
     return data
@@ -458,6 +481,13 @@ def read_as_df(data_path, **kwargs):
     '''Submethod to read data as DataFrame'''
     ext = get_file_ext(data_path)
     data = pd.read_csv(data_path, **kwargs)
+    return data
+
+
+def read_as_pickle(data_path, **kwargs):
+    '''Submethod to read data as pickle'''
+    with open(data_path, 'rb') as f:
+        data = pickle.load(f)
     return data
 
 
@@ -534,24 +564,6 @@ def self_desc(cls):
     return desc
 
 
-def session_df_to_data(session_df):
-    '''
-    Convert a multi_index session_df (df) with column levels (a,e,b,col) to session_data[aeb] = aeb_df
-    @example
-
-    session_df = util.read(filepath, header=[0, 1, 2, 3])
-    session_data = util.session_df_to_data(session_df)
-    '''
-    session_data = {}
-    fix_multi_index_dtype(session_df)
-    aeb_list = get_df_aeb_list(session_df)
-    for aeb in aeb_list:
-        aeb_df = session_df.loc[:, aeb]
-        aeb_df.reset_index(inplace=True, drop=True)  # guard for eval append-row
-        session_data[aeb] = aeb_df
-    return session_data
-
-
 def set_attr(obj, attr_dict, keys=None):
     '''Set attribute of an object from a dict'''
     if keys is not None:
@@ -584,7 +596,7 @@ def set_cuda_id(spec):
 
 def set_logger(spec, logger, unit=None):
     '''Set the logger for a lab unit give its spec'''
-    os.environ['PREPATH'] = get_prepath(spec, unit=unit)
+    os.environ['LOG_PREPATH'] = insert_folder(get_prepath(spec, unit=unit), 'log')
     reload(logger)  # to set session-specific logger
 
 
@@ -714,6 +726,8 @@ def write(data, data_path):
     ext = get_file_ext(data_path)
     if ext == '.csv':
         write_as_df(data, data_path)
+    elif ext == '.pkl':
+        write_as_pickle(data, data_path)
     else:
         write_as_plain(data, data_path)
     return data_path
@@ -723,7 +737,14 @@ def write_as_df(data, data_path):
     '''Submethod to write data as DataFrame'''
     df = cast_df(data)
     ext = get_file_ext(data_path)
-    df.to_csv(data_path)
+    df.to_csv(data_path, index=False)
+    return data_path
+
+
+def write_as_pickle(data, data_path):
+    '''Submethod to write data as pickle'''
+    with open(data_path, 'wb') as f:
+        pickle.dump(data, f)
     return data_path
 
 

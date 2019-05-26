@@ -1,17 +1,14 @@
-'''
-The control module
-Creates and controls the units of SLM lab: Experiment, Trial, Session
-'''
+# the control module
+# creates and runs control loops at levels: Experiment, Trial, Session
 from copy import deepcopy
 from importlib import reload
 from slm_lab.agent import AgentSpace, Agent
 from slm_lab.agent.net import net_util
 from slm_lab.env import EnvSpace, make_env
-from slm_lab.experiment import analysis, retro_analysis, search
+from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
-import os
 import torch.multiprocessing as mp
 
 
@@ -28,8 +25,7 @@ class Session:
         util.set_random_seed(self.spec)
         util.set_cuda_id(self.spec)
         util.set_logger(self.spec, logger, 'session')
-        analysis.save_spec(spec, unit='session')
-        self.data = None
+        spec_util.save(spec, unit='session')
 
         # init agent and env
         self.env = make_env(self.spec)
@@ -43,56 +39,42 @@ class Session:
 
     def to_ckpt(self, env, mode='eval'):
         '''Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end'''
-        clock = env.clock
-        tick = clock.get()
         if mode == 'eval' and util.in_eval_lab_modes():  # avoid double-eval: eval-ckpt in eval mode
             return False
+        clock = env.clock
+        frame = clock.get()
         frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
-        if mode == 'log' and tick == 0:  # avoid log ckpt at init
+        if frame == 0 or clock.get('opt_step') == 0:  # avoid ckpt at init
             to_ckpt = False
         elif frequency is None:  # default episodic
             to_ckpt = env.done
-        elif clock.max_tick_unit == 'epi' and not env.done:  # epi ckpt needs env done
-            to_ckpt = False
         else:  # normal ckpt condition by mod remainder (general for venv)
             rem = env.num_envs or 1
-            to_ckpt = (tick % frequency < rem) or tick == clock.max_tick
+            to_ckpt = (frame % frequency < rem) or frame == clock.max_frame
         return to_ckpt
 
     def try_ckpt(self, agent, env):
         '''Check then run checkpoint log/eval'''
+        body = agent.body
         if self.to_ckpt(env, 'log'):
-            agent.body.train_ckpt()
-            agent.body.log_summary('train')
+            body.train_ckpt()
+            body.log_summary('train')
 
         if self.to_ckpt(env, 'eval'):
-            total_reward = self.run_eval()
-            agent.body.eval_ckpt(self.eval_env, total_reward)
-            agent.body.log_summary('eval')
+            avg_return = analysis.gen_avg_return(agent, self.eval_env)
+            body.eval_ckpt(self.eval_env, avg_return)
+            body.log_summary('eval')
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            if env.clock.get() > 0:  # nothing to analyze at start
-                analysis.analyze_session(self, eager_analyze_trial=True)
-
-    def run_eval(self):
-        with util.ctx_lab_mode('eval'):  # enter eval context
-            self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
-            self.eval_env.clock.tick('epi')
-            state = self.eval_env.reset()
-            done = False
-            total_reward = 0
-            while not done:
-                self.eval_env.clock.tick('t')
-                action = self.agent.act(state)
-                next_state, reward, done, info = self.eval_env.step(action)
-                state = next_state
-                total_reward += reward
-        # exit eval context, restore variables simply by updating
-        self.agent.algorithm.update()
-        return total_reward
+            if len(body.train_df) > 1:  # need > 1 row to calculate stability
+                metrics = analysis.analyze_session(self.spec, body.train_df, 'train')
+                body.log_metrics(metrics['scalar'], 'train')
+            if len(body.eval_df) > 1:  # need > 1 row to calculate stability
+                metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval')
+                body.log_metrics(metrics['scalar'], 'eval')
 
     def run_rl(self):
-        '''Run the main RL loop until clock.max_tick'''
+        '''Run the main RL loop until clock.max_frame'''
         logger.info(f'Running RL loop for trial {self.spec["meta"]["trial"]} session {self.index}')
         clock = self.env.clock
         state = self.env.reset()
@@ -100,12 +82,12 @@ class Session:
         while True:
             if util.epi_done(done):  # before starting another episode
                 self.try_ckpt(self.agent, self.env)
-                if clock.get() < clock.max_tick:  # reset and continue
+                if clock.get() < clock.max_frame:  # reset and continue
                     clock.tick('epi')
                     state = self.env.reset()
                     done = False
             self.try_ckpt(self.agent, self.env)
-            if clock.get() >= clock.max_tick:  # finish
+            if clock.get() >= clock.max_frame:  # finish
                 break
             clock.tick('t')
             action = self.agent.act(state)
@@ -118,13 +100,14 @@ class Session:
         self.agent.close()
         self.env.close()
         self.eval_env.close()
-        logger.info('Session done and closed.')
+        logger.info(f'Session {self.index} done')
 
     def run(self):
         self.run_rl()
-        self.data = analysis.analyze_session(self)  # session fitness
+        metrics = analysis.analyze_session(self.spec, self.agent.body.eval_df, 'eval')
+        self.agent.body.log_metrics(metrics['scalar'], 'eval')
         self.close()
-        return self.data
+        return metrics
 
 
 class SpaceSession(Session):
@@ -136,8 +119,7 @@ class SpaceSession(Session):
         util.set_random_seed(self.spec)
         util.set_cuda_id(self.spec)
         util.set_logger(self.spec, logger, 'session')
-        analysis.save_spec(spec, unit='session')
-        self.data = None
+        spec_util.save(spec, unit='session')
 
         self.aeb_space = AEBSpace(self.spec)
         self.env_space = EnvSpace(self.spec, self.aeb_space)
@@ -175,25 +157,20 @@ class SpaceSession(Session):
         '''Close session and clean up. Save agent, close env.'''
         self.agent_space.close()
         self.env_space.close()
-        logger.info('Session done and closed.')
+        logger.info('Session done')
 
     def run(self):
         self.run_all_episodes()
-        self.data = analysis.analyze_session(self, tmp_space_session_sub=True)  # session fitness
+        space_metrics_dict = analysis.analyze_session(self)
         self.close()
-        return self.data
+        return space_metrics_dict
 
 
-def init_run_session(*args):
-    '''Runner for multiprocessing'''
-    session = Session(*args)
-    return session.run()
-
-
-def init_run_space_session(*args):
-    '''Runner for multiprocessing'''
-    session = SpaceSession(*args)
-    return session.run()
+def mp_run_session(spec, global_nets, mp_dict):
+    '''Wrap for multiprocessing with shared variable'''
+    session = Session(spec, global_nets)
+    metrics = session.run()
+    mp_dict[session.index] = metrics
 
 
 class Trial:
@@ -207,44 +184,28 @@ class Trial:
         self.spec = spec
         self.index = self.spec['meta']['trial']
         util.set_logger(self.spec, logger, 'trial')
-        analysis.save_spec(spec, unit='trial')
-        self.session_data_dict = {}
-        self.data = None
-
-        self.is_singleton = spec_util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
-        self.SessionClass = Session if self.is_singleton else SpaceSession
-        self.mp_runner = init_run_session if self.is_singleton else init_run_space_session
+        spec_util.save(spec, unit='trial')
 
     def parallelize_sessions(self, global_nets=None):
+        mp_dict = mp.Manager().dict()
         workers = []
         for _s in range(self.spec['meta']['max_session']):
             spec_util.tick(self.spec, 'session')
-            w = mp.Process(target=self.mp_runner, args=(deepcopy(self.spec), global_nets))
+            w = mp.Process(target=mp_run_session, args=(deepcopy(self.spec), global_nets, mp_dict))
             w.start()
             workers.append(w)
         for w in workers:
             w.join()
-        session_datas = retro_analysis.session_data_dict_for_dist(self.spec)
-        return session_datas
+        session_metrics_list = [mp_dict[idx] for idx in sorted(mp_dict.keys())]
+        return session_metrics_list
 
     def run_sessions(self):
         logger.info('Running sessions')
-        if util.get_lab_mode() in ('train', 'eval') and self.spec['meta']['max_session'] > 1:
-            # when training a single spec over multiple sessions
-            session_datas = self.parallelize_sessions()
-        else:
-            session_datas = []
-            for _s in range(self.spec['meta']['max_session']):
-                spec_util.tick(self.spec, 'session')
-                session = self.SessionClass(deepcopy(self.spec))
-                session_data = session.run()
-                session_datas.append(session_data)
-                if analysis.is_unfit(session_data, session):
-                    break
-        return session_datas
+        session_metrics_list = self.parallelize_sessions()
+        return session_metrics_list
 
     def init_global_nets(self):
-        session = self.SessionClass(deepcopy(self.spec))
+        session = Session(deepcopy(self.spec))
         if self.is_singleton:
             session.env.close()  # safety
             global_nets = net_util.init_global_nets(session.agent.algorithm)
@@ -256,21 +217,20 @@ class Trial:
     def run_distributed_sessions(self):
         logger.info('Running distributed sessions')
         global_nets = self.init_global_nets()
-        session_datas = self.parallelize_sessions(global_nets)
-        return session_datas
+        session_metrics_list = self.parallelize_sessions(global_nets)
+        return session_metrics_list
 
     def close(self):
-        logger.info('Trial done and closed.')
+        logger.info(f'Trial {self.index} done')
 
     def run(self):
         if self.spec['meta'].get('distributed') == False:
-            session_datas = self.run_sessions()
+            session_metrics_list = self.run_sessions()
         else:
-            session_datas = self.run_distributed_sessions()
-        self.session_data_dict = {data.index[0]: data for data in session_datas}
-        self.data = analysis.analyze_trial(self)
+            session_metrics_list = self.run_distributed_sessions()
+        metrics = analysis.analyze_trial(self.spec, session_metrics_list)
         self.close()
-        return self.data
+        return metrics['scalar']
 
 
 class Experiment:
@@ -284,24 +244,22 @@ class Experiment:
         self.spec = spec
         self.index = self.spec['meta']['experiment']
         util.set_logger(self.spec, logger, 'trial')
-        analysis.save_spec(spec, unit='experiment')
-        self.trial_data_dict = {}
-        self.data = None
+        spec_util.save(spec, unit='experiment')
         SearchClass = getattr(search, spec['meta'].get('search'))
-        self.search = SearchClass(self)
+        self.search = SearchClass(deepcopy(self.spec))
 
     def init_trial_and_run(self, spec):
         '''Method to run trial with the properly updated spec (trial_index) from experiment.search.lab_trial.'''
         trial = Trial(spec)
-        trial_data = trial.run()
-        return trial_data
+        trial_metrics = trial.run()
+        return trial_metrics
 
     def close(self):
         reload(search)  # fixes ray consecutive run crashing due to bad cleanup
-        logger.info('Experiment done and closed.')
+        logger.info('Experiment done')
 
     def run(self):
-        self.trial_data_dict = self.search.run()
-        self.data = analysis.analyze_experiment(self)
+        trial_data_dict = self.search.run(self.init_trial_and_run)
+        experiment_df = analysis.analyze_experiment(self.spec, trial_data_dict)
         self.close()
-        return self.data
+        return experiment_df
