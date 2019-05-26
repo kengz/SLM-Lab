@@ -27,7 +27,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 4,
+        "training_batch_iter": 4,
+        "training_iter": 8,
         "training_epoch": 8
       },
       "memory": {
@@ -126,7 +127,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_epoch": 4
       },
       "memory": {
@@ -225,7 +227,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
+        "training_batch_iter": 8,
+        "training_iter": 8,
         "training_epoch": 8
       },
       "memory": {
@@ -328,7 +331,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
+        "training_batch_iter": 8,
+        "training_iter": 8,
         "training_epoch": 8
       },
       "memory": {
@@ -431,7 +435,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 4,
+        "training_batch_iter": 4,
+        "training_iter": 8,
         "training_epoch": 8
       },
       "memory": {
@@ -530,7 +535,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
+        "training_batch_iter": 8,
+        "training_iter": 8,
         "training_epoch": 8
       },
       "memory": {
@@ -629,7 +635,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
+        "training_batch_iter": 8,
+        "training_iter": 8,
         "training_epoch": 8
       },
       "memory": {
@@ -732,7 +739,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
+        "training_batch_iter": 8,
+        "training_iter": 8,
         "training_epoch": 8
       },
       "memory": {

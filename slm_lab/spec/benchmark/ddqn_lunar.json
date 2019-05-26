@@ -14,8 +14,8 @@
           "end_step": 14000
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },

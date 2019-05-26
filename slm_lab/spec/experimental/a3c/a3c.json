@@ -20,7 +20,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.96,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -102,7 +101,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -184,7 +182,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.08,
         "training_frequency": 1,
-        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -266,7 +263,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -352,7 +348,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -438,7 +433,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -520,7 +514,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -602,7 +595,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -688,7 +680,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -774,7 +765,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -845,7 +835,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"

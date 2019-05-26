@@ -14,8 +14,8 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 32,
         "training_start_step": 10
       },
@@ -109,8 +109,8 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 32,
         "training_start_step": 10
       },
@@ -207,8 +207,8 @@
           "end_step": 15000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 4,
-        "training_epoch": 4,
+        "training_batch_iter": 4,
+        "training_iter": 4,
         "training_frequency": 32,
         "training_start_step": 32
       },
@@ -301,8 +301,8 @@
           "end_step": 15000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 4,
-        "training_epoch": 4,
+        "training_batch_iter": 4,
+        "training_iter": 4,
         "training_frequency": 32,
         "training_start_step": 32
       },

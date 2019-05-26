@@ -61,7 +61,6 @@ class ActorCritic(Reinforce):
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
     }
 
     e.g. special net_spec param "shared" to share/separate Actor/Critic
@@ -95,7 +94,6 @@ class ActorCritic(Reinforce):
             'policy_loss_coef',
             'val_loss_coef',
             'training_frequency',
-            'training_epoch',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)

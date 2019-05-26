@@ -22,8 +22,8 @@
         "sil_policy_loss_coef": 0.5,
         "sil_val_loss_coef": 0.5,
         "training_frequency": 1,
-        "training_batch_epoch": 4,
-        "training_epoch": 8
+        "training_batch_iter": 4,
+        "training_iter": 8
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -74,7 +74,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -116,8 +116,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -168,7 +168,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -210,8 +210,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -266,7 +266,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -308,8 +308,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -364,7 +364,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -406,8 +406,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 4,
-        "training_epoch": 4
+        "training_batch_iter": 4,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -458,7 +458,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -500,8 +500,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -552,7 +552,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -594,8 +594,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -650,7 +650,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -692,8 +692,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -748,7 +748,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -790,8 +790,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
@@ -868,8 +868,8 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",

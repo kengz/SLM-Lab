@@ -43,8 +43,8 @@ class VanillaDQN(SARSA):
             "end_step": 1000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 10,
         "training_start_step": 10,
     }
@@ -65,8 +65,8 @@ class VanillaDQN(SARSA):
             # these control the trade off between exploration and exploitaton
             'explore_var_spec',
             'gamma',  # the discount factor
-            'training_batch_epoch',  # how many gradient updates per batch
-            'training_epoch',  # how many batches to train each time
+            'training_batch_iter',  # how many gradient updates per batch
+            'training_iter',  # how many batches to train each time
             'training_frequency',  # how often to train (once a few timesteps)
             'training_start_step',  # how long before starting training
         ])
@@ -134,14 +134,14 @@ class VanillaDQN(SARSA):
         clock = self.body.env.clock
         if self.to_train == 1:
             total_loss = torch.tensor(0.0)
-            for _ in range(self.training_epoch):
+            for _ in range(self.training_iter):
                 batch = self.sample()
                 clock.set_batch_size(len(batch))
-                for _ in range(self.training_batch_epoch):
+                for _ in range(self.training_batch_iter):
                     loss = self.calc_q_loss(batch)
                     self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
                     total_loss += loss
-            loss = total_loss / (self.training_epoch * self.training_batch_epoch)
+            loss = total_loss / (self.training_iter * self.training_batch_iter)
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
@@ -247,8 +247,8 @@ class DQN(DQNBase):
             "end_step": 1000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 10,
         "training_start_step": 10
     }
@@ -275,8 +275,8 @@ class DoubleDQN(DQN):
             "end_step": 1000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 10,
         "training_start_step": 10
     }

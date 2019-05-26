@@ -234,8 +234,8 @@ def override_test_spec(spec):
         freq = 1 if agent_spec['memory']['name'] == 'OnPolicyReplay' else 8
         agent_spec['algorithm']['training_frequency'] = freq
         agent_spec['algorithm']['training_start_step'] = 1
-        agent_spec['algorithm']['training_epoch'] = 1
-        agent_spec['algorithm']['training_batch_epoch'] = 1
+        agent_spec['algorithm']['training_iter'] = 1
+        agent_spec['algorithm']['training_batch_iter'] = 1
     for env_spec in spec['env']:
         env_spec['max_frame'] = 40
         env_spec['max_t'] = 12

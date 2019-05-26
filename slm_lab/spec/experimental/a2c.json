@@ -20,7 +20,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -102,7 +101,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -184,7 +182,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -268,7 +265,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -354,7 +350,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -440,7 +435,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -522,7 +516,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -604,7 +597,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -690,7 +682,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -776,7 +767,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.5,
         "training_frequency": 1,
-        "training_epoch": 1
       },
       "memory": {
         "name": "OnPolicyReplay",
