@@ -4,26 +4,6 @@ import pytest
 import torch
 
 
-@pytest.mark.parametrize('vec,res', [
-    ([1, 1, 1], [False, False, False]),
-    ([1, 1, 2], [False, False, True]),
-    ([[1, 1], [1, 1], [1, 2]], [False, False, True]),
-])
-def test_is_outlier(vec, res):
-    assert np.array_equal(math_util.is_outlier(vec), res)
-
-
-def test_nan_add():
-    r0 = np.nan
-    r1 = np.array([1.0, 1.0])
-    r2 = np.array([np.nan, 2.0])
-    r3 = np.array([3.0, 3.0])
-
-    assert np.array_equal(math_util.nan_add(r0, r1), r1)
-    assert np.array_equal(math_util.nan_add(r1, r2), np.array([0.0, 3.0]))
-    assert np.array_equal(math_util.nan_add(r2, r3), np.array([3.0, 5.0]))
-
-
 @pytest.mark.parametrize('base_shape', [
     [],  # scalar
     [2],  # vector

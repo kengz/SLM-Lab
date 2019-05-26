@@ -1,6 +1,5 @@
-'''
-The data visualization module
-'''
+# The data visualization module
+# Defines plotting methods for analysis
 from plotly import graph_objs as go, io as pio, tools
 from plotly.offline import init_notebook_mode, iplot
 from slm_lab.lib import logger, util
@@ -8,8 +7,8 @@ import colorlover as cl
 import os
 import pydash as ps
 
-
 logger = logger.get_logger(__name__)
+
 # warn orca failure only once
 orca_warn_once = ps.once(lambda e: logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later.'))
 if util.is_jupyter():

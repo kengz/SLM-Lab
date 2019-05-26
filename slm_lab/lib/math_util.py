@@ -1,56 +1,9 @@
-'''
-Calculations used by algorithms
-All calculations for training shall have a standard API that takes in `batch` from algorithm.sample() method and return np array for calculation.
-`batch` is a dict containing keys to any data type you wish, e.g. {rewards: np.array([...])}
-'''
-from slm_lab.lib import logger
+# Various math calculations used by algorithms
 import numpy as np
 import torch
 
-logger = logger.get_logger(__name__)
-
 
 # general math methods
-
-
-def is_outlier(points, thres=3.5):
-    '''
-    Detects outliers using MAD modified_z_score method, generalized to work on points.
-    From https://stackoverflow.com/a/22357811/3865298
-    @example
-
-    is_outlier([1, 1, 1])
-    # => array([False, False, False], dtype=bool)
-    is_outlier([1, 1, 2])
-    # => array([False, False,  True], dtype=bool)
-    is_outlier([[1, 1], [1, 1], [1, 2]])
-    # => array([False, False,  True], dtype=bool)
-    '''
-    points = np.array(points)
-    if len(points.shape) == 1:
-        points = points[:, None]
-    median = np.median(points, axis=0)
-    diff = np.sum((points - median)**2, axis=-1)
-    diff = np.sqrt(diff)
-    med_abs_deviation = np.median(diff)
-    with np.errstate(divide='ignore', invalid='ignore'):
-        modified_z_score = 0.6745 * diff / med_abs_deviation
-        return modified_z_score > thres
-
-
-def nan_add(a1, a2):
-    '''Add np arrays and reset any nan to 0. Used for adding total_reward'''
-    a1_isnan = np.isnan(a1)
-    if a1_isnan.all():
-        return a2
-    else:
-        if a1_isnan.any():  # reset nan to 0 pre-sum
-            a1 = np.nan_to_num(a1)
-        a12 = a1 + a2
-        if np.isnan(a12).any():  # reset nan to 0 post-sum
-            a12 = np.nan_to_num(a12)
-        return a12
-
 
 def normalize(v):
     '''Method to normalize a rank-1 np array'''

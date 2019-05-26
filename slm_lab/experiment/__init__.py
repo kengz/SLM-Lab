@@ -1,2 +1,2 @@
-# the experiment module
-# handles experimentation logic: control, analysis
+# The experiment module
+# Handles experimentation logic: control, analysis

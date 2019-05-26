@@ -1,4 +1,4 @@
-# The entry point of SLM Lab
+# The SLM Lab entrypoint
 # to run scheduled set of specs:
 # python run_lab.py config/experiments.json
 # to run a single spec:

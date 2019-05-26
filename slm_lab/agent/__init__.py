@@ -1,4 +1,4 @@
-# the agent module
+# The agent module
 from slm_lab.agent import algorithm, memory
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.net import net_util

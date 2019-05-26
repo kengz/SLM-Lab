@@ -1,4 +1,4 @@
-# module to generate random baselines
+# Module to generate random baselines
 # Run as: python slm_lab/spec/random_baseline.py
 from slm_lab.lib import logger, util
 import gym

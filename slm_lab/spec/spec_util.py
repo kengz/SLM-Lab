@@ -1,8 +1,5 @@
-'''
-The spec util
-Handles the Lab experiment spec: reading, writing(evolution), validation and default setting
-Expands the spec and params into consumable inputs in info space for lab units.
-'''
+# The spec module
+# Manages specification to run things in lab
 from slm_lab.lib import logger, util
 from string import Template
 import itertools
