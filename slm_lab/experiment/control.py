@@ -99,7 +99,7 @@ class Session:
         self.agent.close()
         self.env.close()
         self.eval_env.close()
-        logger.info(f'Session {self.index} done and closed')
+        logger.info(f'Session {self.index} done')
 
     def run(self):
         self.run_rl()
@@ -155,7 +155,7 @@ class SpaceSession(Session):
         '''Close session and clean up. Save agent, close env.'''
         self.agent_space.close()
         self.env_space.close()
-        logger.info('Session done and closed')
+        logger.info('Session done')
 
     def run(self):
         self.run_all_episodes()
@@ -199,16 +199,7 @@ class Trial:
 
     def run_sessions(self):
         logger.info('Running sessions')
-        if util.get_lab_mode() in ('train', 'eval') and self.spec['meta']['max_session'] > 1:
-            # when training a single spec over multiple sessions
-            session_metrics_list = self.parallelize_sessions()
-        else:
-            session_metrics_list = []
-            for _s in range(self.spec['meta']['max_session']):
-                spec_util.tick(self.spec, 'session')
-                session = Session(deepcopy(self.spec))
-                session_metrics = session.run()
-                session_metrics_list.append(session_metrics)
+        session_metrics_list = self.parallelize_sessions()
         return session_metrics_list
 
     def init_global_nets(self):
@@ -228,7 +219,7 @@ class Trial:
         return session_metrics_list
 
     def close(self):
-        logger.info(f'Trial {self.index} done and closed')
+        logger.info(f'Trial {self.index} done')
 
     def run(self):
         if self.spec['meta'].get('distributed') == False:
@@ -253,7 +244,7 @@ class Experiment:
         util.set_logger(self.spec, logger, 'trial')
         spec_util.save(spec, unit='experiment')
         SearchClass = getattr(search, spec['meta'].get('search'))
-        self.search = SearchClass(self)
+        self.search = SearchClass(deepcopy(self.spec))
 
     def init_trial_and_run(self, spec):
         '''Method to run trial with the properly updated spec (trial_index) from experiment.search.lab_trial.'''
@@ -263,7 +254,7 @@ class Experiment:
 
     def close(self):
         reload(search)  # fixes ray consecutive run crashing due to bad cleanup
-        logger.info('Experiment done and closed')
+        logger.info('Experiment done')
 
     def run(self):
         trial_data_dict = self.search.run(self.init_trial_and_run)
