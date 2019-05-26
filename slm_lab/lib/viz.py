@@ -127,6 +127,7 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
     '''
     meta_spec = session_spec['meta']
     prepath = meta_spec['prepath']
+    graph_prepath = meta_spec['graph_prepath']
     title = f'session graph: {session_spec["name"]} t{meta_spec["trial"]} s{meta_spec["session"]}'
 
     local_metrics = session_metrics['local']
@@ -140,7 +141,9 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
     for name, time in name_time_pairs:
         fig = plot_sr(
             local_metrics[name], local_metrics[time], title, name, time)
-        save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
+        save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
+        if name in ('mean_returns', 'strengths'):  # save important graphs in prepath directly
+            save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
     if df_mode == 'eval':
         return
@@ -153,7 +156,7 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
     for name, time in name_time_pairs:
         fig = plot_sr(
             session_df[name], session_df[time], title, name, time)
-        save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
+        save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
 
 def plot_trial(trial_spec, trial_metrics):
@@ -164,6 +167,7 @@ def plot_trial(trial_spec, trial_metrics):
     '''
     meta_spec = trial_spec['meta']
     prepath = meta_spec['prepath']
+    graph_prepath = meta_spec['graph_prepath']
     title = f'trial graph: {trial_spec["name"]} t{meta_spec["trial"]} {meta_spec["max_session"]} sessions'
 
     local_metrics = trial_metrics['local']
@@ -182,7 +186,9 @@ def plot_trial(trial_spec, trial_metrics):
         else:
             fig = plot_mean_sr(
                 local_metrics[name], local_metrics[time], title, name, time)
-        save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
+        save_image(fig, f'{graph_prepath}_trial_graph_{name}_vs_{time}.png')
+        if name in ('mean_returns', 'strengths'):  # save important graphs in prepath directly
+            save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
 
 
 def plot_experiment(experiment_spec, experiment_df, metrics_cols):
@@ -218,6 +224,9 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
         title=f'experiment graph: {experiment_spec["name"]}',
         width=100 + 300 * len(x_cols), height=200 + 300 * len(y_cols))
     plot(fig)
+    graph_prepath = experiment_spec['meta']['graph_prepath']
+    save_image(fig, f'{graph_prepath}_experiment_graph.png')
+    # save important graphs in prepath directly
     prepath = experiment_spec['meta']['prepath']
     save_image(fig, f'{prepath}_experiment_graph.png')
     return fig

@@ -20,9 +20,9 @@ def retro_analyze_sessions(predir):
 def _retro_analyze_session(session_spec_path):
     '''Method to retro analyze a single session given only a path to its spec'''
     session_spec = util.read(session_spec_path)
-    prepath = session_spec['meta']['prepath']
+    data_prepath = session_spec['meta']['data_prepath']
     for df_mode in ('eval', 'train'):
-        session_df = util.read(f'{prepath}_session_df_{df_mode}.csv')
+        session_df = util.read(f'{data_prepath}_session_df_{df_mode}.csv')
         analysis.analyze_session(session_spec, session_df, df_mode)
 
 
@@ -39,8 +39,8 @@ def _retro_analyze_trial(trial_spec_path):
     '''Method to retro analyze a single trial given only a path to its spec'''
     trial_spec = util.read(trial_spec_path)
     meta_spec = trial_spec['meta']
-    prepath = meta_spec['prepath']
-    session_metrics_list = [util.read(f'{prepath}_s{s}_session_metrics_eval.pkl') for s in range(meta_spec['max_session'])]
+    data_prepath = meta_spec['data_prepath']
+    session_metrics_list = [util.read(f'{data_prepath}_s{s}_session_metrics_eval.pkl') for s in range(meta_spec['max_session'])]
     analysis.analyze_trial(trial_spec, session_metrics_list)
 
 
@@ -52,7 +52,8 @@ def retro_analyze_experiment(predir):
     experiment_spec_paths = ps.difference(glob(f'{predir}/*_spec.json'), trial_spec_paths)
     experiment_spec_path = experiment_spec_paths[0]
     spec = util.read(experiment_spec_path)
-    trial_data_dict = util.read(f'{prepath}_trial_data_dict.json')
+    data_prepath = spec['meta']['data_prepath']
+    trial_data_dict = util.read(f'{data_prepath}_trial_data_dict.json')
     analysis.analyze_experiment(spec, trial_data_dict)
 
 
@@ -64,7 +65,7 @@ def retro_analyze(predir):
     yarn retro_analyze data/reinforce_cartpole_2018_01_22_211751/
     '''
     predir = predir.strip('/')  # sanitary
-    os.environ['PREPATH'] = f'{predir}/retro_analyze'  # to prevent overwriting log file
+    os.environ['LOG_PREPATH'] = f'{predir}/log/retro_analyze'  # to prevent overwriting log file
     logger.info(f'Running retro-analysis on {predir}')
     retro_analyze_sessions(predir)
     retro_analyze_trials(predir)

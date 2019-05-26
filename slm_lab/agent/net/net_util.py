@@ -174,19 +174,19 @@ def save_algorithm(algorithm, ckpt=None):
     '''Save all the nets for an algorithm'''
     agent = algorithm.agent
     net_names = algorithm.net_names
-    prepath = agent.spec['meta']['prepath']
+    model_prepath = agent.spec['meta']['model_prepath']
     if ckpt is not None:
-        prepath = f'{prepath}_ckpt-{ckpt}'
+        model_prepath = f'{model_prepath}_ckpt-{ckpt}'
     for net_name in net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{prepath}_{net_name}_model.pt'
+        model_path = f'{model_prepath}_{net_name}_model.pt'
         save(net, model_path)
         optim_name = net_name.replace('net', 'optim')
         optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim
-            optim_path = f'{prepath}_{net_name}_optim.pt'
+            optim_path = f'{model_prepath}_{net_name}_optim.pt'
             save(optim, optim_path)
-    logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {prepath}_*.pt')
+    logger.debug(f'Saved algorithm {util.get_class_name(algorithm)} nets {net_names} to {model_prepath}_*.pt')
 
 
 def load(net, model_path):
@@ -201,18 +201,18 @@ def load_algorithm(algorithm):
     net_names = algorithm.net_names
     if util.in_eval_lab_modes():
         # load specific model in eval mode
-        prepath = agent.spec['meta']['eval_model_prepath']
+        model_prepath = agent.spec['meta']['eval_model_prepath']
     else:
-        prepath = agent.spec['meta']['prepath']
-    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {prepath}_*.pt')
+        model_prepath = agent.spec['meta']['model_prepath']
+    logger.info(f'Loading algorithm {util.get_class_name(algorithm)} nets {net_names} from {model_prepath}_*.pt')
     for net_name in net_names:
         net = getattr(algorithm, net_name)
-        model_path = f'{prepath}_{net_name}_model.pt'
+        model_path = f'{model_prepath}_{net_name}_model.pt'
         load(net, model_path)
         optim_name = net_name.replace('net', 'optim')
         optim = getattr(algorithm, optim_name, None)
         if optim is not None:  # only trainable net has optim
-            optim_path = f'{prepath}_{net_name}_optim.pt'
+            optim_path = f'{model_prepath}_{net_name}_optim.pt'
             load(optim, optim_path)
 
 

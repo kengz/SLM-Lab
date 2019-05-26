@@ -169,7 +169,7 @@ def get_eval_spec(spec_file, prename):
     prepath = f'{predir}/{prename}'
     spec = util.prepath_to_spec(prepath)
     spec['meta']['ckpt'] = 'eval'
-    spec['meta']['eval_model_prepath'] = prepath
+    spec['meta']['eval_model_prepath'] = util.insert_folder(prepath, 'model')
     return spec
 
 
@@ -312,5 +312,9 @@ def tick(spec, unit):
     else:
         raise ValueError(f'Unrecognized lab unit to tick: {unit}')
     # set prepath since it is determined at this point
-    meta_spec['prepath'] = util.get_prepath(spec, unit)
+    meta_spec['prepath'] = prepath = util.get_prepath(spec, unit)
+    for folder in ('data', 'graph', 'log', 'model'):
+        folder_prepath = util.insert_folder(prepath, folder)
+        os.makedirs(os.path.dirname(folder_prepath), exist_ok=True)
+        meta_spec[f'{folder}_prepath'] = folder_prepath
     return spec

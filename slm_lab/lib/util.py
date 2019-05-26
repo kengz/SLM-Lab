@@ -385,7 +385,7 @@ def prepath_split(prepath):
     if ckpt is not None:  # separate ckpt
         tail = tail.replace(f'_ckpt-{ckpt}', '')
     if '/' in tail:  # tail = prefolder/prename
-        prefolder, prename = tail.split('/')
+        prefolder, prename = tail.split('/', 1)
     else:
         prefolder, prename = tail, None
     predir = f'data/{prefolder}'
@@ -596,7 +596,7 @@ def set_cuda_id(spec):
 
 def set_logger(spec, logger, unit=None):
     '''Set the logger for a lab unit give its spec'''
-    os.environ['PREPATH'] = get_prepath(spec, unit=unit)
+    os.environ['LOG_PREPATH'] = insert_folder(get_prepath(spec, unit=unit), 'log')
     reload(logger)  # to set session-specific logger
 
 

@@ -15,13 +15,12 @@ import torch
 import torch.multiprocessing as mp
 
 
-logger = logger.get_logger(__name__)
-
 debug_modules = [
     # 'algorithm',
 ]
 debug_level = 'DEBUG'
 logger.toggle_debug(debug_modules, debug_level)
+logger = logger.get_logger(__name__)
 
 
 def run_spec(spec, lab_mode):
