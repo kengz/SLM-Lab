@@ -50,12 +50,12 @@ def create_layout(title, y_title, x_title, x_type=None, width=500, height=500, l
     return layout
 
 
-def get_palette(aeb_count):
-    '''Get the suitable palette to plot for some number of aeb graphs, where each aeb is a color.'''
-    if aeb_count <= 8:
-        palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
+def get_palette(size):
+    '''Get the suitable palette of a certain size'''
+    if size <= 8:
+        palette = cl.scales[str(max(3, size))]['qual']['Set2']
     else:
-        palette = cl.interp(cl.scales['8']['qual']['Set2'], aeb_count)
+        palette = cl.interp(cl.scales['8']['qual']['Set2'], size)
     return palette
 
 

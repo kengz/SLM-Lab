@@ -21,7 +21,6 @@ class Memory(ABC):
         '''
         self.memory_spec = memory_spec
         self.body = body
-
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
 
@@ -39,9 +38,3 @@ class Memory(ABC):
     def sample(self):
         '''Implement memory sampling mechanism'''
         raise NotImplementedError
-
-    def print_memory_info(self):
-        '''Prints size of all of the memory arrays'''
-        for k in self.data_keys:
-            d = getattr(self, k)
-            logger.info(f'Memory for body {self.body.aeb}: {k} :shape: {d.shape}, dtype: {d.dtype}, size: {util.sizeof(d)}MB')

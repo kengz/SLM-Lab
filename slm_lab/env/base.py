@@ -6,7 +6,6 @@ import numpy as np
 import pydash as ps
 import time
 
-ENV_DATA_NAMES = ['state', 'reward', 'done']
 logger = logger.get_logger(__name__)
 
 

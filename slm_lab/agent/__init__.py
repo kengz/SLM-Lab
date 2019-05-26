@@ -6,7 +6,6 @@ import numpy as np
 import pydash as ps
 import torch
 
-AGENT_DATA_NAMES = ['action', 'loss', 'explore_var']
 logger = logger.get_logger(__name__)
 
 

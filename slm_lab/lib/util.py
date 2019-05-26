@@ -175,34 +175,12 @@ def filter_nonan(arr):
         return np.array(mixed_type, dtype=arr.dtype)
 
 
-def fix_multi_index_dtype(df):
-    '''Restore aeb multi_index dtype from string to int, when read from file'''
-    df.columns = pd.MultiIndex.from_tuples([(int(x[0]), int(x[1]), int(x[2]), x[3]) for x in df.columns])
-    return df
-
-
-def nanflatten(arr):
-    '''Flatten np array while ignoring nan, like np.nansum etc.'''
-    flat_arr = arr.reshape(-1)
-    return filter_nonan(flat_arr)
-
-
 def gen_isnan(v):
     '''Check isnan for general type (np.isnan is only operable on np type)'''
     try:
         return np.isnan(v).all()
     except Exception:
         return v is None
-
-
-def get_df_aeb_list(session_df):
-    '''Get the aeb list for session_df for iterating.'''
-    aeb_list = sorted(ps.uniq([(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
-    return aeb_list
-
-
-def get_aeb_shape(aeb_list):
-    return np.amax(aeb_list, axis=0) + 1
 
 
 def get_class_name(obj, lower=False):

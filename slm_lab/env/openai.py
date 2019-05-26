@@ -1,4 +1,4 @@
-from slm_lab.env.base import BaseEnv, ENV_DATA_NAMES
+from slm_lab.env.base import BaseEnv
 from slm_lab.env.wrapper import make_gym_env
 from slm_lab.env.vec_env import make_gym_venv
 from slm_lab.env.registration import try_register_env

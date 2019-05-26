@@ -1,5 +1,5 @@
 from gym import spaces
-from slm_lab.env.base import BaseEnv, ENV_DATA_NAMES, set_gym_space_attr
+from slm_lab.env.base import BaseEnv, set_gym_space_attr
 from slm_lab.env.registration import get_env_path
 from slm_lab.env.wrapper import try_scale_reward
 from slm_lab.lib import logger, util
@@ -128,7 +128,7 @@ class UnityEnv(BaseEnv):
     def reset(self):
         self.done = False
         env_info_dict = self.u_env.reset(train_mode=(util.get_lab_mode() != 'dev'), config=self.env_spec.get('unity'))
-        a, b = 0, 0  # default singleton aeb
+        a, b = 0, 0  # default singleton agent and body
         env_info_a = self._get_env_info(env_info_dict, a)
         state = env_info_a.states[b]
         return state
@@ -136,7 +136,7 @@ class UnityEnv(BaseEnv):
     @lab_api
     def step(self, action):
         env_info_dict = self.u_env.step(action)
-        a, b = 0, 0  # default singleton aeb
+        a, b = 0, 0  # default singleton agent and body
         env_info_a = self._get_env_info(env_info_dict, a)
         state = env_info_a.states[b]
         reward = env_info_a.rewards[b]
