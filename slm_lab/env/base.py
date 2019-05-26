@@ -86,8 +86,8 @@ class BaseEnv(ABC):
     }],
     '''
 
-    def __init__(self, spec, e=None, env_space=None):
-        self.e = e or 0  # for compatibility with env_space
+    def __init__(self, spec, e=None):
+        self.e = e or 0  # for
         self.done = False
         self.env_spec = spec['env'][self.e]
         # set default
@@ -184,28 +184,4 @@ class BaseEnv(ABC):
     @lab_api
     def close(self):
         '''Method to close and cleanup env'''
-        raise NotImplementedError
-
-    @lab_api
-    def set_body_e(self, body_e):
-        '''Method called by body_space.init_body_space to complete the necessary backward reference needed for EnvSpace to work'''
-        self.body_e = body_e
-        self.nanflat_body_e = util.nanflatten(self.body_e)
-        for idx, body in enumerate(self.nanflat_body_e):
-            body.nanflat_e_idx = idx
-        self.body_num = len(self.nanflat_body_e)
-
-    @lab_api
-    def space_init(self, env_space):
-        '''Post init override for space env. Note that aeb is already correct from __init__'''
-        raise NotImplementedError
-
-    @lab_api
-    def space_reset(self):
-        '''Space (multi-env) reset method, return state_e'''
-        raise NotImplementedError
-
-    @lab_api
-    def space_step(self, action_e):
-        '''Space (multi-env) step method, return state_e, reward_e, done_e, info_e'''
         raise NotImplementedError

@@ -4,7 +4,7 @@ from copy import deepcopy
 from importlib import reload
 from slm_lab.agent import Agent
 from slm_lab.agent.net import net_util
-from slm_lab.env import EnvSpace, make_env
+from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import Body
 from slm_lab.lib import logger, util
@@ -149,12 +149,8 @@ class Trial:
 
     def init_global_nets(self):
         session = Session(deepcopy(self.spec))
-        if self.is_singleton:
-            session.env.close()  # safety
-            global_nets = net_util.init_global_nets(session.agent.algorithm)
-        else:
-            session.env_space.close()  # safety
-            global_nets = [net_util.init_global_nets(agent.algorithm) for agent in session.agent_space.agents]
+        session.env.close()  # safety
+        global_nets = net_util.init_global_nets(session.agent.algorithm)
         return global_nets
 
     def run_distributed_sessions(self):

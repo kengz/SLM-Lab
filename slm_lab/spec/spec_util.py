@@ -206,11 +206,6 @@ def is_aeb_compact(aeb_list):
     return aeb_compact
 
 
-def is_singleton(spec):
-    '''Check if spec uses a singleton Session'''
-    return len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1
-
-
 def override_dev_spec(spec):
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2

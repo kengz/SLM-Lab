@@ -59,8 +59,8 @@ class UnityEnv(BaseEnv):
     }],
     '''
 
-    def __init__(self, spec, e=None, env_space=None):
-        super().__init__(spec, e, env_space)
+    def __init__(self, spec, e=None):
+        super().__init__(spec, e)
         util.set_attr(self, self.env_spec, ['unity'])
         worker_id = int(f'{os.getpid()}{self.e+int(ps.unique_id())}'[-4:])
         seed = ps.get(spec, 'meta.random_seed')
@@ -69,11 +69,6 @@ class UnityEnv(BaseEnv):
         self.patch_gym_spaces(self.u_env)
         self._set_attr_from_u_env(self.u_env)
         assert self.max_t is not None
-        if env_space is None:  # singleton mode
-            pass
-        else:
-            self.space_init(env_space)
-
         logger.info(util.self_desc(self))
 
     def patch_gym_spaces(self, u_env):
@@ -155,45 +150,3 @@ class UnityEnv(BaseEnv):
     @lab_api
     def close(self):
         self.u_env.close()
-
-    # NOTE optional extension for multi-agent-env
-
-    @lab_api
-    def space_init(self, env_space):
-        '''Post init override for space env. Note that aeb is already correct from __init__'''
-        self.env_space = env_space
-        self.aeb_space = env_space.aeb_space
-        self.observation_spaces = [self.observation_space]
-        self.action_spaces = [self.action_space]
-
-    @lab_api
-    def space_reset(self):
-        self.done = False
-        self._check_u_brain_to_agent()
-        env_info_dict = self.u_env.reset(train_mode=(util.get_lab_mode() != 'dev'), config=self.env_spec.get('unity'))
-        state_e, = self.env_space.aeb_space.init_data_s(['state'], e=self.e)
-        for (a, b), body in util.ndenumerate_nonan(self.body_e):
-            env_info_a = self._get_env_info(env_info_dict, a)
-            self._check_u_agent_to_body(env_info_a, a)
-            state = env_info_a.states[b]
-            state_e[(a, b)] = state
-        return state_e
-
-    @lab_api
-    def space_step(self, action_e):
-        # TODO implement clock_speed: step only if self.clock.to_step()
-        action_e = util.nanflatten(action_e)
-        env_info_dict = self.u_env.step(action_e)
-        state_e, reward_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
-        if util.nonan_all(done_e):
-            state_e = self.space_reset()
-        for (a, b), body in util.ndenumerate_nonan(self.body_e):
-            env_info_a = self._get_env_info(env_info_dict, a)
-            state_e[(a, b)] = env_info_a.states[b]
-            rewards = env_info_a.rewards[b]
-            rewards = try_scale_reward(self, rewards)
-            reward_e[(a, b)] = rewards
-            done_e[(a, b)] = env_info_a.local_done[b]
-        info_e = env_info_dict
-        self.done = (util.nonan_all(done_e) or self.clock.t > self.max_t)
-        return state_e, reward_e, done_e, info_e
