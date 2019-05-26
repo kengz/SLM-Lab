@@ -8,7 +8,6 @@ import shutil
 import torch
 
 
-MA_WINDOW = 100
 NUM_EVAL = 4
 METRICS_COLS = [
     'strength', 'max_strength', 'final_strength',
