@@ -45,7 +45,7 @@ def test_demo_performance():
     spec_util.tick(spec, 'session')
     session = Session(spec)
     session.run()
-    last_reward = session.agent.body.train_df.iloc[-1]['reward']
+    last_reward = session.agent.body.train_df.iloc[-1]['total_reward']
     assert last_reward > 50, f'last_reward is too low: {last_reward}'
 
 

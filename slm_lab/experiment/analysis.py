@@ -113,7 +113,7 @@ def calc_session_metrics(session_df, env_name, prepath=None, df_mode=None):
     '''
     rand_bl = random_baseline.get_random_baseline(env_name)
     mean_rand_returns = rand_bl['mean']
-    mean_returns = session_df['reward']
+    mean_returns = session_df['total_reward']
     frames = session_df['frame']
     opt_steps = session_df['opt_step']
 

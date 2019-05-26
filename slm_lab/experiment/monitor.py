@@ -64,7 +64,7 @@ class Body:
         # dataframes to track data for analysis.analyze_session
         # track training data per episode
         self.train_df = pd.DataFrame(columns=[
-            'epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'reward', 'reward_ma', 'loss', 'lr',
+            'epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'total_reward', 'total_reward_ma', 'loss', 'lr',
             'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
         # track eval data within run_eval. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
@@ -118,8 +118,8 @@ class Body:
             'opt_step': self.env.clock.get('opt_step'),
             'frame': frame,
             'fps': fps,
-            'reward': np.nanmean(self.total_reward),  # guard for vec env
-            'reward_ma': np.nan,  # update outside
+            'total_reward': np.nanmean(self.total_reward),  # guard for vec env
+            'total_reward_ma': np.nan,  # update outside
             'loss': self.loss,
             'lr': self.get_mean_lr(),
             'explore_var': self.explore_var,
@@ -136,18 +136,18 @@ class Body:
         # append efficiently to df
         self.train_df.loc[len(self.train_df)] = row
         # update current reward_ma
-        self.total_reward_ma = self.train_df[-analysis.MA_WINDOW:]['reward'].mean()
-        self.train_df.iloc[-1]['reward_ma'] = self.total_reward_ma
+        self.total_reward_ma = self.train_df[-analysis.MA_WINDOW:]['total_reward'].mean()
+        self.train_df.iloc[-1]['total_reward_ma'] = self.total_reward_ma
 
     def eval_ckpt(self, eval_env, total_reward):
         '''Checkpoint to update body.eval_df data'''
         row = self.calc_df_row(eval_env)
-        row['reward'] = total_reward
+        row['total_reward'] = total_reward
         # append efficiently to df
         self.eval_df.loc[len(self.eval_df)] = row
         # update current reward_ma
-        self.eval_reward_ma = self.eval_df[-analysis.MA_WINDOW:]['reward'].mean()
-        self.eval_df.iloc[-1]['reward_ma'] = self.eval_reward_ma
+        self.eval_reward_ma = self.eval_df[-analysis.MA_WINDOW:]['total_reward'].mean()
+        self.eval_df.iloc[-1]['total_reward_ma'] = self.eval_reward_ma
 
     def get_mean_lr(self):
         '''Gets the average current learning rate of the algorithm's nets.'''
