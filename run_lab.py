@@ -1,6 +1,6 @@
 # The SLM Lab entrypoint
 # to run scheduled set of specs:
-# python run_lab.py config/experiments.json
+# python run_lab.py job/experiments.json
 # to run a single spec:
 # python run_lab.py slm_lab/spec/experimental/a2c_pong.json a2c_pong train
 from slm_lab import EVAL_MODES, TRAIN_MODES
@@ -70,7 +70,7 @@ def main():
     '''Main method to run jobs from scheduler or from a spec directly'''
     args = sys.argv[1:]
     if len(args) <= 1:  # use scheduler
-        job_file = args[0] if len(args) == 1 else 'config/experiments.json'
+        job_file = args[0] if len(args) == 1 else 'job/experiments.json'
         for spec_file, spec_and_mode in util.read(job_file).items():
             for spec_name, lab_mode in spec_and_mode.items():
                 read_spec_and_run(spec_file, spec_name, lab_mode)
