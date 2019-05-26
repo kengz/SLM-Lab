@@ -240,6 +240,7 @@ def analyze_session(session_spec, session_df, df_mode):
     prepath = session_spec['meta']['prepath']
     session_df = session_df.copy()
     assert len(session_df) > 1, f'Need more than 1 datapoint to calculate metrics'
+    util.write(session_df, f'{prepath}_session_df_{df_mode}.csv')
     # calculate metrics
     session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.0.name'), prepath, df_mode)
     # plot graph
