@@ -266,7 +266,7 @@ class Experiment:
         logger.info('Experiment done and closed')
 
     def run(self):
-        trial_data_dict = self.search.run()
+        trial_data_dict = self.search.run(self.init_trial_and_run)
         experiment_df = analysis.analyze_experiment(self.spec, trial_data_dict)
         self.close()
         return experiment_df

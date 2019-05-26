@@ -3,10 +3,8 @@ from copy import deepcopy
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from slm_lab.spec import spec_util
-import json
 import logging
 import numpy as np
-import os
 import pydash as ps
 import random
 import ray
@@ -16,16 +14,7 @@ import torch
 logger = logger.get_logger(__name__)
 
 
-def register_ray_serializer():
-    '''Helper to register so objects can be serialized in Ray'''
-    from slm_lab.experiment.control import Experiment
-    import pandas as pd
-    ray.register_custom_serializer(Experiment, use_pickle=True)
-    ray.register_custom_serializer(pd.DataFrame, use_pickle=True)
-    ray.register_custom_serializer(pd.Series, use_pickle=True)
-
-
-def build_config_space(experiment):
+def build_config_space(spec):
     '''
     Build ray config space from flattened spec.search
     Specify a config space in spec using `"{key}__{space_type}": {v}`.
@@ -44,7 +33,7 @@ def build_config_space(experiment):
     '''
     space_types = ('grid_search', 'choice', 'randint', 'uniform', 'normal')
     config_space = {}
-    for k, v in util.flatten_dict(experiment.spec['search']).items():
+    for k, v in util.flatten_dict(spec['search']).items():
         key, space_type = k.split('__')
         assert space_type in space_types, f'Please specify your search variable as {key}__<space_type> in one of {space_types}'
         if space_type == 'grid_search':
@@ -57,27 +46,26 @@ def build_config_space(experiment):
     return config_space
 
 
-def spec_from_config(experiment, config):
+def spec_from_config(spec, config):
     '''Helper to create spec from config - variables in spec.'''
-    spec = deepcopy(experiment.spec)
+    spec = deepcopy(spec)
     spec.pop('search', None)
     for k, v in config.items():
         ps.set_(spec, k, v)
     return spec
 
 
-def create_remote_fn(experiment):
-    ray_gpu = int(bool(ps.get(experiment.spec, 'agent.0.net.gpu') and torch.cuda.device_count()))
+def create_remote_fn(spec):
+    ray_gpu = int(bool(ps.get(spec, 'agent.0.net.gpu') and torch.cuda.device_count()))
     # TODO fractional ray_gpu is broken
 
     @ray.remote(num_gpus=ray_gpu)  # hack around bad Ray design of hard-coding
-    def run_trial(experiment, config):
+    def run_trial(init_trial_and_run, spec, config):
         trial_index = config.pop('trial_index')
-        spec = spec_from_config(experiment, config)
-        spec['meta']['trial'] = trial_index
-        spec['meta']['session'] = -1
-        metrics = experiment.init_trial_and_run(spec)
-        trial_data = {**config, **metrics, 'trial_index': trial_index}
+        spec = spec_from_config(spec, config)
+        spec['meta']['trial'] = trial_index  # inject trial index
+        metrics = init_trial_and_run(spec)
+        trial_data = {**config, **metrics, 'trial_index': spec['meta']['trial']}
         return trial_data
     return run_trial
 
@@ -98,39 +86,24 @@ def get_ray_results(pending_ids, ray_id_to_config):
 
 
 class RaySearch(ABC):
-    '''
-    RaySearch module for Experiment - Ray API integration with Lab
-    Abstract class ancestor to all RaySearch (using Ray).
-    specifies the necessary design blueprint for agent to work in Lab.
-    Mostly, implement just the abstract methods and properties.
-    '''
+    '''RaySearch module for Experiment - Ray API integration with Lab'''
 
-    def __init__(self, experiment):
-        self.experiment = experiment
-        self.config_space = build_config_space(experiment)
-        logger.info(f'Running {util.get_class_name(self)}, with meta spec:\n{self.experiment.spec["meta"]}')
+    def __init__(self, spec):
+        self.spec = spec
+        self.config_space = build_config_space(self.spec)
+        logger.info(f'Running {util.get_class_name(self)}, with meta spec:\n{self.spec["meta"]}')
 
     @abstractmethod
     def generate_config(self):
-        '''
-        Generate the next config given config_space, may update belief first.
-        Remember to update trial_index in config here, since run_trial() on ray.remote is not thread-safe.
-        '''
-        # inject trial_index for tracking in Ray
-        config['trial_index'] = spec_util.tick(self.experiment.spec, 'trial')['meta']['trial']
+        '''Generate the next config given config_space'''
         raise NotImplementedError
         return config
 
     @abstractmethod
     @lab_api
     def run(self):
-        '''
-        Implement the main run_trial loop.
-        Remember to call ray init and cleanup before and after loop.
-        '''
-        logging.getLogger('ray').propagate = True
+        '''Implement the main run_trial loop.'''
         ray.init()
-        register_ray_serializer()
         # loop for max_trial: generate_config(); run_trial.remote(config)
         ray.shutdown()
         raise NotImplementedError
@@ -143,17 +116,16 @@ class RandomSearch(RaySearch):
         configs = []  # to accommodate for grid_search
         for resolved_vars, config in ray.tune.suggest.variant_generator._generate_variants(self.config_space):
             # inject trial_index for tracking in Ray
-            config['trial_index'] = spec_util.tick(self.experiment.spec, 'trial')['meta']['trial']
+            config['trial_index'] = spec_util.tick(self.spec, 'trial')['meta']['trial']
             configs.append(config)
         return configs
 
     @lab_api
-    def run(self):
-        run_trial = create_remote_fn(self.experiment)
-        meta_spec = self.experiment.spec['meta']
+    def run(self, init_trial_and_run):
+        run_trial = create_remote_fn(self.spec)
+        meta_spec = self.spec['meta']
         logging.getLogger('ray').propagate = True
         ray.init(**meta_spec.get('search_resources', {}))
-        register_ray_serializer()
         max_trial = meta_spec['max_trial']
         trial_data_dict = {}
         ray_id_to_config = {}
@@ -162,7 +134,7 @@ class RandomSearch(RaySearch):
         for _t in range(max_trial):
             configs = self.generate_config()
             for config in configs:
-                ray_id = run_trial.remote(self.experiment, config)
+                ray_id = run_trial.remote(init_trial_and_run, self.spec, config)
                 ray_id_to_config[ray_id] = config
                 pending_ids.append(ray_id)
 
