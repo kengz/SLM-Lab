@@ -240,8 +240,6 @@ def analyze_session(session_spec, session_df, df_mode):
     prepath = session_spec['meta']['prepath']
     session_df = session_df.copy()
     assert len(session_df) > 1, f'Need more than 1 datapoint to calculate metrics'
-    if 'retro_analyze' not in os.environ['PREPATH']:
-        util.write(session_df, f'{prepath}_session_df_{df_mode}.csv')
     # calculate metrics
     session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.0.name'), prepath, df_mode)
     # plot graph
@@ -250,7 +248,7 @@ def analyze_session(session_spec, session_df, df_mode):
     return session_metrics
 
 
-def analyze_trial(trial_spec, session_metrics_list, zip=True):
+def analyze_trial(trial_spec, session_metrics_list):
     '''Analyze trial and save data, then return metrics'''
     prepath = trial_spec['meta']['prepath']
     # calculate metrics
@@ -259,7 +257,7 @@ def analyze_trial(trial_spec, session_metrics_list, zip=True):
     viz.plot_trial(trial_spec, trial_metrics)
     logger.debug(f'Saved trial data and graphs to {prepath}*')
     # zip files
-    if util.get_lab_mode() == 'train' and zip:
+    if util.get_lab_mode() == 'train':
         predir, _, _, _, _, _ = util.prepath_split(prepath)
         shutil.make_archive(predir, 'zip', predir)
         logger.info(f'All trial data zipped to {predir}.zip')
@@ -269,6 +267,7 @@ def analyze_trial(trial_spec, session_metrics_list, zip=True):
 def analyze_experiment(spec, trial_data_dict):
     '''Analyze experiment and save data'''
     prepath = spec['meta']['prepath']
+    util.write(trial_data_dict, f'{prepath}_trial_data_dict.json')
     # calculate experiment df
     experiment_df = calc_experiment_df(trial_data_dict, prepath)
     # plot graph
