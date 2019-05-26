@@ -87,8 +87,11 @@ def ray_trainable(config, reporter):
 
 
 def run_ray_search(spec):
-    '''Method to run ray search from experiment'''
-    logger.info('Running ray search')
+    '''
+    Method to run ray search from experiment. Uses RandomSearch now.
+    TODO support for other ray search algorithms: https://ray.readthedocs.io/en/latest/tune-searchalg.html
+    '''
+    logger.info(f'Running ray search for spec {spec["name"]}')
     # generate trial index to pass into Lab Trial
     global trial_index  # make gen_trial_index passable into ray.run
     trial_index = -1
