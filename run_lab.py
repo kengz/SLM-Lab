@@ -15,6 +15,8 @@ import torch
 import torch.multiprocessing as mp
 
 
+logger = logger.get_logger(__name__)
+
 debug_modules = [
     # 'algorithm',
 ]

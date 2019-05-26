@@ -9,7 +9,6 @@ from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
-import os
 import torch.multiprocessing as mp
 
 

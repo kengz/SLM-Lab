@@ -9,8 +9,6 @@ from slm_lab.spec import spec_util
 import numpy as np
 import pandas as pd
 import pydash as ps
-import time
-import torch
 
 
 logger = logger.get_logger(__name__)
@@ -49,7 +47,10 @@ def get_action_type(action_space):
 
 class Body:
     '''
-    Body of an agent inside an environment. This acts as the main variable storage and bridge between agent and environment to pair them up properly in the generalized multi-agent-env setting.
+    Body of an agent inside an environment, it:
+    - enables the automatic dimension inference for constructing network input/output
+    - acts as reference bridge between agent and environment (useful for multi-agent, multi-env)
+    - acts as non-gradient variable storage for monitoring and analysis
     '''
 
     def __init__(self, env, agent_spec, aeb=(0, 0, 0), aeb_space=None):
