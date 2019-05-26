@@ -106,13 +106,13 @@ class UnityEnv(BaseEnv):
     def _check_u_brain_to_agent(self):
         '''Check the size match between unity brain and agent'''
         u_brain_num = self.u_env.number_brains
-        agent_num = len(self.body_e)
+        agent_num = 1  # TODO rework unity outdated
         assert u_brain_num == agent_num, f'There must be a Unity brain for each agent. e:{self.e}, brain: {u_brain_num} != agent: {agent_num}.'
 
     def _check_u_agent_to_body(self, env_info_a, a):
         '''Check the size match between unity agent and body'''
         u_agent_num = len(env_info_a.agents)
-        body_num = util.count_nonan(self.body_e[a])
+        body_num = 1  # rework unity
         assert u_agent_num == body_num, f'There must be a Unity agent for each body; a:{a}, e:{self.e}, agent_num: {u_agent_num} != body_num: {body_num}.'
 
     def _get_env_info(self, env_info_dict, a):

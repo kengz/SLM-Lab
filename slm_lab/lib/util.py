@@ -112,13 +112,6 @@ def concat_batches(batches):
     return concat_batch
 
 
-def count_nonan(arr):
-    try:
-        return np.count_nonzero(~np.isnan(arr))
-    except Exception:
-        return len(filter_nonan(arr))
-
-
 def downcast_float32(df):
     '''Downcast any float64 col to float32 to allow safer pandas comparison'''
     for col in df.columns:
@@ -161,26 +154,6 @@ def flatten_dict(obj, delim='.'):
         else:
             nobj[key] = val
     return nobj
-
-
-def filter_nonan(arr):
-    '''Filter to np array with no nan'''
-    try:
-        return arr[~np.isnan(arr)]
-    except Exception:
-        mixed_type = []
-        for v in arr:
-            if not gen_isnan(v):
-                mixed_type.append(v)
-        return np.array(mixed_type, dtype=arr.dtype)
-
-
-def gen_isnan(v):
-    '''Check isnan for general type (np.isnan is only operable on np type)'''
-    try:
-        return np.isnan(v).all()
-    except Exception:
-        return v is None
 
 
 def get_class_name(obj, lower=False):
@@ -310,16 +283,6 @@ def monkey_patch(base_cls, extend_cls):
     ext_fn_list = get_fn_list(extend_cls)
     for fn in ext_fn_list:
         setattr(base_cls, fn, getattr(extend_cls, fn))
-
-
-def ndenumerate_nonan(arr):
-    '''Generic ndenumerate for np.ndenumerate with only not gen_isnan values'''
-    return (idx_v for idx_v in np.ndenumerate(arr) if not gen_isnan(idx_v[1]))
-
-
-def nonan_all(v):
-    '''Generic np.all that also returns false if array is all np.nan'''
-    return bool(np.all(v) and ~np.all(np.isnan(v)))
 
 
 def parallelize(fn, args, num_cpus=NUM_CPUS):

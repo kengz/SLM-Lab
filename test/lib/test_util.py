@@ -31,18 +31,6 @@ def test_cast_list(test_list, test_str):
     assert ps.is_list(util.cast_list(test_str))
 
 
-@pytest.mark.parametrize('arr,arr_len', [
-    ([0, 1, 2], 3),
-    ([0, 1, 2, None], 3),
-    ([0, 1, 2, np.nan], 3),
-    ([0, 1, 2, np.nan, np.nan], 3),
-    ([0, 1, Clock()], 3),
-    ([0, 1, Clock(), np.nan], 3),
-])
-def test_count_nonan(arr, arr_len):
-    assert util.count_nonan(np.array(arr)) == arr_len
-
-
 @pytest.mark.parametrize('d,flat_d', [
     ({'a': 1}, {'a': 1}),
     ({'a': {'b': 1}}, {'a.b': 1}),
@@ -77,30 +65,6 @@ def test_flatten_dict(d, flat_d):
     assert util.flatten_dict(d) == flat_d
 
 
-@pytest.mark.parametrize('arr', [
-    ([0, 1, 2]),
-    ([0, 1, 2, None]),
-    ([0, 1, 2, np.nan]),
-    ([0, 1, 2, np.nan, np.nan]),
-    ([0, 1, Clock()]),
-    ([0, 1, Clock(), np.nan]),
-])
-def test_filter_nonan(arr):
-    arr = np.array(arr)
-    assert np.array_equal(util.filter_nonan(arr), arr[:3])
-
-
-@pytest.mark.parametrize('v,isnan', [
-    (0, False),
-    (1, False),
-    (Clock(), False),
-    (None, True),
-    (np.nan, True),
-])
-def test_gen_isnan(v, isnan):
-    assert util.gen_isnan(v) == isnan
-
-
 def test_get_fn_list():
     fn_list = util.get_fn_list(Agent)
     assert 'act' in fn_list
@@ -119,26 +83,6 @@ def test_insert_folder():
 
 def test_is_jupyter():
     assert not util.is_jupyter()
-
-
-def test_ndenumerate_nonan():
-    arr = np.full((2, 3), np.nan, dtype=object)
-    np.fill_diagonal(arr, 1)
-    for (a, b), body in util.ndenumerate_nonan(arr):
-        assert a == b
-        assert body == 1
-
-
-@pytest.mark.parametrize('v,isall', [
-    ([1, 1], True),
-    ([True, True], True),
-    ([np.nan, 1], True),
-    ([0, 1], False),
-    ([False, True], False),
-    ([np.nan, np.nan], False),
-])
-def test_nonan_all(v, isall):
-    assert util.nonan_all(v) == isall
 
 
 def test_prepath_split():
