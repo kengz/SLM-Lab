@@ -163,13 +163,6 @@ def test_prepath_split():
     assert ckpt == None
 
 
-def test_s_get(test_agent):
-    spec = util.s_get(test_agent, 'aeb_space.spec')
-    assert ps.is_dict(spec)
-    spec = util.s_get(test_agent, 'aeb_space').spec
-    assert ps.is_dict(spec)
-
-
 def test_set_attr():
     class Foo:
         bar = 0

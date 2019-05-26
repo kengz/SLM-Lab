@@ -16,9 +16,9 @@ class Agent:
     Contains algorithm, memory, body
     '''
 
-    def __init__(self, spec, body, a=None, agent_space=None, global_nets=None):
+    def __init__(self, spec, body, a=None, global_nets=None):
         self.spec = spec
-        self.a = a or 0  # for compatibility with agent_space
+        self.a = a or 0  # for multi-agent
         self.agent_spec = spec['agent'][self.a]
         self.name = self.agent_spec['name']
         assert not ps.is_list(global_nets), f'single agent global_nets must be a dict, got {global_nets}'

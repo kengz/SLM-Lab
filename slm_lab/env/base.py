@@ -87,7 +87,7 @@ class BaseEnv(ABC):
     '''
 
     def __init__(self, spec, e=None):
-        self.e = e or 0  # for
+        self.e = e or 0  # for multi-env
         self.done = False
         self.env_spec = spec['env'][self.e]
         # set default

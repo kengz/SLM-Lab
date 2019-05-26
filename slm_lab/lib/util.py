@@ -24,7 +24,6 @@ import yaml
 NUM_CPUS = mp.cpu_count()
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
-SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
 
 
 class LabJsonEncoder(json.JSONEncoder):
@@ -284,16 +283,6 @@ def get_ts(pattern=FILE_TS_FORMAT):
     return ts
 
 
-def guard_data_a(cls, data_a, data_name):
-    '''Guard data_a in case if it scalar, create a data_a and fill.'''
-    if np.isscalar(data_a):
-        new_data_a, = s_get(cls, 'aeb_space').init_data_s([data_name], a=cls.a)
-        for eb, body in ndenumerate_nonan(cls.body_a):
-            new_data_a[eb] = data_a
-        data_a = new_data_a
-    return data_a
-
-
 def insert_folder(prepath, folder):
     '''Insert a folder into prepath'''
     split_path = prepath.split('/')
@@ -521,32 +510,6 @@ def run_cmd_wait(proc):
         raise subprocess.CalledProcessError(proc.args, proc.returncode, output)
     else:
         return output
-
-
-def s_get(cls, attr_path):
-    '''
-    Method to get attribute across space via inferring agent <-> env paths.
-    @example
-    self.agent.agent_space.aeb_space.clock
-    # equivalently
-    util.s_get(self, 'aeb_space.clock')
-    '''
-    from_class_name = get_class_name(cls, lower=True)
-    from_idx = ps.find_index(SPACE_PATH, lambda s: from_class_name in (s, s.replace('_', '')))
-    from_idx = max(from_idx, 0)
-    attr_path = attr_path.split('.')
-    to_idx = SPACE_PATH.index(attr_path[0])
-    assert -1 not in (from_idx, to_idx)
-    if from_idx < to_idx:
-        path_link = SPACE_PATH[from_idx: to_idx]
-    else:
-        path_link = ps.reverse(SPACE_PATH[to_idx: from_idx])
-
-    res = cls
-    for attr in path_link + attr_path:
-        if not (get_class_name(res, lower=True) in (attr, attr.replace('_', ''))):
-            res = getattr(res, attr)
-    return res
 
 
 def self_desc(cls):

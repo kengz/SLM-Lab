@@ -63,15 +63,6 @@ class Algorithm(ABC):
         '''
         raise NotImplementedError
 
-    def nanflat_to_data_a(self, data_name, nanflat_data_a):
-        '''Reshape nanflat_data_a, e.g. action_a, from a single pass back into the API-conforming data_a'''
-        data_names = (data_name,)
-        data_a, = self.agent.agent_space.aeb_space.init_data_s(data_names, a=self.agent.a)
-        for body, data in zip(self.agent.nanflat_body_a, nanflat_data_a):
-            e, b = body.e, body.b
-            data_a[(e, b)] = data
-        return data_a
-
     @lab_api
     def act(self, state):
         '''Standard act method.'''

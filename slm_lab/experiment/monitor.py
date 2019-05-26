@@ -41,7 +41,7 @@ class Body:
     - acts as non-gradient variable storage for monitoring and analysis
     '''
 
-    def __init__(self, env, agent_spec, aeb=(0, 0, 0), aeb_space=None):
+    def __init__(self, env, agent_spec, aeb=(0, 0, 0)):
         # essential reference variables
         self.agent = None  # set later
         self.env = env
