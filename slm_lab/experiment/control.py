@@ -12,6 +12,14 @@ from slm_lab.spec import spec_util
 import torch.multiprocessing as mp
 
 
+def make_agent_env(spec, global_nets=None):
+    '''Helper to create agent and env given spec'''
+    env = make_env(spec)
+    body = Body(env, spec['agent'])
+    agent = Agent(spec, body=body, global_nets=global_nets)
+    return agent, env
+
+
 class Session:
     '''
     The base lab unit to run a RL session for a spec.
@@ -27,13 +35,9 @@ class Session:
         util.set_logger(self.spec, logger, 'session')
         spec_util.save(spec, unit='session')
 
-        # init agent and env
-        self.env = make_env(self.spec)
+        self.agent, self.env = make_agent_env(self.spec, global_nets)
         with util.ctx_lab_mode('eval'):  # env for eval
             self.eval_env = make_env(self.spec)
-        body = Body(self.env, self.spec['agent'])
-        self.agent = Agent(self.spec, body=body, global_nets=global_nets)
-
         logger.info(util.self_desc(self))
 
     def to_ckpt(self, env, mode='eval'):
