@@ -61,7 +61,7 @@ def check_comp_spec(comp_spec, comp_spec_format):
                 comp_spec[spec_k] = int(comp_spec_v)
 
 
-# def check_body_spec(spec):
+def check_body_spec(spec):
     '''Base method to check body spec for multi-agent multi-env'''
     ae_product = ps.get(spec, 'body.product')
     body_num = ps.get(spec, 'body.num')
