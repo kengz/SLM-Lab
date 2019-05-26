@@ -66,10 +66,12 @@ class Session:
             body.log_summary('eval')
             if analysis.new_best(agent):
                 agent.save(ckpt='best')
-            if len(body.eval_df) > 1:  # need > 1 row to calculate stability
-                analysis.analyze_session(self.spec, body.eval_df, 'eval')
             if len(body.train_df) > 1:  # need > 1 row to calculate stability
-                analysis.analyze_session(self.spec, body.train_df, 'train')
+                metrics = analysis.analyze_session(self.spec, body.train_df, 'train')
+                body.log_metrics(metrics['scalar'], 'train')
+            if len(body.eval_df) > 1:  # need > 1 row to calculate stability
+                metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval')
+                body.log_metrics(metrics['scalar'], 'eval')
 
     def run_rl(self):
         '''Run the main RL loop until clock.max_frame'''
@@ -103,6 +105,7 @@ class Session:
     def run(self):
         self.run_rl()
         metrics = analysis.analyze_session(self.spec, self.agent.body.eval_df, 'eval')
+        self.agent.body.log_metrics(metrics['scalar'], 'eval')
         self.close()
         return metrics
 
