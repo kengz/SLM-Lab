@@ -8,7 +8,7 @@ import numpy as np
 import pydash as ps
 import random
 import ray
-import ray.tune
+import ray.tune as tune
 import torch
 
 logger = logger.get_logger(__name__)
@@ -37,12 +37,12 @@ def build_config_space(spec):
         key, space_type = k.split('__')
         assert space_type in space_types, f'Please specify your search variable as {key}__<space_type> in one of {space_types}'
         if space_type == 'grid_search':
-            config_space[key] = ray.tune.grid_search(v)
+            config_space[key] = tune.grid_search(v)
         elif space_type == 'choice':
-            config_space[key] = lambda spec, v=v: random.choice(v)
+            config_space[key] = tune.sample_from(lambda spec, v=v: random.choice(v))
         else:
             np_fn = getattr(np.random, space_type)
-            config_space[key] = lambda spec, v=v: np_fn(*v)
+            config_space[key] = tune.sample_from(lambda spec, v=v: np_fn(*v))
     return config_space
 
 
@@ -114,7 +114,7 @@ class RandomSearch(RaySearch):
 
     def generate_config(self):
         configs = []  # to accommodate for grid_search
-        for resolved_vars, config in ray.tune.suggest.variant_generator._generate_variants(self.config_space):
+        for resolved_vars, config in tune.suggest.variant_generator._generate_variants(self.config_space):
             # inject trial_index for tracking in Ray
             config['trial_index'] = spec_util.tick(self.spec, 'trial')['meta']['trial']
             configs.append(config)
