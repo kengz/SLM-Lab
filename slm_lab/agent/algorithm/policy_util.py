@@ -1,5 +1,6 @@
 # Action policy module
 # Constructs action probability distribution used by agent to sample action and calculate log_prob, entropy, etc.
+from gym import spaces
 from slm_lab.env.wrapper import LazyFrames
 from slm_lab.lib import distribution, logger, math_util, util
 from torch import distributions
@@ -22,6 +23,25 @@ ACTION_PDS = {
     'multi_discrete': ['MultiCategorical'],
     'multi_binary': ['Bernoulli'],
 }
+
+
+def get_action_type(action_space):
+    '''Method to get the action type to choose prob. dist. to sample actions from NN logits output'''
+    if isinstance(action_space, spaces.Box):
+        shape = action_space.shape
+        assert len(shape) == 1
+        if shape[0] == 1:
+            return 'continuous'
+        else:
+            return 'multi_continuous'
+    elif isinstance(action_space, spaces.Discrete):
+        return 'discrete'
+    elif isinstance(action_space, spaces.MultiDiscrete):
+        return 'multi_discrete'
+    elif isinstance(action_space, spaces.MultiBinary):
+        return 'multi_binary'
+    else:
+        raise NotImplementedError
 
 
 # action_policy base methods
@@ -148,9 +168,8 @@ def boltzmann(state, algorithm, body):
     return action
 
 
-# multi-body action_policy used by agent
-
-# TODO fix later using similar batch action method
+# multi-body/multi-env action_policy used by agent
+# TODO rework
 
 def multi_default(states, algorithm, body_list, pdparam):
     '''
@@ -253,18 +272,3 @@ class VarScheduler:
         step = clock.get()
         val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
         return val
-
-
-# misc calc methods
-
-def guard_multi_pdparams(pdparams, body):
-    '''Guard pdparams for multi action'''
-    action_dim = body.action_dim
-    is_multi_action = ps.is_iterable(action_dim)
-    if is_multi_action:
-        assert ps.is_list(pdparams)
-        pdparams = [t.clone() for t in pdparams]  # clone for grad safety
-        assert len(pdparams) == len(action_dim), pdparams
-        # transpose into (batch_size, [action_dims])
-        pdparams = [list(torch.split(t, action_dim, dim=0)) for t in torch.cat(pdparams, dim=1)]
-    return pdparams

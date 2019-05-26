@@ -1,3 +1,4 @@
+# Custom PyTorch optimizer classes, to be registered in net_util.py
 import math
 import torch
 

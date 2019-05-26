@@ -1,18 +1,10 @@
-from slm_lab.agent import AgentSpace
-from slm_lab.env import EnvSpace
-from slm_lab.experiment.monitor import AEBSpace
+from slm_lab.experiment.control import make_agent_env
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 from xvfbwrapper import Xvfb
 import numpy as np
 import pandas as pd
 import pytest
-
-
-spec = None
-aeb_space = None
-agent = None
-env = None
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -29,33 +21,9 @@ def test_xvfb():
 
 @pytest.fixture(scope='session')
 def test_spec():
-    global spec
     spec = spec_util.get('base.json', 'base_case_openai')
     spec = spec_util.override_test_spec(spec)
     return spec
-
-
-@pytest.fixture(scope='session')
-def test_aeb_space(test_spec):
-    global aeb_space
-    if aeb_space is None:
-        aeb_space = AEBSpace(test_spec)
-        env_space = EnvSpace(test_spec, aeb_space)
-        aeb_space.init_body_space()
-        agent_space = AgentSpace(test_spec, aeb_space)
-    return aeb_space
-
-
-@pytest.fixture(scope='session')
-def test_agent(test_aeb_space):
-    agent = test_aeb_space.agent_space.agents[0]
-    return agent
-
-
-@pytest.fixture(scope='session')
-def test_env(test_aeb_space):
-    env = test_aeb_space.env_space.envs[0]
-    return env
 
 
 @pytest.fixture
@@ -117,15 +85,9 @@ def test_str():
     ),
 ])
 def test_memory(request):
-    memspec = spec_util.get('base.json', 'base_memory')
-    memspec = spec_util.override_test_spec(memspec)
-    aeb_mem_space = AEBSpace(memspec)
-    env_space = EnvSpace(memspec, aeb_mem_space)
-    aeb_mem_space.init_body_space()
-    agent_space = AgentSpace(memspec, aeb_mem_space)
-    agent = agent_space.agents[0]
-    body = agent.nanflat_body_a[0]
-    res = (body.memory, ) + request.param
+    spec = spec_util.get('base.json', 'base_memory')
+    agent, env = make_agent_env(spec)
+    res = (agent.body.memory, ) + request.param
     return res
 
 
@@ -145,15 +107,9 @@ def test_memory(request):
     ),
 ])
 def test_on_policy_episodic_memory(request):
-    memspec = spec_util.get('base.json', 'base_on_policy_memory')
-    memspec = spec_util.override_test_spec(memspec)
-    aeb_mem_space = AEBSpace(memspec)
-    env_space = EnvSpace(memspec, aeb_mem_space)
-    aeb_mem_space.init_body_space()
-    agent_space = AgentSpace(memspec, aeb_mem_space)
-    agent = agent_space.agents[0]
-    body = agent.nanflat_body_a[0]
-    res = (body.memory, ) + request.param
+    spec = spec_util.get('base.json', 'base_on_policy_memory')
+    agent, env = make_agent_env(spec)
+    res = (agent.body.memory, ) + request.param
     return res
 
 
@@ -173,15 +129,9 @@ def test_on_policy_episodic_memory(request):
     ),
 ])
 def test_on_policy_batch_memory(request):
-    memspec = spec_util.get('base.json', 'base_on_policy_batch_memory')
-    memspec = spec_util.override_test_spec(memspec)
-    aeb_mem_space = AEBSpace(memspec)
-    env_space = EnvSpace(memspec, aeb_mem_space)
-    aeb_mem_space.init_body_space()
-    agent_space = AgentSpace(memspec, aeb_mem_space)
-    agent = agent_space.agents[0]
-    body = agent.nanflat_body_a[0]
-    res = (body.memory, ) + request.param
+    spec = spec_util.get('base.json', 'base_on_policy_batch_memory')
+    agent, env = make_agent_env(spec)
+    res = (agent.body.memory, ) + request.param
     return res
 
 
@@ -201,13 +151,7 @@ def test_on_policy_batch_memory(request):
     ),
 ])
 def test_prioritized_replay_memory(request):
-    memspec = spec_util.get('base.json', 'base_prioritized_replay_memory')
-    memspec = spec_util.override_test_spec(memspec)
-    aeb_mem_space = AEBSpace(memspec)
-    env_space = EnvSpace(memspec, aeb_mem_space)
-    aeb_mem_space.init_body_space()
-    agent_space = AgentSpace(memspec, aeb_mem_space)
-    agent = agent_space.agents[0]
-    body = agent.nanflat_body_a[0]
-    res = (body.memory, ) + request.param
+    spec = spec_util.get('base.json', 'base_prioritized_replay_memory')
+    agent, env = make_agent_env(spec)
+    res = (agent.body.memory, ) + request.param
     return res

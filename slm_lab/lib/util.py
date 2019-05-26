@@ -10,6 +10,7 @@ import numpy as np
 import operator
 import os
 import pandas as pd
+import pickle
 import pydash as ps
 import regex as re
 import subprocess
@@ -23,7 +24,6 @@ import yaml
 NUM_CPUS = mp.cpu_count()
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
-SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
 
 
 class LabJsonEncoder(json.JSONEncoder):
@@ -44,6 +44,14 @@ def batch_get(arr, idxs):
         return np.array(operator.itemgetter(*idxs)(arr))
     else:
         return arr[idxs]
+
+
+def calc_srs_mean_std(sr_list):
+    '''Given a list of series, calculate their mean and std'''
+    cat_df = pd.DataFrame(dict(enumerate(sr_list)))
+    mean_sr = cat_df.mean(axis=1)
+    std_sr = cat_df.std(axis=1)
+    return mean_sr, std_sr
 
 
 def calc_ts_diff(ts2, ts1):
@@ -104,13 +112,6 @@ def concat_batches(batches):
     return concat_batch
 
 
-def count_nonan(arr):
-    try:
-        return np.count_nonzero(~np.isnan(arr))
-    except Exception:
-        return len(filter_nonan(arr))
-
-
 def downcast_float32(df):
     '''Downcast any float64 col to float32 to allow safer pandas comparison'''
     for col in df.columns:
@@ -153,48 +154,6 @@ def flatten_dict(obj, delim='.'):
         else:
             nobj[key] = val
     return nobj
-
-
-def filter_nonan(arr):
-    '''Filter to np array with no nan'''
-    try:
-        return arr[~np.isnan(arr)]
-    except Exception:
-        mixed_type = []
-        for v in arr:
-            if not gen_isnan(v):
-                mixed_type.append(v)
-        return np.array(mixed_type, dtype=arr.dtype)
-
-
-def fix_multi_index_dtype(df):
-    '''Restore aeb multi_index dtype from string to int, when read from file'''
-    df.columns = pd.MultiIndex.from_tuples([(int(x[0]), int(x[1]), int(x[2]), x[3]) for x in df.columns])
-    return df
-
-
-def nanflatten(arr):
-    '''Flatten np array while ignoring nan, like np.nansum etc.'''
-    flat_arr = arr.reshape(-1)
-    return filter_nonan(flat_arr)
-
-
-def gen_isnan(v):
-    '''Check isnan for general type (np.isnan is only operable on np type)'''
-    try:
-        return np.isnan(v).all()
-    except Exception:
-        return v is None
-
-
-def get_df_aeb_list(session_df):
-    '''Get the aeb list for session_df for iterating.'''
-    aeb_list = sorted(ps.uniq([(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
-    return aeb_list
-
-
-def get_aeb_shape(aeb_list):
-    return np.amax(aeb_list, axis=0) + 1
 
 
 def get_class_name(obj, lower=False):
@@ -275,14 +234,12 @@ def get_ts(pattern=FILE_TS_FORMAT):
     return ts
 
 
-def guard_data_a(cls, data_a, data_name):
-    '''Guard data_a in case if it scalar, create a data_a and fill.'''
-    if np.isscalar(data_a):
-        new_data_a, = s_get(cls, 'aeb_space').init_data_s([data_name], a=cls.a)
-        for eb, body in ndenumerate_nonan(cls.body_a):
-            new_data_a[eb] = data_a
-        data_a = new_data_a
-    return data_a
+def insert_folder(prepath, folder):
+    '''Insert a folder into prepath'''
+    split_path = prepath.split('/')
+    prename = split_path.pop()
+    split_path += [folder, prename]
+    return '/'.join(split_path)
 
 
 def in_eval_lab_modes():
@@ -306,7 +263,11 @@ def ctx_lab_mode(lab_mode):
     Creates context to run method with a specific lab_mode
     @example
     with util.ctx_lab_mode('eval'):
-        run_eval()
+        foo()
+
+    @util.ctx_lab_mode('eval')
+    def foo():
+        ...
     '''
     prev_lab_mode = os.environ.get('lab_mode')
     os.environ['lab_mode'] = lab_mode
@@ -322,16 +283,6 @@ def monkey_patch(base_cls, extend_cls):
     ext_fn_list = get_fn_list(extend_cls)
     for fn in ext_fn_list:
         setattr(base_cls, fn, getattr(extend_cls, fn))
-
-
-def ndenumerate_nonan(arr):
-    '''Generic ndenumerate for np.ndenumerate with only not gen_isnan values'''
-    return (idx_v for idx_v in np.ndenumerate(arr) if not gen_isnan(idx_v[1]))
-
-
-def nonan_all(v):
-    '''Generic np.all that also returns false if array is all np.nan'''
-    return bool(np.all(v) and ~np.all(np.isnan(v)))
 
 
 def parallelize(fn, args, num_cpus=NUM_CPUS):
@@ -364,7 +315,7 @@ def prepath_split(prepath):
     if ckpt is not None:  # separate ckpt
         tail = tail.replace(f'_ckpt-{ckpt}', '')
     if '/' in tail:  # tail = prefolder/prename
-        prefolder, prename = tail.split('/')
+        prefolder, prename = tail.split('/', 1)
     else:
         prefolder, prename = tail, None
     predir = f'data/{prefolder}'
@@ -449,6 +400,8 @@ def read(data_path, **kwargs):
     ext = get_file_ext(data_path)
     if ext == '.csv':
         data = read_as_df(data_path, **kwargs)
+    elif ext == '.pkl':
+        data = read_as_pickle(data_path, **kwargs)
     else:
         data = read_as_plain(data_path, **kwargs)
     return data
@@ -458,6 +411,13 @@ def read_as_df(data_path, **kwargs):
     '''Submethod to read data as DataFrame'''
     ext = get_file_ext(data_path)
     data = pd.read_csv(data_path, **kwargs)
+    return data
+
+
+def read_as_pickle(data_path, **kwargs):
+    '''Submethod to read data as pickle'''
+    with open(data_path, 'rb') as f:
+        data = pickle.load(f)
     return data
 
 
@@ -493,32 +453,6 @@ def run_cmd_wait(proc):
         return output
 
 
-def s_get(cls, attr_path):
-    '''
-    Method to get attribute across space via inferring agent <-> env paths.
-    @example
-    self.agent.agent_space.aeb_space.clock
-    # equivalently
-    util.s_get(self, 'aeb_space.clock')
-    '''
-    from_class_name = get_class_name(cls, lower=True)
-    from_idx = ps.find_index(SPACE_PATH, lambda s: from_class_name in (s, s.replace('_', '')))
-    from_idx = max(from_idx, 0)
-    attr_path = attr_path.split('.')
-    to_idx = SPACE_PATH.index(attr_path[0])
-    assert -1 not in (from_idx, to_idx)
-    if from_idx < to_idx:
-        path_link = SPACE_PATH[from_idx: to_idx]
-    else:
-        path_link = ps.reverse(SPACE_PATH[to_idx: from_idx])
-
-    res = cls
-    for attr in path_link + attr_path:
-        if not (get_class_name(res, lower=True) in (attr, attr.replace('_', ''))):
-            res = getattr(res, attr)
-    return res
-
-
 def self_desc(cls):
     '''Method to get self description, used at init.'''
     desc_list = [f'{get_class_name(cls)}:']
@@ -532,24 +466,6 @@ def self_desc(cls):
         desc_list.append(f'- {k} = {desc_v}')
     desc = '\n'.join(desc_list)
     return desc
-
-
-def session_df_to_data(session_df):
-    '''
-    Convert a multi_index session_df (df) with column levels (a,e,b,col) to session_data[aeb] = aeb_df
-    @example
-
-    session_df = util.read(filepath, header=[0, 1, 2, 3])
-    session_data = util.session_df_to_data(session_df)
-    '''
-    session_data = {}
-    fix_multi_index_dtype(session_df)
-    aeb_list = get_df_aeb_list(session_df)
-    for aeb in aeb_list:
-        aeb_df = session_df.loc[:, aeb]
-        aeb_df.reset_index(inplace=True, drop=True)  # guard for eval append-row
-        session_data[aeb] = aeb_df
-    return session_data
 
 
 def set_attr(obj, attr_dict, keys=None):
@@ -584,7 +500,7 @@ def set_cuda_id(spec):
 
 def set_logger(spec, logger, unit=None):
     '''Set the logger for a lab unit give its spec'''
-    os.environ['PREPATH'] = get_prepath(spec, unit=unit)
+    os.environ['LOG_PREPATH'] = insert_folder(get_prepath(spec, unit=unit), 'log')
     reload(logger)  # to set session-specific logger
 
 
@@ -714,6 +630,8 @@ def write(data, data_path):
     ext = get_file_ext(data_path)
     if ext == '.csv':
         write_as_df(data, data_path)
+    elif ext == '.pkl':
+        write_as_pickle(data, data_path)
     else:
         write_as_plain(data, data_path)
     return data_path
@@ -723,7 +641,14 @@ def write_as_df(data, data_path):
     '''Submethod to write data as DataFrame'''
     df = cast_df(data)
     ext = get_file_ext(data_path)
-    df.to_csv(data_path)
+    df.to_csv(data_path, index=False)
+    return data_path
+
+
+def write_as_pickle(data, data_path):
+    '''Submethod to write data as pickle'''
+    with open(data_path, 'wb') as f:
+        pickle.dump(data, f)
     return data_path
 
 

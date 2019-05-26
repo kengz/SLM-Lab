@@ -20,7 +20,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
-        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -51,7 +50,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 2600,
+      "max_frame": 2600,
     }],
     "body": {
       "product": "outer",
@@ -60,7 +59,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -72,11 +70,9 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [2, 4, 8],
-          "training_epoch__choice": [2, 4, 8],
           "lam__uniform": [0.9, 0.99]
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
           "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
           "hid_layers__choice": [[100], [200], [400], [200, 100]],
           "actor_optim_spec": {
@@ -110,7 +106,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
-        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -150,7 +145,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 2600,
+      "max_frame": 2600,
     }],
     "body": {
       "product": "outer",
@@ -159,7 +154,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -171,11 +165,9 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [2, 4, 8],
-          "training_epoch__choice": [2, 4, 8],
           "lam__uniform": [0.9, 0.99],
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
           "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
           "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
           "hid_layers__choice": [[], [100], [200]],
@@ -212,7 +204,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
-        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -243,7 +234,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 2600,
+      "max_frame": 2600,
     }],
     "body": {
       "product": "outer",
@@ -252,7 +243,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -264,11 +254,9 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [2, 4, 8],
-          "training_epoch__choice": [2, 4, 8],
           "num_step_returns__choice": [2, 4, 8]
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
           "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
           "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
           "hid_layers__choice": [[100], [200], [400], [200, 100]],
@@ -303,7 +291,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
         "training_frequency": 1,
-        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -338,7 +325,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 2600,
+      "max_frame": 2600,
     }],
     "body": {
       "product": "outer",
@@ -347,7 +334,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -359,11 +345,9 @@
       "agent": [{
         "algorithm": {
           "training_frequency__choice": [2, 4, 8],
-          "training_epoch__choice": [2, 4, 8],
           "lam__uniform": [0.9, 0.99],
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
           "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
           "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
           "hid_layers__choice": [[], [100], [200]],
@@ -394,8 +378,8 @@
           "end_step": 80000,
         },
         "gamma": 0.999,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -426,13 +410,12 @@
         "update_frequency": 200,
         "polyak_coef": 0.8,
         "gpu": false,
-        "training_epoch": 2
       }
     }],
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 1400,
+      "max_frame": 1400,
     }],
     "body": {
       "product": "outer",
@@ -441,7 +424,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -457,7 +439,6 @@
           }
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
           "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
           "polyak_coef__uniform": [0.8, 1.0],
           "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
@@ -484,8 +465,8 @@
           "end_step": 40000,
         },
         "gamma": 0.999,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -525,7 +506,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 1400,
+      "max_frame": 1400,
     }],
     "body": {
       "product": "outer",
@@ -534,7 +515,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -550,7 +530,6 @@
           }
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
           "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
           "polyak_coef__uniform": [0.8, 1.0],
           "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
@@ -579,8 +558,8 @@
           "end_step": 40000,
         },
         "gamma": 0.999,
-        "training_batch_epoch": 4,
-        "training_epoch": 4,
+        "training_batch_iter": 4,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -611,13 +590,12 @@
         "update_frequency": 200,
         "polyak_coef": 0.8,
         "gpu": false,
-        "training_epoch": 8
       }
     }],
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 1400,
+      "max_frame": 1400,
     }],
     "body": {
       "product": "outer",
@@ -626,7 +604,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -642,7 +619,6 @@
           }
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
           "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
           "polyak_coef__uniform": [0.8, 1.0],
           "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
@@ -669,8 +645,8 @@
           "end_step": 40000,
         },
         "gamma": 0.999,
-        "training_batch_epoch": 4,
-        "training_epoch": 4,
+        "training_batch_iter": 4,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -710,7 +686,7 @@
     "env": [{
       "name": "MountainCar-v0",
       "max_t": null,
-      "max_tick": 1400,
+      "max_frame": 1400,
     }],
     "body": {
       "product": "outer",
@@ -719,7 +695,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 200,
       "search": "RandomSearch",
@@ -735,7 +710,6 @@
           }
         },
         "net": {
-          "training_epoch__choice": [2, 4, 8],
           "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
           "polyak_coef__uniform": [0.8, 1.0],
           "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],

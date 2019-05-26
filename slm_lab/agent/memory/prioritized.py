@@ -155,21 +155,12 @@ class PrioritizedReplay(Replay):
             batch_idxs[-1] = self.head
         return batch_idxs
 
-    def get_body_errors(self, errors):
-        '''Get the slice of errors belonging to a body in network output'''
-        body_idx = self.body.nanflat_a_idx
-        start_idx = body_idx * self.batch_size
-        end_idx = start_idx + self.batch_size
-        body_errors = errors[start_idx:end_idx]
-        return body_errors
-
     def update_priorities(self, errors):
         '''
         Updates the priorities from the most recent batch
         Assumes the relevant batch indices are stored in self.batch_idxs
         '''
-        body_errors = self.get_body_errors(errors)
-        priorities = self.get_priority(body_errors)
+        priorities = self.get_priority(errors)
         assert len(priorities) == self.batch_idxs.size
         for idx, p in zip(self.batch_idxs, priorities):
             self.priorities[idx] = p

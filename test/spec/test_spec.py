@@ -3,7 +3,6 @@ from slm_lab.experiment.control import Trial
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 import os
-import pandas as pd
 import pytest
 import sys
 
@@ -14,8 +13,8 @@ def run_trial_test(spec_file, spec_name=False):
     spec = spec_util.override_test_spec(spec)
     spec_util.tick(spec, 'trial')
     trial = Trial(spec)
-    trial_data = trial.run()
-    assert isinstance(trial_data, pd.DataFrame)
+    trial_metrics = trial.run()
+    assert isinstance(trial_metrics, dict)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -176,15 +175,6 @@ def test_dueling_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('experimental/hydra_dqn.json', 'hydra_dqn_boltzmann_cartpole'),
-    ('experimental/hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole'),
-    # ('experimental/hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole_2dball'),
-])
-def test_hydra_dqn(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('experimental/dqn.json', 'dqn_pong'),
@@ -195,6 +185,7 @@ def test_atari(spec_file, spec_name):
 
 
 @flaky
+@pytest.mark.skip(reason='no baseline')
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('experimental/reinforce.json', 'reinforce_conv_vizdoom'),
 ])
@@ -203,20 +194,10 @@ def test_reinforce_vizdoom(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('base.json', 'base_case_unity'),
+    # ('base.json', 'base_case_unity'),
     ('base.json', 'base_case_openai'),
     ('random.json', 'random_cartpole'),
     ('random.json', 'random_pendulum'),
-    # ('base.json', 'multi_agent'),
-    # ('base.json', 'multi_agent_multi_env'),
 ])
 def test_base(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('base.json', 'multi_body'),
-    ('base.json', 'multi_env'),
-])
-def test_base_multi(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)

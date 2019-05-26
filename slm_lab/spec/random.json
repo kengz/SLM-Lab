@@ -13,7 +13,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 100
+      "max_frame": 100
     }],
     "body": {
       "product": "outer",
@@ -22,7 +22,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 5,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -42,7 +41,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 100
+      "max_frame": 100
     }],
     "body": {
       "product": "outer",
@@ -51,7 +50,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 5,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -71,7 +69,7 @@
     "env": [{
       "name": "2DBall",
       "max_t": 1000,
-      "max_tick": 100
+      "max_frame": 100
     }],
     "body": {
       "product": "outer",
@@ -80,7 +78,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 5,
       "max_trial": 1,
       "search": "RandomSearch"

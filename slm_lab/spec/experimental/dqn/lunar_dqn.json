@@ -14,8 +14,8 @@
           "end_step": 10000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -52,7 +52,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 250000,
+      "max_frame": 250000,
     }],
     "body": {
       "product": "outer",
@@ -61,7 +61,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -72,7 +71,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_batch_epoch__choice": [1, 2, 3],
+          "training_batch_iter__choice": [1, 2, 3],
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
@@ -109,8 +108,8 @@
           "end_step": 10000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -147,7 +146,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 250000,
+      "max_frame": 250000,
     }],
     "body": {
       "product": "outer",
@@ -156,7 +155,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -167,7 +165,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_batch_epoch__choice": [1, 2, 3],
+          "training_batch_iter__choice": [1, 2, 3],
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
@@ -204,8 +202,8 @@
           "end_step": 10000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -242,7 +240,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 250000,
+      "max_frame": 250000,
     }],
     "body": {
       "product": "outer",
@@ -251,7 +249,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -262,7 +259,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_batch_epoch__choice": [1, 2, 3],
+          "training_batch_iter__choice": [1, 2, 3],
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
@@ -299,8 +296,8 @@
           "end_step": 10000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -337,7 +334,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 250000,
+      "max_frame": 250000,
     }],
     "body": {
       "product": "outer",
@@ -346,7 +343,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -357,7 +353,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_batch_epoch__choice": [1, 2, 3],
+          "training_batch_iter__choice": [1, 2, 3],
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
@@ -394,8 +390,8 @@
           "end_step": 10000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -432,7 +428,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 250000,
+      "max_frame": 250000,
     }],
     "body": {
       "product": "outer",
@@ -441,7 +437,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -452,7 +447,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_batch_epoch__choice": [1, 2, 3],
+          "training_batch_iter__choice": [1, 2, 3],
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
@@ -489,8 +484,8 @@
           "end_step": 10000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -527,7 +522,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 250000,
+      "max_frame": 250000,
     }],
     "body": {
       "product": "outer",
@@ -536,7 +531,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -547,7 +541,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_batch_epoch__choice": [1, 2, 3],
+          "training_batch_iter__choice": [1, 2, 3],
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
@@ -584,8 +578,8 @@
           "end_step": 10000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -622,7 +616,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 250000,
+      "max_frame": 250000,
     }],
     "body": {
       "product": "outer",
@@ -631,7 +625,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -642,7 +635,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_batch_epoch__choice": [1, 2, 3],
+          "training_batch_iter__choice": [1, 2, 3],
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
@@ -679,8 +672,8 @@
           "end_step": 10000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -717,7 +710,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 250000,
+      "max_frame": 250000,
     }],
     "body": {
       "product": "outer",
@@ -726,7 +719,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -737,7 +729,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_batch_epoch__choice": [1, 2, 3],
+          "training_batch_iter__choice": [1, 2, 3],
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
@@ -774,8 +766,8 @@
           "end_step": 10000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -816,7 +808,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 250000,
+      "max_frame": 250000,
     }],
     "body": {
       "product": "outer",
@@ -825,7 +817,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -836,7 +827,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_batch_epoch__choice": [1, 2, 3],
+          "training_batch_iter__choice": [1, 2, 3],
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },
@@ -873,8 +864,8 @@
           "end_step": 10000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 32
       },
@@ -911,7 +902,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 250000,
+      "max_frame": 250000,
     }],
     "body": {
       "product": "outer",
@@ -920,7 +911,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
@@ -931,7 +921,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_batch_epoch__choice": [1, 2, 3],
+          "training_batch_iter__choice": [1, 2, 3],
           "explore_var_spec": {
             "end_step__choice": [8000, 10000, 12000, 14000]
           },

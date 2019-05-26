@@ -1,8 +1,5 @@
-'''
-The spec util
-Handles the Lab experiment spec: reading, writing(evolution), validation and default setting
-Expands the spec and params into consumable inputs in info space for lab units.
-'''
+# The spec module
+# Manages specification to run things in lab
 from slm_lab.lib import logger, util
 from string import Template
 import itertools
@@ -30,7 +27,7 @@ SPEC_FORMAT = {
     "env": [{
         "name": str,
         "max_t": (type(None), int, float),
-        "max_tick": (int, float),
+        "max_frame": (int, float),
     }],
     "body": {
         "product": ["outer", "inner", "custom"],
@@ -38,7 +35,6 @@ SPEC_FORMAT = {
     },
     "meta": {
         "eval_frequency": (int, float),
-        "max_tick_unit": str,
         "max_session": int,
         "max_trial": (type(None), int),
     },
@@ -63,7 +59,7 @@ def check_comp_spec(comp_spec, comp_spec_format):
 
 
 def check_body_spec(spec):
-    '''Base method to check body spec for AEB space resolution'''
+    '''Base method to check body spec for multi-agent multi-env'''
     ae_product = ps.get(spec, 'body.product')
     body_num = ps.get(spec, 'body.num')
     if ae_product == 'outer':
@@ -72,7 +68,7 @@ def check_body_spec(spec):
         agent_num = len(spec['agent'])
         env_num = len(spec['env'])
         assert agent_num == env_num, 'Agent and Env spec length must be equal for body `inner` product. Given {agent_num}, {env_num}'
-    else:  # custom AEB
+    else:  # custom
         assert ps.is_list(body_num)
 
 
@@ -94,7 +90,7 @@ def check(spec):
             check_comp_spec(env_spec, SPEC_FORMAT['env'][0])
         check_comp_spec(spec['body'], SPEC_FORMAT['body'])
         check_comp_spec(spec['meta'], SPEC_FORMAT['meta'])
-        check_body_spec(spec)
+        # check_body_spec(spec)
         check_compatibility(spec)
     except Exception as e:
         logger.exception(f'spec {spec_name} fails spec check')
@@ -128,12 +124,13 @@ def extend_meta_spec(spec):
         'trial': -1,
         'session': -1,
         'cuda_offset': int(os.environ.get('CUDA_OFFSET', 0)),
+        'experiment_ts': util.get_ts(),
+        'prepath': None,
         # ckpt extends prepath, e.g. ckpt_str = ckpt-epi10-totalt1000
         'ckpt': None,
-        'experiment_ts': util.get_ts(),
-        'eval_model_prepath': None,
         'git_sha': util.get_git_sha(),
         'random_seed': None,
+        'eval_model_prepath': None,
     }
     spec['meta'].update(extended_meta_spec)
     return spec
@@ -169,7 +166,7 @@ def get_eval_spec(spec_file, prename):
     prepath = f'{predir}/{prename}'
     spec = util.prepath_to_spec(prepath)
     spec['meta']['ckpt'] = 'eval'
-    spec['meta']['eval_model_prepath'] = prepath
+    spec['meta']['eval_model_prepath'] = util.insert_folder(prepath, 'model')
     return spec
 
 
@@ -191,26 +188,6 @@ def get_param_specs(spec):
     return specs
 
 
-def is_aeb_compact(aeb_list):
-    '''
-    Check if aeb space (aeb_list) is compact; uniq count must equal shape in each of a,e axes. For b, per unique a,e hash, uniq must equal shape.'''
-    aeb_shape = util.get_aeb_shape(aeb_list)
-    aeb_uniq = [len(np.unique(col)) for col in np.transpose(aeb_list)]
-    ae_compact = np.array_equal(aeb_shape, aeb_uniq)
-    b_compact = True
-    for ae, ae_b_list in ps.group_by(aeb_list, lambda aeb: f'{aeb[0]}{aeb[1]}').items():
-        b_shape = util.get_aeb_shape(ae_b_list)[2]
-        b_uniq = [len(np.unique(col)) for col in np.transpose(ae_b_list)][2]
-        b_compact = b_compact and np.array_equal(b_shape, b_uniq)
-    aeb_compact = ae_compact and b_compact
-    return aeb_compact
-
-
-def is_singleton(spec):
-    '''Check if spec uses a singleton Session'''
-    return len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1
-
-
 def override_dev_spec(spec):
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
@@ -230,52 +207,26 @@ def override_eval_spec(spec):
 
 def override_test_spec(spec):
     for agent_spec in spec['agent']:
-        # covers episodic and timestep
-        agent_spec['algorithm']['training_frequency'] = 1
+        # onpolicy freq is episodic
+        freq = 1 if agent_spec['memory']['name'] == 'OnPolicyReplay' else 8
+        agent_spec['algorithm']['training_frequency'] = freq
         agent_spec['algorithm']['training_start_step'] = 1
-        agent_spec['algorithm']['training_epoch'] = 1
-        agent_spec['algorithm']['training_batch_epoch'] = 1
+        agent_spec['algorithm']['training_iter'] = 1
+        agent_spec['algorithm']['training_batch_iter'] = 1
     for env_spec in spec['env']:
-        env_spec['max_t'] = 20
-        env_spec['max_tick'] = 3
-    spec['meta']['eval_frequency'] = 1000
-    spec['meta']['max_tick_unit'] = 'epi'
+        env_spec['max_frame'] = 40
+        env_spec['max_t'] = 12
+    spec['meta']['log_frequency'] = 10
+    spec['meta']['eval_frequency'] = 10
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
     return spec
 
 
-def resolve_aeb(spec):
-    '''
-    Resolve an experiment spec into the full list of points (coordinates) in AEB space.
-    @param {dict} spec An experiment spec.
-    @returns {list} aeb_list Resolved array of points in AEB space.
-    @example
-
-    spec = spec_util.get('base.json', 'general_inner')
-    aeb_list = spec_util.resolve_aeb(spec)
-    # => [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
-    '''
-    agent_num = len(spec['agent']) if ps.is_list(spec['agent']) else 1
-    env_num = len(spec['env']) if ps.is_list(spec['env']) else 1
-    ae_product = ps.get(spec, 'body.product')
-    body_num = ps.get(spec, 'body.num')
-    body_num_list = body_num if ps.is_list(body_num) else [body_num] * env_num
-
-    aeb_list = []
-    if ae_product == 'outer':
-        for e in range(env_num):
-            sub_aeb_list = list(itertools.product(range(agent_num), [e], range(body_num_list[e])))
-            aeb_list.extend(sub_aeb_list)
-    elif ae_product == 'inner':
-        for a, e in zip(range(agent_num), range(env_num)):
-            sub_aeb_list = list(itertools.product([a], [e], range(body_num_list[e])))
-            aeb_list.extend(sub_aeb_list)
-    else:  # custom AEB, body_num is a aeb_list
-        aeb_list = [tuple(aeb) for aeb in body_num]
-    aeb_list.sort()
-    assert is_aeb_compact(aeb_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
-    return aeb_list
+def save(spec, unit='experiment'):
+    '''Save spec to proper path. Called at Experiment or Trial init.'''
+    prepath = util.get_prepath(spec, unit)
+    util.write(spec, f'{prepath}_spec.json')
 
 
 def tick(spec, unit):
@@ -292,10 +243,22 @@ def tick(spec, unit):
         meta_spec['trial'] = -1
         meta_spec['session'] = -1
     elif unit == 'trial':
+        if meta_spec['experiment'] == -1:
+            meta_spec['experiment'] += 1
         meta_spec['trial'] += 1
         meta_spec['session'] = -1
     elif unit == 'session':
+        if meta_spec['experiment'] == -1:
+            meta_spec['experiment'] += 1
+        if meta_spec['trial'] == -1:
+            meta_spec['trial'] += 1
         meta_spec['session'] += 1
     else:
         raise ValueError(f'Unrecognized lab unit to tick: {unit}')
-    return meta_spec
+    # set prepath since it is determined at this point
+    meta_spec['prepath'] = prepath = util.get_prepath(spec, unit)
+    for folder in ('graph', 'info', 'log', 'model'):
+        folder_prepath = util.insert_folder(prepath, folder)
+        os.makedirs(os.path.dirname(folder_prepath), exist_ok=True)
+        meta_spec[f'{folder}_prepath'] = folder_prepath
+    return spec

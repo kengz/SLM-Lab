@@ -1,12 +1,9 @@
-'''
-The entry point of SLM Lab
-# to run scheduled set of specs
-python run_lab.py config/experiments.json
-# to run a single spec
-python run_lab.py slm_lab/spec/experimental/a2c_pong.json a2c_pong train
-'''
+# The SLM Lab entrypoint
+# to run scheduled set of specs:
+# python run_lab.py config/experiments.json
+# to run a single spec:
+# python run_lab.py slm_lab/spec/experimental/a2c_pong.json a2c_pong train
 from slm_lab import EVAL_MODES, TRAIN_MODES
-from slm_lab.experiment import analysis, retro_analysis
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
@@ -23,13 +20,14 @@ debug_modules = [
 ]
 debug_level = 'DEBUG'
 logger.toggle_debug(debug_modules, debug_level)
+logger = logger.get_logger(__name__)
 
 
 def run_spec(spec, lab_mode):
     '''Run a spec in lab_mode'''
     os.environ['lab_mode'] = lab_mode
     if lab_mode in TRAIN_MODES:
-        analysis.save_spec(spec)  # first save the new spec
+        spec_util.save(spec)  # first save the new spec
         if lab_mode == 'dev':
             spec = spec_util.override_dev_spec(spec)
         if lab_mode == 'search':
@@ -41,9 +39,6 @@ def run_spec(spec, lab_mode):
     elif lab_mode in EVAL_MODES:
         spec = spec_util.override_enjoy_spec(spec)
         Session(spec).run()
-        if lab_mode == 'eval':
-            util.clear_periodic_ckpt(prepath)  # cleanup after itself
-            retro_analysis.analyze_eval_trial(spec, predir)
     else:
         raise ValueError(f'Unrecognizable lab_mode not of {TRAIN_MODES} or {EVAL_MODES}')
 

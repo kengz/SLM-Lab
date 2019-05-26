@@ -61,7 +61,6 @@ class ActorCritic(Reinforce):
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
     }
 
     e.g. special net_spec param "shared" to share/separate Actor/Critic
@@ -95,7 +94,6 @@ class ActorCritic(Reinforce):
             'policy_loss_coef',
             'val_loss_coef',
             'training_frequency',
-            'training_epoch',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -283,20 +281,21 @@ class ActorCritic(Reinforce):
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
+            clock.set_batch_size(len(batch))
             pdparams, v_preds = self.calc_pdparam_v(batch)
             advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
             policy_loss = self.calc_policy_loss(batch, pdparams, advs)  # from actor
             val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
             if self.shared:  # shared network
                 loss = policy_loss + val_loss
-                self.net.train_step(loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
+                self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
             else:
-                self.net.train_step(policy_loss, self.optim, self.lr_scheduler, lr_clock=clock, global_net=self.global_net)
-                self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, lr_clock=clock, global_net=self.global_critic_net)
+                self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, clock=clock, global_net=self.global_critic_net)
                 loss = policy_loss + val_loss
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan

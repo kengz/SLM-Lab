@@ -3,17 +3,12 @@ from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
-import pydash as ps
 
 logger = logger.get_logger(__name__)
 
 
 class Algorithm(ABC):
-    '''
-    Abstract class ancestor to all Algorithms,
-    specifies the necessary design blueprint for agent to work in Lab.
-    Mostly, implement just the abstract methods and properties.
-    '''
+    '''Abstract Algorithm class to define the API methods'''
 
     def __init__(self, agent, global_nets=None):
         '''
@@ -64,15 +59,6 @@ class Algorithm(ABC):
         '''
         raise NotImplementedError
 
-    def nanflat_to_data_a(self, data_name, nanflat_data_a):
-        '''Reshape nanflat_data_a, e.g. action_a, from a single pass back into the API-conforming data_a'''
-        data_names = (data_name,)
-        data_a, = self.agent.agent_space.aeb_space.init_data_s(data_names, a=self.agent.a)
-        for body, data in zip(self.agent.nanflat_body_a, nanflat_data_a):
-            e, b = body.e, body.b
-            data_a[(e, b)] = data
-        return data_a
-
     @lab_api
     def act(self, state):
         '''Standard act method.'''
@@ -120,55 +106,3 @@ class Algorithm(ABC):
             if k.endswith('_scheduler') and hasattr(v, 'end_val'):
                 var_name = k.replace('_scheduler', '')
                 setattr(self.body, var_name, v.end_val)
-
-    # NOTE optional extension for multi-agent-env
-
-    @lab_api
-    def space_act(self, state_a):
-        '''Interface-level agent act method for all its bodies. Resolves state to state; get action and compose into action.'''
-        data_names = ('action',)
-        action_a, = self.agent.agent_space.aeb_space.init_data_s(data_names, a=self.agent.a)
-        for eb, body in util.ndenumerate_nonan(self.agent.body_a):
-            state = state_a[eb]
-            self.body = body
-            action_a[eb] = self.act(state)
-        # set body reference back to default
-        self.body = self.agent.nanflat_body_a[0]
-        return action_a
-
-    @lab_api
-    def space_sample(self):
-        '''Samples a batch from memory'''
-        batches = []
-        for body in self.agent.nanflat_body_a:
-            self.body = body
-            batches.append(self.sample())
-        # set body reference back to default
-        self.body = self.agent.nanflat_body_a[0]
-        batch = util.concat_batches(batches)
-        batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
-        return batch
-
-    @lab_api
-    def space_train(self):
-        if util.in_eval_lab_modes():
-            return np.nan
-        losses = []
-        for body in self.agent.nanflat_body_a:
-            self.body = body
-            losses.append(self.train())
-        # set body reference back to default
-        self.body = self.agent.nanflat_body_a[0]
-        loss_a = self.nanflat_to_data_a('loss', losses)
-        return loss_a
-
-    @lab_api
-    def space_update(self):
-        explore_vars = []
-        for body in self.agent.nanflat_body_a:
-            self.body = body
-            explore_vars.append(self.update())
-        # set body reference back to default
-        self.body = self.agent.nanflat_body_a[0]
-        explore_var_a = self.nanflat_to_data_a('explore_var', explore_vars)
-        return explore_var_a

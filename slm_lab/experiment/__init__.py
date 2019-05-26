@@ -1,4 +1,2 @@
-'''
-The experiment module
-Handles experimentation logic: control, design, monitoring, analysis, evolution
-'''
+# The experiment module
+# Handles experimentation logic: control, analysis
