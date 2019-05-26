@@ -1,9 +1,5 @@
-'''
-The memory module
-Contains different ways of storing an agents experiences and sampling from them
-'''
-
-# expose all the classes
+# The memory module
+# Implements various methods for memory storage
 from .replay import *
 from .onpolicy import *
 from .prioritized import *

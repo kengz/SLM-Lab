@@ -8,12 +8,7 @@ logger = logger.get_logger(__name__)
 
 
 class Memory(ABC):
-    '''
-    Abstract class ancestor to all Memories,
-    specifies the necessary design blueprint for agent body to work in Lab.
-    Mostly, implement just the abstract methods and properties.
-    Memory is singleton to each body for modularity, and there is no gains to do multi-body memory now. Shall be constructed when body_space is built.
-    '''
+    '''Abstract Memory class to define the API methods'''
 
     def __init__(self, memory_spec, body):
         '''
@@ -21,7 +16,6 @@ class Memory(ABC):
         '''
         self.memory_spec = memory_spec
         self.body = body
-
         # declare what data keys to store
         self.data_keys = ['states', 'actions', 'rewards', 'next_states', 'dones', 'priorities']
 
@@ -39,9 +33,3 @@ class Memory(ABC):
     def sample(self):
         '''Implement memory sampling mechanism'''
         raise NotImplementedError
-
-    def print_memory_info(self):
-        '''Prints size of all of the memory arrays'''
-        for k in self.data_keys:
-            d = getattr(self, k)
-            logger.info(f'Memory for body {self.body.aeb}: {k} :shape: {d.shape}, dtype: {d.dtype}, size: {util.sizeof(d)}MB')

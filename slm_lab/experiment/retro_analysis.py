@@ -1,4 +1,4 @@
-# retro analysis module
+# The retro analysis module
 # Runs analysis post-hoc using existing data files
 # example: yarn retro_analyze data/reinforce_cartpole_2018_01_22_211751/
 from glob import glob

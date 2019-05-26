@@ -1,6 +1,5 @@
-'''
-The data visualization module
-'''
+# The data visualization module
+# Defines plotting methods for analysis
 from plotly import graph_objs as go, io as pio, tools
 from plotly.offline import init_notebook_mode, iplot
 from slm_lab.lib import logger, util
@@ -8,8 +7,8 @@ import colorlover as cl
 import os
 import pydash as ps
 
-
 logger = logger.get_logger(__name__)
+
 # warn orca failure only once
 orca_warn_once = ps.once(lambda e: logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later.'))
 if util.is_jupyter():
@@ -50,12 +49,12 @@ def create_layout(title, y_title, x_title, x_type=None, width=500, height=500, l
     return layout
 
 
-def get_palette(aeb_count):
-    '''Get the suitable palette to plot for some number of aeb graphs, where each aeb is a color.'''
-    if aeb_count <= 8:
-        palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
+def get_palette(size):
+    '''Get the suitable palette of a certain size'''
+    if size <= 8:
+        palette = cl.scales[str(max(3, size))]['qual']['Set2']
     else:
-        palette = cl.interp(cl.scales['8']['qual']['Set2'], aeb_count)
+        palette = cl.interp(cl.scales['8']['qual']['Set2'], size)
     return palette
 
 

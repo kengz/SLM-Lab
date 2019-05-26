@@ -1,8 +1,5 @@
-'''
-The spec util
-Handles the Lab experiment spec: reading, writing(evolution), validation and default setting
-Expands the spec and params into consumable inputs in info space for lab units.
-'''
+# The spec module
+# Manages specification to run things in lab
 from slm_lab.lib import logger, util
 from string import Template
 import itertools
@@ -62,7 +59,7 @@ def check_comp_spec(comp_spec, comp_spec_format):
 
 
 def check_body_spec(spec):
-    '''Base method to check body spec for AEB space resolution'''
+    '''Base method to check body spec for multi-agent multi-env'''
     ae_product = ps.get(spec, 'body.product')
     body_num = ps.get(spec, 'body.num')
     if ae_product == 'outer':
@@ -71,7 +68,7 @@ def check_body_spec(spec):
         agent_num = len(spec['agent'])
         env_num = len(spec['env'])
         assert agent_num == env_num, 'Agent and Env spec length must be equal for body `inner` product. Given {agent_num}, {env_num}'
-    else:  # custom AEB
+    else:  # custom
         assert ps.is_list(body_num)
 
 
@@ -93,7 +90,7 @@ def check(spec):
             check_comp_spec(env_spec, SPEC_FORMAT['env'][0])
         check_comp_spec(spec['body'], SPEC_FORMAT['body'])
         check_comp_spec(spec['meta'], SPEC_FORMAT['meta'])
-        check_body_spec(spec)
+        # check_body_spec(spec)
         check_compatibility(spec)
     except Exception as e:
         logger.exception(f'spec {spec_name} fails spec check')
@@ -191,26 +188,6 @@ def get_param_specs(spec):
     return specs
 
 
-def is_aeb_compact(aeb_list):
-    '''
-    Check if aeb space (aeb_list) is compact; uniq count must equal shape in each of a,e axes. For b, per unique a,e hash, uniq must equal shape.'''
-    aeb_shape = util.get_aeb_shape(aeb_list)
-    aeb_uniq = [len(np.unique(col)) for col in np.transpose(aeb_list)]
-    ae_compact = np.array_equal(aeb_shape, aeb_uniq)
-    b_compact = True
-    for ae, ae_b_list in ps.group_by(aeb_list, lambda aeb: f'{aeb[0]}{aeb[1]}').items():
-        b_shape = util.get_aeb_shape(ae_b_list)[2]
-        b_uniq = [len(np.unique(col)) for col in np.transpose(ae_b_list)][2]
-        b_compact = b_compact and np.array_equal(b_shape, b_uniq)
-    aeb_compact = ae_compact and b_compact
-    return aeb_compact
-
-
-def is_singleton(spec):
-    '''Check if spec uses a singleton Session'''
-    return len(spec['agent']) == 1 and len(spec['env']) == 1 and spec['body']['num'] == 1
-
-
 def override_dev_spec(spec):
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
@@ -244,39 +221,6 @@ def override_test_spec(spec):
     spec['meta']['max_session'] = 1
     spec['meta']['max_trial'] = 2
     return spec
-
-
-def resolve_aeb(spec):
-    '''
-    Resolve an experiment spec into the full list of points (coordinates) in AEB space.
-    @param {dict} spec An experiment spec.
-    @returns {list} aeb_list Resolved array of points in AEB space.
-    @example
-
-    spec = spec_util.get('base.json', 'general_inner')
-    aeb_list = spec_util.resolve_aeb(spec)
-    # => [(0, 0, 0), (0, 0, 1), (1, 1, 0), (1, 1, 1)]
-    '''
-    agent_num = len(spec['agent']) if ps.is_list(spec['agent']) else 1
-    env_num = len(spec['env']) if ps.is_list(spec['env']) else 1
-    ae_product = ps.get(spec, 'body.product')
-    body_num = ps.get(spec, 'body.num')
-    body_num_list = body_num if ps.is_list(body_num) else [body_num] * env_num
-
-    aeb_list = []
-    if ae_product == 'outer':
-        for e in range(env_num):
-            sub_aeb_list = list(itertools.product(range(agent_num), [e], range(body_num_list[e])))
-            aeb_list.extend(sub_aeb_list)
-    elif ae_product == 'inner':
-        for a, e in zip(range(agent_num), range(env_num)):
-            sub_aeb_list = list(itertools.product([a], [e], range(body_num_list[e])))
-            aeb_list.extend(sub_aeb_list)
-    else:  # custom AEB, body_num is a aeb_list
-        aeb_list = [tuple(aeb) for aeb in body_num]
-    aeb_list.sort()
-    assert is_aeb_compact(aeb_list), 'Failed check: for a, e, uniq count == len (shape), and for each a,e hash, b uniq count == b len (shape)'
-    return aeb_list
 
 
 def save(spec, unit='experiment'):

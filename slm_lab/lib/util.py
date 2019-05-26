@@ -24,7 +24,6 @@ import yaml
 NUM_CPUS = mp.cpu_count()
 FILE_TS_FORMAT = '%Y_%m_%d_%H%M%S'
 RE_FILE_TS = re.compile(r'(\d{4}_\d{2}_\d{2}_\d{6})')
-SPACE_PATH = ['agent', 'agent_space', 'aeb_space', 'env_space', 'env']
 
 
 class LabJsonEncoder(json.JSONEncoder):
@@ -113,13 +112,6 @@ def concat_batches(batches):
     return concat_batch
 
 
-def count_nonan(arr):
-    try:
-        return np.count_nonzero(~np.isnan(arr))
-    except Exception:
-        return len(filter_nonan(arr))
-
-
 def downcast_float32(df):
     '''Downcast any float64 col to float32 to allow safer pandas comparison'''
     for col in df.columns:
@@ -162,48 +154,6 @@ def flatten_dict(obj, delim='.'):
         else:
             nobj[key] = val
     return nobj
-
-
-def filter_nonan(arr):
-    '''Filter to np array with no nan'''
-    try:
-        return arr[~np.isnan(arr)]
-    except Exception:
-        mixed_type = []
-        for v in arr:
-            if not gen_isnan(v):
-                mixed_type.append(v)
-        return np.array(mixed_type, dtype=arr.dtype)
-
-
-def fix_multi_index_dtype(df):
-    '''Restore aeb multi_index dtype from string to int, when read from file'''
-    df.columns = pd.MultiIndex.from_tuples([(int(x[0]), int(x[1]), int(x[2]), x[3]) for x in df.columns])
-    return df
-
-
-def nanflatten(arr):
-    '''Flatten np array while ignoring nan, like np.nansum etc.'''
-    flat_arr = arr.reshape(-1)
-    return filter_nonan(flat_arr)
-
-
-def gen_isnan(v):
-    '''Check isnan for general type (np.isnan is only operable on np type)'''
-    try:
-        return np.isnan(v).all()
-    except Exception:
-        return v is None
-
-
-def get_df_aeb_list(session_df):
-    '''Get the aeb list for session_df for iterating.'''
-    aeb_list = sorted(ps.uniq([(a, e, b) for a, e, b, col in session_df.columns.tolist()]))
-    return aeb_list
-
-
-def get_aeb_shape(aeb_list):
-    return np.amax(aeb_list, axis=0) + 1
 
 
 def get_class_name(obj, lower=False):
@@ -284,16 +234,6 @@ def get_ts(pattern=FILE_TS_FORMAT):
     return ts
 
 
-def guard_data_a(cls, data_a, data_name):
-    '''Guard data_a in case if it scalar, create a data_a and fill.'''
-    if np.isscalar(data_a):
-        new_data_a, = s_get(cls, 'aeb_space').init_data_s([data_name], a=cls.a)
-        for eb, body in ndenumerate_nonan(cls.body_a):
-            new_data_a[eb] = data_a
-        data_a = new_data_a
-    return data_a
-
-
 def insert_folder(prepath, folder):
     '''Insert a folder into prepath'''
     split_path = prepath.split('/')
@@ -343,16 +283,6 @@ def monkey_patch(base_cls, extend_cls):
     ext_fn_list = get_fn_list(extend_cls)
     for fn in ext_fn_list:
         setattr(base_cls, fn, getattr(extend_cls, fn))
-
-
-def ndenumerate_nonan(arr):
-    '''Generic ndenumerate for np.ndenumerate with only not gen_isnan values'''
-    return (idx_v for idx_v in np.ndenumerate(arr) if not gen_isnan(idx_v[1]))
-
-
-def nonan_all(v):
-    '''Generic np.all that also returns false if array is all np.nan'''
-    return bool(np.all(v) and ~np.all(np.isnan(v)))
 
 
 def parallelize(fn, args, num_cpus=NUM_CPUS):
@@ -521,32 +451,6 @@ def run_cmd_wait(proc):
         raise subprocess.CalledProcessError(proc.args, proc.returncode, output)
     else:
         return output
-
-
-def s_get(cls, attr_path):
-    '''
-    Method to get attribute across space via inferring agent <-> env paths.
-    @example
-    self.agent.agent_space.aeb_space.clock
-    # equivalently
-    util.s_get(self, 'aeb_space.clock')
-    '''
-    from_class_name = get_class_name(cls, lower=True)
-    from_idx = ps.find_index(SPACE_PATH, lambda s: from_class_name in (s, s.replace('_', '')))
-    from_idx = max(from_idx, 0)
-    attr_path = attr_path.split('.')
-    to_idx = SPACE_PATH.index(attr_path[0])
-    assert -1 not in (from_idx, to_idx)
-    if from_idx < to_idx:
-        path_link = SPACE_PATH[from_idx: to_idx]
-    else:
-        path_link = ps.reverse(SPACE_PATH[to_idx: from_idx])
-
-    res = cls
-    for attr in path_link + attr_path:
-        if not (get_class_name(res, lower=True) in (attr, attr.replace('_', ''))):
-            res = getattr(res, attr)
-    return res
 
 
 def self_desc(cls):

@@ -8,7 +8,6 @@ import shutil
 import torch
 
 
-MA_WINDOW = 100
 NUM_EVAL = 4
 METRICS_COLS = [
     'strength', 'max_strength', 'final_strength',
@@ -42,24 +41,6 @@ def gen_avg_return(agent, env, num_eval=NUM_EVAL):
     # exit eval context, restore variables simply by updating
     agent.algorithm.update()
     return np.mean(returns)
-
-
-def get_reward_mas(agent, name='eval_reward_ma'):
-    '''Return array of the named reward_ma for all of an agent's bodies.'''
-    bodies = getattr(agent, 'nanflat_body_a', [agent.body])
-    return np.array([getattr(body, name) for body in bodies], dtype=np.float16)
-
-
-def new_best(agent):
-    '''Check if algorithm is now the new best result, then update the new best'''
-    best_reward_mas = get_reward_mas(agent, 'best_reward_ma')
-    eval_reward_mas = get_reward_mas(agent, 'eval_reward_ma')
-    best = (eval_reward_mas >= best_reward_mas).all()
-    if best:
-        bodies = getattr(agent, 'nanflat_body_a', [agent.body])
-        for body in bodies:
-            body.best_reward_ma = body.eval_reward_ma
-    return best
 
 
 # metrics calculation methods
@@ -131,7 +112,7 @@ def calc_session_metrics(session_df, env_name, prepath=None, df_mode=None):
     '''
     rand_bl = random_baseline.get_random_baseline(env_name)
     mean_rand_returns = rand_bl['mean']
-    mean_returns = session_df['reward']
+    mean_returns = session_df['total_reward']
     frames = session_df['frame']
     opt_steps = session_df['opt_step']
 

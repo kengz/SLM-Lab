@@ -1,15 +1,22 @@
-# the control module
-# creates and runs control loops at levels: Experiment, Trial, Session
+# The control module
+# Creates and runs control loops at levels: Experiment, Trial, Session
 from copy import deepcopy
 from importlib import reload
-from slm_lab.agent import AgentSpace, Agent
+from slm_lab.agent import Agent, Body
 from slm_lab.agent.net import net_util
-from slm_lab.env import EnvSpace, make_env
+from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
-from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import torch.multiprocessing as mp
+
+
+def make_agent_env(spec, global_nets=None):
+    '''Helper to create agent and env given spec'''
+    env = make_env(spec)
+    body = Body(env, spec['agent'])
+    agent = Agent(spec, body=body, global_nets=global_nets)
+    return agent, env
 
 
 class Session:
@@ -27,14 +34,9 @@ class Session:
         util.set_logger(self.spec, logger, 'session')
         spec_util.save(spec, unit='session')
 
-        # init agent and env
-        self.env = make_env(self.spec)
+        self.agent, self.env = make_agent_env(self.spec, global_nets)
         with util.ctx_lab_mode('eval'):  # env for eval
             self.eval_env = make_env(self.spec)
-        body = Body(self.env, self.spec['agent'])
-        self.agent = Agent(self.spec, body=body, global_nets=global_nets)
-
-        enable_aeb_space(self)  # to use lab's data analysis framework
         logger.info(util.self_desc(self))
 
     def to_ckpt(self, env, mode='eval'):
@@ -64,7 +66,8 @@ class Session:
             avg_return = analysis.gen_avg_return(agent, self.eval_env)
             body.eval_ckpt(self.eval_env, avg_return)
             body.log_summary('eval')
-            if analysis.new_best(agent):
+            if body.eval_reward_ma >= body.best_reward_ma:
+                body.best_reward_ma = body.eval_reward_ma
                 agent.save(ckpt='best')
             if len(body.train_df) > 1:  # need > 1 row to calculate stability
                 metrics = analysis.analyze_session(self.spec, body.train_df, 'train')
@@ -110,62 +113,6 @@ class Session:
         return metrics
 
 
-class SpaceSession(Session):
-    '''Session for multi-agent/env setting'''
-
-    def __init__(self, spec, global_nets=None):
-        self.spec = spec
-        self.index = self.spec['meta']['session']
-        util.set_random_seed(self.spec)
-        util.set_cuda_id(self.spec)
-        util.set_logger(self.spec, logger, 'session')
-        spec_util.save(spec, unit='session')
-
-        self.aeb_space = AEBSpace(self.spec)
-        self.env_space = EnvSpace(self.spec, self.aeb_space)
-        self.aeb_space.init_body_space()
-        self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
-
-        logger.info(util.self_desc(self))
-
-    def try_ckpt(self, agent_space, env_space):
-        '''Try to checkpoint agent at the start, save_freq, and the end'''
-        # TODO ckpt and eval not implemented for SpaceSession
-        pass
-        # for agent in agent_space.agents:
-        #     for body in agent.nanflat_body_a:
-        #         env = body.env
-        #         super().try_ckpt(agent, env)
-
-    def run_all_episodes(self):
-        '''
-        Continually run all episodes, where each env can step and reset at its own clock_speed and timeline.
-        Will terminate when all envs done are done.
-        '''
-        all_done = self.aeb_space.tick('epi')
-        state_space = self.env_space.reset()
-        while not all_done:
-            self.try_ckpt(self.agent_space, self.env_space)
-            all_done = self.aeb_space.tick()
-            action_space = self.agent_space.act(state_space)
-            next_state_space, reward_space, done_space, info_v = self.env_space.step(action_space)
-            self.agent_space.update(state_space, action_space, reward_space, next_state_space, done_space)
-            state_space = next_state_space
-        self.try_ckpt(self.agent_space, self.env_space)
-
-    def close(self):
-        '''Close session and clean up. Save agent, close env.'''
-        self.agent_space.close()
-        self.env_space.close()
-        logger.info('Session done')
-
-    def run(self):
-        self.run_all_episodes()
-        space_metrics_dict = analysis.analyze_session(self)
-        self.close()
-        return space_metrics_dict
-
-
 def mp_run_session(spec, global_nets, mp_dict):
     '''Wrap for multiprocessing with shared variable'''
     session = Session(spec, global_nets)
@@ -206,12 +153,8 @@ class Trial:
 
     def init_global_nets(self):
         session = Session(deepcopy(self.spec))
-        if self.is_singleton:
-            session.env.close()  # safety
-            global_nets = net_util.init_global_nets(session.agent.algorithm)
-        else:
-            session.env_space.close()  # safety
-            global_nets = [net_util.init_global_nets(agent.algorithm) for agent in session.agent_space.agents]
+        session.env.close()  # safety
+        global_nets = net_util.init_global_nets(session.agent.algorithm)
         return global_nets
 
     def run_distributed_sessions(self):
