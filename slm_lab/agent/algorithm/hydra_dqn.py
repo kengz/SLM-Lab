@@ -32,7 +32,7 @@ class HydraDQN(DQN):
         self.eval_net = self.target_net
 
     @lab_api
-    def space_act(self, state_a):
+    def act(self, state_a):
         '''Non-atomizable act to override agent.act(), do a single pass on the entire state_a instead of composing act() via iteration'''
         # gather and flatten
         states = []
@@ -46,7 +46,7 @@ class HydraDQN(DQN):
         return action_a.cpu().numpy()
 
     @lab_api
-    def space_sample(self):
+    def sample(self):
         '''Samples a batch per body, which may experience different environment'''
         batch = {k: [] for k in self.body.memory.data_keys}
         for body in self.agent.nanflat_body_a:
@@ -76,7 +76,7 @@ class HydraDQN(DQN):
         return q_loss
 
     @lab_api
-    def space_train(self):
+    def train(self):
         '''
         Completes one training step for the agent if it is time to train.
         i.e. the environment timestep is greater than the minimum training timestep and a multiple of the training_frequency.
@@ -90,7 +90,7 @@ class HydraDQN(DQN):
         if self.to_train == 1:
             total_loss = torch.tensor(0.0, device=self.net.device)
             for _ in range(self.training_iter):
-                batch = self.space_sample()
+                batch = self.sample()
                 for _ in range(self.training_batch_iter):
                     loss = self.calc_q_loss(batch)
                     self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)

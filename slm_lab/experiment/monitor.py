@@ -73,16 +73,13 @@ class Body:
         # track eval data within run_eval. the same as train_df except for reward
         self.eval_df = self.train_df.copy()
 
-        if aeb_space is None:  # singleton mode
-            # the specific agent-env interface variables for a body
-            self.observation_space = self.env.observation_space
-            self.action_space = self.env.action_space
-            self.observable_dim = self.env.observable_dim
-            self.state_dim = self.observable_dim['state']
-            self.action_dim = self.env.action_dim
-            self.is_discrete = self.env.is_discrete
-        else:
-            self.space_init(aeb_space)
+        # the specific agent-env interface variables for a body
+        self.observation_space = self.env.observation_space
+        self.action_space = self.env.action_space
+        self.observable_dim = self.env.observable_dim
+        self.state_dim = self.observable_dim['state']
+        self.action_dim = self.env.action_dim
+        self.is_discrete = self.env.is_discrete
 
         # set the ActionPD class for sampling action
         self.action_type = get_action_type(self.action_space)
@@ -193,19 +190,6 @@ class Body:
         row_str = '  '.join([f'{k}: {v:g}' for k, v in last_row.items()])
         msg = f'{prefix} [{df_mode}_df] {row_str}'
         logger.info(msg)
-
-    def space_init(self, aeb_space):
-        '''Post init override for space body. Note that aeb is already correct from __init__'''
-        self.aeb_space = aeb_space
-        # to be reset properly later
-        self.nanflat_a_idx, self.nanflat_e_idx = None, None
-
-        self.observation_space = self.env.observation_spaces[self.a]
-        self.action_space = self.env.action_spaces[self.a]
-        self.observable_dim = self.env._get_observable_dim(self.observation_space)
-        self.state_dim = self.observable_dim['state']
-        self.action_dim = self.env._get_action_dim(self.action_space)
-        self.is_discrete = self.env._is_discrete(self.action_space)
 
 
 class AEBSpace:

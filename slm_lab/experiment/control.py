@@ -2,11 +2,11 @@
 # creates and runs control loops at levels: Experiment, Trial, Session
 from copy import deepcopy
 from importlib import reload
-from slm_lab.agent import AgentSpace, Agent
+from slm_lab.agent import Agent
 from slm_lab.agent.net import net_util
 from slm_lab.env import EnvSpace, make_env
 from slm_lab.experiment import analysis, search
-from slm_lab.experiment.monitor import AEBSpace, Body
+from slm_lab.experiment.monitor import Body
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
 import torch.multiprocessing as mp
