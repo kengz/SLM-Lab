@@ -294,6 +294,14 @@ def guard_data_a(cls, data_a, data_name):
     return data_a
 
 
+def insert_folder(prepath, folder):
+    '''Insert a folder into prepath'''
+    split_path = prepath.split('/')
+    prename = split_path.pop()
+    split_path += [folder, prename]
+    return '/'.join(split_path)
+
+
 def in_eval_lab_modes():
     '''Check if lab_mode is one of EVAL_MODES'''
     return get_lab_mode() in EVAL_MODES

@@ -124,6 +124,10 @@ def test_get_ts():
     assert util.RE_FILE_TS.match(ts)
 
 
+def test_insert_folder():
+    assert util.insert_folder('data/dqn_pong_2018_12_02_082510/dqn_pong_t0_s0', 'model') == 'data/dqn_pong_2018_12_02_082510/model/dqn_pong_t0_s0'
+
+
 def test_is_jupyter():
     assert not util.is_jupyter()
 
@@ -146,6 +150,17 @@ def test_ndenumerate_nonan():
 ])
 def test_nonan_all(v, isall):
     assert util.nonan_all(v) == isall
+
+
+def test_prepath_split():
+    prepath = 'data/dqn_pong_2018_12_02_082510/dqn_pong_t0_s0'
+    predir, prefolder, prename, spec_name, experiment_ts, ckpt = util.prepath_split(prepath)
+    assert predir == 'data/dqn_pong_2018_12_02_082510'
+    assert prefolder == 'dqn_pong_2018_12_02_082510'
+    assert prename == 'dqn_pong_t0_s0'
+    assert spec_name == 'dqn_pong'
+    assert experiment_ts == '2018_12_02_082510'
+    assert ckpt == None
 
 
 def test_s_get(test_agent):
