@@ -14,18 +14,6 @@ import pydash as ps
 logger = logger.get_logger(__name__)
 
 
-def enable_aeb_space(session):
-    '''Enable aeb_space to session use Lab's data-monitor and analysis modules'''
-    session.aeb_space = AEBSpace(session.spec)
-    # make compatible with the generic multiagent setup
-    session.aeb_space.body_space = DataSpace('body', session.aeb_space)
-    body_v = np.full(session.aeb_space.aeb_shape, np.nan, dtype=object)
-    body_v[0, 0, 0] = session.agent.body
-    session.aeb_space.body_space.add(body_v)
-    session.agent.aeb_space = session.aeb_space
-    session.env.aeb_space = session.aeb_space
-
-
 def get_action_type(action_space):
     '''Method to get the action type to choose prob. dist. to sample actions from NN logits output'''
     if isinstance(action_space, spaces.Box):
@@ -218,85 +206,6 @@ class Body:
         self.state_dim = self.observable_dim['state']
         self.action_dim = self.env._get_action_dim(self.action_space)
         self.is_discrete = self.env._is_discrete(self.action_space)
-
-
-class DataSpace:
-    '''
-    AEB data space. Store all data from RL system in standard aeb-shaped tensors.
-    '''
-
-    def __init__(self, data_name, aeb_space):
-        self.data_name = data_name
-        self.aeb_space = aeb_space
-        self.aeb_shape = aeb_space.aeb_shape
-
-        # data from env have shape (eab), need to swap
-        self.to_swap = self.data_name in ENV_DATA_NAMES
-        self.swap_aeb_shape = self.aeb_shape[1], self.aeb_shape[0], self.aeb_shape[2]
-
-        self.data_shape = self.swap_aeb_shape if self.to_swap else self.aeb_shape
-        self.data_type = object if self.data_name in ['state', 'action'] else np.float32
-        self.data = None  # standard data in aeb_shape
-        self.swap_data = None
-
-    def __str__(self):
-        if self.data is None:
-            return '<None>'
-        s = '['
-        for a, a_arr in enumerate(self.data):
-            s += f'\n  a:{a} ['
-            for e, e_arr in enumerate(a_arr):
-                s += f'\n    e:{e} ['
-                for b, val in enumerate(e_arr):
-                    s += f'\n      b:{b} {val}'
-                s += ']'
-            s += ']'
-        s += '\n]'
-        return s
-
-    def __bool__(self):
-        return util.nonan_all(self.data)
-
-    def init_data_v(self):
-        '''Method to init a data volume filled with np.nan'''
-        data_v = np.full(self.data_shape, np.nan, dtype=self.data_type)
-        return data_v
-
-    def init_data_s(self, a=None, e=None):
-        '''Method to init a data surface (subset of data volume) filled with np.nan.'''
-        body_s = self.aeb_space.body_space.get(a=a, e=e)
-        data_s = np.full(body_s.shape, np.nan, dtype=self.data_type)
-        return data_s
-
-    def add(self, data_v):
-        '''
-        Take raw data from RL system and construct numpy object self.data.
-        If data is from env, auto-swap the data to aeb standard shape.
-        @param {[x: [y: [body_v]]} data_v As collected in RL sytem.
-        @returns {array} data Tensor in standard aeb shape.
-        '''
-        new_data = np.array(data_v)  # no type restriction, auto-infer
-        if self.to_swap:  # data from env has shape eab
-            self.swap_data = new_data
-            self.data = new_data.swapaxes(0, 1)
-        else:
-            self.data = new_data
-            self.swap_data = new_data.swapaxes(0, 1)
-        return self.data
-
-    def get(self, a=None, e=None):
-        '''
-        Get the data projected on a or e axes for use by agent_space, env_space.
-        @param {int} a The index a of an agent in agent_space
-        @param {int} e The index e of an env in env_space
-        @returns {array} data_x Where x is a or e.
-        '''
-        if e is None:
-            return self.data[a]
-        elif a is None:
-            return self.swap_data[e]
-        else:
-            return self.data[a][e]
 
 
 class AEBSpace:

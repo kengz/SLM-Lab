@@ -36,17 +36,6 @@ def test_spec():
 
 
 @pytest.fixture(scope='session')
-def test_aeb_space(test_spec):
-    global aeb_space
-    if aeb_space is None:
-        aeb_space = AEBSpace(test_spec)
-        env_space = EnvSpace(test_spec, aeb_space)
-        aeb_space.init_body_space()
-        agent_space = AgentSpace(test_spec, aeb_space)
-    return aeb_space
-
-
-@pytest.fixture(scope='session')
 def test_agent(test_aeb_space):
     agent = test_aeb_space.agent_space.agents[0]
     return agent
