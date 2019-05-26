@@ -64,9 +64,6 @@
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95,
-      }
     },
     "search": {
       "agent": [{
@@ -158,9 +155,6 @@
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95,
-      }
     },
     "search": {
       "agent": [{
@@ -252,9 +246,6 @@
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95,
-      }
     },
     "search": {
       "agent": [{
@@ -346,9 +337,6 @@
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95,
-      }
     },
     "search": {
       "agent": [{
@@ -440,9 +428,6 @@
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95,
-      }
     },
     "search": {
       "agent": [{
@@ -534,9 +519,6 @@
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95,
-      }
     },
     "search": {
       "agent": [{
@@ -628,9 +610,6 @@
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95,
-      }
     },
     "search": {
       "agent": [{
@@ -722,9 +701,6 @@
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95,
-      }
     },
     "search": {
       "agent": [{
@@ -820,9 +796,6 @@
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95,
-      }
     },
     "search": {
       "agent": [{
@@ -914,9 +887,6 @@
       "max_session": 2,
       "max_trial": 95,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95,
-      }
     },
     "search": {
       "agent": [{

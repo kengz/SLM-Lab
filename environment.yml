@@ -47,7 +47,7 @@ dependencies:
     - colorlover==0.3.0
     - opencv-python==3.4.0.12
     - pyopengl==3.1.0
-    - ray==0.5.3
+    - ray==0.7.0
     - redis==2.10.6
     - xvfbwrapper==0.2.9
     - gym==0.12.1

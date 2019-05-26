@@ -569,9 +569,6 @@
       "max_session": 1,
       "max_trial": 16,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 16,
-      }
     },
     "search": {
       "agent": [{

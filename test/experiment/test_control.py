@@ -49,6 +49,7 @@ def test_demo_performance():
     assert last_reward > 50, f'last_reward is too low: {last_reward}'
 
 
+@pytest.mark.skip(reason="Cant run on CI")
 def test_experiment():
     spec = spec_util.get('demo.json', 'dqn_cartpole')
     spec_util.save(spec, unit='experiment')

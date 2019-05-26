@@ -62,9 +62,6 @@
       "max_session": 4,
       "max_trial": 190,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -154,9 +151,6 @@
       "max_session": 4,
       "max_trial": 190,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -243,9 +237,6 @@
       "max_session": 4,
       "max_trial": 190,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -335,9 +326,6 @@
       "max_session": 4,
       "max_trial": 190,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -431,9 +419,6 @@
       "max_session": 4,
       "max_trial": 190,
       "search": "RandomSearch",
-      "search_resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
