@@ -1,12 +1,9 @@
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
-from slm_lab.lib import logger, math_util, util
-import numpy as np
+from slm_lab.lib import math_util, util
 import pydash as ps
 import torch
 import torch.nn as nn
-
-logger = logger.get_logger(__name__)
 
 
 class ConvNet(Net, nn.Module):
@@ -188,21 +185,6 @@ class ConvNet(Net, nn.Module):
             return outs
         else:
             return self.model_tail(x)
-
-    @net_util.dev_check_train_step
-    def train_step(self, loss, optim, lr_scheduler, clock=None, global_net=None):
-        lr_scheduler.step(epoch=ps.get(clock, 'frame'))
-        optim.zero_grad()
-        loss.backward()
-        if self.clip_grad_val is not None:
-            nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
-        if global_net is not None:
-            net_util.push_global_grads(self, global_net)
-        optim.step()
-        if global_net is not None:
-            net_util.copy(global_net, self)
-        clock.tick('opt_step')
-        return loss
 
 
 class DuelingConvNet(ConvNet):
