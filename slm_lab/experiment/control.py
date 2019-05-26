@@ -5,7 +5,7 @@ from importlib import reload
 from slm_lab.agent import AgentSpace, Agent
 from slm_lab.agent.net import net_util
 from slm_lab.env import EnvSpace, make_env
-from slm_lab.experiment import analysis, retro_analysis, search
+from slm_lab.experiment import analysis, search
 from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
@@ -99,7 +99,7 @@ class Session:
         self.agent.close()
         self.env.close()
         self.eval_env.close()
-        logger.info(f'Session {self.index} done and closed.')
+        logger.info(f'Session {self.index} done and closed')
 
     def run(self):
         self.run_rl()
@@ -155,7 +155,7 @@ class SpaceSession(Session):
         '''Close session and clean up. Save agent, close env.'''
         self.agent_space.close()
         self.env_space.close()
-        logger.info('Session done and closed.')
+        logger.info('Session done and closed')
 
     def run(self):
         self.run_all_episodes()
@@ -228,7 +228,7 @@ class Trial:
         return session_metrics_list
 
     def close(self):
-        logger.info(f'Trial {self.index} done and closed.')
+        logger.info(f'Trial {self.index} done and closed')
 
     def run(self):
         if self.spec['meta'].get('distributed') == False:
@@ -263,7 +263,7 @@ class Experiment:
 
     def close(self):
         reload(search)  # fixes ray consecutive run crashing due to bad cleanup
-        logger.info('Experiment done and closed.')
+        logger.info('Experiment done and closed')
 
     def run(self):
         trial_data_dict = self.search.run()

@@ -1,12 +1,9 @@
-'''
-The entry point of SLM Lab
-# to run scheduled set of specs
-python run_lab.py config/experiments.json
-# to run a single spec
-python run_lab.py slm_lab/spec/experimental/a2c_pong.json a2c_pong train
-'''
+# The entry point of SLM Lab
+# to run scheduled set of specs:
+# python run_lab.py config/experiments.json
+# to run a single spec:
+# python run_lab.py slm_lab/spec/experimental/a2c_pong.json a2c_pong train
 from slm_lab import EVAL_MODES, TRAIN_MODES
-from slm_lab.experiment import retro_analysis
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
