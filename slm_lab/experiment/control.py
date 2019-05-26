@@ -1,7 +1,6 @@
 # The control module
 # Creates and runs control loops at levels: Experiment, Trial, Session
 from copy import deepcopy
-from importlib import reload
 from slm_lab.agent import Agent, Body
 from slm_lab.agent.net import net_util
 from slm_lab.env import make_env
@@ -17,6 +16,13 @@ def make_agent_env(spec, global_nets=None):
     body = Body(env, spec['agent'])
     agent = Agent(spec, body=body, global_nets=global_nets)
     return agent, env
+
+
+def mp_run_session(spec, global_nets, mp_dict):
+    '''Wrap for multiprocessing with shared variable'''
+    session = Session(spec, global_nets)
+    metrics = session.run()
+    mp_dict[session.index] = metrics
 
 
 class Session:
@@ -113,13 +119,6 @@ class Session:
         return metrics
 
 
-def mp_run_session(spec, global_nets, mp_dict):
-    '''Wrap for multiprocessing with shared variable'''
-    session = Session(spec, global_nets)
-    metrics = session.run()
-    mp_dict[session.index] = metrics
-
-
 class Trial:
     '''
     The lab unit which runs repeated sessions for a same spec, i.e. a trial
@@ -188,21 +187,12 @@ class Experiment:
         self.index = self.spec['meta']['experiment']
         util.set_logger(self.spec, logger, 'trial')
         spec_util.save(spec, unit='experiment')
-        SearchClass = getattr(search, spec['meta'].get('search'))
-        self.search = SearchClass(deepcopy(self.spec))
-
-    def init_trial_and_run(self, spec):
-        '''Method to run trial with the properly updated spec (trial_index) from experiment.search.lab_trial.'''
-        trial = Trial(spec)
-        trial_metrics = trial.run()
-        return trial_metrics
 
     def close(self):
-        reload(search)  # fixes ray consecutive run crashing due to bad cleanup
         logger.info('Experiment done')
 
     def run(self):
-        trial_data_dict = self.search.run(self.init_trial_and_run)
+        trial_data_dict = search.run_ray_search(self.spec)
         experiment_df = analysis.analyze_experiment(self.spec, trial_data_dict)
         self.close()
         return experiment_df

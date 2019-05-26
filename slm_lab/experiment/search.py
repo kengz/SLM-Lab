@@ -1,15 +1,10 @@
-from abc import ABC, abstractmethod
 from copy import deepcopy
 from slm_lab.lib import logger, util
-from slm_lab.lib.decorator import lab_api
-from slm_lab.spec import spec_util
-import logging
 import numpy as np
 import pydash as ps
 import random
 import ray
 import ray.tune as tune
-import torch
 
 logger = logger.get_logger(__name__)
 
@@ -46,8 +41,8 @@ def build_config_space(spec):
     return config_space
 
 
-def spec_from_config(spec, config):
-    '''Helper to create spec from config - variables in spec.'''
+def inject_config(spec, config):
+    '''Inject flattened config into SLM Lab spec.'''
     spec = deepcopy(spec)
     spec.pop('search', None)
     for k, v in config.items():
@@ -55,89 +50,60 @@ def spec_from_config(spec, config):
     return spec
 
 
-def create_remote_fn(spec):
-    ray_gpu = int(bool(ps.get(spec, 'agent.0.net.gpu') and torch.cuda.device_count()))
-    # TODO fractional ray_gpu is broken
+def ray_trainable(config, reporter):
+    '''
+    Create an instance of a trainable function for ray: https://ray.readthedocs.io/en/latest/tune-usage.html#training-api
+    Lab needs a spec and a trial_index to be carried through config, pass them with config in ray.run() like so:
+    config = {
+        'spec': spec,
+        'trial_index': tune.sample_from(lambda spec: gen_trial_index()),
+        ... # normal ray config with sample, grid search etc.
+    }
+    '''
+    from slm_lab.experiment.control import Trial
+    # restore data carried from ray.run() config
+    spec = config.pop('spec')
+    trial_index = config.pop('trial_index')
+    spec['meta']['trial'] = trial_index
+    spec = inject_config(spec, config)
+    # run SLM Lab trial
+    metrics = Trial(spec).run()
+    # ray report to carry data in ray trial.last_result
+    reporter(trial_data={trial_index: metrics})
 
-    @ray.remote(num_gpus=ray_gpu)  # hack around bad Ray design of hard-coding
-    def run_trial(init_trial_and_run, spec, config):
-        trial_index = config.pop('trial_index')
-        spec = spec_from_config(spec, config)
-        spec['meta']['trial'] = trial_index  # inject trial index
-        metrics = init_trial_and_run(spec)
-        trial_data = {**config, **metrics, 'trial_index': spec['meta']['trial']}
-        return trial_data
-    return run_trial
 
+def run_ray_search(spec):
+    '''Method to run ray search from experiment'''
+    logger.info('Running ray search')
+    # generate trial index to pass into Lab Trial
+    global trial_index  # make gen_trial_index passable into ray.run
+    trial_index = -1
 
-def get_ray_results(pending_ids, ray_id_to_config):
-    '''Helper to wait and get ray results into a new trial_data_dict, or handle ray error'''
+    def gen_trial_index():
+        global trial_index
+        trial_index += 1
+        return trial_index
+
+    ray.init()
+
+    config_space = build_config_space(spec)
+    ray_trials = tune.run(
+        ray_trainable,
+        name=spec['name'],
+        config={
+            "spec": spec,
+            "trial_index": tune.sample_from(lambda spec: gen_trial_index()),
+            **config_space
+        },
+        resources_per_trial=spec['meta'].get('search_resources'),
+        num_samples=spec['meta']['max_trial'],
+    )
+
+    # collect results
     trial_data_dict = {}
-    for _t in range(len(pending_ids)):
-        ready_ids, pending_ids = ray.wait(pending_ids, num_returns=1)
-        ready_id = ready_ids[0]
-        try:
-            trial_data = ray.get(ready_id)
-            trial_index = trial_data.pop('trial_index')
-            trial_data_dict[trial_index] = trial_data
-        except:
-            logger.exception(f'Trial failed: {ray_id_to_config[ready_id]}')
+    for ray_trial in ray_trials:
+        ray_trial_data = trial.last_result['trial_data']
+        trial_data_dict.update(trial_data_dict)
+
+    ray.shutdown()
     return trial_data_dict
-
-
-class RaySearch(ABC):
-    '''RaySearch module for Experiment - Ray API integration with Lab'''
-
-    def __init__(self, spec):
-        self.spec = spec
-        self.config_space = build_config_space(self.spec)
-        logger.info(f'Running {util.get_class_name(self)}, with meta spec:\n{self.spec["meta"]}')
-
-    @abstractmethod
-    def generate_config(self):
-        '''Generate the next config given config_space'''
-        raise NotImplementedError
-        return config
-
-    @abstractmethod
-    @lab_api
-    def run(self):
-        '''Implement the main run_trial loop.'''
-        ray.init()
-        # loop for max_trial: generate_config(); run_trial.remote(config)
-        ray.shutdown()
-        raise NotImplementedError
-        return trial_data_dict
-
-
-class RandomSearch(RaySearch):
-
-    def generate_config(self):
-        configs = []  # to accommodate for grid_search
-        for resolved_vars, config in tune.suggest.variant_generator._generate_variants(self.config_space):
-            # inject trial_index for tracking in Ray
-            config['trial_index'] = spec_util.tick(self.spec, 'trial')['meta']['trial']
-            configs.append(config)
-        return configs
-
-    @lab_api
-    def run(self, init_trial_and_run):
-        run_trial = create_remote_fn(self.spec)
-        meta_spec = self.spec['meta']
-        logging.getLogger('ray').propagate = True
-        ray.init(**meta_spec.get('search_resources', {}))
-        max_trial = meta_spec['max_trial']
-        trial_data_dict = {}
-        ray_id_to_config = {}
-        pending_ids = []
-
-        for _t in range(max_trial):
-            configs = self.generate_config()
-            for config in configs:
-                ray_id = run_trial.remote(init_trial_and_run, self.spec, config)
-                ray_id_to_config[ray_id] = config
-                pending_ids.append(ray_id)
-
-        trial_data_dict.update(get_ray_results(pending_ids, ray_id_to_config))
-        ray.shutdown()
-        return trial_data_dict
