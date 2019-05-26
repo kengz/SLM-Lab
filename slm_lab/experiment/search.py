@@ -5,6 +5,7 @@ import pydash as ps
 import random
 import ray
 import ray.tune as tune
+import torch
 
 logger = logger.get_logger(__name__)
 
@@ -39,6 +40,19 @@ def build_config_space(spec):
             np_fn = getattr(np.random, space_type)
             config_space[key] = tune.sample_from(lambda spec, v=v: np_fn(*v))
     return config_space
+
+
+def infer_trial_resources(spec):
+    '''Infer the resources_per_trial for ray from spec'''
+    meta_spec = spec['meta']
+    num_cpus = min(util.NUM_CPUS, meta_spec['max_session'])
+
+    use_gpu = any(agent_spec['net'].get('gpu') for agent_spec in spec['agent'])
+    requested_gpu = meta_spec['max_session'] if use_gpu else 0
+    gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
+    num_gpus = min(gpu_count, requested_gpu)
+    resources_per_trial = {'cpu': num_cpus, 'gpu': num_gpus}
+    return resources_per_trial
 
 
 def inject_config(spec, config):
@@ -86,17 +100,17 @@ def run_ray_search(spec):
 
     ray.init()
 
-    config_space = build_config_space(spec)
     ray_trials = tune.run(
         ray_trainable,
         name=spec['name'],
         config={
             "spec": spec,
             "trial_index": tune.sample_from(lambda spec: gen_trial_index()),
-            **config_space
+            **build_config_space(spec)
         },
-        resources_per_trial=spec['meta'].get('search_resources'),
+        resources_per_trial=infer_trial_resources(spec),
         num_samples=spec['meta']['max_trial'],
+        queue_trials=True,
     )
 
     # collect results
