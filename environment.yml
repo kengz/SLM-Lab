@@ -45,7 +45,6 @@ dependencies:
     - box2d-py==2.3.8
     - cloudpickle==0.5.2
     - colorlover==0.3.0
-    - deap==1.2.2
     - opencv-python==3.4.0.12
     - pyopengl==3.1.0
     - ray==0.5.3

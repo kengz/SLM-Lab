@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from copy import deepcopy
-from deap import creator, base, tools, algorithms
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from slm_lab.spec import spec_util
@@ -56,21 +55,6 @@ def build_config_space(experiment):
             np_fn = getattr(np.random, space_type)
             config_space[key] = lambda spec, v=v: np_fn(*v)
     return config_space
-
-
-def calc_population_size(experiment):
-    '''Calculate the population size for RandomSearch or EvolutionarySearch'''
-    pop_size = 2  # x2 for more search coverage
-    for k, v in util.flatten_dict(experiment.spec['search']).items():
-        if '__' in k:
-            key, space_type = k.split('__')
-        else:
-            key, space_type = k, 'grid_search'
-        if space_type in ('grid_search', 'choice'):
-            pop_size *= len(v)
-        else:
-            pop_size *= 3
-    return pop_size
 
 
 def spec_from_config(experiment, config):
@@ -183,111 +167,5 @@ class RandomSearch(RaySearch):
                 pending_ids.append(ray_id)
 
         trial_data_dict.update(get_ray_results(pending_ids, ray_id_to_config))
-        ray.shutdown()
-        return trial_data_dict
-
-
-class EvolutionarySearch(RaySearch):
-
-    def generate_config(self):
-        for resolved_vars, config in ray.tune.suggest.variant_generator._generate_variants(self.config_space):
-            # trial_index is set at population level
-            return config
-
-    def mutate(self, individual, indpb):
-        '''
-        Deap implementation for dict individual (config),
-        mutate an attribute with some probability - resample using the generate_config method and ensuring the new value is different.
-        @param {dict} individual Individual to be mutated.
-        @param {float} indpb Independent probability for each attribute to be mutated.
-        @returns A tuple of one individual.
-        '''
-        for k, v in individual.items():
-            if random.random() < indpb:
-                while True:
-                    new_ind = self.generate_config()
-                    if new_ind[k] != v:
-                        individual[k] = new_ind[k]
-                        break
-        return individual,
-
-    def cx_uniform(cls, ind1, ind2, indpb):
-        '''
-        Deap implementation for dict individual (config),
-        do a uniform crossover that modify in place the two individuals. The attributes are swapped with probability indpd.
-        @param {dict} ind1 The first individual participating in the crossover.
-        @param {dict} ind2 The second individual participating in the crossover.
-        @param {float} indpb Independent probabily for each attribute to be exchanged.
-        @returns A tuple of two individuals.
-        '''
-        for k in ind1:
-            if random.random() < indpb:
-                ind1[k], ind2[k] = ind2[k], ind1[k]
-        return ind1, ind2
-
-    def init_deap(self):
-        creator.create('FitnessMax', base.Fitness, weights=(1.0,))
-        creator.create('Individual', dict, fitness=creator.FitnessMax)
-        toolbox = base.Toolbox()
-        toolbox.register('attr', self.generate_config)
-        toolbox.register('individual', tools.initIterate,
-                         creator.Individual, toolbox.attr)
-        toolbox.register('population', tools.initRepeat,
-                         list, toolbox.individual)
-
-        toolbox.register('mate', self.cx_uniform, indpb=0.5)
-        toolbox.register('mutate', self.mutate, indpb=1 /
-                         len(toolbox.individual()))
-        toolbox.register('select', tools.selTournament, tournsize=3)
-        return toolbox
-
-    @lab_api
-    def run(self):
-        run_trial = create_remote_fn(self.experiment)
-        meta_spec = self.experiment.spec['meta']
-        logging.getLogger('ray').propagate = True
-        ray.init(**meta_spec.get('search_resources', {}))
-        register_ray_serializer()
-        max_generation = meta_spec['max_generation']
-        pop_size = meta_spec['max_trial'] or calc_population_size(self.experiment)
-        logger.info(f'EvolutionarySearch max_generation: {max_generation}, population size: {pop_size}')
-        trial_data_dict = {}
-        config_hash = {}  # config hash_str to trial_index
-
-        toolbox = self.init_deap()
-        population = toolbox.population(n=pop_size)
-        for gen in range(1, max_generation + 1):
-            logger.info(f'Running generation: {gen}/{max_generation}')
-            ray_id_to_config = {}
-            pending_ids = []
-            for individual in population:
-                config = dict(individual.items())
-                hash_str = util.to_json(config, indent=0)
-                if hash_str not in config_hash:
-                    trial_index = spec_util.tick(self.experiment.spec, 'trial')['meta']['trial']
-                    config_hash[hash_str] = config['trial_index'] = trial_index
-                    ray_id = run_trial.remote(self.experiment, config)
-                    ray_id_to_config[ray_id] = config
-                    pending_ids.append(ray_id)
-                individual['trial_index'] = config_hash[hash_str]
-
-            trial_data_dict.update(get_ray_results(pending_ids, ray_id_to_config))
-
-            for individual in population:
-                trial_index = individual.pop('trial_index')
-                trial_data = trial_data_dict.get(trial_index, {'strength': 0})  # if trial errored
-                individual.fitness.values = trial_data['strength'],
-
-            preview = 'Fittest of population preview:'
-            for individual in tools.selBest(population, k=min(10, pop_size)):
-                preview += f'\nfitness: {individual.fitness.values[0]}, {individual}'
-            logger.info(preview)
-
-            # prepare offspring for next generation
-            if gen < max_generation:
-                population = toolbox.select(population, len(population))
-                # Vary the pool of individuals
-                population = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.5)
-
         ray.shutdown()
         return trial_data_dict
