@@ -63,7 +63,8 @@ class Session:
             avg_return = analysis.gen_avg_return(agent, self.eval_env)
             body.eval_ckpt(self.eval_env, avg_return)
             body.log_summary('eval')
-            if analysis.new_best(agent):
+            if body.eval_reward_ma >= body.best_reward_ma:
+                body.best_reward_ma = body.eval_reward_ma
                 agent.save(ckpt='best')
             if len(body.train_df) > 1:  # need > 1 row to calculate stability
                 metrics = analysis.analyze_session(self.spec, body.train_df, 'train')

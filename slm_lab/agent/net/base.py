@@ -3,11 +3,7 @@ import torch
 
 
 class Net(ABC):
-    '''
-    Abstract class ancestor to all Nets,
-    specifies the necessary design blueprint for algorithm to work in Lab.
-    Mostly, implement just the abstract methods and properties.
-    '''
+    '''Abstract Net class to define the API methods'''
 
     def __init__(self, net_spec, in_dim, out_dim):
         '''

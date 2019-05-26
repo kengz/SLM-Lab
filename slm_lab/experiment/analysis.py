@@ -44,24 +44,6 @@ def gen_avg_return(agent, env, num_eval=NUM_EVAL):
     return np.mean(returns)
 
 
-def get_reward_mas(agent, name='eval_reward_ma'):
-    '''Return array of the named reward_ma for all of an agent's bodies.'''
-    bodies = getattr(agent, 'nanflat_body_a', [agent.body])
-    return np.array([getattr(body, name) for body in bodies], dtype=np.float16)
-
-
-def new_best(agent):
-    '''Check if algorithm is now the new best result, then update the new best'''
-    best_reward_mas = get_reward_mas(agent, 'best_reward_ma')
-    eval_reward_mas = get_reward_mas(agent, 'eval_reward_ma')
-    best = (eval_reward_mas >= best_reward_mas).all()
-    if best:
-        bodies = getattr(agent, 'nanflat_body_a', [agent.body])
-        for body in bodies:
-            body.best_reward_ma = body.eval_reward_ma
-    return best
-
-
 # metrics calculation methods
 
 def calc_strength(mean_returns, mean_rand_returns):

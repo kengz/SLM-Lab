@@ -148,9 +148,8 @@ def boltzmann(state, algorithm, body):
     return action
 
 
-# multi-body action_policy used by agent
-
-# TODO fix later using similar batch action method
+# multi-body/multi-env action_policy used by agent
+# TODO rework
 
 def multi_default(states, algorithm, body_list, pdparam):
     '''

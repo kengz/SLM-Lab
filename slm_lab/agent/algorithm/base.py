@@ -8,11 +8,7 @@ logger = logger.get_logger(__name__)
 
 
 class Algorithm(ABC):
-    '''
-    Abstract class ancestor to all Algorithms,
-    specifies the necessary design blueprint for agent to work in Lab.
-    Mostly, implement just the abstract methods and properties.
-    '''
+    '''Abstract Algorithm class to define the API methods'''
 
     def __init__(self, agent, global_nets=None):
         '''

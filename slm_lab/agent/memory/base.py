@@ -8,12 +8,7 @@ logger = logger.get_logger(__name__)
 
 
 class Memory(ABC):
-    '''
-    Abstract class ancestor to all Memories,
-    specifies the necessary design blueprint for agent body to work in Lab.
-    Mostly, implement just the abstract methods and properties.
-    Memory is singleton to each body for modularity, and there is no gains to do multi-body memory now. Shall be constructed when body_space is built.
-    '''
+    '''Abstract Memory class to define the API methods'''
 
     def __init__(self, memory_spec, body):
         '''

@@ -44,7 +44,6 @@ class Body:
         self.env = env
         self.aeb = aeb
         self.a, self.e, self.b = aeb
-        self.nanflat_a_idx, self.nanflat_e_idx = self.a, self.e
 
         # variables set during init_algorithm_params
         self.explore_var = np.nan  # action exploration: epsilon or tau
