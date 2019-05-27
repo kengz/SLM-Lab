@@ -117,7 +117,7 @@ def run_ray_search(spec):
     )
     trial_data_dict = {}  # data for Lab Experiment to analyze
     for ray_trial in ray_trials:
-        ray_trial_data = trial.last_result['trial_data']
+        ray_trial_data = ray_trial.last_result['trial_data']
         trial_data_dict.update(trial_data_dict)
 
     ray.shutdown()
