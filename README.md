@@ -49,7 +49,7 @@ SLM Lab integrates with multiple environment offerings:
 
 *Contributions are welcome to integrate more environments!*
 
-#### [Metrics and Experimentation](#experimentation-framework)
+### [Metrics and Experimentation](#experimentation-framework)
 
 To facilitate better RL development, SLM Lab also comes with prebuilt *metrics* and *experimentation framework*:
 - every run generates metrics, graphs and data for analysis, as well as spec for reproducibility
@@ -75,7 +75,7 @@ To facilitate better RL development, SLM Lab also comes with prebuilt *metrics* 
 
 ## Quick Start
 
-### DQN CartPole
+#### DQN CartPole
 
 Everything in the lab is ran using a `spec file`, which contains all the information for the run to be reproducible. These are located in `slm_lab/spec/`.
 
@@ -103,7 +103,7 @@ This will run a new `Trial` in *training mode*. At the end of it, all the metric
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_training.png)
 
 
-### A2C Atari
+#### A2C Atari
 
 Run A2C to solve Atari Pong:
 
@@ -121,7 +121,7 @@ Below shows a trial graph with multiple sessions:
 
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_atari_graph.png)
 
-### Benchmark
+#### Benchmark
 
 To run a full benchmark, simply pick a file and run it in train mode. For example, for A2C Atari benchmark, the spec file is `slm_lab/spec/benchmark/a2c/a2c_atari.json`. This file is parametrized to run on a set of environments. Run the benchmark:
 
@@ -131,7 +131,7 @@ python run_lab.py slm_lab/spec/benchmark/a2c/a2c_atari.json a2c_atari train
 
 This will spawn multiple processes to run each environment in its separate `Trial`, and the data is saved to `data/` as usual.
 
-### Experimentation / Hyperparameter search
+#### Experimentation / Hyperparameter search
 
 An [`Experiment`](https://github.com/kengz/SLM-Lab/blob/master/slm_lab/experiment/control.py) is a hyperparameter search, which samples multiple `spec`s from a search space. `Experiment` spawns a `Trial` for each `spec`, and each `Trial` runs multiple duplicated `Session`s for averaging its results.
 
