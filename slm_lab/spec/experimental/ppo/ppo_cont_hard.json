@@ -54,7 +54,7 @@
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "total_t": 1e6
+          "frame": 1e6
         },
         "gpu": true
       }

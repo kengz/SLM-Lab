@@ -59,7 +59,7 @@
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "total_t": 1e7
+          "frame": 1e7
         },
         "gpu": true
       }
@@ -151,7 +151,7 @@
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "total_t": 1e7
+          "frame": 1e7
         },
         "gpu": true
       }
