@@ -82,6 +82,7 @@ def ray_trainable(config, reporter):
     spec = inject_config(spec, config)
     # run SLM Lab trial
     metrics = Trial(spec).run()
+    metrics.update(config) # carry config for analysis too
     # ray report to carry data in ray trial.last_result
     reporter(trial_data={trial_index: metrics})
 
