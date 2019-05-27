@@ -9,7 +9,7 @@ dependencies:
   - colorlog=4.0.2
   - coverage=4.5.3
   - flaky=3.5.3
-  - libgcc=4.8.5
+  - libgcc
   - numpy=1.16.3
   - openpyxl=2.6.1
   - pandas=0.24.2
