@@ -6,15 +6,15 @@ set -e
 trap "exit" INT
 
 echo "--- Installing system dependencies ---"
-sudo pacman -Suy
-sudo pacman -Sy --needed git cmake gcc
-sudo pacman -Sy --needed zlib libjpeg-turbo xorg-server-xvfb gst-libav xorg-server-devel python-opengl boost sdl swig base-devel gcc-libs hdf5 openblas
+pacman -Suy
+pacman -Sy --needed git cmake gcc
+pacman -Sy --needed zlib libjpeg-turbo xorg-server-xvfb gst-libav xorg-server-devel python-opengl boost sdl swig base-devel gcc-libs hdf5 openblas
 
 echo "--- Installing Conda ---"
 if which conda >/dev/null; then
   echo "Conda is already installed"
 else
-  sudo pacman -Sy --needed python-conda
+  pacman -Sy --needed python-conda
   echo '. /etc/profile.d/conda.sh' >> ~/.bashrc
   source ~/.bashrc
 fi

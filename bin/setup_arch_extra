@@ -9,8 +9,8 @@ echo "--- Installing NodeJS Lab interface ---"
 if which node >/dev/null; then
   echo "Nodejs is already installed"
 else
-  sudo pacman -Sy --needed nodejs npm
-  sudo npm install --unsafe-perm=true --allow-root -g yarn
+  pacman -Sy --needed nodejs npm
+  npm install --unsafe-perm=true --allow-root -g yarn
 fi
 
 echo "--- Installing npm modules for Lab interface ---"
