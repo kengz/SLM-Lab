@@ -33,7 +33,7 @@ Below shows the latest benchmark status. See [benchmark results here](https://gi
 |-------------------------|-------|------------|
 | SARSA                   | -     |            |
 | DQN, distributed-DQN    | :white_check_mark: |            |
-| Double-DQN, PER-DQN     | :white_check_mark: |            |
+| Double-DQN, Dueling-DQN, PER-DQN | :white_check_mark: |            |
 | REINFORCE               | -     |            |
 | A2C, A3C (N-step & GAE) | :white_check_mark: |            |
 | PPO, distributed-PPO    | :white_check_mark: |            |

@@ -1,6 +1,5 @@
 # run instructions:
 # build image: docker build -t kengz/slm_lab:latest -t kengz/slm_lab:v4.0.0 .
-# or use: v=4.0.0 yarn build
 # start container: docker run --name lab -dt kengz/slm_lab
 # enter container: docker exec -it lab bash
 # remove container (forced): docker rm lab -f
