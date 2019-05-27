@@ -112,11 +112,14 @@ conda activate lab
 python run_lab.py slm_lab/spec/benchmark/a2c/a2c_pong.json a2c_pong train
 ```
 
+![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_atari.png)
+>Atari Pong ran with `dev` mode to render the environment
+
 This will run a `Trial` with multiple Sessions in *training mode*. In the beginning, the `total_reward` should be around -21. After about 1 million frames, it should begin to converge to around +21 (perfect score). At the end of it, all the metrics and graphs will be output to the `data/` folder.
 
 Below shows a trial graph with multiple sessions:
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_atari.png)
+![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_atari_graph.png)
 
 ### Benchmark
 
