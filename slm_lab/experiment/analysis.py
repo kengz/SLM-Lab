@@ -101,13 +101,13 @@ def calc_consistency(local_strs_list):
     return con, local_cons
 
 
-def calc_session_metrics(session_df, env_name, prepath=None, df_mode=None):
+def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     '''
     Calculate the session metrics: strength, efficiency, stability
     @param DataFrame:session_df Dataframe containing reward, frame, opt_step
     @param str:env_name Name of the environment to get its random baseline
-    @param str:prepath Optional prepath to auto-save the output to
-    @param str:df_mode Optional df_mode to save with prepath
+    @param str:info_prepath Optional info_prepath to auto-save the output to
+    @param str:df_mode Optional df_mode to save with info_prepath
     @returns dict:metrics Consists of scalar metrics and series local metrics
     '''
     rand_bl = random_baseline.get_random_baseline(env_name)
@@ -145,17 +145,19 @@ def calc_session_metrics(session_df, env_name, prepath=None, df_mode=None):
         'scalar': scalar,
         'local': local,
     }
-    if prepath is not None:  # auto-save if prepath is given
-        util.write(metrics, f'{prepath}_session_metrics_{df_mode}.pkl')
-        util.write(scalar, f'{prepath}_session_metrics_scalar_{df_mode}.json')
+    if info_prepath is not None:  # auto-save if info_prepath is given
+        util.write(metrics, f'{info_prepath}_session_metrics_{df_mode}.pkl')
+        util.write(scalar, f'{info_prepath}_session_metrics_scalar_{df_mode}.json')
+        # save important metrics in info_prepath directly
+        util.write(scalar, f'{info_prepath.replace("info/", "")}_session_metrics_scalar_{df_mode}.json')
     return metrics
 
 
-def calc_trial_metrics(session_metrics_list, prepath=None):
+def calc_trial_metrics(session_metrics_list, info_prepath=None):
     '''
     Calculate the trial metrics: mean(strength), mean(efficiency), mean(stability), consistency
     @param list:session_metrics_list The metrics collected from each session; format: {session_index: {'scalar': {...}, 'local': {...}}}
-    @param str:prepath Optional prepath to auto-save the output to
+    @param str:info_prepath Optional info_prepath to auto-save the output to
     @returns dict:metrics Consists of scalar metrics and series local metrics
     '''
     # calculate mean of session metrics
@@ -198,13 +200,15 @@ def calc_trial_metrics(session_metrics_list, prepath=None):
         'scalar': scalar,
         'local': local,
     }
-    if prepath is not None:  # auto-save if prepath is given
-        util.write(metrics, f'{prepath}_trial_metrics.pkl')
-        util.write(scalar, f'{prepath}_trial_metrics_scalar.json')
+    if info_prepath is not None:  # auto-save if info_prepath is given
+        util.write(metrics, f'{info_prepath}_trial_metrics.pkl')
+        util.write(scalar, f'{info_prepath}_trial_metrics_scalar.json')
+        # save important metrics in info_prepath directly
+        util.write(scalar, f'{info_prepath.replace("info/", "")}_trial_metrics_scalar.json')
     return metrics
 
 
-def calc_experiment_df(trial_data_dict, prepath=None):
+def calc_experiment_df(trial_data_dict, info_prepath=None):
     '''Collect all trial data (metrics and config) from trials into a dataframe'''
     experiment_df = pd.DataFrame(trial_data_dict).transpose()
     cols = METRICS_COLS
@@ -212,8 +216,10 @@ def calc_experiment_df(trial_data_dict, prepath=None):
     sorted_cols = config_cols + cols
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
     experiment_df.sort_values(by=['strength'], ascending=False, inplace=True)
-    if prepath is not None:
-        util.write(experiment_df, f'{prepath}_experiment_df.csv')
+    if info_prepath is not None:
+        util.write(experiment_df, f'{info_prepath}_experiment_df.csv')
+        # save important metrics in info_prepath directly
+        util.write(experiment_df, f'{info_prepath.replace("info/", "")}_experiment_df.csv')
     return experiment_df
 
 

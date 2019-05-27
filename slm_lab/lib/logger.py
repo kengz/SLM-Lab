@@ -20,6 +20,7 @@ sh = logging.StreamHandler(sys.stdout)
 sh.setFormatter(color_formatter)
 lab_logger = logging.getLogger()
 lab_logger.handlers = FixedList([sh])
+logging.getLogger('ray').propagate = False  # hack to mute poorly designed ray TF warning log
 
 # this will trigger from Experiment init on reload(logger)
 if os.environ.get('LOG_PREPATH') is not None:

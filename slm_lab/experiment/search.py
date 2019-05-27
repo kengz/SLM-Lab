@@ -82,6 +82,7 @@ def ray_trainable(config, reporter):
     spec = inject_config(spec, config)
     # run SLM Lab trial
     metrics = Trial(spec).run()
+    metrics.update(config) # carry config for analysis too
     # ray report to carry data in ray trial.last_result
     reporter(trial_data={trial_index: metrics})
 
@@ -117,8 +118,8 @@ def run_ray_search(spec):
     )
     trial_data_dict = {}  # data for Lab Experiment to analyze
     for ray_trial in ray_trials:
-        ray_trial_data = trial.last_result['trial_data']
-        trial_data_dict.update(trial_data_dict)
+        ray_trial_data = ray_trial.last_result['trial_data']
+        trial_data_dict.update(ray_trial_data)
 
     ray.shutdown()
     return trial_data_dict

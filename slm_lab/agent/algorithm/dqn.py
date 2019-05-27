@@ -214,8 +214,7 @@ class DQNBase(VanillaDQN):
         return q_loss
 
     def update_nets(self):
-        frame = self.body.env.clock.frame
-        if frame % self.net.update_frequency == 0:
+        if util.frame_mod(self.body.env.clock.frame, self.net.update_frequency, self.body.env.num_envs):
             if self.net.update_type == 'replace':
                 net_util.copy(self.net, self.target_net)
             elif self.net.update_type == 'polyak':

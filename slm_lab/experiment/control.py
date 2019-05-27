@@ -57,8 +57,7 @@ class Session:
         elif frequency is None:  # default episodic
             to_ckpt = env.done
         else:  # normal ckpt condition by mod remainder (general for venv)
-            rem = env.num_envs or 1
-            to_ckpt = (frame % frequency < rem) or frame == clock.max_frame
+            to_ckpt = util.frame_mod(frame, frequency, env.num_envs) or frame == clock.max_frame
         return to_ckpt
 
     def try_ckpt(self, agent, env):
