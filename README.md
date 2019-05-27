@@ -25,16 +25,18 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 
 SLM Lab implements a number of canonical RL [algorithms](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/algorithm) with reusable **modular components** and *class-inheritance*, with commitment to code quality and performance.
 
-The benchmark results below also include complete [spec files](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/spec/benchmark) to enable full **reproducibility** using SLM Lab.
+The benchmark results also include complete [spec files](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/spec/benchmark) to enable full **reproducibility** using SLM Lab.
+
+Below shows the latest benchmark status. See [benchmark results here](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md).
 
 | **Algorithm\Benchmark** | Atari | Roboschool |
 |-------------------------|-------|------------|
 | SARSA                   | -     |            |
-| DQN, distributed-DQN    |       |            |
-| Double-DQN, PER-DQN     |       |            |
-| REINFORCE               |       |            |
-| A2C, A3C (N-step & GAE) |       |            |
-| PPO, distributed-PPO    |       |            |
+| DQN, distributed-DQN    | :white_check_mark: |            |
+| Double-DQN, PER-DQN     | :white_check_mark: |            |
+| REINFORCE               | -     |            |
+| A2C, A3C (N-step & GAE) | :white_check_mark: |            |
+| PPO, distributed-PPO    | :white_check_mark: |            |
 | SIL (A2C, PPO)          |       |            |
 
 ### [Environments](#environments)
