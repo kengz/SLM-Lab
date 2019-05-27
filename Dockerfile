@@ -38,7 +38,7 @@ COPY environment.yml environment.yml
 
 # install Python and Conda dependencies
 RUN . ~/miniconda3/etc/profile.d/conda.sh && \
-    conda create -n lab python=3.6 -y && \
+    conda create -n lab python=3.7.3 -y && \
     conda activate lab && \
     conda env update -f environment.yml && \
     conda clean -y --all && \
