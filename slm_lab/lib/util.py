@@ -138,6 +138,14 @@ def find_ckpt(prepath):
     return ckpt
 
 
+def frame_mod(frame, frequency, num_envs):
+    '''
+    Generic mod for (frame % frequency == 0) for when num_envs is 1 or more,
+    since frame will increase multiple ticks for vector env, use the remainder'''
+    remainder = num_envs or 1
+    return (frame % frequency < remainder)
+
+
 def flatten_dict(obj, delim='.'):
     '''Missing pydash method to flatten dict'''
     nobj = {}
