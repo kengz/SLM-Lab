@@ -1,6 +1,5 @@
 # run instructions:
-# build image: docker build -t kengz/slm_lab:latest -t kengz/slm_lab:v2.0.0 .
-# or use: v=2.0.0 yarn build
+# build image: docker build -t kengz/slm_lab:latest -t kengz/slm_lab:v4.0.0 .
 # start container: docker run --name lab -dt kengz/slm_lab
 # enter container: docker exec -it lab bash
 # remove container (forced): docker rm lab -f
@@ -15,7 +14,6 @@ LABEL website="https://github.com/kengz/SLM-Lab"
 
 SHELL ["/bin/bash", "-c"]
 
-# basic system dependencies for dev, PyTorch, OpenAI gym
 RUN apt-get update && \
     apt-get install -y build-essential \
     curl nano git wget zip libstdc++6 \
@@ -36,33 +34,22 @@ WORKDIR /root/SLM-Lab
 
 # install dependencies, only retrigger on dependency changes
 COPY environment.yml environment.yml
+
 # install Python and Conda dependencies
 RUN . ~/miniconda3/etc/profile.d/conda.sh && \
-    conda create -n lab python=3.6 -y && \
+    conda create -n lab python=3.7.3 -y && \
     conda activate lab && \
     conda env update -f environment.yml && \
     conda clean -y --all && \
     rm -rf ~/.cache/pip
-
-# Install extra dependencies for Unity ML agent
-# NodeJS and yarn for unity package management and command
-RUN curl -sL https://deb.nodesource.com/setup_11.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g yarn
-COPY package.json yarn.lock ./
-RUN yarn install
-RUN . ~/miniconda3/etc/profile.d/conda.sh && \
-    conda activate lab && \
-    pip install unityagents==0.2.0 && \
-    pip uninstall -y tensorflow tensorboard
 
 # copy file at last to not trigger changes above unnecessarily
 COPY . .
 
 RUN . ~/miniconda3/etc/profile.d/conda.sh && \
     conda activate lab && \
-    python setup.py test && \
-    pytest --verbose --no-flaky-report test/spec/test_dist_spec.py && \
-    yarn reset
+    python setup.py test
+    # pytest --verbose --no-flaky-report test/spec/test_dist_spec.py && \
+    # yarn reset
 
 CMD ["/bin/bash"]

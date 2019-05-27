@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - checkout
-      - run:
-          name: Install NodeJS dependencies
-          command: |
-            yarn install
+      # - run:
+      #     name: Install NodeJS dependencies
+      #     command: |
+      #       yarn install
 
       - run: echo '. ~/miniconda3/etc/profile.d/conda.sh' >> $BASH_ENV
       - run:
