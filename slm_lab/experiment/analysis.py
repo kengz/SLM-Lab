@@ -204,7 +204,7 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
         util.write(metrics, f'{info_prepath}_trial_metrics.pkl')
         util.write(scalar, f'{info_prepath}_trial_metrics_scalar.json')
         # save important metrics in info_prepath directly
-        util.write(scalar, f'{info_prepath.replace("info/", "")}_trial_metrics_scalar{df_mode}.json')
+        util.write(scalar, f'{info_prepath.replace("info/", "")}_trial_metrics_scalar.json')
     return metrics
 
 
