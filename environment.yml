@@ -5,34 +5,34 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - autopep8
-  - colorlog
-  - coverage
-  - flaky
-  - libgcc
-  - numpy
-  - openpyxl
-  - pandas
-  - plotly-orca
-  - psutil
-  - pycodestyle
+  - autopep8=1.4.4
+  - colorlog=4.0.2
+  - coverage=4.5.3
+  - flaky=3.5.3
+  - libgcc=4.8.5
+  - numpy=1.16.3
+  - openpyxl=2.6.1
+  - pandas=0.24.2
+  - plotly-orca=1.2.1
+  - psutil=5.6.2
+  - pycodestyle=2.5.0
   - pydash=4.2.1
-  - pytest-cov
-  - pytest-timeout
-  - pytest
+  - pytest-cov=2.7.1
+  - pytest-timeout=1.3.3
+  - pytest=4.5.0
   - python=3.7.3
-  - pyyaml
-  - regex
-  - scipy
-  - ujson
-  - xlrd
   - pytorch=1.1.0
+  - pyyaml=5.1
+  - regex=2019.05.25
+  - scipy=1.3.0
+  - ujson=1.35
+  - xlrd=1.2.0
   - pip:
-    - plotly
     - box2d-py==2.3.8
     - cloudpickle==0.5.2
     - colorlover==0.3.0
-    - opencv-python
+    - opencv-python==4.1.0.25
+    - plotly==3.9.0
     - pyopengl==3.1.0
     - ray==0.7.0
     - redis==2.10.6
