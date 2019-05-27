@@ -14,11 +14,10 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 8,
-        "training_start_step": 32,
-        "normalize_state": true
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -49,7 +48,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 250
+      "max_frame": 250
     }],
     "body": {
       "product": "outer",
@@ -58,7 +57,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -100,11 +98,10 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 8,
-        "training_start_step": 32,
-        "normalize_state": true
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -138,7 +135,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 100,
+      "max_frame": 100,
     }],
     "body": {
       "product": "outer",
@@ -147,7 +144,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 2,
       "max_trial": 16,
       "search": "RandomSearch"
@@ -182,11 +178,10 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 8,
-        "training_start_step": 32,
-        "normalize_state": true
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -220,7 +215,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 250,
+      "max_frame": 250,
     }],
     "body": {
       "product": "outer",
@@ -229,7 +224,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -271,14 +265,13 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 8,
-        "training_start_step": 32,
-        "normalize_state": true
+        "training_start_step": 32
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -313,7 +306,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 250,
+      "max_frame": 250,
     }],
     "body": {
       "product": "outer",
@@ -322,7 +315,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -364,14 +356,13 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 8,
-        "training_start_step": 32,
-        "normalize_state": true
+        "training_start_step": 32
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -406,7 +397,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 250,
+      "max_frame": 250,
     }],
     "body": {
       "product": "outer",
@@ -415,7 +406,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -457,17 +447,15 @@
           "end_step": 17500,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 5,
+        "training_batch_iter": 8,
+        "training_iter": 5,
         "training_frequency": 50,
-        "training_start_step": 100,
-        "normalize_state": true
+        "training_start_step": 100
       },
       "memory": {
-        "name": "ConcatReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "concat_len": 4,
         "use_cer": true
       },
       "net": {
@@ -495,8 +483,10 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 600,
+      "max_frame": 600,
     }],
     "body": {
       "product": "outer",
@@ -505,7 +495,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -526,17 +515,15 @@
           "end_step": 210000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 1,
-        "training_epoch": 1,
+        "training_batch_iter": 1,
+        "training_iter": 1,
         "training_frequency": 1,
-        "training_start_step": 10000,
-        "normalize_state": false
+        "training_start_step": 10000
       },
       "memory": {
-        "name": "AtariReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "stack_len": 4,
         "use_cer": false
       },
       "net": {
@@ -566,8 +553,11 @@
     }],
     "env": [{
       "name": "PongNoFrameskip-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
       "max_t": null,
-      "max_tick": 10000000,
+      "max_frame": 10000000,
     }],
     "body": {
       "product": "outer",
@@ -576,13 +566,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 1,
       "max_trial": 16,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 16,
-      }
     },
     "search": {
       "agent": [{

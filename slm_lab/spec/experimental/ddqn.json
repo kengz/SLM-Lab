@@ -14,11 +14,10 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 10,
-        "training_epoch": 4,
+        "training_batch_iter": 10,
+        "training_iter": 4,
         "training_frequency": 8,
-        "training_start_step": 32,
-        "normalize_state": true
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -52,7 +51,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 400,
+      "max_frame": 400,
     }],
     "body": {
       "product": "outer",
@@ -61,7 +60,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -97,11 +95,10 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 32,
-        "training_start_step": 10,
-        "normalize_state": true
+        "training_start_step": 10
       },
       "memory": {
         "name": "Replay",
@@ -135,7 +132,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 250,
+      "max_frame": 250,
     }],
     "body": {
       "product": "outer",
@@ -144,7 +141,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -186,14 +182,13 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 32,
-        "training_start_step": 10,
-        "normalize_state": true
+        "training_start_step": 10
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -228,7 +223,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 250,
+      "max_frame": 250,
     }],
     "body": {
       "product": "outer",
@@ -237,7 +232,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -279,14 +273,13 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 32,
-        "training_start_step": 10,
-        "normalize_state": true
+        "training_start_step": 10
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -321,7 +314,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 250,
+      "max_frame": 250,
     }],
     "body": {
       "product": "outer",
@@ -330,7 +323,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -372,17 +364,15 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 100,
-        "training_start_step": 100,
-        "normalize_state": false
+        "training_start_step": 100
       },
       "memory": {
-        "name": "AtariReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 250000,
-        "stack_len": 4,
         "use_cer": true
       },
       "net": {
@@ -420,8 +410,11 @@
     }],
     "env": [{
       "name": "BreakoutDeterministic-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
       "max_t": null,
-      "max_tick": 50000,
+      "max_frame": 50000,
     }],
     "body": {
       "product": "outer",
@@ -430,7 +423,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -451,17 +443,15 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 100,
-        "training_start_step": 100,
-        "normalize_state": false
+        "training_start_step": 100
       },
       "memory": {
-        "name": "AtariReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 250000,
-        "stack_len": 4,
         "use_cer": true
       },
       "net": {
@@ -499,8 +489,11 @@
     }],
     "env": [{
       "name": "BreakoutDeterministic-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
       "max_t": null,
-      "max_tick": 50000,
+      "max_frame": 50000,
     }],
     "body": {
       "product": "outer",
@@ -509,7 +502,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"

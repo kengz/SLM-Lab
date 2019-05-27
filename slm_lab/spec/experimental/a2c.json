@@ -20,8 +20,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -52,7 +50,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -61,7 +59,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -104,8 +101,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -136,7 +131,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -145,7 +140,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -188,12 +182,9 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
       },
       "memory": {
-        "name": "OnPolicyConcatReplay",
-        "concat_len": 4
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -220,8 +211,10 @@
     }],
     "env": [{
       "name": "CartPole-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -230,7 +223,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -273,11 +265,9 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -309,7 +299,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -318,7 +308,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -361,11 +350,9 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -397,7 +384,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -406,7 +393,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -449,8 +435,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -481,7 +465,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -490,7 +474,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -533,8 +516,6 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -565,7 +546,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -574,7 +555,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -617,11 +597,9 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -653,7 +631,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -662,7 +640,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -705,11 +682,9 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -741,7 +716,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -750,7 +725,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -793,12 +767,9 @@
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.5,
         "training_frequency": 1,
-        "training_epoch": 1,
-        "normalize_state": false
       },
       "memory": {
-        "name": "OnPolicyAtariReplay",
-        "stack_len": 4
+        "name": "OnPolicyReplay",
       },
       "net": {
         "type": "ConvNet",
@@ -831,8 +802,11 @@
     }],
     "env": [{
       "name": "PongNoFrameskip-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
       "max_t": null,
-      "max_tick": 10000000,
+      "max_frame": 10000000,
     }],
     "body": {
       "product": "outer",
@@ -841,13 +815,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 1,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 16,
-      }
     }
   },
 }

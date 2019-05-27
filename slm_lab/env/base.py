@@ -3,10 +3,9 @@ from gym import spaces
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+import pydash as ps
 import time
 
-ENV_DATA_NAMES = ['reward', 'state', 'done']
-NUM_EVAL_EPI = 100  # set the number of episodes to eval a model ckpt
 logger = logger.get_logger(__name__)
 
 
@@ -33,38 +32,40 @@ def set_gym_space_attr(gym_space):
 class Clock:
     '''Clock class for each env and space to keep track of relative time. Ticking and control loop is such that reset is at t=0 and epi=0'''
 
-    def __init__(self, clock_speed=1):
+    def __init__(self, max_frame=int(1e7), clock_speed=1):
+        self.max_frame = max_frame
         self.clock_speed = int(clock_speed)
-        self.ticks = 0  # multiple ticks make a timestep; used for clock speed
-        self.t = 0
-        self.total_t = 0
-        self.epi = -1  # offset so epi is 0 when it gets ticked at start
-        self.start_wall_t = time.time()
+        self.reset()
 
-    def get(self, unit='t'):
+    def reset(self):
+        self.t = 0
+        self.frame = 0  # i.e. total_t
+        self.epi = 0
+        self.start_wall_t = time.time()
+        self.batch_size = 1  # multiplier to accurately count opt steps
+        self.opt_step = 0  # count the number of optimizer updates
+
+    def get(self, unit='frame'):
         return getattr(self, unit)
 
     def get_elapsed_wall_t(self):
         '''Calculate the elapsed wall time (int seconds) since self.start_wall_t'''
         return int(time.time() - self.start_wall_t)
 
+    def set_batch_size(self, batch_size):
+        self.batch_size = batch_size
+
     def tick(self, unit='t'):
         if unit == 't':  # timestep
-            if self.to_step():
-                self.t += 1
-                self.total_t += 1
-            else:
-                pass
-            self.ticks += 1
+            self.t += self.clock_speed
+            self.frame += self.clock_speed
         elif unit == 'epi':  # episode, reset timestep
             self.epi += 1
             self.t = 0
+        elif unit == 'opt_step':
+            self.opt_step += self.batch_size
         else:
             raise KeyError
-
-    def to_step(self):
-        '''Step signal from clock_speed. Step only if the base unit of time in this clock has moved. Used to control if env of different clock_speed should step()'''
-        return self.ticks % self.clock_speed == 0
 
 
 class BaseEnv(ABC):
@@ -73,46 +74,59 @@ class BaseEnv(ABC):
 
     e.g. env_spec
     "env": [{
-      "name": "CartPole-v0",
-      "max_t": null,
-      "max_tick": 150,
-    }],
-
-    # or using total_t
-    "env": [{
-      "name": "CartPole-v0",
-      "max_t": null,
-      "max_tick": 10000,
+        "name": "PongNoFrameskip-v4",
+        "frame_op": "concat",
+        "frame_op_len": 4,
+        "normalize_state": false,
+        "reward_scale": "sign",
+        "num_envs": 8,
+        "max_t": null,
+        "max_frame": 1e7
     }],
     '''
 
-    def __init__(self, spec, e=None, env_space=None):
-        self.e = e or 0  # for compatibility with env_space
-        self.clock_speed = 1
-        self.clock = Clock(self.clock_speed)
+    def __init__(self, spec, e=None):
+        self.e = e or 0  # for multi-env
         self.done = False
         self.env_spec = spec['env'][self.e]
+        # set default
         util.set_attr(self, dict(
-            reward_scale=1.0,
+            log_frequency=None,  # default to log at epi done
+            frame_op=None,
+            frame_op_len=None,
+            normalize_state=False,
+            reward_scale=None,
+            num_envs=None,
         ))
         util.set_attr(self, spec['meta'], [
+            'log_frequency',
             'eval_frequency',
-            'max_tick_unit',
         ])
         util.set_attr(self, self.env_spec, [
             'name',
-            'max_t',
-            'max_tick',
+            'frame_op',
+            'frame_op_len',
+            'normalize_state',
             'reward_scale',
+            'num_envs',
+            'max_t',
+            'max_frame',
         ])
-        if util.get_lab_mode() == 'eval':
-            # override for eval, offset so epi is 0 - (num_eval_epi - 1)
-            logger.info(f'Override max_tick for eval mode to {NUM_EVAL_EPI} epi')
-            self.max_tick = NUM_EVAL_EPI - 1
-            self.max_tick_unit = 'epi'
-        # set max_tick info to clock
-        self.clock.max_tick = self.max_tick
-        self.clock.max_tick_unit = self.max_tick_unit
+        seq_len = ps.get(spec, 'agent.0.net.seq_len')
+        if seq_len is not None:  # infer if using RNN
+            self.frame_op = 'stack'
+            self.frame_op_len = seq_len
+        if util.in_eval_lab_modes():  # use singleton for eval
+            self.num_envs = 1
+            self.log_frequency = None
+        if spec['meta']['distributed'] != False:  # divide max_frame for distributed
+            self.max_frame = int(self.max_frame / spec['meta']['max_session'])
+        self.is_venv = (self.num_envs is not None and self.num_envs > 1)
+        if self.is_venv:
+            assert self.log_frequency is not None, f'Specify log_frequency when using venv'
+        self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
+        self.clock = Clock(self.max_frame, self.clock_speed)
+        self.to_render = util.to_render()
 
     def _set_attr_from_u_env(self, u_env):
         '''Set the observation, action dimensions and action type from u_env'''
@@ -156,41 +170,17 @@ class BaseEnv(ABC):
     @abstractmethod
     @lab_api
     def reset(self):
-        '''Reset method, return _reward, state, done'''
+        '''Reset method, return state'''
         raise NotImplementedError
 
     @abstractmethod
     @lab_api
     def step(self, action):
-        '''Step method, return reward, state, done'''
+        '''Step method, return state, reward, done, info'''
         raise NotImplementedError
 
     @abstractmethod
     @lab_api
     def close(self):
         '''Method to close and cleanup env'''
-        raise NotImplementedError
-
-    @lab_api
-    def set_body_e(self, body_e):
-        '''Method called by body_space.init_body_space to complete the necessary backward reference needed for EnvSpace to work'''
-        self.body_e = body_e
-        self.nanflat_body_e = util.nanflatten(self.body_e)
-        for idx, body in enumerate(self.nanflat_body_e):
-            body.nanflat_e_idx = idx
-        self.body_num = len(self.nanflat_body_e)
-
-    @lab_api
-    def space_init(self, env_space):
-        '''Post init override for space env. Note that aeb is already correct from __init__'''
-        raise NotImplementedError
-
-    @lab_api
-    def space_reset(self):
-        '''Space (multi-env) reset method, return _reward_e, state_e, done_e'''
-        raise NotImplementedError
-
-    @lab_api
-    def space_step(self, action_e):
-        '''Space (multi-env) step method, return reward_e, state_e, done_e'''
         raise NotImplementedError

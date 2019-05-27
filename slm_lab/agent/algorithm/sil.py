@@ -36,16 +36,15 @@ class SIL(ActorCritic):
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.01,
-        "training_batch_epoch": 8,
+        "training_batch_iter": 8,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_iter": 8,
     }
 
     e.g. special memory_spec
     "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -53,7 +52,7 @@ class SIL(ActorCritic):
     '''
 
     def __init__(self, agent, global_nets=None):
-        super(SIL, self).__init__(agent, global_nets)
+        super().__init__(agent, global_nets)
         # create the extra replay memory for SIL
         MemoryClass = getattr(memory, self.memory_spec['sil_replay_name'])
         self.body.replay_memory = MemoryClass(self.memory_spec, self.body)
@@ -84,98 +83,68 @@ class SIL(ActorCritic):
             'sil_policy_loss_coef',
             'sil_val_loss_coef',
             'training_frequency',
-            'training_batch_epoch',
-            'training_epoch',
-            'normalize_state'
+            'training_batch_iter',
+            'training_iter',
         ])
-        super(SIL, self).init_algorithm_params()
+        super().init_algorithm_params()
 
     def sample(self):
         '''Modify the onpolicy sample to also append to replay'''
         batch = self.body.memory.sample()
         batch = {k: np.concatenate(v) for k, v in batch.items()}  # concat episodic memory
-        batch['rets'] = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
         for idx in range(len(batch['dones'])):
             tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]
             self.body.replay_memory.add_experience(*tuples)
-        if self.normalize_state:
-            batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.replay_memory.is_episodic)
         return batch
 
     def replay_sample(self):
         '''Samples a batch from memory'''
         batch = self.body.replay_memory.sample()
-        if self.normalize_state:
-            batch = policy_util.normalize_states_and_next_states(
-                self.body, batch, episodic_flag=self.body.replay_memory.is_episodic)
         batch = util.to_torch_batch(batch, self.net.device, self.body.replay_memory.is_episodic)
-        assert not torch.isnan(batch['states']).any(), batch['states']
         return batch
 
-    def calc_sil_policy_val_loss(self, batch):
+    def calc_sil_policy_val_loss(self, batch, pdparams):
         '''
         Calculate the SIL policy losses for actor and critic
         sil_policy_loss = -log_prob * max(R - v_pred, 0)
         sil_val_loss = (max(R - v_pred, 0)^2) / 2
         This is called on a randomly-sample batch from experience replay
         '''
-        returns = batch['rets']
-        v_preds = self.calc_v(batch['states'], evaluate=False)
-        clipped_advs = torch.clamp(returns - v_preds, min=0.0)
-        log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
+        v_preds = self.calc_v(batch['states'], use_cache=False)
+        rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
+        clipped_advs = torch.clamp(rets - v_preds, min=0.0)
 
-        sil_policy_loss = self.sil_policy_loss_coef * torch.mean(- log_probs * clipped_advs)
-        sil_val_loss = self.sil_val_loss_coef * torch.pow(clipped_advs, 2) / 2
-        sil_val_loss = torch.mean(sil_val_loss)
+        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+        actions = batch['actions']
+        if self.body.env.is_venv:
+            actions = math_util.venv_unpack(actions)
+        log_probs = action_pd.log_prob(actions)
+
+        sil_policy_loss = - self.sil_policy_loss_coef * (log_probs * clipped_advs).mean()
+        sil_val_loss = self.sil_val_loss_coef * clipped_advs.pow(2).mean() / 2
         logger.debug(f'SIL actor policy loss: {sil_policy_loss:g}')
         logger.debug(f'SIL critic value loss: {sil_val_loss:g}')
         return sil_policy_loss, sil_val_loss
 
-    def train_shared(self):
-        '''
-        Trains the network when the actor and critic share parameters
-        '''
+    def train(self):
         clock = self.body.env.clock
         if self.to_train == 1:
             # onpolicy update
-            super_loss = super(SIL, self).train_shared()
+            super_loss = super().train()
             # offpolicy sil update with random minibatch
-            total_sil_loss = torch.tensor(0.0, device=self.net.device)
-            for _ in range(self.training_epoch):
+            total_sil_loss = torch.tensor(0.0)
+            for _ in range(self.training_iter):
                 batch = self.replay_sample()
-                for _ in range(self.training_batch_epoch):
-                    sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
+                for _ in range(self.training_batch_iter):
+                    pdparams, _v_preds = self.calc_pdparam_v(batch)
+                    sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch, pdparams)
                     sil_loss = sil_policy_loss + sil_val_loss
-                    self.net.training_step(loss=sil_loss, lr_clock=clock)
+                    self.net.train_step(sil_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
                     total_sil_loss += sil_loss
-            sil_loss = total_sil_loss / self.training_epoch
+            sil_loss = total_sil_loss / self.training_iter
             loss = super_loss + sil_loss
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
-            return loss.item()
-        else:
-            return np.nan
-
-    def train_separate(self):
-        '''
-        Trains the network when the actor and critic are separate networks
-        '''
-        clock = self.body.env.clock
-        if self.to_train == 1:
-            # onpolicy update
-            super_loss = super(SIL, self).train_separate()
-            # offpolicy sil update with random minibatch
-            total_sil_loss = torch.tensor(0.0, device=self.net.device)
-            for _ in range(self.training_epoch):
-                batch = self.replay_sample()
-                for _ in range(self.training_batch_epoch):
-                    sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch)
-                    self.net.training_step(loss=sil_policy_loss, lr_clock=clock, retain_graph=True)
-                    self.critic.training_step(loss=sil_val_loss, lr_clock=clock)
-                    total_sil_loss += sil_policy_loss + sil_val_loss
-            sil_loss = total_sil_loss / self.training_epoch
-            loss = super_loss + sil_loss
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -210,15 +179,15 @@ class PPOSIL(SIL, PPO):
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
+        "training_batch_iter": 8,
+        "training_iter": 8,
         "training_epoch": 8,
-        "normalize_state": true
     }
 
     e.g. special memory_spec
     "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true

@@ -1,12 +1,10 @@
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
-from slm_lab.lib import logger, math_util, util
+from slm_lab.lib import math_util, util
 import numpy as np
 import pydash as ps
 import torch
 import torch.nn as nn
-
-logger = logger.get_logger(__name__)
 
 
 class MLPNet(Net, nn.Module):
@@ -59,7 +57,7 @@ class MLPNet(Net, nn.Module):
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
         nn.Module.__init__(self)
-        super(MLPNet, self).__init__(net_spec, in_dim, out_dim)
+        super().__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -106,14 +104,9 @@ class MLPNet(Net, nn.Module):
             self.model_tails = nn.ModuleList(tails)
 
         net_util.init_layers(self, self.init_fn)
-        for module in self.modules():
-            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
-        self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
-
-    def __str__(self):
-        return super(MLPNet, self).__str__() + f'\noptim: {self.optim}'
+        self.to(self.device)
+        self.train()
 
     def forward(self, x):
         '''The feedforward step'''
@@ -125,36 +118,6 @@ class MLPNet(Net, nn.Module):
             return outs
         else:
             return self.model_tail(x)
-
-    @net_util.dev_check_training_step
-    def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_clock=None):
-        '''
-        Takes a single training step: one forward and one backwards pass
-        More most RL usage, we have custom, often complicated, loss functions. Compute its value and put it in a pytorch tensor then pass it in as loss
-        '''
-        if hasattr(self, 'model_tails') and x is not None:
-            raise ValueError('Loss computation from x,y not supported for multitails')
-        self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
-        self.train()
-        self.optim.zero_grad()
-        if loss is None:
-            out = self(x)
-            loss = self.loss_fn(out, y)
-        assert not torch.isnan(loss).any(), loss
-        loss.backward(retain_graph=retain_graph)
-        if self.clip_grad_val is not None:
-            nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
-        self.optim.step()
-        logger.debug(f'Net training_step loss: {loss}')
-        return loss
-
-    def wrap_eval(self, x):
-        '''
-        Completes one feedforward step, ensuring net is set to evaluation model
-        returns: network output given input x
-        '''
-        self.eval()
-        return self(x)
 
 
 class HydraMLPNet(Net, nn.Module):
@@ -218,7 +181,7 @@ class HydraMLPNet(Net, nn.Module):
            env 1 action      env 2 action
         '''
         nn.Module.__init__(self)
-        super(HydraMLPNet, self).__init__(net_spec, in_dim, out_dim)
+        super().__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -264,14 +227,9 @@ class HydraMLPNet(Net, nn.Module):
         self.model_tails = self.build_model_tails(self.out_dim, self.out_layer_activation)
 
         net_util.init_layers(self, self.init_fn)
-        for module in self.modules():
-            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
-        self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
-
-    def __str__(self):
-        return super(HydraMLPNet, self).__str__() + f'\noptim: {self.optim}'
+        self.to(self.device)
+        self.train()
 
     def build_model_heads(self, in_dim):
         '''Build each model_head. These are stored as Sequential models in model_heads'''
@@ -313,37 +271,6 @@ class HydraMLPNet(Net, nn.Module):
         for model_tail in self.model_tails:
             outs.append(model_tail(body_x))
         return outs
-
-    @net_util.dev_check_training_step
-    def training_step(self, xs=None, ys=None, loss=None, retain_graph=False, lr_clock=None):
-        '''
-        Takes a single training step: one forward and one backwards pass. Both x and y are lists of the same length, one x and y per environment
-        '''
-        self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
-        self.train()
-        self.optim.zero_grad()
-        if loss is None:
-            outs = self(xs)
-            total_loss = torch.tensor(0.0, device=self.device)
-            for out, y in zip(outs, ys):
-                loss = self.loss_fn(out, y)
-                total_loss += loss
-            loss = total_loss
-        assert not torch.isnan(loss).any(), loss
-        loss.backward(retain_graph=retain_graph)
-        if self.clip_grad_val is not None:
-            nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
-        self.optim.step()
-        logger.debug(f'Net training_step loss: {loss}')
-        return loss
-
-    def wrap_eval(self, x):
-        '''
-        Completes one feedforward step, ensuring net is set to evaluation model
-        returns: network output given input x
-        '''
-        self.eval()
-        return self(x)
 
 
 class DuelingMLPNet(MLPNet):
@@ -416,11 +343,8 @@ class DuelingMLPNet(MLPNet):
         self.v = nn.Linear(dims[-1], 1)  # state value
         self.adv = nn.Linear(dims[-1], out_dim)  # action dependent raw advantage
         net_util.init_layers(self, self.init_fn)
-        for module in self.modules():
-            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
-        self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
+        self.to(self.device)
 
     def forward(self, x):
         '''The feedforward step'''

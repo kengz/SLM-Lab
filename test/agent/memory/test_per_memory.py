@@ -2,7 +2,6 @@ from collections import Counter
 from flaky import flaky
 import numpy as np
 import pytest
-import torch
 
 
 @flaky
@@ -16,12 +15,13 @@ class TestPERMemory:
 
     def test_prioritized_replay_memory_init(self, test_prioritized_replay_memory):
         memory = test_prioritized_replay_memory[0]
-        assert memory.true_size == 0
-        assert memory.states.shape == (memory.max_size, memory.body.state_dim)
-        assert memory.actions.shape == (memory.max_size,)
-        assert memory.rewards.shape == (memory.max_size,)
-        assert memory.dones.shape == (memory.max_size,)
-        assert memory.priorities.shape == (memory.max_size,)
+        memory.reset()
+        assert memory.size == 0
+        assert len(memory.states) == memory.max_size
+        assert len(memory.actions) == memory.max_size
+        assert len(memory.rewards) == memory.max_size
+        assert len(memory.dones) == memory.max_size
+        assert len(memory.priorities) == memory.max_size
         assert memory.tree.write == 0
         assert memory.tree.total() == 0
         assert memory.epsilon[0] == 0
@@ -34,12 +34,13 @@ class TestPERMemory:
         experiences = test_prioritized_replay_memory[2]
         exp = experiences[0]
         memory.add_experience(*exp)
-        assert memory.true_size == 1
+        assert memory.size == 1
         assert memory.head == 0
         # Handle states and actions with multiple dimensions
         assert np.array_equal(memory.states[memory.head], exp[0])
         assert memory.actions[memory.head] == exp[1]
         assert memory.rewards[memory.head] == exp[2]
+        assert np.array_equal(memory.ns_buffer[0], exp[3])
         assert memory.dones[memory.head] == exp[4]
         assert memory.priorities[memory.head] == 1000
 
@@ -52,7 +53,7 @@ class TestPERMemory:
         for e in experiences:
             memory.add_experience(*e)
             num_added += 1
-            assert memory.true_size == min(memory.max_size, num_added)
+            assert memory.size == min(memory.max_size, num_added)
             assert memory.head == (num_added - 1) % memory.max_size
             write = (num_added - 1) % memory.max_size + 1
             if write == memory.max_size:
@@ -99,12 +100,13 @@ class TestPERMemory:
             memory.add_experience(*e)
         memory.reset()
         assert memory.head == -1
-        assert memory.true_size == 0
-        assert np.sum(memory.states) == 0
-        assert np.sum(memory.actions) == 0
-        assert np.sum(memory.rewards) == 0
-        assert np.sum(memory.dones) == 0
-        assert np.sum(memory.priorities) == 0
+        assert memory.size == 0
+        assert memory.states[0] is None
+        assert memory.actions[0] is None
+        assert memory.rewards[0] is None
+        assert memory.dones[0] is None
+        assert memory.priorities[0] is None
+        assert len(memory.ns_buffer) == 0
         assert memory.tree.write == 0
         assert memory.tree.total() == 0
 
@@ -123,7 +125,7 @@ class TestPERMemory:
         memory.batch_idxs = np.asarray([0, 1, 2, 3]).astype(int)
         memory.tree_idxs = [3, 4, 5, 6]
         print(f'batch_size: {batch_size}, batch_idxs: {memory.batch_idxs}, tree_idxs: {memory.tree_idxs}')
-        new_errors = torch.from_numpy(np.asarray([0, 10, 10, 20])).float().unsqueeze(dim=1)
+        new_errors = np.array([0, 10, 10, 20], dtype=np.float32)
         print(f'new_errors: {new_errors}')
         memory.update_priorities(new_errors)
         memory.tree.print_tree()
@@ -133,7 +135,7 @@ class TestPERMemory:
         assert memory.priorities[2] == 10
         assert memory.priorities[3] == 20
         # Second update
-        new_errors = torch.from_numpy(np.asarray([90, 0, 30, 0])).float().unsqueeze(dim=1)
+        new_errors = np.array([90, 0, 30, 0], dtype=np.float32)
         # Manually change tree idxs and batch idxs
         memory.batch_idxs = np.asarray([0, 1, 2, 3]).astype(int)
         memory.tree_idxs = [3, 4, 5, 6]

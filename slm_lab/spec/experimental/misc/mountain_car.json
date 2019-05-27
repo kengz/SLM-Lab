@@ -1,0 +1,702 @@
+{
+  "a2c_gae_mlp_separate_mountain_car": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.999,
+        "lam": 0.97,
+        "num_step_returns": null,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "training_frequency": 1,
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [200],
+        "hid_layers_activation": "sigmoid",
+        "clip_grad_val": null,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_t": null,
+      "max_frame": 2600,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "training_frequency__choice": [2, 4, 8],
+          "lam__uniform": [0.9, 0.99]
+        },
+        "net": {
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "actor_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          }
+        }
+      }]
+    }
+  },
+  "a2c_gae_rnn_separate_mountain_car": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.999,
+        "lam": 0.97,
+        "num_step_returns": null,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "training_frequency": 1,
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "shared": false,
+        "cell_type": "GRU",
+        "fc_hid_layers": [200],
+        "hid_layers_activation": "sigmoid",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": null,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_t": null,
+      "max_frame": 2600,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "training_frequency__choice": [2, 4, 8],
+          "lam__uniform": [0.9, 0.99],
+        },
+        "net": {
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[], [100], [200]],
+          "rnn_hidden_size__choice": [32, 64, 128],
+          "seq_len__choice": [2, 3, 4, 5, 6],
+          "actor_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          }
+        }
+      }]
+    }
+  },
+  "a2c_nstep_mlp_separate_mountain_car": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.999,
+        "lam": null,
+        "num_step_returns": 1,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "training_frequency": 1,
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [200],
+        "hid_layers_activation": "sigmoid",
+        "clip_grad_val": null,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_t": null,
+      "max_frame": 2600,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "training_frequency__choice": [2, 4, 8],
+          "num_step_returns__choice": [2, 4, 8]
+        },
+        "net": {
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "actor_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          }
+        }
+      }]
+    }
+  },
+  "a2c_nstep_rnn_separate_mountain_car": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.999,
+        "lam": null,
+        "num_step_returns": 1,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 1.0,
+        "training_frequency": 1,
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "shared": false,
+        "cell_type": "GRU",
+        "fc_hid_layers": [200],
+        "hid_layers_activation": "sigmoid",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": null,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_t": null,
+      "max_frame": 2600,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "training_frequency__choice": [2, 4, 8],
+          "lam__uniform": [0.9, 0.99],
+        },
+        "net": {
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[], [100], [200]],
+          "rnn_hidden_size__choice": [32, 64, 128],
+          "seq_len__choice": [2, 3, 4, 5, 6],
+          "actor_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          }
+        }
+      }]
+    }
+  },
+  "dqn_boltzmann_mountain_car": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 5.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 80000,
+        },
+        "gamma": 0.999,
+        "training_batch_iter": 3,
+        "training_iter": 4,
+        "training_frequency": 4,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [200, 100],
+        "hid_layers_activation": "relu",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.006
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+        },
+        "update_type": "polyak",
+        "update_frequency": 200,
+        "polyak_coef": 0.8,
+        "gpu": false,
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_t": null,
+      "max_frame": 1400,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [20000, 40000, 80000]
+          }
+        },
+        "net": {
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "polyak_coef__uniform": [0.8, 1.0],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+        }
+      }]
+    }
+  },
+  "drqn_boltzmann_mountain_car": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 5.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 40000,
+        },
+        "gamma": 0.999,
+        "training_batch_iter": 3,
+        "training_iter": 4,
+        "training_frequency": 4,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "cell_type": "GRU",
+        "fc_hid_layers": [200],
+        "hid_layers_activation": "sigmoid",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+        },
+        "update_type": "polyak",
+        "update_frequency": 200,
+        "polyak_coef": 0,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_t": null,
+      "max_frame": 1400,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [20000, 40000, 80000]
+          }
+        },
+        "net": {
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "polyak_coef__uniform": [0.8, 1.0],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[], [100], [200]],
+          "rnn_hidden_size__choice": [32, 64, 128],
+          "seq_len__choice": [2, 3, 4, 5, 6],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+        }
+      }]
+    }
+  },
+  "ddqn_boltzmann_mountain_car": {
+    "agent": [{
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 5.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 40000,
+        },
+        "gamma": 0.999,
+        "training_batch_iter": 4,
+        "training_iter": 4,
+        "training_frequency": 4,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [200, 100],
+        "hid_layers_activation": "relu",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.004
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+        },
+        "update_type": "polyak",
+        "update_frequency": 200,
+        "polyak_coef": 0.8,
+        "gpu": false,
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_t": null,
+      "max_frame": 1400,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [20000, 40000, 80000]
+          }
+        },
+        "net": {
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "polyak_coef__uniform": [0.8, 1.0],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[100], [200], [400], [200, 100]],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+        }
+      }]
+    }
+  },
+  "ddrqn_boltzmann_mountain_car": {
+    "agent": [{
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 5.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 40000,
+        },
+        "gamma": 0.999,
+        "training_batch_iter": 4,
+        "training_iter": 4,
+        "training_frequency": 4,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "cell_type": "GRU",
+        "fc_hid_layers": [200],
+        "hid_layers_activation": "sigmoid",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 160000,
+          "gamma": 0.9,
+        },
+        "update_type": "polyak",
+        "update_frequency": 200,
+        "polyak_coef": 0,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "MountainCar-v0",
+      "max_t": null,
+      "max_frame": 1400,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 200,
+      "search": "RandomSearch",
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [20000, 40000, 80000]
+          }
+        },
+        "net": {
+          "lr_decay_frequency__choice": [5000, 10000, 50000, 10000],
+          "polyak_coef__uniform": [0.8, 1.0],
+          "hid_layers_activation__choice": ["relu", "selu", "sigmoid"],
+          "hid_layers__choice": [[], [100], [200]],
+          "rnn_hidden_size__choice": [32, 64, 128],
+          "seq_len__choice": [2, 3, 4, 5, 6],
+          "optim_spec": {
+            "lr__uniform": [0.001, 0.01]
+          },
+        }
+      }]
+    }
+  },
+}

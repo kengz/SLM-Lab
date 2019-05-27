@@ -5,7 +5,7 @@ import pytest
 
 
 def memory_init_util(memory):
-    assert memory.true_size == 0
+    assert memory.size == 0
     assert memory.seen_size == 0
     return True
 
@@ -16,7 +16,7 @@ def memory_reset_util(memory, experiences):
         e = experiences[i]
         memory.add_experience(*e)
     memory.reset()
-    assert memory.true_size == 0
+    assert memory.size == 0
     assert np.sum(memory.states) == 0
     assert np.sum(memory.actions) == 0
     assert np.sum(memory.rewards) == 0
@@ -45,7 +45,7 @@ class TestOnPolicyBatchMemory:
         experiences = test_on_policy_batch_memory[2]
         exp = experiences[0]
         memory.add_experience(*exp)
-        assert memory.true_size == 1
+        assert memory.size == 1
         assert len(memory.states) == 1
         # Handle states and actions with multiple dimensions
         assert np.array_equal(memory.states[-1], exp[0])
@@ -114,7 +114,7 @@ class TestOnPolicyMemory:
         experiences = test_on_policy_episodic_memory[2]
         exp = experiences[0]
         memory.add_experience(*exp)
-        assert memory.true_size == 1
+        assert memory.size == 1
         assert len(memory.states) == 0
         # Handle states and actions with multiple dimensions
         assert np.array_equal(memory.cur_epi_data['states'][-1], exp[0])

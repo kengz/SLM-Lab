@@ -15,8 +15,7 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "training_frequency": 1,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -44,7 +43,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 400,
+      "max_frame": 400,
     }],
     "body": {
       "product": "outer",
@@ -53,7 +52,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -88,11 +86,10 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "training_frequency": 1,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -121,7 +118,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -130,7 +127,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -165,8 +161,7 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "training_frequency": 1,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -194,7 +189,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -203,7 +198,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -238,11 +232,10 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "training_frequency": 1,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -271,7 +264,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -280,7 +273,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -315,8 +307,7 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "training_frequency": 1,
-        "normalize_state": false
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -350,7 +341,7 @@
     "env": [{
       "name": "Breakout-v0",
       "max_t": null,
-      "max_tick": 1
+      "max_frame": 1
     }],
     "body": {
       "product": "outer",
@@ -359,7 +350,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -370,7 +360,7 @@
       "name": "Reinforce",
       "algorithm": {
         "name": "Reinforce",
-        "action_pdtype": "default",
+        "action_pdtype": "MultiCategorical",
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
@@ -381,12 +371,10 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "training_frequency": 1,
-        "normalize_state": false
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicyAtariReplay",
-        "stack_len": 4
+        "name": "OnPolicyReplay",
       },
       "net": {
         "type": "ConvNet",
@@ -417,9 +405,12 @@
     }],
     "env": [{
       "name": "vizdoom-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
       "cfg_name": "basic",
-      "max_t": null,
-      "max_tick": 100
+      "max_t": 400000,
+      "max_frame": 100
     }],
     "body": {
       "product": "outer",
@@ -428,7 +419,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"

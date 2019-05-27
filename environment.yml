@@ -21,9 +21,9 @@ dependencies:
   - pandas=0.22.0=py36_0
   - pillow=5.0.0=py36_0
   - pip=9.0.1=py36_1
-  - plotly=3.4.2
+  - plotly=3.8.1
   - plotly-orca=1.2.1
-  - psutil=5.4.7
+  - psutil=5.6.2
   - pycodestyle=2.3.1=py36_0
   - pydash=4.2.1=py_0
   - pytest-cov=2.5.1=py36_0
@@ -42,18 +42,17 @@ dependencies:
   - xlrd=1.1.0=py_2
   - pytorch=1.0.1
   - pip:
-    - atari-py==0.1.1
     - box2d-py==2.3.8
     - cloudpickle==0.5.2
     - colorlover==0.3.0
-    - deap==1.2.2
-    - gym==0.10.9
+    - opencv-python==3.4.0.12
+    - pyopengl==3.1.0
+    - ray==0.7.0
+    - redis==2.10.6
+    - xvfbwrapper==0.2.9
+    - gym==0.12.1
     - gym[atari]
     - gym[box2d]
     - gym[classic_control]
-    - opencv-python==3.4.0.12
-    - pyopengl==3.1.0
-    - ray==0.5.3
-    - redis==2.10.6
-    - xvfbwrapper==0.2.9
-    - vizdoom==1.1.6
+    - roboschool==1.0.46
+    - atari-py

@@ -18,17 +18,16 @@
           "end_step": 5000,
         },
         "policy_loss_coef": 1.0,
-        "val_loss_coef": 0.69,
-        "sil_policy_loss_coef": 0.59,
-        "sil_val_loss_coef": 0.17,
+        "val_loss_coef": 0.5,
+        "sil_policy_loss_coef": 0.5,
+        "sil_val_loss_coef": 0.5,
         "training_frequency": 1,
-        "training_batch_epoch": 10,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_batch_iter": 4,
+        "training_iter": 8
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -37,7 +36,7 @@
         "type": "MLPNet",
         "shared": true,
         "hid_layers": [64],
-        "hid_layers_activation": "tanh",
+        "hid_layers_activation": "relu",
         "clip_grad_val": null,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -59,7 +58,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 400,
+      "max_frame": 400,
     }],
     "body": {
       "product": "outer",
@@ -68,15 +67,14 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 100,
       "search": "RandomSearch"
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -118,13 +116,12 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
-        "normalize_state": true
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -155,7 +152,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -164,7 +161,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -172,7 +168,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -214,13 +210,12 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
-        "normalize_state": true
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
-        "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SILSeqReplay",
+        "name": "OnPolicyReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -255,7 +250,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -264,7 +259,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -272,7 +266,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -314,13 +308,12 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
-        "normalize_state": true
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
-        "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SILSeqReplay",
+        "name": "OnPolicyReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -355,7 +348,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -364,7 +357,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -372,7 +364,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -414,13 +406,12 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 4,
-        "training_epoch": 4,
-        "normalize_state": true
+        "training_batch_iter": 4,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -451,7 +442,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -460,7 +451,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -468,7 +458,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -510,13 +500,12 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
-        "normalize_state": true
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -547,7 +536,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -556,7 +545,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -564,7 +552,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -606,13 +594,12 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
-        "normalize_state": true
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
-        "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SILSeqReplay",
+        "name": "OnPolicyReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -647,7 +634,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -656,7 +643,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -664,7 +650,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -706,13 +692,12 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
-        "normalize_state": true
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
-        "name": "OnPolicySeqReplay",
-        "sil_replay_name": "SILSeqReplay",
+        "name": "OnPolicyReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -747,7 +732,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_tick": 500,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -756,7 +741,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 4,
       "max_trial": 100,
       "search": "RandomSearch"
@@ -764,7 +748,7 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "training_epoch__choice": [1, 4, 8, 16]
+          "training_iter__choice": [1, 4, 8, 16]
         },
         "net": {
           "hid_layers__choice": [
@@ -806,13 +790,12 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
-        "normalize_state": false
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -848,7 +831,7 @@
     "env": [{
       "name": "Breakout-v0",
       "max_t": null,
-      "max_tick": 1
+      "max_frame": 1
     }],
     "body": {
       "product": "outer",
@@ -857,7 +840,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"
@@ -886,13 +868,12 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
-        "normalize_state": false
+        "training_batch_iter": 8,
+        "training_iter": 4
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -928,7 +909,7 @@
     "env": [{
       "name": "Breakout-v0",
       "max_t": null,
-      "max_tick": 1
+      "max_frame": 1
     }],
     "body": {
       "product": "outer",
@@ -937,7 +918,6 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "epi",
       "max_session": 1,
       "max_trial": 1,
       "search": "RandomSearch"

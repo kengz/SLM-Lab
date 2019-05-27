@@ -1,31 +1,21 @@
-'''
-The data visualization module
-TODO pie, swarm, box plots
-'''
-from plotly import (
-    graph_objs as go,
-    offline as py,
-    tools,
-)
+# The data visualization module
+# Defines plotting methods for analysis
+from plotly import graph_objs as go, io as pio, tools
+from plotly.offline import init_notebook_mode, iplot
 from slm_lab.lib import logger, util
 import colorlover as cl
 import os
-import plotly
-import plotly.io as pio
 import pydash as ps
-import sys
 
-
-PLOT_FILEDIR = util.smart_path('data')
-os.makedirs(PLOT_FILEDIR, exist_ok=True)
-if util.is_jupyter():
-    py.init_notebook_mode(connected=True)
 logger = logger.get_logger(__name__)
 
+# warn orca failure only once
+orca_warn_once = ps.once(lambda e: logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later.'))
+if util.is_jupyter():
+    init_notebook_mode(connected=True)
 
-def create_label(
-        y_col, x_col,
-        title=None, y_title=None, x_title=None, legend_name=None):
+
+def create_label(y_col, x_col, title=None, y_title=None, x_title=None, legend_name=None):
     '''Create label dict for go.Layout with smart resolution'''
     legend_name = legend_name or y_col
     y_col_list, x_col_list, legend_name_list = ps.map_(
@@ -45,9 +35,7 @@ def create_label(
     return label
 
 
-def create_layout(
-        title, y_title, x_title, x_type=None,
-        width=500, height=350, layout_kwargs=None):
+def create_layout(title, y_title, x_title, x_type=None, width=500, height=500, layout_kwargs=None):
     '''simplified method to generate Layout'''
     layout = go.Layout(
         title=title,
@@ -61,12 +49,12 @@ def create_layout(
     return layout
 
 
-def get_palette(aeb_count):
-    '''Get the suitable palette to plot for some number of aeb graphs, where each aeb is a color.'''
-    if aeb_count <= 8:
-        palette = cl.scales[str(max(3, aeb_count))]['qual']['Set2']
+def get_palette(size):
+    '''Get the suitable palette of a certain size'''
+    if size <= 8:
+        palette = cl.scales[str(max(3, size))]['qual']['Set2']
     else:
-        palette = cl.interp(cl.scales['8']['qual']['Set2'], aeb_count)
+        palette = cl.interp(cl.scales['8']['qual']['Set2'], size)
     return palette
 
 
@@ -76,162 +64,168 @@ def lower_opacity(rgb, opacity):
 
 def plot(*args, **kwargs):
     if util.is_jupyter():
-        return py.iplot(*args, **kwargs)
-    else:
-        kwargs.update({'auto_open': ps.get(kwargs, 'auto_open', False)})
-        return py.plot(*args, **kwargs)
+        return iplot(*args, **kwargs)
 
 
-def plot_go(
-        df, y_col=None, x_col='index', y2_col=None,
-        title=None, y_title=None, x_title=None, x_type=None,
-        legend_name=None, width=500, height=350, draw=True,
-        save=False, filename=None,
-        trace_class='Scatter', trace_kwargs=None, layout_kwargs=None):
-    '''
-    Quickly plot from df using trace_class, e.g. go.Scatter
-    1. create_label() to auto-resolve labels
-    2. create_layout() with go.Layout() and update(layout_kwargs)
-    3. spread and create go.<trace_class>() and update(trace_kwargs)
-    4. Create the figure and plot accordingly
-    @returns figure
-    '''
-    df = df.copy()
-    if x_col == 'index':
-        df['index'] = df.index.tolist()
-
-    label = create_label(y_col, x_col, title, y_title, x_title, legend_name)
-    layout = create_layout(
-        x_type=x_type, width=width, height=height, layout_kwargs=layout_kwargs,
-        **ps.pick(label, ['title', 'y_title', 'x_title']))
-    y_col_list, x_col_list = label['y_col_list'], label['x_col_list']
-
-    if y2_col is not None:
-        label2 = create_label(y2_col, x_col, title, y_title, x_title, legend_name)
-        layout.update(dict(yaxis2=dict(
-            rangemode='tozero', title=label2['y_title'],
-            side='right', overlaying='y1', anchor='x1',
-        )))
-        y2_col_list, x_col_list = label2['y_col_list'], label2['x_col_list']
-        label2_legend_name_list = label2['legend_name_list']
-    else:
-        y2_col_list = []
-        label2_legend_name_list = []
-
-    combo_y_col_list = y_col_list + y2_col_list
-    combo_legend_name_list = label['legend_name_list'] + label2_legend_name_list
-    y_col_num, x_col_num = len(combo_y_col_list), len(x_col_list)
-    trace_num = max(y_col_num, x_col_num)
-    data = []
-    for idx in range(trace_num):
-        y_c = ps.get(combo_y_col_list, idx % y_col_num)
-        x_c = ps.get(x_col_list, idx % x_col_num)
-        df_y, df_x = ps.get(df, y_c), ps.get(df, x_c)
-        trace = ps.get(go, trace_class)(y=df_y, x=df_x, name=combo_legend_name_list[idx])
-        trace.update(trace_kwargs)
-        if idx >= len(y_col_list):
-            trace.update(dict(yaxis='y2', xaxis='x1'))
-        data.append(trace)
-
-    figure = go.Figure(data=data, layout=layout)
-    if draw:
-        plot(figure)
-    if save:
-        save_image(figure, filename=filename)
-    return figure
+def plot_sr(sr, time_sr, title, y_title, x_title):
+    '''Plot a series'''
+    x = time_sr.tolist()
+    color = get_palette(1)[0]
+    main_trace = go.Scatter(
+        x=x, y=sr, mode='lines', showlegend=False,
+        line={'color': color, 'width': 1},
+    )
+    data = [main_trace]
+    layout = create_layout(title=title, y_title=y_title, x_title=x_title)
+    fig = go.Figure(data, layout)
+    plot(fig)
+    return fig
 
 
-def plot_area(
-    *args, fill='tonexty', stack=False,
-    trace_kwargs=None, layout_kwargs=None,
-        **kwargs):
-    '''Plot area from df'''
-    if stack:
-        df, y_col = args[:2]
-        stack_df = stack_cumsum(df, y_col)
-        args = (stack_df,) + args[1:]
-    trace_kwargs = ps.merge(dict(fill=fill, mode='lines', line=dict(width=1)), trace_kwargs)
-    layout_kwargs = ps.merge(dict(), layout_kwargs)
-    return plot_go(
-        *args, trace_class='Scatter',
-        trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
-        **kwargs)
+def plot_mean_sr(sr_list, time_sr, title, y_title, x_title):
+    '''Plot a list of series using its mean, with error bar using std'''
+    mean_sr, std_sr = util.calc_srs_mean_std(sr_list)
+    max_sr = mean_sr + std_sr
+    min_sr = mean_sr - std_sr
+    max_y = max_sr.tolist()
+    min_y = min_sr.tolist()
+    x = time_sr.tolist()
+    color = get_palette(1)[0]
+    main_trace = go.Scatter(
+        x=x, y=mean_sr, mode='lines', showlegend=False,
+        line={'color': color, 'width': 1},
+    )
+    envelope_trace = go.Scatter(
+        x=x + x[::-1], y=max_y + min_y[::-1], showlegend=False,
+        line={'color': 'rgba(0, 0, 0, 0)'},
+        fill='tozerox', fillcolor=lower_opacity(color, 0.2),
+    )
+    data = [main_trace, envelope_trace]
+    layout = create_layout(title=title, y_title=y_title, x_title=x_title)
+    fig = go.Figure(data, layout)
+    return fig
 
 
-def plot_bar(
-    *args, barmode='stack', orientation='v',
-    trace_kwargs=None, layout_kwargs=None,
-        **kwargs):
-    '''Plot bar chart from df'''
-    trace_kwargs = ps.merge(dict(orientation=orientation), trace_kwargs)
-    layout_kwargs = ps.merge(dict(barmode=barmode), layout_kwargs)
-    return plot_go(
-        *args, trace_class='Bar',
-        trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
-        **kwargs)
-
-
-def plot_line(
-    *args,
-    trace_kwargs=None, layout_kwargs=None,
-        **kwargs):
-    '''Plot line from df'''
-    trace_kwargs = ps.merge(dict(mode='lines', line=dict(width=1)), trace_kwargs)
-    layout_kwargs = ps.merge(dict(), layout_kwargs)
-    return plot_go(
-        *args, trace_class='Scatter',
-        trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
-        **kwargs)
-
-
-def plot_scatter(
-    *args,
-    trace_kwargs=None, layout_kwargs=None,
-        **kwargs):
-    '''Plot scatter from df'''
-    trace_kwargs = ps.merge(dict(mode='markers'), trace_kwargs)
-    layout_kwargs = ps.merge(dict(), layout_kwargs)
-    return plot_go(
-        *args, trace_class='Scatter',
-        trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
-        **kwargs)
-
-
-def plot_histogram(
-    *args, barmode='overlay', xbins=None, histnorm='count', orientation='v',
-    trace_kwargs=None, layout_kwargs=None,
-        **kwargs):
-    '''Plot histogram from df'''
-    trace_kwargs = ps.merge(dict(orientation=orientation, xbins={}, histnorm=histnorm), trace_kwargs)
-    layout_kwargs = ps.merge(dict(barmode=barmode), layout_kwargs)
-    return plot_go(
-        *args, trace_class='Histogram',
-        trace_kwargs=trace_kwargs, layout_kwargs=layout_kwargs,
-        **kwargs)
-
-
-def save_image(figure, filepath=None):
+def save_image(figure, filepath):
     if os.environ['PY_ENV'] == 'test':
         return
-    if filepath is None:
-        filepath = f'{PLOT_FILEDIR}/{ps.get(figure, "layout.title")}.png'
     filepath = util.smart_path(filepath)
     try:
         pio.write_image(figure, filepath)
-        logger.info(f'Graph saved to {filepath}')
     except Exception as e:
-        logger.warn(
-            f'{e}\nFailed to generate graph. Fix the issue and run retro-analysis to generate graphs.')
+        orca_warn_once(e)
 
 
-def stack_cumsum(df, y_col):
-    '''Submethod to cumsum over y columns for stacked area plot'''
-    y_col_list = util.cast_list(y_col)
-    stack_df = df.copy()
-    for idx in range(len(y_col_list)):
-        col = y_col_list[idx]
-        presum_idx = idx - 1
-        if presum_idx > -1:
-            presum_col = y_col_list[presum_idx]
-            stack_df[col] += stack_df[presum_col]
-    return stack_df
+# analysis plot methods
+
+def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
+    '''
+    Plot the session graphs:
+    - mean_returns, strengths, sample_efficiencies, training_efficiencies, stabilities (with error bar)
+    - additional plots from session_df: losses, exploration variable, entropy
+    '''
+    meta_spec = session_spec['meta']
+    prepath = meta_spec['prepath']
+    graph_prepath = meta_spec['graph_prepath']
+    title = f'session graph: {session_spec["name"]} t{meta_spec["trial"]} s{meta_spec["session"]}'
+
+    local_metrics = session_metrics['local']
+    name_time_pairs = [
+        ('mean_returns', 'frames'),
+        ('strengths', 'frames'),
+        ('sample_efficiencies', 'frames'),
+        ('training_efficiencies', 'opt_steps'),
+        ('stabilities', 'frames')
+    ]
+    for name, time in name_time_pairs:
+        fig = plot_sr(
+            local_metrics[name], local_metrics[time], title, name, time)
+        save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
+        if name in ('mean_returns',):  # save important graphs in prepath directly
+            save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
+
+    if df_mode == 'eval':
+        return
+    # training plots from session_df
+    name_time_pairs = [
+        ('loss', 'frame'),
+        ('explore_var', 'frame'),
+        ('entropy', 'frame'),
+    ]
+    for name, time in name_time_pairs:
+        fig = plot_sr(
+            session_df[name], session_df[time], title, name, time)
+        save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
+
+
+def plot_trial(trial_spec, trial_metrics):
+    '''
+    Plot the trial graphs:
+    - mean_returns, strengths, sample_efficiencies, training_efficiencies, stabilities (with error bar)
+    - consistencies (no error bar)
+    '''
+    meta_spec = trial_spec['meta']
+    prepath = meta_spec['prepath']
+    graph_prepath = meta_spec['graph_prepath']
+    title = f'trial graph: {trial_spec["name"]} t{meta_spec["trial"]} {meta_spec["max_session"]} sessions'
+
+    local_metrics = trial_metrics['local']
+    name_time_pairs = [
+        ('mean_returns', 'frames'),
+        ('strengths', 'frames'),
+        ('sample_efficiencies', 'frames'),
+        ('training_efficiencies', 'opt_steps'),
+        ('stabilities', 'frames'),
+        ('consistencies', 'frames'),
+    ]
+    for name, time in name_time_pairs:
+        if name == 'consistencies':
+            fig = plot_sr(
+                local_metrics[name], local_metrics[time], title, name, time)
+        else:
+            fig = plot_mean_sr(
+                local_metrics[name], local_metrics[time], title, name, time)
+        save_image(fig, f'{graph_prepath}_trial_graph_{name}_vs_{time}.png')
+        if name in ('mean_returns',):  # save important graphs in prepath directly
+            save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
+
+
+def plot_experiment(experiment_spec, experiment_df, metrics_cols):
+    '''
+    Plot the metrics vs. specs parameters of an experiment, where each point is a trial.
+    ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
+    '''
+    y_cols = metrics_cols
+    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
+    fig = tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
+    strength_sr = experiment_df['strength']
+    min_strength = strength_sr.values.min()
+    max_strength = strength_sr.values.max()
+    for row_idx, y in enumerate(y_cols):
+        for col_idx, x in enumerate(x_cols):
+            x_sr = experiment_df[x]
+            guard_cat_x = x_sr.astype(str) if x_sr.dtype == 'object' else x_sr
+            trace = go.Scatter(
+                y=experiment_df[y], yaxis=f'y{row_idx+1}',
+                x=guard_cat_x, xaxis=f'x{col_idx+1}',
+                showlegend=False, mode='markers',
+                marker={
+                    'symbol': 'circle-open-dot', 'color': experiment_df['strength'], 'opacity': 0.5,
+                    # dump first quarter of colorscale that is too bright
+                    'cmin': min_strength - 0.50 * (max_strength - min_strength), 'cmax': max_strength,
+                    'colorscale': 'YlGnBu', 'reversescale': True
+                },
+            )
+            fig.add_trace(trace, row_idx + 1, col_idx + 1)
+            fig.layout[f'xaxis{col_idx+1}'].update(title='<br>'.join(ps.chunk(x, 20)), zerolinewidth=1, categoryarray=sorted(guard_cat_x.unique()))
+        fig.layout[f'yaxis{row_idx+1}'].update(title=y, rangemode='tozero')
+    fig.layout.update(
+        title=f'experiment graph: {experiment_spec["name"]}',
+        width=100 + 300 * len(x_cols), height=200 + 300 * len(y_cols))
+    plot(fig)
+    graph_prepath = experiment_spec['meta']['graph_prepath']
+    save_image(fig, f'{graph_prepath}_experiment_graph.png')
+    # save important graphs in prepath directly
+    prepath = experiment_spec['meta']['prepath']
+    save_image(fig, f'{prepath}_experiment_graph.png')
+    return fig

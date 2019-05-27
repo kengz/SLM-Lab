@@ -1,91 +1,64 @@
-'''
-The agent module
-Contains graduated components from experiments for building agents and be taught, tested, evaluated on curriculum.
-To be designed by human and evolution module, based on the experiment aim (trait) and fitness metrics.
-Main SLM components (refer to SLM doc for more):
-- primary survival objective
-- control policies
-- sensors (input) for embodiment
-- motors (output) for embodiment
-- neural architecture
-- memory (with time)
-- prioritization mechanism and "emotions"
-- strange loop must be created
-- social aspect
-- high level properties of thinking, e.g. creativity, planning.
-
-Agent components:
-- algorithm (with net, policy)
-- memory (per body)
-'''
+# The agent module
 from slm_lab.agent import algorithm, memory
+from slm_lab.agent.algorithm import policy_util
+from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
+import pandas as pd
 import pydash as ps
+import torch
 
-AGENT_DATA_NAMES = ['action', 'loss', 'explore_var']
+
 logger = logger.get_logger(__name__)
 
 
 class Agent:
     '''
-    Class for all Agents.
-    Standardizes the Agent design to work in Lab.
-    Access Envs properties by: Agents - AgentSpace - AEBSpace - EnvSpace - Envs
+    Agent abstraction; implements the API to interface with Env in SLM Lab
+    Contains algorithm, memory, body
     '''
 
-    def __init__(self, spec, info_space, body, a=None, agent_space=None, global_nets=None):
+    def __init__(self, spec, body, a=None, global_nets=None):
         self.spec = spec
-        self.info_space = info_space
-        self.a = a or 0  # for compatibility with agent_space
+        self.a = a or 0  # for multi-agent
         self.agent_spec = spec['agent'][self.a]
         self.name = self.agent_spec['name']
         assert not ps.is_list(global_nets), f'single agent global_nets must be a dict, got {global_nets}'
-        if agent_space is None:  # singleton mode
-            self.body = body
-            body.agent = self
-            MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
-            self.body.memory = MemoryClass(self.agent_spec['memory'], self.body)
-            AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
-            self.algorithm = AlgorithmClass(self, global_nets)
-        else:
-            self.space_init(agent_space, body, global_nets)
+        # set components
+        self.body = body
+        body.agent = self
+        MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
+        self.body.memory = MemoryClass(self.agent_spec['memory'], self.body)
+        AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
+        self.algorithm = AlgorithmClass(self, global_nets)
 
         logger.info(util.self_desc(self))
 
     @lab_api
-    def reset(self, state):
-        '''Do agent reset per session, such as memory pointer'''
-        logger.debug(f'Agent {self.a} reset')
-        self.body.memory.epi_reset(state)
-
-    @lab_api
     def act(self, state):
         '''Standard act method from algorithm.'''
-        action = self.algorithm.act(state)
-        logger.debug(f'Agent {self.a} act: {action}')
+        with torch.no_grad():  # for efficiency, only calc grad in algorithm.train
+            action = self.algorithm.act(state)
         return action
 
     @lab_api
-    def update(self, action, reward, state, done):
+    def update(self, state, action, reward, next_state, done):
         '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
-        self.body.action_pd_update()
-        self.body.memory.update(action, reward, state, done)
+        self.body.update(state, action, reward, next_state, done)
+        if util.in_eval_lab_modes():  # eval does not update agent for training
+            return
+        self.body.memory.update(state, action, reward, next_state, done)
         loss = self.algorithm.train()
         if not np.isnan(loss):  # set for log_summary()
             self.body.loss = loss
         explore_var = self.algorithm.update()
-        logger.debug(f'Agent {self.a} loss: {loss}, explore_var {explore_var}')
-        if done:
-            self.body.epi_update()
         return loss, explore_var
 
     @lab_api
     def save(self, ckpt=None):
         '''Save agent'''
-        if util.in_eval_lab_modes():
-            # eval does not save new models
+        if util.in_eval_lab_modes():  # eval does not save new models
             return
         self.algorithm.save(ckpt=ckpt)
 
@@ -94,134 +67,160 @@ class Agent:
         '''Close and cleanup agent at the end of a session, e.g. save model'''
         self.save()
 
-    @lab_api
-    def space_init(self, agent_space, body_a, global_nets):
-        '''Post init override for space env. Note that aeb is already correct from __init__'''
-        self.agent_space = agent_space
-        self.body_a = body_a
-        self.aeb_space = agent_space.aeb_space
-        self.nanflat_body_a = util.nanflatten(self.body_a)
-        for idx, body in enumerate(self.nanflat_body_a):
-            if idx == 0:  # NOTE set default body
-                self.body = body
-            body.agent = self
-            body.nanflat_a_idx = idx
-            MemoryClass = getattr(memory, ps.get(self.agent_spec, 'memory.name'))
-            body.memory = MemoryClass(self.agent_spec['memory'], body)
-        self.body_num = len(self.nanflat_body_a)
-        AlgorithmClass = getattr(algorithm, ps.get(self.agent_spec, 'algorithm.name'))
-        self.algorithm = AlgorithmClass(self, global_nets)
-        # after algo init, transfer any missing variables from default body
-        for idx, body in enumerate(self.nanflat_body_a):
-            for k, v in vars(self.body).items():
-                if util.gen_isnan(getattr(body, k, None)):
-                    setattr(body, k, v)
 
-    @lab_api
-    def space_reset(self, state_a):
-        '''Do agent reset per session, such as memory pointer'''
-        logger.debug(f'Agent {self.a} reset')
-        for eb, body in util.ndenumerate_nonan(self.body_a):
-            body.memory.epi_reset(state_a[eb])
-
-    @lab_api
-    def space_act(self, state_a):
-        '''Standard act method from algorithm.'''
-        action_a = self.algorithm.space_act(state_a)
-        logger.debug(f'Agent {self.a} act: {action_a}')
-        return action_a
-
-    @lab_api
-    def space_update(self, action_a, reward_a, state_a, done_a):
-        '''Update per timestep after env transitions, e.g. memory, algorithm, update agent params, train net'''
-        for eb, body in util.ndenumerate_nonan(self.body_a):
-            body.action_pd_update()
-            body.memory.update(action_a[eb], reward_a[eb], state_a[eb], done_a[eb])
-        loss_a = self.algorithm.space_train()
-        loss_a = util.guard_data_a(self, loss_a, 'loss')
-        for eb, body in util.ndenumerate_nonan(self.body_a):
-            if not np.isnan(loss_a[eb]):  # set for log_summary()
-                body.loss = loss_a[eb]
-        explore_var_a = self.algorithm.space_update()
-        explore_var_a = util.guard_data_a(self, explore_var_a, 'explore_var')
-        logger.debug(f'Agent {self.a} loss: {loss_a}, explore_var_a {explore_var_a}')
-        for eb, body in util.ndenumerate_nonan(self.body_a):
-            if body.env.done:
-                body.epi_update()
-        return loss_a, explore_var_a
-
-
-class AgentSpace:
+class Body:
     '''
-    Subspace of AEBSpace, collection of all agents, with interface to Session logic; same methods as singleton agents.
-    Access EnvSpace properties by: AgentSpace - AEBSpace - EnvSpace - Envs
+    Body of an agent inside an environment, it:
+    - enables the automatic dimension inference for constructing network input/output
+    - acts as reference bridge between agent and environment (useful for multi-agent, multi-env)
+    - acts as non-gradient variable storage for monitoring and analysis
     '''
 
-    def __init__(self, spec, aeb_space, global_nets=None):
-        self.spec = spec
-        self.aeb_space = aeb_space
-        aeb_space.agent_space = self
-        self.info_space = aeb_space.info_space
-        self.aeb_shape = aeb_space.aeb_shape
-        assert not ps.is_dict(global_nets), f'multi agent global_nets must be a list of dicts, got {global_nets}'
-        assert ps.is_list(self.spec['agent'])
-        self.agents = []
-        for a in range(len(self.spec['agent'])):
-            body_a = self.aeb_space.body_space.get(a=a)
-            if global_nets is not None:
-                agent_global_nets = global_nets[a]
-            else:
-                agent_global_nets = None
-            agent = Agent(self.spec, self.info_space, body=body_a, a=a, agent_space=self, global_nets=agent_global_nets)
-            self.agents.append(agent)
-        logger.info(util.self_desc(self))
+    def __init__(self, env, agent_spec, aeb=(0, 0, 0)):
+        # essential reference variables
+        self.agent = None  # set later
+        self.env = env
+        self.aeb = aeb
+        self.a, self.e, self.b = aeb
 
-    def get(self, a):
-        return self.agents[a]
+        # variables set during init_algorithm_params
+        self.explore_var = np.nan  # action exploration: epsilon or tau
+        self.entropy_coef = np.nan  # entropy for exploration
 
-    @lab_api
-    def reset(self, state_space):
-        logger.debug3('AgentSpace.reset')
-        _action_v, _loss_v, _explore_var_v = self.aeb_space.init_data_v(AGENT_DATA_NAMES)
-        for agent in self.agents:
-            state_a = state_space.get(a=agent.a)
-            agent.space_reset(state_a)
-        _action_space, _loss_space, _explore_var_space = self.aeb_space.add(AGENT_DATA_NAMES, (_action_v, _loss_v, _explore_var_v))
-        logger.debug3(f'action_space: {_action_space}')
-        return _action_space
+        # debugging/logging variables, set in train or loss function
+        self.loss = np.nan
+        self.mean_entropy = np.nan
+        self.mean_grad_norm = np.nan
 
-    @lab_api
-    def act(self, state_space):
-        data_names = ('action',)
-        action_v, = self.aeb_space.init_data_v(data_names)
-        for agent in self.agents:
-            a = agent.a
-            state_a = state_space.get(a=a)
-            action_a = agent.space_act(state_a)
-            action_v[a, 0:len(action_a)] = action_a
-        action_space, = self.aeb_space.add(data_names, (action_v,))
-        logger.debug3(f'\naction_space: {action_space}')
-        return action_space
+        self.ckpt_total_reward = np.nan
+        self.total_reward = 0  # init to 0, but dont ckpt before end of an epi
+        self.total_reward_ma = np.nan
+        self.ma_window = 100
+        # store current and best reward_ma for model checkpointing and early termination if all the environments are solved
+        self.best_reward_ma = -np.inf
+        self.eval_reward_ma = np.nan
 
-    @lab_api
-    def update(self, action_space, reward_space, state_space, done_space):
-        data_names = ('loss', 'explore_var')
-        loss_v, explore_var_v = self.aeb_space.init_data_v(data_names)
-        for agent in self.agents:
-            a = agent.a
-            action_a = action_space.get(a=a)
-            reward_a = reward_space.get(a=a)
-            state_a = state_space.get(a=a)
-            done_a = done_space.get(a=a)
-            loss_a, explore_var_a = agent.space_update(action_a, reward_a, state_a, done_a)
-            loss_v[a, 0:len(loss_a)] = loss_a
-            explore_var_v[a, 0:len(explore_var_a)] = explore_var_a
-        loss_space, explore_var_space = self.aeb_space.add(data_names, (loss_v, explore_var_v))
-        logger.debug3(f'\nloss_space: {loss_space}\nexplore_var_space: {explore_var_space}')
-        return loss_space, explore_var_space
+        # dataframes to track data for analysis.analyze_session
+        # track training data per episode
+        self.train_df = pd.DataFrame(columns=[
+            'epi', 't', 'wall_t', 'opt_step', 'frame', 'fps', 'total_reward', 'total_reward_ma', 'loss', 'lr',
+            'explore_var', 'entropy_coef', 'entropy', 'grad_norm'])
+        # track eval data within run_eval. the same as train_df except for reward
+        self.eval_df = self.train_df.copy()
 
-    @lab_api
-    def close(self):
-        logger.info('AgentSpace.close')
-        for agent in self.agents:
-            agent.close()
+        # the specific agent-env interface variables for a body
+        self.observation_space = self.env.observation_space
+        self.action_space = self.env.action_space
+        self.observable_dim = self.env.observable_dim
+        self.state_dim = self.observable_dim['state']
+        self.action_dim = self.env.action_dim
+        self.is_discrete = self.env.is_discrete
+        # set the ActionPD class for sampling action
+        self.action_type = policy_util.get_action_type(self.action_space)
+        self.action_pdtype = agent_spec[self.a]['algorithm'].get('action_pdtype')
+        if self.action_pdtype in (None, 'default'):
+            self.action_pdtype = policy_util.ACTION_PDS[self.action_type][0]
+        self.ActionPD = policy_util.get_action_pd_cls(self.action_pdtype, self.action_type)
+
+    def update(self, state, action, reward, next_state, done):
+        '''Interface update method for body at agent.update()'''
+        if hasattr(self.env.u_env, 'raw_reward'):  # use raw_reward if reward is preprocessed
+            reward = self.env.u_env.raw_reward
+        if self.ckpt_total_reward is np.nan:  # init
+            self.ckpt_total_reward = reward
+        else:  # reset on epi_start, else keep adding. generalized for vec env
+            self.ckpt_total_reward = self.ckpt_total_reward * (1 - self.epi_start) + reward
+        self.total_reward = done * self.ckpt_total_reward + (1 - done) * self.total_reward
+        self.epi_start = done
+
+    def __str__(self):
+        return f'body: {util.to_json(util.get_class_attr(self))}'
+
+    def calc_df_row(self, env):
+        '''Calculate a row for updating train_df or eval_df.'''
+        frame = self.env.clock.get('frame')
+        wall_t = env.clock.get_elapsed_wall_t()
+        fps = 0 if wall_t == 0 else frame / wall_t
+
+        # update debugging variables
+        if net_util.to_check_train_step():
+            grad_norms = net_util.get_grad_norms(self.agent.algorithm)
+            self.mean_grad_norm = np.nan if ps.is_empty(grad_norms) else np.mean(grad_norms)
+
+        row = pd.Series({
+            # epi and frame are always measured from training env
+            'epi': self.env.clock.get('epi'),
+            # t and reward are measured from a given env or eval_env
+            't': env.clock.get('t'),
+            'wall_t': wall_t,
+            'opt_step': self.env.clock.get('opt_step'),
+            'frame': frame,
+            'fps': fps,
+            'total_reward': np.nanmean(self.total_reward),  # guard for vec env
+            'total_reward_ma': np.nan,  # update outside
+            'loss': self.loss,
+            'lr': self.get_mean_lr(),
+            'explore_var': self.explore_var,
+            'entropy_coef': self.entropy_coef if hasattr(self, 'entropy_coef') else np.nan,
+            'entropy': self.mean_entropy,
+            'grad_norm': self.mean_grad_norm,
+        }, dtype=np.float32)
+        assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
+        return row
+
+    def train_ckpt(self):
+        '''Checkpoint to update body.train_df data'''
+        row = self.calc_df_row(self.env)
+        # append efficiently to df
+        self.train_df.loc[len(self.train_df)] = row
+        # update current reward_ma
+        self.total_reward_ma = self.train_df[-self.ma_window:]['total_reward'].mean()
+        self.train_df.iloc[-1]['total_reward_ma'] = self.total_reward_ma
+
+    def eval_ckpt(self, eval_env, total_reward):
+        '''Checkpoint to update body.eval_df data'''
+        row = self.calc_df_row(eval_env)
+        row['total_reward'] = total_reward
+        # append efficiently to df
+        self.eval_df.loc[len(self.eval_df)] = row
+        # update current reward_ma
+        self.eval_reward_ma = self.eval_df[-self.ma_window:]['total_reward'].mean()
+        self.eval_df.iloc[-1]['total_reward_ma'] = self.eval_reward_ma
+
+    def get_mean_lr(self):
+        '''Gets the average current learning rate of the algorithm's nets.'''
+        if not hasattr(self.agent.algorithm, 'net_names'):
+            return np.nan
+        lrs = []
+        for attr, obj in self.agent.algorithm.__dict__.items():
+            if attr.endswith('lr_scheduler'):
+                lrs.append(obj.get_lr())
+        return np.mean(lrs)
+
+    def get_log_prefix(self):
+        '''Get the prefix for logging'''
+        spec = self.agent.spec
+        spec_name = spec['name']
+        trial_index = spec['meta']['trial']
+        session_index = spec['meta']['session']
+        prefix = f'Trial {trial_index} session {session_index} {spec_name}_t{trial_index}_s{session_index}'
+        return prefix
+
+    def log_metrics(self, metrics, df_mode):
+        '''Log session metrics'''
+        prefix = self.get_log_prefix()
+        row_str = '  '.join([f'{k}: {v:g}' for k, v in metrics.items()])
+        msg = f'{prefix} [{df_mode}_df metrics] {row_str}'
+        logger.info(msg)
+
+    def log_summary(self, df_mode):
+        '''
+        Log the summary for this body when its environment is done
+        @param str:df_mode 'train' or 'eval'
+        '''
+        prefix = self.get_log_prefix()
+        df = getattr(self, f'{df_mode}_df')
+        last_row = df.iloc[-1]
+        row_str = '  '.join([f'{k}: {v:g}' for k, v in last_row.items()])
+        msg = f'{prefix} [{df_mode}_df] {row_str}'
+        logger.info(msg)

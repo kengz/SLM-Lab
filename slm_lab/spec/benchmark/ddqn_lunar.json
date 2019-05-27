@@ -14,18 +14,16 @@
           "end_step": 14000
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 32,
-        "normalize_state": true
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
         "batch_size": 32,
         "max_size": 100000,
-        "use_cer": false,
-        "concat_len": 4
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -57,8 +55,10 @@
     }],
     "env": [{
       "name": "LunarLander-v2",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 250000
+      "max_frame": 250000
     }],
     "body": {
       "product": "outer",
@@ -67,13 +67,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 62,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 62
-      }
     },
   }
 }

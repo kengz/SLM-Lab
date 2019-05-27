@@ -2,11 +2,9 @@ from flaky import flaky
 from slm_lab.agent.net import net_util
 from slm_lab.experiment import analysis
 from slm_lab.experiment.control import Trial
-from slm_lab.experiment.monitor import InfoSpace
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 import os
-import pandas as pd
 import pydash as ps
 import pytest
 
@@ -15,12 +13,11 @@ import pytest
 def run_trial_test_dist(spec_file, spec_name=False):
     spec = spec_util.get(spec_file, spec_name)
     spec = spec_util.override_test_spec(spec)
-    info_space = InfoSpace()
-    info_space.tick('trial')
-    spec['meta']['distributed'] = True
+    spec_util.tick(spec, 'trial')
+    spec['meta']['distributed'] = 'synced'
     spec['meta']['max_session'] = 2
 
-    trial = Trial(spec, info_space)
+    trial = Trial(spec)
     # manually run the logic to obtain global nets for testing to ensure global net gets updated
     global_nets = trial.init_global_nets()
     # only test first network
@@ -28,11 +25,10 @@ def run_trial_test_dist(spec_file, spec_name=False):
         net = list(global_nets[0].values())[0]
     else:
         net = list(global_nets.values())[0]
-    session_datas = trial.parallelize_sessions(global_nets)
-    trial.session_data_dict = {data.index[0]: data for data in session_datas}
-    trial_data = analysis.analyze_trial(trial)
+    session_metrics_list = trial.parallelize_sessions(global_nets)
+    trial_metrics = analysis.analyze_trial(spec, session_metrics_list)
     trial.close()
-    assert isinstance(trial_data, pd.DataFrame)
+    assert isinstance(trial_metrics, dict)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
@@ -187,12 +183,4 @@ def test_ddqn_dist(spec_file, spec_name):
     # ('experimental/dueling_dqn.json', 'dueling_dqn_epsilon_greedy_breakout'),
 ])
 def test_dueling_dqn_dist(spec_file, spec_name):
-    run_trial_test_dist(spec_file, spec_name)
-
-
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('experimental/hydra_dqn.json', 'hydra_dqn_boltzmann_cartpole'),
-    ('experimental/hydra_dqn.json', 'hydra_dqn_epsilon_greedy_cartpole'),
-])
-def test_hydra_dqn_dist(spec_file, spec_name):
     run_trial_test_dist(spec_file, spec_name)

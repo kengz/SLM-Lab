@@ -1,0 +1,152 @@
+{
+  "a3c_gae_pong": {
+    "agent": [{
+      "name": "A3C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "num_step_returns": null,
+        "entropy_coef_spec": {
+          "name": "no_decay",
+          "start_val": 0.01,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "val_loss_coef": 0.5,
+        "training_frequency": 32
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay",
+      },
+      "net": {
+        "type": "ConvNet",
+        "shared": true,
+        "conv_hid_layers": [
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
+          [32, 3, 1, 0, 1]
+        ],
+        "fc_hid_layers": [512],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "normalize": true,
+        "batch_norm": false,
+        "clip_grad_val": 0.5,
+        "use_same_optim": false,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "actor_optim_spec": {
+          "name": "GlobalAdam",
+          "lr": 1e-4
+        },
+        "critic_optim_spec": {
+          "name": "GlobalAdam",
+          "lr": 1e-4
+        },
+        "lr_scheduler_spec": null,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "PongNoFrameskip-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
+      "num_envs": 8,
+      "max_t": null,
+      "max_frame": 1e7
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": "synced",
+      "log_frequency": 50000,
+      "eval_frequency": 50000,
+      "max_session": 16,
+      "max_trial": 1,
+    }
+  },
+  "gpu_a3c_gae_pong": {
+    "agent": [{
+      "name": "A3C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "num_step_returns": null,
+        "entropy_coef_spec": {
+          "name": "no_decay",
+          "start_val": 0.01,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "val_loss_coef": 0.5,
+        "training_frequency": 32
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay",
+      },
+      "net": {
+        "type": "ConvNet",
+        "shared": true,
+        "conv_hid_layers": [
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
+          [32, 3, 1, 0, 1]
+        ],
+        "fc_hid_layers": [512],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "normalize": true,
+        "batch_norm": false,
+        "clip_grad_val": 0.5,
+        "use_same_optim": false,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "actor_optim_spec": {
+          "name": "GlobalAdam",
+          "lr": 1e-4
+        },
+        "critic_optim_spec": {
+          "name": "GlobalAdam",
+          "lr": 1e-4
+        },
+        "lr_scheduler_spec": null,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "PongNoFrameskip-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
+      "num_envs": 8,
+      "max_t": null,
+      "max_frame": 1e7
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": "shared",
+      "log_frequency": 50000,
+      "eval_frequency": 50000,
+      "max_session": 16,
+      "max_trial": 1,
+    }
+  }
+}

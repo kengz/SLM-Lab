@@ -13,13 +13,15 @@ def get_env_path(env_name):
     return env_path
 
 
-def register_env(spec):
-    '''Register additional environments for OpenAI gym.'''
-    env_name = spec['env'][0]['name']
-
-    if env_name.lower() == 'vizdoom-v0':
-        assert 'cfg_name' in spec['env'][0].keys(), 'Environment config name must be defined for vizdoom.'
-        cfg_name = spec['env'][0]['cfg_name']
-        register(id='vizdoom-v0',
-                 entry_point='slm_lab.env.vizdoom.vizdoom_env:VizDoomEnv',
-                 kwargs={'cfg_name': cfg_name})
+def try_register_env(spec):
+    '''Try to additional environments for OpenAI gym.'''
+    try:
+        env_name = spec['env'][0]['name']
+        if env_name.lower() == 'vizdoom-v0':
+            assert 'cfg_name' in spec['env'][0].keys(), 'Environment config name must be defined for vizdoom.'
+            cfg_name = spec['env'][0]['cfg_name']
+            register(id='vizdoom-v0',
+                     entry_point='slm_lab.env.vizdoom.vizdoom_env:VizDoomEnv',
+                     kwargs={'cfg_name': cfg_name})
+    except Exception as e:
+        pass

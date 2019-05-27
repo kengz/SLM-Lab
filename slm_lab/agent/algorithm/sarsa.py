@@ -2,7 +2,7 @@ from slm_lab.agent import net
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.base import Algorithm
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, math_util, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pydash as ps
@@ -39,7 +39,6 @@ class SARSA(Algorithm):
         },
         "gamma": 0.99,
         "training_frequency": 10,
-        "normalize_state": true
     }
     '''
 
@@ -60,7 +59,6 @@ class SARSA(Algorithm):
             'explore_var_spec',
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
-            'normalize_state',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -72,54 +70,33 @@ class SARSA(Algorithm):
         '''Initialize the neural network used to learn the Q function from the spec'''
         if 'Recurrent' in self.net_spec['type']:
             self.net_spec.update(seq_len=self.net_spec['seq_len'])
-        if global_nets is None:
-            in_dim = self.body.state_dim
-            out_dim = net_util.get_out_dim(self.body)
-            NetClass = getattr(net, self.net_spec['type'])
-            self.net = NetClass(self.net_spec, in_dim, out_dim)
-            self.net_names = ['net']
-        else:
-            util.set_attr(self, global_nets)
-            self.net_names = list(global_nets.keys())
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body)
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net_names = ['net']
+        # init net optimizer and its lr scheduler
+        self.optim = net_util.get_optim(self.net, self.net.optim_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
     @lab_api
-    def calc_pdparam(self, x, evaluate=True, net=None):
+    def calc_pdparam(self, x, net=None):
         '''
         To get the pdparam for action policy sampling, do a forward pass of the appropriate net, and pick the correct outputs.
         The pdparam will be the logits for discrete prob. dist., or the mean and std for continuous prob. dist.
         '''
         net = self.net if net is None else net
-        if evaluate:
-            pdparam = net.wrap_eval(x)
-        else:
-            net.train()
-            pdparam = net(x)
-        logger.debug(f'pdparam: {pdparam}')
+        pdparam = net(x)
         return pdparam
 
     @lab_api
     def act(self, state):
         '''Note, SARSA is discrete-only'''
         body = self.body
-        if self.normalize_state:
-            state = policy_util.update_online_stats_and_normalize_state(body, state)
-        action, action_pd = self.action_policy(state, self, body)
-        body.action_tensor, body.action_pd = action, action_pd  # used for body.action_pd_update later
-        if len(action.shape) == 0:  # scalar
-            return action.cpu().numpy().astype(body.action_space.dtype).item()
-        else:
-            return action.cpu().numpy()
-
-    def calc_q_loss(self, batch):
-        '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
-        q_preds = self.net.wrap_eval(batch['states'])
-        act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
-        next_q_preds = self.net.wrap_eval(batch['next_states'])
-        act_next_q_preds = q_preds.gather(-1, batch['next_actions'].long().unsqueeze(-1)).squeeze(-1)
-        act_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * act_next_q_preds
-        q_loss = self.net.loss_fn(act_q_preds, act_q_targets)
-        return q_loss
+        action = self.action_policy(state, self, body)
+        return action.cpu().squeeze().numpy()  # squeeze to handle scalar
 
     @lab_api
     def sample(self):
@@ -128,10 +105,28 @@ class SARSA(Algorithm):
         # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['dones'])
         batch['next_actions'] = np.zeros_like(batch['actions'])
         batch['next_actions'][:-1] = batch['actions'][1:]
-        if self.normalize_state:
-            batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
+
+    def calc_q_loss(self, batch):
+        '''Compute the Q value loss using predicted and target Q values from the appropriate networks'''
+        states = batch['states']
+        next_states = batch['next_states']
+        if self.body.env.is_venv:
+            states = math_util.venv_unpack(states)
+            next_states = math_util.venv_unpack(next_states)
+        q_preds = self.net(states)
+        with torch.no_grad():
+            next_q_preds = self.net(next_states)
+        if self.body.env.is_venv:
+            q_preds = math_util.venv_pack(q_preds, self.body.env.num_envs)
+            next_q_preds = math_util.venv_pack(next_q_preds, self.body.env.num_envs)
+        act_q_preds = q_preds.gather(-1, batch['actions'].long().unsqueeze(-1)).squeeze(-1)
+        act_next_q_preds = next_q_preds.gather(-1, batch['next_actions'].long().unsqueeze(-1)).squeeze(-1)
+        act_q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * act_next_q_preds
+        logger.debug(f'act_q_preds: {act_q_preds}\nact_q_targets: {act_q_targets}')
+        q_loss = self.net.loss_fn(act_q_preds, act_q_targets)
+        return q_loss
 
     @lab_api
     def train(self):
@@ -140,17 +135,16 @@ class SARSA(Algorithm):
         Otherwise this function does nothing.
         '''
         if util.in_eval_lab_modes():
-            self.body.flush()
             return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
+            clock.set_batch_size(len(batch))
             loss = self.calc_q_loss(batch)
-            self.net.training_step(loss=loss, lr_clock=clock)
+            self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
             # reset
             self.to_train = 0
-            self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan

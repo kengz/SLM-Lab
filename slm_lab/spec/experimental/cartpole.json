@@ -15,8 +15,7 @@
           "start_step": 0,
           "end_step": 2000,
         },
-        "training_frequency": 1,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -44,7 +43,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -53,13 +52,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -94,11 +89,10 @@
           "start_step": 0,
           "end_step": 2000,
         },
-        "training_frequency": 1,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -127,7 +121,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -136,13 +130,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -181,9 +171,7 @@
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 1.0,
-        "training_frequency": 1,
-        "training_epoch": 4,
-        "normalize_state": false
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -214,7 +202,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -223,13 +211,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -268,9 +252,7 @@
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
-        "training_epoch": 4,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -301,7 +283,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -310,13 +292,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -358,9 +336,7 @@
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
-        "training_epoch": 4,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -391,7 +367,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -400,13 +376,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 23,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -448,12 +420,10 @@
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -485,7 +455,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -494,13 +464,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -542,9 +508,7 @@
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -575,7 +539,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -584,13 +548,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -630,9 +590,7 @@
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -663,7 +621,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -672,13 +630,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -721,9 +675,7 @@
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -754,22 +706,18 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 23,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -808,12 +756,10 @@
         },
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
-        "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_frequency": 1
       },
       "memory": {
-        "name": "OnPolicySeqReplay"
+        "name": "OnPolicyReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -845,7 +791,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -854,13 +800,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -909,8 +851,7 @@
         },
         "val_loss_coef": 0.1,
         "training_frequency": 8,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay"
@@ -941,7 +882,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -950,13 +891,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -1006,13 +943,12 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 8,
-        "training_batch_epoch": 8,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_batch_iter": 8,
+        "training_epoch": 8
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -1043,7 +979,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -1052,13 +988,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -1103,13 +1035,11 @@
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.1,
         "training_frequency": 1,
-        "training_batch_epoch": 10,
-        "training_epoch": 8,
-        "normalize_state": true
+        "training_batch_iter": 10
       },
       "memory": {
         "name": "OnPolicyReplay",
-        "sil_replay_name": "SILReplay",
+        "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": true
@@ -1140,7 +1070,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -1149,13 +1079,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -1194,8 +1120,7 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_frequency": 20,
-        "normalize_state": true
+        "training_frequency": 20
       },
       "memory": {
         "name": "OnPolicyBatchReplay"
@@ -1223,7 +1148,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -1232,13 +1157,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -1271,11 +1192,10 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_frequency": 20,
-        "normalize_state": true
+        "training_frequency": 20
       },
       "memory": {
-        "name": "OnPolicySeqBatchReplay"
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -1304,7 +1224,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -1313,13 +1233,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -1353,18 +1269,16 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 128,
-        "normalize_state": true
+        "training_start_step": 128
       },
       "memory": {
         "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
-        "use_cer": false,
-        "concat_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -1390,8 +1304,10 @@
     }],
     "env": [{
       "name": "CartPole-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -1400,13 +1316,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 16
-      }
     },
     "search": {
       "agent": [{
@@ -1417,7 +1329,6 @@
           },
         },
         "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
           "batch_size__choice": [32, 64, 128],
           "use_cer__choice": [false, true],
         },
@@ -1445,11 +1356,10 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 10,
-        "training_epoch": 4,
+        "training_batch_iter": 10,
+        "training_iter": 4,
         "training_frequency": 8,
-        "training_start_step": 32,
-        "normalize_state": true
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -1483,22 +1393,18 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 23,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{
@@ -1532,18 +1438,16 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 128,
-        "normalize_state": true
+        "training_start_step": 128
       },
       "memory": {
         "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
-        "use_cer": false,
-        "concat_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -1569,8 +1473,10 @@
     }],
     "env": [{
       "name": "CartPole-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -1579,13 +1485,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 16
-      }
     },
     "search": {
       "agent": [{
@@ -1596,7 +1498,6 @@
           },
         },
         "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
           "batch_size__choice": [32, 64, 128],
           "use_cer__choice": [false, true],
         },
@@ -1624,14 +1525,13 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 128,
-        "normalize_state": true
+        "training_start_step": 128
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": false,
@@ -1665,7 +1565,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -1674,13 +1574,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 16
-      }
     },
     "search": {
       "agent": [{
@@ -1718,14 +1614,13 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 128,
-        "normalize_state": true
+        "training_start_step": 128
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": false,
@@ -1759,7 +1654,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -1768,13 +1663,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 16
-      }
     },
     "search": {
       "agent": [{
@@ -1812,18 +1703,16 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 128,
-        "normalize_state": true
+        "training_start_step": 128
       },
       "memory": {
         "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
-        "use_cer": false,
-        "concat_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -1849,8 +1738,10 @@
     }],
     "env": [{
       "name": "CartPole-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -1859,13 +1750,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 16
-      }
     },
     "search": {
       "agent": [{
@@ -1876,7 +1763,6 @@
           },
         },
         "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
           "batch_size__choice": [32, 64, 128],
           "use_cer__choice": [false, true],
         },
@@ -1904,18 +1790,16 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 128,
-        "normalize_state": true
+        "training_start_step": 128
       },
       "memory": {
         "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
-        "use_cer": false,
-        "concat_len": 4,
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
@@ -1941,8 +1825,10 @@
     }],
     "env": [{
       "name": "CartPole-v0",
+      "frame_op": "concat",
+      "frame_op_len": 4,
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -1951,13 +1837,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 16
-      }
     },
     "search": {
       "agent": [{
@@ -1968,7 +1850,6 @@
           },
         },
         "memory": {
-          "name__choice": ["Replay", "ConcatReplay"],
           "batch_size__choice": [32, 64, 128],
           "use_cer__choice": [false, true],
         },
@@ -1996,14 +1877,13 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 128,
-        "normalize_state": true
+        "training_start_step": 128
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": false,
@@ -2037,7 +1917,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -2046,13 +1926,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 16
-      }
     },
     "search": {
       "agent": [{
@@ -2090,14 +1966,13 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 3,
-        "training_epoch": 4,
+        "training_batch_iter": 3,
+        "training_iter": 4,
         "training_frequency": 4,
-        "training_start_step": 128,
-        "normalize_state": true
+        "training_start_step": 128
       },
       "memory": {
-        "name": "SeqReplay",
+        "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
         "use_cer": false,
@@ -2131,7 +2006,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -2140,13 +2015,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 64,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 16
-      }
     },
     "search": {
       "agent": [{
@@ -2184,11 +2055,10 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 10,
-        "training_epoch": 4,
+        "training_batch_iter": 10,
+        "training_iter": 4,
         "training_frequency": 8,
-        "training_start_step": 32,
-        "normalize_state": true
+        "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
@@ -2222,7 +2092,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_tick": 40000,
+      "max_frame": 40000,
     }],
     "body": {
       "product": "outer",
@@ -2231,13 +2101,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_tick_unit": "total_t",
       "max_session": 4,
       "max_trial": 95,
       "search": "RandomSearch",
-      "resources": {
-        "num_cpus": 95
-      }
     },
     "search": {
       "agent": [{

@@ -1,12 +1,8 @@
 from slm_lab.agent.net import net_util
 from slm_lab.agent.net.base import Net
-from slm_lab.lib import logger, util
-import numpy as np
+from slm_lab.lib import util
 import pydash as ps
-import torch
 import torch.nn as nn
-
-logger = logger.get_logger(__name__)
 
 
 class RecurrentNet(Net, nn.Module):
@@ -75,7 +71,7 @@ class RecurrentNet(Net, nn.Module):
         gpu: whether to train using a GPU. Note this will only work if a GPU is available, othewise setting gpu=True does nothing
         '''
         nn.Module.__init__(self)
-        super(RecurrentNet, self).__init__(net_spec, in_dim, out_dim)
+        super().__init__(net_spec, in_dim, out_dim)
         # set default
         util.set_attr(self, dict(
             out_layer_activation=None,
@@ -111,6 +107,8 @@ class RecurrentNet(Net, nn.Module):
             'polyak_coef',
             'gpu',
         ])
+        # restore proper in_dim from env stacked state_dim (stack_len, *raw_state_dim)
+        self.in_dim = in_dim[1:] if len(in_dim) > 2 else in_dim[1]
         # fc body: state processing model
         if ps.is_empty(self.fc_hid_layers):
             self.rnn_input_dim = self.in_dim
@@ -140,14 +138,9 @@ class RecurrentNet(Net, nn.Module):
             self.model_tails = nn.ModuleList(tails)
 
         net_util.init_layers(self, self.init_fn)
-        for module in self.modules():
-            module.to(self.device)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
-        self.optim = net_util.get_optim(self, self.optim_spec)
-        self.lr_scheduler = net_util.get_lr_scheduler(self, self.lr_scheduler_spec)
-
-    def __str__(self):
-        return super(RecurrentNet, self).__str__() + f'\noptim: {self.optim}'
+        self.to(self.device)
+        self.train()
 
     def forward(self, x):
         '''The feedforward step. Input is batch_size x seq_len x state_dim'''
@@ -171,29 +164,3 @@ class RecurrentNet(Net, nn.Module):
             return outs
         else:
             return self.model_tail(hid_x)
-
-    @net_util.dev_check_training_step
-    def training_step(self, x=None, y=None, loss=None, retain_graph=False, lr_clock=None):
-        '''Takes a single training step: one forward and one backwards pass'''
-        if hasattr(self, 'model_tails') and x is not None:
-            raise ValueError('Loss computation from x,y not supported for multitails')
-        self.lr_scheduler.step(epoch=ps.get(lr_clock, 'total_t'))
-        self.train()
-        self.optim.zero_grad()
-        if loss is None:
-            out = self(x)
-            loss = self.loss_fn(out, y)
-        assert not torch.isnan(loss).any(), loss
-        loss.backward(retain_graph=retain_graph)
-        if self.clip_grad_val is not None:
-            nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
-        self.optim.step()
-        logger.debug(f'Net training_step loss: {loss}')
-        return loss
-
-    def wrap_eval(self, x):
-        '''
-        Completes one feedforward step, ensuring net is set to evaluation model returns: network output given input x
-        '''
-        self.eval()
-        return self(x)

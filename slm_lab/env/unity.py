@@ -1,6 +1,7 @@
 from gym import spaces
-from slm_lab.env.base import BaseEnv, ENV_DATA_NAMES, set_gym_space_attr
+from slm_lab.env.base import BaseEnv, set_gym_space_attr
 from slm_lab.env.registration import get_env_path
+from slm_lab.env.wrapper import try_scale_reward
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 from unityagents import brain, UnityEnvironment
@@ -49,7 +50,7 @@ class UnityEnv(BaseEnv):
     "env": [{
       "name": "gridworld",
       "max_t": 20,
-      "max_tick": 3,
+      "max_frame": 3,
       "unity": {
         "gridSize": 6,
         "numObstacles": 2,
@@ -58,19 +59,16 @@ class UnityEnv(BaseEnv):
     }],
     '''
 
-    def __init__(self, spec, e=None, env_space=None):
-        super(UnityEnv, self).__init__(spec, e, env_space)
+    def __init__(self, spec, e=None):
+        super().__init__(spec, e)
         util.set_attr(self, self.env_spec, ['unity'])
         worker_id = int(f'{os.getpid()}{self.e+int(ps.unique_id())}'[-4:])
+        seed = ps.get(spec, 'meta.random_seed')
+        # TODO update Unity ml-agents to use seed=seed below
         self.u_env = UnityEnvironment(file_name=get_env_path(self.name), worker_id=worker_id)
         self.patch_gym_spaces(self.u_env)
         self._set_attr_from_u_env(self.u_env)
         assert self.max_t is not None
-        if env_space is None:  # singleton mode
-            pass
-        else:
-            self.space_init(env_space)
-
         logger.info(util.self_desc(self))
 
     def patch_gym_spaces(self, u_env):
@@ -108,13 +106,13 @@ class UnityEnv(BaseEnv):
     def _check_u_brain_to_agent(self):
         '''Check the size match between unity brain and agent'''
         u_brain_num = self.u_env.number_brains
-        agent_num = len(self.body_e)
+        agent_num = 1  # TODO rework unity outdated
         assert u_brain_num == agent_num, f'There must be a Unity brain for each agent. e:{self.e}, brain: {u_brain_num} != agent: {agent_num}.'
 
     def _check_u_agent_to_body(self, env_info_a, a):
         '''Check the size match between unity agent and body'''
         u_agent_num = len(env_info_a.agents)
-        body_num = util.count_nonan(self.body_e[a])
+        body_num = 1  # rework unity
         assert u_agent_num == body_num, f'There must be a Unity agent for each body; a:{a}, e:{self.e}, agent_num: {u_agent_num} != body_num: {body_num}.'
 
     def _get_env_info(self, env_info_dict, a):
@@ -123,71 +121,32 @@ class UnityEnv(BaseEnv):
         env_info_a = env_info_dict[name_a]
         return env_info_a
 
+    def seed(self, seed):
+        self.u_env.seed(seed)
+
     @lab_api
     def reset(self):
-        _reward = np.nan
+        self.done = False
         env_info_dict = self.u_env.reset(train_mode=(util.get_lab_mode() != 'dev'), config=self.env_spec.get('unity'))
-        a, b = 0, 0  # default singleton aeb
+        a, b = 0, 0  # default singleton agent and body
         env_info_a = self._get_env_info(env_info_dict, a)
         state = env_info_a.states[b]
-        self.done = done = False
-        logger.debug(f'Env {self.e} reset reward: {_reward}, state: {state}, done: {done}')
-        return _reward, state, done
+        return state
 
     @lab_api
     def step(self, action):
         env_info_dict = self.u_env.step(action)
-        a, b = 0, 0  # default singleton aeb
+        a, b = 0, 0  # default singleton agent and body
         env_info_a = self._get_env_info(env_info_dict, a)
-        reward = env_info_a.rewards[b] * self.reward_scale
         state = env_info_a.states[b]
+        reward = env_info_a.rewards[b]
+        reward = try_scale_reward(self, reward)
         done = env_info_a.local_done[b]
-        self.done = done = done or self.clock.t > self.max_t
-        logger.debug(f'Env {self.e} step reward: {reward}, state: {state}, done: {done}')
-        return reward, state, done
+        if not self.is_venv and self.clock.t > self.max_t:
+            done = True
+        self.done = done
+        return state, reward, done, env_info_a
 
     @lab_api
     def close(self):
         self.u_env.close()
-
-    # NOTE optional extension for multi-agent-env
-
-    @lab_api
-    def space_init(self, env_space):
-        '''Post init override for space env. Note that aeb is already correct from __init__'''
-        self.env_space = env_space
-        self.aeb_space = env_space.aeb_space
-        self.observation_spaces = [self.observation_space]
-        self.action_spaces = [self.action_space]
-
-    @lab_api
-    def space_reset(self):
-        self._check_u_brain_to_agent()
-        self.done = False
-        env_info_dict = self.u_env.reset(train_mode=(util.get_lab_mode() != 'dev'), config=self.env_spec.get('unity'))
-        _reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
-        for (a, b), body in util.ndenumerate_nonan(self.body_e):
-            env_info_a = self._get_env_info(env_info_dict, a)
-            self._check_u_agent_to_body(env_info_a, a)
-            state = env_info_a.states[b]
-            state_e[(a, b)] = state
-            done_e[(a, b)] = self.done
-        logger.debug(f'Env {self.e} reset reward_e: {_reward_e}, state_e: {state_e}, done_e: {done_e}')
-        return _reward_e, state_e, done_e
-
-    @lab_api
-    def space_step(self, action_e):
-        # TODO implement clock_speed: step only if self.clock.to_step()
-        if self.done:
-            return self.space_reset()
-        action_e = util.nanflatten(action_e)
-        env_info_dict = self.u_env.step(action_e)
-        reward_e, state_e, done_e = self.env_space.aeb_space.init_data_s(ENV_DATA_NAMES, e=self.e)
-        for (a, b), body in util.ndenumerate_nonan(self.body_e):
-            env_info_a = self._get_env_info(env_info_dict, a)
-            reward_e[(a, b)] = env_info_a.rewards[b] * self.reward_scale
-            state_e[(a, b)] = env_info_a.states[b]
-            done_e[(a, b)] = env_info_a.local_done[b]
-        self.done = (util.nonan_all(done_e) or self.clock.t > self.max_t)
-        logger.debug(f'Env {self.e} step reward_e: {reward_e}, state_e: {state_e}, done_e: {done_e}')
-        return reward_e, state_e, done_e

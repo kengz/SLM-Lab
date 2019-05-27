@@ -1,324 +1,197 @@
-'''
-The control module
-Creates and controls the units of SLM lab: Experiment, Trial, Session
-'''
+# The control module
+# Creates and runs control loops at levels: Experiment, Trial, Session
 from copy import deepcopy
-from importlib import reload
-from slm_lab.agent import AgentSpace, Agent
-from slm_lab.env import EnvSpace, make_env
-from slm_lab.experiment import analysis, retro_analysis, search
-from slm_lab.experiment.monitor import AEBSpace, Body, enable_aeb_space
+from slm_lab.agent import Agent, Body
+from slm_lab.agent.net import net_util
+from slm_lab.env import make_env
+from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
-import os
 import torch.multiprocessing as mp
+
+
+def make_agent_env(spec, global_nets=None):
+    '''Helper to create agent and env given spec'''
+    env = make_env(spec)
+    body = Body(env, spec['agent'])
+    agent = Agent(spec, body=body, global_nets=global_nets)
+    return agent, env
+
+
+def mp_run_session(spec, global_nets, mp_dict):
+    '''Wrap for multiprocessing with shared variable'''
+    session = Session(spec, global_nets)
+    metrics = session.run()
+    mp_dict[session.index] = metrics
 
 
 class Session:
     '''
-    The base unit of instantiated RL system.
-    Given a spec,
-    session creates agent(s) and environment(s),
-    run the RL system and collect data, e.g. fitness metrics, till it ends,
-    then return the session data.
+    The base lab unit to run a RL session for a spec.
+    Given a spec, it creates the agent and env, runs the RL loop,
+    then gather data and analyze it to produce session data.
     '''
 
-    def __init__(self, spec, info_space, global_nets=None):
+    def __init__(self, spec, global_nets=None):
         self.spec = spec
-        self.info_space = info_space
-        self.index = self.info_space.get('session')
-        util.set_logger(self.spec, self.info_space, logger, 'session')
-        self.data = None
+        self.index = self.spec['meta']['session']
+        util.set_random_seed(self.spec)
+        util.set_cuda_id(self.spec)
+        util.set_logger(self.spec, logger, 'session')
+        spec_util.save(spec, unit='session')
 
-        # init singleton agent and env
-        self.env = make_env(self.spec)
-        util.set_rand_seed(self.info_space.get_random_seed(), self.env)
+        self.agent, self.env = make_agent_env(self.spec, global_nets)
         with util.ctx_lab_mode('eval'):  # env for eval
             self.eval_env = make_env(self.spec)
-            util.set_rand_seed(self.info_space.get_random_seed(), self.eval_env)
-        util.try_set_cuda_id(self.spec, self.info_space)
-        body = Body(self.env, self.spec['agent'])
-        self.agent = Agent(self.spec, self.info_space, body=body, global_nets=global_nets)
-
-        enable_aeb_space(self)  # to use lab's data analysis framework
         logger.info(util.self_desc(self))
-        logger.info(f'Initialized session {self.index}')
+
+    def to_ckpt(self, env, mode='eval'):
+        '''Check with clock whether to run log/eval ckpt: at the start, save_freq, and the end'''
+        if mode == 'eval' and util.in_eval_lab_modes():  # avoid double-eval: eval-ckpt in eval mode
+            return False
+        clock = env.clock
+        frame = clock.get()
+        frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
+        if frame == 0 or clock.get('opt_step') == 0:  # avoid ckpt at init
+            to_ckpt = False
+        elif frequency is None:  # default episodic
+            to_ckpt = env.done
+        else:  # normal ckpt condition by mod remainder (general for venv)
+            to_ckpt = util.frame_mod(frame, frequency, env.num_envs) or frame == clock.max_frame
+        return to_ckpt
 
     def try_ckpt(self, agent, env):
-        '''Try to checkpoint agent at the start, save_freq, and the end'''
-        tick = env.clock.get(env.max_tick_unit)
-        to_ckpt = False
-        if not util.in_eval_lab_modes() and tick <= env.max_tick:
-            to_ckpt = (tick % env.eval_frequency == 0) or tick == env.max_tick
-        if env.max_tick_unit == 'epi':  # extra condition for epi
-            to_ckpt = to_ckpt and env.done
+        '''Check then run checkpoint log/eval'''
+        body = agent.body
+        if self.to_ckpt(env, 'log'):
+            body.train_ckpt()
+            body.log_summary('train')
 
-        if to_ckpt:
-            if self.spec['meta'].get('parallel_eval'):
-                retro_analysis.run_parallel_eval(self, agent, env)
-            else:
-                self.run_eval_episode()
-            if analysis.new_best(agent):
+        if self.to_ckpt(env, 'eval'):
+            avg_return = analysis.gen_avg_return(agent, self.eval_env)
+            body.eval_ckpt(self.eval_env, avg_return)
+            body.log_summary('eval')
+            if body.eval_reward_ma >= body.best_reward_ma:
+                body.best_reward_ma = body.eval_reward_ma
                 agent.save(ckpt='best')
-            if tick > 0:  # nothing to analyze at start
-                analysis.analyze_session(self, eager_analyze_trial=True)
+            if len(body.train_df) > 1:  # need > 1 row to calculate stability
+                metrics = analysis.analyze_session(self.spec, body.train_df, 'train')
+                body.log_metrics(metrics['scalar'], 'train')
+            if len(body.eval_df) > 1:  # need > 1 row to calculate stability
+                metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval')
+                body.log_metrics(metrics['scalar'], 'eval')
 
-    def run_eval_episode(self):
-        with util.ctx_lab_mode('eval'):  # enter eval context
-            self.agent.algorithm.update()  # set explore_var etc. to end_val under ctx
-            self.eval_env.clock.tick('epi')
-            logger.info(f'Running eval episode for trial {self.info_space.get("trial")} session {self.index}')
-            total_reward = 0
-            reward, state, done = self.eval_env.reset()
-            while not done:
-                self.eval_env.clock.tick('t')
-                action = self.agent.act(state)
-                reward, state, done = self.eval_env.step(action)
-                total_reward += reward
-        # exit eval context, restore variables simply by updating
-        self.agent.algorithm.update()
-        # update body.eval_df
-        self.agent.body.eval_update(self.eval_env, total_reward)
-        self.agent.body.log_summary(body_df_kind='eval')
-
-    def run_episode(self):
-        self.env.clock.tick('epi')
-        logger.info(f'Running trial {self.info_space.get("trial")} session {self.index} episode {self.env.clock.epi}')
-        reward, state, done = self.env.reset()
-        self.agent.reset(state)
-        while not done:
+    def run_rl(self):
+        '''Run the main RL loop until clock.max_frame'''
+        logger.info(f'Running RL loop for trial {self.spec["meta"]["trial"]} session {self.index}')
+        clock = self.env.clock
+        state = self.env.reset()
+        done = False
+        while True:
+            if util.epi_done(done):  # before starting another episode
+                self.try_ckpt(self.agent, self.env)
+                if clock.get() < clock.max_frame:  # reset and continue
+                    clock.tick('epi')
+                    state = self.env.reset()
+                    done = False
             self.try_ckpt(self.agent, self.env)
-            self.env.clock.tick('t')
+            if clock.get() >= clock.max_frame:  # finish
+                break
+            clock.tick('t')
             action = self.agent.act(state)
-            reward, state, done = self.env.step(action)
-            self.agent.update(action, reward, state, done)
-        self.try_ckpt(self.agent, self.env)  # final timestep ckpt
-        self.agent.body.log_summary(body_df_kind='train')
+            next_state, reward, done, info = self.env.step(action)
+            self.agent.update(state, action, reward, next_state, done)
+            state = next_state
 
     def close(self):
-        '''
-        Close session and clean up.
-        Save agent, close env.
-        '''
+        '''Close session and clean up. Save agent, close env.'''
         self.agent.close()
         self.env.close()
         self.eval_env.close()
-        logger.info('Session done and closed.')
+        logger.info(f'Session {self.index} done')
 
     def run(self):
-        while self.env.clock.get(self.env.max_tick_unit) < self.env.max_tick:
-            self.run_episode()
-        retro_analysis.try_wait_parallel_eval(self)
-        self.data = analysis.analyze_session(self)  # session fitness
+        self.run_rl()
+        metrics = analysis.analyze_session(self.spec, self.agent.body.eval_df, 'eval')
+        self.agent.body.log_metrics(metrics['scalar'], 'eval')
         self.close()
-        return self.data
-
-
-class SpaceSession(Session):
-    '''Session for multi-agent/env setting'''
-
-    def __init__(self, spec, info_space, global_nets=None):
-        self.spec = spec
-        self.info_space = info_space
-        self.index = self.info_space.get('session')
-        util.set_logger(self.spec, self.info_space, logger, 'session')
-        self.data = None
-
-        self.aeb_space = AEBSpace(self.spec, self.info_space)
-        self.env_space = EnvSpace(self.spec, self.aeb_space)
-        self.aeb_space.init_body_space()
-        util.set_rand_seed(self.info_space.get_random_seed(), self.env_space)
-        util.try_set_cuda_id(self.spec, self.info_space)
-        self.agent_space = AgentSpace(self.spec, self.aeb_space, global_nets)
-
-        logger.info(util.self_desc(self))
-        logger.info(f'Initialized session {self.index}')
-
-    def try_ckpt(self, agent_space, env_space):
-        '''Try to checkpoint agent at the start, save_freq, and the end'''
-        # TODO ckpt and eval not implemented for SpaceSession
-        pass
-        # for agent in agent_space.agents:
-        #     for body in agent.nanflat_body_a:
-        #         env = body.env
-        #         super(SpaceSession, self).try_ckpt(agent, env)
-
-    def run_all_episodes(self):
-        '''
-        Continually run all episodes, where each env can step and reset at its own clock_speed and timeline.
-        Will terminate when all envs done are done.
-        '''
-        all_done = self.aeb_space.tick('epi')
-        reward_space, state_space, done_space = self.env_space.reset()
-        self.agent_space.reset(state_space)
-        while not all_done:
-            self.try_ckpt(self.agent_space, self.env_space)
-            all_done = self.aeb_space.tick()
-            action_space = self.agent_space.act(state_space)
-            reward_space, state_space, done_space = self.env_space.step(action_space)
-            self.agent_space.update(action_space, reward_space, state_space, done_space)
-        self.try_ckpt(self.agent_space, self.env_space)
-        retro_analysis.try_wait_parallel_eval(self)
-
-    def close(self):
-        '''
-        Close session and clean up.
-        Save agent, close env.
-        '''
-        self.agent_space.close()
-        self.env_space.close()
-        logger.info('Session done and closed.')
-
-    def run(self):
-        self.run_all_episodes()
-        self.data = analysis.analyze_session(self, tmp_space_session_sub=True)  # session fitness
-        self.close()
-        return self.data
-
-
-def init_run_session(*args):
-    '''Runner for multiprocessing'''
-    session = Session(*args)
-    return session.run()
-
-
-def init_run_space_session(*args):
-    '''Runner for multiprocessing'''
-    session = SpaceSession(*args)
-    return session.run()
+        return metrics
 
 
 class Trial:
     '''
-    The base unit of an experiment.
-    Given a spec and number s,
-    trial creates and runs s sessions,
-    gather and aggregate data from sessions as trial data,
-    then return the trial data.
+    The lab unit which runs repeated sessions for a same spec, i.e. a trial
+    Given a spec and number s, trial creates and runs s sessions,
+    then gathers session data and analyze it to produce trial data.
     '''
 
-    def __init__(self, spec, info_space):
+    def __init__(self, spec):
         self.spec = spec
-        self.info_space = info_space
-        self.index = self.info_space.get('trial')
-        info_space.set('session', None)  # Session starts anew for new trial
-        util.set_logger(self.spec, self.info_space, logger, 'trial')
-        self.session_data_dict = {}
-        self.data = None
-
-        analysis.save_spec(spec, info_space, unit='trial')
-        self.is_singleton = spec_util.is_singleton(spec)  # singleton mode as opposed to multi-agent-env space
-        self.SessionClass = Session if self.is_singleton else SpaceSession
-        self.mp_runner = init_run_session if self.is_singleton else init_run_space_session
-        logger.info(f'Initialized trial {self.index}')
+        self.index = self.spec['meta']['trial']
+        util.set_logger(self.spec, logger, 'trial')
+        spec_util.save(spec, unit='trial')
 
     def parallelize_sessions(self, global_nets=None):
+        mp_dict = mp.Manager().dict()
         workers = []
         for _s in range(self.spec['meta']['max_session']):
-            self.info_space.tick('session')
-            w = mp.Process(target=self.mp_runner, args=(deepcopy(self.spec), deepcopy(self.info_space), global_nets))
+            spec_util.tick(self.spec, 'session')
+            w = mp.Process(target=mp_run_session, args=(deepcopy(self.spec), global_nets, mp_dict))
             w.start()
             workers.append(w)
         for w in workers:
             w.join()
-        session_datas = retro_analysis.session_data_dict_for_dist(self.spec, self.info_space)
-        return session_datas
+        session_metrics_list = [mp_dict[idx] for idx in sorted(mp_dict.keys())]
+        return session_metrics_list
 
     def run_sessions(self):
         logger.info('Running sessions')
-        if util.get_lab_mode() in ('train', 'eval') and self.spec['meta']['max_session'] > 1:
-            # when training a single spec over multiple sessions
-            session_datas = self.parallelize_sessions()
-        else:
-            session_datas = []
-            for _s in range(self.spec['meta']['max_session']):
-                self.info_space.tick('session')
-                session = self.SessionClass(deepcopy(self.spec), deepcopy(self.info_space))
-                session_data = session.run()
-                session_datas.append(session_data)
-                if analysis.is_unfit(session_data, session):
-                    break
-        return session_datas
-
-    def make_global_nets(self, agent):
-        global_nets = {}
-        for net_name in agent.algorithm.net_names:
-            g_net = getattr(agent.algorithm, net_name)
-            g_net.share_memory()  # make net global
-            # TODO also create shared optimizer here
-            global_nets[net_name] = g_net
-        return global_nets
+        session_metrics_list = self.parallelize_sessions()
+        return session_metrics_list
 
     def init_global_nets(self):
-        session = self.SessionClass(deepcopy(self.spec), deepcopy(self.info_space))
-        if self.is_singleton:
-            session.env.close()  # safety
-            global_nets = self.make_global_nets(session.agent)
-        else:
-            session.env_space.close()  # safety
-            global_nets = [self.make_global_nets(agent) for agent in session.agent_space.agents]
+        session = Session(deepcopy(self.spec))
+        session.env.close()  # safety
+        global_nets = net_util.init_global_nets(session.agent.algorithm)
         return global_nets
 
     def run_distributed_sessions(self):
         logger.info('Running distributed sessions')
         global_nets = self.init_global_nets()
-        session_datas = self.parallelize_sessions(global_nets)
-        return session_datas
+        session_metrics_list = self.parallelize_sessions(global_nets)
+        return session_metrics_list
 
     def close(self):
-        logger.info('Trial done and closed.')
+        logger.info(f'Trial {self.index} done')
 
     def run(self):
-        if self.spec['meta'].get('distributed'):
-            session_datas = self.run_distributed_sessions()
+        if self.spec['meta'].get('distributed') == False:
+            session_metrics_list = self.run_sessions()
         else:
-            session_datas = self.run_sessions()
-        self.session_data_dict = {data.index[0]: data for data in session_datas}
-        self.data = analysis.analyze_trial(self)
+            session_metrics_list = self.run_distributed_sessions()
+        metrics = analysis.analyze_trial(self.spec, session_metrics_list)
         self.close()
-        return self.data
+        return metrics['scalar']
 
 
 class Experiment:
     '''
-    The core high level unit of Lab.
-    Given a spec-space/generator of cardinality t,
-    a number s,
-    a hyper-optimization algorithm hopt(spec, fitness-metric) -> spec_next/null
-    experiment creates and runs up to t trials of s sessions each to optimize (maximize) the fitness metric,
-    gather the trial data,
-    then return the experiment data for analysis and use in evolution graph.
-    Experiment data will include the trial data, notes on design, hypothesis, conclusion, analysis data, e.g. fitness metric, evolution link of ancestors to potential descendants.
-    An experiment then forms a node containing its data in the evolution graph with the evolution link and suggestion at the adjacent possible new experiments
-    On the evolution graph level, an experiment and its neighbors could be seen as test/development of traits.
+    The lab unit to run experiments.
+    It generates a list of specs to search over, then run each as a trial with s repeated session,
+    then gathers trial data and analyze it to produce experiment data.
     '''
 
-    def __init__(self, spec, info_space):
+    def __init__(self, spec):
         self.spec = spec
-        self.info_space = info_space
-        self.index = self.info_space.get('experiment')
-        util.set_logger(self.spec, self.info_space, logger, 'trial')
-        self.trial_data_dict = {}
-        self.data = None
-        analysis.save_spec(spec, info_space, unit='experiment')
-        SearchClass = getattr(search, spec['meta'].get('search'))
-        self.search = SearchClass(self)
-        logger.info(f'Initialized experiment {self.index}')
-
-    def init_trial_and_run(self, spec, info_space):
-        '''
-        Method to run trial with the properly updated info_space (trial_index) from experiment.search.lab_trial.
-        '''
-        trial = Trial(spec, info_space)
-        trial_data = trial.run()
-        return trial_data
+        self.index = self.spec['meta']['experiment']
+        util.set_logger(self.spec, logger, 'trial')
+        spec_util.save(spec, unit='experiment')
 
     def close(self):
-        reload(search)  # fixes ray consecutive run crashing due to bad cleanup
-        logger.info('Experiment done and closed.')
+        logger.info('Experiment done')
 
     def run(self):
-        self.trial_data_dict = self.search.run()
-        self.data = analysis.analyze_experiment(self)
+        trial_data_dict = search.run_ray_search(self.spec)
+        experiment_df = analysis.analyze_experiment(self.spec, trial_data_dict)
         self.close()
-        return self.data
+        return experiment_df

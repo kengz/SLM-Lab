@@ -51,9 +51,9 @@ class PPO(ActorCritic):
           "start_step": 100,
           "end_step": 5000,
         },
+        "minibatch_size": 256,
         "training_frequency": 1,
         "training_epoch": 8,
-        "normalize_state": true
     }
 
     e.g. special net_spec param "shared" to share/separate Actor/Critic
@@ -72,6 +72,7 @@ class PPO(ActorCritic):
             action_policy='default',
             explore_var_spec=None,
             entropy_coef_spec=None,
+            minibatch_size=4,
             val_loss_coef=1.0,
         ))
         util.set_attr(self, self.algorithm_spec, [
@@ -84,9 +85,9 @@ class PPO(ActorCritic):
             'clip_eps_spec',
             'entropy_coef_spec',
             'val_loss_coef',
+            'minibatch_size',
             'training_frequency',  # horizon
             'training_epoch',
-            'normalize_state',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -104,12 +105,12 @@ class PPO(ActorCritic):
     @lab_api
     def init_nets(self, global_nets=None):
         '''PPO uses old and new to calculate ratio for loss'''
-        super(PPO, self).init_nets(global_nets)
+        super().init_nets(global_nets)
         # create old net to calculate ratio
         self.old_net = deepcopy(self.net)
         assert id(self.old_net) != id(self.net)
 
-    def calc_policy_loss(self, batch, advs):
+    def calc_policy_loss(self, batch, pdparams, advs):
         '''
         The PPO loss function (subscript t is omitted)
         L^{CLIP+VF+S} = E[ L^CLIP - c1 * L^VF + c2 * S[pi](s) ]
@@ -123,91 +124,83 @@ class PPO(ActorCritic):
         3. S = E[ entropy ]
         '''
         clip_eps = self.body.clip_eps
+        action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+        states = batch['states']
+        actions = batch['actions']
+        if self.body.env.is_venv:
+            states = math_util.venv_unpack(states)
+            actions = math_util.venv_unpack(actions)
 
         # L^CLIP
-        log_probs = policy_util.calc_log_probs(self, self.net, self.body, batch)
-        old_log_probs = policy_util.calc_log_probs(self, self.old_net, self.body, batch).detach()
+        log_probs = action_pd.log_prob(actions)
+        with torch.no_grad():
+            old_pdparams = self.calc_pdparam(states, net=self.old_net)
+            old_action_pd = policy_util.init_action_pd(self.body.ActionPD, old_pdparams)
+            old_log_probs = old_action_pd.log_prob(actions)
         assert log_probs.shape == old_log_probs.shape
-        assert advs.shape[0] == log_probs.shape[0]  # batch size
         ratios = torch.exp(log_probs - old_log_probs)  # clip to prevent overflow
         logger.debug(f'ratios: {ratios}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
         # flip sign because need to maximize
-        clip_loss = -torch.mean(torch.min(sur_1, sur_2))
+        clip_loss = -torch.min(sur_1, sur_2).mean()
         logger.debug(f'clip_loss: {clip_loss}')
 
         # L^VF (inherit from ActorCritic)
 
         # S entropy bonus
-        entropies = torch.stack(self.body.entropies)
-        ent_penalty = torch.mean(-self.body.entropy_coef * entropies)
+        entropy = action_pd.entropy().mean()
+        self.body.mean_entropy = entropy  # update logging variable
+        ent_penalty = -self.body.entropy_coef * entropy
         logger.debug(f'ent_penalty: {ent_penalty}')
 
         policy_loss = clip_loss + ent_penalty
         logger.debug(f'PPO Actor policy loss: {policy_loss:g}')
         return policy_loss
 
-    def train_shared(self):
-        '''
-        Trains the network when the actor and critic share parameters
-        '''
+    def train(self):
+        if util.in_eval_lab_modes():
+            return np.nan
         clock = self.body.env.clock
         if self.to_train == 1:
-            # update old net
-            torch.cuda.empty_cache()
-            net_util.copy(self.net, self.old_net)
+            net_util.copy(self.net, self.old_net)  # update old net
             batch = self.sample()
-            total_loss = torch.tensor(0.0, device=self.net.device)
+            clock.set_batch_size(len(batch))
+            _pdparams, v_preds = self.calc_pdparam_v(batch)
+            advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
+            # piggy back on batch, but remember to not pack or unpack
+            batch['advs'], batch['v_targets'] = advs, v_targets
+            if self.body.env.is_venv:  # unpack if venv for minibatch sampling
+                for k, v in batch.items():
+                    if k not in ('advs', 'v_targets'):
+                        batch[k] = math_util.venv_unpack(v)
+            total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
-                with torch.no_grad():
-                    advs, v_targets = self.calc_advs_v_targets(batch)
-                policy_loss = self.calc_policy_loss(batch, advs)  # from actor
-                val_loss = self.calc_val_loss(batch, v_targets)  # from critic
-                loss = policy_loss + val_loss
-                # retain for entropies etc.
-                self.net.training_step(loss=loss, lr_clock=clock, retain_graph=True)
-                total_loss += loss
-            loss = total_loss / self.training_epoch
+                minibatches = util.split_minibatch(batch, self.minibatch_size)
+                for minibatch in minibatches:
+                    if self.body.env.is_venv:  # re-pack to restore proper shape
+                        for k, v in minibatch.items():
+                            if k not in ('advs', 'v_targets'):
+                                minibatch[k] = math_util.venv_pack(v, self.body.env.num_envs)
+                    advs, v_targets = minibatch['advs'], minibatch['v_targets']
+                    pdparams, v_preds = self.calc_pdparam_v(minibatch)
+                    policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
+                    val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
+                    if self.shared:  # shared network
+                        loss = policy_loss + val_loss
+                        self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                    else:
+                        self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                        self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, clock=clock, global_net=self.global_critic_net)
+                        loss = policy_loss + val_loss
+                    total_loss += loss
+            loss = total_loss / self.training_epoch / len(minibatches)
             # reset
             self.to_train = 0
-            self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
-
-    def train_separate(self):
-        '''
-        Trains the network when the actor and critic share parameters
-        '''
-        clock = self.body.env.clock
-        if self.to_train == 1:
-            torch.cuda.empty_cache()
-            net_util.copy(self.net, self.old_net)
-            batch = self.sample()
-            policy_loss = self.train_actor(batch)
-            val_loss = self.train_critic(batch)
-            loss = val_loss + policy_loss
-            # reset
-            self.to_train = 0
-            self.body.flush()
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.memory.total_reward}, loss: {loss:g}')
-            return loss.item()
-        else:
-            return np.nan
-
-    def train_actor(self, batch):
-        '''Trains the actor when the actor and critic are separate networks'''
-        total_policy_loss = torch.tensor(0.0, device=self.net.device)
-        for _ in range(self.training_epoch):
-            with torch.no_grad():
-                advs, _v_targets = self.calc_advs_v_targets(batch)
-            policy_loss = self.calc_policy_loss(batch, advs)
-            # retain for entropies etc.
-            self.net.training_step(loss=policy_loss, lr_clock=self.body.env.clock, retain_graph=True)
-        val_loss = total_policy_loss / self.training_epoch
-        return policy_loss
 
     @lab_api
     def update(self):
