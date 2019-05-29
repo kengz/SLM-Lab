@@ -47,6 +47,7 @@ class Reinforce(Algorithm):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
+            center_return=False,
             explore_var_spec=None,
             entropy_coef_spec=None,
             policy_loss_coef=1.0,
@@ -54,7 +55,7 @@ class Reinforce(Algorithm):
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
             'action_policy',
-            # theoretically, REINFORCE does not have policy update; but in this implementation we have such option
+            'center_return',  # center by the mean
             'explore_var_spec',
             'gamma',  # the discount factor
             'entropy_coef_spec',
@@ -121,6 +122,8 @@ class Reinforce(Algorithm):
     def calc_ret_advs(self, batch):
         '''Calculate plain returns; which is generalized to advantage in ActorCritic'''
         rets = math_util.calc_returns(batch['rewards'], batch['dones'], self.gamma)
+        if self.center_return:
+            rets = math_util.center_mean(rets)
         advs = rets
         if self.body.env.is_venv:
             advs = math_util.venv_unpack(advs)
