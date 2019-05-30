@@ -19,10 +19,9 @@ class Agent:
     Contains algorithm, memory, body
     '''
 
-    def __init__(self, spec, body, a=None, global_nets=None):
+    def __init__(self, spec, body, global_nets=None):
         self.spec = spec
-        self.a = a or 0  # for multi-agent
-        self.agent_spec = spec['agent'][self.a]
+        self.agent_spec = spec['agent'][0]  # idx 0 for single-agent
         self.name = self.agent_spec['name']
         assert not ps.is_list(global_nets), f'single agent global_nets must be a dict, got {global_nets}'
         # set components
@@ -80,8 +79,8 @@ class Body:
         # essential reference variables
         self.agent = None  # set later
         self.env = env
-        self.aeb = aeb
-        self.a, self.e, self.b = aeb
+        # agent, env, body index for multi-agent-env
+        self.a, self.e, self.b = self.aeb = aeb
 
         # variables set during init_algorithm_params
         self.explore_var = np.nan  # action exploration: epsilon or tau

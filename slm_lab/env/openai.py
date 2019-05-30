@@ -30,8 +30,8 @@ class OpenAIEnv(BaseEnv):
     }],
     '''
 
-    def __init__(self, spec, e=None):
-        super().__init__(spec, e)
+    def __init__(self, spec):
+        super().__init__(spec)
         try_register_env(spec)  # register if it's a custom gym env
         seed = ps.get(spec, 'meta.random_seed')
         if self.is_venv:  # make vector environment

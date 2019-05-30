@@ -5,6 +5,11 @@ import torch
 
 # general math methods
 
+def center_mean(v):
+    '''Center an array by its mean'''
+    return v - v.mean()
+
+
 def normalize(v):
     '''Method to normalize a rank-1 np array'''
     v_min = v.min()

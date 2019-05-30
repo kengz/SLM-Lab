@@ -1,11 +1,11 @@
 # the environment module
 
 
-def make_env(spec, e=None):
+def make_env(spec):
     try:
         from slm_lab.env.openai import OpenAIEnv
-        env = OpenAIEnv(spec, e)
+        env = OpenAIEnv(spec)
     except Exception:
         from slm_lab.env.unity import UnityEnv
-        env = UnityEnv(spec, e)
+        env = UnityEnv(spec)
     return env

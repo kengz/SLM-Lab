@@ -21,7 +21,7 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 
 ## Features
 
-### [Algorithms](#algorithms)
+### Algorithms
 
 SLM Lab implements a number of canonical RL [algorithms](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/agent/algorithm) with reusable **modular components** and *class-inheritance*, with commitment to code quality and performance.
 
@@ -39,7 +39,7 @@ Below shows the latest benchmark status. See [benchmark results here](https://gi
 | PPO, distributed-PPO    | :white_check_mark: |            |
 | SIL (A2C, PPO)          |       |            |
 
-### [Environments](#environments)
+### Environments
 
 SLM Lab integrates with multiple environment offerings:
   - [OpenAI gym](https://github.com/openai/gym)
@@ -49,7 +49,7 @@ SLM Lab integrates with multiple environment offerings:
 
 *Contributions are welcome to integrate more environments!*
 
-### [Metrics and Experimentation](#experimentation-framework)
+### Metrics and Experimentation
 
 To facilitate better RL development, SLM Lab also comes with prebuilt *metrics* and *experimentation framework*:
 - every run generates metrics, graphs and data for analysis, as well as spec for reproducibility

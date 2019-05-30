@@ -27,7 +27,7 @@ class Net(ABC):
             self.device = 'cpu'
 
     @net_util.dev_check_train_step
-    def train_step(self, loss, optim, lr_scheduler, clock=None, global_net=None):
+    def train_step(self, loss, optim, lr_scheduler, clock, global_net=None):
         lr_scheduler.step(epoch=ps.get(clock, 'frame'))
         optim.zero_grad()
         loss.backward()
