@@ -85,10 +85,9 @@ class BaseEnv(ABC):
     }],
     '''
 
-    def __init__(self, spec, e=None):
-        self.e = e or 0  # for multi-env
+    def __init__(self, spec):
         self.done = False
-        self.env_spec = spec['env'][self.e]
+        self.env_spec = spec['env'][0]  # idx 0 for single-env
         # set default
         util.set_attr(self, dict(
             log_frequency=None,  # default to log at epi done
