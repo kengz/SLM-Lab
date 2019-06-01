@@ -18,17 +18,14 @@ def run_trial_test(spec_file, spec_name=False):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('experimental/reinforce.json', 'reinforce_mlp_cartpole'),
-    ('experimental/reinforce.json', 'reinforce_rnn_cartpole'),
-    # ('experimental/reinforce.json', 'reinforce_conv_breakout'),
+    ('experimental/reinforce.json', 'reinforce_cartpole'),
 ])
 def test_reinforce(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('experimental/reinforce.json', 'reinforce_mlp_pendulum'),
-    ('experimental/reinforce.json', 'reinforce_rnn_pendulum'),
+    ('experimental/reinforce.json', 'reinforce_pendulum'),
 ])
 def test_reinforce_cont(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
@@ -128,12 +125,8 @@ def test_sil_cont(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
-    ('experimental/sarsa.json', 'sarsa_mlp_boltzmann_cartpole'),
-    ('experimental/sarsa.json', 'sarsa_mlp_epsilon_greedy_cartpole'),
-    ('experimental/sarsa.json', 'sarsa_rnn_boltzmann_cartpole'),
-    ('experimental/sarsa.json', 'sarsa_rnn_epsilon_greedy_cartpole'),
-    # ('experimental/sarsa.json', 'sarsa_conv_boltzmann_breakout'),
-    # ('experimental/sarsa.json', 'sarsa_conv_epsilon_greedy_breakout'),
+    ('experimental/sarsa.json', 'sarsa_epsilon_greedy_cartpole'),
+    ('experimental/sarsa.json', 'sarsa_boltzmann_cartpole'),
 ])
 def test_sarsa(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
@@ -181,15 +174,6 @@ def test_dueling_dqn(spec_file, spec_name):
     ('experimental/a2c.json', 'a2c_pong'),
 ])
 def test_atari(spec_file, spec_name):
-    run_trial_test(spec_file, spec_name)
-
-
-@flaky
-@pytest.mark.skip(reason='no baseline')
-@pytest.mark.parametrize('spec_file,spec_name', [
-    ('experimental/reinforce.json', 'reinforce_conv_vizdoom'),
-])
-def test_reinforce_vizdoom(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
