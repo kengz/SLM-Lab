@@ -38,7 +38,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 75000,
+      "max_frame": 80000,
     }],
     "body": {
       "product": "outer",
@@ -90,7 +90,7 @@
     "env": [{
       "name": "Pendulum-v0",
       "max_t": null,
-      "max_frame": 75000,
+      "max_frame": 80000,
     }],
     "body": {
       "product": "outer",
