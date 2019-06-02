@@ -46,7 +46,7 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 2000,
       "max_session": 1,
       "max_trial": 1,
     }
@@ -98,7 +98,7 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 2000,
       "max_session": 1,
       "max_trial": 1,
     }
