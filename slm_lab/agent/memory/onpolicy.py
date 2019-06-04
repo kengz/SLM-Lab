@@ -79,10 +79,6 @@ class OnPolicyReplay(Memory):
         self.size += 1
         self.seen_size += 1
 
-    def get_most_recent_experience(self):
-        '''Returns the most recent experience'''
-        return self.most_recent
-
     def sample(self):
         '''
         Returns all the examples from memory in a single batch. Batch is stored as a dict.

@@ -21,7 +21,7 @@ def test_xvfb():
 
 @pytest.fixture(scope='session')
 def test_spec():
-    spec = spec_util.get('base.json', 'base_case_openai')
+    spec = spec_util.get('experimental/misc/base.json', 'base_case_openai')
     spec = spec_util.override_test_spec(spec)
     return spec
 
@@ -85,7 +85,7 @@ def test_str():
     ),
 ])
 def test_memory(request):
-    spec = spec_util.get('base.json', 'base_memory')
+    spec = spec_util.get('experimental/misc/base.json', 'base_memory')
     agent, env = make_agent_env(spec)
     res = (agent.body.memory, ) + request.param
     return res
@@ -107,7 +107,7 @@ def test_memory(request):
     ),
 ])
 def test_on_policy_episodic_memory(request):
-    spec = spec_util.get('base.json', 'base_on_policy_memory')
+    spec = spec_util.get('experimental/misc/base.json', 'base_on_policy_memory')
     agent, env = make_agent_env(spec)
     res = (agent.body.memory, ) + request.param
     return res
@@ -129,7 +129,7 @@ def test_on_policy_episodic_memory(request):
     ),
 ])
 def test_on_policy_batch_memory(request):
-    spec = spec_util.get('base.json', 'base_on_policy_batch_memory')
+    spec = spec_util.get('experimental/misc/base.json', 'base_on_policy_batch_memory')
     agent, env = make_agent_env(spec)
     res = (agent.body.memory, ) + request.param
     return res
@@ -151,7 +151,7 @@ def test_on_policy_batch_memory(request):
     ),
 ])
 def test_prioritized_replay_memory(request):
-    spec = spec_util.get('base.json', 'base_prioritized_replay_memory')
+    spec = spec_util.get('experimental/misc/base.json', 'base_prioritized_replay_memory')
     agent, env = make_agent_env(spec)
     res = (agent.body.memory, ) + request.param
     return res

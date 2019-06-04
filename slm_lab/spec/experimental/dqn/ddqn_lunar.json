@@ -1,9 +1,9 @@
 {
-  "dqn_lunar": {
+  "ddqn_concat_lunar": {
     "agent": [{
-      "name": "DQN",
+      "name": "DoubleDQN",
       "algorithm": {
-        "name": "DQN",
+        "name": "DoubleDQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
@@ -11,7 +11,7 @@
           "start_val": 1.0,
           "end_val": 0.08,
           "start_step": 0,
-          "end_step": 12000
+          "end_step": 14000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -43,7 +43,8 @@
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
           "milestones": [
-            70000
+            80000,
+            100000
           ],
           "gamma": 0.5
         },

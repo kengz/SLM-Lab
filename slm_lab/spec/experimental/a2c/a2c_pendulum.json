@@ -1,182 +1,43 @@
 {
-  "reinforce_mlp_cartpole": {
+  "a2c_shared_pendulum": {
     "agent": [{
-      "name": "Reinforce",
+      "name": "A2C",
       "algorithm": {
-        "name": "Reinforce",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
-        "gamma": 0.98,
+        "gamma": 0.99,
+        "lam": 1.0,
+        "num_step_returns": null,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
-          "start_step": 1000,
+          "start_step": 100,
           "end_step": 5000,
         },
-        "training_frequency": 1
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "training_frequency": 1,
       },
       "memory": {
         "name": "OnPolicyReplay"
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64],
-        "hid_layers_activation": "tanh",
-        "clip_grad_val": null,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.004
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 2000,
-          "gamma": 0.9,
-        },
-        "gpu": false
-      }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
-      "max_t": null,
-      "max_frame": 400,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 1000,
-      "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
-    },
-    "search": {
-      "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "entropy_coef__uniform": [0.01, 0.10]
-        },
-        "net": {
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.1]
-          }
-        }
-      }]
-    }
-  },
-  "reinforce_rnn_cartpole": {
-    "agent": [{
-      "name": "Reinforce",
-      "algorithm": {
-        "name": "Reinforce",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "entropy_coef_spec": {
-          "name": "linear_decay",
-          "start_val": 0.01,
-          "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 5000,
-        },
-        "training_frequency": 1
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {
-        "type": "RecurrentNet",
-        "cell_type": "GRU",
-        "fc_hid_layers": [],
-        "hid_layers_activation": "relu",
-        "rnn_hidden_size": 64,
-        "rnn_num_layers": 1,
-        "seq_len": 4,
-        "clip_grad_val": null,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.01
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
-        },
-        "gpu": false
-      }
-    }],
-    "env": [{
-      "name": "CartPole-v0",
-      "max_t": null,
-      "max_frame": 500,
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 1000,
-      "max_session": 4,
-      "max_trial": 100,
-      "search": "RandomSearch"
-    },
-    "search": {
-      "agent": [{
-        "algorithm": {
-          "gamma__uniform": [0.90, 0.99],
-          "entropy_coef__uniform": [0.01, 0.10]
-        },
-        "net": {
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
-          }
-        }
-      }]
-    }
-  },
-  "reinforce_mlp_pendulum": {
-    "agent": [{
-      "name": "Reinforce",
-      "algorithm": {
-        "name": "Reinforce",
-        "action_pdtype": "default",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "entropy_coef_spec": {
-          "name": "linear_decay",
-          "start_val": 0.01,
-          "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 5000,
-        },
-        "training_frequency": 1
-      },
-      "memory": {
-        "name": "OnPolicyReplay"
-      },
-      "net": {
-        "type": "MLPNet",
+        "shared": true,
         "hid_layers": [64],
         "hid_layers_activation": "relu",
         "clip_grad_val": null,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
+        "use_same_optim": false,
+        "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
@@ -206,52 +67,58 @@
       "agent": [{
         "algorithm": {
           "gamma__uniform": [0.90, 0.99],
-          "entropy_coef__uniform": [0.01, 0.10]
+          "lam__uniform": [0.1, 1.0]
         },
         "net": {
-          "optim_spec": {
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
+          },
+          "critic_optim_spec": {
             "lr__uniform": [0.0001, 0.1]
           }
         }
       }]
     }
   },
-  "reinforce_rnn_pendulum": {
+  "a2c_separate_pendulum": {
     "agent": [{
-      "name": "Reinforce",
+      "name": "A2C",
       "algorithm": {
-        "name": "Reinforce",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
+        "lam": 1.0,
+        "num_step_returns": null,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
-          "start_step": 1000,
+          "start_step": 100,
           "end_step": 5000,
         },
-        "training_frequency": 1
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "training_frequency": 1,
       },
       "memory": {
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "RecurrentNet",
-        "cell_type": "GRU",
-        "fc_hid_layers": [],
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "rnn_hidden_size": 64,
-        "rnn_num_layers": 1,
-        "seq_len": 4,
         "clip_grad_val": null,
-        "loss_spec": {
-          "name": "MSELoss"
-        },
-        "optim_spec": {
+        "use_same_optim": false,
+        "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
@@ -281,136 +148,73 @@
       "agent": [{
         "algorithm": {
           "gamma__uniform": [0.90, 0.99],
-          "entropy_coef__uniform": [0.01, 0.10]
+          "lam__uniform": [0.1, 1.0]
         },
         "net": {
-          "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
           }
         }
       }]
     }
   },
-  "reinforce_conv_breakout": {
+  "a2c_concat_pendulum": {
     "agent": [{
-      "name": "Reinforce",
+      "name": "A2C",
       "algorithm": {
-        "name": "Reinforce",
+        "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
+        "lam": 1.0,
+        "num_step_returns": null,
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
-          "start_step": 1000,
+          "start_step": 100,
           "end_step": 5000,
         },
-        "training_frequency": 1
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "training_frequency": 1,
       },
       "memory": {
         "name": "OnPolicyReplay"
       },
       "net": {
-        "type": "ConvNet",
-        "conv_hid_layers": [
-          [16, 5, 2, 0, 1],
-          [32, 5, 2, 0, 2],
-          [32, 5, 2, 0, 2]
-        ],
-        "fc_hid_layers": [128, 64],
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [64],
         "hid_layers_activation": "relu",
-        "batch_norm": false,
         "clip_grad_val": null,
-        "loss_spec": {
-          "name": "SmoothL1Loss"
-        },
-        "optim_spec": {
+        "use_same_optim": false,
+        "actor_optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
-          "step_size": 1000,
+          "step_size": 500,
           "gamma": 0.9,
         },
         "gpu": false
       }
     }],
     "env": [{
-      "name": "Breakout-v0",
-      "max_t": null,
-      "max_frame": 1
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 1000,
-      "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
-    }
-  },
-  "reinforce_conv_vizdoom": {
-    "agent": [{
-      "name": "Reinforce",
-      "algorithm": {
-        "name": "Reinforce",
-        "action_pdtype": "MultiCategorical",
-        "action_policy": "default",
-        "explore_var_spec": null,
-        "gamma": 0.99,
-        "entropy_coef_spec": {
-          "name": "linear_decay",
-          "start_val": 0.01,
-          "end_val": 0.001,
-          "start_step": 1000,
-          "end_step": 5000,
-        },
-        "training_frequency": 1
-      },
-      "memory": {
-        "name": "OnPolicyReplay",
-      },
-      "net": {
-        "type": "ConvNet",
-        "conv_hid_layers": [
-          [16, 5, 2, 0, 1],
-          [32, 5, 2, 0, 2],
-          [32, 5, 2, 0, 2]
-        ],
-        "fc_hid_layers": [128, 64],
-        "hid_layers_activation": "relu",
-        "init_fn": "orthogonal_",
-        "batch_norm": false,
-        "clip_grad_val": 10.0,
-        "loss_spec": {
-          "name": "SmoothL1Loss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.001
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 1000,
-          "gamma": 0.9,
-        },
-        "gpu": true
-      }
-    }],
-    "env": [{
-      "name": "vizdoom-v0",
+      "name": "Pendulum-v0",
       "frame_op": "concat",
       "frame_op_len": 4,
-      "reward_scale": "sign",
-      "cfg_name": "basic",
-      "max_t": 400000,
-      "max_frame": 100
+      "max_t": null,
+      "max_frame": 500,
     }],
     "body": {
       "product": "outer",
@@ -419,9 +223,195 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_session": 1,
-      "max_trial": 1,
+      "max_session": 4,
+      "max_trial": 100,
       "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
+        },
+        "net": {
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
+          }
+        }
+      }]
+    }
+  },
+  "a2c_rnn_shared_pendulum": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 1.0,
+        "num_step_returns": null,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "training_frequency": 1,
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "shared": true,
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": null,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "max_t": null,
+      "max_frame": 500,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
+        },
+        "net": {
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
+          }
+        }
+      }]
+    }
+  },
+  "a2c_rnn_separate_pendulum": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 1.0,
+        "num_step_returns": null,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 100,
+          "end_step": 5000,
+        },
+        "policy_loss_coef": 1.0,
+        "val_loss_coef": 0.01,
+        "training_frequency": 1,
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "shared": false,
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 64,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": null,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "max_t": null,
+      "max_frame": 500,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__uniform": [0.90, 0.99],
+          "lam__uniform": [0.1, 1.0]
+        },
+        "net": {
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.1]
+          }
+        }
+      }]
     }
   }
 }

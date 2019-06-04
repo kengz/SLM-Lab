@@ -1,10 +1,10 @@
 {
-  "sarsa_mlp_boltzmann_cartpole": {
+  "ddqn_boltzmann_cartpole": {
     "agent": [{
-      "name": "SARSA",
+      "name": "DoubleDQN",
       "algorithm": {
-        "name": "SARSA",
-        "action_pdtype": "default",
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -14,35 +14,44 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_frequency": 20
+        "training_batch_iter": 10,
+        "training_iter": 4,
+        "training_frequency": 8,
+        "training_start_step": 32
       },
       "memory": {
-        "name": "OnPolicyBatchReplay"
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [32],
-        "hid_layers_activation": "relu",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
         "clip_grad_val": null,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.0002
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
         },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0,
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 250,
+      "max_frame": 400,
     }],
     "body": {
       "product": "outer",
@@ -59,30 +68,24 @@
       "agent": [{
         "algorithm": {
           "explore_var_spec": {
-            "end_step__choice": [1000, 3000, 5000, 10000],
+            "end_step__choice": [1000, 5000, 10000],
           }
         },
         "net": {
-          "hid_layers__choice": [
-            [32],
-            [64],
-            [32, 16],
-            [64, 32]
-          ],
-          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "hid_layers_activation__choice": ["tanh", "relu", "selu"],
           "optim_spec": {
-            "lr__uniform": [0.0001, 0.2]
+            "lr__uniform": [0.0001, 0.01]
           }
         }
       }]
     }
   },
-  "sarsa_mlp_epsilon_greedy_cartpole": {
+  "ddqn_epsilon_greedy_cartpole": {
     "agent": [{
-      "name": "SARSA",
+      "name": "DoubleDQN",
       "algorithm": {
-        "name": "SARSA",
-        "action_pdtype": "default",
+        "name": "DoubleDQN",
+        "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -92,10 +95,16 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_frequency": 20
+        "training_batch_iter": 8,
+        "training_iter": 4,
+        "training_frequency": 32,
+        "training_start_step": 10
       },
       "memory": {
-        "name": "OnPolicyBatchReplay"
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "MLPNet",
@@ -107,13 +116,16 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
         },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
         "gpu": false
       }
     }],
@@ -155,12 +167,12 @@
       }]
     }
   },
-  "sarsa_rnn_boltzmann_cartpole": {
+  "ddrqn_boltzmann_cartpole": {
     "agent": [{
-      "name": "SARSA",
+      "name": "DDRQN",
       "algorithm": {
-        "name": "SARSA",
-        "action_pdtype": "default",
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -170,10 +182,16 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_frequency": 20
+        "training_batch_iter": 8,
+        "training_iter": 4,
+        "training_frequency": 32,
+        "training_start_step": 10
       },
       "memory": {
-        "name": "OnPolicyBatchReplay"
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "RecurrentNet",
@@ -189,13 +207,16 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
         },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
         "gpu": false
       }
     }],
@@ -237,12 +258,12 @@
       }]
     }
   },
-  "sarsa_rnn_epsilon_greedy_cartpole": {
+  "ddrqn_epsilon_greedy_cartpole": {
     "agent": [{
-      "name": "SARSA",
+      "name": "DDRQN",
       "algorithm": {
-        "name": "SARSA",
-        "action_pdtype": "default",
+        "name": "DoubleDQN",
+        "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
           "name": "linear_decay",
@@ -252,10 +273,16 @@
           "end_step": 2000,
         },
         "gamma": 0.99,
-        "training_frequency": 20
+        "training_batch_iter": 8,
+        "training_iter": 4,
+        "training_frequency": 32,
+        "training_start_step": 10
       },
       "memory": {
-        "name": "OnPolicyBatchReplay"
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
       },
       "net": {
         "type": "RecurrentNet",
@@ -271,13 +298,16 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.01
+          "lr": 0.02
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
           "step_size": 500,
           "gamma": 0.9,
         },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
         "gpu": false
       }
     }],
@@ -319,130 +349,4 @@
       }]
     }
   },
-  "sarsa_conv_boltzmann_breakout": {
-    "agent": [{
-      "name": "SARSA",
-      "algorithm": {
-        "name": "SARSA",
-        "action_pdtype": "default",
-        "action_policy": "boltzmann",
-        "explore_var_spec": {
-          "name": "linear_decay",
-          "start_val": 3.0,
-          "end_val": 1.0,
-          "start_step": 0,
-          "end_step": 2000,
-        },
-        "gamma": 0.99,
-        "training_frequency": 100
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "ConvNet",
-        "conv_hid_layers": [
-          [16, 5, 2, 0, 1],
-          [32, 5, 2, 0, 2],
-          [32, 5, 2, 0, 2]
-        ],
-        "fc_hid_layers": [128, 64],
-        "hid_layers_activation": "relu",
-        "batch_norm": false,
-        "clip_grad_val": null,
-        "loss_spec": {
-          "name": "SmoothL1Loss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.01
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
-        },
-        "gpu": false
-      }
-    }],
-    "env": [{
-      "name": "Breakout-v0",
-      "max_t": null,
-      "max_frame": 1
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 1000,
-      "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
-    }
-  },
-  "sarsa_conv_epsilon_greedy_breakout": {
-    "agent": [{
-      "name": "SARSA",
-      "algorithm": {
-        "name": "SARSA",
-        "action_pdtype": "default",
-        "action_policy": "epsilon_greedy",
-        "explore_var_spec": {
-          "name": "linear_decay",
-          "start_val": 1.0,
-          "end_val": 0.1,
-          "start_step": 0,
-          "end_step": 2000,
-        },
-        "gamma": 0.99,
-        "training_frequency": 100
-      },
-      "memory": {
-        "name": "OnPolicyBatchReplay"
-      },
-      "net": {
-        "type": "ConvNet",
-        "conv_hid_layers": [
-          [16, 5, 2, 0, 1],
-          [32, 5, 2, 0, 2],
-          [32, 5, 2, 0, 2]
-        ],
-        "fc_hid_layers": [128, 64],
-        "hid_layers_activation": "relu",
-        "batch_norm": false,
-        "clip_grad_val": null,
-        "loss_spec": {
-          "name": "SmoothL1Loss"
-        },
-        "optim_spec": {
-          "name": "Adam",
-          "lr": 0.01
-        },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 500,
-          "gamma": 0.9,
-        },
-        "gpu": false
-      }
-    }],
-    "env": [{
-      "name": "Breakout-v0",
-      "max_t": null,
-      "max_frame": 1
-    }],
-    "body": {
-      "product": "outer",
-      "num": 1
-    },
-    "meta": {
-      "distributed": false,
-      "eval_frequency": 1000,
-      "max_session": 1,
-      "max_trial": 1,
-      "search": "RandomSearch"
-    }
-  }
 }
