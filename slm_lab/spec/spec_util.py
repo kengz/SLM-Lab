@@ -142,7 +142,7 @@ def get(spec_file, spec_name):
     Auto-check spec.
     @example
 
-    spec = spec_util.get('base.json', 'base_case_openai')
+    spec = spec_util.get('demo.json', 'dqn_cartpole')
     '''
     spec_file = spec_file.replace(SPEC_DIR, '')  # cleanup
     if 'data/' in spec_file:

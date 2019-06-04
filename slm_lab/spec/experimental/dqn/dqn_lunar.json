@@ -1,5 +1,5 @@
 {
-  "dqn_lunar": {
+  "dqn_concat_lunar": {
     "agent": [{
       "name": "DQN",
       "algorithm": {
