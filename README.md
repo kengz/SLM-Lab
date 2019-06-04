@@ -107,7 +107,7 @@ Run A2C to solve Atari Pong:
 
 ```shell
 conda activate lab
-python run_lab.py slm_lab/spec/experimental/a2c/a2c_pong.json a2c_pong train
+python run_lab.py slm_lab/spec/benchmark/a2c/a2c_pong.json a2c_pong train
 ```
 
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_atari.png)
