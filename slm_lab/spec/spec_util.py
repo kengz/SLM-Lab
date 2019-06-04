@@ -7,6 +7,7 @@ import json
 import numpy as np
 import os
 import pydash as ps
+import torch
 
 
 SPEC_DIR = 'slm_lab/spec'
