@@ -215,7 +215,8 @@ def override_test_spec(spec):
         agent_spec['algorithm']['training_batch_iter'] = 1
     for env_spec in spec['env']:
         env_spec['max_frame'] = 40
-        env_spec['num_envs'] = 2
+        if env_spec.get('num_envs', 1) > 1:
+            env_spec['num_envs'] = 2
         env_spec['max_t'] = 12
     spec['meta']['log_frequency'] = 10
     spec['meta']['eval_frequency'] = 10
