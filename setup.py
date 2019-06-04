@@ -44,7 +44,9 @@ setup(
     author='kengz,lgraesser',
     author_email='kengzwl@gmail.com',
     license='MIT',
-    packages=[],
+    packages=['slm_lab'],
+    # NOTE: use the optimized conda dependencies
+    install_requires=[],
     zip_safe=False,
     include_package_data=True,
     dependency_links=[],

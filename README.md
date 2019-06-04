@@ -100,8 +100,6 @@ python run_lab.py slm_lab/spec/demo.json dqn_cartpole train
 
 This will run a new `Trial` in *training mode*. At the end of it, all the metrics and graphs will be output to the `data/` folder.
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_training.png)
-
 
 #### A2C Atari
 
