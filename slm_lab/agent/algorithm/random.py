@@ -1,7 +1,7 @@
 # The random agent algorithm
 # For basic dev purpose
 from slm_lab.agent.algorithm.base import Algorithm
-from slm_lab.lib import logger
+from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 
