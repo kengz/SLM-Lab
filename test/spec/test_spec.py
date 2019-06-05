@@ -134,7 +134,7 @@ def test_dueling_dqn(spec_file, spec_name):
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('benchmark/dqn/dqn_pong.json', 'dqn_pong'),
-    ('benchmark/a2c/a2c_gae_pong.json', 'a2c_pong'),
+    ('benchmark/a2c/a2c_gae_pong.json', 'a2c_gae_pong'),
 ])
 def test_atari(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
