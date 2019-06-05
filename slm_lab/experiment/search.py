@@ -1,5 +1,6 @@
 from copy import deepcopy
 from slm_lab.lib import logger, util
+from slm_lab.spec import spec_util
 import numpy as np
 import pydash as ps
 import random
@@ -77,9 +78,11 @@ def ray_trainable(config, reporter):
     from slm_lab.experiment.control import Trial
     # restore data carried from ray.run() config
     spec = config.pop('spec')
-    trial_index = config.pop('trial_index')
-    spec['meta']['trial'] = trial_index
     spec = inject_config(spec, config)
+    # tick trial_index with proper offset
+    trial_index = config.pop('trial_index')
+    spec['meta']['trial'] = trial_index - 1
+    spec_util.tick(spec, 'trial')
     # run SLM Lab trial
     metrics = Trial(spec).run()
     metrics.update(config)  # carry config for analysis too
