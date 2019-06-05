@@ -1,5 +1,5 @@
 {
-  "a2c_pong": {
+  "a2c_nstep_pong": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
