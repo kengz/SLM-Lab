@@ -108,8 +108,8 @@ def run_ray_search(spec):
         ray_trainable,
         name=spec['name'],
         config={
-            "spec": spec,
-            "trial_index": tune.sample_from(lambda spec: gen_trial_index()),
+            'spec': spec,
+            'trial_index': tune.sample_from(lambda spec: gen_trial_index()),
             **build_config_space(spec)
         },
         resources_per_trial=infer_trial_resources(spec),
