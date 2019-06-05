@@ -1,5 +1,6 @@
 # The spec module
 # Manages specification to run things in lab
+from slm_lab import ROOT_DIR
 from slm_lab.lib import logger, util
 from string import Template
 import itertools
@@ -258,11 +259,10 @@ def tick(spec, unit):
         raise ValueError(f'Unrecognized lab unit to tick: {unit}')
     # set prepath since it is determined at this point
     meta_spec['prepath'] = prepath = util.get_prepath(spec, unit)
-    if unit == 'trial':
-        for folder in ('graph', 'info', 'log', 'model'):
-            folder_prepath = util.insert_folder(prepath, folder)
-            folder_predir = os.path.dirname(folder_prepath)
-            os.makedirs(folder_predir, exist_ok=True)
-            assert os.path.exists(folder_predir)
-            meta_spec[f'{folder}_prepath'] = folder_prepath
+    for folder in ('graph', 'info', 'log', 'model'):
+        folder_prepath = util.insert_folder(prepath, folder)
+        folder_predir = os.path.dirname(f'{ROOT_DIR}/{folder_prepath}')
+        os.makedirs(folder_predir, exist_ok=True)
+        assert os.path.exists(folder_predir)
+        meta_spec[f'{folder}_prepath'] = folder_prepath
     return spec
