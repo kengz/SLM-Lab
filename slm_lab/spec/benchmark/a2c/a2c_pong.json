@@ -75,8 +75,7 @@
       "log_frequency": 50000,
       "eval_frequency": 50000,
       "max_session": 1,
-      "max_trial": 1,
-      "param_spec_process": 4
+      "max_trial": 1
     }
   }
 }
