@@ -1,5 +1,5 @@
 {
-  "experimental/a2c/a2c_atari.json": {
+  "benchmark/a2c/a2c_atari.json": {
     "a2c_atari": "train"
   },
   "experimental/a2c/a2c_cont.json": {
