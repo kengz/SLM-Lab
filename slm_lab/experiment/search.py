@@ -82,7 +82,7 @@ def ray_trainable(config, reporter):
     spec = inject_config(spec, config)
     # run SLM Lab trial
     metrics = Trial(spec).run()
-    metrics.update(config) # carry config for analysis too
+    metrics.update(config)  # carry config for analysis too
     # ray report to carry data in ray trial.last_result
     reporter(trial_data={trial_index: metrics})
 
@@ -123,3 +123,20 @@ def run_ray_search(spec):
 
     ray.shutdown()
     return trial_data_dict
+
+
+def run_param_specs(param_specs):
+    '''Run the given param_specs in parallel trials using ray. Used for benchmarking.'''
+    ray.init()
+    ray_trials = tune.run(
+        ray_trainable,
+        name='param_specs',
+        config={
+            'spec': tune.grid_search(param_specs),
+            'trial_index': 0,
+        },
+        resources_per_trial=infer_trial_resources(param_specs[0]),
+        num_samples=1,
+        queue_trials=True,
+    )
+    ray.shutdown()
