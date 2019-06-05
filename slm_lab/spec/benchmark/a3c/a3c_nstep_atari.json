@@ -1,5 +1,5 @@
 {
-  "a3c_atari": {
+  "a3c_nstep_atari": {
     "agent": [{
       "name": "A3C",
       "algorithm": {
@@ -71,8 +71,7 @@
       "log_frequency": 50000,
       "eval_frequency": 50000,
       "max_session": 16,
-      "max_trial": 1,
-      "param_spec_process": 4
+      "max_trial": 1
     },
     "spec_params": {
       "env": [
@@ -80,7 +79,7 @@
       ]
     }
   },
-  "gpu_a3c_atari": {
+  "gpu_a3c_nstep_atari": {
     "agent": [{
       "name": "A3C",
       "algorithm": {
@@ -152,8 +151,7 @@
       "log_frequency": 50000,
       "eval_frequency": 50000,
       "max_session": 16,
-      "max_trial": 1,
-      "param_spec_process": 4
+      "max_trial": 1
     },
     "spec_params": {
       "env": [
@@ -161,7 +159,7 @@
       ]
     }
   },
-  "a3c_atari_full": {
+  "a3c_nstep_atari_full": {
     "agent": [{
       "name": "A3C",
       "algorithm": {
@@ -233,8 +231,7 @@
       "log_frequency": 50000,
       "eval_frequency": 50000,
       "max_session": 16,
-      "max_trial": 1,
-      "param_spec_process": 4
+      "max_trial": 1
     },
     "spec_params": {
       "env": [
@@ -242,7 +239,7 @@
       ]
     }
   },
-  "gpu_a3c_atari_full": {
+  "gpu_a3c_nstep_atari_full": {
     "agent": [{
       "name": "A3C",
       "algorithm": {
@@ -314,8 +311,7 @@
       "log_frequency": 50000,
       "eval_frequency": 50000,
       "max_session": 16,
-      "max_trial": 1,
-      "param_spec_process": 4
+      "max_trial": 1
     },
     "spec_params": {
       "env": [

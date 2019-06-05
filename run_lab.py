@@ -4,6 +4,7 @@
 # to run a single spec:
 # python run_lab.py slm_lab/spec/experimental/a2c_pong.json a2c_pong train
 from slm_lab import EVAL_MODES, TRAIN_MODES
+from slm_lab.experiment import search
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
@@ -54,16 +55,9 @@ def read_spec_and_run(spec_file, spec_name, lab_mode):
 
     if 'spec_params' not in spec:
         run_spec(spec, lab_mode)
-    else:  # spec is parametrized; run them in parallel
+    else:  # spec is parametrized; run them in parallel using ray
         param_specs = spec_util.get_param_specs(spec)
-        num_pro = spec['meta']['param_spec_process']
-        # can't use Pool since it cannot spawn nested Process, which is needed for VecEnv and parallel sessions. So these will run and wait by chunks
-        workers = [mp.Process(target=run_spec, args=(spec, lab_mode)) for spec in param_specs]
-        for chunk_w in ps.chunk(workers, num_pro):
-            for w in chunk_w:
-                w.start()
-            for w in chunk_w:
-                w.join()
+        search.run_param_specs(param_specs)
 
 
 def main():

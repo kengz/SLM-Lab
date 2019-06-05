@@ -74,7 +74,7 @@ def calc_returns(rewards, dones, gamma):
 
 def calc_nstep_returns(rewards, dones, next_v_pred, gamma, n):
     '''
-    Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
+    Estimate the advantages using n-step returns. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
     Also see Algorithm S3 from A3C paper https://arxiv.org/pdf/1602.01783.pdf for the calculation used below
     R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1} + gamma^(n) V(s_{t+n})
     '''
@@ -88,7 +88,7 @@ def calc_nstep_returns(rewards, dones, next_v_pred, gamma, n):
 
 def calc_gaes(rewards, dones, v_preds, gamma, lam):
     '''
-    Calculate GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
+    Estimate the advantages using GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
     v_preds are values predicted for current states, with one last element as the final next_state
     delta is defined as r + gamma * V(s') - V(s) in eqn 10
     GAE is defined in eqn 16

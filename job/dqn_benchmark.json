@@ -1,14 +1,14 @@
 {
-  "experimental/dqn/dqn_atari.json": {
+  "benchmark/dqn/dqn_atari.json": {
     "dqn_atari": "train"
   },
-  "experimental/dqn/dqn_per_atari.json": {
+  "benchmark/dqn/dqn_per_atari.json": {
     "dqn_per_atari": "train"
   },
-  "experimental/dqn/ddqn_atari.json": {
+  "benchmark/dqn/ddqn_atari.json": {
     "ddqn_atari": "train"
   },
-  "experimental/dqn/ddqn_per_atari.json": {
+  "benchmark/dqn/ddqn_per_atari.json": {
     "ddqn_per_atari": "train"
   },
 }

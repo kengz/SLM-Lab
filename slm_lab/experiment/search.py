@@ -1,5 +1,6 @@
 from copy import deepcopy
 from slm_lab.lib import logger, util
+from slm_lab.spec import spec_util
 import numpy as np
 import pydash as ps
 import random
@@ -77,12 +78,14 @@ def ray_trainable(config, reporter):
     from slm_lab.experiment.control import Trial
     # restore data carried from ray.run() config
     spec = config.pop('spec')
-    trial_index = config.pop('trial_index')
-    spec['meta']['trial'] = trial_index
     spec = inject_config(spec, config)
+    # tick trial_index with proper offset
+    trial_index = config.pop('trial_index')
+    spec['meta']['trial'] = trial_index - 1
+    spec_util.tick(spec, 'trial')
     # run SLM Lab trial
     metrics = Trial(spec).run()
-    metrics.update(config) # carry config for analysis too
+    metrics.update(config)  # carry config for analysis too
     # ray report to carry data in ray trial.last_result
     reporter(trial_data={trial_index: metrics})
 
@@ -108,8 +111,8 @@ def run_ray_search(spec):
         ray_trainable,
         name=spec['name'],
         config={
-            "spec": spec,
-            "trial_index": tune.sample_from(lambda spec: gen_trial_index()),
+            'spec': spec,
+            'trial_index': tune.sample_from(lambda spec: gen_trial_index()),
             **build_config_space(spec)
         },
         resources_per_trial=infer_trial_resources(spec),
@@ -123,3 +126,20 @@ def run_ray_search(spec):
 
     ray.shutdown()
     return trial_data_dict
+
+
+def run_param_specs(param_specs):
+    '''Run the given param_specs in parallel trials using ray. Used for benchmarking.'''
+    ray.init()
+    ray_trials = tune.run(
+        ray_trainable,
+        name='param_specs',
+        config={
+            'spec': tune.grid_search(param_specs),
+            'trial_index': 0,
+        },
+        resources_per_trial=infer_trial_resources(param_specs[0]),
+        num_samples=1,
+        queue_trials=True,
+    )
+    ray.shutdown()

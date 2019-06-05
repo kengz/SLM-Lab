@@ -1,11 +1,8 @@
 {
-  "experimental/ppo/ppo_atari.json": {
+  "benchmark/ppo/ppo_atari.json": {
     "ppo_atari": "train"
   },
-  "experimental/ppo/ppo_cont.json": {
+  "benchmark/ppo/ppo_cont.json": {
     "ppo_cont": "train"
-  },
-  "experimental/ppo/ppo_cont_hard.json": {
-    "ppo_cont_hard": "train"
   },
 }

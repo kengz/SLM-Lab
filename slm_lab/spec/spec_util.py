@@ -1,5 +1,6 @@
 # The spec module
 # Manages specification to run things in lab
+from slm_lab import ROOT_DIR
 from slm_lab.lib import logger, util
 from string import Template
 import itertools
@@ -182,8 +183,7 @@ def get_param_specs(spec):
         spec = json.loads(spec_str)
         spec['name'] += f'_{"_".join(vals)}'
         # offset to prevent parallel-run GPU competition, to mod in util.set_cuda_id
-        cuda_id_gap = int(spec['meta']['max_session'] / spec['meta']['param_spec_process'])
-        spec['meta']['cuda_offset'] += idx * cuda_id_gap
+        spec['meta']['cuda_offset'] += idx * spec['meta']['max_session']
         specs.append(spec)
     return specs
 
@@ -261,6 +261,8 @@ def tick(spec, unit):
     meta_spec['prepath'] = prepath = util.get_prepath(spec, unit)
     for folder in ('graph', 'info', 'log', 'model'):
         folder_prepath = util.insert_folder(prepath, folder)
-        os.makedirs(os.path.dirname(folder_prepath), exist_ok=True)
+        folder_predir = os.path.dirname(f'{ROOT_DIR}/{folder_prepath}')
+        os.makedirs(folder_predir, exist_ok=True)
+        assert os.path.exists(folder_predir)
         meta_spec[f'{folder}_prepath'] = folder_prepath
     return spec
