@@ -52,7 +52,7 @@ class PPO(ActorCritic):
           "end_step": 5000,
         },
         "minibatch_size": 256,
-        "training_frequency": 1,
+        "time_horizon": 32,
         "training_epoch": 8,
     }
 
@@ -86,10 +86,12 @@ class PPO(ActorCritic):
             'entropy_coef_spec',
             'val_loss_coef',
             'minibatch_size',
-            'training_frequency',  # horizon
+            'time_horizon',  # training_frequency = actor * horizon
             'training_epoch',
         ])
         self.to_train = 0
+        self.training_frequency = self.time_horizon * self.body.env.num_envs
+        assert self.algorithm.memory_spec['name'] == 'OnPolicyBatchReplay', f'PPO only works with OnPolicyBatchReplay, but got {self.algorithm.memory_spec["name"]}'
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
@@ -113,7 +115,7 @@ class PPO(ActorCritic):
     def calc_policy_loss(self, batch, pdparams, advs):
         '''
         The PPO loss function (subscript t is omitted)
-        L^{CLIP+VF+S} = E[ L^CLIP - c1 * L^VF + c2 * S[pi](s) ]
+        L^{CLIP+VF+S} = E[ L^CLIP - c1 * L^VF + c2 * H[pi](s) ]
 
         Breakdown piecewise,
         1. L^CLIP = E[ min(ratio * A, clip(ratio, 1-eps, 1+eps) * A) ]
@@ -121,7 +123,7 @@ class PPO(ActorCritic):
 
         2. L^VF = E[ mse(V(s_t), V^target) ]
 
-        3. S = E[ entropy ]
+        3. H = E[ entropy ]
         '''
         clip_eps = self.body.clip_eps
         action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
@@ -138,7 +140,7 @@ class PPO(ActorCritic):
             old_action_pd = policy_util.init_action_pd(self.body.ActionPD, old_pdparams)
             old_log_probs = old_action_pd.log_prob(actions)
         assert log_probs.shape == old_log_probs.shape
-        ratios = torch.exp(log_probs - old_log_probs)  # clip to prevent overflow
+        ratios = torch.exp(log_probs - old_log_probs)
         logger.debug(f'ratios: {ratios}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
@@ -148,7 +150,7 @@ class PPO(ActorCritic):
 
         # L^VF (inherit from ActorCritic)
 
-        # S entropy bonus
+        # H entropy regularization
         entropy = action_pd.entropy().mean()
         self.body.mean_entropy = entropy  # update logging variable
         ent_penalty = -self.body.entropy_coef * entropy

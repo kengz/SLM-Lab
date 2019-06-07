@@ -178,7 +178,7 @@ class PPOSIL(SIL, PPO):
         },
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.01,
-        "training_frequency": 1,
+        "time_horizon": 32,
         "training_batch_iter": 8,
         "training_iter": 8,
         "training_epoch": 8,
