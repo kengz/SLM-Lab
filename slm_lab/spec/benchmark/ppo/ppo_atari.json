@@ -10,11 +10,11 @@
         "gamma": 0.99,
         "lam": 0.95,
         "clip_eps_spec": {
-          "name": "linear_decay",
+          "name": "no_decay",
           "start_val": 0.10,
-          "end_val": 0.0,
+          "end_val": 0.10,
           "start_step": 0,
-          "end_step": 10000000
+          "end_step": 0
         },
         "entropy_coef_spec": {
           "name": "no_decay",
@@ -23,10 +23,10 @@
           "start_step": 0,
           "end_step": 0
         },
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.5,
         "time_horizon": 128,
         "minibatch_size": 256,
-        "training_epoch": 3
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -69,7 +69,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 8,
+      "num_envs": 16,
       "max_t": null,
       "max_frame": 1e7
     }],
@@ -101,11 +101,11 @@
         "gamma": 0.99,
         "lam": 0.95,
         "clip_eps_spec": {
-          "name": "linear_decay",
+          "name": "no_decay",
           "start_val": 0.10,
-          "end_val": 0.0,
+          "end_val": 0.10,
           "start_step": 0,
-          "end_step": 10000000
+          "end_step": 0
         },
         "entropy_coef_spec": {
           "name": "no_decay",
@@ -114,10 +114,10 @@
           "start_step": 0,
           "end_step": 0
         },
-        "val_loss_coef": 1.0,
+        "val_loss_coef": 0.5,
         "time_horizon": 128,
         "minibatch_size": 256,
-        "training_epoch": 3
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -160,7 +160,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 8,
+      "num_envs": 16,
       "max_t": null,
       "max_frame": 1e7
     }],
