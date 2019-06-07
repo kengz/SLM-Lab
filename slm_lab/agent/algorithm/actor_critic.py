@@ -49,7 +49,7 @@ class ActorCritic(Reinforce):
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.95,
         "num_step_returns": 100,
         "entropy_coef_spec": {
           "name": "linear_decay",

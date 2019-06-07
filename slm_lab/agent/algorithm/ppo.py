@@ -36,7 +36,7 @@ class PPO(ActorCritic):
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
@@ -91,7 +91,7 @@ class PPO(ActorCritic):
         ])
         self.to_train = 0
         self.training_frequency = self.time_horizon * self.body.env.num_envs
-        assert self.algorithm.memory_spec['name'] == 'OnPolicyBatchReplay', f'PPO only works with OnPolicyBatchReplay, but got {self.algorithm.memory_spec["name"]}'
+        assert self.memory_spec['name'] == 'OnPolicyBatchReplay', f'PPO only works with OnPolicyBatchReplay, but got {self.memory_spec["name"]}'
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
