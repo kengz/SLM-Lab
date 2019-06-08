@@ -147,6 +147,7 @@ class Trial:
     def run_sessions(self):
         logger.info('Running sessions')
         if self.spec['meta']['max_session'] == 1:
+            spec_util.tick(self.spec, 'session')
             session_metrics_list = [Session(deepcopy(self.spec)).run()]
         else:
             session_metrics_list = self.parallelize_sessions()

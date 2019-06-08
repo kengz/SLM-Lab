@@ -14,22 +14,22 @@
           "start_val": 0.10,
           "end_val": 0.01,
           "start_step": 1000,
-          "end_step": 5000,
+          "end_step": 50000,
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 5000,
+          "end_step": 50000,
         },
-        "val_loss_coef": 0.1,
+        "val_loss_coef": 1.0,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
+        "sil_val_loss_coef": 1.0,
         "time_horizon": 32,
         "training_batch_iter": 4,
-        "training_iter": 8,
-        "training_epoch": 8
+        "training_iter": 4,
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -42,8 +42,8 @@
         "type": "MLPNet",
         "shared": true,
         "hid_layers": [64],
-        "hid_layers_activation": "tanh",
-        "clip_grad_val": 10.0,
+        "hid_layers_activation": "selu",
+        "clip_grad_val": 0.5,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -64,7 +64,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 500,
+      "max_frame": 50000,
     }],
     "body": {
       "product": "outer",
@@ -73,7 +73,7 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 100,
       "search": "RandomSearch"
     },
@@ -114,18 +114,18 @@
           "start_val": 0.10,
           "end_val": 0.01,
           "start_step": 1000,
-          "end_step": 5000,
+          "end_step": 50000,
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 5000,
+          "end_step": 50000,
         },
         "val_loss_coef": 0.4,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
+        "sil_val_loss_coef": 1.0,
         "time_horizon": 32,
         "training_batch_iter": 8,
         "training_iter": 4,
@@ -142,8 +142,8 @@
         "type": "MLPNet",
         "shared": false,
         "hid_layers": [64],
-        "hid_layers_activation": "tanh",
-        "clip_grad_val": 10.0,
+        "hid_layers_activation": "selu",
+        "clip_grad_val": 0.5,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -164,7 +164,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 400,
+      "max_frame": 50000,
     }],
     "body": {
       "product": "outer",
@@ -173,7 +173,7 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 100,
       "search": "RandomSearch"
     },
@@ -214,22 +214,22 @@
           "start_val": 0.10,
           "end_val": 0.01,
           "start_step": 1000,
-          "end_step": 5000,
+          "end_step": 50000,
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 5000,
+          "end_step": 50000,
         },
-        "val_loss_coef": 0.1,
+        "val_loss_coef": 1.0,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
+        "sil_val_loss_coef": 1.0,
         "time_horizon": 32,
         "training_batch_iter": 8,
-        "training_iter": 8,
-        "training_epoch": 8
+        "training_iter": 4,
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -243,11 +243,11 @@
         "shared": true,
         "cell_type": "GRU",
         "fc_hid_layers": [],
-        "hid_layers_activation": "tanh",
+        "hid_layers_activation": "selu",
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad_val": 10.0,
+        "clip_grad_val": 0.5,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -268,7 +268,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 500,
+      "max_frame": 50000,
     }],
     "body": {
       "product": "outer",
@@ -277,7 +277,7 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 100,
       "search": "RandomSearch"
     },
@@ -318,22 +318,22 @@
           "start_val": 0.10,
           "end_val": 0.01,
           "start_step": 1000,
-          "end_step": 5000,
+          "end_step": 50000,
         },
         "entropy_coef_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
           "end_val": 0.001,
           "start_step": 1000,
-          "end_step": 5000,
+          "end_step": 50000,
         },
-        "val_loss_coef": 0.1,
+        "val_loss_coef": 1.0,
         "sil_policy_loss_coef": 1.0,
-        "sil_val_loss_coef": 0.1,
+        "sil_val_loss_coef": 1.0,
         "time_horizon": 32,
         "training_batch_iter": 8,
-        "training_iter": 8,
-        "training_epoch": 8
+        "training_iter": 4,
+        "training_epoch": 4
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -347,11 +347,11 @@
         "shared": false,
         "cell_type": "GRU",
         "fc_hid_layers": [],
-        "hid_layers_activation": "tanh",
+        "hid_layers_activation": "selu",
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
         "seq_len": 4,
-        "clip_grad_val": 10.0,
+        "clip_grad_val": 0.5,
         "use_same_optim": false,
         "actor_optim_spec": {
           "name": "Adam",
@@ -372,7 +372,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 500,
+      "max_frame": 50000,
     }],
     "body": {
       "product": "outer",
@@ -381,7 +381,7 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 100,
       "search": "RandomSearch"
     },
