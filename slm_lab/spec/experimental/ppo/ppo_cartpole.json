@@ -8,7 +8,7 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
           "start_val": 0.10,
@@ -23,12 +23,12 @@
           "start_step": 1000,
           "end_step": 5000,
         },
-        "val_loss_coef": 0.1,
-        "training_frequency": 1,
+        "val_loss_coef": 1.0,
+        "time_horizon": 32,
         "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -45,18 +45,14 @@
           "name": "Adam",
           "lr": 0.02
         },
-        "lr_scheduler_spec": {
-          "name": "StepLR",
-          "step_size": 2000,
-          "gamma": 0.9,
-        },
+        "lr_scheduler_spec": null,
         "gpu": false
       }
     }],
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 500,
+      "max_frame": 50000,
     }],
     "body": {
       "product": "outer",
@@ -65,7 +61,7 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 100,
       "search": "RandomSearch"
     },
@@ -114,11 +110,11 @@
           "end_step": 5000,
         },
         "val_loss_coef": 0.85,
-        "training_frequency": 4,
+        "time_horizon": 32,
         "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "MLPNet",
@@ -188,7 +184,7 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
           "start_val": 0.10,
@@ -204,11 +200,11 @@
           "end_step": 5000,
         },
         "val_loss_coef": 0.1,
-        "training_frequency": 1,
+        "time_horizon": 32,
         "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "RecurrentNet",
@@ -282,7 +278,7 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
           "start_val": 0.10,
@@ -298,11 +294,11 @@
           "end_step": 5000,
         },
         "val_loss_coef": 0.1,
-        "training_frequency": 1,
+        "time_horizon": 32,
         "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay"
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "RecurrentNet",

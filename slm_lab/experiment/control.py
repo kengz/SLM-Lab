@@ -146,7 +146,10 @@ class Trial:
 
     def run_sessions(self):
         logger.info('Running sessions')
-        session_metrics_list = self.parallelize_sessions()
+        if self.spec['meta']['max_session'] == 1:
+            session_metrics_list = [Session(deepcopy(self.spec)).run()]
+        else:
+            session_metrics_list = self.parallelize_sessions()
         return session_metrics_list
 
     def init_global_nets(self):

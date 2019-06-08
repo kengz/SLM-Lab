@@ -38,7 +38,6 @@ class OnPolicyReplay(Memory):
     def __init__(self, memory_spec, body):
         super().__init__(memory_spec, body)
         # NOTE for OnPolicy replay, frequency = episode; for other classes below frequency = frames
-        util.set_attr(self, self.body.agent.agent_spec['algorithm'], ['training_frequency'])
         # Don't want total experiences reset when memory is
         self.is_episodic = True
         self.size = 0  # total experiences stored

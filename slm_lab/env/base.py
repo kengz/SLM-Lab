@@ -95,7 +95,7 @@ class BaseEnv(ABC):
             frame_op_len=None,
             normalize_state=False,
             reward_scale=None,
-            num_envs=None,
+            num_envs=1,
         ))
         util.set_attr(self, spec['meta'], [
             'log_frequency',

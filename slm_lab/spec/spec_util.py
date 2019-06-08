@@ -210,6 +210,7 @@ def override_test_spec(spec):
         # onpolicy freq is episodic
         freq = 1 if agent_spec['memory']['name'] == 'OnPolicyReplay' else 8
         agent_spec['algorithm']['training_frequency'] = freq
+        agent_spec['algorithm']['time_horizon'] = freq
         agent_spec['algorithm']['training_start_step'] = 1
         agent_spec['algorithm']['training_iter'] = 1
         agent_spec['algorithm']['training_batch_iter'] = 1

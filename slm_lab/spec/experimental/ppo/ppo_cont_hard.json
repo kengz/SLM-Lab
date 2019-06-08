@@ -24,9 +24,9 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 2048,
-        "minibatch_size": 64,
-        "training_epoch": 10
+        "time_horizon": 512,
+        "minibatch_size": 4096,
+        "training_epoch": 15
       },
       "memory": {
         "name": "OnPolicyBatchReplay",

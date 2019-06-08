@@ -89,6 +89,7 @@ def test_sil(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
 
 
+@pytest.mark.skip(reason='To fix memory')
 @flaky
 @pytest.mark.parametrize('spec_file,spec_name', [
     ('experimental/sil/ppo_sil_cartpole.json', 'ppo_sil_shared_cartpole'),
