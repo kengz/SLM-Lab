@@ -32,7 +32,7 @@
         "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay",
+        "name": "OnPolicyBatchReplay",
         "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
@@ -132,7 +132,7 @@
         "training_epoch": 4
       },
       "memory": {
-        "name": "OnPolicyReplay",
+        "name": "OnPolicyBatchReplay",
         "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
@@ -232,7 +232,7 @@
         "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay",
+        "name": "OnPolicyBatchReplay",
         "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
@@ -336,7 +336,7 @@
         "training_epoch": 8
       },
       "memory": {
-        "name": "OnPolicyReplay",
+        "name": "OnPolicyBatchReplay",
         "sil_replay_name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
