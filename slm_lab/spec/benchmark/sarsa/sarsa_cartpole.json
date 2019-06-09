@@ -47,7 +47,7 @@
       "distributed": false,
       "eval_frequency": 2000,
       "max_trial": 1,
-      "max_session": 10
+      "max_session": 4
     },
     "search": {
       "agent": [{
