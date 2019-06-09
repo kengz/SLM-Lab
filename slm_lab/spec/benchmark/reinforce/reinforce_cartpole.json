@@ -38,7 +38,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 80000,
+      "max_frame": 100000,
     }],
     "body": {
       "product": "outer",
@@ -47,8 +47,15 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 2000,
-      "max_session": 1,
+      "max_session": 10,
       "max_trial": 1,
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "gamma__grid_search": [0.1, 0.5, 0.7, 0.8, 0.90, 0.99, 0.999]
+        }
+      }]
     }
   }
 }
