@@ -66,8 +66,10 @@ To facilitate better RL development, SLM Lab also comes with prebuilt *metrics* 
 2. Install dependencies (this uses Conda for optimality):
     ```shell
     cd SLM-Lab/
-    bin/setup
+    sudo bin/setup
     ```
+
+  >To avoid running sudo on the whole setup, run `bin/setup` instead and install the relevant OS specific dependencies manually. The most likely additional dependency you will need to install is Xvfb. with `sudo apt-get install -y xvfb`
 
   >Alternatively, instead of `bin/setup`, copy-paste from [`bin/setup_macOS` or `bin/setup_ubuntu`](https://github.com/kengz/SLM-Lab/tree/master/bin) into your terminal to install manually.
 
