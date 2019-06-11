@@ -198,9 +198,6 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     y_cols = metrics_cols
     x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
     fig = tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
-    strength_sr = experiment_df['strength']
-    min_strength = strength_sr.values.min()
-    max_strength = strength_sr.values.max()
     for row_idx, y in enumerate(y_cols):
         for col_idx, x in enumerate(x_cols):
             x_sr = experiment_df[x]
@@ -211,8 +208,6 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
                 showlegend=False, mode='markers',
                 marker={
                     'symbol': 'circle-open-dot', 'color': experiment_df['strength'], 'opacity': 0.5,
-                    # dump first quarter of colorscale that is too bright
-                    'cmin': min_strength - 0.50 * (max_strength - min_strength), 'cmax': max_strength,
                     'colorscale': 'YlGnBu', 'reversescale': True
                 },
             )
