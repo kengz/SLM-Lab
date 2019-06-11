@@ -10,6 +10,7 @@ import torch
 
 NUM_EVAL = 4
 METRICS_COLS = [
+    'mean_return',
     'strength', 'max_strength', 'final_strength',
     'sample_efficiency', 'training_efficiency',
     'stability', 'consistency',
@@ -116,6 +117,7 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     frames = session_df['frame']
     opt_steps = session_df['opt_step']
 
+    mean_return = mean_returns.mean()
     str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
     max_str, final_str = local_strs.max(), local_strs.iloc[-1]
     sample_eff, local_sample_effs = calc_efficiency(local_strs, frames)
@@ -124,6 +126,7 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
 
     # all the scalar session metrics
     scalar = {
+        'mean_return': mean_return,
         'strength': str_,
         'max_strength': max_str,
         'final_strength': final_str,
@@ -133,11 +136,11 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     }
     # all the session local metrics
     local = {
+        'mean_returns': mean_returns,
         'strengths': local_strs,
         'sample_efficiencies': local_sample_effs,
         'training_efficiencies': local_train_effs,
         'stabilities': local_stas,
-        'mean_returns': mean_returns,
         'frames': frames,
         'opt_steps': opt_steps,
     }
@@ -164,11 +167,11 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
     scalar_list = [sm['scalar'] for sm in session_metrics_list]
     mean_scalar = pd.DataFrame(scalar_list).mean().to_dict()
 
+    mean_returns_list = [sm['local']['mean_returns'] for sm in session_metrics_list]
     local_strs_list = [sm['local']['strengths'] for sm in session_metrics_list]
     local_se_list = [sm['local']['sample_efficiencies'] for sm in session_metrics_list]
     local_te_list = [sm['local']['training_efficiencies'] for sm in session_metrics_list]
     local_sta_list = [sm['local']['stabilities'] for sm in session_metrics_list]
-    mean_returns_list = [sm['local']['mean_returns'] for sm in session_metrics_list]
     frames = session_metrics_list[0]['local']['frames']
     opt_steps = session_metrics_list[0]['local']['opt_steps']
     # calculate consistency
@@ -176,6 +179,7 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
 
     # all the scalar trial metrics
     scalar = {
+        'mean_return': mean_scalar['mean_return'],
         'strength': mean_scalar['strength'],
         'max_strength': mean_scalar['max_strength'],
         'final_strength': mean_scalar['final_strength'],
@@ -187,12 +191,12 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
     assert set(scalar.keys()) == set(METRICS_COLS)
     # for plotting: gather all local series of sessions
     local = {
+        'mean_returns': mean_returns_list,
         'strengths': local_strs_list,
         'sample_efficiencies': local_se_list,
         'training_efficiencies': local_te_list,
         'stabilities': local_sta_list,
         'consistencies': local_cons,  # this is a list
-        'mean_returns': mean_returns_list,
         'frames': frames,
         'opt_steps': opt_steps,
     }
