@@ -134,9 +134,10 @@ class Trial:
     def parallelize_sessions(self, global_nets=None):
         mp_dict = mp.Manager().dict()
         workers = []
-        for _s in range(self.spec['meta']['max_session']):
-            spec_util.tick(self.spec, 'session')
-            w = mp.Process(target=mp_run_session, args=(deepcopy(self.spec), global_nets, mp_dict))
+        spec = deepcopy(self.spec)
+        for _s in range(spec['meta']['max_session']):
+            spec_util.tick(spec, 'session')
+            w = mp.Process(target=mp_run_session, args=(spec, global_nets, mp_dict))
             w.start()
             workers.append(w)
         for w in workers:
@@ -147,8 +148,9 @@ class Trial:
     def run_sessions(self):
         logger.info('Running sessions')
         if self.spec['meta']['max_session'] == 1:
-            spec_util.tick(self.spec, 'session')
-            session_metrics_list = [Session(deepcopy(self.spec)).run()]
+            spec = deepcopy(self.spec)
+            spec_util.tick(spec, 'session')
+            session_metrics_list = [Session(spec).run()]
         else:
             session_metrics_list = self.parallelize_sessions()
         return session_metrics_list
