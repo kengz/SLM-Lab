@@ -53,7 +53,7 @@ def retro_analyze_experiment(predir):
     experiment_spec_path = experiment_spec_paths[0]
     spec = util.read(experiment_spec_path)
     info_prepath = spec['meta']['info_prepath']
-    if os.path.exists(f'{info_prepath}_trial_data_dict.json'):
+    if not os.path.exists(f'{info_prepath}_trial_data_dict.json'):
         return  # only run analysis if experiment had been ran
     trial_data_dict = util.read(f'{info_prepath}_trial_data_dict.json')
     analysis.analyze_experiment(spec, trial_data_dict)
