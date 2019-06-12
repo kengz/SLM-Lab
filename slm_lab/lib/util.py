@@ -334,20 +334,10 @@ def prepath_split(prepath):
 
 def prepath_to_idxs(prepath):
     '''Extract trial index and session index from prepath if available'''
-    _, _, prename, spec_name, _, _ = prepath_split(prepath)
-    idxs_tail = prename.replace(spec_name, '').strip('_')
-    idxs_strs = ps.compact(idxs_tail.split('_')[:2])
-    if ps.is_empty(idxs_strs):
-        return None, None
-    tidx = idxs_strs[0]
-    assert tidx.startswith('t')
-    trial_index = int(tidx.strip('t'))
-    if len(idxs_strs) == 1:  # has session
-        session_index = None
-    else:
-        sidx = idxs_strs[1]
-        assert sidx.startswith('s')
-        session_index = int(sidx.strip('s'))
+    tidxs = re.findall('_t(\d+)', prepath)
+    trial_index = int(tidxs[0]) if tidxs else None
+    sidxs = re.findall('_s(\d+)', prepath)
+    session_index = int(sidxs[0]) if sidxs else None
     return trial_index, session_index
 
 
@@ -357,7 +347,7 @@ def prepath_to_spec(prepath):
     example: data/a2c_cartpole_2018_06_13_220436/a2c_cartpole_t0_s0
     '''
     predir, _, prename, _, experiment_ts, ckpt = prepath_split(prepath)
-    sidx_res = re.search('_s\d+', prename)
+    sidx_res = re.findall('_s\d+', prename)
     if sidx_res:  # replace the _s0 if any
         prename = prename.replace(sidx_res[0], '')
     spec_path = f'{predir}/{prename}_spec.json'
