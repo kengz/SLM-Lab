@@ -1,5 +1,6 @@
 # The data visualization module
 # Defines plotting methods for analysis
+from glob import glob
 from plotly import graph_objs as go, io as pio, tools
 from plotly.offline import init_notebook_mode, iplot
 from slm_lab.lib import logger, util
@@ -190,39 +191,6 @@ def plot_trial(trial_spec, trial_metrics):
             save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
 
 
-def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title):
-    '''Method to plot list local_metrics gathered from multiple trials, with ability to specify custom legend and title. Used by plot_multi_trial'''
-    palette = get_palette(len(local_metrics_list))
-    all_data = []
-    for idx, local_metrics in enumerate(local_metrics_list):
-        fig = plot_mean_sr(
-            local_metrics[name], local_metrics[time], '', name, time, color=palette[idx])
-        # update legend for the main trace
-        fig.data[0].update({'showlegend': True, 'name': legend_list[idx]})
-        all_data += list(fig.data)
-    layout = create_layout(title, name, time)
-    fig = go.Figure(all_data, layout)
-    return fig
-
-
-def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath):
-    '''
-    Plot multiple trial graphs together
-    This method can be used in analysis and also custom plotting by specifying the arguments manually
-    '''
-    local_metrics_list = [util.read(path)['local'] for path in trial_metrics_path_list]
-    name_time_pairs = [
-        ('mean_returns', 'frames'),
-        ('strengths', 'frames'),
-        ('sample_efficiencies', 'frames'),
-        ('training_efficiencies', 'opt_steps'),
-        ('stabilities', 'frames')
-    ]
-    for name, time in name_time_pairs:
-        fig = plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
-        save_image(fig, f'{graph_prepath}_multi_trial_graph_{name}_vs_{time}.png')
-
-
 def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     '''
     Plot the metrics vs. specs parameters of an experiment, where each point is a trial.
@@ -257,3 +225,60 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     prepath = experiment_spec['meta']['prepath']
     save_image(fig, f'{prepath}_experiment_graph.png')
     return fig
+
+
+def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title):
+    '''Method to plot list local_metrics gathered from multiple trials, with ability to specify custom legend and title. Used by plot_multi_trial'''
+    palette = get_palette(len(local_metrics_list))
+    all_data = []
+    for idx, local_metrics in enumerate(local_metrics_list):
+        fig = plot_mean_sr(
+            local_metrics[name], local_metrics[time], '', name, time, color=palette[idx])
+        # update legend for the main trace
+        fig.data[0].update({'showlegend': True, 'name': legend_list[idx]})
+        all_data += list(fig.data)
+    layout = create_layout(title, name, time)
+    fig = go.Figure(all_data, layout)
+    return fig
+
+
+def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath):
+    '''
+    Plot multiple trial graphs together
+    This method can be used in analysis and also custom plotting by specifying the arguments manually
+    @example
+
+    trial_metrics_path_list = [
+        'data/dqn_cartpole_2019_06_11_092512/info/dqn_cartpole_t0_trial_metrics.pkl',
+        'data/dqn_cartpole_2019_06_11_092512/info/dqn_cartpole_t1_trial_metrics.pkl',
+    ]
+    legend_list = [
+        '0',
+        '1',
+    ]
+    title = f'Multi trial trial graphs'
+    graph_prepath = 'data/my_exp'
+    viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)
+    '''
+    local_metrics_list = [util.read(path)['local'] for path in trial_metrics_path_list]
+    name_time_pairs = [
+        ('mean_returns', 'frames'),
+        ('strengths', 'frames'),
+        ('sample_efficiencies', 'frames'),
+        ('training_efficiencies', 'opt_steps'),
+        ('stabilities', 'frames')
+    ]
+    for name, time in name_time_pairs:
+        fig = plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
+        save_image(fig, f'{graph_prepath}_multi_trial_graph_{name}_vs_{time}.png')
+
+
+def plot_experiment_trials(experiment_spec):
+    meta_spec = experiment_spec['meta']
+    info_prepath = meta_spec['info_prepath']
+    trial_metrics_path_list = glob(f'{info_prepath}*_trial_metrics.pkl')
+    title = f'multi trial graph: {experiment_spec["name"]}'
+    # get only trial indices
+    legend_list = [util.prepath_to_idxs(prepath)[0] for prepath in trial_metrics_path_list]
+    graph_prepath = meta_spec['graph_prepath']
+    plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)

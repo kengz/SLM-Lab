@@ -267,6 +267,7 @@ def analyze_experiment(spec, trial_data_dict):
     experiment_df = calc_experiment_df(trial_data_dict, info_prepath)
     # plot graph
     viz.plot_experiment(spec, experiment_df, METRICS_COLS)
+    viz.plot_experiment_trials(spec)
     # zip files
     predir, _, _, _, _, _ = util.prepath_split(info_prepath)
     shutil.make_archive(predir, 'zip', predir)
