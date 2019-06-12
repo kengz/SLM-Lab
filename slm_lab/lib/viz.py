@@ -67,10 +67,10 @@ def plot(*args, **kwargs):
         return iplot(*args, **kwargs)
 
 
-def plot_sr(sr, time_sr, title, y_title, x_title):
+def plot_sr(sr, time_sr, title, y_title, x_title, color=None):
     '''Plot a series'''
     x = time_sr.tolist()
-    color = get_palette(1)[0]
+    color = color or get_palette(1)[0]
     main_trace = go.Scatter(
         x=x, y=sr, mode='lines', showlegend=False,
         line={'color': color, 'width': 1},
@@ -82,7 +82,7 @@ def plot_sr(sr, time_sr, title, y_title, x_title):
     return fig
 
 
-def plot_mean_sr(sr_list, time_sr, title, y_title, x_title):
+def plot_mean_sr(sr_list, time_sr, title, y_title, x_title, color=None):
     '''Plot a list of series using its mean, with error bar using std'''
     mean_sr, std_sr = util.calc_srs_mean_std(sr_list)
     max_sr = mean_sr + std_sr
@@ -90,7 +90,7 @@ def plot_mean_sr(sr_list, time_sr, title, y_title, x_title):
     max_y = max_sr.tolist()
     min_y = min_sr.tolist()
     x = time_sr.tolist()
-    color = get_palette(1)[0]
+    color = color or get_palette(1)[0]
     main_trace = go.Scatter(
         x=x, y=mean_sr, mode='lines', showlegend=False,
         line={'color': color, 'width': 1},
@@ -188,6 +188,39 @@ def plot_trial(trial_spec, trial_metrics):
         save_image(fig, f'{graph_prepath}_trial_graph_{name}_vs_{time}.png')
         if name in ('mean_returns',):  # save important graphs in prepath directly
             save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
+
+
+def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title):
+    '''Method to plot list local_metrics gathered from multiple trials, with ability to specify custom legend and title. Used by plot_multi_trial'''
+    palette = get_palette(len(local_metrics_list))
+    all_data = []
+    for idx, local_metrics in enumerate(local_metrics_list):
+        fig = plot_mean_sr(
+            local_metrics[name], local_metrics[time], '', name, time, color=palette[idx])
+        # update legend for the main trace
+        fig.data[0].update({'showlegend': True, 'name': legend_list[idx]})
+        all_data += list(fig.data)
+    layout = create_layout(title, name, time)
+    fig = go.Figure(all_data, layout)
+    return fig
+
+
+def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath):
+    '''
+    Plot multiple trial graphs together
+    This method can be used in analysis and also custom plotting by specifying the arguments manually
+    '''
+    local_metrics_list = [util.read(path)['local'] for path in trial_metrics_path_list]
+    name_time_pairs = [
+        ('mean_returns', 'frames'),
+        ('strengths', 'frames'),
+        ('sample_efficiencies', 'frames'),
+        ('training_efficiencies', 'opt_steps'),
+        ('stabilities', 'frames')
+    ]
+    for name, time in name_time_pairs:
+        fig = plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
+        save_image(fig, f'{graph_prepath}_multi_trial_graph_{name}_vs_{time}.png')
 
 
 def plot_experiment(experiment_spec, experiment_df, metrics_cols):
