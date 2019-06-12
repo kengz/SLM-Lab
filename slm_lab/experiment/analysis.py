@@ -10,6 +10,7 @@ import torch
 
 NUM_EVAL = 4
 METRICS_COLS = [
+    'mean_return',
     'strength', 'max_strength', 'final_strength',
     'sample_efficiency', 'training_efficiency',
     'stability', 'consistency',
@@ -66,8 +67,10 @@ def calc_efficiency(local_strs, ts):
     @param Series:ts A series of times units (frame or opt_steps)
     @returns float:eff, Series:local_effs
     '''
-    eff = (local_strs / ts).sum() / local_strs.sum()
-    local_effs = (local_strs / ts).cumsum() / local_strs.cumsum()
+    # drop inf from when first t is 0
+    str_t_ratios = (local_strs / ts).replace([np.inf, -np.inf], np.nan).dropna()
+    eff = str_t_ratios.sum() / local_strs.sum()
+    local_effs = str_t_ratios.cumsum() / local_strs.cumsum()
     return eff, local_effs
 
 
@@ -116,6 +119,7 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     frames = session_df['frame']
     opt_steps = session_df['opt_step']
 
+    mean_return = mean_returns.mean()
     str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
     max_str, final_str = local_strs.max(), local_strs.iloc[-1]
     sample_eff, local_sample_effs = calc_efficiency(local_strs, frames)
@@ -124,6 +128,7 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
 
     # all the scalar session metrics
     scalar = {
+        'mean_return': mean_return,
         'strength': str_,
         'max_strength': max_str,
         'final_strength': final_str,
@@ -133,11 +138,11 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     }
     # all the session local metrics
     local = {
+        'mean_returns': mean_returns,
         'strengths': local_strs,
         'sample_efficiencies': local_sample_effs,
         'training_efficiencies': local_train_effs,
         'stabilities': local_stas,
-        'mean_returns': mean_returns,
         'frames': frames,
         'opt_steps': opt_steps,
     }
@@ -164,11 +169,11 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
     scalar_list = [sm['scalar'] for sm in session_metrics_list]
     mean_scalar = pd.DataFrame(scalar_list).mean().to_dict()
 
+    mean_returns_list = [sm['local']['mean_returns'] for sm in session_metrics_list]
     local_strs_list = [sm['local']['strengths'] for sm in session_metrics_list]
     local_se_list = [sm['local']['sample_efficiencies'] for sm in session_metrics_list]
     local_te_list = [sm['local']['training_efficiencies'] for sm in session_metrics_list]
     local_sta_list = [sm['local']['stabilities'] for sm in session_metrics_list]
-    mean_returns_list = [sm['local']['mean_returns'] for sm in session_metrics_list]
     frames = session_metrics_list[0]['local']['frames']
     opt_steps = session_metrics_list[0]['local']['opt_steps']
     # calculate consistency
@@ -176,6 +181,7 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
 
     # all the scalar trial metrics
     scalar = {
+        'mean_return': mean_scalar['mean_return'],
         'strength': mean_scalar['strength'],
         'max_strength': mean_scalar['max_strength'],
         'final_strength': mean_scalar['final_strength'],
@@ -187,12 +193,12 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
     assert set(scalar.keys()) == set(METRICS_COLS)
     # for plotting: gather all local series of sessions
     local = {
+        'mean_returns': mean_returns_list,
         'strengths': local_strs_list,
         'sample_efficiencies': local_se_list,
         'training_efficiencies': local_te_list,
         'stabilities': local_sta_list,
         'consistencies': local_cons,  # this is a list
-        'mean_returns': mean_returns_list,
         'frames': frames,
         'opt_steps': opt_steps,
     }
@@ -216,6 +222,8 @@ def calc_experiment_df(trial_data_dict, info_prepath=None):
     sorted_cols = config_cols + cols
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
     experiment_df.sort_values(by=['strength'], ascending=False, inplace=True)
+    # insert trial index
+    experiment_df.insert(0, 'trial', experiment_df.index)
     if info_prepath is not None:
         util.write(experiment_df, f'{info_prepath}_experiment_df.csv')
         # save important metrics in info_prepath directly
@@ -235,6 +243,7 @@ def analyze_session(session_spec, session_df, df_mode):
     session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.0.name'), info_prepath, df_mode)
     # plot graph
     viz.plot_session(session_spec, session_metrics, session_df, df_mode)
+    viz.plot_session(session_spec, session_metrics, session_df, df_mode, ma=True)
     return session_metrics
 
 
@@ -245,6 +254,7 @@ def analyze_trial(trial_spec, session_metrics_list):
     trial_metrics = calc_trial_metrics(session_metrics_list, info_prepath)
     # plot graphs
     viz.plot_trial(trial_spec, trial_metrics)
+    viz.plot_trial(trial_spec, trial_metrics, ma=True)
     # zip files
     if util.get_lab_mode() == 'train':
         predir, _, _, _, _, _ = util.prepath_split(info_prepath)
@@ -261,6 +271,7 @@ def analyze_experiment(spec, trial_data_dict):
     experiment_df = calc_experiment_df(trial_data_dict, info_prepath)
     # plot graph
     viz.plot_experiment(spec, experiment_df, METRICS_COLS)
+    viz.plot_experiment_trials(spec)
     # zip files
     predir, _, _, _, _, _ = util.prepath_split(info_prepath)
     shutil.make_archive(predir, 'zip', predir)
