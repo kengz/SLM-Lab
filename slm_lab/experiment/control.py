@@ -52,9 +52,7 @@ class Session:
         clock = env.clock
         frame = clock.get()
         frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
-        if frame == 0 or clock.get('opt_step') == 0:  # avoid ckpt at init
-            to_ckpt = False
-        elif frequency is None:  # default episodic
+        if frequency is None:  # default episodic
             to_ckpt = env.done
         else:  # normal ckpt condition by mod remainder (general for venv)
             to_ckpt = util.frame_mod(frame, frequency, env.num_envs) or frame == clock.max_frame

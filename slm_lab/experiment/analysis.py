@@ -67,8 +67,10 @@ def calc_efficiency(local_strs, ts):
     @param Series:ts A series of times units (frame or opt_steps)
     @returns float:eff, Series:local_effs
     '''
-    eff = (local_strs / ts).sum() / local_strs.sum()
-    local_effs = (local_strs / ts).cumsum() / local_strs.cumsum()
+    # drop inf from when first t is 0
+    str_t_ratios = (local_strs / ts).replace([np.inf, -np.inf], np.nan).dropna()
+    eff = str_t_ratios.sum() / local_strs.sum()
+    local_effs = str_t_ratios.cumsum() / local_strs.cumsum()
     return eff, local_effs
 
 
