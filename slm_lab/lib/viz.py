@@ -261,7 +261,7 @@ def plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
     return fig
 
 
-def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath):
+def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=False):
     '''
     Plot multiple trial graphs together
     This method can be used in analysis and also custom plotting by specifying the arguments manually
@@ -288,6 +288,12 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)
         ('stabilities', 'frames')
     ]
     for name, time in name_time_pairs:
+        if ma:
+            for local_metrics in local_metrics_list:
+                sr_list = local_metrics[name]
+                sr_list = [calc_sr_ma(sr) for sr in sr_list]
+                local_metrics[f'{name}_ma'] = sr_list
+            name = f'{name}_ma'  # for labeling
         fig = plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
         save_image(fig, f'{graph_prepath}_multi_trial_graph_{name}_vs_{time}.png')
 
@@ -301,3 +307,4 @@ def plot_experiment_trials(experiment_spec):
     legend_list = [util.prepath_to_idxs(prepath)[0] for prepath in trial_metrics_path_list]
     graph_prepath = meta_spec['graph_prepath']
     plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)
+    plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=True)
