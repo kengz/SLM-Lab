@@ -243,6 +243,7 @@ def analyze_session(session_spec, session_df, df_mode):
     session_metrics = calc_session_metrics(session_df, ps.get(session_spec, 'env.0.name'), info_prepath, df_mode)
     # plot graph
     viz.plot_session(session_spec, session_metrics, session_df, df_mode)
+    viz.plot_session(session_spec, session_metrics, session_df, df_mode, ma=True)
     return session_metrics
 
 
@@ -253,6 +254,7 @@ def analyze_trial(trial_spec, session_metrics_list):
     trial_metrics = calc_trial_metrics(session_metrics_list, info_prepath)
     # plot graphs
     viz.plot_trial(trial_spec, trial_metrics)
+    viz.plot_trial(trial_spec, trial_metrics, ma=True)
     # zip files
     if util.get_lab_mode() == 'train':
         predir, _, _, _, _, _ = util.prepath_split(info_prepath)

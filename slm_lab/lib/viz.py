@@ -126,7 +126,7 @@ def save_image(figure, filepath):
 
 # analysis plot methods
 
-def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
+def plot_session(session_spec, session_metrics, session_df, df_mode='eval', ma=False):
     '''
     Plot the session graphs:
     - mean_returns, strengths, sample_efficiencies, training_efficiencies, stabilities (with error bar)
@@ -146,13 +146,17 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
         ('stabilities', 'frames')
     ]
     for name, time in name_time_pairs:
+        sr = local_metrics[name]
+        if ma:
+            sr = calc_sr_ma(sr)
+            name = f'{name}_ma'  # for labeling
         fig = plot_sr(
-            local_metrics[name], local_metrics[time], title, name, time)
+            sr, local_metrics[time], title, name, time)
         save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
-        if name in ('mean_returns',):  # save important graphs in prepath directly
+        if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
             save_image(fig, f'{prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
-    if df_mode == 'eval':
+    if df_mode == 'eval' or ma:
         return
     # training plots from session_df
     name_time_pairs = [
@@ -166,7 +170,7 @@ def plot_session(session_spec, session_metrics, session_df, df_mode='eval'):
         save_image(fig, f'{graph_prepath}_session_graph_{df_mode}_{name}_vs_{time}.png')
 
 
-def plot_trial(trial_spec, trial_metrics):
+def plot_trial(trial_spec, trial_metrics, ma=False):
     '''
     Plot the trial graphs:
     - mean_returns, strengths, sample_efficiencies, training_efficiencies, stabilities (with error bar)
@@ -188,13 +192,21 @@ def plot_trial(trial_spec, trial_metrics):
     ]
     for name, time in name_time_pairs:
         if name == 'consistencies':
+            sr = local_metrics[name]
+            if ma:
+                sr = calc_sr_ma(sr)
+                name = f'{name}_ma'  # for labeling
             fig = plot_sr(
-                local_metrics[name], local_metrics[time], title, name, time)
+                sr, local_metrics[time], title, name, time)
         else:
+            sr_list = local_metrics[name]
+            if ma:
+                sr_list = [calc_sr_ma(sr) for sr in sr_list]
+                name = f'{name}_ma'  # for labeling
             fig = plot_mean_sr(
-                local_metrics[name], local_metrics[time], title, name, time)
+                sr_list, local_metrics[time], title, name, time)
         save_image(fig, f'{graph_prepath}_trial_graph_{name}_vs_{time}.png')
-        if name in ('mean_returns',):  # save important graphs in prepath directly
+        if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
             save_image(fig, f'{prepath}_trial_graph_{name}_vs_{time}.png')
 
 
