@@ -296,6 +296,9 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
             name = f'{name}_ma'  # for labeling
         fig = plot_multi_local_metrics(local_metrics_list, legend_list, name, time, title)
         save_image(fig, f'{graph_prepath}_multi_trial_graph_{name}_vs_{time}.png')
+        if name in ('mean_returns', 'mean_returns_ma'):  # save important graphs in prepath directly
+            prepath = graph_prepath.replace('/graph/', '/')
+            save_image(fig, f'{prepath}_multi_trial_graph_{name}_vs_{time}.png')
 
 
 def plot_experiment_trials(experiment_spec):
