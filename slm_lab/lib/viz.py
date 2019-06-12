@@ -305,9 +305,11 @@ def plot_experiment_trials(experiment_spec):
     meta_spec = experiment_spec['meta']
     info_prepath = meta_spec['info_prepath']
     trial_metrics_path_list = glob(f'{info_prepath}*_trial_metrics.pkl')
-    title = f'multi trial graph: {experiment_spec["name"]}'
+    # sort by trial id
+    trial_metrics_path_list = list(sorted(trial_metrics_path_list, key=lambda k: util.prepath_to_idxs(k)[0]))
     # get only trial indices
     legend_list = [util.prepath_to_idxs(prepath)[0] for prepath in trial_metrics_path_list]
+    title = f'multi trial graph: {experiment_spec["name"]}'
     graph_prepath = meta_spec['graph_prepath']
     plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)
     plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=True)
