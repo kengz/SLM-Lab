@@ -10,10 +10,17 @@ import pydash as ps
 
 logger = logger.get_logger(__name__)
 
+# moving-average window size for plotting
+PLOT_MA_WINDOW = 100
 # warn orca failure only once
 orca_warn_once = ps.once(lambda e: logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later.'))
 if util.is_jupyter():
     init_notebook_mode(connected=True)
+
+
+def calc_sr_ma(sr):
+    '''Calculate the moving-average of a series to be plotted'''
+    return sr.rolling(PLOT_MA_WINDOW, min_periods=1).mean()
 
 
 def create_label(y_col, x_col, title=None, y_title=None, x_title=None, legend_name=None):
