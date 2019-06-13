@@ -223,7 +223,7 @@ def calc_experiment_df(trial_data_dict, info_prepath=None):
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
     experiment_df.sort_values(by=['strength'], ascending=False, inplace=True)
     # insert trial index
-    experiment_df.insert(0, 'trial', experiment_df.index)
+    experiment_df.insert(0, 'trial', experiment_df.index.astype(np.int))
     if info_prepath is not None:
         util.write(experiment_df, f'{info_prepath}_experiment_df.csv')
         # save important metrics in info_prepath directly
@@ -271,7 +271,7 @@ def analyze_experiment(spec, trial_data_dict):
     experiment_df = calc_experiment_df(trial_data_dict, info_prepath)
     # plot graph
     viz.plot_experiment(spec, experiment_df, METRICS_COLS)
-    viz.plot_experiment_trials(spec)
+    viz.plot_experiment_trials(spec, experiment_df, METRICS_COLS)
     # zip files
     predir, _, _, _, _, _ = util.prepath_split(info_prepath)
     shutil.make_archive(predir, 'zip', predir)
