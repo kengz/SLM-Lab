@@ -305,14 +305,31 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
             save_image(fig, f'{prepath}_multi_trial_graph_{name}_vs_{time}.png')
 
 
-def plot_experiment_trials(experiment_spec):
+def get_trial_legends(experiment_df, trial_idxs, metrics_cols):
+    '''Format trial variables in experiment_df into legend strings'''
+    var_df = experiment_df.drop(metrics_cols, axis=1).set_index('trial')
+    trial_legends = []
+    for trial_idx in trial_idxs:
+        trial_vars = var_df.loc[trial_idx].to_dict()
+        var_list = [f'{k.split(".").pop()} {v}' for k, v in trial_vars.items()]
+        var_str = ' '.join(var_list)
+        legend = f't{trial_idx}: {var_str}'
+        trial_legends.append(legend)
+    trial_legends
+    return trial_legends
+
+
+def plot_experiment_trials(experiment_spec, experiment_df, metrics_cols):
     meta_spec = experiment_spec['meta']
     info_prepath = meta_spec['info_prepath']
     trial_metrics_path_list = glob(f'{info_prepath}*_trial_metrics.pkl')
     # sort by trial id
     trial_metrics_path_list = list(sorted(trial_metrics_path_list, key=lambda k: util.prepath_to_idxs(k)[0]))
-    # get only trial indices
-    legend_list = [util.prepath_to_idxs(prepath)[0] for prepath in trial_metrics_path_list]
+
+    # get trial indices to build legends
+    trial_idxs = [util.prepath_to_idxs(prepath)[0] for prepath in trial_metrics_path_list]
+    legend_list = get_trial_legends(experiment_df, trial_idxs, metrics_cols)
+
     title = f'multi trial graph: {experiment_spec["name"]}'
     graph_prepath = meta_spec['graph_prepath']
     plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)
