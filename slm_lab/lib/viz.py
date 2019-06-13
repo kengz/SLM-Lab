@@ -218,6 +218,8 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     y_cols = metrics_cols
     x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
     fig = tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
+    strength_sr = experiment_df['strength']
+    min_strength, max_strength = strength_sr.min(), strength_sr.max()
     for row_idx, y in enumerate(y_cols):
         for col_idx, x in enumerate(x_cols):
             x_sr = experiment_df[x]
@@ -227,7 +229,9 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
                 x=guard_cat_x, xaxis=f'x{col_idx+1}',
                 showlegend=False, mode='markers',
                 marker={
-                    'symbol': 'circle-open-dot', 'color': experiment_df['strength'], 'opacity': 0.5,
+                    'symbol': 'circle-open-dot', 'color': strength_sr, 'opacity': 0.5,
+                    # dump first portion of colorscale that is too bright
+                    'cmin': min_strength - 0.5 * (max_strength - min_strength), 'cmax': max_strength,
                     'colorscale': 'YlGnBu', 'reversescale': True
                 },
             )
@@ -301,13 +305,32 @@ def plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
             save_image(fig, f'{prepath}_multi_trial_graph_{name}_vs_{time}.png')
 
 
-def plot_experiment_trials(experiment_spec):
+def get_trial_legends(experiment_df, trial_idxs, metrics_cols):
+    '''Format trial variables in experiment_df into legend strings'''
+    var_df = experiment_df.drop(metrics_cols, axis=1).set_index('trial')
+    trial_legends = []
+    for trial_idx in trial_idxs:
+        trial_vars = var_df.loc[trial_idx].to_dict()
+        var_list = [f'{k.split(".").pop()} {v}' for k, v in trial_vars.items()]
+        var_str = ' '.join(var_list)
+        legend = f't{trial_idx}: {var_str}'
+        trial_legends.append(legend)
+    trial_legends
+    return trial_legends
+
+
+def plot_experiment_trials(experiment_spec, experiment_df, metrics_cols):
     meta_spec = experiment_spec['meta']
     info_prepath = meta_spec['info_prepath']
     trial_metrics_path_list = glob(f'{info_prepath}*_trial_metrics.pkl')
+    # sort by trial id
+    trial_metrics_path_list = list(sorted(trial_metrics_path_list, key=lambda k: util.prepath_to_idxs(k)[0]))
+
+    # get trial indices to build legends
+    trial_idxs = [util.prepath_to_idxs(prepath)[0] for prepath in trial_metrics_path_list]
+    legend_list = get_trial_legends(experiment_df, trial_idxs, metrics_cols)
+
     title = f'multi trial graph: {experiment_spec["name"]}'
-    # get only trial indices
-    legend_list = [util.prepath_to_idxs(prepath)[0] for prepath in trial_metrics_path_list]
     graph_prepath = meta_spec['graph_prepath']
     plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath)
     plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath, ma=True)
