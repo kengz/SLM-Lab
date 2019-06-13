@@ -1,4 +1,4 @@
-# Custom distribution classes to extend torch.distributions
+# Custom PyTorch distribution classes to be registered in policy_util.py
 # Mainly used by policy_util action distribution
 from torch import distributions
 import torch

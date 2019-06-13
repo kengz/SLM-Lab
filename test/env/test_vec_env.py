@@ -9,11 +9,11 @@ import pytest
     ('CartPole-v0', (4,), None),
 ])
 @pytest.mark.parametrize('num_envs', (1, 4))
-def test_make_gym_venv_nostack(name, state_shape, reward_scale, num_envs):
+def test_make_gym_venv_nostack(name, num_envs, state_shape, reward_scale):
     seed = 0
     frame_op = None
     frame_op_len = None
-    venv = make_gym_venv(name, seed, frame_op, frame_op_len, reward_scale, num_envs)
+    venv = make_gym_venv(name, num_envs, seed, frame_op, frame_op_len, reward_scale)
     venv.reset()
     for i in range(5):
         state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
@@ -34,11 +34,11 @@ def test_make_gym_venv_nostack(name, state_shape, reward_scale, num_envs):
     ('CartPole-v0', (4,), None),
 ])
 @pytest.mark.parametrize('num_envs', (1, 4))
-def test_make_gym_concat(name, state_shape, reward_scale, num_envs):
+def test_make_gym_concat(name, num_envs, state_shape, reward_scale):
     seed = 0
     frame_op = 'concat'  # used for image, or for concat vector
     frame_op_len = 4
-    venv = make_gym_venv(name, seed, frame_op, frame_op_len, reward_scale, num_envs)
+    venv = make_gym_venv(name, num_envs, seed, frame_op, frame_op_len, reward_scale)
     venv.reset()
     for i in range(5):
         state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)
@@ -60,11 +60,11 @@ def test_make_gym_concat(name, state_shape, reward_scale, num_envs):
     ('CartPole-v0', (4,), None),
 ])
 @pytest.mark.parametrize('num_envs', (1, 4))
-def test_make_gym_stack(name, state_shape, reward_scale, num_envs):
+def test_make_gym_stack(name, num_envs, state_shape, reward_scale):
     seed = 0
     frame_op = 'stack'  # used for rnn
     frame_op_len = 4
-    venv = make_gym_venv(name, seed, frame_op, frame_op_len, reward_scale, num_envs)
+    venv = make_gym_venv(name, num_envs, seed, frame_op, frame_op_len, reward_scale)
     venv.reset()
     for i in range(5):
         state, reward, done, info = venv.step([venv.action_space.sample()] * num_envs)

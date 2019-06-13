@@ -1,5 +1,6 @@
 # Action policy module
 # Constructs action probability distribution used by agent to sample action and calculate log_prob, entropy, etc.
+from gym import spaces
 from slm_lab.env.wrapper import LazyFrames
 from slm_lab.lib import distribution, logger, math_util, util
 from torch import distributions
@@ -22,6 +23,25 @@ ACTION_PDS = {
     'multi_discrete': ['MultiCategorical'],
     'multi_binary': ['Bernoulli'],
 }
+
+
+def get_action_type(action_space):
+    '''Method to get the action type to choose prob. dist. to sample actions from NN logits output'''
+    if isinstance(action_space, spaces.Box):
+        shape = action_space.shape
+        assert len(shape) == 1
+        if shape[0] == 1:
+            return 'continuous'
+        else:
+            return 'multi_continuous'
+    elif isinstance(action_space, spaces.Discrete):
+        return 'discrete'
+    elif isinstance(action_space, spaces.MultiDiscrete):
+        return 'multi_discrete'
+    elif isinstance(action_space, spaces.MultiBinary):
+        return 'multi_binary'
+    else:
+        raise NotImplementedError
 
 
 # action_policy base methods
@@ -148,9 +168,8 @@ def boltzmann(state, algorithm, body):
     return action
 
 
-# multi-body action_policy used by agent
-
-# TODO fix later using similar batch action method
+# multi-body/multi-env action_policy used by agent
+# TODO rework
 
 def multi_default(states, algorithm, body_list, pdparam):
     '''
@@ -253,116 +272,3 @@ class VarScheduler:
         step = clock.get()
         val = self._updater(self.start_val, self.end_val, self.start_step, self.end_step, step)
         return val
-
-
-# misc calc methods
-
-def guard_multi_pdparams(pdparams, body):
-    '''Guard pdparams for multi action'''
-    action_dim = body.action_dim
-    is_multi_action = ps.is_iterable(action_dim)
-    if is_multi_action:
-        assert ps.is_list(pdparams)
-        pdparams = [t.clone() for t in pdparams]  # clone for grad safety
-        assert len(pdparams) == len(action_dim), pdparams
-        # transpose into (batch_size, [action_dims])
-        pdparams = [list(torch.split(t, action_dim, dim=0)) for t in torch.cat(pdparams, dim=1)]
-    return pdparams
-
-
-def update_online_stats(body, state):
-    '''
-    Method to calculate the running mean and standard deviation of the state space.
-    See https://www.johndcook.com/blog/standard_deviation/ for more details
-    for n >= 1
-        M_n = M_n-1 + (state - M_n-1) / n
-        S_n = S_n-1 + (state - M_n-1) * (state - M_n)
-        variance = S_n / (n - 1)
-        std_dev = sqrt(variance)
-    '''
-    # Assumes only one state is given
-    if ('Atari' in util.get_class_name(body.memory)):
-        assert state.ndim == 3
-    elif getattr(body.memory, 'raw_state_dim', False):
-        assert state.size == body.memory.raw_state_dim
-    else:
-        assert state.size == body.state_dim or state.shape == body.state_dim
-    mean = body.state_mean
-    body.state_n += 1
-    if np.isnan(mean).any():
-        assert np.isnan(body.state_std_dev_int)
-        assert np.isnan(body.state_std_dev)
-        body.state_mean = state
-        body.state_std_dev_int = 0
-        body.state_std_dev = 0
-    else:
-        assert body.state_n > 1
-        body.state_mean = mean + (state - mean) / body.state_n
-        body.state_std_dev_int = body.state_std_dev_int + (state - mean) * (state - body.state_mean)
-        body.state_std_dev = np.sqrt(body.state_std_dev_int / (body.state_n - 1))
-        # Guard against very small std devs
-        if (body.state_std_dev < 1e-8).any():
-            body.state_std_dev[np.where(body.state_std_dev < 1e-8)] += 1e-8
-
-
-def normalize_state(body, state):
-    '''
-    Normalizes one or more states using a running mean and standard deviation
-    Details of the normalization from Deep RL Bootcamp, L6
-    https://www.youtube.com/watch?v=8EcdaCk9KaQ&feature=youtu.be
-    '''
-    same_shape = False if type(state) == list else state.shape == body.state_mean.shape
-    if ('Atari' in util.get_class_name(body.memory)):
-        # never normalize atari, it has its own normalization step
-        return state
-    elif same_shape:
-        # if not atari, always normalize the state the first time we see it during act
-        # if the shape is not transformed in some way
-        if np.sum(body.state_std_dev) == 0:
-            return np.clip(state - body.state_mean, -10, 10)
-        else:
-            return np.clip((state - body.state_mean) / body.state_std_dev, -10, 10)
-    else:
-        # broadcastable sample from an un-normalized memory so we should normalize
-        if np.sum(body.state_std_dev) == 0:
-            return np.clip(state - body.state_mean, -10, 10)
-        else:
-            return np.clip((state - body.state_mean) / body.state_std_dev, -10, 10)
-
-
-# TODO Not currently used, this will crash for more exotic memory structures
-# def unnormalize_state(body, state):
-#     '''
-#     Un-normalizes one or more states using a running mean and new_std_dev
-#     '''
-#     return state * body.state_mean + body.state_std_dev
-
-
-def update_online_stats_and_normalize_state(body, state):
-    '''
-    Convenience combination function for updating running state mean and std_dev and normalizing the state in one go.
-    '''
-    update_online_stats(body, state)
-    state = normalize_state(body, state)
-    return state
-
-
-def normalize_states_and_next_states(body, batch, episodic_flag=None):
-    '''
-    Convenience function for normalizing the states and next states in a batch of data
-    '''
-    episodic = episodic_flag if episodic_flag is not None else body.memory.is_episodic
-    logger.debug(f'Episodic: {episodic}, episodic_flag: {episodic_flag}, body.memory: {body.memory.is_episodic}')
-    if episodic:
-        normalized = []
-        for epi in batch['states']:
-            normalized.append(normalize_state(body, epi))
-        batch['states'] = normalized
-        normalized = []
-        for epi in batch['next_states']:
-            normalized.append(normalize_state(body, epi))
-        batch['next_states'] = normalized
-    else:
-        batch['states'] = normalize_state(body, batch['states'])
-        batch['next_states'] = normalize_state(body, batch['next_states'])
-    return batch

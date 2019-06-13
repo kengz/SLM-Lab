@@ -49,7 +49,7 @@ class ActorCritic(Reinforce):
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.95,
         "num_step_returns": 100,
         "entropy_coef_spec": {
           "name": "linear_decay",
@@ -61,8 +61,6 @@ class ActorCritic(Reinforce):
         "policy_loss_coef": 1.0,
         "val_loss_coef": 0.01,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": false
     }
 
     e.g. special net_spec param "shared" to share/separate Actor/Critic
@@ -96,8 +94,6 @@ class ActorCritic(Reinforce):
             'policy_loss_coef',
             'val_loss_coef',
             'training_frequency',
-            'training_epoch',
-            'normalize_state',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -146,21 +142,24 @@ class ActorCritic(Reinforce):
         if critic_net_spec['use_same_optim']:
             critic_net_spec = actor_net_spec
 
-        if global_nets is None:
-            in_dim = self.body.state_dim
-            out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
-            # main actor network, may contain out_dim self.shared == True
-            NetClass = getattr(net, actor_net_spec['type'])
-            self.net = NetClass(actor_net_spec, in_dim, out_dim)
-            self.net_names = ['net']
-            if not self.shared:  # add separate network for critic
-                critic_out_dim = 1
-                CriticNetClass = getattr(net, critic_net_spec['type'])
-                self.critic = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
-                self.net_names.append('critic')
-        else:
-            util.set_attr(self, global_nets)
-            self.net_names = list(global_nets.keys())
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body, add_critic=self.shared)
+        # main actor network, may contain out_dim self.shared == True
+        NetClass = getattr(net, actor_net_spec['type'])
+        self.net = NetClass(actor_net_spec, in_dim, out_dim)
+        self.net_names = ['net']
+        if not self.shared:  # add separate network for critic
+            critic_out_dim = 1
+            CriticNetClass = getattr(net, critic_net_spec['type'])
+            self.critic_net = CriticNetClass(critic_net_spec, in_dim, critic_out_dim)
+            self.net_names.append('critic_net')
+        # init net optimizer and its lr scheduler
+        self.optim = net_util.get_optim(self.net, self.net.optim_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        if not self.shared:
+            self.critic_optim = net_util.get_optim(self.critic_net, self.critic_net.optim_spec)
+            self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic_net.lr_scheduler_spec)
+        net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
     @lab_api
@@ -182,7 +181,7 @@ class ActorCritic(Reinforce):
 
     def calc_v(self, x, net=None, use_cache=True):
         '''
-        Forward-pass to calculate the predicted state-value from critic.
+        Forward-pass to calculate the predicted state-value from critic_net.
         '''
         if self.shared:  # output: policy, value
             if use_cache:  # uses cache from calc_pdparam to prevent double-pass
@@ -191,7 +190,7 @@ class ActorCritic(Reinforce):
                 net = self.net if net is None else net
                 v_pred = net(x)[-1].view(-1)
         else:
-            net = self.critic if net is None else net
+            net = self.critic_net if net is None else net
             v_pred = net(x).view(-1)
         return v_pred
 
@@ -282,20 +281,21 @@ class ActorCritic(Reinforce):
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
+            clock.set_batch_size(len(batch))
             pdparams, v_preds = self.calc_pdparam_v(batch)
             advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
             policy_loss = self.calc_policy_loss(batch, pdparams, advs)  # from actor
             val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
             if self.shared:  # shared network
                 loss = policy_loss + val_loss
-                self.net.training_step(loss=loss, lr_clock=clock)
+                self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
             else:
-                self.net.training_step(loss=policy_loss, lr_clock=clock)
-                self.critic.training_step(loss=val_loss, lr_clock=clock)
+                self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, clock=clock, global_net=self.global_critic_net)
                 loss = policy_loss + val_loss
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan

@@ -23,7 +23,7 @@ class SIL(ActorCritic):
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.95,
         "num_step_returns": 100,
         "entropy_coef_spec": {
           "name": "linear_decay",
@@ -36,10 +36,9 @@ class SIL(ActorCritic):
         "val_loss_coef": 0.01,
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.01,
-        "training_batch_epoch": 8,
+        "training_batch_iter": 8,
         "training_frequency": 1,
-        "training_epoch": 8,
-        "normalize_state": false
+        "training_iter": 8,
     }
 
     e.g. special memory_spec
@@ -84,30 +83,25 @@ class SIL(ActorCritic):
             'sil_policy_loss_coef',
             'sil_val_loss_coef',
             'training_frequency',
-            'training_batch_epoch',
-            'training_epoch',
-            'normalize_state'
+            'training_batch_iter',
+            'training_iter',
         ])
         super().init_algorithm_params()
 
     def sample(self):
         '''Modify the onpolicy sample to also append to replay'''
         batch = self.body.memory.sample()
-        batch = {k: np.concatenate(v) for k, v in batch.items()}  # concat episodic memory
+        if self.body.memory.is_episodic:
+            batch = {k: np.concatenate(v) for k, v in batch.items()}  # concat episodic memory
         for idx in range(len(batch['dones'])):
             tuples = [batch[k][idx] for k in self.body.replay_memory.data_keys]
             self.body.replay_memory.add_experience(*tuples)
-        if self.normalize_state:
-            batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.replay_memory.is_episodic)
         return batch
 
     def replay_sample(self):
         '''Samples a batch from memory'''
         batch = self.body.replay_memory.sample()
-        if self.normalize_state:
-            batch = policy_util.normalize_states_and_next_states(
-                self.body, batch, episodic_flag=self.body.replay_memory.is_episodic)
         batch = util.to_torch_batch(batch, self.net.device, self.body.replay_memory.is_episodic)
         return batch
 
@@ -141,17 +135,17 @@ class SIL(ActorCritic):
             super_loss = super().train()
             # offpolicy sil update with random minibatch
             total_sil_loss = torch.tensor(0.0)
-            for _ in range(self.training_epoch):
+            for _ in range(self.training_iter):
                 batch = self.replay_sample()
-                for _ in range(self.training_batch_epoch):
+                for _ in range(self.training_batch_iter):
                     pdparams, _v_preds = self.calc_pdparam_v(batch)
                     sil_policy_loss, sil_val_loss = self.calc_sil_policy_val_loss(batch, pdparams)
                     sil_loss = sil_policy_loss + sil_val_loss
-                    self.net.training_step(loss=sil_loss, lr_clock=clock)
+                    self.net.train_step(sil_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
                     total_sil_loss += sil_loss
-            sil_loss = total_sil_loss / self.training_epoch
+            sil_loss = total_sil_loss / self.training_iter
             loss = super_loss + sil_loss
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -168,7 +162,7 @@ class PPOSIL(SIL, PPO):
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
@@ -185,10 +179,10 @@ class PPOSIL(SIL, PPO):
         },
         "sil_policy_loss_coef": 1.0,
         "sil_val_loss_coef": 0.01,
-        "training_frequency": 1,
-        "training_batch_epoch": 8,
+        "time_horizon": 32,
+        "training_batch_iter": 8,
+        "training_iter": 8,
         "training_epoch": 8,
-        "normalize_state": false
     }
 
     e.g. special memory_spec

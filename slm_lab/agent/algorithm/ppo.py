@@ -36,7 +36,7 @@ class PPO(ActorCritic):
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 1.0,
+        "lam": 0.95,
         "clip_eps_spec": {
           "name": "linear_decay",
           "start_val": 0.01,
@@ -52,9 +52,8 @@ class PPO(ActorCritic):
           "end_step": 5000,
         },
         "minibatch_size": 256,
-        "training_frequency": 1,
+        "time_horizon": 32,
         "training_epoch": 8,
-        "normalize_state": false
     }
 
     e.g. special net_spec param "shared" to share/separate Actor/Critic
@@ -87,11 +86,12 @@ class PPO(ActorCritic):
             'entropy_coef_spec',
             'val_loss_coef',
             'minibatch_size',
-            'training_frequency',  # horizon
+            'time_horizon',  # training_frequency = actor * horizon
             'training_epoch',
-            'normalize_state',
         ])
         self.to_train = 0
+        self.training_frequency = self.time_horizon * self.body.env.num_envs
+        assert self.memory_spec['name'] == 'OnPolicyBatchReplay', f'PPO only works with OnPolicyBatchReplay, but got {self.memory_spec["name"]}'
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
         self.body.explore_var = self.explore_var_scheduler.start_val
@@ -115,7 +115,7 @@ class PPO(ActorCritic):
     def calc_policy_loss(self, batch, pdparams, advs):
         '''
         The PPO loss function (subscript t is omitted)
-        L^{CLIP+VF+S} = E[ L^CLIP - c1 * L^VF + c2 * S[pi](s) ]
+        L^{CLIP+VF+S} = E[ L^CLIP - c1 * L^VF + c2 * H[pi](s) ]
 
         Breakdown piecewise,
         1. L^CLIP = E[ min(ratio * A, clip(ratio, 1-eps, 1+eps) * A) ]
@@ -123,7 +123,7 @@ class PPO(ActorCritic):
 
         2. L^VF = E[ mse(V(s_t), V^target) ]
 
-        3. S = E[ entropy ]
+        3. H = E[ entropy ]
         '''
         clip_eps = self.body.clip_eps
         action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
@@ -140,7 +140,7 @@ class PPO(ActorCritic):
             old_action_pd = policy_util.init_action_pd(self.body.ActionPD, old_pdparams)
             old_log_probs = old_action_pd.log_prob(actions)
         assert log_probs.shape == old_log_probs.shape
-        ratios = torch.exp(log_probs - old_log_probs)  # clip to prevent overflow
+        ratios = torch.exp(log_probs - old_log_probs)
         logger.debug(f'ratios: {ratios}')
         sur_1 = ratios * advs
         sur_2 = torch.clamp(ratios, 1.0 - clip_eps, 1.0 + clip_eps) * advs
@@ -150,7 +150,7 @@ class PPO(ActorCritic):
 
         # L^VF (inherit from ActorCritic)
 
-        # S entropy bonus
+        # H entropy regularization
         entropy = action_pd.entropy().mean()
         self.body.mean_entropy = entropy  # update logging variable
         ent_penalty = -self.body.entropy_coef * entropy
@@ -167,6 +167,7 @@ class PPO(ActorCritic):
         if self.to_train == 1:
             net_util.copy(self.net, self.old_net)  # update old net
             batch = self.sample()
+            clock.set_batch_size(len(batch))
             _pdparams, v_preds = self.calc_pdparam_v(batch)
             advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
             # piggy back on batch, but remember to not pack or unpack
@@ -177,27 +178,28 @@ class PPO(ActorCritic):
                         batch[k] = math_util.venv_unpack(v)
             total_loss = torch.tensor(0.0)
             for _ in range(self.training_epoch):
-                minibatch = util.sample_minibatch(batch, self.minibatch_size)
-                if self.body.env.is_venv:  # re-pack to restore proper shape
-                    for k, v in minibatch.items():
-                        if k not in ('advs', 'v_targets'):
-                            minibatch[k] = math_util.venv_pack(v, self.body.env.num_envs)
-                advs, v_targets = minibatch['advs'], minibatch['v_targets']
-                pdparams, v_preds = self.calc_pdparam_v(minibatch)
-                policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
-                val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
-                if self.shared:  # shared network
-                    loss = policy_loss + val_loss
-                    self.net.training_step(loss=loss, lr_clock=clock)
-                else:
-                    self.net.training_step(loss=policy_loss, lr_clock=clock)
-                    self.critic.training_step(loss=val_loss, lr_clock=clock)
-                    loss = policy_loss + val_loss
-                total_loss += loss
-            loss = total_loss / self.training_epoch
+                minibatches = util.split_minibatch(batch, self.minibatch_size)
+                for minibatch in minibatches:
+                    if self.body.env.is_venv:  # re-pack to restore proper shape
+                        for k, v in minibatch.items():
+                            if k not in ('advs', 'v_targets'):
+                                minibatch[k] = math_util.venv_pack(v, self.body.env.num_envs)
+                    advs, v_targets = minibatch['advs'], minibatch['v_targets']
+                    pdparams, v_preds = self.calc_pdparam_v(minibatch)
+                    policy_loss = self.calc_policy_loss(minibatch, pdparams, advs)  # from actor
+                    val_loss = self.calc_val_loss(v_preds, v_targets)  # from critic
+                    if self.shared:  # shared network
+                        loss = policy_loss + val_loss
+                        self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                    else:
+                        self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                        self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, clock=clock, global_net=self.global_critic_net)
+                        loss = policy_loss + val_loss
+                    total_loss += loss
+            loss = total_loss / self.training_epoch / len(minibatches)
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan

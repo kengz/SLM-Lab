@@ -9,8 +9,8 @@ echo "--- Installing NodeJS Lab interface ---"
 if which node >/dev/null; then
   echo "Nodejs is already installed"
 else
-  sudo pacman -Sy --needed nodejs npm
-  sudo npm install --unsafe-perm=true --allow-root -g yarn
+  pacman -Sy --needed nodejs npm
+  npm install --unsafe-perm=true --allow-root -g yarn
 fi
 
 echo "--- Installing npm modules for Lab interface ---"
@@ -24,3 +24,6 @@ echo "--- Installing Unity ML agents ---"
 conda activate lab
 pip install unityagents==0.2.0
 pip uninstall -y tensorflow tensorboard
+
+echo "--- Installing VizDoom ---"
+pip install vizdoom==1.1.6

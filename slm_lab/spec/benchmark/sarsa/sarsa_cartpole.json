@@ -1,0 +1,113 @@
+{
+  "sarsa_epsilon_greedy_cartpole": {
+    "agent": [{
+      "name": "SARSA",
+      "algorithm": {
+        "name": "SARSA",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.05,
+          "start_step": 0,
+          "end_step": 10000
+        },
+        "gamma": 0.99,
+        "training_frequency": 32
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "RMSprop",
+          "lr": 0.01
+        },
+        "lr_scheduler_spec": null
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_frame": 100000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 2000,
+      "max_trial": 1,
+      "max_session": 4
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "optim_spec": {
+            "lr__grid_search": [0.0005, 0.001, 0.001, 0.005, 0.01, 0.05, 0.1]
+          }
+        }
+      }]
+    }
+  },
+  "sarsa_boltzmann_cartpole": {
+    "agent": [{
+      "name": "SARSA",
+      "algorithm": {
+        "name": "SARSA",
+        "action_pdtype": "Argmax",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 10000
+        },
+        "gamma": 0.99,
+        "training_frequency": 32
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "RMSprop",
+          "lr": 0.01
+        },
+        "lr_scheduler_spec": null
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_frame": 100000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 2000,
+      "max_trial": 1,
+      "max_session": 1
+    }
+  }
+}

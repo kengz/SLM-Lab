@@ -1,0 +1,352 @@
+{
+  "ddqn_boltzmann_cartpole": {
+    "agent": [{
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 10,
+        "training_iter": 4,
+        "training_frequency": 8,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.0002
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_frame": 400,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [1000, 5000, 10000],
+          }
+        },
+        "net": {
+          "hid_layers_activation__choice": ["tanh", "relu", "selu"],
+          "optim_spec": {
+            "lr__uniform": [0.0001, 0.01]
+          }
+        }
+      }]
+    }
+  },
+  "ddqn_epsilon_greedy_cartpole": {
+    "agent": [{
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 2000,
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 8,
+        "training_iter": 4,
+        "training_frequency": 32,
+        "training_start_step": 10
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [32],
+        "hid_layers_activation": "relu",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_frame": 250,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [1000, 3000, 5000, 10000],
+          }
+        },
+        "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          }
+        }
+      }]
+    }
+  },
+  "ddrqn_boltzmann_cartpole": {
+    "agent": [{
+      "name": "DDRQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 3.0,
+          "end_val": 1.0,
+          "start_step": 0,
+          "end_step": 2000,
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 8,
+        "training_iter": 4,
+        "training_frequency": 32,
+        "training_start_step": 10
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 32,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_frame": 250,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [1000, 3000, 5000, 10000],
+          }
+        },
+        "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          }
+        }
+      }]
+    }
+  },
+  "ddrqn_epsilon_greedy_cartpole": {
+    "agent": [{
+      "name": "DDRQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "epsilon_greedy",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 1.0,
+          "end_val": 0.1,
+          "start_step": 0,
+          "end_step": 2000,
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 8,
+        "training_iter": 4,
+        "training_frequency": 32,
+        "training_start_step": 10
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": true
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 32,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 500,
+          "gamma": 0.9,
+        },
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.9,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_frame": 250,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [1000, 3000, 5000, 10000],
+          }
+        },
+        "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          }
+        }
+      }]
+    }
+  },
+}

@@ -1,55 +1,13 @@
-'''
-Calculations used by algorithms
-All calculations for training shall have a standard API that takes in `batch` from algorithm.sample() method and return np array for calculation.
-`batch` is a dict containing keys to any data type you wish, e.g. {rewards: np.array([...])}
-'''
-from slm_lab.lib import logger
+# Various math calculations used by algorithms
 import numpy as np
 import torch
-
-logger = logger.get_logger(__name__)
 
 
 # general math methods
 
-
-def is_outlier(points, thres=3.5):
-    '''
-    Detects outliers using MAD modified_z_score method, generalized to work on points.
-    From https://stackoverflow.com/a/22357811/3865298
-    @example
-
-    is_outlier([1, 1, 1])
-    # => array([False, False, False], dtype=bool)
-    is_outlier([1, 1, 2])
-    # => array([False, False,  True], dtype=bool)
-    is_outlier([[1, 1], [1, 1], [1, 2]])
-    # => array([False, False,  True], dtype=bool)
-    '''
-    points = np.array(points)
-    if len(points.shape) == 1:
-        points = points[:, None]
-    median = np.median(points, axis=0)
-    diff = np.sum((points - median)**2, axis=-1)
-    diff = np.sqrt(diff)
-    med_abs_deviation = np.median(diff)
-    with np.errstate(divide='ignore', invalid='ignore'):
-        modified_z_score = 0.6745 * diff / med_abs_deviation
-        return modified_z_score > thres
-
-
-def nan_add(a1, a2):
-    '''Add np arrays and reset any nan to 0. Used for adding total_reward'''
-    a1_isnan = np.isnan(a1)
-    if a1_isnan.all():
-        return a2
-    else:
-        if a1_isnan.any():  # reset nan to 0 pre-sum
-            a1 = np.nan_to_num(a1)
-        a12 = a1 + a2
-        if np.isnan(a12).any():  # reset nan to 0 post-sum
-            a12 = np.nan_to_num(a12)
-        return a12
+def center_mean(v):
+    '''Center an array by its mean'''
+    return v - v.mean()
 
 
 def normalize(v):
@@ -116,7 +74,7 @@ def calc_returns(rewards, dones, gamma):
 
 def calc_nstep_returns(rewards, dones, next_v_pred, gamma, n):
     '''
-    Calculate the n-step returns for advantage. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
+    Estimate the advantages using n-step returns. Ref: http://www-anw.cs.umass.edu/~barto/courses/cs687/Chapter%207.pdf
     Also see Algorithm S3 from A3C paper https://arxiv.org/pdf/1602.01783.pdf for the calculation used below
     R^(n)_t = r_{t} + gamma r_{t+1} + ... + gamma^(n-1) r_{t+n-1} + gamma^(n) V(s_{t+n})
     '''
@@ -130,7 +88,7 @@ def calc_nstep_returns(rewards, dones, next_v_pred, gamma, n):
 
 def calc_gaes(rewards, dones, v_preds, gamma, lam):
     '''
-    Calculate GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
+    Estimate the advantages using GAE from Schulman et al. https://arxiv.org/pdf/1506.02438.pdf
     v_preds are values predicted for current states, with one last element as the final next_state
     delta is defined as r + gamma * V(s') - V(s) in eqn 10
     GAE is defined in eqn 16

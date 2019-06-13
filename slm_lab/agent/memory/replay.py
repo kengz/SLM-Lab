@@ -30,10 +30,10 @@ def sample_next_states(head, max_size, ns_idx_offset, batch_idxs, states, ns_buf
         ns_batch_idxs[buffer_ns_locs] = 0
     # guard all against overrun idxs from offset
     ns_batch_idxs = ns_batch_idxs % max_size
-    next_states = util.cond_multiget(states, ns_batch_idxs)
+    next_states = util.batch_get(states, ns_batch_idxs)
     if to_replace:
         # now replace using buffer_idxs and ns_buffer
-        buffer_ns = util.cond_multiget(ns_buffer, buffer_idxs)
+        buffer_ns = util.batch_get(ns_buffer, buffer_idxs)
         next_states[buffer_ns_locs] = buffer_ns
     return next_states
 
@@ -142,7 +142,7 @@ class Replay(Memory):
             if k == 'next_states':
                 batch[k] = sample_next_states(self.head, self.max_size, self.ns_idx_offset, self.batch_idxs, self.states, self.ns_buffer)
             else:
-                batch[k] = util.cond_multiget(getattr(self, k), self.batch_idxs)
+                batch[k] = util.batch_get(getattr(self, k), self.batch_idxs)
         return batch
 
     def sample_idxs(self, batch_size):

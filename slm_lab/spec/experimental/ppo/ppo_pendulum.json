@@ -1,0 +1,370 @@
+{
+  "ppo_shared_pendulum": {
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "val_loss_coef": 0.1,
+        "time_horizon": 8,
+        "training_epoch": 8
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": true,
+        "hid_layers": [32],
+        "hid_layers_activation": "relu",
+        "clip_grad_val": 10.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "max_t": null,
+      "max_frame": 500,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          }
+        }
+      }]
+    }
+  },
+  "ppo_separate_pendulum": {
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "val_loss_coef": 0.85,
+        "time_horizon": 8,
+        "training_epoch": 8
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [64],
+        "hid_layers_activation": "tanh",
+        "clip_grad_val": 10.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.01
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.05
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "max_t": null,
+      "max_frame": 500,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          }
+        }
+      }]
+    }
+  },
+  "ppo_rnn_shared_pendulum": {
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "val_loss_coef": 0.1,
+        "time_horizon": 8,
+        "training_epoch": 8
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "shared": true,
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 32,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": 10.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "max_t": null,
+      "max_frame": 500,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          }
+        }
+      }]
+    }
+  },
+  "ppo_rnn_separate_pendulum": {
+    "agent": [{
+      "name": "PPO",
+      "algorithm": {
+        "name": "PPO",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": 0.95,
+        "clip_eps_spec": {
+          "name": "linear_decay",
+          "start_val": 0.10,
+          "end_val": 0.01,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 1000,
+          "end_step": 5000,
+        },
+        "val_loss_coef": 0.1,
+        "time_horizon": 8,
+        "training_epoch": 8
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "RecurrentNet",
+        "shared": false,
+        "cell_type": "GRU",
+        "fc_hid_layers": [],
+        "hid_layers_activation": "relu",
+        "rnn_hidden_size": 32,
+        "rnn_num_layers": 1,
+        "seq_len": 4,
+        "clip_grad_val": 10.0,
+        "use_same_optim": false,
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "Pendulum-v0",
+      "max_t": null,
+      "max_frame": 500,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 100,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "actor_optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          },
+          "critic_optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          }
+        }
+      }]
+    }
+  },
+}

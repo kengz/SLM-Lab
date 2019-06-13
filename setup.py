@@ -36,7 +36,7 @@ class PyTest(TestCommand):
 
 setup(
     name='slm_lab',
-    version='3.0.0',
+    version='4.0.0',
     description='Modular Deep Reinforcement Learning framework in PyTorch.',
     long_description='https://github.com/kengz/slm_lab',
     keywords='SLM Lab',
@@ -44,7 +44,9 @@ setup(
     author='kengz,lgraesser',
     author_email='kengzwl@gmail.com',
     license='MIT',
-    packages=[],
+    packages=['slm_lab'],
+    # NOTE: use the optimized conda dependencies
+    install_requires=[],
     zip_safe=False,
     include_package_data=True,
     dependency_links=[],

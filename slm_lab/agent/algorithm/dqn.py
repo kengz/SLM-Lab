@@ -43,11 +43,10 @@ class VanillaDQN(SARSA):
             "end_step": 1000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 10,
         "training_start_step": 10,
-        "normalize_state": false
     }
     '''
 
@@ -66,11 +65,10 @@ class VanillaDQN(SARSA):
             # these control the trade off between exploration and exploitaton
             'explore_var_spec',
             'gamma',  # the discount factor
-            'training_batch_epoch',  # how many gradient updates per batch
-            'training_epoch',  # how many batches to train each time
+            'training_batch_iter',  # how many gradient updates per batch
+            'training_iter',  # how many batches to train each time
             'training_frequency',  # how often to train (once a few timesteps)
             'training_start_step',  # how long before starting training
-            'normalize_state',
         ])
         super().init_algorithm_params()
 
@@ -79,15 +77,15 @@ class VanillaDQN(SARSA):
         '''Initialize the neural network used to learn the Q function from the spec'''
         if self.algorithm_spec['name'] == 'VanillaDQN':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for VanillaDQN; use DQN.'
-        if global_nets is None:
-            in_dim = self.body.state_dim
-            out_dim = net_util.get_out_dim(self.body)
-            NetClass = getattr(net, self.net_spec['type'])
-            self.net = NetClass(self.net_spec, in_dim, out_dim)
-            self.net_names = ['net']
-        else:
-            util.set_attr(self, global_nets)
-            self.net_names = list(global_nets.keys())
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body)
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net_names = ['net']
+        # init net optimizer and its lr scheduler
+        self.optim = net_util.get_optim(self.net, self.net.optim_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
     def calc_q_loss(self, batch):
@@ -119,8 +117,6 @@ class VanillaDQN(SARSA):
     def sample(self):
         '''Samples a batch from memory of size self.memory_spec['batch_size']'''
         batch = self.body.memory.sample()
-        if self.normalize_state:
-            batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 
@@ -138,16 +134,17 @@ class VanillaDQN(SARSA):
         clock = self.body.env.clock
         if self.to_train == 1:
             total_loss = torch.tensor(0.0)
-            for _ in range(self.training_epoch):
+            for _ in range(self.training_iter):
                 batch = self.sample()
-                for _ in range(self.training_batch_epoch):
+                clock.set_batch_size(len(batch))
+                for _ in range(self.training_batch_iter):
                     loss = self.calc_q_loss(batch)
-                    self.net.training_step(loss=loss, lr_clock=clock)
+                    self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
                     total_loss += loss
-            loss = total_loss / (self.training_epoch * self.training_batch_epoch)
+            loss = total_loss / (self.training_iter * self.training_batch_iter)
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
@@ -179,16 +176,16 @@ class DQNBase(VanillaDQN):
         '''Initialize networks'''
         if self.algorithm_spec['name'] == 'DQNBase':
             assert all(k not in self.net_spec for k in ['update_type', 'update_frequency', 'polyak_coef']), 'Network update not available for DQNBase; use DQN.'
-        if global_nets is None:
-            in_dim = self.body.state_dim
-            out_dim = net_util.get_out_dim(self.body)
-            NetClass = getattr(net, self.net_spec['type'])
-            self.net = NetClass(self.net_spec, in_dim, out_dim)
-            self.target_net = NetClass(self.net_spec, in_dim, out_dim)
-            self.net_names = ['net', 'target_net']
-        else:
-            util.set_attr(self, global_nets)
-            self.net_names = list(global_nets.keys())
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body)
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.target_net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net_names = ['net', 'target_net']
+        # init net optimizer and its lr scheduler
+        self.optim = net_util.get_optim(self.net, self.net.optim_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
         self.online_net = self.target_net
         self.eval_net = self.target_net
@@ -217,8 +214,7 @@ class DQNBase(VanillaDQN):
         return q_loss
 
     def update_nets(self):
-        total_t = self.body.env.clock.total_t
-        if total_t % self.net.update_frequency == 0:
+        if util.frame_mod(self.body.env.clock.frame, self.net.update_frequency, self.body.env.num_envs):
             if self.net.update_type == 'replace':
                 net_util.copy(self.net, self.target_net)
             elif self.net.update_type == 'polyak':
@@ -250,8 +246,8 @@ class DQN(DQNBase):
             "end_step": 1000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 10,
         "training_start_step": 10
     }
@@ -278,8 +274,8 @@ class DoubleDQN(DQN):
             "end_step": 1000,
         },
         "gamma": 0.99,
-        "training_batch_epoch": 8,
-        "training_epoch": 4,
+        "training_batch_iter": 8,
+        "training_iter": 4,
         "training_frequency": 10,
         "training_start_step": 10
     }

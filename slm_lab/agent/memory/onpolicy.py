@@ -38,7 +38,6 @@ class OnPolicyReplay(Memory):
     def __init__(self, memory_spec, body):
         super().__init__(memory_spec, body)
         # NOTE for OnPolicy replay, frequency = episode; for other classes below frequency = frames
-        util.set_attr(self, self.body.agent.agent_spec['algorithm'], ['training_frequency'])
         # Don't want total experiences reset when memory is
         self.is_episodic = True
         self.size = 0  # total experiences stored
@@ -53,7 +52,7 @@ class OnPolicyReplay(Memory):
         for k in self.data_keys:
             setattr(self, k, [])
         self.cur_epi_data = {k: [] for k in self.data_keys}
-        self.most_recent = [None] * len(self.data_keys)
+        self.most_recent = (None,) * len(self.data_keys)
         self.size = 0
 
     @lab_api
@@ -63,7 +62,7 @@ class OnPolicyReplay(Memory):
 
     def add_experience(self, state, action, reward, next_state, done):
         '''Interface helper method for update() to add experience to memory'''
-        self.most_recent = [state, action, reward, next_state, done]
+        self.most_recent = (state, action, reward, next_state, done)
         for idx, k in enumerate(self.data_keys):
             self.cur_epi_data[k].append(self.most_recent[idx])
         # If episode ended, add to memory and clear cur_epi_data
@@ -78,10 +77,6 @@ class OnPolicyReplay(Memory):
         # Track memory size and num experiences
         self.size += 1
         self.seen_size += 1
-
-    def get_most_recent_experience(self):
-        '''Returns the most recent experience'''
-        return self.most_recent
 
     def sample(self):
         '''

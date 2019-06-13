@@ -1,13 +1,12 @@
 from abc import ABC, abstractmethod
+from slm_lab.agent.net import net_util
+import pydash as ps
 import torch
+import torch.nn as nn
 
 
 class Net(ABC):
-    '''
-    Abstract class ancestor to all Nets,
-    specifies the necessary design blueprint for algorithm to work in Lab.
-    Mostly, implement just the abstract methods and properties.
-    '''
+    '''Abstract Net class to define the API methods'''
 
     def __init__(self, net_spec, in_dim, out_dim):
         '''
@@ -26,6 +25,21 @@ class Net(ABC):
                 self.device = 'cpu'
         else:
             self.device = 'cpu'
+
+    @net_util.dev_check_train_step
+    def train_step(self, loss, optim, lr_scheduler, clock, global_net=None):
+        lr_scheduler.step(epoch=ps.get(clock, 'frame'))
+        optim.zero_grad()
+        loss.backward()
+        if self.clip_grad_val is not None:
+            nn.utils.clip_grad_norm_(self.parameters(), self.clip_grad_val)
+        if global_net is not None:
+            net_util.push_global_grads(self, global_net)
+        optim.step()
+        if global_net is not None:
+            net_util.copy(global_net, self)
+        clock.tick('opt_step')
+        return loss
 
     def store_grad_norms(self):
         '''Stores the gradient norms for debugging.'''

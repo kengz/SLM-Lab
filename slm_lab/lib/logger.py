@@ -20,12 +20,13 @@ sh = logging.StreamHandler(sys.stdout)
 sh.setFormatter(color_formatter)
 lab_logger = logging.getLogger()
 lab_logger.handlers = FixedList([sh])
+logging.getLogger('ray').propagate = False  # hack to mute poorly designed ray TF warning log
 
 # this will trigger from Experiment init on reload(logger)
-if os.environ.get('PREPATH') is not None:
+if os.environ.get('LOG_PREPATH') is not None:
     warnings.filterwarnings('ignore', category=pd.io.pytables.PerformanceWarning)
 
-    log_filepath = os.environ['PREPATH'] + '.log'
+    log_filepath = os.environ['LOG_PREPATH'] + '.log'
     os.makedirs(os.path.dirname(log_filepath), exist_ok=True)
     # create file handler
     formatter = logging.Formatter(LOG_FORMAT)
@@ -38,15 +39,6 @@ if os.environ.get('LOG_LEVEL'):
     lab_logger.setLevel(os.environ['LOG_LEVEL'])
 else:
     lab_logger.setLevel('INFO')
-
-
-def to_init(spec, info_space):
-    '''
-    Whether the lab's logger had been initialized:
-    - prepath present in env
-    - importlib.reload(logger) had been called
-    '''
-    return os.environ.get('PREPATH') is None
 
 
 def set_level(lvl):
@@ -74,8 +66,8 @@ def info(msg, *args, **kwargs):
     return lab_logger.info(msg, *args, **kwargs)
 
 
-def warn(msg, *args, **kwargs):
-    return lab_logger.warn(msg, *args, **kwargs)
+def warning(msg, *args, **kwargs):
+    return lab_logger.warning(msg, *args, **kwargs)
 
 
 def get_logger(__name__):

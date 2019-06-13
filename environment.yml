@@ -5,56 +5,42 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - autopep8=1.3.3=py_0
-  - blas=1.1=openblas
-  - colorlog=3.1.0=py36_0
-  - coverage=4.4.2=py36_0
-  - cython=0.27.3=py36_0
-  - flaky=3.4.0=py_0
-  - hdf5=1.10.1=1
-  - ipykernel=4.7.0=py36_0
+  - autopep8=1.4.4
+  - colorlog=4.0.2
+  - coverage=4.5.3
+  - flaky=3.5.3
   - libgcc
-  - numpy=1.14.3=py36_blas_openblas_200
-  - openblas=0.2.20=7
-  - openpyxl=2.5.0b1=py36_0
-  - openssl=1.0.2n=0
-  - pandas=0.22.0=py36_0
-  - pillow=5.0.0=py36_0
-  - pip=9.0.1=py36_1
-  - plotly=3.4.2
+  - numpy=1.16.3
+  - openpyxl=2.6.1
+  - pandas=0.24.2
+  - pip=19.1.1
   - plotly-orca=1.2.1
-  - psutil=5.4.7
-  - pycodestyle=2.3.1=py36_0
-  - pydash=4.2.1=py_0
-  - pytest-cov=2.5.1=py36_0
-  - pytest-timeout=1.2.1=py_0
-  - pytest=3.6.0=py36_0
-  - python=3.6.4=0
-  - pyyaml=3.12=py36_1
-  - regex=2017.12.12=py36_0
-  - requests=2.18.4=py36_1
-  - scipy=1.0.0=py36_blas_openblas_201
-  - setuptools=38.4.0=py36_0
-  - six=1.11.0=py36_1
-  - ujson=1.35=py36_0
-  - urllib3=1.22=py36_0
-  - wheel=0.30.0=py36_2
-  - xlrd=1.1.0=py_2
-  - pytorch=1.0.1
+  - psutil=5.6.2
+  - pycodestyle=2.5.0
+  - pydash=4.2.1
+  - pytest-cov=2.7.1
+  - pytest-timeout=1.3.3
+  - pytest=4.5.0
+  - python=3.7.3
+  - pytorch=1.1.0
+  - pyyaml=5.1
+  - regex=2019.05.25
+  - scipy=1.3.0
+  - ujson=1.35
+  - xlrd=1.2.0
   - pip:
-    - atari-py==0.1.1
     - box2d-py==2.3.8
     - cloudpickle==0.5.2
     - colorlover==0.3.0
-    - deap==1.2.2
-    - gym==0.10.9
+    - opencv-python==4.1.0.25
+    - plotly==3.9.0
+    - pyopengl==3.1.0
+    - ray==0.7.0
+    - redis==2.10.6
+    - xvfbwrapper==0.2.9
+    - gym==0.12.1
     - gym[atari]
     - gym[box2d]
     - gym[classic_control]
     - roboschool==1.0.46
-    - opencv-python==3.4.0.12
-    - pyopengl==3.1.0
-    - ray==0.5.3
-    - redis==2.10.6
-    - xvfbwrapper==0.2.9
-    - vizdoom==1.1.6
+    - atari-py

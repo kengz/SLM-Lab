@@ -39,7 +39,6 @@ class SARSA(Algorithm):
         },
         "gamma": 0.99,
         "training_frequency": 10,
-        "normalize_state": false
     }
     '''
 
@@ -60,7 +59,6 @@ class SARSA(Algorithm):
             'explore_var_spec',
             'gamma',  # the discount factor
             'training_frequency',  # how often to train for batch training (once each training_frequency time steps)
-            'normalize_state',
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
@@ -72,15 +70,15 @@ class SARSA(Algorithm):
         '''Initialize the neural network used to learn the Q function from the spec'''
         if 'Recurrent' in self.net_spec['type']:
             self.net_spec.update(seq_len=self.net_spec['seq_len'])
-        if global_nets is None:
-            in_dim = self.body.state_dim
-            out_dim = net_util.get_out_dim(self.body)
-            NetClass = getattr(net, self.net_spec['type'])
-            self.net = NetClass(self.net_spec, in_dim, out_dim)
-            self.net_names = ['net']
-        else:
-            util.set_attr(self, global_nets)
-            self.net_names = list(global_nets.keys())
+        in_dim = self.body.state_dim
+        out_dim = net_util.get_out_dim(self.body)
+        NetClass = getattr(net, self.net_spec['type'])
+        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net_names = ['net']
+        # init net optimizer and its lr scheduler
+        self.optim = net_util.get_optim(self.net, self.net.optim_spec)
+        self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
+        net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
     @lab_api
@@ -97,8 +95,6 @@ class SARSA(Algorithm):
     def act(self, state):
         '''Note, SARSA is discrete-only'''
         body = self.body
-        if self.normalize_state:
-            state = policy_util.update_online_stats_and_normalize_state(body, state)
         action = self.action_policy(state, self, body)
         return action.cpu().squeeze().numpy()  # squeeze to handle scalar
 
@@ -109,8 +105,6 @@ class SARSA(Algorithm):
         # this is safe for next_action at done since the calculated act_next_q_preds will be multiplied by (1 - batch['dones'])
         batch['next_actions'] = np.zeros_like(batch['actions'])
         batch['next_actions'][:-1] = batch['actions'][1:]
-        if self.normalize_state:
-            batch = policy_util.normalize_states_and_next_states(self.body, batch)
         batch = util.to_torch_batch(batch, self.net.device, self.body.memory.is_episodic)
         return batch
 
@@ -145,11 +139,12 @@ class SARSA(Algorithm):
         clock = self.body.env.clock
         if self.to_train == 1:
             batch = self.sample()
+            clock.set_batch_size(len(batch))
             loss = self.calc_q_loss(batch)
-            self.net.training_step(loss=loss, lr_clock=clock)
+            self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
             # reset
             self.to_train = 0
-            logger.debug(f'Trained {self.name} at epi: {clock.epi}, total_t: {clock.total_t}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
+            logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.total_reward}, loss: {loss:g}')
             return loss.item()
         else:
             return np.nan
