@@ -223,7 +223,7 @@ def calc_experiment_df(trial_data_dict, info_prepath=None):
     experiment_df = experiment_df.reindex(sorted_cols, axis=1)
     experiment_df.sort_values(by=['strength'], ascending=False, inplace=True)
     # insert trial index
-    experiment_df.insert(0, 'trial', experiment_df.index)
+    experiment_df.insert(0, 'trial', experiment_df.index.astype(np.int))
     if info_prepath is not None:
         util.write(experiment_df, f'{info_prepath}_experiment_df.csv')
         # save important metrics in info_prepath directly
