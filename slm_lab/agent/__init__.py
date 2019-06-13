@@ -2,7 +2,7 @@
 from slm_lab.agent import algorithm, memory
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.net import net_util
-from slm_lab.lib import logger, util
+from slm_lab.lib import logger, util, viz
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import pandas as pd
@@ -94,7 +94,6 @@ class Body:
         self.ckpt_total_reward = np.nan
         self.total_reward = 0  # init to 0, but dont ckpt before end of an epi
         self.total_reward_ma = np.nan
-        self.ma_window = 100
         # store current and best reward_ma for model checkpointing and early termination if all the environments are solved
         self.best_reward_ma = -np.inf
         self.eval_reward_ma = np.nan
@@ -173,7 +172,7 @@ class Body:
         # append efficiently to df
         self.train_df.loc[len(self.train_df)] = row
         # update current reward_ma
-        self.total_reward_ma = self.train_df[-self.ma_window:]['total_reward'].mean()
+        self.total_reward_ma = self.train_df[-viz.PLOT_MA_WINDOW:]['total_reward'].mean()
         self.train_df.iloc[-1]['total_reward_ma'] = self.total_reward_ma
 
     def eval_ckpt(self, eval_env, total_reward):
@@ -183,7 +182,7 @@ class Body:
         # append efficiently to df
         self.eval_df.loc[len(self.eval_df)] = row
         # update current reward_ma
-        self.eval_reward_ma = self.eval_df[-self.ma_window:]['total_reward'].mean()
+        self.eval_reward_ma = self.eval_df[-viz.PLOT_MA_WINDOW:]['total_reward'].mean()
         self.eval_df.iloc[-1]['total_reward_ma'] = self.eval_reward_ma
 
     def get_mean_lr(self):
