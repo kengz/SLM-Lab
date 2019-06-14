@@ -10,7 +10,7 @@ import torch
 
 NUM_EVAL = 4
 METRICS_COLS = [
-    'mean_return',
+    'final_return_ma',
     'strength', 'max_strength', 'final_strength',
     'sample_efficiency', 'training_efficiency',
     'stability', 'consistency',
@@ -119,7 +119,7 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
     frames = session_df['frame']
     opt_steps = session_df['opt_step']
 
-    mean_return = mean_returns.mean()
+    final_return_ma = mean_returns[-viz.PLOT_MA_WINDOW:].mean()
     str_, local_strs = calc_strength(mean_returns, mean_rand_returns)
     max_str, final_str = local_strs.max(), local_strs.iloc[-1]
     sample_eff, local_sample_effs = calc_efficiency(local_strs, frames)
@@ -128,7 +128,7 @@ def calc_session_metrics(session_df, env_name, info_prepath=None, df_mode=None):
 
     # all the scalar session metrics
     scalar = {
-        'mean_return': mean_return,
+        'final_return_ma': final_return_ma,
         'strength': str_,
         'max_strength': max_str,
         'final_strength': final_str,
@@ -181,7 +181,7 @@ def calc_trial_metrics(session_metrics_list, info_prepath=None):
 
     # all the scalar trial metrics
     scalar = {
-        'mean_return': mean_scalar['mean_return'],
+        'final_return_ma': mean_scalar['final_return_ma'],
         'strength': mean_scalar['strength'],
         'max_strength': mean_scalar['max_strength'],
         'final_strength': mean_scalar['final_strength'],
