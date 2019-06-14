@@ -74,8 +74,15 @@
       "distributed": false,
       "log_frequency": 50000,
       "eval_frequency": 50000,
-      "max_session": 1,
+      "max_session": 4,
       "max_trial": 1,
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "lam__grid_search": [0.50, 0.70, 0.90, 0.95, 0.97, 0.99]
+        }
+      }]
     }
   }
 }

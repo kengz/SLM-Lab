@@ -1,5 +1,5 @@
 {
-  "a2c_gae_pong": {
+  "a2c_nstep_pong": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -8,8 +8,8 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 0.95,
-        "num_step_returns": null,
+        "lam": null,
+        "num_step_returns": 5,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -18,10 +18,10 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 32
+        "training_frequency": 5
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -68,14 +68,21 @@
     }],
     "body": {
       "product": "outer",
-      "num": 1
+      "num": 1,
     },
     "meta": {
       "distributed": false,
       "log_frequency": 50000,
       "eval_frequency": 50000,
-      "max_session": 1,
-      "max_trial": 1,
+      "max_session": 4,
+      "max_trial": 1
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "num_step_returns__grid_search": [1, 3, 5, 7, 9, 11]
+        }
+      }]
     }
   }
 }
