@@ -1,0 +1,9 @@
+{
+  "slm_lab/spec/benchmark/reinforce/reinforce_cartpole.json": {
+    "reinforce_cartpole": "search",
+    "reinforce_baseline_cartpole": "search"
+  },
+  "slm_lab/spec/benchmark/sarsa/sarsa_cartpole.json": {
+    "sarsa_epsilon_greedy_cartpole": "search"
+  }
+}
