@@ -1,13 +1,13 @@
 {
-  "slm_lab/spec/experimental/a2c/a2c_gae_search.json": {
+  "slm_lab/spec/experimental/a2c/a2c_gae_lam_search.json": {
     "a2c_gae_pong": "search",
     "a2c_gae_breakout": "search"
   },
-  "slm_lab/spec/experimental/a2c/a2c_nstep_search.json": {
+  "slm_lab/spec/experimental/a2c/a2c_nstep_n_search.json": {
     "a2c_nstep_pong": "search",
     "a2c_nstep_breakout": "search"
   },
-  "slm_lab/spec/experimental/ppo/ppo_search.json": {
+  "slm_lab/spec/experimental/ppo/ppo_lam_search.json": {
     "ppo_pong": "search",
     "ppo_breakout": "search"
   }
