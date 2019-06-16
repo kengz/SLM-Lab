@@ -75,8 +75,9 @@ def ray_trainable(config, reporter):
         ... # normal ray config with sample, grid search etc.
     }
     '''
-    from slm_lab.experiment.control import Trial
     import os
+    os.environ.pop('CUDA_VISIBLE_DEVICES', None)  # remove CUDA id restriction from ray
+    from slm_lab.experiment.control import Trial
     # restore data carried from ray.run() config
     spec = config.pop('spec')
     spec = inject_config(spec, config)
@@ -85,7 +86,6 @@ def ray_trainable(config, reporter):
     spec['meta']['trial'] = trial_index - 1
     spec_util.tick(spec, 'trial')
     # run SLM Lab trial
-    os.environ.pop('CUDA_VISIBLE_DEVICES', None)  # remove CUDA id restriction from ray
     metrics = Trial(spec).run()
     metrics.update(config)  # carry config for analysis too
     # ray report to carry data in ray trial.last_result
