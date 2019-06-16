@@ -78,7 +78,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
+      "distributed": "synced",
       "log_frequency": 50000,
       "eval_frequency": 50000,
       "max_session": 8,
