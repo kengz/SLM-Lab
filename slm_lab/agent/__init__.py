@@ -65,6 +65,7 @@ class Agent:
     def close(self):
         '''Close and cleanup agent at the end of a session, e.g. save model'''
         self.save()
+        del self.algorithm  # cleanup
 
 
 class Body:
