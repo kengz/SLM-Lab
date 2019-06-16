@@ -61,7 +61,7 @@
           "name": "LinearToZero",
           "frame": 1e7
         },
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
