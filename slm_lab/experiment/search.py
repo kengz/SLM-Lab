@@ -52,7 +52,7 @@ def infer_trial_resources(spec):
     requested_gpu = meta_spec['max_session'] if use_gpu else 0
     gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
     num_gpus = min(gpu_count, requested_gpu)
-    resources_per_trial = {'cpu': 1, 'extra_cpu': num_cpus, 'extra_gpu': num_gpus}
+    resources_per_trial = {'cpu': num_cpus, 'gpu': num_gpus}
     return resources_per_trial
 
 
@@ -84,6 +84,7 @@ def ray_trainable(config, reporter):
     spec['meta']['trial'] = trial_index - 1
     spec_util.tick(spec, 'trial')
     # run SLM Lab trial
+    os.environ.pop('CUDA_VISIBLE_DEVICES', None)  # remove CUDA id restriction from ray
     metrics = Trial(spec).run()
     metrics.update(config)  # carry config for analysis too
     # ray report to carry data in ray trial.last_result
