@@ -52,7 +52,7 @@ def infer_trial_resources(spec):
     requested_gpu = meta_spec['max_session'] if use_gpu else 0
     gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
     num_gpus = min(gpu_count, requested_gpu)
-    resources_per_trial = {'cpu': num_cpus, 'gpu': num_gpus}
+    resources_per_trial = {'cpu': num_cpus, 'gpu': num_gpus, 'extra_cpu': num_cpus, 'extra_gpu': num_gpus}
     return resources_per_trial
 
 
