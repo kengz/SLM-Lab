@@ -76,6 +76,7 @@ def ray_trainable(config, reporter):
     }
     '''
     from slm_lab.experiment.control import Trial
+    import os
     # restore data carried from ray.run() config
     spec = config.pop('spec')
     spec = inject_config(spec, config)
