@@ -125,7 +125,7 @@
           "lr": 1e-4
         },
         "lr_scheduler_spec": null,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -142,7 +142,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": "shared",
+      "distributed": "synced",
       "log_frequency": 50000,
       "eval_frequency": 50000,
       "max_session": 16,
