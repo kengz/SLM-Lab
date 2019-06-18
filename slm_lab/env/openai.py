@@ -69,4 +69,3 @@ class OpenAIEnv(BaseEnv):
     @lab_api
     def close(self):
         self.u_env.close()
-        del self.u_env

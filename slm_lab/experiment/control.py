@@ -7,7 +7,6 @@ from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
-import gc
 import torch
 import torch.multiprocessing as mp
 
@@ -109,7 +108,6 @@ class Session:
         self.agent.close()
         self.env.close()
         self.eval_env.close()
-        gc.collect()
         torch.cuda.empty_cache()
         logger.info(f'Session {self.index} done')
 
