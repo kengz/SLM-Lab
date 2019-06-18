@@ -8,7 +8,6 @@ from slm_lab.experiment import search
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
-from xvfbwrapper import Xvfb
 import os
 import pydash as ps
 import sys
@@ -86,9 +85,4 @@ def main():
 if __name__ == '__main__':
     torch.set_num_threads(1)  # prevent multithread slowdown
     mp.set_start_method('spawn')  # for distributed pytorch to work
-    if sys.platform == 'darwin':
-        # avoid xvfb on MacOS: https://github.com/nipy/nipype/issues/1400
-        main()
-    else:
-        with Xvfb() as xvfb:  # safety context for headless machines
-            main()
+    main()
