@@ -120,6 +120,7 @@ def run_ray_search(spec):
         resources_per_trial=infer_trial_resources(spec),
         num_samples=spec['meta']['max_trial'],
         reuse_actors=False,
+        server_port=util.get_port(),
     )
     trial_data_dict = {}  # data for Lab Experiment to analyze
     for ray_trial in ray_trials:
@@ -143,5 +144,6 @@ def run_param_specs(param_specs):
         resources_per_trial=infer_trial_resources(param_specs[0]),
         num_samples=1,
         reuse_actors=False,
+        server_port=util.get_port(),
     )
     ray.shutdown()

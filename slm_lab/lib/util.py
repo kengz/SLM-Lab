@@ -206,6 +206,14 @@ def get_lab_mode():
     return os.environ.get('lab_mode')
 
 
+def get_port():
+    '''Get a unique port number for a run time as 4xxx, where xxx is the last 3 digits from the PID, front-padded with 0'''
+    # get 3 digits from pid
+    xxx = ps.pad_start(str(os.getpid())[-3:], 3, 0)
+    port = int(f'4{xxx}')
+    return port
+
+
 def get_prepath(spec, unit='experiment'):
     spec_name = spec['name']
     meta_spec = spec['meta']

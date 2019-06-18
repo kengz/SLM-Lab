@@ -58,15 +58,8 @@ def read_spec_and_run(spec_file, spec_name, lab_mode):
         param_specs = spec_util.get_param_specs(spec)
         device_count = torch.cuda.device_count() or util.NUM_CPUS
         num_pro = int(device_count/spec['meta']['max_session'])
-        # can't use Pool since it cannot spawn nested Process, which is needed for VecEnv and parallel sessions. So these will run and wait by chunks
-        workers = [mp.Process(target=run_spec, args=(spec, lab_mode)) for spec in param_specs]
-        for chunk_w in ps.chunk(workers, num_pro):
-            for w in chunk_w:
-                w.start()
-            for w in chunk_w:
-                w.join()
-        # param_specs = spec_util.get_param_specs(spec)
-        # search.run_param_specs(param_specs)
+        param_specs = spec_util.get_param_specs(spec)
+        search.run_param_specs(param_specs)
 
 
 def main():
