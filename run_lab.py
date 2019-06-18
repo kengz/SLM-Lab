@@ -56,9 +56,6 @@ def read_spec_and_run(spec_file, spec_name, lab_mode):
         run_spec(spec, lab_mode)
     else:  # spec is parametrized; run them in parallel using ray
         param_specs = spec_util.get_param_specs(spec)
-        device_count = torch.cuda.device_count() or util.NUM_CPUS
-        num_pro = int(device_count/spec['meta']['max_session'])
-        param_specs = spec_util.get_param_specs(spec)
         search.run_param_specs(param_specs)
 
 
