@@ -1,5 +1,5 @@
 {
-  "a2c_nstep_atari": {
+  "a2c_gae_pong": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -8,8 +8,8 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": null,
-        "num_step_returns": 5,
+        "lam": 0.95,
+        "num_step_returns": null,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -18,10 +18,10 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 5
+        "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyBatchReplay"
+        "name": "OnPolicyBatchReplay",
       },
       "net": {
         "type": "ConvNet",
@@ -58,7 +58,7 @@
       }
     }],
     "env": [{
-      "name": "${env}",
+      "name": "PongNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
@@ -68,22 +68,24 @@
     }],
     "body": {
       "product": "outer",
-      "num": 1,
+      "num": 1
     },
     "meta": {
       "distributed": false,
       "log_frequency": 50000,
       "eval_frequency": 50000,
       "max_session": 4,
-      "max_trial": 1
+      "max_trial": 1,
     },
-    "spec_params": {
-      "env": [
-        "BreakoutNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SeaquestNoFrameskip-v4"
-      ]
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "lam__grid_search": [0.50, 0.70, 0.90, 0.95, 0.97, 0.99]
+        }
+      }]
     }
   },
-  "a2c_nstep_atari_full": {
+  "a2c_gae_breakout": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -92,8 +94,8 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": null,
-        "num_step_returns": 5,
+        "lam": 0.95,
+        "num_step_returns": null,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -102,10 +104,10 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 5
+        "training_frequency": 32
       },
       "memory": {
-        "name": "OnPolicyBatchReplay"
+        "name": "OnPolicyBatchReplay",
       },
       "net": {
         "type": "ConvNet",
@@ -142,7 +144,7 @@
       }
     }],
     "env": [{
-      "name": "${env}",
+      "name": "BreakoutNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
@@ -152,19 +154,21 @@
     }],
     "body": {
       "product": "outer",
-      "num": 1,
+      "num": 1
     },
     "meta": {
       "distributed": false,
       "log_frequency": 50000,
       "eval_frequency": 50000,
       "max_session": 4,
-      "max_trial": 1
+      "max_trial": 1,
     },
-    "spec_params": {
-      "env": [
-        "AdventureNoFrameskip-v4", "AirRaidNoFrameskip-v4", "AlienNoFrameskip-v4", "AmidarNoFrameskip-v4", "AssaultNoFrameskip-v4", "AsterixNoFrameskip-v4", "AsteroidsNoFrameskip-v4", "AtlantisNoFrameskip-v4", "BankHeistNoFrameskip-v4", "BattleZoneNoFrameskip-v4", "BeamRiderNoFrameskip-v4", "BerzerkNoFrameskip-v4", "BowlingNoFrameskip-v4", "BoxingNoFrameskip-v4", "BreakoutNoFrameskip-v4", "CarnivalNoFrameskip-v4", "CentipedeNoFrameskip-v4", "ChopperCommandNoFrameskip-v4", "CrazyClimberNoFrameskip-v4", "DefenderNoFrameskip-v4", "DemonAttackNoFrameskip-v4", "DoubleDunkNoFrameskip-v4", "ElevatorActionNoFrameskip-v4", "FishingDerbyNoFrameskip-v4", "FreewayNoFrameskip-v4", "FrostbiteNoFrameskip-v4", "GopherNoFrameskip-v4", "GravitarNoFrameskip-v4", "HeroNoFrameskip-v4", "IceHockeyNoFrameskip-v4", "JamesbondNoFrameskip-v4", "JourneyEscapeNoFrameskip-v4", "KangarooNoFrameskip-v4", "KrullNoFrameskip-v4", "KungFuMasterNoFrameskip-v4", "MontezumaRevengeNoFrameskip-v4", "MsPacmanNoFrameskip-v4", "NameThisGameNoFrameskip-v4", "PhoenixNoFrameskip-v4", "PitfallNoFrameskip-v4", "PongNoFrameskip-v4", "PooyanNoFrameskip-v4", "PrivateEyeNoFrameskip-v4", "QbertNoFrameskip-v4", "RiverraidNoFrameskip-v4", "RoadRunnerNoFrameskip-v4", "RobotankNoFrameskip-v4", "SeaquestNoFrameskip-v4", "SkiingNoFrameskip-v4", "SolarisNoFrameskip-v4", "SpaceInvadersNoFrameskip-v4", "StarGunnerNoFrameskip-v4", "TennisNoFrameskip-v4", "TimePilotNoFrameskip-v4", "TutankhamNoFrameskip-v4", "UpNDownNoFrameskip-v4", "VentureNoFrameskip-v4", "VideoPinballNoFrameskip-v4", "WizardOfWorNoFrameskip-v4", "YarsRevengeNoFrameskip-v4", "ZaxxonNoFrameskip-v4"
-      ]
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "lam__grid_search": [0.50, 0.70, 0.90, 0.95, 0.97, 0.99]
+        }
+      }]
     }
   }
 }

@@ -8,7 +8,6 @@ from slm_lab.experiment import search
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
-from xvfbwrapper import Xvfb
 import os
 import pydash as ps
 import sys
@@ -57,17 +56,7 @@ def read_spec_and_run(spec_file, spec_name, lab_mode):
         run_spec(spec, lab_mode)
     else:  # spec is parametrized; run them in parallel using ray
         param_specs = spec_util.get_param_specs(spec)
-        device_count = torch.cuda.device_count() or util.NUM_CPUS
-        num_pro = int(device_count/spec['meta']['max_session'])
-        # can't use Pool since it cannot spawn nested Process, which is needed for VecEnv and parallel sessions. So these will run and wait by chunks
-        workers = [mp.Process(target=run_spec, args=(spec, lab_mode)) for spec in param_specs]
-        for chunk_w in ps.chunk(workers, num_pro):
-            for w in chunk_w:
-                w.start()
-            for w in chunk_w:
-                w.join()
-        # param_specs = spec_util.get_param_specs(spec)
-        # search.run_param_specs(param_specs)
+        search.run_param_specs(param_specs)
 
 
 def main():
@@ -86,9 +75,4 @@ def main():
 if __name__ == '__main__':
     torch.set_num_threads(1)  # prevent multithread slowdown
     mp.set_start_method('spawn')  # for distributed pytorch to work
-    if sys.platform == 'darwin':
-        # avoid xvfb on MacOS: https://github.com/nipy/nipype/issues/1400
-        main()
-    else:
-        with Xvfb() as xvfb:  # safety context for headless machines
-            main()
+    main()

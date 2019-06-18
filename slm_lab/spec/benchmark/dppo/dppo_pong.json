@@ -61,7 +61,7 @@
           "name": "LinearToZero",
           "frame": 1e7
         },
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -69,7 +69,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 1,
+      "num_envs": 8,
       "max_t": null,
       "max_frame": 1e7
     }],
@@ -78,9 +78,9 @@
       "num": 1
     },
     "meta": {
-      "distributed": true,
-      "log_frequency": 50000,
-      "eval_frequency": 50000,
+      "distributed": "synced",
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "max_session": 8,
       "max_trial": 1,
     }

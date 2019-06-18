@@ -6,6 +6,7 @@
         "name": "Reinforce",
         "action_pdtype": "default",
         "action_policy": "default",
+        "center_return": true,
         "explore_var_spec": null,
         "gamma": 0.99,
         "entropy_coef_spec": {
@@ -54,6 +55,66 @@
       "agent": [{
         "algorithm": {
           "gamma__grid_search": [0.1, 0.5, 0.7, 0.8, 0.90, 0.99, 0.999]
+        }
+      }]
+    }
+  },
+  "reinforce_baseline_cartpole": {
+    "agent": [{
+      "name": "Reinforce",
+      "algorithm": {
+        "name": "Reinforce",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "center_return": true,
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "entropy_coef_spec": {
+          "name": "linear_decay",
+          "start_val": 0.01,
+          "end_val": 0.001,
+          "start_step": 0,
+          "end_step": 20000,
+        },
+        "training_frequency": 1
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": null,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.002
+        },
+        "lr_scheduler_spec": null
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_frame": 100000,
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 2000,
+      "max_session": 4,
+      "max_trial": 1,
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "center_return__grid_search": [true, false]
         }
       }]
     }
