@@ -27,8 +27,10 @@ class Net(ABC):
             self.device = 'cpu'
 
     @net_util.dev_check_train_step
-    def train_step(self, loss, optim, lr_scheduler, clock, global_net=None):
-        lr_scheduler.step(epoch=ps.get(clock, 'frame'))
+    def train_step(self, loss, optim, lr_scheduler, clock, global_net=None, step_lr_sched=True):
+        if step_lr_sched:
+            # Guard against multiple lr_scheduler steps for the same clock step
+            lr_scheduler.step(epoch=ps.get(clock, 'frame'))
         optim.zero_grad()
         loss.backward()
         if self.clip_grad_val is not None:
