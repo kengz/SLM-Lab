@@ -137,9 +137,10 @@ class VanillaDQN(SARSA):
             for _ in range(self.training_iter):
                 batch = self.sample()
                 clock.set_batch_size(len(batch))
-                for _ in range(self.training_batch_iter):
+                for __ in range(self.training_batch_iter):
+                    step_lr_sched = _ == 0 and __ == 0
                     loss = self.calc_q_loss(batch)
-                    self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+                    self.net.train_step(loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net, step_lr_sched=step_lr_sched)
                     total_loss += loss
             loss = total_loss / (self.training_iter * self.training_batch_iter)
             # reset
