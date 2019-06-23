@@ -44,7 +44,7 @@
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
           "milestones": [
-            80000
+            80033
           ],
           "gamma": 0.1
         },
@@ -68,14 +68,11 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 10,
+      "max_trial": 16,
       "search": "GridSearch",
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "normalize_state__choice": [true, false]
-        },
         "net": {
           "polyak_coef__choice": [0.8, 0.9, 0.95, 0.99]
         }
@@ -127,7 +124,7 @@
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
           "milestones": [
-            80000
+            80033
           ],
           "gamma": 0.1
         },
@@ -151,14 +148,11 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 10,
+      "max_trial": 16,
       "search": "GridSearch",
     },
     "search": {
       "agent": [{
-        "algorithm": {
-          "normalize_state__choice": [true, false]
-        },
         "net": {
           "update_frequency__choice": [10, 100, 250, 500, 1000]
         }
@@ -210,7 +204,7 @@
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
           "milestones": [
-            80000
+            80033
           ],
           "gamma": 0.1
         },
@@ -231,9 +225,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 20,
-      "search": "GridSearch",
+      "search": "RandomSearch",
     },
     "search": {
       "agent": [{
