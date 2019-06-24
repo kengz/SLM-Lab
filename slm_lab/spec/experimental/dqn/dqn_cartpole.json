@@ -1,5 +1,5 @@
 {
-  "vanilla_dqn_epsilson_cartpole": {
+  "vanilla_dqn_cartpole": {
     "agent": [{
       "name": "VanillaDQN",
       "algorithm": {
