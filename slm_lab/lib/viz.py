@@ -4,9 +4,11 @@ from glob import glob
 from plotly import graph_objs as go, io as pio, tools
 from plotly.offline import init_notebook_mode, iplot
 from slm_lab.lib import logger, util
+from xvfbwrapper import Xvfb
 import colorlover as cl
 import os
 import pydash as ps
+import sys
 
 logger = logger.get_logger(__name__)
 
@@ -119,7 +121,11 @@ def save_image(figure, filepath):
         return
     filepath = util.smart_path(filepath)
     try:
-        pio.write_image(figure, filepath)
+        if sys.platform == 'darwin':  # MacOS is not headless
+            pio.write_image(figure, filepath)
+        else:
+            with Xvfb() as xvfb:  # orca needs xvfb to run on headless machines
+                pio.write_image(figure, filepath)
     except Exception as e:
         orca_warn_once(e)
 
