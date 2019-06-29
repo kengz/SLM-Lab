@@ -52,11 +52,8 @@
           "name": "Adam",
           "lr": 3e-4,
         },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "frame": 1e6
-        },
-        "gpu": true
+        "lr_scheduler_spec": null,
+        "gpu": false
       }
     }],
     "env": [{
@@ -135,11 +132,8 @@
           "name": "Adam",
           "lr": 3e-4,
         },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "frame": 1e6
-        },
-        "gpu": true
+        "lr_scheduler_spec": null,
+        "gpu": false
       }
     }],
     "env": [{
@@ -213,11 +207,8 @@
           "name": "Adam",
           "lr": 3e-4,
         },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "frame": 1e6
-        },
-        "gpu": true
+        "lr_scheduler_spec": null,
+        "gpu": false
       }
     }],
     "env": [{
