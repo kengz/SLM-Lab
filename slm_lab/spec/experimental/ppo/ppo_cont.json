@@ -160,7 +160,7 @@
       "max_trial": 1
     }
   },
-  "ppo_cont_pendulum": {
+  "ppo_pendulum": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
