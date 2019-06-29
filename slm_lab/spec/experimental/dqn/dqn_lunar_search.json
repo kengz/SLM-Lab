@@ -68,13 +68,12 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 16,
-      "search": "GridSearch",
+      "max_trial": 1,
     },
     "search": {
       "agent": [{
         "net": {
-          "polyak_coef__choice": [0.8, 0.9, 0.95, 0.99]
+          "polyak_coef__grid_search": [0.8, 0.9, 0.95, 0.99]
         }
       }]
     }
@@ -148,13 +147,12 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 16,
-      "search": "GridSearch",
+      "max_trial": 1,
     },
     "search": {
       "agent": [{
         "net": {
-          "update_frequency__choice": [10, 100, 250, 500, 1000]
+          "update_frequency__grid_search": [10, 100, 250, 500, 1000, 2000]
         }
       }]
     }
@@ -227,7 +225,6 @@
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 20,
-      "search": "RandomSearch",
     },
     "search": {
       "agent": [{
