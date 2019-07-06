@@ -106,6 +106,8 @@ class ActorCritic(Reinforce):
         if self.lam is not None:
             self.calc_advs_v_targets = self.calc_gae_advs_v_targets
         elif self.num_step_returns is not None:
+            # need to override training_frequency for nstep to be the same
+            self.training_frequency = self.num_step_returns
             self.calc_advs_v_targets = self.calc_nstep_advs_v_targets
         else:
             self.calc_advs_v_targets = self.calc_ret_advs_v_targets
