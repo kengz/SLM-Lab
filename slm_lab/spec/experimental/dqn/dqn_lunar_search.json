@@ -224,12 +224,12 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 20,
+      "max_trial": 1,
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "normalize_state__choice": [true, false],
+          "normalize_state__grid_search": [true, false],
         }
       }]
     }
