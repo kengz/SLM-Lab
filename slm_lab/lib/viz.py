@@ -223,7 +223,7 @@ def plot_experiment(experiment_spec, experiment_df, metrics_cols):
     ref colors: https://plot.ly/python/heatmaps-contours-and-2dhistograms-tutorial/#plotlys-predefined-color-scales
     '''
     y_cols = metrics_cols
-    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols)
+    x_cols = ps.difference(experiment_df.columns.tolist(), y_cols + ['trial'])
     fig = tools.make_subplots(rows=len(y_cols), cols=len(x_cols), shared_xaxes=True, shared_yaxes=True, print_grid=False)
     strength_sr = experiment_df['strength']
     min_strength, max_strength = strength_sr.min(), strength_sr.max()

@@ -1,15 +1,15 @@
 {
-  "a2c_gae_pong": {
+  "a3c_nstep_pong": {
     "agent": [{
-      "name": "A2C",
+      "name": "A3C",
       "algorithm": {
         "name": "ActorCritic",
         "action_pdtype": "default",
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 0.95,
-        "num_step_returns": null,
+        "lam": null,
+        "num_step_returns": 5,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -18,7 +18,7 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 32
+        "training_frequency": 5
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -42,19 +42,15 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "RMSprop",
-          "lr": 7e-4,
-          "alpha": 0.99,
-          "eps": 1e-5
+          "name": "GlobalAdam",
+          "lr": 1e-4
         },
         "critic_optim_spec": {
-          "name": "RMSprop",
-          "lr": 7e-4,
-          "alpha": 0.99,
-          "eps": 1e-5
+          "name": "GlobalAdam",
+          "lr": 1e-4
         },
         "lr_scheduler_spec": null,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
@@ -62,7 +58,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 16,
+      "num_envs": 8,
       "max_t": null,
       "max_frame": 1e7
     }],
@@ -71,11 +67,16 @@
       "num": 1
     },
     "meta": {
-      "distributed": false,
+      "distributed": "synced",
       "log_frequency": 50000,
       "eval_frequency": 50000,
-      "max_session": 4,
+      "max_session": 16,
       "max_trial": 1,
+    },
+    "search": {
+      "meta": {
+        "max_session__grid_search": [2, 4, 8, 16, 32]
+      }
     }
   }
 }

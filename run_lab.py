@@ -74,5 +74,8 @@ def main():
 
 if __name__ == '__main__':
     torch.set_num_threads(1)  # prevent multithread slowdown
-    mp.set_start_method('spawn')  # for distributed pytorch to work
+    try:
+        mp.set_start_method('spawn')  # for distributed pytorch to work
+    except RuntimeError:
+        pass
     main()
