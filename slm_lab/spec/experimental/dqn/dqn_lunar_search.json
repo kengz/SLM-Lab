@@ -169,7 +169,7 @@
           "start_val": 1.0,
           "end_val": 0.08,
           "start_step": 0,
-          "end_step": 12000
+          "end_step": 80000
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
@@ -202,7 +202,7 @@
         "lr_scheduler_spec": {
           "name": "MultiStepLR",
           "milestones": [
-            80033
+            80000
           ],
           "gamma": 0.1
         },
@@ -230,14 +230,6 @@
       "agent": [{
         "algorithm": {
           "normalize_state__choice": [true, false],
-          "explore_var_spec": {
-            "end_step__choice": [80000, 100000, 120000]
-          }
-        },
-        "net": {
-          "lr_scheduler_spec": {
-            "gamma__choice": [0.1, 0.25, 0.5]
-          }
         }
       }]
     }
