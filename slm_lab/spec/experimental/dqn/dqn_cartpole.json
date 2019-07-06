@@ -11,25 +11,25 @@
           "start_val": 1.0,
           "end_val": 0.1,
           "start_step": 0,
-          "end_step": 2000,
+          "end_step": 1000,
         },
         "gamma": 0.99,
         "training_batch_iter": 3,
-        "training_iter": 4,
-        "training_frequency": 8,
+        "training_iter": 3,
+        "training_frequency": 1,
         "training_start_step": 32
       },
       "memory": {
         "name": "Replay",
         "batch_size": 32,
         "max_size": 10000,
-        "use_cer": true
+        "use_cer": false
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [32],
-        "hid_layers_activation": "relu",
-        "clip_grad_val": null,
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -39,7 +39,7 @@
         },
         "lr_scheduler_spec": {
           "name": "StepLR",
-          "step_size": 500,
+          "step_size": 2000,
           "gamma": 0.9,
         },
         "gpu": false
@@ -48,7 +48,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 250
+      "max_frame": 50000
     }],
     "body": {
       "product": "outer",
@@ -56,9 +56,93 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 1000,
+      "eval_frequency": 500,
       "max_session": 4,
-      "max_trial": 100,
+      "max_trial": 1,
+      "search": "RandomSearch"
+    },
+    "search": {
+      "agent": [{
+        "algorithm": {
+          "explore_var_spec": {
+            "end_step__choice": [1000, 3000, 5000, 10000],
+          }
+        },
+        "net": {
+          "hid_layers__choice": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ],
+          "hid_layers_activation__choice": ["sigmoid", "relu", "tanh"],
+          "optim_spec": {
+            "lr__uniform": [0.0001, 0.2]
+          }
+        }
+      }]
+    }
+  },
+  "vanilla_dqn_boltzmann_cartpole": {
+    "agent": [{
+      "name": "VanillaDQN",
+      "algorithm": {
+        "name": "VanillaDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 5.0,
+          "end_val": 0.5,
+          "start_step": 0,
+          "end_step": 1000,
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 3,
+        "training_iter": 3,
+        "training_frequency": 1,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_scheduler_spec": {
+          "name": "StepLR",
+          "step_size": 2000,
+          "gamma": 0.9,
+        },
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_frame": 50000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 500,
+      "max_session": 4,
+      "max_trial": 1,
       "search": "RandomSearch"
     },
     "search": {
