@@ -57,8 +57,9 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
+      "num_envs": 16,
       "max_t": null,
-      "max_frame": 10000000
+      "max_frame": 4e6
     }],
     "body": {
       "product": "outer",
