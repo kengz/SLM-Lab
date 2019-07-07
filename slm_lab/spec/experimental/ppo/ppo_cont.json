@@ -114,19 +114,19 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [100, 100],
+        "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "normalize": true,
         "batch_norm": false,
         "clip_grad_val": 0.5,
-        "use_same_optim": false,
+        "use_same_optim": true,
         "loss_spec": {
           "name": "MSELoss"
         },
         "actor_optim_spec": {
           "name": "RMSprop",
-          "lr": 7e-4,
+          "lr": 1e-4,
           "alpha": 0.99,
           "eps": 1e-5
         },
