@@ -121,12 +121,11 @@ def save_image(figure, filepath):
         return
     filepath = util.smart_path(filepath)
     try:
-        pio.write_image(figure, filepath)
-        # if sys.platform == 'darwin':  # MacOS is not headless
-        #     pio.write_image(figure, filepath)
-        # else:
-        #     with Xvfb() as xvfb:  # orca needs xvfb to run on headless machines
-        #         pio.write_image(figure, filepath)
+        if sys.platform == 'darwin':  # MacOS is not headless
+            pio.write_image(figure, filepath)
+        else:
+            with Xvfb() as xvfb:  # orca needs xvfb to run on headless machines
+                pio.write_image(figure, filepath)
     except Exception as e:
         orca_warn_once(e)
 
