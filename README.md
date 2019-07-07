@@ -66,7 +66,7 @@ To facilitate better RL development, SLM Lab also comes with prebuilt *metrics* 
 2. Install dependencies (this uses Conda for optimality):
     ```shell
     cd SLM-Lab/
-    sudo bin/setup
+    ./bin/setup
     ```
 
   >Alternatively, instead of running `sudo bin/setup`, copy-paste from [`bin/setup_macOS` or `bin/setup_ubuntu`](https://github.com/kengz/SLM-Lab/tree/master/bin) into your terminal and add `sudo` accordingly to run the installation commands.
