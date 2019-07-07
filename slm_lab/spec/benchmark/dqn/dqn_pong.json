@@ -15,7 +15,7 @@
         },
         "gamma": 0.99,
         "training_batch_iter": 1,
-        "training_iter": 1,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 10000
       },
