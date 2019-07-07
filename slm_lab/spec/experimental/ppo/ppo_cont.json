@@ -122,7 +122,7 @@
         "clip_grad_val": 0.5,
         "use_same_optim": true,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "actor_optim_spec": {
           "name": "RMSprop",
@@ -201,7 +201,7 @@
         "clip_grad_val": 0.5,
         "use_same_optim": true,
         "loss_spec": {
-          "name": "MSELoss"
+          "name": "SmoothL1Loss"
         },
         "actor_optim_spec": {
           "name": "RMSprop",
