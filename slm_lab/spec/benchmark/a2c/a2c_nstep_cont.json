@@ -87,13 +87,13 @@
         "num_step_returns": 5,
         "entropy_coef_spec": {
           "name": "no_decay",
-          "start_val": 0.0,
-          "end_val": 0.0,
+          "start_val": 0.01,
+          "end_val": 0.01,
           "start_step": 0,
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 2048
+        "training_frequency": 256
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -101,10 +101,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64],
-        "hid_layers_activation": "tanh",
+        "hid_layers": [256, 128],
+        "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "normalize": false,
+        "normalize": true,
         "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
@@ -119,18 +119,15 @@
           "name": "Adam",
           "lr": 3e-4,
         },
-        "lr_scheduler_spec": {
-          "name": "LinearToZero",
-          "frame": 1e6
-        },
-        "gpu": true
+        "lr_scheduler_spec": null,
+        "gpu": false
       }
     }],
     "env": [{
       "name": "BipedalWalker-v2",
-      "num_envs": 8,
+      "num_envs": 32,
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 4e6
     }],
     "body": {
       "product": "outer",
@@ -138,8 +135,8 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 20000,
-      "eval_frequency": 20000,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "max_session": 4,
       "max_trial": 1
     }
