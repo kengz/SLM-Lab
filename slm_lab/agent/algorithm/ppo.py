@@ -90,7 +90,7 @@ class PPO(ActorCritic):
             'training_epoch',
         ])
         self.to_train = 0
-        self.training_frequency = self.time_horizon * self.body.env.num_envs
+        self.training_frequency = self.time_horizon  # since all memories stores num_envs by batch in list
         assert self.memory_spec['name'] == 'OnPolicyBatchReplay', f'PPO only works with OnPolicyBatchReplay, but got {self.memory_spec["name"]}'
         self.action_policy = getattr(policy_util, self.action_policy)
         self.explore_var_scheduler = policy_util.VarScheduler(self.explore_var_spec)
