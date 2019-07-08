@@ -4,7 +4,7 @@
       "name": "VanillaDQN",
       "algorithm": {
         "name": "VanillaDQN",
-        "action_pdtype": "default",
+        "action_pdtype": "Categorical",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
