@@ -140,7 +140,7 @@
       "name": "BipedalWalker-v2",
       "num_envs": 32,
       "max_t": null,
-      "max_frame": 2e6
+      "max_frame": 4e6
     }],
     "body": {
       "product": "outer",
