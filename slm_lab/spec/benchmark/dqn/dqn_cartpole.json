@@ -62,7 +62,7 @@
     "search": {
       "agent": [{
         "net": {
-          "hid_layers__choice": [
+          "hid_layers__grid_search": [
             [32],
             [64],
             [32, 16],
