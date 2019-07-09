@@ -15,7 +15,7 @@
         },
         "gamma": 0.99,
         "training_batch_iter": 1,
-        "training_iter": 1,
+        "training_iter": 4,
         "training_frequency": 4,
         "training_start_step": 10000
       },
@@ -57,8 +57,9 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
+      "num_envs": 16,
       "max_t": null,
-      "max_frame": 10000000
+      "max_frame": 4e6
     }],
     "body": {
       "product": "outer",
@@ -67,8 +68,9 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 10000,
+      "log_frequency": 10000,
       "max_session": 4,
       "max_trial": 1
-    },
-  },
+    }
+  }
 }

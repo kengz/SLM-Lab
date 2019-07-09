@@ -68,8 +68,8 @@
     },
     "meta": {
       "distributed": "synced",
-      "log_frequency": 50000,
-      "eval_frequency": 50000,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "max_session": 16,
       "max_trial": 1
     },
@@ -148,8 +148,8 @@
     },
     "meta": {
       "distributed": "shared",
-      "log_frequency": 50000,
-      "eval_frequency": 50000,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "max_session": 16,
       "max_trial": 1
     },
@@ -228,8 +228,8 @@
     },
     "meta": {
       "distributed": "synced",
-      "log_frequency": 50000,
-      "eval_frequency": 50000,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "max_session": 16,
       "max_trial": 1
     },
@@ -308,8 +308,8 @@
     },
     "meta": {
       "distributed": "shared",
-      "log_frequency": 50000,
-      "eval_frequency": 50000,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "max_session": 16,
       "max_trial": 1
     },

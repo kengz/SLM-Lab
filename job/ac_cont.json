@@ -1,0 +1,14 @@
+{
+  "slm_lab/spec/experimental/a2c/a2c_nstep_cont.json": {
+    "a2c_nstep_bipedalwalker": "train",
+    "a2c_nstep_pendulum": "train",
+  },
+  "slm_lab/spec/experimental/a2c/a2c_gae_cont.json": {
+    "a2c_gae_bipedalwalker": "train",
+    "a2c_gae_pendulum": "train",
+  },
+  "slm_lab/spec/experimental/ppo/ppo_cont.json": {
+    "ppo_bipedalwalker": "train",
+    "ppo_pendulum": "train",
+  }
+}

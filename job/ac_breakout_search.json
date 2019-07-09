@@ -7,5 +7,8 @@
   },
   "slm_lab/spec/experimental/ppo/ppo_lam_search.json": {
     "ppo_breakout": "search"
-  }
+  },
+  "slm_lab/spec/experimental/ppo/ppo_eps_search.json": {
+    "ppo_breakout": "search"
+  },
 }

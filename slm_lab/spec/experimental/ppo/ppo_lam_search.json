@@ -69,7 +69,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 8,
+      "num_envs": 16,
       "max_t": null,
       "max_frame": 1e7
     }],
@@ -79,8 +79,8 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 50000,
-      "eval_frequency": 50000,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "max_session": 4,
       "max_trial": 1,
     },
@@ -162,7 +162,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 8,
+      "num_envs": 16,
       "max_t": null,
       "max_frame": 1e7
     }],
@@ -172,8 +172,8 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 50000,
-      "eval_frequency": 50000,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "max_session": 4,
       "max_trial": 1,
     },

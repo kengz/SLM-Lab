@@ -41,6 +41,10 @@ else
   conda create -n lab python=3.7.3 -y
 fi
 
+# install kernel for Atom Hydrogen
+# conda install ipykernel
+# python -m ipykernel install --user --name lab
+
 # remove for reset:
 # conda deactivate
 # conda env remove -n lab -y

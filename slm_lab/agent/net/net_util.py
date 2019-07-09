@@ -9,6 +9,7 @@ logger = logger.get_logger(__name__)
 
 # register custom torch.optim
 setattr(torch.optim, 'GlobalAdam', optimizer.GlobalAdam)
+setattr(torch.optim, 'GlobalRMSprop', optimizer.GlobalRMSprop)
 
 
 class NoOpLRScheduler:
