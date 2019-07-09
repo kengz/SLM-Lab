@@ -8,11 +8,13 @@ from slm_lab.experiment import search
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+from xvfbwrapper import Xvfb
 import os
 import pydash as ps
 import sys
 import torch
 import torch.multiprocessing as mp
+import sys
 
 
 debug_modules = [
@@ -78,4 +80,9 @@ if __name__ == '__main__':
         mp.set_start_method('spawn')  # for distributed pytorch to work
     except RuntimeError:
         pass
-    main()
+
+    if sys.platform == 'darwin':  # MacOS is not headless
+        main()
+    else:
+        with Xvfb() as xvfb:  # to run on headless machines, e.g. plotly orca
+            main()
