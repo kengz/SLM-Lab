@@ -69,9 +69,18 @@ To facilitate better RL development, SLM Lab also comes with prebuilt *metrics* 
     ./bin/setup
     ```
 
-  >Alternatively, instead of running `sudo bin/setup`, copy-paste from [`bin/setup_macOS` or `bin/setup_ubuntu`](https://github.com/kengz/SLM-Lab/tree/master/bin) into your terminal and add `sudo` accordingly to run the installation commands.
+  >Alternatively, instead of running `./bin/setup`, copy-paste from [`bin/setup_macOS` or `bin/setup_ubuntu`](https://github.com/kengz/SLM-Lab/tree/master/bin) into your terminal and add `sudo` accordingly to run the installation commands.
 
   >Useful reference: [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html)
+
+#### Hardware Requirements
+
+Non-image based environments can run on a laptop. Only image based environments such as the Atari games benefit from a GPU speedup. For these, we recommend 1 GPU and at least 4 CPUs. This can run a single Atari `Trial` consisting of 4 `Sessions`.
+
+For desktop, a reference spec is GTX 1080 GPU, 4 CPUs above 3.0 GHz, and 32 Gb RAM.
+
+For cloud computing, start with an affordable instance of [AWS EC2 `p2.xlarge`](https://aws.amazon.com/ec2/instance-types/p2/) with a K80 GPU and 4 CPUs. Use the Deep Learning AMI with Conda when [creating an instance](https://aws.amazon.com/getting-started/tutorials/get-started-dlami/).
+
 
 ## Quick Start
 
@@ -110,6 +119,8 @@ conda activate lab
 python run_lab.py slm_lab/spec/benchmark/a2c/a2c_gae_pong.json a2c_gae_pong train
 ```
 
+>When running on a headless server, prepend a command with `xvfb-run -a`, for example `xvfb-run -a python run_lab.py slm_lab/spec/benchmark/a2c/a2c_gae_pong.json a2c_gae_pong train`
+
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_atari.png)
 >Atari Pong ran with `dev` mode to render the environment
 
@@ -117,7 +128,7 @@ This will run a `Trial` with multiple Sessions in *training mode*. In the beginn
 
 Below shows a trial graph with multiple sessions:
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_atari_graph.png)
+![](https://kengz.gitbooks.io/slm-lab/content/assets/a2c_gae_pong_t0_trial_graph_mean_returns_ma_vs_frames.png)
 
 #### Benchmark
 
