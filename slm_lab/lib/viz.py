@@ -13,7 +13,7 @@ logger = logger.get_logger(__name__)
 # moving-average window size for plotting
 PLOT_MA_WINDOW = 100
 # warn orca failure only once
-orca_warn_once = ps.once(lambda e: logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later. {e}'))
+orca_warn_once = ps.once(lambda e: logger.warning(f'Failed to generate graph. Run retro-analysis to generate graphs later. {e}\nIf running on a headless server, prepend your Python command with `xvfb-run -a `, for example `xvfb-run -a python run_lab.py`'))
 if util.is_jupyter():
     init_notebook_mode(connected=True)
 
