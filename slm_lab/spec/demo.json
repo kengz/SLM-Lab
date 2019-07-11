@@ -67,11 +67,11 @@
     "search": {
       "agent": [{
         "algorithm": {
-          "gamma__choice": [0.95, 0.99]
+          "gamma__uniform": [0.95, 0.99]
         },
         "net": {
           "optim_spec": {
-            "lr__choice": [0.001, 0.01]
+            "lr__uniform": [0.001, 0.01]
           }
         }
       }]
