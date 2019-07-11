@@ -3,12 +3,11 @@
 
 Modular Deep Reinforcement Learning framework in PyTorch.
 
-||||
-|:---:|:---:|:---:|
-| ![ddqn_beamrider](https://user-images.githubusercontent.com/8209263/49688812-b7e04200-facc-11e8-9a1a-d5c8e512f26c.gif) |  ![ddqn_breakout](https://user-images.githubusercontent.com/8209263/49688819-c29ad700-facc-11e8-842b-1dc6f6f38495.gif) |![ddqn_pong](https://user-images.githubusercontent.com/8209263/49688793-54eeab00-facc-11e8-80fe-4b76a12180a0.gif) |
-| BeamRider | Breakout | Pong |
-| ![ddqn_qbert](https://user-images.githubusercontent.com/8209263/49688862-6be1cd00-facd-11e8-849d-61aef598611b.gif) | ![ddqn_seaquest](https://user-images.githubusercontent.com/8209263/49688863-70a68100-facd-11e8-9303-73bea9b9987a.gif) | ![ddqn_spaceinvaders](https://user-images.githubusercontent.com/8209263/49688875-87e56e80-facd-11e8-90be-9d6be7bace03.gif) |
-| Qbert | Seaquest | SpaceInvaders |
+|||||
+|:---:|:---:|:---:|:---:|
+| ![ddqn_breakout](https://user-images.githubusercontent.com/8209263/49688819-c29ad700-facc-11e8-842b-1dc6f6f38495.gif) |![ddqn_pong](https://user-images.githubusercontent.com/8209263/49688793-54eeab00-facc-11e8-80fe-4b76a12180a0.gif) | ![ddqn_qbert](https://user-images.githubusercontent.com/8209263/49688862-6be1cd00-facd-11e8-849d-61aef598611b.gif) | ![ddqn_spaceinvaders](https://user-images.githubusercontent.com/8209263/49688875-87e56e80-facd-11e8-90be-9d6be7bace03.gif) |
+| Breakout | Pong | Qbert | Sp.Invaders |
+
 
 
 | References | |
