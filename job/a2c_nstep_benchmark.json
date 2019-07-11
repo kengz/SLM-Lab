@@ -1,8 +1,0 @@
-{
-  "benchmark/a2c/a2c_nstep_atari.json": {
-    "a2c_nstep_atari": "train"
-  },
-  "experimental/a2c/a2c_nstep_cont.json": {
-    "a2c_nstep_cont": "train"
-  },
-}

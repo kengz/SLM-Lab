@@ -1,0 +1,14 @@
+{
+  "benchmark/a2c/a2c_nstep_atari.json": {
+    "a2c_nstep_atari": "train"
+  },
+  "benchmark/a2c/a2c_gae_atari.json": {
+    "a2c_gae_atari": "train"
+  },
+  "benchmark/dqn/dqn_atari.json": {
+    "dqn_atari": "train"
+  },
+  "benchmark/dqn/ddqn_atari.json": {
+    "ddqn_atari": "train"
+  },
+}
