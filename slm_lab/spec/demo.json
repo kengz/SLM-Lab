@@ -61,17 +61,12 @@
       "distributed": false,
       "eval_frequency": 500,
       "max_session": 2,
-      "max_trial": 8
+      "max_trial": 1
     },
     "search": {
       "agent": [{
         "algorithm": {
-          "gamma__uniform": [0.95, 0.99]
-        },
-        "net": {
-          "optim_spec": {
-            "lr__uniform": [0.001, 0.01]
-          }
+          "gamma__grid_search": [0.5, 0.7, 0.90, 0.95, 0.99]
         }
       }]
     }
