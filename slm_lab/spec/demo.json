@@ -59,10 +59,9 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 2000,
-      "max_trial": 4,
+      "eval_frequency": 500,
       "max_session": 2,
-      "search": "RandomSearch",
+      "max_trial": 8
     },
     "search": {
       "agent": [{
