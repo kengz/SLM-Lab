@@ -6,7 +6,7 @@ import numpy as np
 import pydash as ps
 import time
 
-NUM_EVAL = 4
+NUM_EVAL = 8
 logger = logger.get_logger(__name__)
 
 
