@@ -40,8 +40,8 @@ def gen_avg_return(agent, env):
     '''Generate average return for agent and an env'''
     with util.ctx_lab_mode('eval'):  # enter eval context
         agent.algorithm.update()  # set explore_var etc. to end_val under ctx
-        with torch.no_grad():
-            ret = gen_return(agent, env)
+    with torch.no_grad():
+        ret = gen_return(agent, env)
     # exit eval context, restore variables simply by updating
     agent.algorithm.update()
     return ret
