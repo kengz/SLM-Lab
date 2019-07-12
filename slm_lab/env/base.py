@@ -6,6 +6,7 @@ import numpy as np
 import pydash as ps
 import time
 
+NUM_EVAL = 4
 logger = logger.get_logger(__name__)
 
 
@@ -116,7 +117,7 @@ class BaseEnv(ABC):
             self.frame_op = 'stack'
             self.frame_op_len = seq_len
         if util.in_eval_lab_modes():  # use singleton for eval
-            self.num_envs = 1
+            self.num_envs = NUM_EVAL
             self.log_frequency = None
         if spec['meta']['distributed'] != False:  # divide max_frame for distributed
             self.max_frame = int(self.max_frame / spec['meta']['max_session'])
