@@ -118,7 +118,7 @@ class BaseEnv(ABC):
             self.frame_op_len = seq_len
         if util.in_eval_lab_modes():  # use singleton for eval
             self.num_envs = NUM_EVAL
-            self.log_frequency = None
+            self.log_frequency = 10000  # dummy
         if spec['meta']['distributed'] != False:  # divide max_frame for distributed
             self.max_frame = int(self.max_frame / spec['meta']['max_session'])
         self.is_venv = (self.num_envs is not None and self.num_envs > 1)
