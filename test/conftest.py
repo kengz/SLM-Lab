@@ -1,9 +1,14 @@
+from slm_lab import env
 from slm_lab.experiment.control import make_agent_env
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
 import numpy as np
 import pandas as pd
 import pytest
+
+
+# set env NUM_EVAL to 1 for test due to CI memory constraint
+env.base.NUM_EVAL = 1
 
 
 @pytest.fixture(scope='session')
