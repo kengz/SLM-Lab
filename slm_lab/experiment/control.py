@@ -75,10 +75,10 @@ class Session:
                 body.best_reward_ma = body.eval_reward_ma
                 agent.save(ckpt='best')
             if len(body.train_df) > 1:  # need > 1 row to calculate stability
-                metrics = analysis.analyze_session(self.spec, body.train_df, 'train')
+                metrics = analysis.analyze_session(self.spec, body.train_df, 'train', plot=False)
                 body.log_metrics(metrics['scalar'], 'train')
             if len(body.eval_df) > 1:  # need > 1 row to calculate stability
-                metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval')
+                metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval', plot=False)
                 body.log_metrics(metrics['scalar'], 'eval')
 
     def run_rl(self):
