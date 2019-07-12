@@ -91,6 +91,7 @@ class Body:
         self.mean_entropy = np.nan
         self.mean_grad_norm = np.nan
 
+        self.epi_start = True
         self.ckpt_total_reward = np.nan
         self.total_reward = 0  # init to 0, but dont ckpt before end of an epi
         self.total_reward_ma = np.nan
@@ -124,12 +125,7 @@ class Body:
         '''Interface update method for body at agent.update()'''
         if hasattr(self.env.u_env, 'raw_reward'):  # use raw_reward if reward is preprocessed
             reward = self.env.u_env.raw_reward
-        if self.ckpt_total_reward is np.nan:  # init
-            self.ckpt_total_reward = reward
-        else:  # reset on epi_start, else keep adding. generalized for vec env
-            self.ckpt_total_reward = self.ckpt_total_reward * (1 - self.epi_start) + reward
-        self.total_reward = done * self.ckpt_total_reward + (1 - done) * self.total_reward
-        self.epi_start = done
+        self.ckpt_total_reward, self.total_reward, self.epi_start = util.update_total_reward(self.ckpt_total_reward, self.total_reward, self.epi_start, reward, done)
 
     def __str__(self):
         return f'body: {util.to_json(util.get_class_attr(self))}'
