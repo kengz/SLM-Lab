@@ -7,8 +7,8 @@ import pandas as pd
 import pytest
 
 
-# set env NUM_EVAL to 1 for test due to CI memory constraint
-env.base.NUM_EVAL = 1
+# set env NUM_EVAL to 2 for test due to CI memory constraint
+env.base.NUM_EVAL = 2
 
 
 @pytest.fixture(scope='session')
