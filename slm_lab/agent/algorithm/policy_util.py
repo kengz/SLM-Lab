@@ -143,8 +143,8 @@ def random(state, algorithm, body):
     if body.env.is_venv and not util.in_eval_lab_modes():
         _action = [body.action_space.sample() for _ in range(body.env.num_envs)]
     else:
-        _action = body.action_space.sample()
-    action = torch.tensor([_action])
+        _action = [body.action_space.sample()]
+    action = torch.tensor(_action)
     return action
 
 
