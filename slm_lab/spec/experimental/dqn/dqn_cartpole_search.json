@@ -38,8 +38,9 @@
           "lr": 0.01
         },
         "lr_scheduler_spec": null,
-        "update_type": "replace",
+        "update_type": "polyak",
         "update_frequency": 32,
+        "polyak_coef": 0.1,
         "gpu": false
       }
     }],
@@ -65,7 +66,9 @@
           "training_iter__randint": [1, 10]
         },
         "net": {
-          "update_frequency__choice": [32, 64, 128, 256]
+          "optim_spec": {
+            "lr__choice": [0.0001, 0.001, 0.01, 0.1]
+          }
         }
       }]
     }
