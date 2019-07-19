@@ -1,8 +1,0 @@
-{
-  "benchmark/ppo/ppo_atari.json": {
-    "ppo_atari": "train"
-  },
-  "benchmark/ppo/ppo_cont.json": {
-    "ppo_cont": "train"
-  },
-}
