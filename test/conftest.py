@@ -1,22 +1,9 @@
 from slm_lab.experiment.control import make_agent_env
 from slm_lab.lib import util
 from slm_lab.spec import spec_util
-from xvfbwrapper import Xvfb
 import numpy as np
 import pandas as pd
 import pytest
-
-
-@pytest.fixture(scope='session', autouse=True)
-def test_xvfb():
-    '''provide xvfb in test environment'''
-    vdisplay = Xvfb()
-    try:  # guard for multiprocessing dist test
-        vdisplay.start()
-        yield vdisplay
-        vdisplay.stop()
-    except Exception as e:
-        yield vdisplay
 
 
 @pytest.fixture(scope='session')
