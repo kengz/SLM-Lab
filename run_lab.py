@@ -1,15 +1,14 @@
 # The SLM Lab entrypoint
-# to run scheduled set of specs:
-# python run_lab.py job/experiments.json
-# to run a single spec:
-# python run_lab.py slm_lab/spec/experimental/a2c_pong.json a2c_pong train
+import os
+# prevent pytorch multithread slowdown
+os.environ['OMP_NUM_THREADS'] = '1'
+# avoid RLIMIT_NPROC error during heavy workload
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
 from slm_lab import EVAL_MODES, TRAIN_MODES
 from slm_lab.experiment import search
 from slm_lab.experiment.control import Session, Trial, Experiment
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
-from xvfbwrapper import Xvfb
-import os
 import pydash as ps
 import sys
 import torch
@@ -74,14 +73,8 @@ def main():
 
 
 if __name__ == '__main__':
-    torch.set_num_threads(1)  # prevent multithread slowdown
     try:
         mp.set_start_method('spawn')  # for distributed pytorch to work
     except RuntimeError:
         pass
-
-    if sys.platform == 'darwin':  # MacOS is not headless
-        main()
-    else:
-        with Xvfb() as xvfb:  # to run on headless machines, e.g. plotly orca
-            main()
+    main()
