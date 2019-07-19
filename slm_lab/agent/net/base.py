@@ -26,6 +26,11 @@ class Net(ABC):
         else:
             self.device = 'cpu'
 
+    @abstractmethod
+    def forward(self):
+        '''The forward step for a specific network architecture'''
+        raise NotImplementedError
+
     @net_util.dev_check_train_step
     def train_step(self, loss, optim, lr_scheduler, clock, global_net=None):
         lr_scheduler.step(epoch=ps.get(clock, 'frame'))
