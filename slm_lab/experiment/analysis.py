@@ -8,7 +8,6 @@ import shutil
 import torch
 
 
-NUM_EVAL = 4
 METRICS_COLS = [
     'final_return_ma',
     'strength', 'max_strength', 'final_strength',
@@ -22,26 +21,37 @@ logger = logger.get_logger(__name__)
 # methods to generate returns (total rewards)
 
 def gen_return(agent, env):
-    '''Generate return for an agent and an env in eval mode'''
+    '''Generate return for an agent and an env in eval mode. eval_env should be a vec env with NUM_EVAL instances'''
+    # stats variables
+    epi_start = True
+    ckpt_total_reward = np.nan
+    total_reward = 0
+    vec_dones = False
+    # swap ref to allow inference based on body.env
+    main_env = agent.body.env
+    agent.body.env = env
+    # start eval loop
     state = env.reset()
     done = False
-    total_reward = 0
-    while not done:
+    while not np.all(vec_dones):
         action = agent.act(state)
         state, reward, done, info = env.step(action)
-        total_reward += reward
-    return total_reward
+        ckpt_total_reward, total_reward, epi_start = util.update_total_reward(ckpt_total_reward, total_reward, epi_start, reward, done)
+        vec_dones = np.logical_or(vec_dones, done)  # wait till every vec slot done turns True
+    # restore swapped ref
+    agent.body.env = main_env
+    return np.mean(total_reward)
 
 
-def gen_avg_return(agent, env, num_eval=NUM_EVAL):
+def gen_avg_return(agent, env):
     '''Generate average return for agent and an env'''
     with util.ctx_lab_mode('eval'):  # enter eval context
         agent.algorithm.update()  # set explore_var etc. to end_val under ctx
-        with torch.no_grad():
-            returns = [gen_return(agent, env) for i in range(num_eval)]
+    with torch.no_grad():
+        ret = gen_return(agent, env)
     # exit eval context, restore variables simply by updating
     agent.algorithm.update()
-    return np.mean(returns)
+    return ret
 
 
 # metrics calculation methods
