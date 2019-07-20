@@ -72,6 +72,81 @@
       }]
     }
   },
+  "dqn_boltzmann_cartpole": {
+    "agent": [{
+      "name": "DQN",
+      "algorithm": {
+        "name": "DQN",
+        "action_pdtype": "Categorical",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 5.0,
+          "end_val": 0.5,
+          "start_step": 0,
+          "end_step": 4000,
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 2,
+        "training_iter": 2,
+        "training_frequency": 4,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 10000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [64],
+        "hid_layers_activation": "selu",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.02
+        },
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "frame": 30000
+        },
+        "update_type": "replace",
+        "update_frequency": 10,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "CartPole-v0",
+      "max_t": null,
+      "max_frame": 30000
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 200,
+      "max_session": 4,
+      "max_trial": 1
+    },
+    "search": {
+      "agent": [{
+        "net": {
+          "hid_layers__grid_search": [
+            [32],
+            [64],
+            [32, 16],
+            [64, 32]
+          ]
+        }
+      }]
+    }
+  },
   "ddqn_per_boltzmann_cartpole": {
     "agent": [{
       "name": "DoubleDQN",
@@ -114,7 +189,7 @@
         },
         "lr_scheduler_spec": {
           "name": "LinearToZero",
-          "frame": 10000
+          "frame": 30000
         },
         "update_type": "replace",
         "update_frequency": 10,
@@ -124,7 +199,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 10000
+      "max_frame": 30000
     }],
     "body": {
       "product": "outer",
@@ -132,7 +207,7 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 500,
+      "eval_frequency": 200,
       "max_session": 4,
       "max_trial": 1
     },
