@@ -34,10 +34,11 @@ class OpenAIEnv(BaseEnv):
         super().__init__(spec)
         try_register_env(spec)  # register if it's a custom gym env
         seed = ps.get(spec, 'meta.random_seed')
+        episode_life = not util.in_eval_lab_modes()
         if self.is_venv:  # make vector environment
-            self.u_env = make_gym_venv(self.name, self.num_envs, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state)
+            self.u_env = make_gym_venv(self.name, self.num_envs, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state, episode_life)
         else:
-            self.u_env = make_gym_env(self.name, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state)
+            self.u_env = make_gym_env(self.name, seed, self.frame_op, self.frame_op_len, self.reward_scale, self.normalize_state, episode_life)
         self._set_attr_from_u_env(self.u_env)
         self.max_t = self.max_t or self.u_env.spec.max_episode_steps
         assert self.max_t is not None
