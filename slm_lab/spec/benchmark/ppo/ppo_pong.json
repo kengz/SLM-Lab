@@ -8,7 +8,7 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 0.95,
+        "lam": 0.70,
         "clip_eps_spec": {
           "name": "no_decay",
           "start_val": 0.10,
