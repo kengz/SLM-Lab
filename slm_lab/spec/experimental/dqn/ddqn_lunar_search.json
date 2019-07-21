@@ -63,6 +63,7 @@
     },
     "meta": {
       "distributed": false,
+      "log_frequency": 1000,
       "eval_frequency": 1000,
       "max_session": 4,
       "max_trial": 32,
