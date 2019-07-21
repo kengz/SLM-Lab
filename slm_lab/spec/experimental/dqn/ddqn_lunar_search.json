@@ -15,8 +15,8 @@
         },
         "gamma": 0.99,
         "training_batch_iter": 1,
-        "training_iter": 3,
-        "training_frequency": 1,
+        "training_iter": 2,
+        "training_frequency": 2,
         "training_start_step": 32
       },
       "memory": {
@@ -28,8 +28,8 @@
       "net": {
         "type": "MLPNet",
         "hid_layers": [
-          800,
-          400
+          400,
+          200
         ],
         "hid_layers_activation": "relu",
         "clip_grad_val": 2.0,
@@ -65,7 +65,7 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 42,
+      "max_trial": 32,
       "search": "RandomSearch",
     },
     "search": {
@@ -76,11 +76,8 @@
         "net": {
           "update_frequency__choice": [0.8, 0.9, 0.925, 0.95],
           "optim_spec": {
-            "lr__choice": [0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01]
+            "lr__choice": [0.001, 0.003, 0.005, 0.007, 0.01]
           }
-        },
-        "env": {
-          "normalize_state__choice": [true, false],
         },
       }]
     }
