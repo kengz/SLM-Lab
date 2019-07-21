@@ -9,7 +9,7 @@
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": null,
-        "num_step_returns": 5,
+        "num_step_returns": 11,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -37,11 +37,11 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 5e-4,
+          "lr": 2e-3,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 5e-4,
+          "lr": 2e-3,
         },
         "lr_scheduler_spec": null,
         "gpu": false
