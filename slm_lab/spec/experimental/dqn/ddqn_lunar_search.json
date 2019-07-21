@@ -4,7 +4,7 @@
       "name": "DoubleDQN",
       "algorithm": {
         "name": "DoubleDQN",
-        "action_pdtype": "Argmax",
+        "action_pdtype": "default",
         "action_policy": "boltzmann",
         "explore_var_spec": {
           "name": "linear_decay",
