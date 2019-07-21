@@ -52,7 +52,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_frame": 300000,
+      "max_frame": 1000000,
       "num_envs": 16,
       "normalize_state": false
     }],
