@@ -1,5 +1,5 @@
 {
-  "ppo_bipedalwalker": {
+  "ppo_lunar": {
     "agent": [{
       "name": "PPO",
       "algorithm": {
