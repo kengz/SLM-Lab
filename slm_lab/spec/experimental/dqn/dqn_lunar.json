@@ -11,12 +11,12 @@
           "start_val": 1.0,
           "end_val": 0.08,
           "start_step": 0,
-          "end_step": 12000
+          "end_step": 100000
         },
         "gamma": 0.99,
-        "training_batch_iter": 3,
-        "training_iter": 4,
-        "training_frequency": 4,
+        "training_batch_iter": 1,
+        "training_iter": 3,
+        "training_frequency": 1,
         "training_start_step": 32
       },
       "memory": {
@@ -27,28 +27,19 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [
-          400,
-          200
-        ],
+        "hid_layers": [64, 64, 32],
         "hid_layers_activation": "relu",
-        "clip_grad_val": null,
+        "clip_grad_val": 2.0,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.002
+          "lr": 0.001
         },
-        "lr_scheduler_spec": {
-          "name": "MultiStepLR",
-          "milestones": [
-            70000
-          ],
-          "gamma": 0.5
-        },
-        "update_type": "polyak",
-        "polyak_coef": 0.9,
+        "lr_scheduler_spec": null,
+        "update_type": "replace",
+        "update_frequency": 50,
         "gpu": false
       }
     }],
@@ -57,7 +48,8 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_frame": 250000
+      "max_frame": 300000,
+      "normalize_state": false
     }],
     "body": {
       "product": "outer",
@@ -65,9 +57,10 @@
     },
     "meta": {
       "distributed": false,
+      "log_frequency": 1000,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 62,
+      "max_trial": 1,
       "search": "RandomSearch",
     },
   }
