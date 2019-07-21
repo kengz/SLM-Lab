@@ -55,7 +55,7 @@
       "frame_op_len": 4,
       "max_t": null,
       "max_frame": 300000,
-      "normalize_state": true
+      "normalize_state": false
     }],
     "body": {
       "product": "outer",

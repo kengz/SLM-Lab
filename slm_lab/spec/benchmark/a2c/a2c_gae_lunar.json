@@ -29,7 +29,6 @@
         "hid_layers": [400, 200],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "normalize": true,
         "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
@@ -55,7 +54,7 @@
       "max_t": null,
       "max_frame": 300000,
       "num_envs": 16,
-      "normalize_state": true
+      "normalize_state": false
     }],
     "body": {
       "product": "outer",
