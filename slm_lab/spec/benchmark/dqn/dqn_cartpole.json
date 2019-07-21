@@ -130,7 +130,7 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 200,
+      "eval_frequency": 100,
       "max_session": 4,
       "max_trial": 1
     },
@@ -207,7 +207,7 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 200,
+      "eval_frequency": 100,
       "max_session": 4,
       "max_trial": 1
     },
