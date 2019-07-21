@@ -1,0 +1,88 @@
+{
+  "ddqn_concat_lunar": {
+    "agent": [{
+      "name": "DoubleDQN",
+      "algorithm": {
+        "name": "DoubleDQN",
+        "action_pdtype": "Argmax",
+        "action_policy": "boltzmann",
+        "explore_var_spec": {
+          "name": "linear_decay",
+          "start_val": 5.0,
+          "end_val": 0.05,
+          "start_step": 0,
+          "end_step": 100000
+        },
+        "gamma": 0.99,
+        "training_batch_iter": 1,
+        "training_iter": 3,
+        "training_frequency": 1,
+        "training_start_step": 32
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 32,
+        "max_size": 100000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [
+          800,
+          400
+        ],
+        "hid_layers_activation": "relu",
+        "clip_grad_val": 2.0,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 0.005
+        },
+        "lr_scheduler_spec": {
+          "name": "LinearToZero",
+          "frame": 500000
+        },
+        "update_type": "replace",
+        "update_frequency": 100,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "max_t": null,
+      "max_frame": 300000,
+      "normalize_state": true
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 64,
+      "search": "RandomSearch",
+    },
+    "search": {
+      "agent": [{
+        "agent": {
+          "training_batch_iter__randint": [1, 5]
+        },
+        "net": {
+          "update_frequency__choice": [0.8, 0.9, 0.925, 0.95],
+          "optim_spec": {
+            "lr__choice": [0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01]
+          }
+        },
+        "env": {
+          "normalize_state__choice": [true, false],
+        },
+      }]
+    }
+  }
+}
