@@ -146,19 +146,34 @@ An [`Experiment`](https://github.com/kengz/SLM-Lab/blob/master/slm_lab/experimen
 Given a spec file in `slm_lab/spec/`, if it has a `search` field defining a search space, then it can be ran as an Experiment. For example,
 
 ```shell
-python run_lab.py slm_lab/spec/demo.json dqn_cartpole search
+python run_lab.py slm_lab/spec/experimental/ppo/ppo_lam_search.json ppo_breakout search
 ```
 
 Deep Reinforcement Learning is highly empirical. The lab enables rapid and massive experimentations, hence it needs a way to quickly analyze data from many trials. The experiment  and analytics framework is the scientific method of the lab.
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_experiment_graph.png)
->Experiment graph summarizing the trials in hyperparameter search.
+|||
+|:---:|:---:|
+| ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_experiment_graph1.png) | ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_experiment_graph2.png) |
+| Experiment graph | Experiment graph |
+>Segments of the experiment graph summarizing the trials in hyperparameter search.
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_trial_graph.png)
->Trial graph showing average envelope of repeated sessions.
+|||
+|:---:|:---:|
+| ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_multi_trial_graph_mean_returns_vs_frames.png) | ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_multi_trial_graph_mean_returns_ma_vs_frames.png)|
+| Multi-trial graph | with moving average |
+>The multi-trial experiment graph and its moving average version comparing the trials. These graph show the effect of different GAE λ values of PPO on the Breakout environment. λ= 0.70 performs the best, while λ values closer to 0.90 do not perform as well.
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
->Session graph showing total rewards.
+|||
+|:---:|:---:|
+| ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_t1_trial_graph_mean_returns_vs_frames.png) | ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_t1_trial_graph_mean_returns_ma_vs_frames.png)|
+| Trial graph | with moving average |
+>A trial graph showing average from repeated sessions, and its moving average version.
+
+|||
+|:---:|:---:|
+| ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_t1_s0_session_graph_eval_mean_returns_vs_frames.png) | ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_t1_s0_session_graph_eval_mean_returns_ma_vs_frames.png)|
+| Session graph | with moving average |
+>A session graph showing the total rewards and its moving average version.
 
 This is the end of the quick start tutorial. Continue reading the full documentation to start using SLM Lab.
 
