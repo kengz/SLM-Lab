@@ -3,12 +3,11 @@
 
 Modular Deep Reinforcement Learning framework in PyTorch.
 
-||||
-|:---:|:---:|:---:|
-| ![ddqn_beamrider](https://user-images.githubusercontent.com/8209263/49688812-b7e04200-facc-11e8-9a1a-d5c8e512f26c.gif) |  ![ddqn_breakout](https://user-images.githubusercontent.com/8209263/49688819-c29ad700-facc-11e8-842b-1dc6f6f38495.gif) |![ddqn_pong](https://user-images.githubusercontent.com/8209263/49688793-54eeab00-facc-11e8-80fe-4b76a12180a0.gif) |
-| BeamRider | Breakout | Pong |
-| ![ddqn_qbert](https://user-images.githubusercontent.com/8209263/49688862-6be1cd00-facd-11e8-849d-61aef598611b.gif) | ![ddqn_seaquest](https://user-images.githubusercontent.com/8209263/49688863-70a68100-facd-11e8-9303-73bea9b9987a.gif) | ![ddqn_spaceinvaders](https://user-images.githubusercontent.com/8209263/49688875-87e56e80-facd-11e8-90be-9d6be7bace03.gif) |
-| Qbert | Seaquest | SpaceInvaders |
+|||||
+|:---:|:---:|:---:|:---:|
+| ![ddqn_breakout](https://user-images.githubusercontent.com/8209263/49688819-c29ad700-facc-11e8-842b-1dc6f6f38495.gif) |![ddqn_pong](https://user-images.githubusercontent.com/8209263/49688793-54eeab00-facc-11e8-80fe-4b76a12180a0.gif) | ![ddqn_qbert](https://user-images.githubusercontent.com/8209263/49688862-6be1cd00-facd-11e8-849d-61aef598611b.gif) | ![ddqn_spaceinvaders](https://user-images.githubusercontent.com/8209263/49688875-87e56e80-facd-11e8-90be-9d6be7bace03.gif) |
+| Breakout | Pong | Qbert | Sp.Invaders |
+
 
 
 | References | |
@@ -69,9 +68,18 @@ To facilitate better RL development, SLM Lab also comes with prebuilt *metrics* 
     ./bin/setup
     ```
 
-  >Alternatively, instead of running `sudo bin/setup`, copy-paste from [`bin/setup_macOS` or `bin/setup_ubuntu`](https://github.com/kengz/SLM-Lab/tree/master/bin) into your terminal and add `sudo` accordingly to run the installation commands.
+  >Alternatively, instead of running `./bin/setup`, copy-paste from [`bin/setup_macOS` or `bin/setup_ubuntu`](https://github.com/kengz/SLM-Lab/tree/master/bin) into your terminal and add `sudo` accordingly to run the installation commands.
 
   >Useful reference: [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html)
+
+#### Hardware Requirements
+
+Non-image based environments can run on a laptop. Only image based environments such as the Atari games benefit from a GPU speedup. For these, we recommend 1 GPU and at least 4 CPUs. This can run a single Atari `Trial` consisting of 4 `Sessions`.
+
+For desktop, a reference spec is GTX 1080 GPU, 4 CPUs above 3.0 GHz, and 32 Gb RAM.
+
+For cloud computing, start with an affordable instance of [AWS EC2 `p2.xlarge`](https://aws.amazon.com/ec2/instance-types/p2/) with a K80 GPU and 4 CPUs. Use the Deep Learning AMI with Conda when [creating an instance](https://aws.amazon.com/getting-started/tutorials/get-started-dlami/).
+
 
 ## Quick Start
 
@@ -110,6 +118,8 @@ conda activate lab
 python run_lab.py slm_lab/spec/benchmark/a2c/a2c_gae_pong.json a2c_gae_pong train
 ```
 
+>When running on a headless server, prepend a command with `xvfb-run -a`, for example `xvfb-run -a python run_lab.py slm_lab/spec/benchmark/a2c/a2c_gae_pong.json a2c_gae_pong train`
+
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_atari.png)
 >Atari Pong ran with `dev` mode to render the environment
 
@@ -117,7 +127,7 @@ This will run a `Trial` with multiple Sessions in *training mode*. In the beginn
 
 Below shows a trial graph with multiple sessions:
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_atari_graph.png)
+![](https://kengz.gitbooks.io/slm-lab/content/assets/a2c_gae_pong_t0_trial_graph_mean_returns_ma_vs_frames.png)
 
 #### Benchmark
 

@@ -151,7 +151,7 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 100,
       "search": "RandomSearch"
     },
@@ -214,7 +214,7 @@
         "hid_layers_activation": "relu",
         "rnn_hidden_size": 32,
         "rnn_num_layers": 1,
-        "seq_len": 4,
+        "seq_len": 8,
         "clip_grad_val": 10.0,
         "use_same_optim": false,
         "actor_optim_spec": {
@@ -236,7 +236,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 500,
+      "max_frame": 500000,
     }],
     "body": {
       "product": "outer",
@@ -245,7 +245,7 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 100,
       "search": "RandomSearch"
     },
@@ -330,7 +330,7 @@
     "env": [{
       "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 500,
+      "max_frame": 500000,
     }],
     "body": {
       "product": "outer",
@@ -339,7 +339,7 @@
     "meta": {
       "distributed": false,
       "eval_frequency": 1000,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 100,
       "search": "RandomSearch"
     },
