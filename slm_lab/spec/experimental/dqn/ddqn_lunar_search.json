@@ -65,7 +65,7 @@
       "distributed": false,
       "eval_frequency": 1000,
       "max_session": 4,
-      "max_trial": 64,
+      "max_trial": 42,
       "search": "RandomSearch",
     },
     "search": {
