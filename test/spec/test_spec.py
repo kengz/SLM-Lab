@@ -106,7 +106,7 @@ def test_ppo_sil(spec_file, spec_name):
     ('experimental/dqn/dqn_cartpole.json', 'dqn_epsilon_greedy_cartpole'),
     ('experimental/dqn/dqn_cartpole.json', 'drqn_boltzmann_cartpole'),
     ('experimental/dqn/dqn_cartpole.json', 'drqn_epsilon_greedy_cartpole'),
-    ('experimental/dqn/dqn_lunar.json', 'dqn_concat_lunar'),
+    ('benchmark/dqn/dqn_lunar.json', 'dqn_concat_lunar'),
 ])
 def test_dqn(spec_file, spec_name):
     run_trial_test(spec_file, spec_name)
