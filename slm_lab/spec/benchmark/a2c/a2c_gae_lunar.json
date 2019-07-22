@@ -37,11 +37,11 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 2e-3,
+          "lr": 4e-3,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 2e-3,
+          "lr": 4e-3,
         },
         "lr_scheduler_spec": null,
         "gpu": false
