@@ -37,7 +37,7 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 3e-3,
+          "lr": 1e-3,
         },
         "critic_optim_spec": {
           "name": "Adam",
