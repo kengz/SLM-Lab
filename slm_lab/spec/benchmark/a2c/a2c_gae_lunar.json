@@ -18,7 +18,7 @@
           "end_step": 0
         },
         "val_loss_coef": 1.0,
-        "training_frequency": 64
+        "training_frequency": 128
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
