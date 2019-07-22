@@ -11,12 +11,12 @@
           "start_val": 1.0,
           "end_val": 0.08,
           "start_step": 0,
-          "end_step": 100000
+          "end_step": 800000
         },
         "gamma": 0.99,
-        "training_batch_iter": 2,
-        "training_iter": 5,
-        "training_frequency": 2,
+        "training_batch_iter": 1,
+        "training_iter": 2,
+        "training_frequency": 1,
         "training_start_step": 32
       },
       "memory": {
@@ -24,7 +24,7 @@
         "alpha": 0.6,
         "epsilon": 0.0001,
         "batch_size": 32,
-        "max_size": 100000,
+        "max_size": 150000,
         "use_cer": false,
       },
       "net": {
