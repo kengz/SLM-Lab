@@ -1,0 +1,71 @@
+{
+  "a2c_nstep_lunar": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": null,
+        "num_step_returns": 5,
+        "entropy_coef_spec": {
+          "name": "no_decay",
+          "start_val": 0.01,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "val_loss_coef": 1.0,
+        "training_frequency": 64
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay",
+      },
+      "net": {
+        "type": "MLPNet",
+        "shared": false,
+        "hid_layers": [64, 64, 32],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "batch_norm": false,
+        "clip_grad_val": 0.5,
+        "use_same_optim": false,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "actor_optim_spec": {
+          "name": "Adam",
+          "lr": 2e-3,
+        },
+        "critic_optim_spec": {
+          "name": "Adam",
+          "lr": 2e-3,
+        },
+        "lr_scheduler_spec": null,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "LunarLander-v2",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "max_t": null,
+      "max_frame": 300000,
+      "num_envs": 8,
+      "normalize_state": false
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
+      "max_session": 4,
+      "max_trial": 1
+    }
+  },
+}
