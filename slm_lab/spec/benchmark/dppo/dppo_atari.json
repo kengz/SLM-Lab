@@ -83,7 +83,7 @@
     },
     "spec_params": {
       "env": [
-        "BeamRiderNoFrameskip-v4", "BreakoutNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SeaquestNoFrameskip-v4", "SpaceInvadersNoFrameskip-v4"
+        "BreakoutNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SeaquestNoFrameskip-v4"
       ]
     }
   }

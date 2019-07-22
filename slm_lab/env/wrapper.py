@@ -300,7 +300,7 @@ def wrap_deepmind(env, episode_life=True, stack_len=None):
     return env
 
 
-def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale=None, normalize_state=False):
+def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale=None, normalize_state=False, episode_life=True):
     '''General method to create any Gym env; auto wraps Atari'''
     env = gym.make(name)
     if seed is not None:
@@ -308,7 +308,6 @@ def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale
     if 'NoFrameskip' in env.spec.id:  # Atari
         env = wrap_atari(env)
         # no reward clipping to allow monitoring; Atari memory clips it
-        episode_life = not util.in_eval_lab_modes()
         env = wrap_deepmind(env, episode_life, frame_op_len)
     elif len(env.observation_space.shape) == 3:  # image-state env
         env = PreprocessImage(env)

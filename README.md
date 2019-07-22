@@ -3,12 +3,11 @@
 
 Modular Deep Reinforcement Learning framework in PyTorch.
 
-||||
-|:---:|:---:|:---:|
-| ![ddqn_beamrider](https://user-images.githubusercontent.com/8209263/49688812-b7e04200-facc-11e8-9a1a-d5c8e512f26c.gif) |  ![ddqn_breakout](https://user-images.githubusercontent.com/8209263/49688819-c29ad700-facc-11e8-842b-1dc6f6f38495.gif) |![ddqn_pong](https://user-images.githubusercontent.com/8209263/49688793-54eeab00-facc-11e8-80fe-4b76a12180a0.gif) |
-| BeamRider | Breakout | Pong |
-| ![ddqn_qbert](https://user-images.githubusercontent.com/8209263/49688862-6be1cd00-facd-11e8-849d-61aef598611b.gif) | ![ddqn_seaquest](https://user-images.githubusercontent.com/8209263/49688863-70a68100-facd-11e8-9303-73bea9b9987a.gif) | ![ddqn_spaceinvaders](https://user-images.githubusercontent.com/8209263/49688875-87e56e80-facd-11e8-90be-9d6be7bace03.gif) |
-| Qbert | Seaquest | SpaceInvaders |
+|||||
+|:---:|:---:|:---:|:---:|
+| ![ddqn_breakout](https://user-images.githubusercontent.com/8209263/49688819-c29ad700-facc-11e8-842b-1dc6f6f38495.gif) |![ddqn_pong](https://user-images.githubusercontent.com/8209263/49688793-54eeab00-facc-11e8-80fe-4b76a12180a0.gif) | ![ddqn_qbert](https://user-images.githubusercontent.com/8209263/49688862-6be1cd00-facd-11e8-849d-61aef598611b.gif) | ![ddqn_spaceinvaders](https://user-images.githubusercontent.com/8209263/49688875-87e56e80-facd-11e8-90be-9d6be7bace03.gif) |
+| Breakout | Pong | Qbert | Sp.Invaders |
+
 
 
 | References | |
@@ -69,9 +68,18 @@ To facilitate better RL development, SLM Lab also comes with prebuilt *metrics* 
     ./bin/setup
     ```
 
-  >Alternatively, instead of running `sudo bin/setup`, copy-paste from [`bin/setup_macOS` or `bin/setup_ubuntu`](https://github.com/kengz/SLM-Lab/tree/master/bin) into your terminal and add `sudo` accordingly to run the installation commands.
+  >Alternatively, instead of running `./bin/setup`, copy-paste from [`bin/setup_macOS` or `bin/setup_ubuntu`](https://github.com/kengz/SLM-Lab/tree/master/bin) into your terminal and add `sudo` accordingly to run the installation commands.
 
   >Useful reference: [Debugging](https://kengz.gitbooks.io/slm-lab/content/installation/debugging.html)
+
+#### Hardware Requirements
+
+Non-image based environments can run on a laptop. Only image based environments such as the Atari games benefit from a GPU speedup. For these, we recommend 1 GPU and at least 4 CPUs. This can run a single Atari `Trial` consisting of 4 `Sessions`.
+
+For desktop, a reference spec is GTX 1080 GPU, 4 CPUs above 3.0 GHz, and 32 Gb RAM.
+
+For cloud computing, start with an affordable instance of [AWS EC2 `p2.xlarge`](https://aws.amazon.com/ec2/instance-types/p2/) with a K80 GPU and 4 CPUs. Use the Deep Learning AMI with Conda when [creating an instance](https://aws.amazon.com/getting-started/tutorials/get-started-dlami/).
+
 
 ## Quick Start
 
@@ -110,6 +118,8 @@ conda activate lab
 python run_lab.py slm_lab/spec/benchmark/a2c/a2c_gae_pong.json a2c_gae_pong train
 ```
 
+>When running on a headless server, prepend a command with `xvfb-run -a`, for example `xvfb-run -a python run_lab.py slm_lab/spec/benchmark/a2c/a2c_gae_pong.json a2c_gae_pong train`
+
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_atari.png)
 >Atari Pong ran with `dev` mode to render the environment
 
@@ -117,7 +127,7 @@ This will run a `Trial` with multiple Sessions in *training mode*. In the beginn
 
 Below shows a trial graph with multiple sessions:
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_atari_graph.png)
+![](https://kengz.gitbooks.io/slm-lab/content/assets/a2c_gae_pong_t0_trial_graph_mean_returns_ma_vs_frames.png)
 
 #### Benchmark
 
@@ -136,19 +146,34 @@ An [`Experiment`](https://github.com/kengz/SLM-Lab/blob/master/slm_lab/experimen
 Given a spec file in `slm_lab/spec/`, if it has a `search` field defining a search space, then it can be ran as an Experiment. For example,
 
 ```shell
-python run_lab.py slm_lab/spec/demo.json dqn_cartpole search
+python run_lab.py slm_lab/spec/experimental/ppo/ppo_lam_search.json ppo_breakout search
 ```
 
 Deep Reinforcement Learning is highly empirical. The lab enables rapid and massive experimentations, hence it needs a way to quickly analyze data from many trials. The experiment  and analytics framework is the scientific method of the lab.
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_experiment_graph.png)
->Experiment graph summarizing the trials in hyperparameter search.
+|||
+|:---:|:---:|
+| ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_experiment_graph1.png) | ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_experiment_graph2.png) |
+| Experiment graph | Experiment graph |
+>Segments of the experiment graph summarizing the trials in hyperparameter search.
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_trial_graph.png)
->Trial graph showing average envelope of repeated sessions.
+|||
+|:---:|:---:|
+| ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_multi_trial_graph_mean_returns_vs_frames.png) | ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_multi_trial_graph_mean_returns_ma_vs_frames.png)|
+| Multi-trial graph | with moving average |
+>The multi-trial experiment graph and its moving average version comparing the trials. These graph show the effect of different GAE λ values of PPO on the Breakout environment. λ= 0.70 performs the best, while λ values closer to 0.90 do not perform as well.
 
-![](https://kengz.gitbooks.io/slm-lab/content/assets/demo_session_graph.png)
->Session graph showing total rewards.
+|||
+|:---:|:---:|
+| ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_t1_trial_graph_mean_returns_vs_frames.png) | ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_t1_trial_graph_mean_returns_ma_vs_frames.png)|
+| Trial graph | with moving average |
+>A trial graph showing average from repeated sessions, and its moving average version.
+
+|||
+|:---:|:---:|
+| ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_t1_s0_session_graph_eval_mean_returns_vs_frames.png) | ![](https://kengz.gitbooks.io/slm-lab/content/assets/ppo_breakout_t1_s0_session_graph_eval_mean_returns_ma_vs_frames.png)|
+| Session graph | with moving average |
+>A session graph showing the total rewards and its moving average version.
 
 This is the end of the quick start tutorial. Continue reading the full documentation to start using SLM Lab.
 
