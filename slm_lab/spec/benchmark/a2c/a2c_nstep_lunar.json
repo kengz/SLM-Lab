@@ -9,7 +9,7 @@
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": null,
-        "num_step_returns": 11,
+        "num_step_returns": 5,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
