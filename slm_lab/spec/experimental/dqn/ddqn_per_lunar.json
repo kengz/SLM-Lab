@@ -14,9 +14,9 @@
           "end_step": 100000
         },
         "gamma": 0.99,
-        "training_batch_iter": 1,
-        "training_iter": 3,
-        "training_frequency": 1,
+        "training_batch_iter": 2,
+        "training_iter": 5,
+        "training_frequency": 2,
         "training_start_step": 32
       },
       "memory": {
@@ -29,7 +29,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64, 64, 32],
+        "hid_layers": [256, 128],
         "hid_layers_activation": "relu",
         "clip_grad_val": 2.0,
         "loss_spec": {
