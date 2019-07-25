@@ -87,7 +87,6 @@ class BaseEnv(ABC):
     '''
 
     def __init__(self, spec):
-        self.done = False
         self.env_spec = spec['env'][0]  # idx 0 for single-env
         # set default
         util.set_attr(self, dict(
@@ -112,21 +111,35 @@ class BaseEnv(ABC):
             'max_t',
             'max_frame',
         ])
-        seq_len = ps.get(spec, 'agent.0.net.seq_len')
+        # override if env is for eval
+        if util.in_eval_lab_modes():
+            self.num_envs = NUM_EVAL
+        self.to_render = util.to_render()
+        self._infer_frame_attr()
+        self._infer_venv_attr()
+        self._set_clock()
+
+        self.done = False
+
+    def _infer_frame_attr(self):
+        '''Infer frame attributes'''
+        seq_len = ps.get(self.spec, 'agent.0.net.seq_len')
         if seq_len is not None:  # infer if using RNN
             self.frame_op = 'stack'
             self.frame_op_len = seq_len
-        if util.in_eval_lab_modes():  # use singleton for eval
-            self.num_envs = NUM_EVAL
-            self.log_frequency = 10000  # dummy
-        if spec['meta']['distributed'] != False:  # divide max_frame for distributed
-            self.max_frame = int(self.max_frame / spec['meta']['max_session'])
+        if self.spec['meta']['distributed'] != False:  # divide max_frame for distributed
+            self.max_frame = int(self.max_frame / self.spec['meta']['max_session'])
+
+    def _infer_venv_attr(self):
+        '''Infer vectorized env attributes'''
         self.is_venv = (self.num_envs is not None and self.num_envs > 1)
-        if self.is_venv:
-            assert self.log_frequency is not None, f'Specify log_frequency when using venv'
+        if self.is_venv and self.log_frequency is None:
+            self.log_frequency = 10000
+            logger.info(f'Defaulted unspecified vec env.log_frequency to {self.log_frequency}')
+
+    def _set_clock(self):
         self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
         self.clock = Clock(self.max_frame, self.clock_speed)
-        self.to_render = util.to_render()
 
     def _set_attr_from_u_env(self, u_env):
         '''Set the observation, action dimensions and action type from u_env'''
