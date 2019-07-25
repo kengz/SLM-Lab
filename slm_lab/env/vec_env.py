@@ -480,7 +480,6 @@ class VecFrameStack(VecEnvWrapper):
         if self.is_stack:
             obs = np.expand_dims(obs, axis=1)
         self.stackedobs[:, -self.shape_dim0:] = obs
-        rews = try_scale_reward(self, rews)
         return self.stackedobs.copy(), rews, news, infos
 
     def reset(self):
