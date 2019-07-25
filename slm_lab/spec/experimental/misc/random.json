@@ -24,7 +24,6 @@
       "eval_frequency": 1000,
       "max_session": 5,
       "max_trial": 1,
-      "search": "RandomSearch"
     }
   },
   "random_pendulum": {
@@ -52,7 +51,6 @@
       "eval_frequency": 1000,
       "max_session": 5,
       "max_trial": 1,
-      "search": "RandomSearch"
     }
   },
   "random_2dball": {
@@ -80,7 +78,38 @@
       "eval_frequency": 1000,
       "max_session": 5,
       "max_trial": 1,
-      "search": "RandomSearch"
+    }
+  },
+  "random_breakout": {
+    "agent": [{
+      "name": "Random",
+      "algorithm": {
+        "name": "Random"
+      },
+      "memory": {
+        "name": "OnPolicyReplay"
+      },
+      "net": {}
+    }],
+    "env": [{
+      "name": "QbertNoFrameskip-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
+      "num_envs": 8,
+      "max_t": null,
+      "max_frame": 1e7
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
+      "max_session": 1,
+      "max_trial": 1,
     }
   }
 }
