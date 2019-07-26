@@ -118,8 +118,7 @@ class BaseEnv(ABC):
         self._infer_frame_attr(spec)
         self._infer_venv_attr()
         self._set_clock()
-
-        self.done = False
+        self._set_tracking_attr()
 
     def _infer_frame_attr(self, spec):
         '''Infer frame attributes'''
@@ -140,6 +139,23 @@ class BaseEnv(ABC):
     def _set_clock(self):
         self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
         self.clock = Clock(self.max_frame, self.clock_speed)
+
+    def _set_tracking_attr(self):
+        self.done = False
+        self.epi_start = True
+        self.ckpt_total_reward = np.nan
+        self.total_reward = 0  # init to 0, but dont ckpt before end of an epi
+
+    def _track_total_reward(self, reward, done):
+        '''
+        Track the total reward given reward and done signal
+        This accounts for whether env is in eval mode and has multiple lives (eval)
+        Work for both single and vec env
+        '''
+        # TODO track both total_reward and episodic total reward
+        if hasattr(self.u_env, 'raw_reward'):  # use raw_reward if reward is preprocessed
+            reward = self.u_env.raw_reward
+        self.ckpt_total_reward, self.total_reward, self.epi_start = util.update_total_reward(self.ckpt_total_reward, self.total_reward, self.epi_start, reward, done)
 
     def _set_attr_from_u_env(self, u_env):
         '''Set the observation, action dimensions and action type from u_env'''

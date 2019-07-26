@@ -610,7 +610,10 @@ def to_torch_batch(batch, device, is_episodic):
 
 
 def update_total_reward(ckpt_total_reward, total_reward, epi_start, reward, done):
-    '''Method to increment total_reward generalized to scalar and vec env. Only update total_reward for an env on reaching done = True'''
+    '''
+    Method to increment total_reward from reward or env.u_env.raw_reward.
+    Generalized to single and vec env, and only update total_reward for an individual env on reaching done = True
+    '''
     if ckpt_total_reward is np.nan:  # init
         ckpt_total_reward = reward
     else:  # reset on epi_start, else keep adding. generalized for vec env

@@ -142,6 +142,7 @@ class UnityEnv(BaseEnv):
         reward = env_info_a.rewards[b]
         reward = try_scale_reward(self, reward)
         done = env_info_a.local_done[b]
+        self._track_total_reward(reward, done)
         if not self.is_venv and self.clock.t > self.max_t:
             done = True
         self.done = done

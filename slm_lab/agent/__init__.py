@@ -91,8 +91,6 @@ class Body:
         self.mean_entropy = np.nan
         self.mean_grad_norm = np.nan
 
-        self.epi_start = True
-        self.ckpt_total_reward = np.nan
         self.total_reward = 0  # init to 0, but dont ckpt before end of an epi
         self.total_reward_ma = np.nan
         # store current and best reward_ma for model checkpointing and early termination if all the environments are solved
@@ -123,9 +121,7 @@ class Body:
 
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
-        if hasattr(self.env.u_env, 'raw_reward'):  # use raw_reward if reward is preprocessed
-            reward = self.env.u_env.raw_reward
-        self.ckpt_total_reward, self.total_reward, self.epi_start = util.update_total_reward(self.ckpt_total_reward, self.total_reward, self.epi_start, reward, done)
+        self.total_reward = self.env.total_reward
 
     def __str__(self):
         return f'body: {util.to_json(util.get_class_attr(self))}'
