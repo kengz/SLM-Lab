@@ -146,7 +146,7 @@ class BaseEnv(ABC):
         self.total_reward_buffer = np.nan
         self.total_reward = 0  # init to 0, but dont ckpt before end of an epi
 
-    def _track_total_reward(self, reward, done):
+    def _track_total_reward(self, reward, done, info):
         '''
         Track the total reward given reward and done signal
         This accounts for whether env is in eval mode and has multiple lives (eval)

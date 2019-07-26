@@ -60,7 +60,7 @@ class OpenAIEnv(BaseEnv):
         if not self.is_discrete and self.action_dim == 1:  # guard for continuous with action_dim 1, make array
             action = np.expand_dims(action, axis=-1)
         state, reward, done, info = self.u_env.step(action)
-        self._track_total_reward(reward, done)
+        self._track_total_reward(reward, done, info)
         if self.to_render:
             self.u_env.render()
         if not self.is_venv and self.clock.t > self.max_t:
