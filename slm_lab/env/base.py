@@ -115,20 +115,20 @@ class BaseEnv(ABC):
         if util.in_eval_lab_modes():
             self.num_envs = NUM_EVAL
         self.to_render = util.to_render()
-        self._infer_frame_attr()
+        self._infer_frame_attr(spec)
         self._infer_venv_attr()
         self._set_clock()
 
         self.done = False
 
-    def _infer_frame_attr(self):
+    def _infer_frame_attr(self, spec):
         '''Infer frame attributes'''
-        seq_len = ps.get(self.spec, 'agent.0.net.seq_len')
+        seq_len = ps.get(spec, 'agent.0.net.seq_len')
         if seq_len is not None:  # infer if using RNN
             self.frame_op = 'stack'
             self.frame_op_len = seq_len
-        if self.spec['meta']['distributed'] != False:  # divide max_frame for distributed
-            self.max_frame = int(self.max_frame / self.spec['meta']['max_session'])
+        if spec['meta']['distributed'] != False:  # divide max_frame for distributed
+            self.max_frame = int(self.max_frame / spec['meta']['max_session'])
 
     def _infer_venv_attr(self):
         '''Infer vectorized env attributes'''
