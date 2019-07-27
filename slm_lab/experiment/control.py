@@ -7,6 +7,7 @@ from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+import pydash as ps
 import torch
 import torch.multiprocessing as mp
 
@@ -42,8 +43,11 @@ class Session:
         spec_util.save(spec, unit='session')
 
         self.agent, self.env = make_agent_env(self.spec, global_nets)
-        with util.ctx_lab_mode('eval'):  # env for eval
-            self.eval_env = make_env(self.spec)
+        if ps.get(self.spec, 'meta.rigorous_eval'):
+            with util.ctx_lab_mode('eval'):
+                self.eval_env = make_env(self.spec)
+        else:
+            self.eval_env = self.env
         logger.info(util.self_desc(self))
 
     def to_ckpt(self, env, mode='eval'):
@@ -68,7 +72,8 @@ class Session:
 
         if self.to_ckpt(env, 'eval'):
             logger.info('Running eval ckpt')
-            analysis.gen_avg_return(agent, self.eval_env)
+            if ps.get(self.spec, 'meta.rigorous_eval'):
+                analysis.gen_avg_return(agent, self.eval_env)
             body.ckpt(self.eval_env, 'eval')
             body.log_summary('eval')
             if body.total_reward_ma >= body.best_total_reward_ma:

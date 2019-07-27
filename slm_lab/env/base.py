@@ -6,7 +6,6 @@ import numpy as np
 import pydash as ps
 import time
 
-NUM_EVAL = 8
 logger = logger.get_logger(__name__)
 
 
@@ -114,7 +113,7 @@ class BaseEnv(ABC):
         ])
         # override if env is for eval
         if util.in_eval_lab_modes():
-            self.num_envs = NUM_EVAL
+            self.num_envs = ps.get(spec, 'meta.rigorous_eval')
         self.to_render = util.to_render()
         self._infer_frame_attr(spec)
         self._infer_venv_attr()
