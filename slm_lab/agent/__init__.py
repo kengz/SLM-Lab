@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pydash as ps
 import torch
+import warnings
 
 
 logger = logger.get_logger(__name__)
@@ -129,7 +130,8 @@ class Body:
         frame = self.env.clock.get('frame')
         wall_t = env.clock.get_elapsed_wall_t()
         fps = 0 if wall_t == 0 else frame / wall_t
-        with np.errstate(all='ignore'):
+        with warnings.catch_warnings():  # mute np.nanmean warning
+            warnings.filterwarnings('ignore')
             total_reward = np.nanmean(env.total_reward)  # guard for vec env
 
         # update debugging variables
