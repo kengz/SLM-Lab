@@ -146,7 +146,7 @@ class Body:
             'opt_step': self.env.clock.get('opt_step'),
             'frame': frame,
             'fps': fps,
-            'total_reward': np.nanmean(self.total_reward),  # guard for vec env
+            'total_reward': np.nanmean(env.total_reward),  # guard for vec env
             'total_reward_ma': np.nan,  # update outside
             'loss': self.loss,
             'lr': self.get_mean_lr(),
