@@ -118,7 +118,7 @@ class BaseEnv(ABC):
         self._infer_frame_attr(spec)
         self._infer_venv_attr()
         self._set_clock()
-        self._set_tracking_attr()
+        self.done = False
 
     def _infer_frame_attr(self, spec):
         '''Infer frame attributes'''
@@ -136,38 +136,16 @@ class BaseEnv(ABC):
             self.log_frequency = 10000
             logger.info(f'Defaulted unspecified vec env.log_frequency to {self.log_frequency}')
 
+    def _update_total_reward(self, info):
+        '''Extract total_reward from info (set in wrapper) into self.total_reward for single and vec env'''
+        if isinstance(info, dict):
+            self.total_reward = info['total_reward']
+        else:  # vec env tuple of infos
+            self.total_reward = np.array([i['total_reward'] for i in info])
+
     def _set_clock(self):
         self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
         self.clock = Clock(self.max_frame, self.clock_speed)
-
-    def _set_tracking_attr(self):
-        self.done = False
-        self.epi_start = True
-        self.total_reward_buffer = np.nan
-        self.total_reward = 0  # init to 0, but dont ckpt before end of an epi
-
-    def _track_total_reward(self, reward, done, info):
-        '''
-        Track the total reward given reward and done signal
-        This accounts for whether env is in eval mode and has multiple lives (eval)
-        Work for both single and vec env
-        '''
-        # TODO track both total_reward and episodic total reward
-        if hasattr(self.u_env, 'raw_reward'):  # use raw_reward if reward is preprocessed
-            reward = self.u_env.raw_reward
-        self._update_total_reward(reward, done)
-
-    def _update_total_reward(self, reward, done):
-        '''
-        Method to increment total_reward from reward or env.u_env.raw_reward.
-        Generalized to single and vec env, and only update total_reward for an individual env on reaching done = True
-        '''
-        if self.total_reward_buffer is np.nan:  # init
-            self.total_reward_buffer = reward
-        else:  # reset on epi_start, else keep adding. generalized for vec env
-            self.total_reward_buffer = self.total_reward_buffer * (1 - self.epi_start) + reward
-        self.total_reward = done * self.total_reward_buffer + (1 - done) * self.total_reward
-        self.epi_start = done
 
     def _set_attr_from_u_env(self, u_env):
         '''Set the observation, action dimensions and action type from u_env'''
