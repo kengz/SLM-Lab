@@ -119,40 +119,7 @@ class BaseEnv(ABC):
         self._infer_venv_attr()
         self._set_clock()
         self.done = False
-
-    def _infer_frame_attr(self, spec):
-        '''Infer frame attributes'''
-        seq_len = ps.get(spec, 'agent.0.net.seq_len')
-        if seq_len is not None:  # infer if using RNN
-            self.frame_op = 'stack'
-            self.frame_op_len = seq_len
-        if spec['meta']['distributed'] != False:  # divide max_frame for distributed
-            self.max_frame = int(self.max_frame / spec['meta']['max_session'])
-
-    def _infer_venv_attr(self):
-        '''Infer vectorized env attributes'''
-        self.is_venv = (self.num_envs is not None and self.num_envs > 1)
-        if self.is_venv and self.log_frequency is None:
-            self.log_frequency = 10000
-            logger.info(f'Defaulted unspecified vec env.log_frequency to {self.log_frequency}')
-
-    def _update_total_reward(self, info):
-        '''Extract total_reward from info (set in wrapper) into self.total_reward for single and vec env'''
-        if isinstance(info, dict):
-            self.total_reward = info['total_reward']
-        else:  # vec env tuple of infos
-            self.total_reward = np.array([i['total_reward'] for i in info])
-
-    def _set_clock(self):
-        self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
-        self.clock = Clock(self.max_frame, self.clock_speed)
-
-    def _set_attr_from_u_env(self, u_env):
-        '''Set the observation, action dimensions and action type from u_env'''
-        self.observation_space, self.action_space = self._get_spaces(u_env)
-        self.observable_dim = self._get_observable_dim(self.observation_space)
-        self.action_dim = self._get_action_dim(self.action_space)
-        self.is_discrete = self._is_discrete(self.action_space)
+        self.total_reward = np.nan
 
     def _get_spaces(self, u_env):
         '''Helper to set the extra attributes to, and get, observation and action spaces'''
@@ -182,9 +149,43 @@ class BaseEnv(ABC):
             raise ValueError('action_space not recognized')
         return action_dim
 
+    def _infer_frame_attr(self, spec):
+        '''Infer frame attributes'''
+        seq_len = ps.get(spec, 'agent.0.net.seq_len')
+        if seq_len is not None:  # infer if using RNN
+            self.frame_op = 'stack'
+            self.frame_op_len = seq_len
+        if spec['meta']['distributed'] != False:  # divide max_frame for distributed
+            self.max_frame = int(self.max_frame / spec['meta']['max_session'])
+
+    def _infer_venv_attr(self):
+        '''Infer vectorized env attributes'''
+        self.is_venv = (self.num_envs is not None and self.num_envs > 1)
+        if self.is_venv and self.log_frequency is None:
+            self.log_frequency = 10000
+            logger.info(f'Defaulted unspecified vec env.log_frequency to {self.log_frequency}')
+
     def _is_discrete(self, action_space):
         '''Check if an action space is discrete'''
         return util.get_class_name(action_space) != 'Box'
+
+    def _set_clock(self):
+        self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
+        self.clock = Clock(self.max_frame, self.clock_speed)
+
+    def _set_attr_from_u_env(self, u_env):
+        '''Set the observation, action dimensions and action type from u_env'''
+        self.observation_space, self.action_space = self._get_spaces(u_env)
+        self.observable_dim = self._get_observable_dim(self.observation_space)
+        self.action_dim = self._get_action_dim(self.action_space)
+        self.is_discrete = self._is_discrete(self.action_space)
+
+    def _update_total_reward(self, info):
+        '''Extract total_reward from info (set in wrapper) into self.total_reward for single and vec env'''
+        if isinstance(info, dict):
+            self.total_reward = info['total_reward']
+        else:  # vec env tuple of infos
+            self.total_reward = np.array([i['total_reward'] for i in info])
 
     @abstractmethod
     @lab_api
