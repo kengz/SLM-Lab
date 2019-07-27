@@ -90,7 +90,8 @@ class BaseEnv(ABC):
         self.env_spec = spec['env'][0]  # idx 0 for single-env
         # set default
         util.set_attr(self, dict(
-            log_frequency=None,  # default to log at epi done
+            eval_frequency=10000,
+            log_frequency=10000,
             frame_op=None,
             frame_op_len=None,
             normalize_state=False,
@@ -98,8 +99,8 @@ class BaseEnv(ABC):
             num_envs=1,
         ))
         util.set_attr(self, spec['meta'], [
-            'log_frequency',
             'eval_frequency',
+            'log_frequency',
         ])
         util.set_attr(self, self.env_spec, [
             'name',
@@ -161,9 +162,6 @@ class BaseEnv(ABC):
     def _infer_venv_attr(self):
         '''Infer vectorized env attributes'''
         self.is_venv = (self.num_envs is not None and self.num_envs > 1)
-        if self.is_venv and self.log_frequency is None:
-            self.log_frequency = 10000
-            logger.info(f'Defaulted unspecified vec env.log_frequency to {self.log_frequency}')
 
     def _is_discrete(self, action_space):
         '''Check if an action space is discrete'''

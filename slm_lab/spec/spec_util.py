@@ -35,7 +35,6 @@ SPEC_FORMAT = {
         "num": (int, list),
     },
     "meta": {
-        "eval_frequency": (int, float),
         "max_session": int,
         "max_trial": (type(None), int),
     },
