@@ -66,7 +66,7 @@ class Session:
         if self.to_ckpt(env, 'log'):
             body.ckpt(self.env, 'train')
             body.log_summary('train')
-            if len(body.train_df) > 1:  # need > 1 row to calculate stability
+            if len(body.train_df) > 2:  # need more rows to calculate metrics
                 metrics = analysis.analyze_session(self.spec, body.train_df, 'train', plot=False)
                 body.log_metrics(metrics['scalar'], 'train')
 
@@ -79,7 +79,7 @@ class Session:
             if body.total_reward_ma >= body.best_total_reward_ma:
                 body.best_total_reward_ma = body.total_reward_ma
                 agent.save(ckpt='best')
-            if len(body.eval_df) > 1:  # need > 1 row to calculate stability
+            if len(body.eval_df) > 2:  # need more rows to calculate metrics
                 metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval', plot=False)
                 body.log_metrics(metrics['scalar'], 'eval')
 
