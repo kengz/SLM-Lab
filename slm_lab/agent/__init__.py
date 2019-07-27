@@ -129,6 +129,8 @@ class Body:
         frame = self.env.clock.get('frame')
         wall_t = env.clock.get_elapsed_wall_t()
         fps = 0 if wall_t == 0 else frame / wall_t
+        with np.errstate(all='ignore'):
+            total_reward = np.nanmean(env.total_reward)  # guard for vec env
 
         # update debugging variables
         if net_util.to_check_train_step():
@@ -144,7 +146,7 @@ class Body:
             'opt_step': self.env.clock.get('opt_step'),
             'frame': frame,
             'fps': fps,
-            'total_reward': np.nanmean(env.total_reward),  # guard for vec env
+            'total_reward': total_reward,
             'total_reward_ma': np.nan,  # update outside
             'loss': self.loss,
             'lr': self.get_mean_lr(),
