@@ -167,10 +167,9 @@ class Body:
         self.total_reward_ma = self.train_df[-viz.PLOT_MA_WINDOW:]['total_reward'].mean()
         self.train_df.iloc[-1]['total_reward_ma'] = self.total_reward_ma
 
-    def eval_ckpt(self, eval_env, total_reward):
+    def eval_ckpt(self, eval_env):
         '''Checkpoint to update body.eval_df data'''
         row = self.calc_df_row(eval_env)
-        row['total_reward'] = total_reward
         # append efficiently to df
         self.eval_df.loc[len(self.eval_df)] = row
         # update current reward_ma

@@ -22,20 +22,17 @@ logger = logger.get_logger(__name__)
 
 def gen_return(agent, env):
     '''Generate return for an agent and an env in eval mode. eval_env should be a vec env with NUM_EVAL instances'''
-    # stats variables
-    vec_dones = False
+    vec_dones = False  # done check for single and vec env
     # swap ref to allow inference based on body.env
-    main_env = agent.body.env
+    body_env = agent.body.env
     agent.body.env = env
     # start eval loop
     state = env.reset()
-    done = False
     while not np.all(vec_dones):
         action = agent.act(state)
         state, reward, done, info = env.step(action)
         vec_dones = np.logical_or(vec_dones, done)  # wait till every vec slot done turns True
-    # restore swapped ref
-    agent.body.env = main_env
+    agent.body.env = body_env  # restore swapped ref
     return np.mean(env.total_reward)
 
 

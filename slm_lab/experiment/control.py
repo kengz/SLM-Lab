@@ -68,8 +68,8 @@ class Session:
 
         if self.to_ckpt(env, 'eval'):
             logger.info('Running eval ckpt')
-            avg_return = analysis.gen_avg_return(agent, self.eval_env)
-            body.eval_ckpt(self.eval_env, avg_return)
+            analysis.gen_avg_return(agent, self.eval_env)
+            body.eval_ckpt(self.eval_env)
             body.log_summary('eval')
             if body.eval_reward_ma >= body.best_reward_ma:
                 body.best_reward_ma = body.eval_reward_ma
