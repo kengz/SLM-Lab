@@ -52,25 +52,35 @@ class NoopResetEnv(gym.Wrapper):
         return self.env.step(ac)
 
 
-class FireResetEnv(gym.Wrapper):
-    def __init__(self, env):
-        '''Take action on reset for environments that are fixed until firing.'''
+class MaxAndSkipEnv(gym.Wrapper):
+    '''OpenAI max-skipframe wrapper used for a NoFrameskip env'''
+
+    def __init__(self, env, skip=4):
+        '''Return only every `skip`-th frame'''
         gym.Wrapper.__init__(self, env)
-        assert env.unwrapped.get_action_meanings()[1] == 'FIRE'
-        assert len(env.unwrapped.get_action_meanings()) >= 3
+        # most recent raw observations (for max pooling across time steps)
+        self._obs_buffer = np.zeros((2,) + env.observation_space.shape, dtype=np.uint8)
+        self._skip = skip
+
+    def step(self, action):
+        '''Repeat action, sum reward, and max over last observations.'''
+        total_reward = 0.0
+        done = None
+        for i in range(self._skip):
+            obs, reward, done, info = self.env.step(action)
+            if i == self._skip - 2:
+                self._obs_buffer[0] = obs
+            if i == self._skip - 1:
+                self._obs_buffer[1] = obs
+            total_reward += reward
+            if done:
+                break
+        # Note that the observation on the done=True frame doesn't matter
+        max_frame = self._obs_buffer.max(axis=0)
+        return max_frame, total_reward, done, info
 
     def reset(self, **kwargs):
-        self.env.reset(**kwargs)
-        obs, _, done, _ = self.env.step(1)
-        if done:
-            self.env.reset(**kwargs)
-        obs, _, done, _ = self.env.step(2)
-        if done:
-            self.env.reset(**kwargs)
-        return obs
-
-    def step(self, ac):
-        return self.env.step(ac)
+        return self.env.reset(**kwargs)
 
 
 class EpisodicLifeEnv(gym.Wrapper):
@@ -112,75 +122,25 @@ class EpisodicLifeEnv(gym.Wrapper):
         return obs
 
 
-class MaxAndSkipEnv(gym.Wrapper):
-    '''OpenAI max-skipframe wrapper used for a NoFrameskip env'''
-
-    def __init__(self, env, skip=4):
-        '''Return only every `skip`-th frame'''
+class FireResetEnv(gym.Wrapper):
+    def __init__(self, env):
+        '''Take action on reset for environments that are fixed until firing.'''
         gym.Wrapper.__init__(self, env)
-        # most recent raw observations (for max pooling across time steps)
-        self._obs_buffer = np.zeros((2,) + env.observation_space.shape, dtype=np.uint8)
-        self._skip = skip
-
-    def step(self, action):
-        '''Repeat action, sum reward, and max over last observations.'''
-        total_reward = 0.0
-        done = None
-        for i in range(self._skip):
-            obs, reward, done, info = self.env.step(action)
-            if i == self._skip - 2:
-                self._obs_buffer[0] = obs
-            if i == self._skip - 1:
-                self._obs_buffer[1] = obs
-            total_reward += reward
-            if done:
-                break
-        # Note that the observation on the done=True frame doesn't matter
-        max_frame = self._obs_buffer.max(axis=0)
-        return max_frame, total_reward, done, info
+        assert env.unwrapped.get_action_meanings()[1] == 'FIRE'
+        assert len(env.unwrapped.get_action_meanings()) >= 3
 
     def reset(self, **kwargs):
-        return self.env.reset(**kwargs)
+        self.env.reset(**kwargs)
+        obs, _, done, _ = self.env.step(1)
+        if done:
+            self.env.reset(**kwargs)
+        obs, _, done, _ = self.env.step(2)
+        if done:
+            self.env.reset(**kwargs)
+        return obs
 
-
-class ScaleRewardEnv(gym.RewardWrapper):
-    def __init__(self, env, reward_scale):
-        '''
-        Rescale reward
-        @param (str,float):reward_scale If 'sign', use np.sign, else multiply with the specified float scale
-        '''
-        gym.Wrapper.__init__(self, env)
-        self.reward_scale = reward_scale
-        self.sign_reward = self.reward_scale == 'sign'
-
-    def reward(self, reward):
-        '''Set self.raw_reward for retrieving the original reward'''
-        return try_scale_reward(self, reward)
-
-
-class NormalizeStateEnv(gym.ObservationWrapper):
-    def __init__(self, env=None):
-        '''
-        Normalize observations on-line
-        Adapted from https://github.com/ikostrikov/pytorch-a3c/blob/e898f7514a03de73a2bf01e7b0f17a6f93963389/envs.py (MIT)
-        '''
-        super().__init__(env)
-        self.state_mean = 0
-        self.state_std = 0
-        self.alpha = 0.9999
-        self.num_steps = 0
-
-    def observation(self, observation):
-        self.num_steps += 1
-        self.state_mean = self.state_mean * self.alpha + \
-            observation.mean() * (1 - self.alpha)
-        self.state_std = self.state_std * self.alpha + \
-            observation.std() * (1 - self.alpha)
-
-        unbiased_mean = self.state_mean / (1 - pow(self.alpha, self.num_steps))
-        unbiased_std = self.state_std / (1 - pow(self.alpha, self.num_steps))
-
-        return (observation - unbiased_mean) / (unbiased_std + 1e-8)
+    def step(self, ac):
+        return self.env.step(ac)
 
 
 class PreprocessImage(gym.ObservationWrapper):
@@ -278,6 +238,46 @@ class FrameStack(gym.Wrapper):
     def _get_ob(self):
         assert len(self.frames) == self.frame_op_len
         return LazyFrames(list(self.frames), self.frame_op)
+
+
+class NormalizeStateEnv(gym.ObservationWrapper):
+    def __init__(self, env=None):
+        '''
+        Normalize observations on-line
+        Adapted from https://github.com/ikostrikov/pytorch-a3c/blob/e898f7514a03de73a2bf01e7b0f17a6f93963389/envs.py (MIT)
+        '''
+        super().__init__(env)
+        self.state_mean = 0
+        self.state_std = 0
+        self.alpha = 0.9999
+        self.num_steps = 0
+
+    def observation(self, observation):
+        self.num_steps += 1
+        self.state_mean = self.state_mean * self.alpha + \
+            observation.mean() * (1 - self.alpha)
+        self.state_std = self.state_std * self.alpha + \
+            observation.std() * (1 - self.alpha)
+
+        unbiased_mean = self.state_mean / (1 - pow(self.alpha, self.num_steps))
+        unbiased_std = self.state_std / (1 - pow(self.alpha, self.num_steps))
+
+        return (observation - unbiased_mean) / (unbiased_std + 1e-8)
+
+
+class ScaleRewardEnv(gym.RewardWrapper):
+    def __init__(self, env, reward_scale):
+        '''
+        Rescale reward
+        @param (str,float):reward_scale If 'sign', use np.sign, else multiply with the specified float scale
+        '''
+        gym.Wrapper.__init__(self, env)
+        self.reward_scale = reward_scale
+        self.sign_reward = self.reward_scale == 'sign'
+
+    def reward(self, reward):
+        '''Set self.raw_reward for retrieving the original reward'''
+        return try_scale_reward(self, reward)
 
 
 def wrap_atari(env):
