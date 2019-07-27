@@ -92,7 +92,7 @@
       "net": {}
     }],
     "env": [{
-      "name": "QbertNoFrameskip-v4",
+      "name": "BreakoutNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
