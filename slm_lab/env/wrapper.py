@@ -95,7 +95,7 @@ class EpisodicLifeEnv(gym.Wrapper):
 
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
-        self.was_real_done = done
+        self.was_real_done = info['was_real_done'] = done
         # check current lives, make loss of life terminal,
         # then update lives to handle bonus lives
         lives = self.env.unwrapped.ale.lives()
@@ -280,6 +280,30 @@ class ScaleRewardEnv(gym.RewardWrapper):
         return try_scale_reward(self, reward)
 
 
+class TrackReward(gym.Wrapper):
+    def __init__(self, env):
+        '''
+        Self-tracking as a simple solution to total reward tracking
+        Tracks the latest episodic rewards
+        '''
+        gym.Wrapper.__init__(self, env)
+        self.tracked_reward = 0
+        self.total_reward = 0
+
+    def step(self, action):
+        obs, reward, done, info = self.env.step(action)
+        self.tracked_reward += reward
+        # use self.was_real_done from EpisodicLifeEnv, or plain done
+        if info.get('was_real_done', done):
+            self.total_reward = self.tracked_reward
+            self.tracked_reward = 0  # reset
+        info.update({'total_reward': self.total_reward})
+        return obs, reward, done, info
+
+    def reset(self, **kwargs):
+        return self.env.reset(**kwargs)
+
+
 def wrap_atari(env):
     '''Apply a common set of wrappers for Atari games'''
     assert 'NoFrameskip' in env.spec.id
@@ -320,6 +344,7 @@ def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale
             env = NormalizeStateEnv(env)
         if frame_op is not None:
             env = FrameStack(env, frame_op, frame_op_len)
+    env = TrackReward(env)  # auto-track total reward
     if reward_scale is not None:
         env = ScaleRewardEnv(env, reward_scale)
     return env
