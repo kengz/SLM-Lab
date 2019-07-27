@@ -288,7 +288,7 @@ class TrackReward(gym.Wrapper):
         '''
         gym.Wrapper.__init__(self, env)
         self.tracked_reward = 0
-        self.total_reward = 0
+        self.total_reward = np.nan
 
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
