@@ -260,7 +260,7 @@ def analyze_trial(trial_spec, session_metrics_list):
     viz.plot_trial(trial_spec, trial_metrics)
     viz.plot_trial(trial_spec, trial_metrics, ma=True)
     # zip files
-    if util.get_lab_mode() == 'train':
+    if util.get_lab_mode() == 'train' or trial_spec['meta']['max_trial'] == 1:
         predir, _, _, _, _, _ = util.prepath_split(info_prepath)
         shutil.make_archive(predir, 'zip', predir)
         logger.info(f'All trial data zipped to {predir}.zip')
