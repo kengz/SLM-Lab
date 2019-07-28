@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from functools import partial
 from gym import spaces
-from slm_lab.env.wrapper import make_gym_env, try_scale_reward
+from slm_lab.env.wrapper import make_gym_env
 from slm_lab.lib import logger
 import contextlib
 import ctypes
@@ -24,7 +24,6 @@ _NP_TO_CT = {
 
 
 # helper methods
-
 
 @contextlib.contextmanager
 def clear_mpi_env_vars():
