@@ -83,5 +83,90 @@
         "BreakoutNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SeaquestNoFrameskip-v4"
       ]
     }
+  },
+  "a2c_nstep_atari_full": {
+    "agent": [{
+      "name": "A2C",
+      "algorithm": {
+        "name": "ActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "explore_var_spec": null,
+        "gamma": 0.99,
+        "lam": null,
+        "num_step_returns": 11,
+        "entropy_coef_spec": {
+          "name": "no_decay",
+          "start_val": 0.01,
+          "end_val": 0.01,
+          "start_step": 0,
+          "end_step": 0
+        },
+        "val_loss_coef": 0.5,
+        "training_frequency": 5
+      },
+      "memory": {
+        "name": "OnPolicyBatchReplay"
+      },
+      "net": {
+        "type": "ConvNet",
+        "shared": true,
+        "conv_hid_layers": [
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
+          [32, 3, 1, 0, 1]
+        ],
+        "fc_hid_layers": [512],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "normalize": true,
+        "batch_norm": false,
+        "clip_grad_val": 0.5,
+        "use_same_optim": false,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "actor_optim_spec": {
+          "name": "RMSprop",
+          "lr": 7e-4,
+          "alpha": 0.99,
+          "eps": 1e-5
+        },
+        "critic_optim_spec": {
+          "name": "RMSprop",
+          "lr": 7e-4,
+          "alpha": 0.99,
+          "eps": 1e-5
+        },
+        "lr_scheduler_spec": null,
+        "gpu": true
+      }
+    }],
+    "env": [{
+      "name": "${env}",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
+      "num_envs": 16,
+      "max_t": null,
+      "max_frame": 1e7
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1,
+    },
+    "meta": {
+      "distributed": false,
+      "eval_frequency": 10000,
+      "log_frequency": 10000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1
+    },
+    "spec_params": {
+      "env": [
+        "AdventureNoFrameskip-v4", "AirRaidNoFrameskip-v4", "AlienNoFrameskip-v4", "AmidarNoFrameskip-v4", "AssaultNoFrameskip-v4", "AsterixNoFrameskip-v4", "AsteroidsNoFrameskip-v4", "AtlantisNoFrameskip-v4", "BankHeistNoFrameskip-v4", "BattleZoneNoFrameskip-v4", "BeamRiderNoFrameskip-v4", "BerzerkNoFrameskip-v4", "BowlingNoFrameskip-v4", "BoxingNoFrameskip-v4", "BreakoutNoFrameskip-v4", "CarnivalNoFrameskip-v4", "CentipedeNoFrameskip-v4", "ChopperCommandNoFrameskip-v4", "CrazyClimberNoFrameskip-v4", "DefenderNoFrameskip-v4", "DemonAttackNoFrameskip-v4", "DoubleDunkNoFrameskip-v4", "ElevatorActionNoFrameskip-v4", "FishingDerbyNoFrameskip-v4", "FreewayNoFrameskip-v4", "FrostbiteNoFrameskip-v4", "GopherNoFrameskip-v4", "GravitarNoFrameskip-v4", "HeroNoFrameskip-v4", "IceHockeyNoFrameskip-v4", "JamesbondNoFrameskip-v4", "JourneyEscapeNoFrameskip-v4", "KangarooNoFrameskip-v4", "KrullNoFrameskip-v4", "KungFuMasterNoFrameskip-v4", "MontezumaRevengeNoFrameskip-v4", "MsPacmanNoFrameskip-v4", "NameThisGameNoFrameskip-v4", "PhoenixNoFrameskip-v4", "PitfallNoFrameskip-v4", "PongNoFrameskip-v4", "PooyanNoFrameskip-v4", "PrivateEyeNoFrameskip-v4", "QbertNoFrameskip-v4", "RiverraidNoFrameskip-v4", "RoadRunnerNoFrameskip-v4", "RobotankNoFrameskip-v4", "SeaquestNoFrameskip-v4", "SkiingNoFrameskip-v4", "SolarisNoFrameskip-v4", "SpaceInvadersNoFrameskip-v4", "StarGunnerNoFrameskip-v4", "TennisNoFrameskip-v4", "TimePilotNoFrameskip-v4", "TutankhamNoFrameskip-v4", "UpNDownNoFrameskip-v4", "VentureNoFrameskip-v4", "VideoPinballNoFrameskip-v4", "WizardOfWorNoFrameskip-v4", "YarsRevengeNoFrameskip-v4", "ZaxxonNoFrameskip-v4"
+      ]
+    }
   }
 }
