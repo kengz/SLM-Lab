@@ -46,10 +46,11 @@ def build_config_space(spec):
 def infer_trial_resources(spec):
     '''Infer the resources_per_trial for ray from spec'''
     meta_spec = spec['meta']
-    num_cpus = min(util.NUM_CPUS, meta_spec['max_session'])
+    requested_cpu = meta_spec.get('num_cpus') or meta_spec['max_session']
+    num_cpus = min(util.NUM_CPUS, requested_cpu)
 
     use_gpu = any(agent_spec['net'].get('gpu') for agent_spec in spec['agent'])
-    requested_gpu = meta_spec['max_session'] if use_gpu else 0
+    requested_gpu = meta_spec.get('num_gpus') or meta_spec['max_session'] if use_gpu else 0
     gpu_count = torch.cuda.device_count() if torch.cuda.is_available() else 0
     num_gpus = min(gpu_count, requested_gpu)
     resources_per_trial = {'cpu': num_cpus, 'gpu': num_gpus}
