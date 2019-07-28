@@ -35,7 +35,6 @@ SPEC_FORMAT = {
         "num": (int, list),
     },
     "meta": {
-        "eval_frequency": (int, float),
         "max_session": int,
         "max_trial": (type(None), int),
     },
@@ -120,6 +119,7 @@ def check_all():
 def extend_meta_spec(spec):
     '''Extend meta spec with information for lab functions'''
     extended_meta_spec = {
+        'rigorous_eval': ps.get(spec, 'meta.rigorous_eval', 8),
         # reset lab indices to -1 so that they tick to 0
         'experiment': -1,
         'trial': -1,

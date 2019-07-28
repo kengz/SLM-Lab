@@ -6,7 +6,6 @@ import numpy as np
 import pydash as ps
 import time
 
-NUM_EVAL = 8
 logger = logger.get_logger(__name__)
 
 
@@ -87,11 +86,11 @@ class BaseEnv(ABC):
     '''
 
     def __init__(self, spec):
-        self.done = False
         self.env_spec = spec['env'][0]  # idx 0 for single-env
         # set default
         util.set_attr(self, dict(
-            log_frequency=None,  # default to log at epi done
+            eval_frequency=10000,
+            log_frequency=10000,
             frame_op=None,
             frame_op_len=None,
             normalize_state=False,
@@ -99,8 +98,8 @@ class BaseEnv(ABC):
             num_envs=1,
         ))
         util.set_attr(self, spec['meta'], [
-            'log_frequency',
             'eval_frequency',
+            'log_frequency',
         ])
         util.set_attr(self, self.env_spec, [
             'name',
@@ -112,28 +111,15 @@ class BaseEnv(ABC):
             'max_t',
             'max_frame',
         ])
-        seq_len = ps.get(spec, 'agent.0.net.seq_len')
-        if seq_len is not None:  # infer if using RNN
-            self.frame_op = 'stack'
-            self.frame_op_len = seq_len
-        if util.in_eval_lab_modes():  # use singleton for eval
-            self.num_envs = NUM_EVAL
-            self.log_frequency = 10000  # dummy
-        if spec['meta']['distributed'] != False:  # divide max_frame for distributed
-            self.max_frame = int(self.max_frame / spec['meta']['max_session'])
-        self.is_venv = (self.num_envs is not None and self.num_envs > 1)
-        if self.is_venv:
-            assert self.log_frequency is not None, f'Specify log_frequency when using venv'
-        self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
-        self.clock = Clock(self.max_frame, self.clock_speed)
+        # override if env is for eval
+        if util.in_eval_lab_modes():
+            self.num_envs = ps.get(spec, 'meta.rigorous_eval')
         self.to_render = util.to_render()
-
-    def _set_attr_from_u_env(self, u_env):
-        '''Set the observation, action dimensions and action type from u_env'''
-        self.observation_space, self.action_space = self._get_spaces(u_env)
-        self.observable_dim = self._get_observable_dim(self.observation_space)
-        self.action_dim = self._get_action_dim(self.action_space)
-        self.is_discrete = self._is_discrete(self.action_space)
+        self._infer_frame_attr(spec)
+        self._infer_venv_attr()
+        self._set_clock()
+        self.done = False
+        self.total_reward = np.nan
 
     def _get_spaces(self, u_env):
         '''Helper to set the extra attributes to, and get, observation and action spaces'''
@@ -163,9 +149,40 @@ class BaseEnv(ABC):
             raise ValueError('action_space not recognized')
         return action_dim
 
+    def _infer_frame_attr(self, spec):
+        '''Infer frame attributes'''
+        seq_len = ps.get(spec, 'agent.0.net.seq_len')
+        if seq_len is not None:  # infer if using RNN
+            self.frame_op = 'stack'
+            self.frame_op_len = seq_len
+        if spec['meta']['distributed'] != False:  # divide max_frame for distributed
+            self.max_frame = int(self.max_frame / spec['meta']['max_session'])
+
+    def _infer_venv_attr(self):
+        '''Infer vectorized env attributes'''
+        self.is_venv = (self.num_envs is not None and self.num_envs > 1)
+
     def _is_discrete(self, action_space):
         '''Check if an action space is discrete'''
         return util.get_class_name(action_space) != 'Box'
+
+    def _set_clock(self):
+        self.clock_speed = 1 * (self.num_envs or 1)  # tick with a multiple of num_envs to properly count frames
+        self.clock = Clock(self.max_frame, self.clock_speed)
+
+    def _set_attr_from_u_env(self, u_env):
+        '''Set the observation, action dimensions and action type from u_env'''
+        self.observation_space, self.action_space = self._get_spaces(u_env)
+        self.observable_dim = self._get_observable_dim(self.observation_space)
+        self.action_dim = self._get_action_dim(self.action_space)
+        self.is_discrete = self._is_discrete(self.action_space)
+
+    def _update_total_reward(self, info):
+        '''Extract total_reward from info (set in wrapper) into self.total_reward for single and vec env'''
+        if isinstance(info, dict):
+            self.total_reward = info['total_reward']
+        else:  # vec env tuple of infos
+            self.total_reward = np.array([i['total_reward'] for i in info])
 
     @abstractmethod
     @lab_api

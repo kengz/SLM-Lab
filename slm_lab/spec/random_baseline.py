@@ -83,11 +83,9 @@ def gen_random_return(env_name, seed):
     env.seed(seed)
     env.reset()
     done = False
-    total_reward = 0
     while not done:
         _, reward, done, _ = env.step(env.action_space.sample())
-        total_reward += reward
-    return total_reward
+    return env.total_reward
 
 
 def gen_random_baseline(env_name, num_eval=NUM_EVAL):

@@ -1,5 +1,5 @@
 {
-  "a2c_gae_atari": {
+  "a2c_gae_qbert": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -58,7 +58,7 @@
       }
     }],
     "env": [{
-      "name": "${env}",
+      "name": "QbertNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
@@ -72,16 +72,11 @@
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 10000,
       "log_frequency": 10000,
+      "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 4,
-      "max_trial": 1
-    },
-    "spec_params": {
-      "env": [
-        "BreakoutNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SeaquestNoFrameskip-v4"
-      ]
+      "max_trial": 1,
     }
   }
 }

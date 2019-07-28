@@ -1,5 +1,5 @@
 {
-  "a2c_gae_atari": {
+  "a2c_nstep_qbert": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -8,8 +8,8 @@
         "action_policy": "default",
         "explore_var_spec": null,
         "gamma": 0.99,
-        "lam": 0.95,
-        "num_step_returns": null,
+        "lam": null,
+        "num_step_returns": 11,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.01,
@@ -18,10 +18,10 @@
           "end_step": 0
         },
         "val_loss_coef": 0.5,
-        "training_frequency": 32
+        "training_frequency": 5
       },
       "memory": {
-        "name": "OnPolicyBatchReplay",
+        "name": "OnPolicyBatchReplay"
       },
       "net": {
         "type": "ConvNet",
@@ -58,7 +58,7 @@
       }
     }],
     "env": [{
-      "name": "${env}",
+      "name": "QbertNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
@@ -68,20 +68,15 @@
     }],
     "body": {
       "product": "outer",
-      "num": 1
+      "num": 1,
     },
     "meta": {
       "distributed": false,
-      "eval_frequency": 10000,
       "log_frequency": 10000,
+      "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1
-    },
-    "spec_params": {
-      "env": [
-        "BreakoutNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SeaquestNoFrameskip-v4"
-      ]
     }
   }
 }

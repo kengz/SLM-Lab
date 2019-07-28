@@ -1,9 +1,9 @@
 {
-  "ddqn_per_atari": {
+  "dqn_per_qbert": {
     "agent": [{
-      "name": "DoubleDQN",
+      "name": "DQN",
       "algorithm": {
-        "name": "DoubleDQN",
+        "name": "DQN",
         "action_pdtype": "Argmax",
         "action_policy": "epsilon_greedy",
         "explore_var_spec": {
@@ -25,7 +25,7 @@
         "epsilon": 0.0001,
         "batch_size": 32,
         "max_size": 200000,
-        "use_cer": false,
+        "use_cer": false
       },
       "net": {
         "type": "ConvNet",
@@ -53,13 +53,13 @@
       }
     }],
     "env": [{
-      "name": "${env}",
+      "name": "QbertNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
       "num_envs": 16,
       "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 4e6
     }],
     "body": {
       "product": "outer",
@@ -72,11 +72,6 @@
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1
-    },
-    "spec_params": {
-      "env": [
-        "BreakoutNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SeaquestNoFrameskip-v4"
-      ]
     }
   }
 }

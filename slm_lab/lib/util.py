@@ -609,17 +609,6 @@ def to_torch_batch(batch, device, is_episodic):
     return batch
 
 
-def update_total_reward(ckpt_total_reward, total_reward, epi_start, reward, done):
-    '''Method to increment total_reward generalized to scalar and vec env. Only update total_reward for an env on reaching done = True'''
-    if ckpt_total_reward is np.nan:  # init
-        ckpt_total_reward = reward
-    else:  # reset on epi_start, else keep adding. generalized for vec env
-        ckpt_total_reward = ckpt_total_reward * (1 - epi_start) + reward
-    total_reward = done * ckpt_total_reward + (1 - done) * total_reward
-    epi_start = done
-    return ckpt_total_reward, total_reward, epi_start
-
-
 def write(data, data_path):
     '''
     Universal data writing method with smart data parsing

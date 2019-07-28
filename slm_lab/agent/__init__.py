@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pydash as ps
 import torch
+import warnings
 
 
 logger = logger.get_logger(__name__)
@@ -91,13 +92,9 @@ class Body:
         self.mean_entropy = np.nan
         self.mean_grad_norm = np.nan
 
-        self.epi_start = True
-        self.ckpt_total_reward = np.nan
-        self.total_reward = 0  # init to 0, but dont ckpt before end of an epi
+        # total_reward_ma from eval for model checkpoint saves
+        self.best_total_reward_ma = -np.inf
         self.total_reward_ma = np.nan
-        # store current and best reward_ma for model checkpointing and early termination if all the environments are solved
-        self.best_reward_ma = -np.inf
-        self.eval_reward_ma = np.nan
 
         # dataframes to track data for analysis.analyze_session
         # track training data per episode
@@ -123,9 +120,7 @@ class Body:
 
     def update(self, state, action, reward, next_state, done):
         '''Interface update method for body at agent.update()'''
-        if hasattr(self.env.u_env, 'raw_reward'):  # use raw_reward if reward is preprocessed
-            reward = self.env.u_env.raw_reward
-        self.ckpt_total_reward, self.total_reward, self.epi_start = util.update_total_reward(self.ckpt_total_reward, self.total_reward, self.epi_start, reward, done)
+        pass
 
     def __str__(self):
         return f'body: {util.to_json(util.get_class_attr(self))}'
@@ -135,6 +130,9 @@ class Body:
         frame = self.env.clock.get('frame')
         wall_t = env.clock.get_elapsed_wall_t()
         fps = 0 if wall_t == 0 else frame / wall_t
+        with warnings.catch_warnings():  # mute np.nanmean warning
+            warnings.filterwarnings('ignore')
+            total_reward = np.nanmean(env.total_reward)  # guard for vec env
 
         # update debugging variables
         if net_util.to_check_train_step():
@@ -150,7 +148,7 @@ class Body:
             'opt_step': self.env.clock.get('opt_step'),
             'frame': frame,
             'fps': fps,
-            'total_reward': np.nanmean(self.total_reward),  # guard for vec env
+            'total_reward': total_reward,
             'total_reward_ma': np.nan,  # update outside
             'loss': self.loss,
             'lr': self.get_mean_lr(),
@@ -162,24 +160,18 @@ class Body:
         assert all(col in self.train_df.columns for col in row.index), f'Mismatched row keys: {row.index} vs df columns {self.train_df.columns}'
         return row
 
-    def train_ckpt(self):
-        '''Checkpoint to update body.train_df data'''
-        row = self.calc_df_row(self.env)
-        # append efficiently to df
-        self.train_df.loc[len(self.train_df)] = row
-        # update current reward_ma
-        self.total_reward_ma = self.train_df[-viz.PLOT_MA_WINDOW:]['total_reward'].mean()
-        self.train_df.iloc[-1]['total_reward_ma'] = self.total_reward_ma
-
-    def eval_ckpt(self, eval_env, total_reward):
-        '''Checkpoint to update body.eval_df data'''
-        row = self.calc_df_row(eval_env)
-        row['total_reward'] = total_reward
-        # append efficiently to df
-        self.eval_df.loc[len(self.eval_df)] = row
-        # update current reward_ma
-        self.eval_reward_ma = self.eval_df[-viz.PLOT_MA_WINDOW:]['total_reward'].mean()
-        self.eval_df.iloc[-1]['total_reward_ma'] = self.eval_reward_ma
+    def ckpt(self, env, df_mode):
+        '''
+        Checkpoint to update body.train_df or eval_df data
+        @param OpenAIEnv|UnityEnv:env self.env or self.eval_env
+        @param str:df_mode 'train' or 'eval'
+        '''
+        row = self.calc_df_row(env)
+        df = getattr(self, f'{df_mode}_df')
+        df.loc[len(df)] = row  # append efficiently to df
+        df.iloc[-1]['total_reward_ma'] = total_reward_ma = df[-viz.PLOT_MA_WINDOW:]['total_reward'].mean()
+        if df_mode == 'eval':
+            self.total_reward_ma = total_reward_ma
 
     def get_mean_lr(self):
         '''Gets the average current learning rate of the algorithm's nets.'''

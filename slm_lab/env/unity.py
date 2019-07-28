@@ -69,6 +69,8 @@ class UnityEnv(BaseEnv):
         self.patch_gym_spaces(self.u_env)
         self._set_attr_from_u_env(self.u_env)
         assert self.max_t is not None
+        self.tracked_reward = 0
+        self.total_reward = 0
         logger.info(util.self_desc(self))
 
     def patch_gym_spaces(self, u_env):
@@ -145,7 +147,14 @@ class UnityEnv(BaseEnv):
         if not self.is_venv and self.clock.t > self.max_t:
             done = True
         self.done = done
-        return state, reward, done, env_info_a
+        info = {'env_info': env_info_a}
+        # track total_reward
+        self.tracked_reward += reward
+        if done:
+            self.total_reward = self.tracked_reward
+            self.tracked_reward = 0  # reset
+        info.update({'total_reward': self.total_reward})
+        return state, reward, done, info
 
     @lab_api
     def close(self):

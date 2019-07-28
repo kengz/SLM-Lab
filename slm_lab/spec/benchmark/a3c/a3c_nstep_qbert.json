@@ -1,5 +1,5 @@
 {
-  "a3c_nstep_atari": {
+  "a3c_nstep_qbert": {
     "agent": [{
       "name": "A3C",
       "algorithm": {
@@ -54,7 +54,7 @@
       }
     }],
     "env": [{
-      "name": "${env}",
+      "name": "PongNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
@@ -71,15 +71,10 @@
       "log_frequency": 10000,
       "eval_frequency": 10000,
       "max_session": 16,
-      "max_trial": 1
-    },
-    "spec_params": {
-      "env": [
-        "BreakoutNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SpaceInvadersNoFrameskip-v4"
-      ]
+      "max_trial": 1,
     }
   },
-  "gpu_a3c_nstep_atari": {
+  "gpu_a3c_nstep_pong": {
     "agent": [{
       "name": "A3C",
       "algorithm": {
@@ -130,11 +125,11 @@
           "lr": 1e-4
         },
         "lr_scheduler_spec": null,
-        "gpu": true
+        "gpu": false
       }
     }],
     "env": [{
-      "name": "${env}",
+      "name": "QbertNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
@@ -147,17 +142,12 @@
       "num": 1
     },
     "meta": {
-      "distributed": "shared",
-      "eval_frequency": 10000,
+      "distributed": "synced",
       "log_frequency": 10000,
+      "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 16,
-      "max_trial": 1
-    },
-    "spec_params": {
-      "env": [
-        "BreakoutNoFrameskip-v4", "PongNoFrameskip-v4", "QbertNoFrameskip-v4", "SpaceInvadersNoFrameskip-v4"
-      ]
+      "max_trial": 1,
     }
   }
 }

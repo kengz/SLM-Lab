@@ -7,6 +7,7 @@ from slm_lab.env import make_env
 from slm_lab.experiment import analysis, search
 from slm_lab.lib import logger, util
 from slm_lab.spec import spec_util
+import pydash as ps
 import torch
 import torch.multiprocessing as mp
 
@@ -42,8 +43,11 @@ class Session:
         spec_util.save(spec, unit='session')
 
         self.agent, self.env = make_agent_env(self.spec, global_nets)
-        with util.ctx_lab_mode('eval'):  # env for eval
-            self.eval_env = make_env(self.spec)
+        if ps.get(self.spec, 'meta.rigorous_eval'):
+            with util.ctx_lab_mode('eval'):
+                self.eval_env = make_env(self.spec)
+        else:
+            self.eval_env = self.env
         logger.info(util.self_desc(self))
 
     def to_ckpt(self, env, mode='eval'):
@@ -53,31 +57,29 @@ class Session:
         clock = env.clock
         frame = clock.get()
         frequency = env.eval_frequency if mode == 'eval' else env.log_frequency
-        if frequency is None:  # default episodic
-            to_ckpt = env.done
-        else:  # normal ckpt condition by mod remainder (general for venv)
-            to_ckpt = util.frame_mod(frame, frequency, env.num_envs) or frame == clock.max_frame
+        to_ckpt = util.frame_mod(frame, frequency, env.num_envs) or frame == clock.max_frame
         return to_ckpt
 
     def try_ckpt(self, agent, env):
         '''Check then run checkpoint log/eval'''
         body = agent.body
         if self.to_ckpt(env, 'log'):
-            body.train_ckpt()
+            body.ckpt(self.env, 'train')
             body.log_summary('train')
+            if len(body.train_df) > 2:  # need more rows to calculate metrics
+                metrics = analysis.analyze_session(self.spec, body.train_df, 'train', plot=False)
+                body.log_metrics(metrics['scalar'], 'train')
 
         if self.to_ckpt(env, 'eval'):
             logger.info('Running eval ckpt')
-            avg_return = analysis.gen_avg_return(agent, self.eval_env)
-            body.eval_ckpt(self.eval_env, avg_return)
+            if ps.get(self.spec, 'meta.rigorous_eval'):
+                analysis.gen_avg_return(agent, self.eval_env)
+            body.ckpt(self.eval_env, 'eval')
             body.log_summary('eval')
-            if body.eval_reward_ma >= body.best_reward_ma:
-                body.best_reward_ma = body.eval_reward_ma
+            if body.total_reward_ma >= body.best_total_reward_ma:
+                body.best_total_reward_ma = body.total_reward_ma
                 agent.save(ckpt='best')
-            if len(body.train_df) > 1:  # need > 1 row to calculate stability
-                metrics = analysis.analyze_session(self.spec, body.train_df, 'train', plot=False)
-                body.log_metrics(metrics['scalar'], 'train')
-            if len(body.eval_df) > 1:  # need > 1 row to calculate stability
+            if len(body.eval_df) > 2:  # need more rows to calculate metrics
                 metrics = analysis.analyze_session(self.spec, body.eval_df, 'eval', plot=False)
                 body.log_metrics(metrics['scalar'], 'eval')
 

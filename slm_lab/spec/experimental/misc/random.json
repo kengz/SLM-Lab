@@ -92,7 +92,7 @@
       "net": {}
     }],
     "env": [{
-      "name": "QbertNoFrameskip-v4",
+      "name": "BreakoutNoFrameskip-v4",
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
@@ -108,6 +108,7 @@
       "distributed": false,
       "log_frequency": 10000,
       "eval_frequency": 10000,
+      "rigorous_eval": 0,
       "max_session": 1,
       "max_trial": 1,
     }

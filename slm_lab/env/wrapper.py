@@ -9,11 +9,10 @@ import numpy as np
 
 
 def try_scale_reward(cls, reward):
-    '''Env class to scale reward and set raw_reward'''
+    '''Env class to scale reward'''
     if util.in_eval_lab_modes():  # only trigger on training
         return reward
     if cls.reward_scale is not None:
-        cls.raw_reward = reward
         if cls.sign_reward:
             reward = np.sign(reward)
         else:
@@ -52,66 +51,6 @@ class NoopResetEnv(gym.Wrapper):
         return self.env.step(ac)
 
 
-class FireResetEnv(gym.Wrapper):
-    def __init__(self, env):
-        '''Take action on reset for environments that are fixed until firing.'''
-        gym.Wrapper.__init__(self, env)
-        assert env.unwrapped.get_action_meanings()[1] == 'FIRE'
-        assert len(env.unwrapped.get_action_meanings()) >= 3
-
-    def reset(self, **kwargs):
-        self.env.reset(**kwargs)
-        obs, _, done, _ = self.env.step(1)
-        if done:
-            self.env.reset(**kwargs)
-        obs, _, done, _ = self.env.step(2)
-        if done:
-            self.env.reset(**kwargs)
-        return obs
-
-    def step(self, ac):
-        return self.env.step(ac)
-
-
-class EpisodicLifeEnv(gym.Wrapper):
-    def __init__(self, env):
-        '''
-        Make end-of-life == end-of-episode, but only reset on true game over.
-        Done by DeepMind for the DQN and co. since it helps value estimation.
-        '''
-        gym.Wrapper.__init__(self, env)
-        self.lives = 0
-        self.was_real_done = True
-
-    def step(self, action):
-        obs, reward, done, info = self.env.step(action)
-        self.was_real_done = done
-        # check current lives, make loss of life terminal,
-        # then update lives to handle bonus lives
-        lives = self.env.unwrapped.ale.lives()
-        if lives < self.lives and lives > 0:
-            # for Qbert sometimes we stay in lives == 0 condtion for a few frames
-            # so its important to keep lives > 0, so that we only reset once
-            # the environment advertises done.
-            done = True
-        self.lives = lives
-        return obs, reward, done, info
-
-    def reset(self, **kwargs):
-        '''
-        Reset only when lives are exhausted.
-        This way all states are still reachable even though lives are episodic,
-        and the learner need not know about any of this behind-the-scenes.
-        '''
-        if self.was_real_done:
-            obs = self.env.reset(**kwargs)
-        else:
-            # no-op step to advance from terminal/lost life state
-            obs, _, _, _ = self.env.step(0)
-        self.lives = self.env.unwrapped.ale.lives()
-        return obs
-
-
 class MaxAndSkipEnv(gym.Wrapper):
     '''OpenAI max-skipframe wrapper used for a NoFrameskip env'''
 
@@ -143,44 +82,64 @@ class MaxAndSkipEnv(gym.Wrapper):
         return self.env.reset(**kwargs)
 
 
-class ScaleRewardEnv(gym.RewardWrapper):
-    def __init__(self, env, reward_scale):
+class EpisodicLifeEnv(gym.Wrapper):
+    def __init__(self, env):
         '''
-        Rescale reward
-        @param (str,float):reward_scale If 'sign', use np.sign, else multiply with the specified float scale
+        Make end-of-life == end-of-episode, but only reset on true game over.
+        Done by DeepMind for the DQN and co. since it helps value estimation.
         '''
         gym.Wrapper.__init__(self, env)
-        self.reward_scale = reward_scale
-        self.sign_reward = self.reward_scale == 'sign'
+        self.lives = 0
+        self.was_real_done = True
 
-    def reward(self, reward):
-        '''Set self.raw_reward for retrieving the original reward'''
-        return try_scale_reward(self, reward)
+    def step(self, action):
+        obs, reward, done, info = self.env.step(action)
+        self.was_real_done = info['was_real_done'] = done
+        # check current lives, make loss of life terminal,
+        # then update lives to handle bonus lives
+        lives = self.env.unwrapped.ale.lives()
+        if lives < self.lives and lives > 0:
+            # for Qbert sometimes we stay in lives == 0 condtion for a few frames
+            # so its important to keep lives > 0, so that we only reset once
+            # the environment advertises done.
+            done = True
+        self.lives = lives
+        return obs, reward, done, info
 
-
-class NormalizeStateEnv(gym.ObservationWrapper):
-    def __init__(self, env=None):
+    def reset(self, **kwargs):
         '''
-        Normalize observations on-line
-        Adapted from https://github.com/ikostrikov/pytorch-a3c/blob/e898f7514a03de73a2bf01e7b0f17a6f93963389/envs.py (MIT)
+        Reset only when lives are exhausted.
+        This way all states are still reachable even though lives are episodic,
+        and the learner need not know about any of this behind-the-scenes.
         '''
-        super().__init__(env)
-        self.state_mean = 0
-        self.state_std = 0
-        self.alpha = 0.9999
-        self.num_steps = 0
+        if self.was_real_done:
+            obs = self.env.reset(**kwargs)
+        else:
+            # no-op step to advance from terminal/lost life state
+            obs, _, _, _ = self.env.step(0)
+        self.lives = self.env.unwrapped.ale.lives()
+        return obs
 
-    def _observation(self, observation):
-        self.num_steps += 1
-        self.state_mean = self.state_mean * self.alpha + \
-            observation.mean() * (1 - self.alpha)
-        self.state_std = self.state_std * self.alpha + \
-            observation.std() * (1 - self.alpha)
 
-        unbiased_mean = self.state_mean / (1 - pow(self.alpha, self.num_steps))
-        unbiased_std = self.state_std / (1 - pow(self.alpha, self.num_steps))
+class FireResetEnv(gym.Wrapper):
+    def __init__(self, env):
+        '''Take action on reset for environments that are fixed until firing.'''
+        gym.Wrapper.__init__(self, env)
+        assert env.unwrapped.get_action_meanings()[1] == 'FIRE'
+        assert len(env.unwrapped.get_action_meanings()) >= 3
 
-        return (observation - unbiased_mean) / (unbiased_std + 1e-8)
+    def reset(self, **kwargs):
+        self.env.reset(**kwargs)
+        obs, _, done, _ = self.env.step(1)
+        if done:
+            self.env.reset(**kwargs)
+        obs, _, done, _ = self.env.step(2)
+        if done:
+            self.env.reset(**kwargs)
+        return obs
+
+    def step(self, ac):
+        return self.env.step(ac)
 
 
 class PreprocessImage(gym.ObservationWrapper):
@@ -280,6 +239,69 @@ class FrameStack(gym.Wrapper):
         return LazyFrames(list(self.frames), self.frame_op)
 
 
+class NormalizeStateEnv(gym.ObservationWrapper):
+    def __init__(self, env=None):
+        '''
+        Normalize observations on-line
+        Adapted from https://github.com/ikostrikov/pytorch-a3c/blob/e898f7514a03de73a2bf01e7b0f17a6f93963389/envs.py (MIT)
+        '''
+        super().__init__(env)
+        self.state_mean = 0
+        self.state_std = 0
+        self.alpha = 0.9999
+        self.num_steps = 0
+
+    def observation(self, observation):
+        self.num_steps += 1
+        self.state_mean = self.state_mean * self.alpha + \
+            observation.mean() * (1 - self.alpha)
+        self.state_std = self.state_std * self.alpha + \
+            observation.std() * (1 - self.alpha)
+
+        unbiased_mean = self.state_mean / (1 - pow(self.alpha, self.num_steps))
+        unbiased_std = self.state_std / (1 - pow(self.alpha, self.num_steps))
+
+        return (observation - unbiased_mean) / (unbiased_std + 1e-8)
+
+
+class ScaleRewardEnv(gym.RewardWrapper):
+    def __init__(self, env, reward_scale):
+        '''
+        Rescale reward
+        @param (str,float):reward_scale If 'sign', use np.sign, else multiply with the specified float scale
+        '''
+        gym.Wrapper.__init__(self, env)
+        self.reward_scale = reward_scale
+        self.sign_reward = self.reward_scale == 'sign'
+
+    def reward(self, reward):
+        return try_scale_reward(self, reward)
+
+
+class TrackReward(gym.Wrapper):
+    def __init__(self, env):
+        '''
+        Self-tracking as a simple solution to total reward tracking
+        Tracks the latest episodic rewards
+        '''
+        gym.Wrapper.__init__(self, env)
+        self.tracked_reward = 0
+        self.total_reward = np.nan
+
+    def step(self, action):
+        obs, reward, done, info = self.env.step(action)
+        self.tracked_reward += reward
+        # use self.was_real_done from EpisodicLifeEnv, or plain done
+        if info.get('was_real_done', done):
+            self.total_reward = self.tracked_reward
+            self.tracked_reward = 0  # reset
+        info.update({'total_reward': self.total_reward})
+        return obs, reward, done, info
+
+    def reset(self, **kwargs):
+        return self.env.reset(**kwargs)
+
+
 def wrap_atari(env):
     '''Apply a common set of wrappers for Atari games'''
     assert 'NoFrameskip' in env.spec.id
@@ -320,6 +342,7 @@ def make_gym_env(name, seed=None, frame_op=None, frame_op_len=None, reward_scale
             env = NormalizeStateEnv(env)
         if frame_op is not None:
             env = FrameStack(env, frame_op, frame_op_len)
+    env = TrackReward(env)  # auto-track total reward
     if reward_scale is not None:
         env = ScaleRewardEnv(env, reward_scale)
     return env

@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from functools import partial
 from gym import spaces
-from slm_lab.env.wrapper import make_gym_env, try_scale_reward
+from slm_lab.env.wrapper import make_gym_env
 from slm_lab.lib import logger
 import contextlib
 import ctypes
@@ -24,7 +24,6 @@ _NP_TO_CT = {
 
 
 # helper methods
-
 
 @contextlib.contextmanager
 def clear_mpi_env_vars():
@@ -450,13 +449,11 @@ class ShmemVecEnv(VecEnv):
 class VecFrameStack(VecEnvWrapper):
     '''Frame stack wrapper for vector environment'''
 
-    def __init__(self, venv, frame_op, frame_op_len, reward_scale=None):
+    def __init__(self, venv, frame_op, frame_op_len):
         self.venv = venv
         assert frame_op in ('concat', 'stack'), 'Invalid frame_op mode'
         self.is_stack = frame_op == 'stack'
         self.frame_op_len = frame_op_len
-        self.reward_scale = reward_scale
-        self.sign_reward = self.reward_scale == 'sign'
         self.spec = venv.spec
         wos = venv.observation_space  # wrapped ob space
         if self.is_stack:
@@ -480,7 +477,6 @@ class VecFrameStack(VecEnvWrapper):
         if self.is_stack:
             obs = np.expand_dims(obs, axis=1)
         self.stackedobs[:, -self.shape_dim0:] = obs
-        rews = try_scale_reward(self, rews)
         return self.stackedobs.copy(), rews, news, infos
 
     def reset(self):
@@ -496,7 +492,7 @@ def make_gym_venv(name, num_envs=4, seed=0, frame_op=None, frame_op_len=None, re
     '''General method to create any parallel vectorized Gym env; auto wraps Atari'''
     venv = [
         # don't concat frame or clip reward on individual env; do that at vector level
-        partial(make_gym_env, name, seed + i, frame_op=None, frame_op_len=None, reward_scale=None, normalize_state=normalize_state, episode_life=episode_life)
+        partial(make_gym_env, name, seed + i, frame_op=None, frame_op_len=None, reward_scale=reward_scale, normalize_state=normalize_state, episode_life=episode_life)
         for i in range(num_envs)
     ]
     if len(venv) > 1:
@@ -504,5 +500,5 @@ def make_gym_venv(name, num_envs=4, seed=0, frame_op=None, frame_op_len=None, re
     else:
         venv = DummyVecEnv(venv)
     if frame_op is not None:
-        venv = VecFrameStack(venv, frame_op, frame_op_len, reward_scale)
+        venv = VecFrameStack(venv, frame_op, frame_op_len)
     return venv
