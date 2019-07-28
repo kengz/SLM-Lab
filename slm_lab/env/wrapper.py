@@ -9,11 +9,10 @@ import numpy as np
 
 
 def try_scale_reward(cls, reward):
-    '''Env class to scale reward and set raw_reward'''
+    '''Env class to scale reward'''
     if util.in_eval_lab_modes():  # only trigger on training
         return reward
     if cls.reward_scale is not None:
-        cls.raw_reward = reward
         if cls.sign_reward:
             reward = np.sign(reward)
         else:
@@ -276,7 +275,6 @@ class ScaleRewardEnv(gym.RewardWrapper):
         self.sign_reward = self.reward_scale == 'sign'
 
     def reward(self, reward):
-        '''Set self.raw_reward for retrieving the original reward'''
         return try_scale_reward(self, reward)
 
 
