@@ -28,7 +28,7 @@ This benchmark table shows the `Trial` level `final_return_ma` from SLM Lab. Thi
 
 All the results are shown below and the data folders including the metrics and models are uploaded to the [SLM Lab public Dropbox](https://www.dropbox.com/sh/urifraklxcvol70/AADxtt6zUNuVR6qe288JYNCNa?dl=0)
 
->The results for A2C (GAE), A2C (n-step), PPO are uploaded in [PR 396](https://github.com/kengz/SLM-Lab/pull/396).
+>The results for A2C (GAE), A2C (n-step), PPO, DQN, DDQN+PER are uploaded in [PR 396](https://github.com/kengz/SLM-Lab/pull/396).
 
 | Env \ Algorithm | A2C (GAE) | A2C (n-step) | PPO |
 |:---|---|---|---|
