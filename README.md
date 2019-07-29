@@ -9,7 +9,6 @@ Modular Deep Reinforcement Learning framework in PyTorch.
 | Breakout | Pong | Qbert | Sp.Invaders |
 
 
-
 | References | |
 |------------|--|
 | [Installation](#installation) | How to install SLM Lab |
@@ -26,17 +25,19 @@ SLM Lab implements a number of canonical RL [algorithms](https://github.com/keng
 
 The benchmark results also include complete [spec files](https://github.com/kengz/SLM-Lab/tree/master/slm_lab/spec/benchmark) to enable full **reproducibility** using SLM Lab.
 
-Below shows the latest benchmark status. See [benchmark results here](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md).
+Below shows the latest benchmark status. See the full [benchmark results here](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md).
 
 | **Algorithm\Benchmark** | Atari | Roboschool |
 |-------------------------|-------|------------|
 | SARSA                   | -     |            |
-| DQN, distributed-DQN    | :white_check_mark: |            |
+| DQN    | :white_check_mark: |            |
 | Double-DQN, Dueling-DQN, PER-DQN | :white_check_mark: |            |
 | REINFORCE               | -     |            |
-| A2C, A3C (N-step & GAE) | :white_check_mark: |            |
-| PPO, distributed-PPO    | :white_check_mark: |            |
+| A2C (GAE & n-step)  | :white_check_mark: |            |
+| PPO    | :white_check_mark: |            |
 | SIL (A2C, PPO)          |       |            |
+
+Due to their standardized design, all the algorithms can be parallelized asynchronously using Hogwild. Hence, SLM Lab also includes A3C, distributed-DQN, distributed-PPO.
 
 ### Environments
 
@@ -83,7 +84,7 @@ For cloud computing, start with an affordable instance of [AWS EC2 `p2.xlarge`](
 
 ## Quick Start
 
-#### DQN CartPole
+### DQN CartPole
 
 Everything in the lab is ran using a `spec file`, which contains all the information for the run to be reproducible. These are located in `slm_lab/spec/`.
 
@@ -109,7 +110,7 @@ python run_lab.py slm_lab/spec/demo.json dqn_cartpole train
 This will run a new `Trial` in *training mode*. At the end of it, all the metrics and graphs will be output to the `data/` folder.
 
 
-#### A2C Atari
+### A2C Atari
 
 Run A2C to solve Atari Pong:
 
@@ -129,7 +130,7 @@ Below shows a trial graph with multiple sessions:
 
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/a2c_gae_pong_t0_trial_graph_mean_returns_ma_vs_frames.png)
 
-#### Benchmark
+### Benchmark
 
 To run a full benchmark, simply pick a file and run it in train mode. For example, for A2C Atari benchmark, the spec file is `slm_lab/spec/benchmark/a2c/a2c_atari.json`. This file is parametrized to run on a set of environments. Run the benchmark:
 
@@ -137,9 +138,9 @@ To run a full benchmark, simply pick a file and run it in train mode. For exampl
 python run_lab.py slm_lab/spec/benchmark/a2c/a2c_atari.json a2c_atari train
 ```
 
-This will spawn multiple processes to run each environment in its separate `Trial`, and the data is saved to `data/` as usual.
+This will spawn multiple processes to run each environment in its separate `Trial`, and the data is saved to `data/` as usual. See the uploaded [benchmark results here](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md).
 
-#### Experimentation / Hyperparameter search
+### Experimentation / Hyperparameter search
 
 An [`Experiment`](https://github.com/kengz/SLM-Lab/blob/master/slm_lab/experiment/control.py) is a hyperparameter search, which samples multiple `spec`s from a search space. `Experiment` spawns a `Trial` for each `spec`, and each `Trial` runs multiple duplicated `Session`s for averaging its results.
 
