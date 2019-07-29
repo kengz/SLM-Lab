@@ -6,6 +6,19 @@ All the results below link to their respective PRs with the full experiment repo
 - [the `result` PRs](https://github.com/kengz/SLM-Lab/pulls?utf8=%E2%9C%93&q=is%3Apr+label%3Aresult+).
 - the full experiment datas contributed are [public on Dropbox ](https://www.dropbox.com/sh/y738zvzj3nxthn1/AAAg1e6TxXVf3krD81TD5V0Ra?dl=0)
 
+### Atari Benchmark
+
+This benchmark table shows the `Trial` level `final_return_ma` from SLM Lab. This is final value of the 100-ckpt moving average of the return (total rewards) from evaluation. Each `Trial` is ran with 4 `Session`s with different random seeds, and their `final_return_ma` are averaged on the `Trial` level.
+
+| Env \ Algorithm | A2C (GAE) | A2C (n-step) | PPO |
+| BreakoutNoFrameskip-v4 | 389.99 | 391.32 | **456.30** |
+| PongNoFrameskip-v4 | **20.04** | 19.66 | 19.78 |
+| QbertNoFrameskip-v4 | 13,328.32 | 13,259.19 | **13,784.93** |
+| SeaquestNoFrameskip-v4 | 892.68 | **1,686.08** | 1,393.63 |
+
+
+### Classic Benchmark
+
 | Algorithm / *Owner* | [DQN](https://arxiv.org/abs/1312.5602) | [DDQN](https://arxiv.org/abs/1509.06461) | [Dueling DQN](https://arxiv.org/abs/1511.06581) | DQN + [PER](https://arxiv.org/abs/1511.05952) | DDQN + [PER](https://arxiv.org/abs/1511.05952) | DQN + [CER](https://arxiv.org/abs/1712.01275) | DDQN + [CER](https://arxiv.org/abs/1712.01275) | [DIST DQN](https://arxiv.org/abs/1602.01783) | REINFORCE | A2C | A2C + [GAE](https://arxiv.org/abs/1506.02438) | A2C + [GAE](https://arxiv.org/abs/1506.02438) + [SIL](https://arxiv.org/abs/1806.05635) | [A3C](https://arxiv.org/abs/1602.01783) | [A3C](https://arxiv.org/abs/1602.01783) + [GAE](https://arxiv.org/abs/1506.02438) | [PPO](https://arxiv.org/abs/1707.06347) | [PPO](https://arxiv.org/abs/1707.06347) + [SIL](https://arxiv.org/abs/1806.05635) | [DPPO](https://arxiv.org/pdf/1707.02286.pdf) |
 |------------|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
 |[CartPole-v0](https://gym.openai.com/envs/CartPole-v0/)|[3.52](https://github.com/kengz/SLM-Lab/pull/213) |[0.85](https://github.com/kengz/SLM-Lab/pull/214) | | | |[4.79](https://github.com/kengz/SLM-Lab/pull/184) |[5.65](https://github.com/kengz/SLM-Lab/pull/195) | |[1.21](https://github.com/kengz/SLM-Lab/pull/200) |[7.10](https://github.com/kengz/SLM-Lab/pull/185) | [1.20](https://github.com/kengz/SLM-Lab/pull/180) |[6.26](https://github.com/kengz/SLM-Lab/pull/201) |[0.93](https://github.com/kengz/SLM-Lab/pull/205)| [1.60](https://github.com/kengz/SLM-Lab/pull/204) |[0.88](https://github.com/kengz/SLM-Lab/pull/211) |[1.48](https://github.com/kengz/SLM-Lab/pull/212) | |
