@@ -27,15 +27,15 @@ The benchmark results also include complete [spec files](https://github.com/keng
 
 Below shows the latest benchmark status. See the full [benchmark results here](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md).
 
-| **Algorithm\Benchmark** | Atari | Roboschool |
-|-------------------------|-------|------------|
-| SARSA                   | -     |            |
-| DQN    | :white_check_mark: |            |
-| Double-DQN, Dueling-DQN, PER-DQN | :white_check_mark: |            |
-| REINFORCE               | -     |            |
-| A2C (GAE & n-step)  | :white_check_mark: |            |
-| PPO    | :white_check_mark: |            |
-| SIL (A2C, PPO)          |       |            |
+| **Algorithm\Benchmark** | Atari |
+|-------------------------|-------|
+| SARSA                   | -     |
+| DQN    | :white_check_mark: |
+| Double-DQN, Dueling-DQN, PER-DQN | :white_check_mark: |
+| REINFORCE               | -     |
+| A2C (GAE & n-step)  | :white_check_mark: |
+| PPO    | :white_check_mark: |
+| SIL (A2C, PPO)          |       |
 
 Due to their standardized design, all the algorithms can be parallelized asynchronously using Hogwild. Hence, SLM Lab also includes A3C, distributed-DQN, distributed-PPO.
 
