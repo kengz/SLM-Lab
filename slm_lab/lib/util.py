@@ -564,11 +564,7 @@ def smart_path(data_path, as_dir=False):
     # => '/tmp'
     '''
     if not os.path.isabs(data_path):
-        abs_path = os.path.abspath(data_path)
-        if os.path.exists(abs_path):
-            data_path = abs_path
-        else:
-            data_path = os.path.join(ROOT_DIR, data_path)
+        data_path = os.path.join(ROOT_DIR, data_path)
     if as_dir:
         data_path = os.path.dirname(data_path)
     return os.path.normpath(data_path)
