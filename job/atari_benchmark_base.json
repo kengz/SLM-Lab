@@ -8,7 +8,4 @@
   "benchmark/dqn/dqn_atari.json": {
     "dqn_atari": "train"
   },
-  "benchmark/dqn/ddqn_atari.json": {
-    "ddqn_atari": "train"
-  },
 }
