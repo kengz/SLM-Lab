@@ -262,7 +262,8 @@ def analyze_trial(trial_spec, session_metrics_list):
     # zip files
     if util.get_lab_mode() == 'train' or trial_spec['meta']['max_trial'] == 1:
         predir, _, _, _, _, _ = util.prepath_split(info_prepath)
-        shutil.make_archive(predir, 'zip', predir)
+        zipdir = util.smart_path(predir)
+        shutil.make_archive(zipdir, 'zip', zipdir)
         logger.info(f'All trial data zipped to {predir}.zip')
     return trial_metrics
 
@@ -278,6 +279,7 @@ def analyze_experiment(spec, trial_data_dict):
     viz.plot_experiment_trials(spec, experiment_df, METRICS_COLS)
     # zip files
     predir, _, _, _, _, _ = util.prepath_split(info_prepath)
-    shutil.make_archive(predir, 'zip', predir)
+    zipdir = util.smart_path(predir)
+    shutil.make_archive(zipdir, 'zip', zipdir)
     logger.info(f'All experiment data zipped to {predir}.zip')
     return experiment_df
