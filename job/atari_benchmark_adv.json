@@ -2,9 +2,6 @@
   "benchmark/ppo/ppo_atari.json": {
     "ppo_atari": "train"
   },
-  "benchmark/dqn/dqn_per_atari.json": {
-    "dqn_per_atari": "train"
-  },
   "benchmark/dqn/ddqn_per_atari.json": {
     "ddqn_per_atari": "train"
   },
