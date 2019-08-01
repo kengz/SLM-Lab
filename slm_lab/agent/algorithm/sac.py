@@ -32,16 +32,17 @@ class SoftActorCritic(ActorCritic):
         util.set_attr(self, dict(
             action_pdtype='default',
             action_policy='default',
+            training_iter=self.body.env.num_envs,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
             'action_policy',
             'gamma',  # the discount factor
+            'training_iter',
             'training_frequency',
         ])
         self.to_train = 0
         self.training_start_step = self.training_frequency
-        self.training_iter = self.body.env.num_envs
         self.action_policy = getattr(policy_util, self.action_policy)
 
     @lab_api

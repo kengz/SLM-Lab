@@ -7,6 +7,7 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
+        "training_iter": 4,
         "training_frequency": 1
       },
       "memory": {
