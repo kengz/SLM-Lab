@@ -4,6 +4,7 @@ from slm_lab.lib import logger, util
 import gym
 import numpy as np
 import pydash as ps
+import roboschool
 
 
 FILEPATH = 'slm_lab/spec/_random_baseline.json'
@@ -71,8 +72,12 @@ EXCLUDE_ENVS = [
 def enum_envs():
     '''Enumerate all the env names of the latest version'''
     envs = [es.id for es in gym.envs.registration.registry.all()]
+    def get_name(s): return s.split('-')[0]
+    # filter out the old stuff
+    envs = ps.reverse(ps.uniq_by(ps.reverse(envs), get_name))
+    # filter out the excluded envs
+    envs = ps.difference_by(envs, EXCLUDE_ENVS, get_name)
     envs += INCLUDE_ENVS
-    envs = ps.difference(envs, EXCLUDE_ENVS)
     return envs
 
 
@@ -83,9 +88,11 @@ def gen_random_return(env_name, seed):
     env.seed(seed)
     env.reset()
     done = False
+    total_reward = 0
     while not done:
         _, reward, done, _ = env.step(env.action_space.sample())
-    return env.total_reward
+        total_reward += reward
+    return total_reward
 
 
 def gen_random_baseline(env_name, num_eval=NUM_EVAL):
