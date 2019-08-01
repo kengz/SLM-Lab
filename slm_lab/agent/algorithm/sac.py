@@ -56,7 +56,10 @@ class SoftActorCritic(ActorCritic):
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
         # main actor network
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        # NOTE continuous action bound
+        policy_net_spec = self.net_spec.copy()
+        policy_net_spec['out_layer_activation'] = 'tanh'
+        self.net = NetClass(policy_net_spec, in_dim, out_dim)
         self.net_names = ['net']
         # critic network and its target network
         val_out_dim = 1
@@ -80,6 +83,12 @@ class SoftActorCritic(ActorCritic):
         self.q2_lr_scheduler = net_util.get_lr_scheduler(self.q2_optim, self.q2_net.lr_scheduler_spec)
         net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
+
+    @lab_api
+    def act(self, state):
+        # NOTE continuous action bound
+        action = super().act(state)
+        return np.tanh(action)
 
     def calc_q(self, state, action, net=None):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
