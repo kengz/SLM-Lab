@@ -120,7 +120,8 @@ class SoftActorCritic(ActorCritic):
 
     def calc_policy_loss(self, batch, action_pd):
         '''policy_loss = log pi(f(a)|s) - Q1(s, f(a)), where f(a) = reparametrized action'''
-        reparam_actions = action_pd.rsample()
+        # NOTE continuous action bound
+        reparam_actions = torch.tanh(action_pd.rsample())
         log_probs = action_pd.log_prob(reparam_actions)
         q1_preds = self.calc_q(batch['states'], reparam_actions, self.q1_net)
         policy_loss = (log_probs - q1_preds).mean()
