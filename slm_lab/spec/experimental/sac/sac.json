@@ -38,9 +38,9 @@
     "env": [{
       "name": "RoboschoolHopper-v1",
       "reward_scale": 5,
-      "num_envs": 1,
+      "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 1e6
     }],
     "body": {
       "product": "outer",
@@ -50,7 +50,7 @@
       "distributed": false,
       "log_frequency": 10000,
       "eval_frequency": 10000,
-      "max_session": 4,
+      "max_session": 1,
       "max_trial": 1,
     }
   }
