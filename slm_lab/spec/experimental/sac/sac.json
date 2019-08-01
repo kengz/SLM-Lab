@@ -32,7 +32,7 @@
         "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.995,
+        "polyak_coef": 0.96,
         "gpu": false
       }
     }],
@@ -89,12 +89,126 @@
         "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.995,
+        "polyak_coef": 0.96,
         "gpu": false
       }
     }],
     "env": [{
       "name": "RoboschoolHopper-v1",
+      "reward_scale": 5,
+      "num_envs": 8,
+      "max_t": null,
+      "max_frame": 1e6
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": "shared",
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
+      "rigorous_eval": 0,
+      "max_session": 4,
+      "max_trial": 1,
+    }
+  },
+  "sac_bipedalwalker": {
+    "agent": [{
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_iter": 4,
+        "training_frequency": 1
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "xavier_uniform_",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "Adam",
+          "lr": 3e-4,
+        },
+        "lr_scheduler_spec": null,
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.96,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "BipedalWalker-v2",
+      "reward_scale": 5,
+      "num_envs": 8,
+      "max_t": null,
+      "max_frame": 1e6
+    }],
+    "body": {
+      "product": "outer",
+      "num": 1
+    },
+    "meta": {
+      "distributed": false,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
+      "rigorous_eval": 0,
+      "max_session": 1,
+      "max_trial": 1,
+    }
+  },
+  "async_sac_bipedalwalker": {
+    "agent": [{
+      "name": "SoftActorCritic",
+      "algorithm": {
+        "name": "SoftActorCritic",
+        "action_pdtype": "default",
+        "action_policy": "default",
+        "gamma": 0.99,
+        "training_iter": 4,
+        "training_frequency": 1
+      },
+      "memory": {
+        "name": "Replay",
+        "batch_size": 256,
+        "max_size": 1000000,
+        "use_cer": false
+      },
+      "net": {
+        "type": "MLPNet",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
+        "init_fn": "orthogonal_",
+        "clip_grad_val": 0.5,
+        "loss_spec": {
+          "name": "MSELoss"
+        },
+        "optim_spec": {
+          "name": "GlobalAdam",
+          "lr": 1e-4,
+        },
+        "lr_scheduler_spec": null,
+        "update_type": "polyak",
+        "update_frequency": 1,
+        "polyak_coef": 0.96,
+        "gpu": false
+      }
+    }],
+    "env": [{
+      "name": "BipedalWalker-v2",
       "reward_scale": 5,
       "num_envs": 8,
       "max_t": null,
