@@ -41,6 +41,7 @@ class SoftActorCritic(ActorCritic):
             'training_frequency',
         ])
         self.to_train = 0
+        self.training_start_step = self.training_frequency
         self.action_policy = getattr(policy_util, self.action_policy)
 
     @lab_api
@@ -79,24 +80,6 @@ class SoftActorCritic(ActorCritic):
         net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
-    def calc_v_targets(self, batch):
-        '''V_tar = Q(s, a) - log pi(a|s), Q(s, a) = min(Q1(s, a), Q2(s, a))'''
-        states = batch['states']
-        actions = batch['actions']
-        if self.body.env.is_venv:
-            states = math_util.venv_unpack(states)
-            actions = math_util.venv_unpack(actions)
-        with torch.no_grad():
-            q1_preds = self.calc_q(states, actions, self.q1_net)
-            q2_preds = self.calc_q(states, actions, self.q2_net)
-            q_preds = torch.min(q1_preds, q2_preds)
-
-            pdparams = self.calc_pdparam(states)
-            action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
-            log_probs = action_pd.log_prob(actions)
-            v_targets = q_preds - log_probs
-        return v_targets
-
     def calc_q(self, state, action, net=None):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
         x = torch.cat((state, action), dim=-1)
@@ -104,16 +87,40 @@ class SoftActorCritic(ActorCritic):
         q_pred = net(x).view(-1)
         return q_pred
 
-    def calc_policy_loss(self, batch, pdparams, advs):
-        '''Calculate the actor's policy loss'''
-        return super().calc_policy_loss(batch, pdparams, advs)
+    def calc_v_targets(self, batch, action_pd, q1_preds, q2_preds):
+        '''V_tar = Q(s, a) - log pi(a|s), Q(s, a) = min(Q1(s, a), Q2(s, a))'''
+        with torch.no_grad():
+            q_preds = torch.min(q1_preds, q2_preds)
+            log_probs = action_pd.log_prob(batch['actions'])
+            v_targets = q_preds - log_probs
+        return v_targets
 
-    def calc_val_loss(self, v_preds, v_targets):
-        '''Calculate the critic's value loss'''
-        assert v_preds.shape == v_targets.shape, f'{v_preds.shape} != {v_targets.shape}'
-        val_loss = self.net.loss_fn(v_preds, v_targets)
-        logger.debug(f'Critic value loss: {val_loss:g}')
-        return val_loss
+    def calc_q_targets(self, batch):
+        '''Q_tar = r + gamma * V_pred(s'; target_critic)'''
+        with torch.no_grad():
+            target_next_v_preds = self.calc_v(batch['next_states'], net=self.target_critic_net)
+            q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * target_next_v_preds
+        return q_targets
+
+    def calc_reg_loss(self, preds, targets):
+        '''Calculate the regression loss for V and Q values, using the same loss function from net_spec'''
+        assert preds.shape == targets.shape, f'{preds.shape} != {targets.shape}'
+        reg_loss = self.net.loss_fn(preds, targets)
+        return reg_loss
+
+    def calc_policy_loss(self, batch, action_pd):
+        '''policy_loss = log pi(f(a)|s) - Q1(s, f(a)), where f(a) = reparametrized action'''
+        reparam_actions = action_pd.rsample()
+        log_probs = action_pd.log_prob(reparam_actions)
+        q1_preds = self.calc_q(batch['states'], reparam_actions, self.q1_net)
+        policy_loss = (log_probs - q1_preds).mean()
+        return policy_loss
+
+    def try_update_per(self, q_preds, q_targets):
+        if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
+            with torch.no_grad():
+                errors = (q_preds - q_targets).abs().cpu().numpy()
+            self.body.memory.update_priorities(errors)
 
     def train(self):
         '''Train actor critic by computing the loss in batch efficiently'''
@@ -123,20 +130,38 @@ class SoftActorCritic(ActorCritic):
         if self.to_train == 1:
             batch = self.sample()
             clock.set_batch_size(len(batch))
-            pdparams, v_preds = self.calc_pdparam_v(batch)
-            advs, v_targets = self.calc_advs_v_targets(batch, v_preds)
-            policy_loss = self.calc_policy_loss(batch, pdparams, advs)  # from actor
 
-            v_targets = self.calc_v_targets(batch)
-            val_loss = self.calc_val_loss(v_preds, v_targets)
+            # forward passes for losses
+            states = batch['states']
+            actions = batch['actions']
+            v_preds = self.calc_v(states, net=self.critic_net)
+            q1_preds = self.calc_q(states, actions, self.q1_net)
+            q2_preds = self.calc_q(states, actions, self.q2_net)
+            pdparams = self.calc_pdparam(states)
+            action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
 
-            q_loss = self.calc_q_loss(batch)
-
-            self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+            # V-value loss
+            v_targets = self.calc_v_targets(batch, action_pd, q1_preds, q2_preds)
+            val_loss = self.calc_reg_loss(v_preds, v_targets)
             self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, clock=clock, global_net=self.global_critic_net)
-            self.q1_net.train_step(val_loss, self.q1_optim, self.q1_lr_scheduler, clock=clock, global_net=self.global_q1_net)
-            self.q2_net.train_step(val_loss, self.q2_optim, self.q2_lr_scheduler, clock=clock, global_net=self.global_q2_net)
-            loss = policy_loss + val_loss + q_loss
+
+            # Q-value loss for both Q nets
+            q_targets = self.calc_q_targets(batch)
+            q1_loss = self.calc_reg_loss(q1_preds, q_targets)
+            self.q1_net.train_step(q1_loss, self.q1_optim, self.q1_lr_scheduler, clock=clock, global_net=self.global_q1_net)
+            q2_loss = self.calc_reg_loss(q2_preds, q_targets)
+            self.q2_net.train_step(q2_loss, self.q2_optim, self.q2_lr_scheduler, clock=clock, global_net=self.global_q2_net)
+
+            # policy loss
+            policy_loss = self.calc_policy_loss(batch, action_pd)
+            self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
+            loss = policy_loss + val_loss + q1_loss + q2_loss
+
+            # update PER priorities if availalbe
+            self.try_update_per(q1_preds, q_targets)
+
+            # NOTE target_critic_net update will happen during API call to update()
+
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
@@ -156,6 +181,6 @@ class SoftActorCritic(ActorCritic):
 
     @lab_api
     def update(self):
-        '''Updates self.target_net and the explore variables'''
+        '''Updates self.target_critic_net and the explore variables'''
         self.update_nets()
-        return super().update()
+        return self.body.explore_var
