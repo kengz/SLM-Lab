@@ -83,8 +83,11 @@ class SoftActorCritic(ActorCritic):
 
     @lab_api
     def act(self, state):
-        action = super().act(state)
-        return np.tanh(action)  # continuous action bound
+        if self.body.env.clock.frame < self.training_start_step:
+            return policy_util.random(state, self, self.body)
+        else:
+            action = super().act(state)
+            return np.tanh(action)  # continuous action bound
 
     def calc_q(self, state, action, net=None):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
