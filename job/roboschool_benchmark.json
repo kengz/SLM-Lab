@@ -1,0 +1,14 @@
+{
+  "slm_lab/spec/benchmark/a2c/a2c_nstep_roboschool.json": {
+    "a2c_nstep_roboschool": "train",
+  },
+  "slm_lab/spec/benchmark/a2c/a2c_gae_roboschool.json": {
+    "a2c_gae_roboschool": "train",
+  },
+  "slm_lab/spec/benchmark/ppo/ppo_roboschool.json": {
+    "ppo_roboschool": "train",
+  },
+  "slm_lab/spec/benchmark/sac/sac_roboschool.json": {
+    "sac_roboschool": "train",
+  }
+}
