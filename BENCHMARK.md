@@ -12,12 +12,13 @@ The data can be downloaded into SLM Lab's `data/` folder and [reran in enjoy mod
 - A2C (n-step): Advantage Actor-Critic with n-step return as advantage estimation
 - A3C: Asynchronous Advantage Actor-Critic
 - CER: Combined Experience Replay
-- DDQN: Double Deep Q-Learning
+- DDQN: Double Deep Q-Network
 - DIST: Distributed
-- DQN: Deep Q-learning
+- DQN: Deep Q-Network
 - GAE: Generalized Advantage Estimation
 - PER: Prioritized Experience Replay
 - PPO: Proximal Policy Optimization
+- SAC: Soft Actor-Critic
 - SIL: Self Imitation Learning
 
 ### Atari Benchmark
