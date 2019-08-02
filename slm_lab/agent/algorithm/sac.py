@@ -84,7 +84,7 @@ class SoftActorCritic(ActorCritic):
     @lab_api
     def act(self, state):
         if self.body.env.clock.frame < self.training_start_step:
-            return policy_util.random(state, self, self.body)
+            return policy_util.random(state, self, self.body).cpu().squeeze().numpy()
         else:
             action = super().act(state)
             return np.tanh(action)  # continuous action bound
