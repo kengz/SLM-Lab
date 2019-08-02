@@ -101,8 +101,8 @@ def init_action_pd(ActionPD, pdparam):
             loc, scale = pdparam
         else:
             loc, scale = pdparam.transpose(0, 1)
-        # scale (stdev) must be > 0, use softplus with positive
-        scale = F.softplus(scale) + 1e-8
+        # scale (stdev) must be > 0, log-clamp-exp
+        scale = torch.clamp(scale, min=-20, max=2).exp()
         if isinstance(pdparam, list):  # split output
             # construct covars from a batched scale tensor
             covars = torch.diag_embed(scale)

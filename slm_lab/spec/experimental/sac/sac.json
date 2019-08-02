@@ -7,7 +7,6 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_iter": 4,
         "training_frequency": 1
       },
       "memory": {
@@ -32,7 +31,7 @@
         "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.96,
+        "polyak_coef": 0.995,
         "gpu": false
       }
     }],
@@ -64,7 +63,6 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_iter": 4,
         "training_frequency": 1
       },
       "memory": {
@@ -89,7 +87,7 @@
         "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.96,
+        "polyak_coef": 0.995,
         "gpu": false
       }
     }],
@@ -113,7 +111,7 @@
       "max_trial": 1,
     }
   },
-  "sac_bipedalwalker": {
+  "sac_walker": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
@@ -121,7 +119,6 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_iter": 4,
         "training_frequency": 1
       },
       "memory": {
@@ -146,12 +143,12 @@
         "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.96,
+        "polyak_coef": 0.995,
         "gpu": false
       }
     }],
     "env": [{
-      "name": "BipedalWalker-v2",
+      "name": "RoboschoolWalker2d-v1",
       "reward_scale": 5,
       "num_envs": 8,
       "max_t": null,
@@ -170,7 +167,7 @@
       "max_trial": 1,
     }
   },
-  "async_sac_bipedalwalker": {
+  "async_sac_walker": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
@@ -178,7 +175,6 @@
         "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_iter": 4,
         "training_frequency": 1
       },
       "memory": {
@@ -203,12 +199,12 @@
         "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.96,
+        "polyak_coef": 0.995,
         "gpu": false
       }
     }],
     "env": [{
-      "name": "BipedalWalker-v2",
+      "name": "RoboschoolWalker2d-v1",
       "reward_scale": 5,
       "num_envs": 8,
       "max_t": null,
