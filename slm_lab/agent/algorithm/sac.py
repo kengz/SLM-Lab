@@ -62,7 +62,6 @@ class SoftActorCritic(ActorCritic):
         val_out_dim = 1
         self.critic_net = NetClass(self.net_spec, in_dim, val_out_dim)
         self.target_critic_net = NetClass(self.net_spec, in_dim, val_out_dim)
-        net_util.copy(self.critic_net, self.target_critic_net)
         self.net_names += ['critic_net', 'target_critic_net']
         # two Q-networks to mitigate positive bias in q_loss and speed up training
         q_in_dim = in_dim + self.body.action_dim  # NOTE concat s, a for now
