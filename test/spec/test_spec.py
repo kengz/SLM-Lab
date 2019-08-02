@@ -101,6 +101,13 @@ def test_ppo_sil(spec_file, spec_name):
 
 
 @pytest.mark.parametrize('spec_file,spec_name', [
+    ('experimental/sac/sac_pendulum.json', 'sac_pendulum'),
+])
+def test_sac_cont(spec_file, spec_name):
+    run_trial_test(spec_file, spec_name)
+
+
+@pytest.mark.parametrize('spec_file,spec_name', [
     ('experimental/dqn/dqn_cartpole.json', 'vanilla_dqn_cartpole'),
     ('experimental/dqn/dqn_cartpole.json', 'dqn_boltzmann_cartpole'),
     ('experimental/dqn/dqn_cartpole.json', 'dqn_epsilon_greedy_cartpole'),
