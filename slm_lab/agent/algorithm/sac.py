@@ -33,6 +33,7 @@ class SoftActorCritic(ActorCritic):
             action_pdtype='default',
             action_policy='default',
             training_iter=self.body.env.num_envs,
+            training_start_step=self.body.memory.batch_size,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',
@@ -42,7 +43,6 @@ class SoftActorCritic(ActorCritic):
             'training_frequency',
         ])
         self.to_train = 0
-        self.training_start_step = self.body.memory.batch_size
         self.action_policy = getattr(policy_util, self.action_policy)
 
     @lab_api
