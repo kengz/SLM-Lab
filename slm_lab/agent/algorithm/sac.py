@@ -56,7 +56,6 @@ class SoftActorCritic(ActorCritic):
         out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
         # main actor network
-        # NOTE continuous action bound
         self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net']
         # critic network and its target network
@@ -85,9 +84,8 @@ class SoftActorCritic(ActorCritic):
 
     @lab_api
     def act(self, state):
-        # NOTE continuous action bound
         action = super().act(state)
-        return np.tanh(action)
+        return np.tanh(action)  # continuous action bound
 
     def calc_q(self, state, action, net=None):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
@@ -130,6 +128,7 @@ class SoftActorCritic(ActorCritic):
         states = batch['states']
         reparam_mus = action_pd.rsample()  # reparametrization for paper eq. 11
         reparam_actions = torch.tanh(reparam_mus)
+        # paper Appendix C. Enforcing Action Bounds
         log_probs = action_pd.log_prob(reparam_mus) - torch.log(1 - reparam_actions.pow(2) + 1e-6).sum(1)
 
         q1_preds = self.calc_q(states, reparam_actions, self.q1_net)
@@ -185,7 +184,7 @@ class SoftActorCritic(ActorCritic):
                 # update target_critic_net
                 self.update_nets()
                 # update PER priorities if availalbe
-                self.try_update_per(q1_preds, q_targets)
+                self.try_update_per(torch.min(q1_preds, q2_preds), q_targets)
 
             # reset
             self.to_train = 0
