@@ -7,7 +7,6 @@ from torch import distributions
 import numpy as np
 import pydash as ps
 import torch
-import torch.nn.functional as F
 
 logger = logger.get_logger(__name__)
 
@@ -19,7 +18,7 @@ setattr(distributions, 'MultiCategorical', distribution.MultiCategorical)
 ACTION_PDS = {
     'continuous': ['Normal', 'Beta', 'Gumbel', 'LogNormal'],
     'multi_continuous': ['MultivariateNormal'],
-    'discrete': ['Categorical', 'Argmax', 'GumbelCategorical'],
+    'discrete': ['Categorical', 'Argmax', 'GumbelCategorical', 'RelaxedOneHotCategorical'],
     'multi_discrete': ['MultiCategorical'],
     'multi_binary': ['Bernoulli'],
 }

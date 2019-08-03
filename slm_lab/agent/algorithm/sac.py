@@ -86,8 +86,13 @@ class SoftActorCritic(ActorCritic):
         if self.body.env.clock.frame < self.training_start_step:
             return policy_util.random(state, self, self.body).cpu().squeeze().numpy()
         else:
-            action = super().act(state)
-            return np.tanh(action)  # continuous action bound
+            action = self.action_policy(state, self, self.body)
+            if self.body.is_discrete:
+                # discrete output is RelaxedOneHotCategorical, need to sample to int. clamp to prevent minor precision issue with prob < 0
+                action = torch.distributions.Categorical(probs=action.clamp(min=0)).sample()
+            else:
+                action = torch.tanh(action)  # continuous action bound
+            return action.cpu().squeeze().numpy()
 
     def calc_q(self, state, action, net=None):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
@@ -100,10 +105,14 @@ class SoftActorCritic(ActorCritic):
         '''V_tar = Q(s, a) - log pi(a|s), Q(s, a) = min(Q1(s, a), Q2(s, a))'''
         states = batch['states']
         with torch.no_grad():
-            mus = action_pd.sample()
-            actions = torch.tanh(mus)
-            # paper Appendix C. Enforcing Action Bounds
-            log_probs = action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6).sum(1)
+            if self.body.is_discrete:
+                actions = action_pd.sample()
+                log_probs = action_pd.log_prob(actions)
+            else:
+                mus = action_pd.sample()
+                actions = torch.tanh(mus)
+                # paper Appendix C. Enforcing Action Bounds for continuous actions
+                log_probs = action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6).sum(1)
 
             q1_preds = self.calc_q(states, actions, self.q1_net)
             q2_preds = self.calc_q(states, actions, self.q2_net)
@@ -128,10 +137,14 @@ class SoftActorCritic(ActorCritic):
     def calc_policy_loss(self, batch, action_pd):
         '''policy_loss = log pi(f(a)|s) - Q1(s, f(a)), where f(a) = reparametrized action'''
         states = batch['states']
-        reparam_mus = action_pd.rsample()  # reparametrization for paper eq. 11
-        reparam_actions = torch.tanh(reparam_mus)
-        # paper Appendix C. Enforcing Action Bounds
-        log_probs = action_pd.log_prob(reparam_mus) - torch.log(1 - reparam_actions.pow(2) + 1e-6).sum(1)
+        if self.body.is_discrete:
+            reparam_actions = action_pd.rsample()
+            log_probs = action_pd.log_prob(reparam_actions)
+        else:
+            reparam_mus = action_pd.rsample()  # reparametrization for paper eq. 11
+            reparam_actions = torch.tanh(reparam_mus)
+            # paper Appendix C. Enforcing Action Bounds for continuous actions
+            log_probs = action_pd.log_prob(reparam_mus) - torch.log(1 - reparam_actions.pow(2) + 1e-6).sum(1)
 
         q1_preds = self.calc_q(states, reparam_actions, self.q1_net)
         q2_preds = self.calc_q(states, reparam_actions, self.q2_net)
@@ -159,6 +172,10 @@ class SoftActorCritic(ActorCritic):
                 # forward passes for losses
                 states = batch['states']
                 actions = batch['actions']
+                if self.body.is_discrete:
+                    # to one-hot discrete action for Q input.
+                    # TODO support multi-discrete actions
+                    actions = torch.eye(self.body.action_dim)[actions.long()]
                 pdparams = self.calc_pdparam(states)
                 action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
 
