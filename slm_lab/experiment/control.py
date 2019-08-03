@@ -100,7 +100,8 @@ class Session:
             if clock.get() >= clock.max_frame:  # finish
                 break
             clock.tick('t')
-            action = self.agent.act(state)
+            with torch.no_grad():
+                action = self.agent.act(state)
             next_state, reward, done, info = self.env.step(action)
             self.agent.update(state, action, reward, next_state, done)
             state = next_state
