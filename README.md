@@ -36,7 +36,7 @@ Below shows the latest benchmark status. See the full [benchmark results here](h
 | A2C with GAE & n-step (Advantage Actor-Critic) | :white_check_mark: |  |
 | PPO (Proximal Policy Optimization)   | :white_check_mark: |  |
 | SIL (Self Imitation Learning)          |       |  |
-| SAC (Soft Actor-Critic) | -      | :white_check_mark: |
+| SAC (Soft Actor-Critic) |       | :white_check_mark: |
 
 Due to their standardized design, all the algorithms can be parallelized asynchronously using Hogwild. Hence, SLM Lab also includes A3C, distributed-DQN, distributed-PPO.
 
