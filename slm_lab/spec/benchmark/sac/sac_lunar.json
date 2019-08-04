@@ -26,7 +26,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 1e-3
+          "lr": 0.01
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -39,7 +39,7 @@
       "name": "LunarLander-v2",
       "frame_op": "concat",
       "frame_op_len": 4,
-      "reward_scale": 10,
+      "reward_scale": 40,
       "max_t": null,
       "max_frame": 300000,
       "num_envs": 8,
