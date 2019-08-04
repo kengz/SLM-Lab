@@ -88,8 +88,8 @@ class SoftActorCritic(ActorCritic):
         else:
             action = self.action_policy(state, self, self.body)
             if self.body.is_discrete:
-                # discrete output is RelaxedOneHotCategorical, need to sample to int. clamp to prevent minor precision issue with prob < 0
-                action = torch.distributions.Categorical(probs=action.clamp(min=0)).sample()
+                # discrete output is RelaxedOneHotCategorical, need to sample to int
+                action = torch.distributions.Categorical(probs=action).sample()
             else:
                 action = torch.tanh(action)  # continuous action bound
             return action.cpu().squeeze().numpy()
