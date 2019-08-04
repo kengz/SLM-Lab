@@ -150,7 +150,7 @@ class SoftActorCritic(ActorCritic):
         q2_preds = self.calc_q(states, reparam_actions, self.q2_net)
         q_preds = torch.min(q1_preds, q2_preds)
 
-        policy_loss = (log_probs - q1_preds).mean()
+        policy_loss = (log_probs - q_preds).mean()
         return policy_loss
 
     def try_update_per(self, q_preds, q_targets):
