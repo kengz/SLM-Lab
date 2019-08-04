@@ -57,6 +57,7 @@ class VanillaDQN(SARSA):
             action_pdtype='Argmax',
             action_policy='epsilon_greedy',
             explore_var_spec=None,
+            training_start_step=self.body.memory.batch_size,
         ))
         util.set_attr(self, self.algorithm_spec, [
             'action_pdtype',

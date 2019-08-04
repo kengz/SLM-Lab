@@ -12,12 +12,13 @@ The data can be downloaded into SLM Lab's `data/` folder and [reran in enjoy mod
 - A2C (n-step): Advantage Actor-Critic with n-step return as advantage estimation
 - A3C: Asynchronous Advantage Actor-Critic
 - CER: Combined Experience Replay
-- DDQN: Double Deep Q-Learning
+- DDQN: Double Deep Q-Network
 - DIST: Distributed
-- DQN: Deep Q-learning
+- DQN: Deep Q-Network
 - GAE: Generalized Advantage Estimation
 - PER: Prioritized Experience Replay
 - PPO: Proximal Policy Optimization
+- SAC: Soft Actor-Critic
 - SIL: Self Imitation Learning
 
 ### Atari Benchmark
@@ -37,6 +38,17 @@ The specs for these are contained in the [`slm_lab/spec/benchmark`](https://gith
 | Qbert <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62232149-60078b80-b37a-11e9-99bb-cedc9fe064d5.png"><img src="https://user-images.githubusercontent.com/8209263/62232148-60078b80-b37a-11e9-9610-17ac447a479f.png"></details> | 13,328.32 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020263-261a6780-b177-11e9-8936-22a74d2405d3.png"></details> | 13,259.19 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020347-742f6b00-b177-11e9-8bfb-edfcfd44c8b7.png"></details> | **13,691.89** <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62067104-cb6d2400-b1e7-11e9-9c4f-9eaac265d7d6.png"></details> | 4,787.79 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62100455-a4920a80-b246-11e9-8ca5-d4dc1ce3d76f.png"></details> | 11,673.52 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62230986-e79fcb00-b377-11e9-8861-3686954b7e1a.png"></details> |
 | Seaquest <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62232168-6bf34d80-b37a-11e9-9564-fa3609dc5c75.png"><img src="https://user-images.githubusercontent.com/8209263/62232167-6bf34d80-b37a-11e9-8db3-c79a0e78292b.png"></details> | 892.68 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020266-29adee80-b177-11e9-83c2-fafbdbb982b9.png"></details> | 1,686.08 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62020350-772a5b80-b177-11e9-8917-e3c8a745cd08.png"></details> | 1,583.04 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62067113-cf994180-b1e7-11e9-870b-b9bba71f2a7e.png"></details> | 1,118.50 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62100462-a9ef5500-b246-11e9-8699-9356ff81ff93.png"></details> | **3,751.34** <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62230991-ebcbe880-b377-11e9-8de4-a01379d1d61c.png"></details> |
 
+
+### Roboschool Benchmark
+
+[Roboschool](https://github.com/openai/roboschool) by OpenAI offers free open source robotics simulations with improved physics. Although it mirrors the environments from MuJuCo, its environments' rewards are different.
+
+| Env. \ Alg. | A2C (GAE) | A2C (n-step) | PPO | SAC |
+|:---|---|---|---|---|---|
+| RoboschoolAnt | | | | 1153.87 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62429426-5f952a80-b6c3-11e9-8cf7-ee2bc908b2b3.png"></details> |
+| RoboschoolHalfCheetah | | | | 1204.68 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62429436-7471be00-b6c3-11e9-8343-cd646aca68e7.png"></details> |
+| RoboschoolHopper | | | | 1161.24 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62429437-79367200-b6c3-11e9-8a05-2c1fd0eb5e1f.png"></details> |
+| RoboschoolWalker2d | | | | 695.36 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62429440-7cc9f900-b6c3-11e9-8d06-1476393d0e9e.png"></details> |
 
 
 ### Classic Benchmark

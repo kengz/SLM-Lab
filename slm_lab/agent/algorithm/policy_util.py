@@ -7,7 +7,6 @@ from torch import distributions
 import numpy as np
 import pydash as ps
 import torch
-import torch.nn.functional as F
 
 logger = logger.get_logger(__name__)
 
@@ -19,7 +18,7 @@ setattr(distributions, 'MultiCategorical', distribution.MultiCategorical)
 ACTION_PDS = {
     'continuous': ['Normal', 'Beta', 'Gumbel', 'LogNormal'],
     'multi_continuous': ['MultivariateNormal'],
-    'discrete': ['Categorical', 'Argmax', 'GumbelCategorical'],
+    'discrete': ['Categorical', 'Argmax', 'GumbelCategorical', 'RelaxedOneHotCategorical'],
     'multi_discrete': ['MultiCategorical'],
     'multi_binary': ['Bernoulli'],
 }
@@ -95,14 +94,16 @@ def init_action_pd(ActionPD, pdparam):
     - continuous: action_pd = ActionPD(loc, scale)
     '''
     if 'logits' in ActionPD.arg_constraints:  # discrete
-        action_pd = ActionPD(logits=pdparam)
+        # for relaxed discrete dist. with reparametrizable discrete actions
+        pd_kwargs = {'temperature': torch.tensor(1.0)} if hasattr(ActionPD, 'temperature') else {}
+        action_pd = ActionPD(logits=pdparam, **pd_kwargs)
     else:  # continuous, args = loc and scale
         if isinstance(pdparam, list):  # split output
             loc, scale = pdparam
         else:
             loc, scale = pdparam.transpose(0, 1)
-        # scale (stdev) must be > 0, use softplus with positive
-        scale = F.softplus(scale) + 1e-8
+        # scale (stdev) must be > 0, log-clamp-exp
+        scale = torch.clamp(scale, min=-20, max=2).exp()
         if isinstance(pdparam, list):  # split output
             # construct covars from a batched scale tensor
             covars = torch.diag_embed(scale)

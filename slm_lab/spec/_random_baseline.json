@@ -3098,5 +3098,58 @@
   "MemorizeDigits-v0": {
     "mean": -18.39,
     "std": 3.733349702345067
-  }
+  },
+  "RoboschoolInvertedPendulum-v1": {
+    "mean": 23.56,
+    "std": 11.820592201746916
+  },
+  "RoboschoolInvertedPendulumSwingup-v1": {
+    "mean": 24.16,
+    "std": 12.312367765787375
+  },
+  "RoboschoolInvertedDoublePendulum-v1": {
+    "mean": 285.03623002569265,
+    "std": 63.49275982165183
+  },
+  "RoboschoolReacher-v1": {
+    "mean": -9.249468095049115,
+    "std": 13.716532864351588
+  },
+  "RoboschoolHopper-v1": {
+    "mean": 21.227225668458228,
+    "std": 3.229383018065665
+  },
+  "RoboschoolWalker2d-v1": {
+    "mean": 16.06784936448613,
+    "std": 3.057158477723673
+  },
+  "RoboschoolHalfCheetah-v1": {
+    "mean": 0.834135859577086,
+    "std": 4.032218930096375
+  },
+  "RoboschoolAnt-v1": {
+    "mean": 52.30856161942187,
+    "std": 68.82312838262293
+  },
+  "RoboschoolHumanoid-v1": {
+    "mean": -36.16465701700577,
+    "std": 7.88433176997452
+  },
+  "RoboschoolHumanoidFlagrun-v1": {
+    "mean": -6.154104883738297,
+    "std": 5.42982138405959
+  },
+  "RoboschoolHumanoidFlagrunHarder-v1": {
+    "mean": -8.64852802036781,
+    "std": 26.116175414060624
+  },
+  "RoboschoolAtlasForwardWalk-v1": {
+    "mean": 40.236817641853165,
+    "std": 8.637679467962908
+  },
+  "RoboschoolPong-v1": {
+    "mean": -11.523448465579003,
+    "std": 3.878485628897857
+  },
+  "vizdoom-v0": null
 }

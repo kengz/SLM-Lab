@@ -27,15 +27,16 @@ The benchmark results also include complete [spec files](https://github.com/keng
 
 Below shows the latest benchmark status. See the full [benchmark results here](https://github.com/kengz/SLM-Lab/blob/master/BENCHMARK.md).
 
-| **Algorithm\Benchmark** | Atari |
-|-------------------------|-------|
-| SARSA                   | -     |
-| DQN    | :white_check_mark: |
-| Double-DQN, Dueling-DQN, PER-DQN | :white_check_mark: |
-| REINFORCE               | -     |
-| A2C (GAE & n-step)  | :white_check_mark: |
-| PPO    | :white_check_mark: |
-| SIL (A2C, PPO)          |       |
+| **Algorithm\Benchmark** | Atari | Roboschool |
+|-------------------------|-------|-------|
+| SARSA                   | -     | - |
+| DQN (Deep Q-Network)    | :white_check_mark: | - |
+| Double-DQN, Dueling-DQN, PER-DQN | :white_check_mark: | - |
+| REINFORCE               | -     | - |
+| A2C with GAE & n-step (Advantage Actor-Critic) | :white_check_mark: |  |
+| PPO (Proximal Policy Optimization)   | :white_check_mark: |  |
+| SIL (Self Imitation Learning)          |       |  |
+| SAC (Soft Actor-Critic) |       | :white_check_mark: |
 
 Due to their standardized design, all the algorithms can be parallelized asynchronously using Hogwild. Hence, SLM Lab also includes A3C, distributed-DQN, distributed-PPO.
 
@@ -140,6 +141,14 @@ This will run a `Trial` with multiple Sessions in *training mode*. In the beginn
 Below shows a trial graph with multiple sessions:
 
 ![](https://kengz.gitbooks.io/slm-lab/content/assets/a2c_gae_pong_t0_trial_graph_mean_returns_ma_vs_frames.png)
+
+### Enjoy mode
+
+Once a Trial completes with a good model saved into the `data/` folder, for example `data/a2c_gae_pong_2019_08_01_010727`, use the `enjoy` mode to show the trained agent playing the environment. Use the `enjoy@{prename}` mode to pick a saved trial-sesison, for example:
+
+```shell
+python run_lab.py data/a2c_gae_pong_2019_08_01_010727/a2c_gae_pong_spec.json a2c_gae_pong enjoy@a2c_gae_pong_t0_s0
+```
 
 ### Benchmark
 

@@ -1,5 +1,5 @@
 {
-  "a2c_gae_cont_hard": {
+  "a2c_gae_roboschool": {
     "agent": [{
       "name": "A2C",
       "algorithm": {
@@ -55,7 +55,7 @@
       "name": "${env}",
       "num_envs": 32,
       "max_t": null,
-      "max_frame": 5e7
+      "max_frame": 1e6
     }],
     "body": {
       "product": "outer",
@@ -63,14 +63,15 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 20000,
-      "eval_frequency": 20000,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
+      "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1
     },
     "spec_params": {
       "env": [
-        "RoboschoolHumanoid-v1"
+        "RoboschoolAnt-v1", "RoboschoolHalfCheetah-v1", "RoboschoolHopper-v1", "RoboschoolWalker2d-v1"
       ]
     }
   }

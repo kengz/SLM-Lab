@@ -6,5 +6,6 @@ from .dqn import *
 from .ppo import *
 from .random import *
 from .reinforce import *
+from .sac import *
 from .sarsa import *
 from .sil import *
