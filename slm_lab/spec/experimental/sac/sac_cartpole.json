@@ -1,10 +1,10 @@
 {
-  "sac_pendulum": {
+  "sac_cartpole": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
-        "action_pdtype": "default",
+        "action_pdtype": "RelaxedOneHotCategorical",
         "action_policy": "default",
         "gamma": 0.99,
         "training_frequency": 1
@@ -12,12 +12,12 @@
       "memory": {
         "name": "Replay",
         "batch_size": 256,
-        "max_size": 1000000,
+        "max_size": 100000,
         "use_cer": true
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 256],
+        "hid_layers": [64],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -26,7 +26,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 3e-4
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -36,10 +36,11 @@
       }
     }],
     "env": [{
-      "name": "Pendulum-v0",
-      "num_envs": 8,
+      "name": "CartPole-v0",
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 200000,
+      "num_envs": 8,
+      "normalize_state": false
     }],
     "body": {
       "product": "outer",
@@ -47,8 +48,8 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
-      "eval_frequency": 1000,
+      "log_frequency": 500,
+      "eval_frequency": 500,
       "rigorous_eval": 0,
       "max_session": 1,
       "max_trial": 1,
