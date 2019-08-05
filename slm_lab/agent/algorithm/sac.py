@@ -6,6 +6,7 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 logger = logger.get_logger(__name__)
 
@@ -104,7 +105,7 @@ class SoftActorCritic(ActorCritic):
         '''Guard to convert actions to one-hot for input to Q-network'''
         if self.body.is_discrete:
             # TODO support multi-discrete actions
-            actions = torch.eye(self.body.action_dim)[actions.long()]
+            actions = F.one_hot(actions.long(), self.body.action_dim).float()
         return actions
 
     def calc_q(self, state, action, net):
