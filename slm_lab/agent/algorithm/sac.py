@@ -143,10 +143,12 @@ class SoftActorCritic(ActorCritic):
             log_probs = action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6).sum(1)
         return log_probs, actions
 
-    def calc_q_targets(self, batch, target_net, next_log_probs):
+    def calc_q_targets(self, batch, next_log_probs):
         '''Q_tar = r + gamma * (target_Q(s', a') - alpha * log pi(a'|s'))'''
         with torch.no_grad():
-            next_target_q_preds = self.calc_q(batch['next_states'], batch['q_next_actions'], target_net)
+            next_target_q1_preds = self.calc_q(batch['next_states'], batch['q_next_actions'], self.target_q1_net)
+            next_target_q2_preds = self.calc_q(batch['next_states'], batch['q_next_actions'], self.target_q2_net)
+            next_target_q_preds = torch.min(next_target_q1_preds, next_target_q2_preds)
             q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * (next_target_q_preds - self.alpha * next_log_probs)
         return q_targets
 
@@ -204,14 +206,13 @@ class SoftActorCritic(ActorCritic):
                 action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
 
                 # Q-value loss for both Q nets
+                q_targets = self.calc_q_targets(batch, next_log_probs)
                 q1_preds = self.calc_q(states, q_actions, self.q1_net)
-                q1_targets = self.calc_q_targets(batch, self.target_q1_net, next_log_probs)
-                q1_loss = self.calc_reg_loss(q1_preds, q1_targets)
+                q1_loss = self.calc_reg_loss(q1_preds, q_targets)
                 self.q1_net.train_step(q1_loss, self.q1_optim, self.q1_lr_scheduler, clock=clock, global_net=self.global_q1_net)
 
                 q2_preds = self.calc_q(states, q_actions, self.q2_net)
-                q2_targets = self.calc_q_targets(batch, self.target_q2_net, next_log_probs)
-                q2_loss = self.calc_reg_loss(q2_preds, q2_targets)
+                q2_loss = self.calc_reg_loss(q2_preds, q_targets)
                 self.q2_net.train_step(q2_loss, self.q2_optim, self.q2_lr_scheduler, clock=clock, global_net=self.global_q2_net)
 
                 # policy loss
