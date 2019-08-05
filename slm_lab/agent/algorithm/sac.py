@@ -72,7 +72,7 @@ class SoftActorCritic(ActorCritic):
         net_util.copy(self.q2_net, self.target_q2_net)
         # temperature variable to be learned, and its target entropy
         self.log_alpha = torch.zeros(1, requires_grad=True)
-        self.alpha = self.log_alpha.exp()
+        self.alpha = self.log_alpha.clamp(min=-5, max=5).exp()
         self.target_entropy = - torch.tensor(self.body.action_space.shape).prod()
 
         # init net optimizer and its lr scheduler
@@ -170,7 +170,7 @@ class SoftActorCritic(ActorCritic):
         self.alpha_optim.zero_grad()
         alpha_loss.backward()
         self.alpha_optim.step()
-        self.alpha = self.log_alpha.exp()
+        self.alpha = self.log_alpha.clamp(min=-5, max=5).exp()
 
     def train(self):
         '''Train actor critic by computing the loss in batch efficiently'''
