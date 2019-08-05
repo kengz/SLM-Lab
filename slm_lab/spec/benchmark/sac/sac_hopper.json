@@ -37,7 +37,6 @@
     }],
     "env": [{
       "name": "RoboschoolHopper-v1",
-      "reward_scale": 5,
       "num_envs": 8,
       "max_t": null,
       "max_frame": 1e6
