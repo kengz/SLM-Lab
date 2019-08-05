@@ -129,15 +129,13 @@ class SoftActorCritic(ActorCritic):
             next_log_probs = action_pd.log_prob(batch['next_actions'])
         return next_log_probs
 
-    def sample_log_probs(self, action_pd, reparam):
-        '''Calculate log probs using sampled actions instead of replay'''
-        # reparametrization for paper eq. 11 if needed
-        sample = action_pd.rsample() if reparam else action_pd.sample()
+    def reparam_log_probs(self, action_pd):
+        '''Calculate reparametrized actions (reparametrization from paper eq. 11) and their log probs'''
         if self.body.is_discrete:
-            actions = sample
+            actions = action_pd.rsample()
             log_probs = action_pd.log_prob(actions)
         else:
-            mus = sample
+            mus = action_pd.rsample()
             actions = torch.tanh(mus)
             # paper Appendix C. Enforcing Action Bounds for continuous actions
             log_probs = action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6).sum(1)
@@ -158,21 +156,17 @@ class SoftActorCritic(ActorCritic):
         reg_loss = self.net.loss_fn(preds, targets)
         return reg_loss
 
-    def calc_policy_loss(self, batch, action_pd):
+    def calc_policy_loss(self, batch, log_probs, reparam_actions):
         '''policy_loss = alpha * log pi(f(a)|s) - Q1(s, f(a)), where f(a) = reparametrized action'''
-        log_probs, reparam_actions = self.sample_log_probs(action_pd, reparam=True)
         states = batch['states']
         q1_preds = self.calc_q(states, reparam_actions, self.q1_net)
         q2_preds = self.calc_q(states, reparam_actions, self.q2_net)
         q_preds = torch.min(q1_preds, q2_preds)
-
         policy_loss = (self.alpha * log_probs - q_preds).mean()
         return policy_loss
 
-    def calc_alpha_loss(self, action_pd):
-        with torch.no_grad():
-            log_probs, _actions = self.sample_log_probs(action_pd, reparam=False)
-        alpha_loss = - (self.alpha * (log_probs + self.target_entropy)).mean()
+    def calc_alpha_loss(self, log_probs):
+        alpha_loss = - (self.alpha * (log_probs.detach() + self.target_entropy)).mean()
         return alpha_loss
 
     def try_update_per(self, q_preds, q_targets):
@@ -204,6 +198,7 @@ class SoftActorCritic(ActorCritic):
                 next_log_probs = self.calc_next_log_probs(batch)
                 pdparams = self.calc_pdparam(states)
                 action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+                log_probs, reparam_actions = self.reparam_log_probs(action_pd)
 
                 # Q-value loss for both Q nets
                 q_targets = self.calc_q_targets(batch, next_log_probs)
@@ -216,11 +211,11 @@ class SoftActorCritic(ActorCritic):
                 self.q2_net.train_step(q2_loss, self.q2_optim, self.q2_lr_scheduler, clock=clock, global_net=self.global_q2_net)
 
                 # policy loss
-                policy_loss = self.calc_policy_loss(batch, action_pd)
+                policy_loss = self.calc_policy_loss(batch, log_probs, reparam_actions)
                 self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
 
                 # alpha loss
-                alpha_loss = self.calc_alpha_loss(action_pd)
+                alpha_loss = self.calc_alpha_loss(log_probs)
                 self.train_alpha(alpha_loss)
 
                 loss = q1_loss + q2_loss + policy_loss + alpha_loss
