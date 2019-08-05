@@ -113,31 +113,21 @@ class SoftActorCritic(ActorCritic):
         q_pred = net(x).view(-1)
         return q_pred
 
-    def calc_v_targets(self, batch, action_pd):
-        '''V_tar = Q(s, a) - log pi(a|s), Q(s, a) = min(Q1(s, a), Q2(s, a))'''
-        states = batch['states']
+    def calc_next_log_probs(self, batch):
         with torch.no_grad():
-            if self.body.is_discrete:
-                actions = action_pd.sample()
-                log_probs = action_pd.log_prob(actions)
-            else:
-                mus = action_pd.sample()
-                actions = torch.tanh(mus)
-                # paper Appendix C. Enforcing Action Bounds for continuous actions
-                log_probs = action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6).sum(1)
+            pdparams = self.calc_pdparam(batch['next_states'])
+            action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+            next_log_probs = action_pd.log_prob(batch['next_actions'])
+        return next_log_probs
 
-            q1_preds = self.calc_q(states, actions, self.q1_net)
-            q2_preds = self.calc_q(states, actions, self.q2_net)
-            q_preds = torch.min(q1_preds, q2_preds)
-
-            v_targets = q_preds - log_probs
-        return v_targets
-
-    def calc_q_targets(self, batch):
-        '''Q_tar = r + gamma * V_pred(s'; target_critic)'''
+    def calc_q_targets(self, batch, target_net, next_log_probs):
+        '''Q_tar = r + gamma * (target_Q(s', a') - alpha * log pi(a'|s'))'''
+        next_states = batch['next_states']
+        next_actions = batch['next_actions']
+        next_actions = self.guard_q_actions(next_actions)
         with torch.no_grad():
-            target_next_v_preds = self.calc_v(batch['next_states'], net=self.target_critic_net)
-            q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * target_next_v_preds
+            next_target_q_preds = self.calc_q(next_states, next_actions, target_net)
+            q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * (next_target_q_preds - self.alpha * next_log_probs)
         return q_targets
 
     def calc_reg_loss(self, preds, targets):
@@ -184,33 +174,27 @@ class SoftActorCritic(ActorCritic):
                 # forward passes for losses
                 states = batch['states']
                 actions = batch['actions']
-                if self.body.is_discrete:
-                    # to one-hot discrete action for Q input.
-                    # TODO support multi-discrete actions
-                    actions = torch.eye(self.body.action_dim)[actions.long()]
+                actions = self.guard_q_actions(actions)
                 pdparams = self.calc_pdparam(states)
                 action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
 
-                # V-value loss
-                v_preds = self.calc_v(states, net=self.critic_net)
-                v_targets = self.calc_v_targets(batch, action_pd)
-                val_loss = self.calc_reg_loss(v_preds, v_targets)
-                self.critic_net.train_step(val_loss, self.critic_optim, self.critic_lr_scheduler, clock=clock, global_net=self.global_critic_net)
-
+                next_log_probs = self.calc_next_log_probs(batch)
                 # Q-value loss for both Q nets
-                q_targets = self.calc_q_targets(batch)
                 q1_preds = self.calc_q(states, actions, self.q1_net)
-                q1_loss = self.calc_reg_loss(q1_preds, q_targets)
+                q1_targets = self.calc_q_targets(batch, self.target_q1_net, next_log_probs)
+                q1_loss = self.calc_reg_loss(q1_preds, q1_targets)
                 self.q1_net.train_step(q1_loss, self.q1_optim, self.q1_lr_scheduler, clock=clock, global_net=self.global_q1_net)
+
                 q2_preds = self.calc_q(states, actions, self.q2_net)
-                q2_loss = self.calc_reg_loss(q2_preds, q_targets)
+                q2_targets = self.calc_q_targets(batch, self.target_q2_net, next_log_probs)
+                q2_loss = self.calc_reg_loss(q2_preds, q2_targets)
                 self.q2_net.train_step(q2_loss, self.q2_optim, self.q2_lr_scheduler, clock=clock, global_net=self.global_q2_net)
 
                 # policy loss
                 policy_loss = self.calc_policy_loss(batch, action_pd)
                 self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
 
-                loss = policy_loss + val_loss + q1_loss + q2_loss
+                loss = q1_loss + q2_loss + policy_loss
 
                 # update target_critic_net
                 self.update_nets()
