@@ -96,17 +96,21 @@ class SoftActorCritic(ActorCritic):
                 action = torch.tanh(action)  # continuous action bound
             return action.cpu().squeeze().numpy()
 
-    @lab_api
-    def sample(self):
-        # use SARSA's method to get 'next_actions'
-        return SARSA.sample(self)
-
     def guard_q_actions(self, actions):
         '''Guard to convert actions to one-hot for input to Q-network'''
         if self.body.is_discrete:
             # TODO support multi-discrete actions
             actions = torch.eye(self.body.action_dim)[actions.long()]
         return actions
+
+    @lab_api
+    def sample(self):
+        # use SARSA's method to get 'next_actions'
+        batch = SARSA.sample(self)
+        # guard to convert to one-hot for discrete actions
+        batch['q_actions'] = self.guard_q_actions(batch['actions'])
+        batch['q_next_actions'] = self.guard_q_actions(batch['next_actions'])
+        return batch
 
     def calc_q(self, state, action, net):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
@@ -123,11 +127,8 @@ class SoftActorCritic(ActorCritic):
 
     def calc_q_targets(self, batch, target_net, next_log_probs):
         '''Q_tar = r + gamma * (target_Q(s', a') - alpha * log pi(a'|s'))'''
-        next_states = batch['next_states']
-        next_actions = batch['next_actions']
-        next_actions = self.guard_q_actions(next_actions)
         with torch.no_grad():
-            next_target_q_preds = self.calc_q(next_states, next_actions, target_net)
+            next_target_q_preds = self.calc_q(batch['next_states'], batch['q_next_actions'], target_net)
             q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * (next_target_q_preds - self.alpha * next_log_probs)
         return q_targets
 
@@ -174,19 +175,18 @@ class SoftActorCritic(ActorCritic):
 
                 # forward passes for losses
                 states = batch['states']
-                actions = batch['actions']
-                actions = self.guard_q_actions(actions)
+                q_actions = batch['q_actions']
+                next_log_probs = self.calc_next_log_probs(batch)
                 pdparams = self.calc_pdparam(states)
                 action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
 
-                next_log_probs = self.calc_next_log_probs(batch)
                 # Q-value loss for both Q nets
-                q1_preds = self.calc_q(states, actions, self.q1_net)
+                q1_preds = self.calc_q(states, q_actions, self.q1_net)
                 q1_targets = self.calc_q_targets(batch, self.target_q1_net, next_log_probs)
                 q1_loss = self.calc_reg_loss(q1_preds, q1_targets)
                 self.q1_net.train_step(q1_loss, self.q1_optim, self.q1_lr_scheduler, clock=clock, global_net=self.global_q1_net)
 
-                q2_preds = self.calc_q(states, actions, self.q2_net)
+                q2_preds = self.calc_q(states, q_actions, self.q2_net)
                 q2_targets = self.calc_q_targets(batch, self.target_q2_net, next_log_probs)
                 q2_loss = self.calc_reg_loss(q2_preds, q2_targets)
                 self.q2_net.train_step(q2_loss, self.q2_optim, self.q2_lr_scheduler, clock=clock, global_net=self.global_q2_net)
