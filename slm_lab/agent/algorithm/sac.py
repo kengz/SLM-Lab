@@ -161,7 +161,7 @@ class SoftActorCritic(ActorCritic):
         return policy_loss
 
     def calc_alpha_loss(self, log_probs):
-        alpha_loss = - (self.alpha * (log_probs.detach() + self.target_entropy)).mean()
+        alpha_loss = - (self.log_alpha * (log_probs.detach() + self.target_entropy)).mean()
         return alpha_loss
 
     def try_update_per(self, q_preds, q_targets):
