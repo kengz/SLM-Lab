@@ -108,12 +108,6 @@ class SoftActorCritic(ActorCritic):
             actions = torch.eye(self.body.action_dim)[actions.long()]
         return actions
 
-    @lab_api
-    def sample(self):
-        batch = super().sample()
-        batch['q_actions'] = self.guard_q_actions(batch['actions'])
-        return batch
-
     def calc_q(self, state, action, net):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
         s_a = torch.cat((state, action), dim=-1)
@@ -189,24 +183,21 @@ class SoftActorCritic(ActorCritic):
                 batch = self.sample()
                 clock.set_batch_size(len(batch))
 
-                # forward passes for losses
                 states = batch['states']
-                q_actions = batch['q_actions']
-                pdparams = self.calc_pdparam(states)
-                action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
-                log_probs, reparam_actions = self.reparam_log_probs(action_pd)
-
-                # Q-value loss for both Q nets
+                actions = self.guard_q_actions(batch['actions'])
                 q_targets = self.calc_q_targets(batch)
-                q1_preds = self.calc_q(states, q_actions, self.q1_net)
+                # Q-value loss for both Q nets
+                q1_preds = self.calc_q(states, actions, self.q1_net)
                 q1_loss = self.calc_reg_loss(q1_preds, q_targets)
                 self.q1_net.train_step(q1_loss, self.q1_optim, self.q1_lr_scheduler, clock=clock, global_net=self.global_q1_net)
 
-                q2_preds = self.calc_q(states, q_actions, self.q2_net)
+                q2_preds = self.calc_q(states, actions, self.q2_net)
                 q2_loss = self.calc_reg_loss(q2_preds, q_targets)
                 self.q2_net.train_step(q2_loss, self.q2_optim, self.q2_lr_scheduler, clock=clock, global_net=self.global_q2_net)
 
                 # policy loss
+                action_pd = policy_util.init_action_pd(self.body.ActionPD, self.calc_pdparam(states))
+                log_probs, reparam_actions = self.reparam_log_probs(action_pd)
                 policy_loss = self.calc_policy_loss(batch, log_probs, reparam_actions)
                 self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
 
@@ -221,6 +212,11 @@ class SoftActorCritic(ActorCritic):
                 # update PER priorities if availalbe
                 self.try_update_per(torch.min(q1_preds, q2_preds), q_targets)
 
+            if clock.frame % 500 == 0:
+                print('q1_loss', q1_loss)
+                print('q2_loss', q2_loss)
+                print('policy_loss', policy_loss)
+                print('alpha_loss', alpha_loss)
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
