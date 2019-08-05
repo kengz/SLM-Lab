@@ -1,7 +1,6 @@
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
-from slm_lab.agent.algorithm.sarsa import SARSA
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -51,7 +50,7 @@ class SoftActorCritic(ActorCritic):
     @lab_api
     def init_nets(self, global_nets=None):
         '''
-        Networks: net(actor/policy), critic (value), target_critic, q1_net, q1_net
+        Networks: net(actor/policy), q1_net, target_q1_net, q2_net, target_q2_net
         All networks are separate, and have the same hidden layer architectures and optim specs, so tuning is minimal
         '''
         self.shared = False  # SAC does not share networks
@@ -206,17 +205,11 @@ class SoftActorCritic(ActorCritic):
                 self.train_alpha(alpha_loss)
 
                 loss = q1_loss + q2_loss + policy_loss + alpha_loss
-
                 # update target networks
                 self.update_nets()
                 # update PER priorities if availalbe
                 self.try_update_per(torch.min(q1_preds, q2_preds), q_targets)
 
-            if clock.frame % 500 == 0:
-                print('q1_loss', q1_loss)
-                print('q2_loss', q2_loss)
-                print('policy_loss', policy_loss)
-                print('alpha_loss', alpha_loss)
             # reset
             self.to_train = 0
             logger.debug(f'Trained {self.name} at epi: {clock.epi}, frame: {clock.frame}, t: {clock.t}, total_reward so far: {self.body.env.total_reward}, loss: {loss:g}')
