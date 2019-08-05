@@ -98,8 +98,13 @@ class SoftActorCritic(ActorCritic):
                 # discrete output is RelaxedOneHotCategorical, need to sample to int
                 action = torch.distributions.Categorical(probs=action).sample()
             else:
-                action = torch.tanh(action)  # continuous action bound
+                action = self.scale_action(torch.tanh(action))  # continuous action bound
             return action.cpu().squeeze().numpy()
+
+    def scale_action(self, action):
+        '''Scale continuous actions from tanh range'''
+        low, high = self.body.action_space.low, self.body.action_space.high
+        return action * (high - low) / 2 + (low + high) / 2
 
     def guard_q_actions(self, actions):
         '''Guard to convert actions to one-hot for input to Q-network'''
@@ -121,7 +126,7 @@ class SoftActorCritic(ActorCritic):
             log_probs = action_pd.log_prob(actions)
         else:
             mus = action_pd.rsample()
-            actions = torch.tanh(mus)
+            actions = self.scale_action(torch.tanh(mus))
             # paper Appendix C. Enforcing Action Bounds for continuous actions
             log_probs = action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6).sum(1)
         return log_probs, actions
