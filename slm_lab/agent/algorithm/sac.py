@@ -129,7 +129,7 @@ class SoftActorCritic(ActorCritic):
             mus = action_pd.rsample()
             actions = self.scale_action(torch.tanh(mus))
             # paper Appendix C. Enforcing Action Bounds for continuous actions
-            log_probs = action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6).sum(1)
+            log_probs = (action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6)).sum(1)
         return log_probs, actions
 
     def calc_q_targets(self, batch):
