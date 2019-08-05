@@ -62,8 +62,8 @@ class SoftActorCritic(ActorCritic):
         self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net']
         # two critic Q-networks to mitigate positive bias in q_loss and speed up training
-        val_out_dim = 1
         q_in_dim = in_dim + self.body.action_dim  # NOTE concat s, a for now
+        val_out_dim = 1
         self.q1_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
         self.target_q1_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
         self.q2_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
@@ -84,6 +84,7 @@ class SoftActorCritic(ActorCritic):
         self.q2_optim = net_util.get_optim(self.q2_net, self.q2_net.optim_spec)
         self.q2_lr_scheduler = net_util.get_lr_scheduler(self.q2_optim, self.q2_net.lr_scheduler_spec)
         self.alpha_optim = net_util.get_optim(self.log_alpha, self.net.optim_spec)
+        self.alpha_lr_scheduler = net_util.get_lr_scheduler(self.alpha_optim, self.net.lr_scheduler_spec)
         net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
@@ -172,6 +173,7 @@ class SoftActorCritic(ActorCritic):
 
     def train_alpha(self, alpha_loss):
         '''Custom method to train the alpha variable'''
+        self.alpha_lr_scheduler.step(epoch=self.body.env.clock.frame)
         self.alpha_optim.zero_grad()
         alpha_loss.backward()
         self.alpha_optim.step()
