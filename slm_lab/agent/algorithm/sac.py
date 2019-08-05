@@ -139,8 +139,8 @@ class SoftActorCritic(ActorCritic):
             action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
             next_log_probs, next_actions = self.reparam_log_probs(action_pd)
 
-            next_target_q1_preds = self.calc_q(batch['next_states'], next_actions, self.target_q1_net)
-            next_target_q2_preds = self.calc_q(batch['next_states'], next_actions, self.target_q2_net)
+            next_target_q1_preds = self.calc_q(next_states, next_actions, self.target_q1_net)
+            next_target_q2_preds = self.calc_q(next_states, next_actions, self.target_q2_net)
             next_target_q_preds = torch.min(next_target_q1_preds, next_target_q2_preds)
             q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * (next_target_q_preds - self.alpha * next_log_probs)
         return q_targets
