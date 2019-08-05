@@ -47,6 +47,7 @@ class SoftActorCritic(ActorCritic):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
+        self.alpha = 1.0
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -137,7 +138,7 @@ class SoftActorCritic(ActorCritic):
         return reg_loss
 
     def calc_policy_loss(self, batch, action_pd):
-        '''policy_loss = log pi(f(a)|s) - Q1(s, f(a)), where f(a) = reparametrized action'''
+        '''policy_loss = alpha * log pi(f(a)|s) - Q1(s, f(a)), where f(a) = reparametrized action'''
         states = batch['states']
         if self.body.is_discrete:
             reparam_actions = action_pd.rsample()
@@ -152,7 +153,7 @@ class SoftActorCritic(ActorCritic):
         q2_preds = self.calc_q(states, reparam_actions, self.q2_net)
         q_preds = torch.min(q1_preds, q2_preds)
 
-        policy_loss = (log_probs - q_preds).mean()
+        policy_loss = (self.alpha * log_probs - q_preds).mean()
         return policy_loss
 
     def try_update_per(self, q_preds, q_targets):
