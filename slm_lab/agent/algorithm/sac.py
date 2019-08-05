@@ -103,7 +103,8 @@ class SoftActorCritic(ActorCritic):
 
     def scale_action(self, action):
         '''Scale continuous actions from tanh range'''
-        low, high = self.body.action_space.low, self.body.action_space.high
+        action_space = self.body.action_space
+        low, high = torch.from_numpy(action_space.low), torch.from_numpy(action_space.high)
         return action * (high - low) / 2 + (low + high) / 2
 
     def guard_q_actions(self, actions):
