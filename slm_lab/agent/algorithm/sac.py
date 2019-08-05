@@ -125,6 +125,20 @@ class SoftActorCritic(ActorCritic):
             next_log_probs = action_pd.log_prob(batch['next_actions'])
         return next_log_probs
 
+    def sample_log_probs(self, action_pd, reparam):
+        '''Calculate log probs using sampled actions instead of replay'''
+        # reparametrization for paper eq. 11 if needed
+        sample = action_pd.rsample() if reparam else action_pd.sample()
+        if self.body.is_discrete:
+            actions = sample
+            log_probs = action_pd.log_prob(actions)
+        else:
+            mus = sample
+            actions = torch.tanh(mus)
+            # paper Appendix C. Enforcing Action Bounds for continuous actions
+            log_probs = action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6).sum(1)
+        return log_probs, actions
+
     def calc_q_targets(self, batch, target_net, next_log_probs):
         '''Q_tar = r + gamma * (target_Q(s', a') - alpha * log pi(a'|s'))'''
         with torch.no_grad():
@@ -140,16 +154,8 @@ class SoftActorCritic(ActorCritic):
 
     def calc_policy_loss(self, batch, action_pd):
         '''policy_loss = alpha * log pi(f(a)|s) - Q1(s, f(a)), where f(a) = reparametrized action'''
+        log_probs, reparam_actions = self.sample_log_probs(action_pd, reparam=True)
         states = batch['states']
-        if self.body.is_discrete:
-            reparam_actions = action_pd.rsample()
-            log_probs = action_pd.log_prob(reparam_actions)
-        else:
-            reparam_mus = action_pd.rsample()  # reparametrization for paper eq. 11
-            reparam_actions = torch.tanh(reparam_mus)
-            # paper Appendix C. Enforcing Action Bounds for continuous actions
-            log_probs = action_pd.log_prob(reparam_mus) - torch.log(1 - reparam_actions.pow(2) + 1e-6).sum(1)
-
         q1_preds = self.calc_q(states, reparam_actions, self.q1_net)
         q2_preds = self.calc_q(states, reparam_actions, self.q2_net)
         q_preds = torch.min(q1_preds, q2_preds)
