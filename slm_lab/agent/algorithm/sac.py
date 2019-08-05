@@ -109,25 +109,15 @@ class SoftActorCritic(ActorCritic):
 
     @lab_api
     def sample(self):
-        # use SARSA's method to get 'next_actions'
-        batch = SARSA.sample(self)
-        # guard to convert to one-hot for discrete actions
+        batch = super().sample()
         batch['q_actions'] = self.guard_q_actions(batch['actions'])
-        batch['q_next_actions'] = self.guard_q_actions(batch['next_actions'])
         return batch
 
     def calc_q(self, state, action, net):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
         s_a = torch.cat((state, action), dim=-1)
-        q_pred = net(x).view(-1)
+        q_pred = net(s_a).view(-1)
         return q_pred
-
-    def calc_next_log_probs(self, batch):
-        with torch.no_grad():
-            pdparams = self.calc_pdparam(batch['next_states'])
-            action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
-            next_log_probs = action_pd.log_prob(batch['next_actions'])
-        return next_log_probs
 
     def reparam_log_probs(self, action_pd):
         '''Calculate reparametrized actions (reparametrization from paper eq. 11) and their log probs'''
@@ -141,11 +131,16 @@ class SoftActorCritic(ActorCritic):
             log_probs = action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6).sum(1)
         return log_probs, actions
 
-    def calc_q_targets(self, batch, next_log_probs):
+    def calc_q_targets(self, batch):
         '''Q_tar = r + gamma * (target_Q(s', a') - alpha * log pi(a'|s'))'''
+        next_states = batch['next_states']
         with torch.no_grad():
-            next_target_q1_preds = self.calc_q(batch['next_states'], batch['q_next_actions'], self.target_q1_net)
-            next_target_q2_preds = self.calc_q(batch['next_states'], batch['q_next_actions'], self.target_q2_net)
+            pdparams = self.calc_pdparam(next_states)
+            action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
+            next_log_probs, next_actions = self.reparam_log_probs(action_pd)
+
+            next_target_q1_preds = self.calc_q(batch['next_states'], next_actions, self.target_q1_net)
+            next_target_q2_preds = self.calc_q(batch['next_states'], next_actions, self.target_q2_net)
             next_target_q_preds = torch.min(next_target_q1_preds, next_target_q2_preds)
             q_targets = batch['rewards'] + self.gamma * (1 - batch['dones']) * (next_target_q_preds - self.alpha * next_log_probs)
         return q_targets
@@ -195,13 +190,12 @@ class SoftActorCritic(ActorCritic):
                 # forward passes for losses
                 states = batch['states']
                 q_actions = batch['q_actions']
-                next_log_probs = self.calc_next_log_probs(batch)
                 pdparams = self.calc_pdparam(states)
                 action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
                 log_probs, reparam_actions = self.reparam_log_probs(action_pd)
 
                 # Q-value loss for both Q nets
-                q_targets = self.calc_q_targets(batch, next_log_probs)
+                q_targets = self.calc_q_targets(batch)
                 q1_preds = self.calc_q(states, q_actions, self.q1_net)
                 q1_loss = self.calc_reg_loss(q1_preds, q_targets)
                 self.q1_net.train_step(q1_loss, self.q1_optim, self.q1_lr_scheduler, clock=clock, global_net=self.global_q1_net)
