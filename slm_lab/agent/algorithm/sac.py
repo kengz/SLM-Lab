@@ -1,6 +1,7 @@
 from slm_lab.agent import net
 from slm_lab.agent.algorithm import policy_util
 from slm_lab.agent.algorithm.actor_critic import ActorCritic
+from slm_lab.agent.algorithm.sarsa import SARSA
 from slm_lab.agent.net import net_util
 from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
@@ -94,10 +95,21 @@ class SoftActorCritic(ActorCritic):
                 action = torch.tanh(action)  # continuous action bound
             return action.cpu().squeeze().numpy()
 
-    def calc_q(self, state, action, net=None):
+    @lab_api
+    def sample(self):
+        # use SARSA's method to get 'next_actions'
+        return SARSA.sample(self)
+
+    def guard_q_actions(self, actions):
+        '''Guard to convert actions to one-hot for input to Q-network'''
+        if self.body.is_discrete:
+            # TODO support multi-discrete actions
+            actions = torch.eye(self.body.action_dim)[actions.long()]
+        return actions
+
+    def calc_q(self, state, action, net):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
-        x = torch.cat((state, action), dim=-1)
-        net = self.q1_net if net is None else net
+        s_a = torch.cat((state, action), dim=-1)
         q_pred = net(x).view(-1)
         return q_pred
 
