@@ -15,6 +15,8 @@ class SoftActorCritic(ActorCritic):
     Implementation of Soft Actor-Critic (SAC)
     Original paper: "Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor"
     https://arxiv.org/abs/1801.01290
+    Improvement of SAC paper: "Soft Actor-Critic Algorithms and Applications"
+    https://arxiv.org/abs/1812.05905
 
     e.g. algorithm_spec
     "algorithm": {
@@ -58,22 +60,20 @@ class SoftActorCritic(ActorCritic):
         # main actor network
         self.net = NetClass(self.net_spec, in_dim, out_dim)
         self.net_names = ['net']
-        # critic network and its target network
+        # two critic Q-networks to mitigate positive bias in q_loss and speed up training
         val_out_dim = 1
-        self.critic_net = NetClass(self.net_spec, in_dim, val_out_dim)
-        self.target_critic_net = NetClass(self.net_spec, in_dim, val_out_dim)
-        self.net_names += ['critic_net', 'target_critic_net']
-        # two Q-networks to mitigate positive bias in q_loss and speed up training
         q_in_dim = in_dim + self.body.action_dim  # NOTE concat s, a for now
         self.q1_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
+        self.target_q1_net = NetClass(self.net_spec, in_dim, val_out_dim)
         self.q2_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
-        self.net_names += ['q1_net', 'q2_net']
+        self.target_q2_net = NetClass(self.net_spec, in_dim, val_out_dim)
+        self.net_names += ['q1_net', 'target_q1_net', 'q2_net', 'target_q2_net']
+        net_util.copy(self.q1_net, self.target_q1_net)
+        net_util.copy(self.q2_net, self.target_q2_net)
 
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
         self.lr_scheduler = net_util.get_lr_scheduler(self.optim, self.net.lr_scheduler_spec)
-        self.critic_optim = net_util.get_optim(self.critic_net, self.critic_net.optim_spec)
-        self.critic_lr_scheduler = net_util.get_lr_scheduler(self.critic_optim, self.critic_net.lr_scheduler_spec)
         self.q1_optim = net_util.get_optim(self.q1_net, self.q1_net.optim_spec)
         self.q1_lr_scheduler = net_util.get_lr_scheduler(self.q1_optim, self.q1_net.lr_scheduler_spec)
         self.q2_optim = net_util.get_optim(self.q2_net, self.q2_net.optim_spec)
