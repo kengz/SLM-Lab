@@ -47,7 +47,6 @@ class SoftActorCritic(ActorCritic):
         ])
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
-        self.alpha = 1.0
 
     @lab_api
     def init_nets(self, global_nets=None):
@@ -66,12 +65,16 @@ class SoftActorCritic(ActorCritic):
         val_out_dim = 1
         q_in_dim = in_dim + self.body.action_dim  # NOTE concat s, a for now
         self.q1_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
-        self.target_q1_net = NetClass(self.net_spec, in_dim, val_out_dim)
+        self.target_q1_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
         self.q2_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
-        self.target_q2_net = NetClass(self.net_spec, in_dim, val_out_dim)
+        self.target_q2_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
         self.net_names += ['q1_net', 'target_q1_net', 'q2_net', 'target_q2_net']
         net_util.copy(self.q1_net, self.target_q1_net)
         net_util.copy(self.q2_net, self.target_q2_net)
+        # temperature variable to be learned, and its target entropy
+        self.log_alpha = torch.zeros(1, requires_grad=True)
+        self.alpha = self.log_alpha.exp()
+        self.target_entropy = - torch.tensor(self.body.action_space.shape).prod()
 
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
@@ -80,6 +83,7 @@ class SoftActorCritic(ActorCritic):
         self.q1_lr_scheduler = net_util.get_lr_scheduler(self.q1_optim, self.q1_net.lr_scheduler_spec)
         self.q2_optim = net_util.get_optim(self.q2_net, self.q2_net.optim_spec)
         self.q2_lr_scheduler = net_util.get_lr_scheduler(self.q2_optim, self.q2_net.lr_scheduler_spec)
+        self.alpha_optim = net_util.get_optim(self.log_alpha, self.net.optim_spec)
         net_util.set_global_nets(self, global_nets)
         self.post_init_nets()
 
@@ -163,11 +167,24 @@ class SoftActorCritic(ActorCritic):
         policy_loss = (self.alpha * log_probs - q_preds).mean()
         return policy_loss
 
+    def calc_alpha_loss(self, action_pd):
+        with torch.no_grad():
+            log_probs, _actions = self.sample_log_probs(action_pd, reparam=False)
+        alpha_loss = - (self.alpha * (log_probs + self.target_entropy)).mean()
+        return alpha_loss
+
     def try_update_per(self, q_preds, q_targets):
         if 'Prioritized' in util.get_class_name(self.body.memory):  # PER
             with torch.no_grad():
                 errors = (q_preds - q_targets).abs().cpu().numpy()
             self.body.memory.update_priorities(errors)
+
+    def train_alpha(self, alpha_loss):
+        '''Custom method to train the alpha variable'''
+        self.alpha_optim.zero_grad()
+        alpha_loss.backward()
+        self.alpha_optim.step()
+        self.alpha = self.log_alpha.exp()
 
     def train(self):
         '''Train actor critic by computing the loss in batch efficiently'''
@@ -201,9 +218,13 @@ class SoftActorCritic(ActorCritic):
                 policy_loss = self.calc_policy_loss(batch, action_pd)
                 self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
 
-                loss = q1_loss + q2_loss + policy_loss
+                # alpha loss
+                alpha_loss = self.calc_alpha_loss(action_pd)
+                self.train_alpha(alpha_loss)
 
-                # update target_critic_net
+                loss = q1_loss + q2_loss + policy_loss + alpha_loss
+
+                # update target networks
                 self.update_nets()
                 # update PER priorities if availalbe
                 self.try_update_per(torch.min(q1_preds, q2_preds), q_targets)
@@ -216,16 +237,18 @@ class SoftActorCritic(ActorCritic):
             return np.nan
 
     def update_nets(self):
-        '''Update target critic net'''
-        if util.frame_mod(self.body.env.clock.frame, self.critic_net.update_frequency, self.body.env.num_envs):
-            if self.critic_net.update_type == 'replace':
-                net_util.copy(self.critic_net, self.target_critic_net)
-            elif self.critic_net.update_type == 'polyak':
-                net_util.polyak_update(self.critic_net, self.target_critic_net, self.critic_net.polyak_coef)
+        '''Update target networks'''
+        if util.frame_mod(self.body.env.clock.frame, self.q1_net.update_frequency, self.body.env.num_envs):
+            if self.q1_net.update_type == 'replace':
+                net_util.copy(self.q1_net, self.target_q1_net)
+                net_util.copy(self.q2_net, self.target_q2_net)
+            elif self.q1_net.update_type == 'polyak':
+                net_util.polyak_update(self.q1_net, self.target_q1_net, self.q1_net.polyak_coef)
+                net_util.polyak_update(self.q2_net, self.target_q2_net, self.q2_net.polyak_coef)
             else:
-                raise ValueError('Unknown critic_net.update_type. Should be "replace" or "polyak". Exiting.')
+                raise ValueError('Unknown q1_net.update_type. Should be "replace" or "polyak". Exiting.')
 
     @lab_api
     def update(self):
-        '''Updates self.target_critic_net and the explore variables'''
+        '''Override parent method to do nothing'''
         return self.body.explore_var

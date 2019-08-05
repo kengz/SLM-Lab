@@ -83,7 +83,10 @@ def get_optim(net, optim_spec):
     '''Helper to parse optim param and construct optim for net'''
     OptimClass = getattr(torch.optim, optim_spec['name'])
     optim_spec = ps.omit(optim_spec, 'name')
-    optim = OptimClass(net.parameters(), **optim_spec)
+    if torch.is_tensor(net):  # for non-net tensor variable
+        optim = OptimClass([net], **optim_spec)
+    else:
+        optim = OptimClass(net.parameters(), **optim_spec)
     return optim
 
 
