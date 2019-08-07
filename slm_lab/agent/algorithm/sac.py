@@ -55,14 +55,13 @@ class SoftActorCritic(ActorCritic):
         All networks are separate, and have the same hidden layer architectures and optim specs, so tuning is minimal
         '''
         self.shared = False  # SAC does not share networks
-        in_dim = self.body.state_dim
-        out_dim = net_util.get_out_dim(self.body)
         NetClass = getattr(net, self.net_spec['type'])
+        out_dim = net_util.get_out_dim(self.body)
         # main actor network
-        self.net = NetClass(self.net_spec, in_dim, out_dim)
+        self.net = NetClass(self.net_spec, self.body.state_dim, out_dim)
         self.net_names = ['net']
         # two critic Q-networks to mitigate positive bias in q_loss and speed up training
-        q_in_dim = in_dim + self.body.action_dim  # NOTE concat s, a for now
+        q_in_dim = self.body.state_dim + self.body.action_dim  # NOTE concat s, a for now
         val_out_dim = 1
         self.q1_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
         self.target_q1_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
@@ -73,7 +72,7 @@ class SoftActorCritic(ActorCritic):
         net_util.copy(self.q2_net, self.target_q2_net)
         # temperature variable to be learned, and its target entropy
         self.log_alpha = torch.zeros(1, requires_grad=True)
-        self.alpha = self.log_alpha.clamp(min=-5, max=5).exp()
+        self.alpha = self.log_alpha.detach().clamp(min=-5, max=5).exp()
         self.target_entropy = - np.product(self.body.action_space.shape)
 
         # init net optimizer and its lr scheduler
@@ -177,7 +176,7 @@ class SoftActorCritic(ActorCritic):
         self.alpha_optim.zero_grad()
         alpha_loss.backward()
         self.alpha_optim.step()
-        self.alpha = self.log_alpha.clamp(min=-5, max=5).exp()
+        self.alpha = self.log_alpha.detach().clamp(min=-5, max=5).exp()
 
     def train(self):
         '''Train actor critic by computing the loss in batch efficiently'''
