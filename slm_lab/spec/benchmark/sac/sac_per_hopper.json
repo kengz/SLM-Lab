@@ -33,7 +33,7 @@
         "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.995,
+        "polyak_coef": 0.005,
         "gpu": false
       }
     }],
