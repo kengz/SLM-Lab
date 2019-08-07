@@ -74,7 +74,7 @@ class SoftActorCritic(ActorCritic):
         # temperature variable to be learned, and its target entropy
         self.log_alpha = torch.zeros(1, requires_grad=True)
         self.alpha = self.log_alpha.clamp(min=-5, max=5).exp()
-        self.target_entropy = - torch.tensor(self.body.action_space.shape).prod()
+        self.target_entropy = - np.product(self.body.action_space.shape)
 
         # init net optimizer and its lr scheduler
         self.optim = net_util.get_optim(self.net, self.net.optim_spec)
