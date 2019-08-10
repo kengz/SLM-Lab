@@ -22,7 +22,7 @@ def test_argmax(pdparam_type):
 ])
 def test_gumbel_categorical(pdparam_type):
     pdparam = torch.tensor([1.1, 10.0, 2.1])
-    pd = distribution.GumbelSoftmax(**{pdparam_type: pdparam})
+    pd = distribution.GumbelSoftmax(**{pdparam_type: pdparam, 'temperature': torch.tensor(1.0)})
     for _ in range(10):
         assert torch.is_tensor(pd.sample())
 
