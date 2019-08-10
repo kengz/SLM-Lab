@@ -127,7 +127,7 @@ class SoftActorCritic(ActorCritic):
                 # paper Appendix C. Enforcing Action Bounds for continuous actions
                 log_probs = (action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6)).sum(1)
             else:
-                log_probs = action_pd.log_prob(actions)
+                log_probs = action_pd.log_prob(actions).sum(1)
         return log_probs, actions
 
     def calc_q(self, state, action, net):
