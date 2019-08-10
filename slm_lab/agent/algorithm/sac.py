@@ -6,7 +6,6 @@ from slm_lab.lib import logger, util
 from slm_lab.lib.decorator import lab_api
 import numpy as np
 import torch
-import torch.nn.functional as F
 
 logger = logger.get_logger(__name__)
 
