@@ -58,17 +58,16 @@ class SoftActorCritic(ActorCritic):
         '''
         self.shared = False  # SAC does not share networks
         NetClass = getattr(net, self.net_spec['type'])
-        out_dim = net_util.get_out_dim(self.body)
         # main actor network
-        self.net = NetClass(self.net_spec, self.body.state_dim, out_dim)
+        self.net = NetClass(self.net_spec, self.body.state_dim, net_util.get_out_dim(self.body))
         self.net_names = ['net']
-        # two critic Q-networks to mitigate positive bias in q_loss and speed up training
-        q_in_dim = self.body.state_dim + self.body.action_dim  # NOTE concat s, a for now
-        val_out_dim = 1
-        self.q1_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
-        self.target_q1_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
-        self.q2_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
-        self.target_q2_net = NetClass(self.net_spec, q_in_dim, val_out_dim)
+        # two critic Q-networks to mitigate positive bias in q_loss and speed up training, uses q_net.py with prefix Q
+        QNetClass = getattr(net, 'Q' + self.net_spec['type'])
+        q_in_dim = [self.body.state_dim, self.body.action_dim]
+        self.q1_net = QNetClass(self.net_spec, q_in_dim, 1)
+        self.target_q1_net = QNetClass(self.net_spec, q_in_dim, 1)
+        self.q2_net = QNetClass(self.net_spec, q_in_dim, 1)
+        self.target_q2_net = QNetClass(self.net_spec, q_in_dim, 1)
         self.net_names += ['q1_net', 'target_q1_net', 'q2_net', 'target_q2_net']
         net_util.copy(self.q1_net, self.target_q1_net)
         net_util.copy(self.q2_net, self.target_q2_net)
@@ -130,8 +129,7 @@ class SoftActorCritic(ActorCritic):
 
     def calc_q(self, state, action, net):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
-        s_a = torch.cat((state, action), dim=-1)
-        q_pred = net(s_a).view(-1)
+        q_pred = net(state, action).view(-1)
         return q_pred
 
     def calc_q_targets(self, batch):
