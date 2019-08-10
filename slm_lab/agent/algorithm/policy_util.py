@@ -12,13 +12,13 @@ logger = logger.get_logger(__name__)
 
 # register custom distributions
 setattr(distributions, 'Argmax', distribution.Argmax)
-setattr(distributions, 'GumbelCategorical', distribution.GumbelCategorical)
+setattr(distributions, 'GumbelSoftmax', distribution.GumbelSoftmax)
 setattr(distributions, 'MultiCategorical', distribution.MultiCategorical)
 # probability distributions constraints for different action types; the first in the list is the default
 ACTION_PDS = {
     'continuous': ['Normal', 'Beta', 'Gumbel', 'LogNormal'],
     'multi_continuous': ['Normal', 'MultivariateNormal'],
-    'discrete': ['Categorical', 'Argmax', 'GumbelCategorical', 'RelaxedOneHotCategorical'],
+    'discrete': ['Categorical', 'Argmax', 'GumbelSoftmax'],
     'multi_discrete': ['MultiCategorical'],
     'multi_binary': ['Bernoulli'],
 }
