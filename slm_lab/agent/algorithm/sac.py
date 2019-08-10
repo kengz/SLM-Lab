@@ -44,6 +44,7 @@ class SoftActorCritic(ActorCritic):
             'gamma',  # the discount factor
             'training_iter',
             'training_frequency',
+            'training_start_step',
         ])
         if self.body.is_discrete:
             assert self.action_pdtype == 'GumbelSoftmax'
