@@ -96,7 +96,7 @@ class SoftActorCritic(ActorCritic):
         else:
             action = self.action_policy(state, self, self.body)
             if self.body.is_discrete:
-                # discrete output is RelaxedOneHotCategorical, need to sample to int
+                # GumbelSoftmax output is simplex, need to sample to int
                 action = torch.distributions.Categorical(probs=action).sample()
             else:
                 action = self.scale_action(torch.tanh(action))  # continuous action bound
