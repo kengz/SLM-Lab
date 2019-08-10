@@ -96,7 +96,7 @@ def init_action_pd(ActionPD, pdparam):
     args = ActionPD.arg_constraints
     if 'logits' in args:  # discrete
         # for relaxed discrete dist. with reparametrizable discrete actions
-        pd_kwargs = {'temperature': torch.tensor(0.1)} if hasattr(ActionPD, 'temperature') else {}
+        pd_kwargs = {'temperature': torch.tensor(1.0)} if hasattr(ActionPD, 'temperature') else {}
         action_pd = ActionPD(logits=pdparam, **pd_kwargs)
     else:  # continuous, args = loc and scale
         if isinstance(pdparam, list):  # split output
