@@ -60,8 +60,8 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 500,
-      "eval_frequency": 500,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1,
