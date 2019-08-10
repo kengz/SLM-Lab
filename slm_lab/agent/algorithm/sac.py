@@ -45,6 +45,8 @@ class SoftActorCritic(ActorCritic):
             'training_iter',
             'training_frequency',
         ])
+        if self.body.is_discrete:
+            assert self.action_pdtype == 'GumbelSoftmax'
         self.to_train = 0
         self.action_policy = getattr(policy_util, self.action_policy)
 
@@ -113,23 +115,27 @@ class SoftActorCritic(ActorCritic):
             actions = F.one_hot(actions.long(), self.body.action_dim).float()
         return actions
 
+    def calc_log_prob_action(self, action_pd, reparam=False):
+        '''Calculate log_probs and actions with option to reparametrize from paper eq. 11'''
+        samples = action_pd.rsample() if reparam else action_pd.sample()
+        if self.body.is_discrete:  # this is straightforward using GumbelSoftmax
+            actions = samples
+            log_probs = action_pd.log_prob(actions)
+        else:
+            mus = samples
+            actions = self.scale_action(torch.tanh(mus))
+            if reparam:
+                # paper Appendix C. Enforcing Action Bounds for continuous actions
+                log_probs = (action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6)).sum(1)
+            else:
+                log_probs = action_pd.log_prob(actions)
+        return log_probs, actions
+
     def calc_q(self, state, action, net):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
         s_a = torch.cat((state, action), dim=-1)
         q_pred = net(s_a).view(-1)
         return q_pred
-
-    def reparam_log_probs(self, action_pd):
-        '''Calculate reparametrized actions (reparametrization from paper eq. 11) and their log probs'''
-        if self.body.is_discrete:
-            actions = action_pd.rsample()
-            log_probs = action_pd.log_prob(actions)
-        else:
-            mus = action_pd.rsample()
-            actions = self.scale_action(torch.tanh(mus))
-            # paper Appendix C. Enforcing Action Bounds for continuous actions
-            log_probs = (action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6)).sum(1)
-        return log_probs, actions
 
     def calc_q_targets(self, batch):
         '''Q_tar = r + gamma * (target_Q(s', a') - alpha * log pi(a'|s'))'''
@@ -137,7 +143,7 @@ class SoftActorCritic(ActorCritic):
         with torch.no_grad():
             pdparams = self.calc_pdparam(next_states)
             action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
-            next_log_probs, next_actions = self.reparam_log_probs(action_pd)
+            next_log_probs, next_actions = self.calc_log_prob_action(action_pd)
 
             next_target_q1_preds = self.calc_q(next_states, next_actions, self.target_q1_net)
             next_target_q2_preds = self.calc_q(next_states, next_actions, self.target_q2_net)
@@ -202,7 +208,7 @@ class SoftActorCritic(ActorCritic):
 
                 # policy loss
                 action_pd = policy_util.init_action_pd(self.body.ActionPD, self.calc_pdparam(states))
-                log_probs, reparam_actions = self.reparam_log_probs(action_pd)
+                log_probs, reparam_actions = self.calc_log_prob_action(action_pd, reparam=True)
                 policy_loss = self.calc_policy_loss(batch, log_probs, reparam_actions)
                 self.net.train_step(policy_loss, self.optim, self.lr_scheduler, clock=clock, global_net=self.global_net)
 

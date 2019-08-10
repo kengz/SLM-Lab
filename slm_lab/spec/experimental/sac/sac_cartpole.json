@@ -4,7 +4,7 @@
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
-        "action_pdtype": "RelaxedOneHotCategorical",
+        "action_pdtype": "GumbelSoftmax",
         "action_policy": "default",
         "gamma": 0.99,
         "training_frequency": 1
@@ -26,7 +26,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 3e-4
+          "lr": 0.005
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",

@@ -4,7 +4,7 @@
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
-        "action_pdtype": "RelaxedOneHotCategorical",
+        "action_pdtype": "GumbelSoftmax",
         "action_policy": "default",
         "gamma": 0.99,
         "training_frequency": 1
