@@ -1,5 +1,5 @@
 {
-  "sac_per_hopper": {
+  "sac_per_halfcheetah": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
@@ -38,7 +38,7 @@
       }
     }],
     "env": [{
-      "name": "RoboschoolHopper-v1",
+      "name": "RoboschoolHalfCheetah-v1",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 1e6
