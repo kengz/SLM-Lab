@@ -17,7 +17,7 @@ setattr(distributions, 'MultiCategorical', distribution.MultiCategorical)
 # probability distributions constraints for different action types; the first in the list is the default
 ACTION_PDS = {
     'continuous': ['Normal', 'Beta', 'Gumbel', 'LogNormal'],
-    'multi_continuous': ['Normal', 'MultivariateNormal'],
+    'multi_continuous': ['MultivariateNormal'],
     'discrete': ['Categorical', 'Argmax', 'GumbelSoftmax'],
     'multi_discrete': ['MultiCategorical'],
     'multi_binary': ['Bernoulli'],
