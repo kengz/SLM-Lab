@@ -12,13 +12,13 @@ logger = logger.get_logger(__name__)
 
 # register custom distributions
 setattr(distributions, 'Argmax', distribution.Argmax)
-setattr(distributions, 'GumbelCategorical', distribution.GumbelCategorical)
+setattr(distributions, 'GumbelSoftmax', distribution.GumbelSoftmax)
 setattr(distributions, 'MultiCategorical', distribution.MultiCategorical)
 # probability distributions constraints for different action types; the first in the list is the default
 ACTION_PDS = {
     'continuous': ['Normal', 'Beta', 'Gumbel', 'LogNormal'],
     'multi_continuous': ['MultivariateNormal'],
-    'discrete': ['Categorical', 'Argmax', 'GumbelCategorical', 'RelaxedOneHotCategorical'],
+    'discrete': ['Categorical', 'Argmax', 'GumbelSoftmax'],
     'multi_discrete': ['MultiCategorical'],
     'multi_binary': ['Bernoulli'],
 }
@@ -93,7 +93,8 @@ def init_action_pd(ActionPD, pdparam):
     - discrete: action_pd = ActionPD(logits)
     - continuous: action_pd = ActionPD(loc, scale)
     '''
-    if 'logits' in ActionPD.arg_constraints:  # discrete
+    args = ActionPD.arg_constraints
+    if 'logits' in args:  # discrete
         # for relaxed discrete dist. with reparametrizable discrete actions
         pd_kwargs = {'temperature': torch.tensor(1.0)} if hasattr(ActionPD, 'temperature') else {}
         action_pd = ActionPD(logits=pdparam, **pd_kwargs)
@@ -104,7 +105,7 @@ def init_action_pd(ActionPD, pdparam):
             loc, scale = pdparam.transpose(0, 1)
         # scale (stdev) must be > 0, log-clamp-exp
         scale = torch.clamp(scale, min=-20, max=2).exp()
-        if isinstance(pdparam, list):  # split output
+        if 'covariance_matrix' in args:  # split output
             # construct covars from a batched scale tensor
             covars = torch.diag_embed(scale)
             action_pd = ActionPD(loc=loc, covariance_matrix=covars)

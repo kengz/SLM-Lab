@@ -1,46 +1,58 @@
 {
-  "sac_hopper": {
+  "sac_pong": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
-        "action_pdtype": "default",
+        "action_pdtype": "GumbelSoftmax",
         "action_policy": "default",
         "gamma": 0.99,
-        "training_frequency": 1
+        "training_start_step": 10000,
+        "training_frequency": 4
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
-        "max_size": 1000000,
+        "batch_size": 64,
+        "max_size": 100000,
         "use_cer": true
       },
       "net": {
-        "type": "MLPNet",
-        "hid_layers": [256, 256],
+        "type": "ConvNet",
+        "shared": false,
+        "conv_hid_layers": [
+          [32, 8, 4, 0, 1],
+          [64, 4, 2, 0, 1],
+          [32, 3, 1, 0, 1]
+        ],
+        "fc_hid_layers": [512],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
+        "normalize": true,
+        "batch_norm": false,
         "clip_grad_val": 0.5,
+        "use_same_optim": false,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 1e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.995,
-        "gpu": false
+        "polyak_coef": 0.005,
+        "gpu": true
       }
     }],
     "env": [{
-      "name": "RoboschoolHopper-v1",
-      "reward_scale": 5,
-      "num_envs": 8,
+      "name": "PongNoFrameskip-v4",
+      "frame_op": "concat",
+      "frame_op_len": 4,
+      "reward_scale": "sign",
+      "num_envs": 16,
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 1e5
     }],
     "body": {
       "product": "outer",

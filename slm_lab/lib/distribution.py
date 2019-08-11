@@ -2,6 +2,7 @@
 # Mainly used by policy_util action distribution
 from torch import distributions
 import torch
+import torch.nn.functional as F
 
 
 class Argmax(distributions.Categorical):
@@ -23,18 +24,28 @@ class Argmax(distributions.Categorical):
         super().__init__(probs=probs, logits=logits, validate_args=validate_args)
 
 
-class GumbelCategorical(distributions.Categorical):
+class GumbelSoftmax(distributions.RelaxedOneHotCategorical):
     '''
-    Special Categorical using Gumbel distribution to simulate softmax categorical for discrete action.
-    Similar to OpenAI's https://github.com/openai/baselines/blob/98257ef8c9bd23a24a330731ae54ed086d9ce4a7/baselines/a2c/utils.py#L8-L10
+    A differentiable Categorical distribution using reparametrization trick with Gumbel-Softmax
     Explanation http://amid.fish/assets/gumbel.html
+    NOTE: use this in place PyTorch's RelaxedOneHotCategorical distribution since its log_prob is not working right (returns positive values)
+    Papers:
+    [1] The Concrete Distribution: A Continuous Relaxation of Discrete Random Variables (Maddison et al, 2017)
+    [2] Categorical Reparametrization with Gumbel-Softmax (Jang et al, 2017)
     '''
 
     def sample(self, sample_shape=torch.Size()):
-        '''Gumbel softmax sampling'''
+        '''Gumbel-softmax sampling. Note rsample is inherited from RelaxedOneHotCategorical'''
         u = torch.empty(self.logits.size(), device=self.logits.device, dtype=self.logits.dtype).uniform_(0, 1)
         noisy_logits = self.logits - torch.log(-torch.log(u))
-        return torch.argmax(noisy_logits, dim=0)
+        return torch.argmax(noisy_logits, dim=-1)
+
+    def log_prob(self, value):
+        '''value is one-hot or relaxed'''
+        if value.shape != self.logits.shape:
+            value = F.one_hot(value.long(), self.logits.shape[-1]).float()
+            assert value.shape == self.logits.shape
+        return - torch.sum(- value * F.log_softmax(self.logits, -1), -1)
 
 
 class MultiCategorical(distributions.Categorical):

@@ -1,10 +1,10 @@
 {
-  "sac_lunar": {
+  "sac_halfcheetah": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
         "name": "SoftActorCritic",
-        "action_pdtype": "GumbelSoftmax",
+        "action_pdtype": "default",
         "action_policy": "default",
         "gamma": 0.99,
         "training_frequency": 1
@@ -12,12 +12,12 @@
       "memory": {
         "name": "Replay",
         "batch_size": 256,
-        "max_size": 100000,
+        "max_size": 1000000,
         "use_cer": true
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [64, 64, 32],
+        "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
@@ -26,7 +26,7 @@
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 0.005
+          "lr": 3e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -36,13 +36,10 @@
       }
     }],
     "env": [{
-      "name": "LunarLander-v2",
-      "frame_op": "concat",
-      "frame_op_len": 4,
-      "max_t": null,
-      "max_frame": 200000,
+      "name": "RoboschoolHalfCheetah-v1",
       "num_envs": 8,
-      "normalize_state": false
+      "max_t": null,
+      "max_frame": 1e6
     }],
     "body": {
       "product": "outer",
@@ -50,8 +47,8 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 500,
-      "eval_frequency": 500,
+      "log_frequency": 1000,
+      "eval_frequency": 1000,
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1,

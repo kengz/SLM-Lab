@@ -32,8 +32,9 @@ class Net(ABC):
         raise NotImplementedError
 
     @net_util.dev_check_train_step
-    def train_step(self, loss, optim, lr_scheduler, clock, global_net=None):
-        lr_scheduler.step(epoch=ps.get(clock, 'frame'))
+    def train_step(self, loss, optim, lr_scheduler=None, clock=None, global_net=None):
+        if lr_scheduler is not None:
+            lr_scheduler.step(epoch=ps.get(clock, 'frame'))
         optim.zero_grad()
         loss.backward()
         if self.clip_grad_val is not None:
@@ -43,7 +44,8 @@ class Net(ABC):
         optim.step()
         if global_net is not None:
             net_util.copy(global_net, self)
-        clock.tick('opt_step')
+        if clock is not None:
+            clock.tick('opt_step')
         return loss
 
     def store_grad_norms(self):

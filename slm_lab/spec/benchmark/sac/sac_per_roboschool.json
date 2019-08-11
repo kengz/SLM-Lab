@@ -33,13 +33,12 @@
         "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.995,
+        "polyak_coef": 0.005,
         "gpu": false
       }
     }],
     "env": [{
       "name": "${env}",
-      "reward_scale": 5,
       "num_envs": 8,
       "max_t": null,
       "max_frame": 1e6
