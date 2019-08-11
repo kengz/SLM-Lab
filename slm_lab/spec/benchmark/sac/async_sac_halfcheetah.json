@@ -46,7 +46,7 @@
       "num": 1
     },
     "meta": {
-      "distributed": "shared",
+      "distributed": "synced",
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
