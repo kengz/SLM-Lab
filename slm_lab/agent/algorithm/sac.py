@@ -95,10 +95,7 @@ class SoftActorCritic(ActorCritic):
             return policy_util.random(state, self, self.body).cpu().squeeze().numpy()
         else:
             action = self.action_policy(state, self, self.body)
-            if self.body.is_discrete:
-                # GumbelSoftmax output is simplex, need to sample to int
-                action = torch.distributions.Categorical(probs=action).sample()
-            else:
+            if not self.body.is_discrete:
                 action = self.scale_action(torch.tanh(action))  # continuous action bound
             return action.cpu().squeeze().numpy()
 
@@ -140,6 +137,7 @@ class SoftActorCritic(ActorCritic):
             pdparams = self.calc_pdparam(next_states)
             action_pd = policy_util.init_action_pd(self.body.ActionPD, pdparams)
             next_log_probs, next_actions = self.calc_log_prob_action(action_pd)
+            next_actions = self.guard_q_actions(next_actions)  # non-reparam discrete actions need to be converted into one-hot
 
             next_target_q1_preds = self.calc_q(next_states, next_actions, self.target_q1_net)
             next_target_q2_preds = self.calc_q(next_states, next_actions, self.target_q2_net)
