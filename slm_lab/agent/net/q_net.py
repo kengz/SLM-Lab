@@ -104,10 +104,11 @@ class QConvNet(ConvNet):
         # fc bodies
         self.state_fc_model = net_util.build_fc_model([self.conv_out_dim] + self.fc_hid_layers, self.hid_layers_activation)
         # use one-to-one fc for action
-        self.action_fc_model = net_util.build_fc_model([action_dim, action_dim], self.hid_layers_activation)
+        action_fc_hid_layers = [8 * action_dim, 8 * action_dim]
+        self.action_fc_model = net_util.build_fc_model([action_dim] + action_fc_hid_layers, self.hid_layers_activation)
 
-        # fc and action_fc to be concatenated
-        tail_in_dim = self.fc_hid_layers[-1] + action_dim
+        # state_fc and action_fc to be concatenated
+        tail_in_dim = self.fc_hid_layers[-1] + action_fc_hid_layers[-1]
         self.model_tail = net_util.build_fc_model([tail_in_dim, self.out_dim], self.out_layer_activation)
 
         net_util.init_layers(self, self.init_fn)
