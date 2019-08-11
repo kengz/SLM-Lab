@@ -12,7 +12,7 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 256,
+        "batch_size": 64,
         "max_size": 100000,
         "use_cer": true
       },
