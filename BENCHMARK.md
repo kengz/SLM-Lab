@@ -47,10 +47,10 @@ The specs for these are contained in the [`slm_lab/spec/benchmark`](https://gith
 
 | Env. \ Alg. | A2C (GAE) | A2C (n-step) | PPO | SAC |
 |:---|---|---|---|---|
-| RoboschoolAnt | | | | 2451.55 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62837485-daf75e80-bc24-11e9-8fba-279802ccdd1d.png"></details> |
-| RoboschoolHalfCheetah | | | | 2004.27 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62837491-e8144d80-bc24-11e9-9d06-27a35b4aacca.png"></details> |
-| RoboschoolHopper | | | | 2090.52 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62837495-f2364c00-bc24-11e9-8bdc-fa88831c227b.png"></details> |
-| RoboschoolWalker2d | | | | 1711.92 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62837481-c1eead80-bc24-11e9-913e-7685d64ecf87.png"></details> |
+| RoboschoolAnt | | | | 2451.55 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62837481-c1eead80-bc24-11e9-913e-7685d64ecf87.png"></details> |
+| RoboschoolHalfCheetah | | | | 2004.27 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62837485-daf75e80-bc24-11e9-8fba-279802ccdd1d.png"></details> |
+| RoboschoolHopper | | | | 2090.52 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62837491-e8144d80-bc24-11e9-9d06-27a35b4aacca.png"></details> |
+| RoboschoolWalker2d | | | | 1711.92 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/62837495-f2364c00-bc24-11e9-8bdc-fa88831c227b.png"></details> |
 
 
 ### Classic Benchmark
