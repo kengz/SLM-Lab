@@ -34,7 +34,17 @@ class GumbelSoftmax(distributions.RelaxedOneHotCategorical):
     [2] Categorical Reparametrization with Gumbel-Softmax (Jang et al, 2017)
     '''
 
+    def sample(self, sample_shape=torch.Size()):
+        '''Gumbel-softmax sampling. Note rsample is inherited from RelaxedOneHotCategorical'''
+        u = torch.empty(self.logits.size(), device=self.logits.device, dtype=self.logits.dtype).uniform_(0, 1)
+        noisy_logits = self.logits - torch.log(-torch.log(u))
+        return torch.argmax(noisy_logits, dim=-1)
+
     def log_prob(self, value):
+        '''value is one-hot or relaxed'''
+        if value.shape != self.logits.shape:
+            value = F.one_hot(value.long(), self.logits.shape[-1]).float()
+            assert value.shape == self.logits.shape
         return - torch.sum(- value * F.log_softmax(self.logits, -1), -1)
 
 
