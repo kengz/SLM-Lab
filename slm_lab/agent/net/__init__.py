@@ -4,3 +4,4 @@ from slm_lab.agent.net.conv import *
 from slm_lab.agent.net.mlp import *
 from slm_lab.agent.net.recurrent import *
 from slm_lab.agent.net.q_net import *
+from slm_lab.agent.net.scn import *
