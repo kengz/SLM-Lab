@@ -47,7 +47,7 @@ def _retro_analyze_trial(trial_spec_path):
 def retro_analyze_experiment(predir):
     '''Retro analyze an experiment'''
     logger.info('Running retro_analyze_experiment')
-    if ps.is_empty(glob(f'{predir}/*_trial_data_dict.json')):
+    if ps.is_empty(glob(f'{predir}/info/*_trial_data_dict.json')):
         logger.info('Skipping retro_analyze_experiment since no experiment was ran.')
         return  # only run analysis if experiment had been ran
     trial_spec_paths = glob(f'{predir}/*_t*_spec.json')
