@@ -58,7 +58,8 @@ class SoftActorCritic(ActorCritic):
         All networks are separate, and have the same hidden layer architectures and optim specs, so tuning is minimal
         '''
         self.shared = False  # SAC does not share networks
-        NetClass = getattr(net, self.net_spec['type'])
+        # NetClass = getattr(net, self.net_spec['type'])
+        NetClass = getattr(net, 'SCNMLPNet')
         # main actor network
         self.net = NetClass(self.net_spec, self.body.state_dim, net_util.get_out_dim(self.body))
         self.net_names = ['net']
