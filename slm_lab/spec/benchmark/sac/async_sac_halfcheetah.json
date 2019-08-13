@@ -26,7 +26,7 @@
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 3e-4,
+          "lr": 1e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
