@@ -37,7 +37,6 @@
         "hid_layers": [64, 64],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
@@ -45,11 +44,11 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 7e-4,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 7e-4,
         },
         "lr_scheduler_spec": null,
         "gpu": false
@@ -59,7 +58,7 @@
       "name": "${env}",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 2e6
     }],
     "body": {
       "product": "outer",
