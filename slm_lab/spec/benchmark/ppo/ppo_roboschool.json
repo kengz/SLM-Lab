@@ -35,7 +35,7 @@
         "type": "MLPNet",
         "shared": false,
         "hid_layers": [64, 64],
-        "hid_layers_activation": "tanh",
+        "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "batch_norm": false,
         "clip_grad_val": 0.5,
