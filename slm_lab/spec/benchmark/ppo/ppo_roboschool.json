@@ -23,7 +23,7 @@
           "start_step": 0,
           "end_step": 0
         },
-        "val_loss_coef": 0.5,
+        "val_loss_coef": 1.0,
         "time_horizon": 2048,
         "minibatch_size": 64,
         "training_epoch": 10
@@ -37,7 +37,6 @@
         "hid_layers": [64, 64],
         "hid_layers_activation": "tanh",
         "init_fn": "orthogonal_",
-        "normalize": false,
         "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
@@ -58,7 +57,7 @@
     }],
     "env": [{
       "name": "${env}",
-      "num_envs": 32,
+      "num_envs": 8,
       "max_t": null,
       "max_frame": 1e6
     }],
