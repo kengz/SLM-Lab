@@ -54,7 +54,7 @@
       "max_trial": 1,
     }
   },
-  "sac_hopper": {
+  "sac_walker2d": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
@@ -91,7 +91,7 @@
       }
     }],
     "env": [{
-      "name": "RoboschoolHopper-v1",
+      "name": "RoboschoolWalker2d-v1",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 1e6
