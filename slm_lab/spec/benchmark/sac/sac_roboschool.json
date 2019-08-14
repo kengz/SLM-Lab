@@ -115,7 +115,7 @@
     },
     "spec_params": {
       "env": [
-        "RoboschoolHumanoid-v0", "RoboschoolHumanoidFlagrun-v0", "RoboschoolHumanoidFlagrunHarder-v0"
+        "RoboschoolHumanoid-v1", "RoboschoolHumanoidFlagrun-v1", "RoboschoolHumanoidFlagrunHarder-v1"
       ]
     }
   }
