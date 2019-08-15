@@ -72,7 +72,7 @@
       },
       "net": {
         "type": "MLPNet",
-        "hid_layers": [256, 256],
+        "hid_layers": [32, 32],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
         "clip_grad_val": 0.5,
