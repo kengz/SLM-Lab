@@ -18,7 +18,7 @@
           "end_step": 0
         },
         "val_loss_coef": 1.0,
-        "training_frequency": 16
+        "training_frequency": 32
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -26,10 +26,10 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [256, 256],
+        "hid_layers": [64, 64],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "clip_grad_val": 2.0,
+        "clip_grad_val": 1.0,
         "use_same_optim": false,
         "loss_spec": {
           "name": "MSELoss"
