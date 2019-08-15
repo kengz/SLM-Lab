@@ -9,7 +9,7 @@
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": null,
-        "num_step_returns": 5,
+        "num_step_returns": 7,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.0,
@@ -35,11 +35,11 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "RMSprop",
+          "name": "Adam",
           "lr": 7e-4,
         },
         "critic_optim_spec": {
-          "name": "RMSprop",
+          "name": "Adam",
           "lr": 7e-4,
         },
         "lr_scheduler_spec": null,
