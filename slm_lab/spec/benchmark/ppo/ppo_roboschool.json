@@ -25,7 +25,7 @@
         },
         "val_loss_coef": 1.0,
         "time_horizon": 2048,
-        "minibatch_size": 64,
+        "minibatch_size": 128,
         "training_epoch": 10
       },
       "memory": {
