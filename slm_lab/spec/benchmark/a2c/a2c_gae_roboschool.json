@@ -48,7 +48,7 @@
     }],
     "env": [{
       "name": "${env}",
-      "num_envs": 8,
+      "num_envs": 4,
       "max_t": null,
       "max_frame": 2e6
     }],
