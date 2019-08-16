@@ -39,7 +39,7 @@
       "name": "${env}",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 2e6
     }],
     "body": {
       "product": "outer",
