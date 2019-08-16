@@ -9,7 +9,7 @@
         "explore_var_spec": null,
         "gamma": 0.99,
         "lam": null,
-        "num_step_returns": 11,
+        "num_step_returns": 5,
         "entropy_coef_spec": {
           "name": "no_decay",
           "start_val": 0.0,
@@ -18,7 +18,7 @@
           "end_step": 0
         },
         "val_loss_coef": 1.0,
-        "training_frequency": 64
+        "training_frequency": 48
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -36,11 +36,11 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 1e-4,
+          "lr": 2.5e-4,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 1e-4,
+          "lr": 2.5e-4,
         },
         "lr_scheduler_spec": null,
         "gpu": false
@@ -48,7 +48,7 @@
     }],
     "env": [{
       "name": "${env}",
-      "num_envs": 16,
+      "num_envs": 8,
       "max_t": null,
       "max_frame": 2e6
     }],
