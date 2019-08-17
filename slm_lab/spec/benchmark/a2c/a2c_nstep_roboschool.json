@@ -29,18 +29,18 @@
         "hid_layers": [128, 128],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "clip_grad_val": 1.0,
+        "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
           "name": "MSELoss"
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 1e-4,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 1e-4,
         },
         "lr_scheduler_spec": null,
         "gpu": false

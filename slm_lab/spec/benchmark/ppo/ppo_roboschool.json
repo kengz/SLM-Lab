@@ -37,7 +37,7 @@
         "hid_layers": [128, 128],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "clip_grad_val": 1.0,
+        "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
           "name": "MSELoss"
