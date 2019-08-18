@@ -1,5 +1,5 @@
 {
-  "async_sac_hopper": {
+  "sac_halfcheetah": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
@@ -31,13 +31,12 @@
         "lr_scheduler_spec": null,
         "update_type": "polyak",
         "update_frequency": 1,
-        "polyak_coef": 0.995,
+        "polyak_coef": 0.005,
         "gpu": false
       }
     }],
     "env": [{
-      "name": "RoboschoolHopper-v1",
-      "reward_scale": 5,
+      "name": "RoboschoolHalfCheetah-v1",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 1e6
