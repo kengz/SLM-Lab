@@ -23,10 +23,10 @@
           "start_step": 0,
           "end_step": 0
         },
-        "val_loss_coef": 0.5,
-        "time_horizon": 512,
-        "minibatch_size": 4096,
-        "training_epoch": 15
+        "val_loss_coef": 1.0,
+        "time_horizon": 2048,
+        "minibatch_size": 128,
+        "training_epoch": 10
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -34,11 +34,9 @@
       "net": {
         "type": "MLPNet",
         "shared": false,
-        "hid_layers": [64, 64],
-        "hid_layers_activation": "tanh",
+        "hid_layers": [256, 256],
+        "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "normalize": false,
-        "batch_norm": false,
         "clip_grad_val": 0.5,
         "use_same_optim": false,
         "loss_spec": {
@@ -46,11 +44,11 @@
         },
         "actor_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 7e-4,
         },
         "critic_optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 7e-4,
         },
         "lr_scheduler_spec": null,
         "gpu": false
@@ -58,9 +56,9 @@
     }],
     "env": [{
       "name": "${env}",
-      "num_envs": 32,
+      "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 2e6
     }],
     "body": {
       "product": "outer",
