@@ -54,11 +54,11 @@
       "max_trial": 1,
     },
     "search": {
-      "meta": [{
+      "meta": {
         "max_session__grid_search": [2, 4, 8],
         "distributed__grid_search": ["synced", "shared"]
         }
-      }]
+      }
     }
   }
 }
