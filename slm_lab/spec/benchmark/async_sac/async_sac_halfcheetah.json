@@ -55,7 +55,7 @@
     },
     "search": {
       "meta": {
-        "max_session__grid_search": [4, 8, 16],
+        "max_session__grid_search": [4, 6, 8, 16],
         "distributed__grid_search": ["synced", "shared"]
       }
     }
