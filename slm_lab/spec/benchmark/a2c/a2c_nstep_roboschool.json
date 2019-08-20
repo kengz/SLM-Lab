@@ -36,11 +36,11 @@
         },
         "actor_optim_spec": {
           "name": "RAdam",
-          "lr": 1e-4,
+          "lr": 3e-4,
         },
         "critic_optim_spec": {
           "name": "RAdam",
-          "lr": 1e-4,
+          "lr": 3e-4,
         },
         "lr_scheduler_spec": null,
         "gpu": false
