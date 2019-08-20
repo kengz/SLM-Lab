@@ -25,8 +25,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "RAdam",
-          "lr": 3e-4,
+          "name": "Adam",
+          "lr": 7e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
