@@ -1,4 +1,5 @@
 # Custom PyTorch optimizer classes, to be registered in net_util.py
+from torch.optim.optimizer import Optimizer
 import math
 import torch
 
@@ -102,8 +103,7 @@ class GlobalRMSprop(torch.optim.RMSprop):
         return loss
 
 
-class RAdam(torch.optim.optimizer.Optimizer):
-
+class RAdam(Optimizer):
     '''
     RAdam optimizer which stabilizes training vs. different learning rates.
     paper: On the Variance of the Adaptive Learning Rate and Beyond https://arxiv.org/abs/1908.03265
