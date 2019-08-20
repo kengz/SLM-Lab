@@ -1,5 +1,5 @@
 {
-  "sac_halfcheetah": {
+  "async_sac_halfcheetah": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
@@ -20,13 +20,13 @@
         "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "clip_grad_val": 0.5,
+        "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 3e-4,
+          "lr": 1e-4,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -39,19 +39,25 @@
       "name": "RoboschoolHalfCheetah-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 4e6
     }],
     "body": {
       "product": "outer",
       "num": 1
     },
     "meta": {
-      "distributed": "shared",
+      "distributed": "synced",
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 4,
+      "max_session": 8,
       "max_trial": 1,
+    },
+    "search": {
+      "meta": {
+        "max_session__grid_search": [4, 8, 16],
+        "distributed__grid_search": ["synced", "shared"]
+      }
     }
   }
 }
