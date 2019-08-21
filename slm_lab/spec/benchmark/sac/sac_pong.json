@@ -12,8 +12,8 @@
       },
       "memory": {
         "name": "Replay",
-        "batch_size": 64,
-        "max_size": 100000,
+        "batch_size": 256,
+        "max_size": 200000,
         "use_cer": true
       },
       "net": {
@@ -35,7 +35,7 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "Adam",
+          "name": "RAdam",
           "lr": 1e-4,
         },
         "lr_scheduler_spec": null,
@@ -50,7 +50,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "reward_scale": "sign",
-      "num_envs": 16,
+      "num_envs": 8,
       "max_t": null,
       "max_frame": 1e5
     }],
