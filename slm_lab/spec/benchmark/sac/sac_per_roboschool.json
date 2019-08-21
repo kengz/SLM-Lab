@@ -14,7 +14,7 @@
         "alpha": 0.6,
         "epsilon": 0.0001,
         "batch_size": 256,
-        "max_size": 200000,
+        "max_size": 1000000,
         "use_cer": true
       },
       "net": {
@@ -22,13 +22,13 @@
         "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "clip_grad_val": 0.5,
+        "clip_grad_val": 1.0,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
           "name": "Adam",
-          "lr": 3e-4,
+          "lr": 1e-3,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -41,7 +41,7 @@
       "name": "${env}",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e6
+      "max_frame": 2e6
     }],
     "body": {
       "product": "outer",
