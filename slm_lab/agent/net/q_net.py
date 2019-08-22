@@ -98,17 +98,21 @@ class QConvNet(ConvNet):
             'polyak_coef',
             'gpu',
         ])
+        # state conv model
         self.conv_model = self.build_conv_layers(self.conv_hid_layers)
         self.conv_out_dim = self.get_conv_output_size()
 
-        # fc bodies
-        self.state_fc_model = net_util.build_fc_model([self.conv_out_dim] + self.fc_hid_layers, self.hid_layers_activation)
-        # use one-to-one fc for action
-        action_fc_hid_layers = [8 * action_dim, 8 * action_dim]
-        self.action_fc_model = net_util.build_fc_model([action_dim] + action_fc_hid_layers, self.hid_layers_activation)
+        # action fc model
+        action_layer_size = int(self.fc_hid_layers[-1] / 4)
+        action_hid_layers = [action_layer_size, action_layer_size]
+        self.action_model = net_util.build_fc_model([action_dim] + action_hid_layers, self.hid_layers_activation)
 
-        # state_fc and action_fc to be concatenated
-        tail_in_dim = self.fc_hid_layers[-1] + action_fc_hid_layers[-1]
+        # concat state and action outputs for fc model
+        fc_in_dim = self.conv_out_dim + action_hid_layers[-1]
+        self.fc_model = net_util.build_fc_model([fc_in_dim] + self.fc_hid_layers, self.hid_layers_activation)
+
+        # tail
+        tail_in_dim = self.fc_hid_layers[-1]
         self.model_tail = net_util.build_fc_model([tail_in_dim, self.out_dim], self.out_layer_activation)
 
         net_util.init_layers(self, self.init_fn)
@@ -121,7 +125,7 @@ class QConvNet(ConvNet):
             state = state / 255.0
         state = self.conv_model(state)
         state = state.view(state.size(0), -1)  # to (batch_size, -1)
-        state = self.state_fc_model(state)
-        action = self.action_fc_model(action)
+        action = self.action_model(action)
         s_a = torch.cat((state, action), dim=-1)
+        s_a = self.fc_model(s_a)
         return self.model_tail(s_a)
