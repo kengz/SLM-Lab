@@ -54,9 +54,11 @@
       "max_trial": 1,
     },
     "search": {
+      "env": [{
+        "num_envs__grid_search": [4, 6, 8, 10]
+      }],
       "meta": {
-        "max_session__grid_search": [4, 6, 8, 16],
-        "distributed__grid_search": ["synced", "shared"]
+        "max_session__grid_search": [4, 6, 8, 10]
       }
     }
   }
