@@ -1,5 +1,5 @@
 {
-  "async_sac_halfcheetah": {
+  "async_sac_roboschool": {
     "agent": [{
       "name": "SoftActorCritic",
       "algorithm": {
@@ -36,7 +36,7 @@
       }
     }],
     "env": [{
-      "name": "RoboschoolHalfCheetah-v1",
+      "name": "${env}",
       "num_envs": 8,
       "max_t": null,
       "max_frame": 4e6
@@ -53,11 +53,10 @@
       "max_session": 6,
       "max_trial": 1,
     },
-    "search": {
-      "meta": {
-        "max_session__grid_search": [4, 6, 8, 16],
-        "distributed__grid_search": ["synced", "shared"]
-      }
+    "spec_params": {
+      "env": [
+        "RoboschoolAnt-v1", "RoboschoolHalfCheetah-v1", "RoboschoolHopper-v1", "RoboschoolWalker2d-v1"
+      ]
     }
   }
 }
