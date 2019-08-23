@@ -102,16 +102,18 @@ class QConvNet(ConvNet):
         self.conv_model = self.build_conv_layers(self.conv_hid_layers)
         self.conv_out_dim = self.get_conv_output_size()
 
-        # action fc model
-        action_layer_size = int(self.fc_hid_layers[-1] / 2)
-        action_hid_layers = [action_layer_size, action_layer_size]
-        self.action_model = net_util.build_fc_model([action_dim] + action_hid_layers, self.hid_layers_activation)
+        # state fc model
+        self.state_fc_model = net_util.build_fc_model([self.conv_out_dim] + self.fc_hid_layers, self.hid_layers_activation)
 
-        # concat state and action outputs for fc model
-        fc_in_dim = self.conv_out_dim + action_hid_layers[-1]
-        self.fc_model = net_util.build_fc_model([fc_in_dim] + self.fc_hid_layers, self.hid_layers_activation)
+        # use Feature-wise Linear Modulation applied to the outputs of the last state_fc_model hid_layers
+        # https://arxiv.org/pdf/1709.07871.pdf
+        state_fc_out_dim = self.fc_hid_layers[-1]
+        self.action_conv_scale = net_util.build_fc_model([action_dim, self.conv_out_dim], 'linear')
+        self.action_conv_shift = net_util.build_fc_model([action_dim, self.conv_out_dim], 'linear')
+        self.action_fc_scale = net_util.build_fc_model([action_dim, state_fc_out_dim], 'linear')
+        self.action_fc_shift = net_util.build_fc_model([action_dim, state_fc_out_dim], 'linear')
 
-        # tail
+        # affine transformation applied to
         tail_in_dim = self.fc_hid_layers[-1]
         self.model_tail = net_util.build_fc_model([tail_in_dim, self.out_dim], self.out_layer_activation)
 
@@ -125,7 +127,11 @@ class QConvNet(ConvNet):
             state = state / 255.0
         state = self.conv_model(state)
         state = state.view(state.size(0), -1)  # to (batch_size, -1)
-        action = self.action_model(action)
-        s_a = torch.cat((state, action), dim=-1)
-        s_a = self.fc_model(s_a)
+        action_conv_scale = self.action_conv_scale(action)
+        action_conv_shift = self.action_conv_shift(action)
+        state = state * action_conv_scale + action_conv_shift
+        state = self.state_fc_model(state)
+        action_fc_scale = self.action_fc_scale(action)
+        action_fc_shift = self.action_fc_shift(action)
+        s_a = state * action_fc_scale + action_fc_shift
         return self.model_tail(s_a)
