@@ -104,7 +104,7 @@ class QConvNet(ConvNet):
 
         # action fc model
         action_layer_size = int(self.fc_hid_layers[-1] / 2)
-        action_hid_layers = [action_layer_size]
+        action_hid_layers = [action_layer_size, action_layer_size]
         self.action_model = net_util.build_fc_model([action_dim] + action_hid_layers, self.hid_layers_activation)
 
         # concat state and action outputs for fc model
