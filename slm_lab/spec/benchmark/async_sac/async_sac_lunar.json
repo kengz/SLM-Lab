@@ -40,7 +40,7 @@
       "frame_op": "concat",
       "frame_op_len": 4,
       "max_t": null,
-      "max_frame": 2e6,
+      "max_frame": 8e5,
       "num_envs": 8,
       "normalize_state": false
     }],
