@@ -121,6 +121,8 @@ class SoftActorCritic(ActorCritic):
         else:
             mus = samples
             actions = self.scale_action(torch.tanh(mus))
+            if actions.dim() == 1:  # handle shape consistency for single actions
+                actions = actions.unsqueeze(dim=-1)
             # paper Appendix C. Enforcing Action Bounds for continuous actions
             log_probs = (action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6).sum(1))
         return log_probs, actions
