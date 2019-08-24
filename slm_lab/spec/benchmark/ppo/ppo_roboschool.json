@@ -137,7 +137,7 @@
       "name": "RoboschoolHumanoid-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 5e7
     }],
     "body": {
       "product": "outer",
