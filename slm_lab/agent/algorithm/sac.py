@@ -122,13 +122,15 @@ class SoftActorCritic(ActorCritic):
             mus = samples
             actions = self.scale_action(torch.tanh(mus))
             if actions.dim() == 1:  # handle shape consistency for single actions
-                actions = actions.unsqueeze(dim=-1)
+                actions = actions.unsqueeze(dim=0)
             # paper Appendix C. Enforcing Action Bounds for continuous actions
             log_probs = (action_pd.log_prob(mus) - torch.log(1 - actions.pow(2) + 1e-6).sum(1))
         return log_probs, actions
 
     def calc_q(self, state, action, net):
         '''Forward-pass to calculate the predicted state-action-value from q1_net.'''
+        if not self.body.is_discrete and action.dim() == 1:  # handle shape consistency for single continuous action
+            action = action.unsqueeze(dim=0)
         q_pred = net(state, action).view(-1)
         return q_pred
 
