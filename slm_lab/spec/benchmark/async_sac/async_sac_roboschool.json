@@ -50,7 +50,7 @@
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 6,
+      "max_session": 8,
       "max_trial": 1,
     },
     "spec_params": {
@@ -99,7 +99,7 @@
       "name": "RoboschoolHumanoid-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 5e6
+      "max_frame": 5e7
     }],
     "body": {
       "product": "outer",
@@ -110,7 +110,7 @@
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 8,
+      "max_session": 16,
       "max_trial": 1
     }
   },
@@ -154,7 +154,7 @@
       "name": "RoboschoolHumanoidFlagrun-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 5e7
     }],
     "body": {
       "product": "outer",
@@ -165,7 +165,7 @@
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 8,
+      "max_session": 16,
       "max_trial": 1
     }
   },
@@ -209,7 +209,7 @@
       "name": "RoboschoolHumanoidFlagrunHarder-v1",
       "num_envs": 8,
       "max_t": null,
-      "max_frame": 1e7
+      "max_frame": 5e7
     }],
     "body": {
       "product": "outer",
@@ -220,7 +220,7 @@
       "log_frequency": 1000,
       "eval_frequency": 1000,
       "rigorous_eval": 0,
-      "max_session": 8,
+      "max_session": 16,
       "max_trial": 1
     }
   }
