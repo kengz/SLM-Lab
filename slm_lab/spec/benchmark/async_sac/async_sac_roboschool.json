@@ -20,7 +20,7 @@
         "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "clip_grad_val": 1.0,
+        "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "MSELoss"
         },
@@ -80,13 +80,13 @@
         "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "clip_grad_val": 1.0,
+        "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4,
+          "lr": 5e-5,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -135,13 +135,13 @@
         "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "clip_grad_val": 1.0,
+        "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4,
+          "lr": 5e-5,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -190,13 +190,13 @@
         "hid_layers": [256, 256],
         "hid_layers_activation": "relu",
         "init_fn": "orthogonal_",
-        "clip_grad_val": 1.0,
+        "clip_grad_val": 0.5,
         "loss_spec": {
           "name": "MSELoss"
         },
         "optim_spec": {
           "name": "GlobalAdam",
-          "lr": 1e-4,
+          "lr": 5e-5,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
