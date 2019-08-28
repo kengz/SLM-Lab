@@ -89,7 +89,7 @@
           "end_step": 0
         },
         "val_loss_coef": 1.0,
-        "training_frequency": 48
+        "training_frequency": 512
       },
       "memory": {
         "name": "OnPolicyBatchReplay",
@@ -106,11 +106,11 @@
           "name": "MSELoss"
         },
         "actor_optim_spec": {
-          "name": "Adam",
+          "name": "RAdam",
           "lr": 3e-4,
         },
         "critic_optim_spec": {
-          "name": "Adam",
+          "name": "RAdam",
           "lr": 3e-4,
         },
         "lr_scheduler_spec": null,
@@ -119,7 +119,7 @@
     }],
     "env": [{
       "name": "RoboschoolHumanoid-v1",
-      "num_envs": 8,
+      "num_envs": 32,
       "max_t": null,
       "max_frame": 5e7
     }],
@@ -129,8 +129,8 @@
     },
     "meta": {
       "distributed": false,
-      "log_frequency": 1000,
-      "eval_frequency": 1000,
+      "log_frequency": 10000,
+      "eval_frequency": 10000,
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1
