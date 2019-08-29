@@ -25,7 +25,7 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "RAdam",
+          "name": "GlobalAdam",
           "lr": 1e-4,
         },
         "lr_scheduler_spec": null,
@@ -85,8 +85,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "RAdam",
-          "lr": 1e-4,
+          "name": "GlobalAdam",
+          "lr": 5e-5,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -140,8 +140,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "RAdam",
-          "lr": 1e-4,
+          "name": "GlobalAdam",
+          "lr": 5e-5,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
@@ -195,8 +195,8 @@
           "name": "MSELoss"
         },
         "optim_spec": {
-          "name": "RAdam",
-          "lr": 1e-4,
+          "name": "GlobalAdam",
+          "lr": 5e-5,
         },
         "lr_scheduler_spec": null,
         "update_type": "polyak",
