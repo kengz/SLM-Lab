@@ -75,3 +75,6 @@ The frames in the graphs are per worker, and graphs are averaged across workers.
 | RoboschoolInvertedPendulumSwingup |  |  |  | 847.06 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63918480-a1c73880-c9f1-11e9-8c19-b69c875c3143.png"></details> |
 | RoboschoolReacher |  |  |  | 19.73 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63918535-b60b3580-c9f1-11e9-8e26-4cbdd3f3c42f.png"></details> |
 | RoboschoolWalker2d |  |  |  | 1386.15 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63918584-ccb18c80-c9f1-11e9-9126-0c9e9d8ac04b.png"></details> |
+| RoboschoolHumanoid |  |  |  |  2458.23 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63919458-a260ce80-c9f3-11e9-81ee-fdee30d293a7.png"></details> |
+| RoboschoolHumanoidFlagrun |  |  |  |  2056.06 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63919472-a8ef4600-c9f3-11e9-9394-b150fd71e4a4.png"></details> |
+| RoboschoolHumanoidFlagrunHarder |  |  |  |  267.36 <details><summary><i>graph</i></summary><img src="https://user-images.githubusercontent.com/8209263/63919477-ac82cd00-c9f3-11e9-9038-29df678edc60.png"></details> |
