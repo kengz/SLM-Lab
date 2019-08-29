@@ -110,8 +110,8 @@ class QConvNet(ConvNet):
         state_fc_out_dim = self.fc_hid_layers[-1]
         # self.action_conv_scale = net_util.build_fc_model([action_dim, self.conv_out_dim], self.hid_layers_activation)
         # self.action_conv_shift = net_util.build_fc_model([action_dim, self.conv_out_dim], self.hid_layers_activation)
-        self.action_fc_scale = net_util.build_fc_model([action_dim, state_fc_out_dim], self.hid_layers_activation)
-        self.action_fc_shift = net_util.build_fc_model([action_dim, state_fc_out_dim], self.hid_layers_activation)
+        self.action_fc_scale = net_util.build_fc_model([action_dim, state_fc_out_dim])
+        self.action_fc_shift = net_util.build_fc_model([action_dim, state_fc_out_dim])
 
         # affine transformation applied to
         tail_in_dim = self.fc_hid_layers[-1]
