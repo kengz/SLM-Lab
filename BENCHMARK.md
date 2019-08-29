@@ -60,7 +60,9 @@ The specs for these are contained in the [`slm_lab/spec/benchmark`](https://gith
 
 #### Asynchronous Algorithms Benchmark
 
->The results for SAC were uploaded in [PR 404](https://github.com/kengz/SLM-Lab/pull/404). The frames in the graphs are per worker, and graphs are averaged across workers.
+>The results for SAC were uploaded in [PR 404](https://github.com/kengz/SLM-Lab/pull/404).
+
+The frames in the graphs are per worker, and graphs are averaged across workers. To get the total frames, simply multiply the x-axis with the number of sessions (workers).
 
 | Env. \ Alg. | A3C (GAE) | A3C (n-step) | Async PPO | Async SAC |
 |:---|---|---|---|---|
