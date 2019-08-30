@@ -103,13 +103,13 @@ class QConvNet(ConvNet):
         self.conv_out_dim = self.get_conv_output_size()
 
         # state fc model
-        self.state_fc_model = net_util.build_fc_model([self.conv_out_dim] + self.fc_hid_layers, self.hid_layers_activation)
+        self.state_fc_model = net_util.build_fc_model([self.conv_out_dim] + self.fc_hid_layers, 'sigmoid')
 
         # use Feature-wise Linear Modulation applied to the outputs of the last state_fc_model hid_layers
         # https://arxiv.org/pdf/1709.07871.pdf
         state_fc_out_dim = self.fc_hid_layers[-1]
-        self.action_conv_scale = net_util.build_fc_model([action_dim, self.conv_out_dim], 'sigmoid')
-        self.action_conv_shift = net_util.build_fc_model([action_dim, self.conv_out_dim], 'sigmoid')
+        # self.action_conv_scale = net_util.build_fc_model([action_dim, self.conv_out_dim], 'sigmoid')
+        # self.action_conv_shift = net_util.build_fc_model([action_dim, self.conv_out_dim], 'sigmoid')
         self.action_fc_scale = net_util.build_fc_model([action_dim, state_fc_out_dim], 'sigmoid')
         self.action_fc_shift = net_util.build_fc_model([action_dim, state_fc_out_dim], 'sigmoid')
 
@@ -127,9 +127,9 @@ class QConvNet(ConvNet):
             state = state / 255.0
         state = self.conv_model(state)
         state = state.view(state.size(0), -1)  # to (batch_size, -1)
-        action_conv_scale = self.action_conv_scale(action)
-        action_conv_shift = self.action_conv_shift(action)
-        state = state * action_conv_scale + action_conv_shift
+        # action_conv_scale = self.action_conv_scale(action)
+        # action_conv_shift = self.action_conv_shift(action)
+        # state = state * action_conv_scale + action_conv_shift
         state = self.state_fc_model(state)
         action_fc_scale = self.action_fc_scale(action)
         action_fc_shift = self.action_fc_shift(action)
