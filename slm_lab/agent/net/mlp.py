@@ -342,6 +342,7 @@ class DuelingMLPNet(MLPNet):
         # output layers
         self.v = nn.Linear(dims[-1], 1)  # state value
         self.adv = nn.Linear(dims[-1], out_dim)  # action dependent raw advantage
+        self.model_tails = nn.ModuleList([self.v, self.adv])
         net_util.init_layers(self, self.init_fn)
         self.loss_fn = net_util.get_loss_fn(self, self.loss_spec)
         self.to(self.device)
