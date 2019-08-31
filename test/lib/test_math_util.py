@@ -77,3 +77,16 @@ def test_linear_decay(start_val, end_val, start_step, end_step, step, correct):
 ])
 def test_rate_decay(start_val, end_val, start_step, end_step, step, correct):
     np.testing.assert_almost_equal(math_util.rate_decay(start_val, end_val, start_step, end_step, step), correct)
+
+def test_calc_q_value_logits():
+    state_value = torch.tensor([[1.], [2.], [3.]])
+    advantages = torch.tensor([
+        [0., 1.],
+        [1., 1.],
+        [1., 0.]])
+    result = torch.tensor([
+        [0.5, 1.5],
+        [2.0, 2.0],
+        [3.5, 2.5]])
+    out = math_util.calc_q_value_logits(state_value, advantages)
+    assert torch.allclose(out, result)
