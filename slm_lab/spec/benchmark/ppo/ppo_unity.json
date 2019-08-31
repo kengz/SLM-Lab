@@ -56,7 +56,7 @@
     }],
     "env": [{
       "name": "unity3dball-v0",
-      "num_envs": 4,
+      "num_envs": 1,
       "max_t": null,
       "max_frame": 1e5
     }],
@@ -130,7 +130,7 @@
     }],
     "env": [{
       "name": "unitywalker-v0",
-      "num_envs": 8,
+      "num_envs": 1,
       "max_t": null,
       "max_frame": 2e6
     }],
@@ -204,7 +204,7 @@
     }],
     "env": [{
       "name": "{env}",
-      "num_envs": 8,
+      "num_envs": 1,
       "max_t": null,
       "max_frame": 1e5
     }],
@@ -289,7 +289,7 @@
     }],
     "env": [{
       "name": "{env}",
-      "num_envs": 8,
+      "num_envs": 1,
       "max_t": null,
       "max_frame": 1e6
     }],
