@@ -9,9 +9,9 @@ echo "--- Installing NodeJS Lab interface ---"
 if which node >/dev/null; then
   echo "Nodejs is already installed"
 else
-  curl -sL https://deb.nodesource.com/setup_11.x | -E bash -
+  curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
   apt-get install -y nodejs
-  npm install --unsafe-perm=true --allow-root -g yarn
+  sudo npm install --unsafe-perm=true --allow-root -g yarn
 fi
 
 echo "--- Installing npm modules for Lab interface ---"
