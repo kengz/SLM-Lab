@@ -22,8 +22,7 @@ fi
 
 echo "--- Installing Unity ML agents ---"
 conda activate lab
-pip install unityagents==0.2.0
-pip uninstall -y tensorflow tensorboard
+pip install gym_unity==0.4.5
 
 echo "--- Installing VizDoom ---"
 pip install vizdoom==1.1.6
