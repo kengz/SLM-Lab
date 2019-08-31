@@ -309,7 +309,7 @@
       "env": [
         "slm-env-unitycrawlerdynamictarget-v0",
         "slm-env-unitycrawlerstatictarget-v0",
-        "slm-env-unitywalker-v0",
+        "slm-env-unitywalker-v0"
       ]
     }
   }
