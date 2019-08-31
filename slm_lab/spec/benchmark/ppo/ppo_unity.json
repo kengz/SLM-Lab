@@ -56,7 +56,7 @@
     }],
     "env": [{
       "name": "unity3dball-v0",
-      "num_envs": 1,
+      "num_envs": 4,
       "max_t": null,
       "max_frame": 1e5
     }],
