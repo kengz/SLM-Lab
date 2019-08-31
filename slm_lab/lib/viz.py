@@ -51,7 +51,7 @@ def create_layout(title, y_title, x_title, x_type=None, width=500, height=500, l
         yaxis=dict(rangemode='tozero', title=y_title),
         xaxis=dict(type=x_type, title=x_title),
         width=width, height=height,
-        margin=go.layout.Margin(l=60, r=60, t=60, b=60),
+        margin=go.layout.Margin(l=60, r=30, t=60, b=60),
     )
     layout.update(layout_kwargs)
     return layout
@@ -119,7 +119,7 @@ def save_image(figure, filepath):
         return
     filepath = util.smart_path(filepath)
     try:
-        pio.write_image(figure, filepath)
+        pio.write_image(figure, filepath, scale=4)
     except Exception as e:
         orca_warn_once(e)
 
