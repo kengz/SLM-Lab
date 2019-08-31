@@ -219,18 +219,18 @@
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1
+    },
+    "spec_params": {
+      "env": [
+        "slm-env-unityball3d-v0",
+        "slm-env-unityball3dhard-v0",
+        "slm-env-unitybouncer-v0",
+        "slm-env-unitygridworld-v0",
+        "slm-env-unityhallway-v0",
+        "slm-env-unitypushblock-v0",
+        "slm-env-unityreacher-v0"
+      ]
     }
-  },
-  "spec_params": {
-    "env": [
-      "slm-env-unityball3d-v0",
-      "slm-env-unityball3dhard-v0",
-      "slm-env-unitybouncer-v0",
-      "slm-env-unitygridworld-v0",
-      "slm-env-unityhallway-v0",
-      "slm-env-unitypushblock-v0",
-      "slm-env-unityreacher-v0"
-    ]
   },
   "ppo_unityadv": {
     "agent": [{
@@ -304,13 +304,13 @@
       "rigorous_eval": 0,
       "max_session": 4,
       "max_trial": 1
+    },
+    "spec_params": {
+      "env": [
+        "slm-env-unitycrawlerdynamictarget-v0",
+        "slm-env-unitycrawlerstatictarget-v0",
+        "slm-env-unitywalker-v0",
+      ]
     }
-  },
-  "spec_params": {
-    "env": [
-      "slm-env-unitycrawlerdynamictarget-v0",
-      "slm-env-unitycrawlerstatictarget-v0",
-      "slm-env-unitywalker-v0",
-    ]
   }
 }
