@@ -28,3 +28,9 @@ class GymUnityEnv(UnityEnv):
         reward = np.array(reward)
         done = np.array(done)
         return state, reward, done, info
+
+    def close(self):
+        try:  # guard repeated call to close()
+            super().close()
+        except Exception as e:
+            pass
