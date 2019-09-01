@@ -6,6 +6,10 @@ The SLM Lab provides a set of benchmark results that are periodically updated wi
 
 The data can be downloaded into SLM Lab's `data/` folder and [reran in enjoy mode](https://kengz.gitbooks.io/slm-lab/content/usage/lab-commands.html).
 
+#### Hardware
+
+For reference, the image based environment benchmarks are run on AWS GPU box `p2.16xlarge`, and the non-image based environments are run on AWS CPU box `m5a.24xlarge`.
+
 #### Terminology
 
 - A2C (GAE): Advantage Actor-Critic with GAE as advantage estimation
@@ -20,6 +24,7 @@ The data can be downloaded into SLM Lab's `data/` folder and [reran in enjoy mod
 - PPO: Proximal Policy Optimization
 - SAC: Soft Actor-Critic
 - SIL: Self Imitation Learning
+
 
 ### Atari Benchmark
 
