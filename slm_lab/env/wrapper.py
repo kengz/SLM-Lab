@@ -292,9 +292,12 @@ class TrackReward(gym.Wrapper):
         obs, reward, done, info = self.env.step(action)
         self.tracked_reward += reward
         # use self.was_real_done from EpisodicLifeEnv, or plain done
-        if info.get('was_real_done', done):
-            self.total_reward = self.tracked_reward
-            self.tracked_reward = 0  # reset
+        real_done = info.get('was_real_done', False) or done
+        not_real_done = (1 - real_done)
+        # update total_reward only when real_done, else use old value
+        self.total_reward = np.nan_to_num(self.total_reward) * not_real_done + self.tracked_reward * real_done
+        # reset to 0 on real_done, i.e. multiply with not_real_done
+        self.tracked_reward = self.tracked_reward * not_real_done
         info.update({'total_reward': self.total_reward})
         return obs, reward, done, info
 
