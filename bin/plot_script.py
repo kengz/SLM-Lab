@@ -26,12 +26,11 @@ viz.plot_multi_trial(trial_metrics_path_list, legend_list, title, graph_prepath,
 # Roboschool
 env_list = [
     'RoboschoolAnt',
-    'RoboschoolAtlasForwardWalk',
+    # 'RoboschoolAtlasForwardWalk',
     'RoboschoolHalfCheetah',
-    'RoboschoolHopper',
+    # 'RoboschoolHopper',
     'RoboschoolInvertedDoublePendulum',
     'RoboschoolInvertedPendulum',
-    'RoboschoolInvertedPendulumSwingup',
     'RoboschoolReacher',
     'RoboschoolWalker2d',
 ]
@@ -41,7 +40,7 @@ for env in env_list:
         f'data/a2c_gae_roboschool_{env}-v1_2019_08_27_135211/info/a2c_gae_roboschool_{env}-v1_t0_trial_metrics.pkl',
         f'data/a2c_nstep_roboschool_{env}-v1_2019_08_27_075653/info/a2c_nstep_roboschool_{env}-v1_t0_trial_metrics.pkl',
         f'data/ppo_roboschool_{env}-v1_2019_08_27_182010/info/ppo_roboschool_{env}-v1_t0_trial_metrics.pkl',
-        f'data/sac_roboschool_{env}-v1_2019_08_24_201811/info/sac_roboschool_{env}-v1_t0_trial_metrics.pkl',
+        f'data/sac_roboschool_{env}-v1_2019_08_29_072253/info/sac_roboschool_{env}-v1_t0_trial_metrics.pkl',
     ]
     legend_list = [
         'A2C (GAE)',
